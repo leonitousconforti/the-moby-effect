@@ -1,0 +1,56 @@
+{
+    "name": "the-moby-effect",
+    "version": "0.0.1",
+    "description": "Docker API client automatically generated from the moby repository using swagger-codegen and effect-ts",
+    "keywords": [
+        "moby",
+        "docker"
+    ],
+    "homepage": "https://github.com/leonitousconforti/the-moby-effect",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/leonitousconforti/the-moby-effect.git"
+    },
+    "license": "MIT",
+    "author": "Leo Conforti <leo@leoconforti.us> (https://leoconforti.us)",
+    "type": "module",
+    "main": "dist/index.js",
+    "files": [
+        "dist/"
+    ],
+    "dependencies": {
+    },    "scripts": {
+        "build": "heft test --clean"
+    },
+
+    "devDependencies": {
+        "@effect/cli": "0.22.0",
+        "@effect/eslint-plugin": "0.1.2",
+        "@effect/language-service": "0.0.21",
+        "@effect/platform": "0.30.1",
+        "@effect/platform-node": "0.31.1",
+        "@effect/printer": "0.23.1",
+        "@effect/printer-ansi": "0.23.1",
+        "@effect/schema": "0.48.0",
+        "@effect/typeclass": "0.15.0",
+        "@types/node": "20.9.0",
+        "effect": "2.0.0-next.55",
+        "eslint": "8.53.0",
+        "eslint-config-prettier": "9.0.0",
+        "eslint-plugin-prettier": "5.0.1",
+        "eslint-plugin-unicorn": "49.0.0",
+        "prettier": "3.1.0",
+        "typescript": "5.2.2",
+                "prettier-plugin-jsdoc": "^1.1.1",
+        "prettier-plugin-packagejson": "^2.4.6"
+
+    },
+    "peerDependencies": {
+        "@effect/platform": "~0.30.1",
+        "@effect/platform-node": "~0.31.1",
+        "effect": "~2.0.0-next.55"
+    },
+    "engines": {
+        "node": ">=16"
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "$schema": "https://json.schemastore.org/prettierrc",
+
+    "semi": true,
+    "singleQuote": false,
+    "trailingComma": "es5",
+
+    "plugins": [
+        "./node_modules/prettier-plugin-jsdoc/dist/index.js",
+        "prettier-plugin-packagejson"
+    ],
+    "jsdocPrintWidth": 80
+}
