@@ -19,7 +19,7 @@
         "dist/"
     ],
     "scripts": {
-        "build": "heft run --only build -- --clean"
+        "build": "heft build --clean"
     },
     "devDependencies": {
         "@effect/eslint-plugin": "0.1.2",

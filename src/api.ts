@@ -84,14 +84,12 @@ export interface Address {
     /** Mask length of the IP address. */
     prefixLen?: number;
 }
-
 export interface AuthConfig {
     username?: string;
     password?: string;
     email?: string;
     serveraddress?: string;
 }
-
 /** BuildCache contains information about a build cache record. */
 export interface BuildCache {
     /** Unique ID of the build cache record. */
@@ -104,7 +102,7 @@ export interface BuildCache {
     /** List of parent build cache record IDs. */
     parents?: Array<string>;
     /** Cache record type. */
-    type?: BuildCache.TypeEnum;
+    type?: BuildCache_TypeEnum;
     /** Description of the build-step that produced the build cache. */
     description?: string;
     /** Indicates if the build cache is in use. */
@@ -126,15 +124,13 @@ export interface BuildCache {
     usageCount?: number;
 }
 
-export namespace BuildCache {
-    export enum TypeEnum {
-        Internal = "internal",
-        Frontend = "frontend",
-        SourceLocal = "source.local",
-        SourceGitCheckout = "source.git.checkout",
-        ExecCachemount = "exec.cachemount",
-        Regular = "regular",
-    }
+export enum BuildCache_TypeEnum {
+    Internal = "internal",
+    Frontend = "frontend",
+    SourceLocal = "source.local",
+    SourceGitCheckout = "source.git.checkout",
+    ExecCachemount = "exec.cachemount",
+    Regular = "regular",
 }
 
 export interface BuildInfo {
@@ -147,13 +143,11 @@ export interface BuildInfo {
     progressDetail?: ProgressDetail;
     aux?: ImageID;
 }
-
 export interface BuildPruneResponse {
     cachesDeleted?: Array<string>;
     /** Disk space reclaimed in bytes */
     spaceReclaimed?: number;
 }
-
 /**
  * Kind of change Can be one of: - `0`: Modified ("C") - `1`: Added ("A") - `2`:
  * Deleted ("D")
@@ -203,7 +197,6 @@ export interface ClusterInfo {
      */
     subnetSize?: number;
 }
-
 /**
  * Options and information specific to, and only present on, Swarm CSI cluster
  * volumes.
@@ -226,7 +219,6 @@ export interface ClusterVolume {
      */
     publishStatus?: Array<ClusterVolumePublishStatus>;
 }
-
 /** Information about the global status of the volume. */
 export interface ClusterVolumeInfo {
     /**
@@ -250,7 +242,6 @@ export interface ClusterVolumeInfo {
     /** The topology this volume is actually accessible from. */
     accessibleTopology?: Array<Topology>;
 }
-
 export interface ClusterVolumePublishStatus {
     /** The ID of the Swarm node the volume is published on. */
     nodeID?: string;
@@ -265,7 +256,7 @@ export interface ClusterVolumePublishStatus {
      * from the node, but has not yet been successfully unpublished on the
      * controller.
      */
-    state?: ClusterVolumePublishStatus.StateEnum;
+    state?: ClusterVolumePublishStatus_StateEnum;
     /**
      * A map of strings to strings returned by the CSI controller plugin when a
      * volume is published.
@@ -273,13 +264,11 @@ export interface ClusterVolumePublishStatus {
     publishContext?: { [key: string]: string };
 }
 
-export namespace ClusterVolumePublishStatus {
-    export enum StateEnum {
-        PendingPublish = "pending-publish",
-        Published = "published",
-        PendingNodeUnpublish = "pending-node-unpublish",
-        PendingControllerUnpublish = "pending-controller-unpublish",
-    }
+export enum ClusterVolumePublishStatus_StateEnum {
+    PendingPublish = "pending-publish",
+    Published = "published",
+    PendingNodeUnpublish = "pending-node-unpublish",
+    PendingControllerUnpublish = "pending-controller-unpublish",
 }
 
 /** Cluster-specific options used to create the volume. */
@@ -295,7 +284,6 @@ export interface ClusterVolumeSpec {
     group?: string;
     accessMode?: ClusterVolumeSpecAccessMode;
 }
-
 /** Defines how the volume is used by tasks. */
 export interface ClusterVolumeSpecAccessMode {
     /**
@@ -303,7 +291,7 @@ export interface ClusterVolumeSpecAccessMode {
      * volume may only be scheduled to one node at a time. - `multi` the volume
      * may be scheduled to any supported number of nodes at a time.
      */
-    scope?: ClusterVolumeSpecAccessMode.ScopeEnum;
+    scope?: ClusterVolumeSpecAccessMode_ScopeEnum;
     /**
      * The number and way that different tasks can use this volume at one time.
      * - `none` The volume may only be used by one task at a time. - `readonly`
@@ -312,7 +300,7 @@ export interface ClusterVolumeSpecAccessMode {
      * of tasks, but only one may mount it as read/write. - `all` The volume may
      * have any number of readers and writers.
      */
-    sharing?: ClusterVolumeSpecAccessMode.SharingEnum;
+    sharing?: ClusterVolumeSpecAccessMode_SharingEnum;
     /**
      * Options for using this volume as a Mount-type volume. Either MountVolume
      * or BlockVolume, but not both, must be present. properties: FsType: type:
@@ -337,25 +325,23 @@ export interface ClusterVolumeSpecAccessMode {
      * All workloads using this volume should be stopped and rescheduled, and no
      * new ones should be started.
      */
-    availability?: ClusterVolumeSpecAccessMode.AvailabilityEnum;
+    availability?: ClusterVolumeSpecAccessMode_AvailabilityEnum;
 }
 
-export namespace ClusterVolumeSpecAccessMode {
-    export enum ScopeEnum {
-        Single = "single",
-        Multi = "multi",
-    }
-    export enum SharingEnum {
-        None = "none",
-        Readonly = "readonly",
-        Onewriter = "onewriter",
-        All = "all",
-    }
-    export enum AvailabilityEnum {
-        Active = "active",
-        Pause = "pause",
-        Drain = "drain",
-    }
+export enum ClusterVolumeSpecAccessMode_ScopeEnum {
+    Single = "single",
+    Multi = "multi",
+}
+export enum ClusterVolumeSpecAccessMode_SharingEnum {
+    None = "none",
+    Readonly = "readonly",
+    Onewriter = "onewriter",
+    All = "all",
+}
+export enum ClusterVolumeSpecAccessMode_AvailabilityEnum {
+    Active = "active",
+    Pause = "pause",
+    Drain = "drain",
 }
 
 /**
@@ -372,7 +358,6 @@ export interface ClusterVolumeSpecAccessModeAccessibilityRequirements {
     /** A list of topologies that the volume should attempt to be provisioned in. */
     preferred?: Array<Topology>;
 }
-
 /**
  * The desired capacity that the volume should be created with. If empty, the
  * plugin will decide the capacity.
@@ -389,7 +374,6 @@ export interface ClusterVolumeSpecAccessModeCapacityRange {
      */
     limitBytes?: number;
 }
-
 /**
  * One cluster volume secret entry. Defines a key-value pair that is passed to
  * the plugin.
@@ -404,7 +388,6 @@ export interface ClusterVolumeSpecAccessModeSecrets {
      */
     secret?: string;
 }
-
 /**
  * Commit holds the Git-commit (SHA1) that a binary was built from, as reported
  * in the version-string of external tools, such as `containerd`, or `runC`.
@@ -415,7 +398,6 @@ export interface Commit {
     /** Commit ID of external tool expected by dockerd as set at build time. */
     expected?: string;
 }
-
 export interface Config {
     ID?: string;
     version?: ObjectVersion;
@@ -423,7 +405,6 @@ export interface Config {
     updatedAt?: string;
     spec?: ConfigSpec;
 }
-
 export interface ConfigSpec {
     /** User-defined name of the config. */
     name?: string;
@@ -436,9 +417,7 @@ export interface ConfigSpec {
     data?: string;
     templating?: Driver;
 }
-
 export interface ConfigsCreateBody {}
-
 /**
  * Configuration for a container that is portable between hosts. When used as
  * `ContainerConfig` field in an image, `ContainerConfig` is an optional field
@@ -518,7 +497,6 @@ export interface ContainerConfig {
     /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
     shell?: Array<string>;
 }
-
 /** OK response to ContainerCreate operation */
 export interface ContainerCreateResponse {
     /** The ID of the created container */
@@ -526,7 +504,6 @@ export interface ContainerCreateResponse {
     /** Warnings encountered when creating the container */
     warnings: Array<string>;
 }
-
 export interface ContainerInspectResponse {
     /** The ID of the container */
     id?: string;
@@ -562,14 +539,12 @@ export interface ContainerInspectResponse {
     config?: ContainerConfig;
     networkSettings?: NetworkSettings;
 }
-
 export interface ContainerPruneResponse {
     /** Container IDs that were deleted */
     containersDeleted?: Array<string>;
     /** Disk space reclaimed in bytes */
     spaceReclaimed?: number;
 }
-
 /**
  * ContainerState stores container's running state. It's part of
  * ContainerJSONBase and will be returned by the "inspect" command.
@@ -579,7 +554,7 @@ export interface ContainerState {
      * String representation of the container state. Can be one of "created",
      * "running", "paused", "restarting", "removing", "exited", or "dead".
      */
-    status?: ContainerState.StatusEnum;
+    status?: ContainerState_StatusEnum;
     /**
      * Whether this container is running. Note that a running container can be
      * _paused_. The `Running` and `Paused` booleans are not mutually exclusive:
@@ -612,16 +587,14 @@ export interface ContainerState {
     health?: Health;
 }
 
-export namespace ContainerState {
-    export enum StatusEnum {
-        Created = "created",
-        Running = "running",
-        Paused = "paused",
-        Restarting = "restarting",
-        Removing = "removing",
-        Exited = "exited",
-        Dead = "dead",
-    }
+export enum ContainerState_StatusEnum {
+    Created = "created",
+    Running = "running",
+    Paused = "paused",
+    Restarting = "restarting",
+    Removing = "removing",
+    Exited = "exited",
+    Dead = "dead",
 }
 
 export interface ContainerSummary {
@@ -653,16 +626,13 @@ export interface ContainerSummary {
     networkSettings?: ContainerSummaryNetworkSettings;
     mounts?: Array<MountPoint>;
 }
-
 export interface ContainerSummaryHostConfig {
     networkMode?: string;
 }
-
 /** A summary of the container's network settings */
 export interface ContainerSummaryNetworkSettings {
     networks?: { [key: string]: EndpointSettings };
 }
-
 /** OK response to ContainerTop operation */
 export interface ContainerTopResponse {
     /** The ps column titles */
@@ -673,35 +643,29 @@ export interface ContainerTopResponse {
      */
     processes?: Array<Array<string>>;
 }
-
 /** OK response to ContainerUpdate operation */
 export interface ContainerUpdateResponse {
     warnings?: Array<string>;
 }
-
 /** Container waiting error, if any */
 export interface ContainerWaitExitError {
     /** Details of an error */
     message?: string;
 }
-
 /** OK response to ContainerWait operation */
 export interface ContainerWaitResponse {
     /** Exit code of the container */
     statusCode: number;
     error?: ContainerWaitExitError;
 }
-
 export interface ContainersCreateBody extends ContainerConfig, ContainerConfig {
     hostConfig?: HostConfig;
     networkingConfig?: NetworkingConfig;
 }
-
 export interface ContainersCreateBody1 extends ContainerConfig, ContainerConfig {
     hostConfig?: HostConfig;
     networkingConfig?: NetworkingConfig;
 }
-
 export interface CreateImageInfo {
     id?: string;
     error?: string;
@@ -710,14 +674,12 @@ export interface CreateImageInfo {
     progress?: string;
     progressDetail?: ProgressDetail;
 }
-
 /** A device mapping between the host and container */
 export interface DeviceMapping {
     pathOnHost?: string;
     pathInContainer?: string;
     cgroupPermissions?: string;
 }
-
 /** A request for devices to be sent to device drivers */
 export interface DeviceRequest {
     driver?: string;
@@ -731,7 +693,6 @@ export interface DeviceRequest {
      */
     options?: { [key: string]: string };
 }
-
 /**
  * Describes the result obtained from contacting the registry to retrieve image
  * metadata.
@@ -741,7 +702,6 @@ export interface DistributionInspect {
     /** An array containing all platforms supported by the image. */
     platforms: Array<OCIPlatform>;
 }
-
 /** Driver represents a driver (network, logging, secrets). */
 export interface Driver {
     /** Name of the driver. */
@@ -749,17 +709,15 @@ export interface Driver {
     /** Key/value map of driver-specific options. */
     options?: { [key: string]: string };
 }
-
 /** EndpointIPAMConfig represents an endpoint's IPAM configuration. */
 export interface EndpointIPAMConfig {
     iPv4Address?: string;
     iPv6Address?: string;
     linkLocalIPs?: Array<string>;
 }
-
 export interface EndpointPortConfig {
     name?: string;
-    protocol?: EndpointPortConfig.ProtocolEnum;
+    protocol?: EndpointPortConfig_ProtocolEnum;
     /** The port inside the container. */
     targetPort?: number;
     /** The port on the swarm hosts. */
@@ -771,19 +729,17 @@ export interface EndpointPortConfig {
      * routing mesh and publish the port directly on the swarm node where that
      * service is running.
      */
-    publishMode?: EndpointPortConfig.PublishModeEnum;
+    publishMode?: EndpointPortConfig_PublishModeEnum;
 }
 
-export namespace EndpointPortConfig {
-    export enum ProtocolEnum {
-        Tcp = "tcp",
-        Udp = "udp",
-        Sctp = "sctp",
-    }
-    export enum PublishModeEnum {
-        Ingress = "ingress",
-        Host = "host",
-    }
+export enum EndpointPortConfig_ProtocolEnum {
+    Tcp = "tcp",
+    Udp = "udp",
+    Sctp = "sctp",
+}
+export enum EndpointPortConfig_PublishModeEnum {
+    Ingress = "ingress",
+    Host = "host",
 }
 
 /** Configuration for a network endpoint. */
@@ -818,11 +774,10 @@ export interface EndpointSettings {
      */
     driverOpts?: { [key: string]: string };
 }
-
 /** Properties that can be configured to access and load balance a service. */
 export interface EndpointSpec {
     /** The mode of resolution to use for internal load balancing between tasks. */
-    mode?: EndpointSpec.ModeEnum;
+    mode?: EndpointSpec_ModeEnum;
     /**
      * List of exposed ports that this service is accessible on from the
      * outside. Ports can only be provided if `vip` resolution mode is used.
@@ -830,11 +785,9 @@ export interface EndpointSpec {
     ports?: Array<EndpointPortConfig>;
 }
 
-export namespace EndpointSpec {
-    export enum ModeEnum {
-        Vip = "vip",
-        Dnsrr = "dnsrr",
-    }
+export enum EndpointSpec_ModeEnum {
+    Vip = "vip",
+    Dnsrr = "dnsrr",
 }
 
 /** EngineDescription provides information about an engine. */
@@ -843,23 +796,19 @@ export interface EngineDescription {
     labels?: { [key: string]: string };
     plugins?: Array<EngineDescriptionPlugins>;
 }
-
 export interface EngineDescriptionPlugins {
     type?: string;
     name?: string;
 }
-
 export interface ErrorDetail {
     code?: number;
     message?: string;
 }
-
 /** Represents an error. */
 export interface ErrorResponse {
     /** The error message. */
     message: string;
 }
-
 /**
  * Actor describes something that generates events, like a container, network,
  * or a volume.
@@ -870,11 +819,10 @@ export interface EventActor {
     /** Various key/value attributes of the object, depending on its type. */
     attributes?: { [key: string]: string };
 }
-
 /** EventMessage represents the information an event contains. */
 export interface EventMessage {
     /** The type of object emitting the event */
-    type?: EventMessage.TypeEnum;
+    type?: EventMessage_TypeEnum;
     /** The type of event */
     action?: string;
     actor?: EventActor;
@@ -882,31 +830,29 @@ export interface EventMessage {
      * Scope of the event. Engine events are `local` scope. Cluster (Swarm)
      * events are `swarm` scope.
      */
-    scope?: EventMessage.ScopeEnum;
+    scope?: EventMessage_ScopeEnum;
     /** Timestamp of event */
     time?: number;
     /** Timestamp of event, with nanosecond accuracy */
     timeNano?: number;
 }
 
-export namespace EventMessage {
-    export enum TypeEnum {
-        Builder = "builder",
-        Config = "config",
-        Container = "container",
-        Daemon = "daemon",
-        Image = "image",
-        Network = "network",
-        Node = "node",
-        Plugin = "plugin",
-        Secret = "secret",
-        Service = "service",
-        Volume = "volume",
-    }
-    export enum ScopeEnum {
-        Local = "local",
-        Swarm = "swarm",
-    }
+export enum EventMessage_TypeEnum {
+    Builder = "builder",
+    Config = "config",
+    Container = "container",
+    Daemon = "daemon",
+    Image = "image",
+    Network = "network",
+    Node = "node",
+    Plugin = "plugin",
+    Secret = "secret",
+    Service = "service",
+    Volume = "volume",
+}
+export enum EventMessage_ScopeEnum {
+    Local = "local",
+    Swarm = "swarm",
 }
 
 export interface ExecConfig {
@@ -940,7 +886,6 @@ export interface ExecConfig {
     /** The working directory for the exec process inside the container. */
     workingDir?: string;
 }
-
 export interface ExecInspectResponse {
     canRemove?: boolean;
     detachKeys?: string;
@@ -955,7 +900,6 @@ export interface ExecInspectResponse {
     /** The system process ID for the exec process. */
     pid?: number;
 }
-
 export interface ExecStartConfig {
     /** Detach from the command. */
     detach?: boolean;
@@ -964,25 +908,21 @@ export interface ExecStartConfig {
     /** Initial console size, as an `[height, width]` array. */
     consoleSize?: Array<number>;
 }
-
 /** Change in the container's filesystem. */
 export interface FilesystemChange {
     /** Path to file or directory that has changed. */
     path: string;
     kind: ChangeType;
 }
-
 /**
  * User-defined resources can be either Integer resources (e.g, `SSD=3`) or
  * String resources (e.g, `GPU=UUID1`).
  */
 export interface GenericResources {}
-
 export interface GenericResourcesInner {
     namedResourceSpec?: any;
     discreteResourceSpec?: any;
 }
-
 /**
  * Information about the storage driver used to store the container's and
  * image's filesystem.
@@ -997,7 +937,6 @@ export interface GraphDriverData {
      */
     data: { [key: string]: string };
 }
-
 /** Health stores information about the container's healthcheck results. */
 export interface Health {
     /**
@@ -1007,20 +946,18 @@ export interface Health {
      * container is running correctly - "unhealthy" Unhealthy indicates that the
      * container has a problem
      */
-    status?: Health.StatusEnum;
+    status?: Health_StatusEnum;
     /** FailingStreak is the number of consecutive failures */
     failingStreak?: number;
     /** Log contains the last few results (oldest first) */
     log?: Array<HealthcheckResult>;
 }
 
-export namespace Health {
-    export enum StatusEnum {
-        None = "none",
-        Starting = "starting",
-        Healthy = "healthy",
-        Unhealthy = "unhealthy",
-    }
+export enum Health_StatusEnum {
+    None = "none",
+    Starting = "starting",
+    Healthy = "healthy",
+    Unhealthy = "unhealthy",
 }
 
 /** A test to perform to check that the container is healthy. */
@@ -1059,7 +996,6 @@ export interface HealthConfig {
      */
     startInterval?: number;
 }
-
 /**
  * HealthcheckResult stores information about a single run of a healthcheck
  * probe
@@ -1083,7 +1019,6 @@ export interface HealthcheckResult {
     /** Output from last check */
     output?: string;
 }
-
 /** Individual image layer information in response to ImageHistory operation */
 export interface HistoryResponseItem {
     id: string;
@@ -1093,7 +1028,6 @@ export interface HistoryResponseItem {
     size: number;
     comment: string;
 }
-
 /** Container configuration that depends on the host we are running on */
 export interface HostConfig
     extends Resources,
@@ -1217,7 +1151,7 @@ export interface HostConfig
      * daemon default is used, which can either be `\"private\"` or `\"host\"`,
      * depending on daemon version, kernel support and configuration.
      */
-    cgroupnsMode?: HostConfig.CgroupnsModeEnum;
+    cgroupnsMode?: HostConfig_CgroupnsModeEnum;
     /** A list of DNS servers for the container to use. */
     dns?: Array<string>;
     /** A list of DNS options. */
@@ -1303,7 +1237,7 @@ export interface HostConfig
     /** Runtime to use with this container. */
     runtime?: string;
     /** Isolation technology of the container. (Windows only) */
-    isolation?: HostConfig.IsolationEnum;
+    isolation?: HostConfig_IsolationEnum;
     /**
      * The list of paths to be masked inside the container (this overrides the
      * default set of paths).
@@ -1316,36 +1250,32 @@ export interface HostConfig
     readonlyPaths?: Array<string>;
 }
 
-export namespace HostConfig {
-    export enum CgroupnsModeEnum {
-        Private = "private",
-        Host = "host",
-    }
-    export enum IsolationEnum {
-        Default = "default",
-        Process = "process",
-        Hyperv = "hyperv",
-    }
+export enum HostConfig_CgroupnsModeEnum {
+    Private = "private",
+    Host = "host",
+}
+export enum HostConfig_IsolationEnum {
+    Default = "default",
+    Process = "process",
+    Hyperv = "hyperv",
 }
 
 /** The logging configuration for this container */
 export interface HostConfigLogConfig {
-    type?: HostConfigLogConfig.TypeEnum;
+    type?: HostConfigLogConfig_TypeEnum;
     config?: { [key: string]: string };
 }
 
-export namespace HostConfigLogConfig {
-    export enum TypeEnum {
-        JsonFile = "json-file",
-        Syslog = "syslog",
-        Journald = "journald",
-        Gelf = "gelf",
-        Fluentd = "fluentd",
-        Awslogs = "awslogs",
-        Splunk = "splunk",
-        Etwlogs = "etwlogs",
-        None = "none",
-    }
+export enum HostConfigLogConfig_TypeEnum {
+    JsonFile = "json-file",
+    Syslog = "syslog",
+    Journald = "journald",
+    Gelf = "gelf",
+    Fluentd = "fluentd",
+    Awslogs = "awslogs",
+    Splunk = "splunk",
+    Etwlogs = "etwlogs",
+    None = "none",
 }
 
 export interface IPAM {
@@ -1360,38 +1290,31 @@ export interface IPAM {
     /** Driver-specific options, specified as a map. */
     options?: { [key: string]: string };
 }
-
 export interface IPAMConfig {
     subnet?: string;
     iPRange?: string;
     gateway?: string;
     auxiliaryAddresses?: { [key: string]: string };
 }
-
 /** Response to an API call that returns just an Id */
 export interface IdResponse {
     /** The id of the newly created object. */
     id: string;
 }
-
 export interface IdUpdateBody extends Resources {
     restartPolicy?: RestartPolicy;
 }
-
 export interface IdUpdateBody1 {}
-
 export interface ImageDeleteResponseItem {
     /** The image ID of an image that was untagged */
     untagged?: string;
     /** The image ID of an image that was deleted */
     deleted?: string;
 }
-
 /** Image ID or Digest */
 export interface ImageID {
     ID?: string;
 }
-
 /** Information about an image in the local image cache. */
 export interface ImageInspect {
     /**
@@ -1471,7 +1394,6 @@ export interface ImageInspect {
     rootFS?: ImageInspectRootFS;
     metadata?: ImageInspectMetadata;
 }
-
 /**
  * Additional metadata of the image in the local cache. This information is
  * local to the daemon, and not part of the image itself.
@@ -1485,20 +1407,17 @@ export interface ImageInspectMetadata {
      */
     lastTagTime?: string;
 }
-
 /** Information about the image's RootFS, including the layer IDs. */
 export interface ImageInspectRootFS {
     type: string;
     layers?: Array<string>;
 }
-
 export interface ImagePruneResponse {
     /** Images that were deleted */
     imagesDeleted?: Array<ImageDeleteResponseItem>;
     /** Disk space reclaimed in bytes */
     spaceReclaimed?: number;
 }
-
 export interface ImageSearchResponseItem {
     description?: string;
     isOfficial?: boolean;
@@ -1511,7 +1430,6 @@ export interface ImageSearchResponseItem {
     name?: string;
     starCount?: number;
 }
-
 export interface ImageSummary {
     /**
      * ID is the content-addressable ID of an image. This identifier is a
@@ -1572,7 +1490,6 @@ export interface ImageSummary {
      */
     containers: number;
 }
-
 /** IndexInfo contains information about a registry. */
 export interface IndexInfo {
     /** Name of the registry, such as "docker.io". */
@@ -1596,7 +1513,6 @@ export interface IndexInfo {
      */
     official?: boolean;
 }
-
 /** JoinTokens contains the tokens workers and managers need to join the swarm. */
 export interface JoinTokens {
     /** The token workers can use to join the swarm. */
@@ -1604,7 +1520,6 @@ export interface JoinTokens {
     /** The token managers can use to join the swarm. */
     manager?: string;
 }
-
 /** An object describing a limit on resources which can be requested by a task. */
 export interface Limit {
     nanoCPUs?: number;
@@ -1615,7 +1530,6 @@ export interface Limit {
      */
     pids?: number;
 }
-
 /** Current local status of this node. */
 export enum LocalNodeState {
     Empty = "",
@@ -1636,7 +1550,6 @@ export interface ManagerStatus {
     /** The IP address and port at which the manager is reachable. */
     addr?: string;
 }
-
 export interface Mount {
     /** Container path. */
     target?: string;
@@ -1652,7 +1565,7 @@ export interface Mount {
      * Mounts a named pipe from the host into the container. Must exist prior to
      * creating the container. - `cluster` a Swarm cluster volume
      */
-    type?: Mount.TypeEnum;
+    type?: Mount_TypeEnum;
     /** Whether the mount should be read-only. */
     readOnly?: boolean;
     /**
@@ -1665,14 +1578,12 @@ export interface Mount {
     tmpfsOptions?: MountTmpfsOptions;
 }
 
-export namespace Mount {
-    export enum TypeEnum {
-        Bind = "bind",
-        Volume = "volume",
-        Tmpfs = "tmpfs",
-        Npipe = "npipe",
-        Cluster = "cluster",
-    }
+export enum Mount_TypeEnum {
+    Bind = "bind",
+    Volume = "volume",
+    Tmpfs = "tmpfs",
+    Npipe = "npipe",
+    Cluster = "cluster",
 }
 
 /** Optional configuration for the `bind` type. */
@@ -1681,7 +1592,7 @@ export interface MountBindOptions {
      * A propagation mode with the value `[r]private`, `[r]shared`, or
      * `[r]slave`.
      */
-    propagation?: MountBindOptions.PropagationEnum;
+    propagation?: MountBindOptions_PropagationEnum;
     /** Disable recursive bind mount. */
     nonRecursive?: boolean;
     /** Create mount point on host if missing */
@@ -1695,15 +1606,13 @@ export interface MountBindOptions {
     readOnlyForceRecursive?: boolean;
 }
 
-export namespace MountBindOptions {
-    export enum PropagationEnum {
-        Private = "private",
-        Rprivate = "rprivate",
-        Shared = "shared",
-        Rshared = "rshared",
-        Slave = "slave",
-        Rslave = "rslave",
-    }
+export enum MountBindOptions_PropagationEnum {
+    Private = "private",
+    Rprivate = "rprivate",
+    Shared = "shared",
+    Rshared = "rshared",
+    Slave = "slave",
+    Rslave = "rslave",
 }
 
 /**
@@ -1717,7 +1626,7 @@ export interface MountPoint {
      * `tmpfs` a `tmpfs`. - `npipe` a named pipe from the host into the
      * container. - `cluster` a Swarm cluster volume
      */
-    type?: MountPoint.TypeEnum;
+    type?: MountPoint_TypeEnum;
     /**
      * Name is the name reference to the underlying data defined by `Source`
      * e.g., the volume name.
@@ -1757,14 +1666,12 @@ export interface MountPoint {
     propagation?: string;
 }
 
-export namespace MountPoint {
-    export enum TypeEnum {
-        Bind = "bind",
-        Volume = "volume",
-        Tmpfs = "tmpfs",
-        Npipe = "npipe",
-        Cluster = "cluster",
-    }
+export enum MountPoint_TypeEnum {
+    Bind = "bind",
+    Volume = "volume",
+    Tmpfs = "tmpfs",
+    Npipe = "npipe",
+    Cluster = "cluster",
 }
 
 /** Optional configuration for the `tmpfs` type. */
@@ -1774,7 +1681,6 @@ export interface MountTmpfsOptions {
     /** The permission mode for the tmpfs mount in an integer. */
     mode?: number;
 }
-
 /** Optional configuration for the `volume` type. */
 export interface MountVolumeOptions {
     /** Populate volume with data from the target. */
@@ -1783,7 +1689,6 @@ export interface MountVolumeOptions {
     labels?: { [key: string]: string };
     driverConfig?: MountVolumeOptionsDriverConfig;
 }
-
 /** Map of driver specific options */
 export interface MountVolumeOptionsDriverConfig {
     /** Name of the driver to use to create the volume. */
@@ -1791,7 +1696,6 @@ export interface MountVolumeOptionsDriverConfig {
     /** Key/value map of driver specific options. */
     options?: { [key: string]: string };
 }
-
 export interface Network {
     name?: string;
     id?: string;
@@ -1807,7 +1711,6 @@ export interface Network {
     options?: { [key: string]: string };
     labels?: { [key: string]: string };
 }
-
 /** Specifies how a service should be attached to a particular network. */
 export interface NetworkAttachmentConfig {
     /** The target network for attachment. Must be a network name or ID. */
@@ -1817,13 +1720,11 @@ export interface NetworkAttachmentConfig {
     /** Driver attachment options for the network target. */
     driverOpts?: { [key: string]: string };
 }
-
 export interface NetworkConnectRequest {
     /** The ID or name of the container to connect to the network. */
     container?: string;
     endpointConfig?: EndpointSettings;
 }
-
 export interface NetworkContainer {
     name?: string;
     endpointID?: string;
@@ -1831,7 +1732,6 @@ export interface NetworkContainer {
     iPv4Address?: string;
     iPv6Address?: string;
 }
-
 export interface NetworkCreateRequest {
     /** The network's name. */
     name: string;
@@ -1859,25 +1759,21 @@ export interface NetworkCreateRequest {
     /** User-defined key/value metadata. */
     labels?: { [key: string]: string };
 }
-
 export interface NetworkCreateResponse {
     /** The ID of the created network. */
     id?: string;
     warning?: string;
 }
-
 export interface NetworkDisconnectRequest {
     /** The ID or name of the container to disconnect from the network. */
     container?: string;
     /** Force the container to disconnect from the network. */
     force?: boolean;
 }
-
 export interface NetworkPruneResponse {
     /** Networks that were deleted */
     networksDeleted?: Array<string>;
 }
-
 /** NetworkSettings exposes the network settings in the API */
 export interface NetworkSettings {
     /** Name of the network's bridge (for example, `docker0`). */
@@ -1969,7 +1865,6 @@ export interface NetworkSettings {
     /** Information about all networks that the container is connected to. */
     networks?: { [key: string]: EndpointSettings };
 }
-
 /**
  * NetworkingConfig represents the container's networking configuration for each
  * of its interfaces. It is used for the networking configs specified in the
@@ -1983,7 +1878,6 @@ export interface NetworkingConfig {
      */
     endpointsConfig?: { [key: string]: EndpointSettings };
 }
-
 export interface Node {
     ID?: string;
     version?: ObjectVersion;
@@ -2002,7 +1896,6 @@ export interface Node {
     status?: NodeStatus;
     managerStatus?: ManagerStatus;
 }
-
 /**
  * NodeDescription encapsulates the properties of the Node as reported by the
  * agent.
@@ -2014,28 +1907,25 @@ export interface NodeDescription {
     engine?: EngineDescription;
     tLSInfo?: TLSInfo;
 }
-
 export interface NodeSpec {
     /** Name for the node. */
     name?: string;
     /** User-defined key/value metadata. */
     labels?: { [key: string]: string };
     /** Role of the node. */
-    role?: NodeSpec.RoleEnum;
+    role?: NodeSpec_RoleEnum;
     /** Availability of the node. */
-    availability?: NodeSpec.AvailabilityEnum;
+    availability?: NodeSpec_AvailabilityEnum;
 }
 
-export namespace NodeSpec {
-    export enum RoleEnum {
-        Worker = "worker",
-        Manager = "manager",
-    }
-    export enum AvailabilityEnum {
-        Active = "active",
-        Pause = "pause",
-        Drain = "drain",
-    }
+export enum NodeSpec_RoleEnum {
+    Worker = "worker",
+    Manager = "manager",
+}
+export enum NodeSpec_AvailabilityEnum {
+    Active = "active",
+    Pause = "pause",
+    Drain = "drain",
 }
 
 /** NodeState represents the state of a node. */
@@ -2056,7 +1946,6 @@ export interface NodeStatus {
     /** IP address of the node. */
     addr?: string;
 }
-
 /**
  * A descriptor struct containing digest, media type, and size, as defined in
  * the [OCI Content Descriptors
@@ -2070,7 +1959,6 @@ export interface OCIDescriptor {
     /** The size in bytes of the blob. */
     size?: number;
 }
-
 /**
  * Describes the platform which the image in the manifest runs on, as defined in
  * the [OCI Image Index
@@ -2097,7 +1985,6 @@ export interface OCIPlatform {
      */
     variant?: string;
 }
-
 /**
  * The version number of the object such as node, service, etc. This is needed
  * to avoid conflicting writes. The client must send the version number along
@@ -2111,7 +1998,6 @@ export interface OCIPlatform {
 export interface ObjectVersion {
     index?: number;
 }
-
 /** Represents a peer-node in the swarm */
 export interface PeerNode {
     /** Unique identifier of for this node in the swarm. */
@@ -2119,7 +2005,6 @@ export interface PeerNode {
     /** IP address and ports at which this node can be reached. */
     addr?: string;
 }
-
 /** Platform represents the platform (Arch/OS). */
 export interface Platform {
     /**
@@ -2130,7 +2015,6 @@ export interface Platform {
     /** OS represents the Operating System (for example, `linux` or `windows`). */
     OS?: string;
 }
-
 /** A plugin for the Engine API */
 export interface Plugin {
     id?: string;
@@ -2145,7 +2029,6 @@ export interface Plugin {
     pluginReference?: string;
     config: PluginConfig;
 }
-
 /** The config of a plugin. */
 export interface PluginConfig {
     /** Docker Version used to create the plugin */
@@ -2166,27 +2049,23 @@ export interface PluginConfig {
     args: PluginConfigArgs;
     rootfs?: PluginConfigRootfs;
 }
-
 export interface PluginConfigArgs {
     name: string;
     description: string;
     settable: Array<string>;
     value: Array<string>;
 }
-
 /** The interface between Docker and the plugin */
 export interface PluginConfigInterface {
     types: Array<PluginInterfaceType>;
     socket: string;
     /** Protocol to use for clients connecting to the plugin. */
-    protocolScheme?: PluginConfigInterface.ProtocolSchemeEnum;
+    protocolScheme?: PluginConfigInterface_ProtocolSchemeEnum;
 }
 
-export namespace PluginConfigInterface {
-    export enum ProtocolSchemeEnum {
-        Empty = "",
-        MobyPluginsHttpv1 = "moby.plugins.http/v1",
-    }
+export enum PluginConfigInterface_ProtocolSchemeEnum {
+    Empty = "",
+    MobyPluginsHttpv1 = "moby.plugins.http/v1",
 }
 
 export interface PluginConfigLinux {
@@ -2194,41 +2073,34 @@ export interface PluginConfigLinux {
     allowAllDevices: boolean;
     devices: Array<PluginDevice>;
 }
-
 export interface PluginConfigNetwork {
     type: string;
 }
-
 export interface PluginConfigRootfs {
     type?: string;
     diffIds?: Array<string>;
 }
-
 export interface PluginConfigUser {
     UID?: number;
     GID?: number;
 }
-
 export interface PluginDevice {
     name: string;
     description: string;
     settable: Array<string>;
     path: string;
 }
-
 export interface PluginEnv {
     name: string;
     description: string;
     settable: Array<string>;
     value: string;
 }
-
 export interface PluginInterfaceType {
     prefix: string;
     capability: string;
     version: string;
 }
-
 export interface PluginMount {
     name: string;
     description: string;
@@ -2238,14 +2110,12 @@ export interface PluginMount {
     type: string;
     options: Array<string>;
 }
-
 /** Describes a permission the user has to accept upon installing the plugin. */
 export interface PluginPrivilege {
     name?: string;
     description?: string;
     value?: Array<string>;
 }
-
 /** Settings that can be modified by users. */
 export interface PluginSettings {
     mounts: Array<PluginMount>;
@@ -2253,7 +2123,6 @@ export interface PluginSettings {
     args: Array<string>;
     devices: Array<PluginDevice>;
 }
-
 /**
  * Available plugins per type. <p><br /></p> > **Note**: Only unmanaged (V1)
  * plugins are included in this list. > V1 plugins are "lazily" loaded, and are
@@ -2269,7 +2138,6 @@ export interface PluginsInfo {
     /** Names of available logging-drivers, and logging-driver plugins. */
     log?: Array<string>;
 }
-
 /** An open port on a container */
 export interface Port {
     /** Host IP address that the container's port is mapped to */
@@ -2278,15 +2146,13 @@ export interface Port {
     privatePort: number;
     /** Port exposed on the host */
     publicPort?: number;
-    type: Port.TypeEnum;
+    type: Port_TypeEnum;
 }
 
-export namespace Port {
-    export enum TypeEnum {
-        Tcp = "tcp",
-        Udp = "udp",
-        Sctp = "sctp",
-    }
+export enum Port_TypeEnum {
+    Tcp = "tcp",
+    Udp = "udp",
+    Sctp = "sctp",
 }
 
 /** PortBinding represents a binding between a host IP address and a host port. */
@@ -2296,7 +2162,6 @@ export interface PortBinding {
     /** Host port number that the container's port is mapped to. */
     hostPort?: string;
 }
-
 /**
  * PortMap describes the mapping of container ports to host ports, using the
  * container's port-number and protocol as key in the format
@@ -2306,7 +2171,6 @@ export interface PortBinding {
 export interface PortMap {
     [key: string]: Array<PortBinding>;
 }
-
 export interface ProcessConfig {
     privileged?: boolean;
     user?: string;
@@ -2314,19 +2178,16 @@ export interface ProcessConfig {
     entrypoint?: string;
     arguments?: Array<string>;
 }
-
 export interface ProgressDetail {
     current?: number;
     total?: number;
 }
-
 export interface PushImageInfo {
     error?: string;
     status?: string;
     progress?: string;
     progressDetail?: ProgressDetail;
 }
-
 /** Reachability represents the reachability of a node. */
 export enum Reachability {
     Unknown = "unknown",
@@ -2396,7 +2257,6 @@ export interface RegistryServiceConfig {
      */
     mirrors?: Array<string>;
 }
-
 /**
  * An object describing the resources which can be advertised by a node and
  * requested by a task.
@@ -2406,7 +2266,6 @@ export interface ResourceObject {
     memoryBytes?: number;
     genericResources?: GenericResources;
 }
-
 /** A container's resources (cgroups config, ulimits, etc) */
 export interface Resources {
     /**
@@ -2533,12 +2392,10 @@ export interface Resources {
      */
     iOMaximumBandwidth?: number;
 }
-
 export interface ResourcesBlkioWeightDevice {
     path?: string;
     weight?: number;
 }
-
 export interface ResourcesUlimits {
     /** Name of ulimit */
     name?: string;
@@ -2547,7 +2404,6 @@ export interface ResourcesUlimits {
     /** Hard limit */
     hard?: number;
 }
-
 /**
  * The behavior to apply when the container exits. The default is not to
  * restart. An ever increasing delay (double the previous delay, starting at
@@ -2560,19 +2416,17 @@ export interface RestartPolicy {
      *   the user has manually stopped the container - `on-failure` Restart only
      *   when the container exit code is non-zero
      */
-    name?: RestartPolicy.NameEnum;
+    name?: RestartPolicy_NameEnum;
     /** If `on-failure` is used, the number of times to retry before giving up. */
     maximumRetryCount?: number;
 }
 
-export namespace RestartPolicy {
-    export enum NameEnum {
-        Empty = "",
-        No = "no",
-        Always = "always",
-        UnlessStopped = "unless-stopped",
-        OnFailure = "on-failure",
-    }
+export enum RestartPolicy_NameEnum {
+    Empty = "",
+    No = "no",
+    Always = "always",
+    UnlessStopped = "unless-stopped",
+    OnFailure = "on-failure",
 }
 
 /**
@@ -2591,7 +2445,6 @@ export interface Runtime {
     /** List of command-line arguments to pass to the runtime when invoked. */
     runtimeArgs?: Array<string>;
 }
-
 export interface Secret {
     ID?: string;
     version?: ObjectVersion;
@@ -2599,7 +2452,6 @@ export interface Secret {
     updatedAt?: string;
     spec?: SecretSpec;
 }
-
 export interface SecretSpec {
     /** User-defined name of the secret. */
     name?: string;
@@ -2615,9 +2467,7 @@ export interface SecretSpec {
     driver?: Driver;
     templating?: Driver;
 }
-
 export interface SecretsCreateBody {}
-
 export interface Service {
     ID?: string;
     version?: ObjectVersion;
@@ -2629,7 +2479,6 @@ export interface Service {
     serviceStatus?: ServiceServiceStatus;
     jobStatus?: ServiceJobStatus;
 }
-
 /**
  * Contains the information returned to a client on the creation of a new
  * service.
@@ -2643,18 +2492,15 @@ export interface ServiceCreateResponse {
      */
     warnings?: Array<string>;
 }
-
 export interface ServiceEndpoint {
     spec?: EndpointSpec;
     ports?: Array<EndpointPortConfig>;
     virtualIPs?: Array<ServiceEndpointVirtualIPs>;
 }
-
 export interface ServiceEndpointVirtualIPs {
     networkID?: string;
     addr?: string;
 }
-
 /**
  * The status of the service when it is in one of ReplicatedJob or GlobalJob
  * modes. Absent on Replicated and Global mode services. The JobIteration is an
@@ -2666,7 +2512,6 @@ export interface ServiceJobStatus {
     /** The last time, as observed by the server, that this job was started. */
     lastExecution?: string;
 }
-
 /**
  * The status of the service's tasks. Provided only when requested as part of a
  * ServiceList operation.
@@ -2689,7 +2534,6 @@ export interface ServiceServiceStatus {
      */
     completedTasks?: number;
 }
-
 /** User modifiable configuration for a service. */
 export interface ServiceSpec {
     /** Name of the service. */
@@ -2708,7 +2552,6 @@ export interface ServiceSpec {
     networks?: Array<NetworkAttachmentConfig>;
     endpointSpec?: EndpointSpec;
 }
-
 /** Scheduling mode for the service. */
 export interface ServiceSpecMode {
     replicated?: ServiceSpecModeReplicated;
@@ -2720,11 +2563,9 @@ export interface ServiceSpecMode {
      */
     globalJob?: any;
 }
-
 export interface ServiceSpecModeReplicated {
     replicas?: number;
 }
-
 /**
  * The mode used for services with a finite number of tasks that run to a
  * completed state.
@@ -2738,7 +2579,6 @@ export interface ServiceSpecModeReplicatedJob {
      */
     totalCompletions?: number;
 }
-
 /** Specification for the rollback strategy of the service. */
 export interface ServiceSpecRollbackConfig {
     /**
@@ -2752,7 +2592,7 @@ export interface ServiceSpecRollbackConfig {
      * Action to take if an rolled back task fails to run, or stops running
      * during the rollback.
      */
-    failureAction?: ServiceSpecRollbackConfig.FailureActionEnum;
+    failureAction?: ServiceSpecRollbackConfig_FailureActionEnum;
     /**
      * Amount of time to monitor each rolled back task for failures, in
      * nanoseconds.
@@ -2768,18 +2608,16 @@ export interface ServiceSpecRollbackConfig {
      * shut down before the new task is started, or the new task is started
      * before the old task is shut down.
      */
-    order?: ServiceSpecRollbackConfig.OrderEnum;
+    order?: ServiceSpecRollbackConfig_OrderEnum;
 }
 
-export namespace ServiceSpecRollbackConfig {
-    export enum FailureActionEnum {
-        Continue = "continue",
-        Pause = "pause",
-    }
-    export enum OrderEnum {
-        StopFirst = "stop-first",
-        StartFirst = "start-first",
-    }
+export enum ServiceSpecRollbackConfig_FailureActionEnum {
+    Continue = "continue",
+    Pause = "pause",
+}
+export enum ServiceSpecRollbackConfig_OrderEnum {
+    StopFirst = "stop-first",
+    StartFirst = "start-first",
 }
 
 /** Specification for the update strategy of the service. */
@@ -2795,7 +2633,7 @@ export interface ServiceSpecUpdateConfig {
      * Action to take if an updated task fails to run, or stops running during
      * the update.
      */
-    failureAction?: ServiceSpecUpdateConfig.FailureActionEnum;
+    failureAction?: ServiceSpecUpdateConfig_FailureActionEnum;
     /** Amount of time to monitor each updated task for failures, in nanoseconds. */
     monitor?: number;
     /**
@@ -2808,48 +2646,41 @@ export interface ServiceSpecUpdateConfig {
      * task is shut down before the new task is started, or the new task is
      * started before the old task is shut down.
      */
-    order?: ServiceSpecUpdateConfig.OrderEnum;
+    order?: ServiceSpecUpdateConfig_OrderEnum;
 }
 
-export namespace ServiceSpecUpdateConfig {
-    export enum FailureActionEnum {
-        Continue = "continue",
-        Pause = "pause",
-        Rollback = "rollback",
-    }
-    export enum OrderEnum {
-        StopFirst = "stop-first",
-        StartFirst = "start-first",
-    }
+export enum ServiceSpecUpdateConfig_FailureActionEnum {
+    Continue = "continue",
+    Pause = "pause",
+    Rollback = "rollback",
+}
+export enum ServiceSpecUpdateConfig_OrderEnum {
+    StopFirst = "stop-first",
+    StartFirst = "start-first",
 }
 
 export interface ServiceUpdateResponse {
     /** Optional warning messages */
     warnings?: Array<string>;
 }
-
 /** The status of a service update. */
 export interface ServiceUpdateStatus {
-    state?: ServiceUpdateStatus.StateEnum;
+    state?: ServiceUpdateStatus_StateEnum;
     startedAt?: string;
     completedAt?: string;
     message?: string;
 }
 
-export namespace ServiceUpdateStatus {
-    export enum StateEnum {
-        Updating = "updating",
-        Paused = "paused",
-        Completed = "completed",
-    }
+export enum ServiceUpdateStatus_StateEnum {
+    Updating = "updating",
+    Paused = "paused",
+    Completed = "completed",
 }
 
 export interface ServicesCreateBody {}
-
 export interface Swarm extends ClusterInfo {
     joinTokens?: JoinTokens;
 }
-
 /** Represents generic information about swarm. */
 export interface SwarmInfo {
     /** Unique identifier of for this node in the swarm. */
@@ -2867,7 +2698,6 @@ export interface SwarmInfo {
     managers?: number;
     cluster?: ClusterInfo;
 }
-
 export interface SwarmInitRequest {
     /**
      * Listen address used for inter-manager communication, as well as
@@ -2918,7 +2748,6 @@ export interface SwarmInitRequest {
     subnetSize?: number;
     spec?: SwarmSpec;
 }
-
 export interface SwarmInitRequest1 {
     /**
      * Listen address used for inter-manager communication, as well as
@@ -2969,7 +2798,6 @@ export interface SwarmInitRequest1 {
     subnetSize?: number;
     spec?: SwarmSpec;
 }
-
 export interface SwarmJoinRequest {
     /**
      * Listen address used for inter-manager communication if the node gets
@@ -3002,7 +2830,6 @@ export interface SwarmJoinRequest {
     /** Secret token for joining this swarm. */
     joinToken?: string;
 }
-
 export interface SwarmJoinRequest1 {
     /**
      * Listen address used for inter-manager communication if the node gets
@@ -3035,7 +2862,6 @@ export interface SwarmJoinRequest1 {
     /** Secret token for joining this swarm. */
     joinToken?: string;
 }
-
 /** User modifiable swarm configuration. */
 export interface SwarmSpec {
     /** Name of the swarm. */
@@ -3049,7 +2875,6 @@ export interface SwarmSpec {
     encryptionConfig?: SwarmSpecEncryptionConfig;
     taskDefaults?: SwarmSpecTaskDefaults;
 }
-
 /** CA configuration. */
 export interface SwarmSpecCAConfig {
     /** The duration node certificates are issued for. */
@@ -3076,13 +2901,12 @@ export interface SwarmSpecCAConfig {
      */
     forceRotate?: number;
 }
-
 export interface SwarmSpecCAConfigExternalCAs {
     /**
      * Protocol for communication with the external CA (currently only `cfssl`
      * is supported).
      */
-    protocol?: SwarmSpecCAConfigExternalCAs.ProtocolEnum;
+    protocol?: SwarmSpecCAConfigExternalCAs_ProtocolEnum;
     /** URL where certificate signing requests should be sent. */
     URL?: string;
     /**
@@ -3098,10 +2922,8 @@ export interface SwarmSpecCAConfigExternalCAs {
     cACert?: string;
 }
 
-export namespace SwarmSpecCAConfigExternalCAs {
-    export enum ProtocolEnum {
-        Cfssl = "cfssl",
-    }
+export enum SwarmSpecCAConfigExternalCAs_ProtocolEnum {
+    Cfssl = "cfssl",
 }
 
 /** Dispatcher configuration. */
@@ -3109,13 +2931,11 @@ export interface SwarmSpecDispatcher {
     /** The delay for an agent to send a heartbeat to the dispatcher. */
     heartbeatPeriod?: number;
 }
-
 /** Parameters related to encryption-at-rest. */
 export interface SwarmSpecEncryptionConfig {
     /** If set, generate a key and use it to lock data stored on the managers. */
     autoLockManagers?: boolean;
 }
-
 /** Orchestration configuration. */
 export interface SwarmSpecOrchestration {
     /**
@@ -3124,7 +2944,6 @@ export interface SwarmSpecOrchestration {
      */
     taskHistoryRetentionLimit?: number;
 }
-
 /** Raft configuration. */
 export interface SwarmSpecRaft {
     /** The number of log entries between snapshots. */
@@ -3152,12 +2971,10 @@ export interface SwarmSpecRaft {
      */
     heartbeatTick?: number;
 }
-
 /** Defaults for creating tasks in this cluster. */
 export interface SwarmSpecTaskDefaults {
     logDriver?: SwarmSpecTaskDefaultsLogDriver;
 }
-
 /**
  * The log driver to use for tasks created in the orchestrator if unspecified by
  * a service. Updating this value only affects new tasks. Existing tasks
@@ -3172,19 +2989,16 @@ export interface SwarmSpecTaskDefaultsLogDriver {
      */
     options?: { [key: string]: string };
 }
-
 export interface SwarmUnlockRequest {
     /** The swarm's unlock key. */
     unlockKey?: string;
 }
-
 export interface SystemAuthResponse {
     /** The status of the authentication */
     status: string;
     /** An opaque token used to authenticate a user after a successful login */
     identityToken?: string;
 }
-
 export interface SystemDataUsageResponse {
     layersSize?: number;
     images?: Array<ImageSummary>;
@@ -3192,7 +3006,6 @@ export interface SystemDataUsageResponse {
     volumes?: Array<Volume>;
     buildCache?: Array<BuildCache>;
 }
-
 export interface SystemInfo {
     /**
      * Unique identifier of the daemon. <p><br /></p> > **Note**: The format of
@@ -3292,9 +3105,9 @@ export interface SystemInfo {
     /** The logging driver to use as a default for new containers. */
     loggingDriver?: string;
     /** The driver to use for managing cgroups. */
-    cgroupDriver?: SystemInfo.CgroupDriverEnum;
+    cgroupDriver?: SystemInfo_CgroupDriverEnum;
     /** The version of the cgroup. */
-    cgroupVersion?: SystemInfo.CgroupVersionEnum;
+    cgroupVersion?: SystemInfo_CgroupVersionEnum;
     /** Number of event listeners subscribed. */
     nEventsListener?: number;
     /**
@@ -3416,7 +3229,7 @@ export interface SystemInfo {
      * and on Windows server, the default is `process`. This option is currently
      * not used on other platforms.
      */
-    isolation?: SystemInfo.IsolationEnum;
+    isolation?: SystemInfo_IsolationEnum;
     /**
      * Name and, optional, path of the `docker-init` binary. If the path is
      * omitted, the daemon searches the host's `$PATH` for the binary and uses
@@ -3464,21 +3277,19 @@ export interface SystemInfo {
     cDISpecDirs?: Array<string>;
 }
 
-export namespace SystemInfo {
-    export enum CgroupDriverEnum {
-        Cgroupfs = "cgroupfs",
-        Systemd = "systemd",
-        None = "none",
-    }
-    export enum CgroupVersionEnum {
-        _1 = "1",
-        _2 = "2",
-    }
-    export enum IsolationEnum {
-        Default = "default",
-        Hyperv = "hyperv",
-        Process = "process",
-    }
+export enum SystemInfo_CgroupDriverEnum {
+    Cgroupfs = "cgroupfs",
+    Systemd = "systemd",
+    None = "none",
+}
+export enum SystemInfo_CgroupVersionEnum {
+    _1 = "1",
+    _2 = "2",
+}
+export enum SystemInfo_IsolationEnum {
+    Default = "default",
+    Hyperv = "hyperv",
+    Process = "process",
 }
 
 export interface SystemInfoDefaultAddressPools {
@@ -3487,7 +3298,6 @@ export interface SystemInfoDefaultAddressPools {
     /** The network pool size */
     size?: number;
 }
-
 /** Response of Engine API: GET "/version" */
 export interface SystemVersion {
     platform?: SystemVersionPlatform;
@@ -3523,7 +3333,6 @@ export interface SystemVersion {
     /** The date and time that the daemon was compiled. */
     buildTime?: string;
 }
-
 export interface SystemVersionComponents {
     /** Name of the component */
     name: string;
@@ -3537,11 +3346,9 @@ export interface SystemVersionComponents {
      */
     details?: any;
 }
-
 export interface SystemVersionPlatform {
     name: string;
 }
-
 /**
  * Information about the issuer of leaf TLS certificates and the trusted root CA
  * certificate.
@@ -3557,7 +3364,6 @@ export interface TLSInfo {
     /** The base64-url-safe-encoded raw public key bytes of the issuer. */
     certIssuerPublicKey?: string;
 }
-
 export interface Task {
     /** The ID of the task. */
     ID?: string;
@@ -3579,7 +3385,6 @@ export interface Task {
     desiredState?: TaskState;
     jobIteration?: ObjectVersion;
 }
-
 /** User modifiable task configuration. */
 export interface TaskSpec {
     pluginSpec?: TaskSpecPluginSpec;
@@ -3599,7 +3404,6 @@ export interface TaskSpec {
     networks?: Array<NetworkAttachmentConfig>;
     logDriver?: TaskSpecLogDriver;
 }
-
 /**
  * Container spec for the service. <p><br /></p> > **Note**: ContainerSpec,
  * NetworkAttachmentSpec, and PluginSpec are > mutually exclusive. PluginSpec is
@@ -3670,7 +3474,7 @@ export interface TaskSpecContainerSpec {
      * Isolation technology of the containers running the service. (Windows
      * only)
      */
-    isolation?: TaskSpecContainerSpec.IsolationEnum;
+    isolation?: TaskSpecContainerSpec_IsolationEnum;
     /**
      * Run an init inside the container that forwards signals and reaps
      * processes. This field is omitted if empty, and the default (as configured
@@ -3703,12 +3507,10 @@ export interface TaskSpecContainerSpec {
     ulimits?: Array<ResourcesUlimits>;
 }
 
-export namespace TaskSpecContainerSpec {
-    export enum IsolationEnum {
-        Default = "default",
-        Process = "process",
-        Hyperv = "hyperv",
-    }
+export enum TaskSpecContainerSpec_IsolationEnum {
+    Default = "default",
+    Process = "process",
+    Hyperv = "hyperv",
 }
 
 export interface TaskSpecContainerSpecConfigs {
@@ -3728,7 +3530,6 @@ export interface TaskSpecContainerSpecConfigs {
      */
     configName?: string;
 }
-
 /**
  * Specification for DNS related configurations in resolver configuration file
  * (`resolv.conf`).
@@ -3744,7 +3545,6 @@ export interface TaskSpecContainerSpecDNSConfig {
      */
     options?: Array<string>;
 }
-
 /** File represents a specific target that is backed by a file. */
 export interface TaskSpecContainerSpecFile {
     /** Name represents the final filename in the filesystem. */
@@ -3756,7 +3556,6 @@ export interface TaskSpecContainerSpecFile {
     /** Mode represents the FileMode of the file. */
     mode?: number;
 }
-
 /**
  * File represents a specific target that is backed by a file. <p><br /><p> >
  * **Note**: `Configs.File` and `Configs.Runtime` are mutually exclusive
@@ -3771,7 +3570,6 @@ export interface TaskSpecContainerSpecFile1 {
     /** Mode represents the FileMode of the file. */
     mode?: number;
 }
-
 /** Security options for the container */
 export interface TaskSpecContainerSpecPrivileges {
     credentialSpec?: TaskSpecContainerSpecPrivilegesCredentialSpec;
@@ -3781,17 +3579,14 @@ export interface TaskSpecContainerSpecPrivileges {
     /** Configuration of the no_new_privs bit in the container */
     noNewPrivileges?: boolean;
 }
-
 /** Options for configuring AppArmor on the container */
 export interface TaskSpecContainerSpecPrivilegesAppArmor {
-    mode?: TaskSpecContainerSpecPrivilegesAppArmor.ModeEnum;
+    mode?: TaskSpecContainerSpecPrivilegesAppArmor_ModeEnum;
 }
 
-export namespace TaskSpecContainerSpecPrivilegesAppArmor {
-    export enum ModeEnum {
-        Default = "default",
-        Disabled = "disabled",
-    }
+export enum TaskSpecContainerSpecPrivilegesAppArmor_ModeEnum {
+    Default = "default",
+    Disabled = "disabled",
 }
 
 /** CredentialSpec for managed service account (Windows only) */
@@ -3824,7 +3619,6 @@ export interface TaskSpecContainerSpecPrivilegesCredentialSpec {
      */
     registry?: string;
 }
-
 /** SELinux labels of the container */
 export interface TaskSpecContainerSpecPrivilegesSELinuxContext {
     /** Disable SELinux */
@@ -3838,20 +3632,17 @@ export interface TaskSpecContainerSpecPrivilegesSELinuxContext {
     /** SELinux level label */
     level?: string;
 }
-
 /** Options for configuring seccomp on the container */
 export interface TaskSpecContainerSpecPrivilegesSeccomp {
-    mode?: TaskSpecContainerSpecPrivilegesSeccomp.ModeEnum;
+    mode?: TaskSpecContainerSpecPrivilegesSeccomp_ModeEnum;
     /** The custom seccomp profile as a json object */
     profile?: string;
 }
 
-export namespace TaskSpecContainerSpecPrivilegesSeccomp {
-    export enum ModeEnum {
-        Default = "default",
-        Unconfined = "unconfined",
-        Custom = "custom",
-    }
+export enum TaskSpecContainerSpecPrivilegesSeccomp_ModeEnum {
+    Default = "default",
+    Unconfined = "unconfined",
+    Custom = "custom",
 }
 
 export interface TaskSpecContainerSpecSecrets {
@@ -3865,7 +3656,6 @@ export interface TaskSpecContainerSpecSecrets {
      */
     secretName?: string;
 }
-
 /**
  * Specifies the log driver to use for tasks created from this spec. If not
  * present, the default one for the swarm will be used, finally falling back to
@@ -3875,7 +3665,6 @@ export interface TaskSpecLogDriver {
     name?: string;
     options?: { [key: string]: string };
 }
-
 /**
  * Read-only spec type for non-swarm containers attached to swarm overlay
  * networks. <p><br /></p> > **Note**: ContainerSpec, NetworkAttachmentSpec, and
@@ -3887,7 +3676,6 @@ export interface TaskSpecNetworkAttachmentSpec {
     /** ID of the container represented by this task */
     containerID?: string;
 }
-
 export interface TaskSpecPlacement {
     /**
      * An array of constraint expressions to limit the set of nodes where a task
@@ -3926,16 +3714,13 @@ export interface TaskSpecPlacement {
      */
     platforms?: Array<Platform>;
 }
-
 export interface TaskSpecPlacementPreferences {
     spread?: TaskSpecPlacementSpread;
 }
-
 export interface TaskSpecPlacementSpread {
     /** Label descriptor, such as `engine.labels.az`. */
     spreadDescriptor?: string;
 }
-
 /**
  * Plugin spec for the service. _(Experimental release only.)_ <p><br /></p> >
  * **Note**: ContainerSpec, NetworkAttachmentSpec, and PluginSpec are > mutually
@@ -3952,7 +3737,6 @@ export interface TaskSpecPluginSpec {
     disabled?: boolean;
     pluginPrivilege?: Array<PluginPrivilege>;
 }
-
 /**
  * Resource requirements which apply to each individual container created as
  * part of the service.
@@ -3961,14 +3745,13 @@ export interface TaskSpecResources {
     limits?: Limit;
     reservations?: ResourceObject;
 }
-
 /**
  * Specification for the restart policy which applies to containers created as
  * part of this service.
  */
 export interface TaskSpecRestartPolicy {
     /** Condition for restart. */
-    condition?: TaskSpecRestartPolicy.ConditionEnum;
+    condition?: TaskSpecRestartPolicy_ConditionEnum;
     /** Delay between restart attempts. */
     delay?: number;
     /**
@@ -3983,12 +3766,10 @@ export interface TaskSpecRestartPolicy {
     window?: number;
 }
 
-export namespace TaskSpecRestartPolicy {
-    export enum ConditionEnum {
-        None = "none",
-        OnFailure = "on-failure",
-        Any = "any",
-    }
+export enum TaskSpecRestartPolicy_ConditionEnum {
+    None = "none",
+    OnFailure = "on-failure",
+    Any = "any",
 }
 
 export enum TaskState {
@@ -4016,20 +3797,17 @@ export interface TaskStatus {
     err?: string;
     containerStatus?: TaskStatusContainerStatus;
 }
-
 export interface TaskStatusContainerStatus {
     containerID?: string;
     PID?: number;
     exitCode?: number;
 }
-
 export interface ThrottleDevice {
     /** Device path */
     path?: string;
     /** Rate */
     rate?: number;
 }
-
 /**
  * A map of topological domains to topological segments. For in depth details,
  * see documentation for the Topology object in the CSI specification.
@@ -4037,12 +3815,10 @@ export interface ThrottleDevice {
 export interface Topology {
     [key: string]: string;
 }
-
 export interface UnlockKeyResponse {
     /** The swarm's unlock key. */
     unlockKey?: string;
 }
-
 export interface Volume {
     /** Name of the volume. */
     name: string;
@@ -4066,18 +3842,16 @@ export interface Volume {
      * The level at which the volume exists. Either `global` for cluster-wide,
      * or `local` for machine level.
      */
-    scope: Volume.ScopeEnum;
+    scope: Volume_ScopeEnum;
     clusterVolume?: ClusterVolume;
     /** The driver specific options used when creating the volume. */
     options: { [key: string]: string };
     usageData?: VolumeUsageData;
 }
 
-export namespace Volume {
-    export enum ScopeEnum {
-        Local = "local",
-        Global = "global",
-    }
+export enum Volume_ScopeEnum {
+    Local = "local",
+    Global = "global",
 }
 
 /** Volume configuration */
@@ -4095,7 +3869,6 @@ export interface VolumeCreateOptions {
     labels?: { [key: string]: string };
     clusterVolumeSpec?: ClusterVolumeSpec;
 }
-
 /** Volume list response */
 export interface VolumeListResponse {
     /** List of volumes */
@@ -4103,14 +3876,12 @@ export interface VolumeListResponse {
     /** Warnings that occurred when fetching the list of volumes. */
     warnings?: Array<string>;
 }
-
 export interface VolumePruneResponse {
     /** Volumes that were deleted */
     volumesDeleted?: Array<string>;
     /** Disk space reclaimed in bytes */
     spaceReclaimed?: number;
 }
-
 /**
  * Usage details about the volume. This information is used by the `GET
  * /system/df` endpoint, and omitted in other endpoints.
@@ -4129,7 +3900,6 @@ export interface VolumeUsageData {
      */
     refCount: number;
 }
-
 /** Volume configuration */
 export interface VolumesNameBody {
     spec?: ClusterVolumeSpec;

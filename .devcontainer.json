@@ -34,7 +34,17 @@
                 "editor.defaultFormatter": "EditorConfig.EditorConfig",
                 "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc]": {
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
-                }
+                },
+                "files.exclude": {
+                    "**/.git": true,
+                    "**/.svn": true,
+                    "**/.hg": true,
+                    "**/CVS": true,
+                    "**/.DS_Store": true,
+                    "**/Thumbs.db": true,
+                    "**/temp": true
+                },
+                "cSpell.words": ["codegen", "Conforti", "execa", "moby", "packagejson", "rushstack", "typeclass"]
             }
         }
     }
