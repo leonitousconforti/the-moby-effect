@@ -18,32 +18,29 @@
     "files": [
         "dist/"
     ],
-    "dependencies": {
-    },    "scripts": {
-        "build": "heft test --clean"
+    "scripts": {
+        "build": "tsc",
+        "lint": "eslint ."
     },
-
     "devDependencies": {
-        "@effect/cli": "0.22.0",
         "@effect/eslint-plugin": "0.1.2",
         "@effect/language-service": "0.0.21",
         "@effect/platform": "0.30.1",
         "@effect/platform-node": "0.31.1",
-        "@effect/printer": "0.23.1",
-        "@effect/printer-ansi": "0.23.1",
-        "@effect/schema": "0.48.0",
-        "@effect/typeclass": "0.15.0",
+        "@tsconfig/node18": "^18.2.2",
+        "@tsconfig/strictest": "^2.0.2",
         "@types/node": "20.9.0",
+        "@typescript-eslint/eslint-plugin": "^6.12.0",
+        "@typescript-eslint/parser": "^6.12.0",
         "effect": "2.0.0-next.55",
         "eslint": "8.53.0",
         "eslint-config-prettier": "9.0.0",
         "eslint-plugin-prettier": "5.0.1",
         "eslint-plugin-unicorn": "49.0.0",
         "prettier": "3.1.0",
-        "typescript": "5.2.2",
-                "prettier-plugin-jsdoc": "^1.1.1",
-        "prettier-plugin-packagejson": "^2.4.6"
-
+        "prettier-plugin-jsdoc": "^1.1.1",
+        "prettier-plugin-packagejson": "^2.4.6",
+        "typescript": "5.2.2"
     },
     "peerDependencies": {
         "@effect/platform": "~0.30.1",

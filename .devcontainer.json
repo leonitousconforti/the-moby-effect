@@ -20,9 +20,7 @@
                 "esbenp.prettier-vscode",
                 "editorconfig.editorconfig",
                 "streetsidesoftware.code-spell-checker",
-                "ms-azuretools.vscode-docker",
                 "eamodio.gitlens",
-                "GitHub.vscode-pull-request-github",
                 "mutantdino.resourcemonitor"
             ],
             "settings": {
@@ -35,12 +33,7 @@
                 "editor.defaultFormatter": "EditorConfig.EditorConfig",
                 "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc]": {
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
-                },
-                "cSpell.enableFiletypes": [
-                    "dockercompose",
-                    "dockerfile",
-                    "editorconfig"
-                ]
+                }
             }
         }
     }

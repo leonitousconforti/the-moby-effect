@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": ["@tsconfig/strictest/tsconfig.json", "@tsconfig/node18/tsconfig.json"],
+    "compilerOptions": {
+        "pretty": true,
+        "sourceMap": true,
+        "declaration": true,
+        "outDir": "./dist",
+        "plugins": [{ "name": "@effect/language-service" }]
+    },
+    "include": ["src/**/*.ts"]
+}
