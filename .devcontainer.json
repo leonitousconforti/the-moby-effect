@@ -21,7 +21,8 @@
                 "editorconfig.editorconfig",
                 "streetsidesoftware.code-spell-checker",
                 "eamodio.gitlens",
-                "mutantdino.resourcemonitor"
+                "mutantdino.resourcemonitor",
+                "dawhite.mustache"
             ],
             "settings": {
                 "cSpell.enabled": true,

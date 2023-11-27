@@ -1,0 +1,34 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/heft/v0/heft.schema.json",
+    "phasesByName": {
+        "build": {
+            "cleanFiles": [
+                { "sourcePath": "dist" },
+                { "includeGlobs": ["src/**/*"], "excludeGlobs": ["src/api.mustache"] }
+            ],
+            "tasksByName": {
+                "swagger-codegen": {
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft",
+                        "pluginName": "run-script-plugin",
+                        "options": {
+                            "scriptPath": "swagger/gen.cjs"
+                        }
+                    }
+                },
+                "typescript": {
+                    "taskDependencies": ["swagger-codegen"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-typescript-plugin"
+                    }
+                },
+                "lint": {
+                    "taskDependencies": ["typescript"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-lint-plugin"
+                    }
+                }
+            }
+        }
+    }
+}
