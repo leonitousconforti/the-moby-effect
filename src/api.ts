@@ -47,19 +47,19 @@ import * as url from "node:url";
 const BASE_PATH = "/v1.44".replace(/\/+$/, "");
 
 const COLLECTION_FORMATS = {
-  csv: ",",
-  ssv: " ",
-  tsv: "\t",
-  pipes: "|",
+    csv: ",",
+    ssv: " ",
+    tsv: "\t",
+    pipes: "|",
 };
 
 export interface FetchAPI {
-  (url: string, init?: any): Promise<Response>;
+    (url: string, init?: any): Promise<Response>;
 }
 
 export interface FetchArguments {
-  url: string;
-  options: any;
+    url: string;
+    options: any;
 }
 
 /**
@@ -68,90 +68,90 @@ export interface FetchArguments {
  * @export
  */
 export class RequiredError extends Error {
-  override name = "RequiredError";
-  constructor(
-    public field: string,
-    message?: string
-  ) {
-    super(message);
-  }
+    override name = "RequiredError";
+    constructor(
+        public field: string,
+        message?: string
+    ) {
+        super(message);
+    }
 }
 
 /** Address represents an IPv4 or IPv6 IP address. */
 export interface Address {
-  /** IP address. */
-  addr?: string;
-  /** Mask length of the IP address. */
-  prefixLen?: number;
+    /** IP address. */
+    addr?: string;
+    /** Mask length of the IP address. */
+    prefixLen?: number;
 }
 
 export interface AuthConfig {
-  username?: string;
-  password?: string;
-  email?: string;
-  serveraddress?: string;
+    username?: string;
+    password?: string;
+    email?: string;
+    serveraddress?: string;
 }
 
 /** BuildCache contains information about a build cache record. */
 export interface BuildCache {
-  /** Unique ID of the build cache record. */
-  ID?: string;
-  /**
-   * ID of the parent build cache record. > **Deprecated**: This field is
-   * deprecated, and omitted if empty.
-   */
-  parent?: string;
-  /** List of parent build cache record IDs. */
-  parents?: Array<string>;
-  /** Cache record type. */
-  type?: BuildCache.TypeEnum;
-  /** Description of the build-step that produced the build cache. */
-  description?: string;
-  /** Indicates if the build cache is in use. */
-  inUse?: boolean;
-  /** Indicates if the build cache is shared. */
-  shared?: boolean;
-  /** Amount of disk space used by the build cache (in bytes). */
-  size?: number;
-  /**
-   * Date and time at which the build cache was created in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  createdAt?: string;
-  /**
-   * Date and time at which the build cache was last used in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  lastUsedAt?: string;
-  usageCount?: number;
+    /** Unique ID of the build cache record. */
+    ID?: string;
+    /**
+     * ID of the parent build cache record. > **Deprecated**: This field is
+     * deprecated, and omitted if empty.
+     */
+    parent?: string;
+    /** List of parent build cache record IDs. */
+    parents?: Array<string>;
+    /** Cache record type. */
+    type?: BuildCache.TypeEnum;
+    /** Description of the build-step that produced the build cache. */
+    description?: string;
+    /** Indicates if the build cache is in use. */
+    inUse?: boolean;
+    /** Indicates if the build cache is shared. */
+    shared?: boolean;
+    /** Amount of disk space used by the build cache (in bytes). */
+    size?: number;
+    /**
+     * Date and time at which the build cache was created in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    createdAt?: string;
+    /**
+     * Date and time at which the build cache was last used in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    lastUsedAt?: string;
+    usageCount?: number;
 }
 
 export namespace BuildCache {
-  export enum TypeEnum {
-    Internal = "internal",
-    Frontend = "frontend",
-    SourceLocal = "source.local",
-    SourceGitCheckout = "source.git.checkout",
-    ExecCachemount = "exec.cachemount",
-    Regular = "regular",
-  }
+    export enum TypeEnum {
+        Internal = "internal",
+        Frontend = "frontend",
+        SourceLocal = "source.local",
+        SourceGitCheckout = "source.git.checkout",
+        ExecCachemount = "exec.cachemount",
+        Regular = "regular",
+    }
 }
 
 export interface BuildInfo {
-  id?: string;
-  stream?: string;
-  error?: string;
-  errorDetail?: ErrorDetail;
-  status?: string;
-  progress?: string;
-  progressDetail?: ProgressDetail;
-  aux?: ImageID;
+    id?: string;
+    stream?: string;
+    error?: string;
+    errorDetail?: ErrorDetail;
+    status?: string;
+    progress?: string;
+    progressDetail?: ProgressDetail;
+    aux?: ImageID;
 }
 
 export interface BuildPruneResponse {
-  cachesDeleted?: Array<string>;
-  /** Disk space reclaimed in bytes */
-  spaceReclaimed?: number;
+    cachesDeleted?: Array<string>;
+    /** Disk space reclaimed in bytes */
+    spaceReclaimed?: number;
 }
 
 /**
@@ -159,9 +159,9 @@ export interface BuildPruneResponse {
  * Deleted ("D")
  */
 export enum ChangeType {
-  NUMBER_0 = 0,
-  NUMBER_1 = 1,
-  NUMBER_2 = 2,
+    NUMBER_0 = 0,
+    NUMBER_1 = 1,
+    NUMBER_2 = 2,
 }
 
 /**
@@ -169,39 +169,39 @@ export enum ChangeType {
  * "/info" endpoint. Join-tokens are not included.
  */
 export interface ClusterInfo {
-  /** The ID of the swarm. */
-  ID?: string;
-  version?: ObjectVersion;
-  /**
-   * Date and time at which the swarm was initialised in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  createdAt?: string;
-  /**
-   * Date and time at which the swarm was last updated in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  updatedAt?: string;
-  spec?: SwarmSpec;
-  tLSInfo?: TLSInfo;
-  /** Whether there is currently a root CA rotation in progress for the swarm */
-  rootRotationInProgress?: boolean;
-  /**
-   * DataPathPort specifies the data path port number for data traffic.
-   * Acceptable port range is 1024 to 49151. If no port is set or is set to 0,
-   * the default port (4789) is used.
-   */
-  dataPathPort?: number;
-  /**
-   * Default Address Pool specifies default subnet pools for global scope
-   * networks.
-   */
-  defaultAddrPool?: Array<string>;
-  /**
-   * SubnetSize specifies the subnet size of the networks created from the
-   * default subnet pool.
-   */
-  subnetSize?: number;
+    /** The ID of the swarm. */
+    ID?: string;
+    version?: ObjectVersion;
+    /**
+     * Date and time at which the swarm was initialised in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    createdAt?: string;
+    /**
+     * Date and time at which the swarm was last updated in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    updatedAt?: string;
+    spec?: SwarmSpec;
+    tLSInfo?: TLSInfo;
+    /** Whether there is currently a root CA rotation in progress for the swarm */
+    rootRotationInProgress?: boolean;
+    /**
+     * DataPathPort specifies the data path port number for data traffic.
+     * Acceptable port range is 1024 to 49151. If no port is set or is set to 0,
+     * the default port (4789) is used.
+     */
+    dataPathPort?: number;
+    /**
+     * Default Address Pool specifies default subnet pools for global scope
+     * networks.
+     */
+    defaultAddrPool?: Array<string>;
+    /**
+     * SubnetSize specifies the subnet size of the networks created from the
+     * default subnet pool.
+     */
+    subnetSize?: number;
 }
 
 /**
@@ -209,153 +209,153 @@ export interface ClusterInfo {
  * volumes.
  */
 export interface ClusterVolume {
-  /**
-   * The Swarm ID of this volume. Because cluster volumes are Swarm objects,
-   * they have an ID, unlike non-cluster volumes. This ID can be used to refer
-   * to the Volume instead of the name.
-   */
-  ID?: string;
-  version?: ObjectVersion;
-  createdAt?: string;
-  updatedAt?: string;
-  spec?: ClusterVolumeSpec;
-  info?: ClusterVolumeInfo;
-  /**
-   * The status of the volume as it pertains to its publishing and use on
-   * specific nodes
-   */
-  publishStatus?: Array<ClusterVolumePublishStatus>;
+    /**
+     * The Swarm ID of this volume. Because cluster volumes are Swarm objects,
+     * they have an ID, unlike non-cluster volumes. This ID can be used to refer
+     * to the Volume instead of the name.
+     */
+    ID?: string;
+    version?: ObjectVersion;
+    createdAt?: string;
+    updatedAt?: string;
+    spec?: ClusterVolumeSpec;
+    info?: ClusterVolumeInfo;
+    /**
+     * The status of the volume as it pertains to its publishing and use on
+     * specific nodes
+     */
+    publishStatus?: Array<ClusterVolumePublishStatus>;
 }
 
 /** Information about the global status of the volume. */
 export interface ClusterVolumeInfo {
-  /**
-   * The capacity of the volume in bytes. A value of 0 indicates that the
-   * capacity is unknown.
-   */
-  capacityBytes?: number;
-  /**
-   * A map of strings to strings returned from the storage plugin when the
-   * volume is created.
-   */
-  volumeContext?: { [key: string]: string };
-  /**
-   * The ID of the volume as returned by the CSI storage plugin. This is
-   * distinct from the volume's ID as provided by Docker. This ID is never
-   * used by the user when communicating with Docker to refer to this volume.
-   * If the ID is blank, then the Volume has not been successfully created in
-   * the plugin yet.
-   */
-  volumeID?: string;
-  /** The topology this volume is actually accessible from. */
-  accessibleTopology?: Array<Topology>;
+    /**
+     * The capacity of the volume in bytes. A value of 0 indicates that the
+     * capacity is unknown.
+     */
+    capacityBytes?: number;
+    /**
+     * A map of strings to strings returned from the storage plugin when the
+     * volume is created.
+     */
+    volumeContext?: { [key: string]: string };
+    /**
+     * The ID of the volume as returned by the CSI storage plugin. This is
+     * distinct from the volume's ID as provided by Docker. This ID is never
+     * used by the user when communicating with Docker to refer to this volume.
+     * If the ID is blank, then the Volume has not been successfully created in
+     * the plugin yet.
+     */
+    volumeID?: string;
+    /** The topology this volume is actually accessible from. */
+    accessibleTopology?: Array<Topology>;
 }
 
 export interface ClusterVolumePublishStatus {
-  /** The ID of the Swarm node the volume is published on. */
-  nodeID?: string;
-  /**
-   * The published state of the volume. * `pending-publish` The volume should
-   * be published to this node, but the call to the controller plugin to do so
-   * has not yet been successfully completed. * `published` The volume is
-   * published successfully to the node. * `pending-node-unpublish` The volume
-   * should be unpublished from the node, and the manager is awaiting
-   * confirmation from the worker that it has done so. *
-   * `pending-controller-unpublish` The volume is successfully unpublished
-   * from the node, but has not yet been successfully unpublished on the
-   * controller.
-   */
-  state?: ClusterVolumePublishStatus.StateEnum;
-  /**
-   * A map of strings to strings returned by the CSI controller plugin when a
-   * volume is published.
-   */
-  publishContext?: { [key: string]: string };
+    /** The ID of the Swarm node the volume is published on. */
+    nodeID?: string;
+    /**
+     * The published state of the volume. * `pending-publish` The volume should
+     * be published to this node, but the call to the controller plugin to do so
+     * has not yet been successfully completed. * `published` The volume is
+     * published successfully to the node. * `pending-node-unpublish` The volume
+     * should be unpublished from the node, and the manager is awaiting
+     * confirmation from the worker that it has done so. *
+     * `pending-controller-unpublish` The volume is successfully unpublished
+     * from the node, but has not yet been successfully unpublished on the
+     * controller.
+     */
+    state?: ClusterVolumePublishStatus.StateEnum;
+    /**
+     * A map of strings to strings returned by the CSI controller plugin when a
+     * volume is published.
+     */
+    publishContext?: { [key: string]: string };
 }
 
 export namespace ClusterVolumePublishStatus {
-  export enum StateEnum {
-    PendingPublish = "pending-publish",
-    Published = "published",
-    PendingNodeUnpublish = "pending-node-unpublish",
-    PendingControllerUnpublish = "pending-controller-unpublish",
-  }
+    export enum StateEnum {
+        PendingPublish = "pending-publish",
+        Published = "published",
+        PendingNodeUnpublish = "pending-node-unpublish",
+        PendingControllerUnpublish = "pending-controller-unpublish",
+    }
 }
 
 /** Cluster-specific options used to create the volume. */
 export interface ClusterVolumeSpec {
-  /**
-   * Group defines the volume group of this volume. Volumes belonging to the
-   * same group can be referred to by group name when creating Services.
-   * Referring to a volume by group instructs Swarm to treat volumes in that
-   * group interchangeably for the purpose of scheduling. Volumes with an
-   * empty string for a group technically all belong to the same, emptystring
-   * group.
-   */
-  group?: string;
-  accessMode?: ClusterVolumeSpecAccessMode;
+    /**
+     * Group defines the volume group of this volume. Volumes belonging to the
+     * same group can be referred to by group name when creating Services.
+     * Referring to a volume by group instructs Swarm to treat volumes in that
+     * group interchangeably for the purpose of scheduling. Volumes with an
+     * empty string for a group technically all belong to the same, emptystring
+     * group.
+     */
+    group?: string;
+    accessMode?: ClusterVolumeSpecAccessMode;
 }
 
 /** Defines how the volume is used by tasks. */
 export interface ClusterVolumeSpecAccessMode {
-  /**
-   * The set of nodes this volume can be used on at one time. - `single` The
-   * volume may only be scheduled to one node at a time. - `multi` the volume
-   * may be scheduled to any supported number of nodes at a time.
-   */
-  scope?: ClusterVolumeSpecAccessMode.ScopeEnum;
-  /**
-   * The number and way that different tasks can use this volume at one time.
-   * - `none` The volume may only be used by one task at a time. - `readonly`
-   * The volume may be used by any number of tasks, but they all must mount
-   * the volume as readonly - `onewriter` The volume may be used by any number
-   * of tasks, but only one may mount it as read/write. - `all` The volume may
-   * have any number of readers and writers.
-   */
-  sharing?: ClusterVolumeSpecAccessMode.SharingEnum;
-  /**
-   * Options for using this volume as a Mount-type volume. Either MountVolume
-   * or BlockVolume, but not both, must be present. properties: FsType: type:
-   * "string" description: | Specifies the filesystem type for the mount
-   * volume. Optional. MountFlags: type: "array" description: | Flags to pass
-   * when mounting the volume. Optional. items: type: "string" BlockVolume:
-   * type: "object" description: | Options for using this volume as a
-   * Block-type volume. Intentionally empty.
-   */
-  mountVolume?: any;
-  /**
-   * Swarm Secrets that are passed to the CSI storage plugin when operating on
-   * this volume.
-   */
-  secrets?: Array<ClusterVolumeSpecAccessModeSecrets>;
-  accessibilityRequirements?: ClusterVolumeSpecAccessModeAccessibilityRequirements;
-  capacityRange?: ClusterVolumeSpecAccessModeCapacityRange;
-  /**
-   * The availability of the volume for use in tasks. - `active` The volume is
-   * fully available for scheduling on the cluster - `pause` No new workloads
-   * should use the volume, but existing workloads are not stopped. - `drain`
-   * All workloads using this volume should be stopped and rescheduled, and no
-   * new ones should be started.
-   */
-  availability?: ClusterVolumeSpecAccessMode.AvailabilityEnum;
+    /**
+     * The set of nodes this volume can be used on at one time. - `single` The
+     * volume may only be scheduled to one node at a time. - `multi` the volume
+     * may be scheduled to any supported number of nodes at a time.
+     */
+    scope?: ClusterVolumeSpecAccessMode.ScopeEnum;
+    /**
+     * The number and way that different tasks can use this volume at one time.
+     * - `none` The volume may only be used by one task at a time. - `readonly`
+     * The volume may be used by any number of tasks, but they all must mount
+     * the volume as readonly - `onewriter` The volume may be used by any number
+     * of tasks, but only one may mount it as read/write. - `all` The volume may
+     * have any number of readers and writers.
+     */
+    sharing?: ClusterVolumeSpecAccessMode.SharingEnum;
+    /**
+     * Options for using this volume as a Mount-type volume. Either MountVolume
+     * or BlockVolume, but not both, must be present. properties: FsType: type:
+     * "string" description: | Specifies the filesystem type for the mount
+     * volume. Optional. MountFlags: type: "array" description: | Flags to pass
+     * when mounting the volume. Optional. items: type: "string" BlockVolume:
+     * type: "object" description: | Options for using this volume as a
+     * Block-type volume. Intentionally empty.
+     */
+    mountVolume?: any;
+    /**
+     * Swarm Secrets that are passed to the CSI storage plugin when operating on
+     * this volume.
+     */
+    secrets?: Array<ClusterVolumeSpecAccessModeSecrets>;
+    accessibilityRequirements?: ClusterVolumeSpecAccessModeAccessibilityRequirements;
+    capacityRange?: ClusterVolumeSpecAccessModeCapacityRange;
+    /**
+     * The availability of the volume for use in tasks. - `active` The volume is
+     * fully available for scheduling on the cluster - `pause` No new workloads
+     * should use the volume, but existing workloads are not stopped. - `drain`
+     * All workloads using this volume should be stopped and rescheduled, and no
+     * new ones should be started.
+     */
+    availability?: ClusterVolumeSpecAccessMode.AvailabilityEnum;
 }
 
 export namespace ClusterVolumeSpecAccessMode {
-  export enum ScopeEnum {
-    Single = "single",
-    Multi = "multi",
-  }
-  export enum SharingEnum {
-    None = "none",
-    Readonly = "readonly",
-    Onewriter = "onewriter",
-    All = "all",
-  }
-  export enum AvailabilityEnum {
-    Active = "active",
-    Pause = "pause",
-    Drain = "drain",
-  }
+    export enum ScopeEnum {
+        Single = "single",
+        Multi = "multi",
+    }
+    export enum SharingEnum {
+        None = "none",
+        Readonly = "readonly",
+        Onewriter = "onewriter",
+        All = "all",
+    }
+    export enum AvailabilityEnum {
+        Active = "active",
+        Pause = "pause",
+        Drain = "drain",
+    }
 }
 
 /**
@@ -364,13 +364,13 @@ export namespace ClusterVolumeSpecAccessMode {
  * specification.
  */
 export interface ClusterVolumeSpecAccessModeAccessibilityRequirements {
-  /**
-   * A list of required topologies, at least one of which the volume must be
-   * accessible from.
-   */
-  requisite?: Array<Topology>;
-  /** A list of topologies that the volume should attempt to be provisioned in. */
-  preferred?: Array<Topology>;
+    /**
+     * A list of required topologies, at least one of which the volume must be
+     * accessible from.
+     */
+    requisite?: Array<Topology>;
+    /** A list of topologies that the volume should attempt to be provisioned in. */
+    preferred?: Array<Topology>;
 }
 
 /**
@@ -378,16 +378,16 @@ export interface ClusterVolumeSpecAccessModeAccessibilityRequirements {
  * plugin will decide the capacity.
  */
 export interface ClusterVolumeSpecAccessModeCapacityRange {
-  /**
-   * The volume must be at least this big. The value of 0 indicates an
-   * unspecified minimum
-   */
-  requiredBytes?: number;
-  /**
-   * The volume must not be bigger than this. The value of 0 indicates an
-   * unspecified maximum.
-   */
-  limitBytes?: number;
+    /**
+     * The volume must be at least this big. The value of 0 indicates an
+     * unspecified minimum
+     */
+    requiredBytes?: number;
+    /**
+     * The volume must not be bigger than this. The value of 0 indicates an
+     * unspecified maximum.
+     */
+    limitBytes?: number;
 }
 
 /**
@@ -395,14 +395,14 @@ export interface ClusterVolumeSpecAccessModeCapacityRange {
  * the plugin.
  */
 export interface ClusterVolumeSpecAccessModeSecrets {
-  /** Key is the name of the key of the key-value pair passed to the plugin. */
-  key?: string;
-  /**
-   * Secret is the swarm Secret object from which to read data. This can be a
-   * Secret name or ID. The Secret data is retrieved by swarm and used as the
-   * value of the key-value pair passed to the plugin.
-   */
-  secret?: string;
+    /** Key is the name of the key of the key-value pair passed to the plugin. */
+    key?: string;
+    /**
+     * Secret is the swarm Secret object from which to read data. This can be a
+     * Secret name or ID. The Secret data is retrieved by swarm and used as the
+     * value of the key-value pair passed to the plugin.
+     */
+    secret?: string;
 }
 
 /**
@@ -410,31 +410,31 @@ export interface ClusterVolumeSpecAccessModeSecrets {
  * in the version-string of external tools, such as `containerd`, or `runC`.
  */
 export interface Commit {
-  /** Actual commit ID of external tool. */
-  ID?: string;
-  /** Commit ID of external tool expected by dockerd as set at build time. */
-  expected?: string;
+    /** Actual commit ID of external tool. */
+    ID?: string;
+    /** Commit ID of external tool expected by dockerd as set at build time. */
+    expected?: string;
 }
 
 export interface Config {
-  ID?: string;
-  version?: ObjectVersion;
-  createdAt?: string;
-  updatedAt?: string;
-  spec?: ConfigSpec;
+    ID?: string;
+    version?: ObjectVersion;
+    createdAt?: string;
+    updatedAt?: string;
+    spec?: ConfigSpec;
 }
 
 export interface ConfigSpec {
-  /** User-defined name of the config. */
-  name?: string;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  /**
-   * Base64-url-safe-encoded ([RFC
-   * 4648](https://tools.ietf.org/html/rfc4648#section-5)) config data.
-   */
-  data?: string;
-  templating?: Driver;
+    /** User-defined name of the config. */
+    name?: string;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    /**
+     * Base64-url-safe-encoded ([RFC
+     * 4648](https://tools.ietf.org/html/rfc4648#section-5)) config data.
+     */
+    data?: string;
+    templating?: Driver;
 }
 
 export interface ConfigsCreateBody extends ConfigSpec {}
@@ -447,127 +447,127 @@ export interface ConfigsCreateBody extends ConfigSpec {}
  * store build cache, and it is not in active use anymore.
  */
 export interface ContainerConfig {
-  /** The hostname to use for the container, as a valid RFC 1123 hostname. */
-  hostname?: string;
-  /** The domain name to use for the container. */
-  domainname?: string;
-  /** The user that commands are run as inside the container. */
-  user?: string;
-  /** Whether to attach to `stdin`. */
-  attachStdin?: boolean;
-  /** Whether to attach to `stdout`. */
-  attachStdout?: boolean;
-  /** Whether to attach to `stderr`. */
-  attachStderr?: boolean;
-  /**
-   * An object mapping ports to an empty object in the form:
-   * `{\"<port>/<tcp|udp|sctp>\": {}}`
-   */
-  exposedPorts?: { [key: string]: any };
-  /** Attach standard streams to a TTY, including `stdin` if it is not closed. */
-  tty?: boolean;
-  /** Open `stdin` */
-  openStdin?: boolean;
-  /** Close `stdin` after one attached client disconnects */
-  stdinOnce?: boolean;
-  /**
-   * A list of environment variables to set inside the container in the form
-   * `[\"VAR=value\", ...]`. A variable without `=` is removed from the
-   * environment, rather than to have an empty value.
-   */
-  env?: Array<string>;
-  /** Command to run specified as a string or an array of strings. */
-  cmd?: Array<string>;
-  healthcheck?: HealthConfig;
-  /** Command is already escaped (Windows only) */
-  argsEscaped?: boolean;
-  /**
-   * The name (or reference) of the image to use when creating the container,
-   * or which was used when the container was created.
-   */
-  image?: string;
-  /**
-   * An object mapping mount point paths inside the container to empty
-   * objects.
-   */
-  volumes?: { [key: string]: any };
-  /** The working directory for commands to run in. */
-  workingDir?: string;
-  /**
-   * The entry point for the container as a string or an array of strings. If
-   * the array consists of exactly one empty string (`[\"\"]`) then the entry
-   * point is reset to system default (i.e., the entry point used by docker
-   * when there is no `ENTRYPOINT` instruction in the `Dockerfile`).
-   */
-  entrypoint?: Array<string>;
-  /** Disable networking for the container. */
-  networkDisabled?: boolean;
-  /**
-   * MAC address of the container. Deprecated: this field is deprecated in API
-   * v1.44 and up. Use EndpointSettings.MacAddress instead.
-   */
-  macAddress?: string;
-  /** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
-  onBuild?: Array<string>;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  /** Signal to stop a container as a string or unsigned integer. */
-  stopSignal?: string;
-  /** Timeout to stop a container in seconds. */
-  stopTimeout?: number;
-  /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
-  shell?: Array<string>;
+    /** The hostname to use for the container, as a valid RFC 1123 hostname. */
+    hostname?: string;
+    /** The domain name to use for the container. */
+    domainname?: string;
+    /** The user that commands are run as inside the container. */
+    user?: string;
+    /** Whether to attach to `stdin`. */
+    attachStdin?: boolean;
+    /** Whether to attach to `stdout`. */
+    attachStdout?: boolean;
+    /** Whether to attach to `stderr`. */
+    attachStderr?: boolean;
+    /**
+     * An object mapping ports to an empty object in the form:
+     * `{\"<port>/<tcp|udp|sctp>\": {}}`
+     */
+    exposedPorts?: { [key: string]: any };
+    /** Attach standard streams to a TTY, including `stdin` if it is not closed. */
+    tty?: boolean;
+    /** Open `stdin` */
+    openStdin?: boolean;
+    /** Close `stdin` after one attached client disconnects */
+    stdinOnce?: boolean;
+    /**
+     * A list of environment variables to set inside the container in the form
+     * `[\"VAR=value\", ...]`. A variable without `=` is removed from the
+     * environment, rather than to have an empty value.
+     */
+    env?: Array<string>;
+    /** Command to run specified as a string or an array of strings. */
+    cmd?: Array<string>;
+    healthcheck?: HealthConfig;
+    /** Command is already escaped (Windows only) */
+    argsEscaped?: boolean;
+    /**
+     * The name (or reference) of the image to use when creating the container,
+     * or which was used when the container was created.
+     */
+    image?: string;
+    /**
+     * An object mapping mount point paths inside the container to empty
+     * objects.
+     */
+    volumes?: { [key: string]: any };
+    /** The working directory for commands to run in. */
+    workingDir?: string;
+    /**
+     * The entry point for the container as a string or an array of strings. If
+     * the array consists of exactly one empty string (`[\"\"]`) then the entry
+     * point is reset to system default (i.e., the entry point used by docker
+     * when there is no `ENTRYPOINT` instruction in the `Dockerfile`).
+     */
+    entrypoint?: Array<string>;
+    /** Disable networking for the container. */
+    networkDisabled?: boolean;
+    /**
+     * MAC address of the container. Deprecated: this field is deprecated in API
+     * v1.44 and up. Use EndpointSettings.MacAddress instead.
+     */
+    macAddress?: string;
+    /** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
+    onBuild?: Array<string>;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    /** Signal to stop a container as a string or unsigned integer. */
+    stopSignal?: string;
+    /** Timeout to stop a container in seconds. */
+    stopTimeout?: number;
+    /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
+    shell?: Array<string>;
 }
 
 /** OK response to ContainerCreate operation */
 export interface ContainerCreateResponse {
-  /** The ID of the created container */
-  id: string;
-  /** Warnings encountered when creating the container */
-  warnings: Array<string>;
+    /** The ID of the created container */
+    id: string;
+    /** Warnings encountered when creating the container */
+    warnings: Array<string>;
 }
 
 export interface ContainerInspectResponse {
-  /** The ID of the container */
-  id?: string;
-  /** The time the container was created */
-  created?: string;
-  /** The path to the command being run */
-  path?: string;
-  /** The arguments to the command being run */
-  args?: Array<string>;
-  state?: ContainerState;
-  /** The container's image ID */
-  image?: string;
-  resolvConfPath?: string;
-  hostnamePath?: string;
-  hostsPath?: string;
-  logPath?: string;
-  name?: string;
-  restartCount?: number;
-  driver?: string;
-  platform?: string;
-  mountLabel?: string;
-  processLabel?: string;
-  appArmorProfile?: string;
-  /** IDs of exec instances that are running in the container. */
-  execIDs?: Array<string>;
-  hostConfig?: HostConfig;
-  graphDriver?: GraphDriverData;
-  /** The size of files that have been created or changed by this container. */
-  sizeRw?: number;
-  /** The total size of all the files in this container. */
-  sizeRootFs?: number;
-  mounts?: Array<MountPoint>;
-  config?: ContainerConfig;
-  networkSettings?: NetworkSettings;
+    /** The ID of the container */
+    id?: string;
+    /** The time the container was created */
+    created?: string;
+    /** The path to the command being run */
+    path?: string;
+    /** The arguments to the command being run */
+    args?: Array<string>;
+    state?: ContainerState;
+    /** The container's image ID */
+    image?: string;
+    resolvConfPath?: string;
+    hostnamePath?: string;
+    hostsPath?: string;
+    logPath?: string;
+    name?: string;
+    restartCount?: number;
+    driver?: string;
+    platform?: string;
+    mountLabel?: string;
+    processLabel?: string;
+    appArmorProfile?: string;
+    /** IDs of exec instances that are running in the container. */
+    execIDs?: Array<string>;
+    hostConfig?: HostConfig;
+    graphDriver?: GraphDriverData;
+    /** The size of files that have been created or changed by this container. */
+    sizeRw?: number;
+    /** The total size of all the files in this container. */
+    sizeRootFs?: number;
+    mounts?: Array<MountPoint>;
+    config?: ContainerConfig;
+    networkSettings?: NetworkSettings;
 }
 
 export interface ContainerPruneResponse {
-  /** Container IDs that were deleted */
-  containersDeleted?: Array<string>;
-  /** Disk space reclaimed in bytes */
-  spaceReclaimed?: number;
+    /** Container IDs that were deleted */
+    containersDeleted?: Array<string>;
+    /** Disk space reclaimed in bytes */
+    spaceReclaimed?: number;
 }
 
 /**
@@ -575,161 +575,161 @@ export interface ContainerPruneResponse {
  * ContainerJSONBase and will be returned by the "inspect" command.
  */
 export interface ContainerState {
-  /**
-   * String representation of the container state. Can be one of "created",
-   * "running", "paused", "restarting", "removing", "exited", or "dead".
-   */
-  status?: ContainerState.StatusEnum;
-  /**
-   * Whether this container is running. Note that a running container can be
-   * _paused_. The `Running` and `Paused` booleans are not mutually exclusive:
-   * When pausing a container (on Linux), the freezer cgroup is used to
-   * suspend all processes in the container. Freezing the process requires the
-   * process to be running. As a result, paused containers are both `Running`
-   * _and_ `Paused`. Use the `Status` field instead to determine if a
-   * container's state is "running".
-   */
-  running?: boolean;
-  /** Whether this container is paused. */
-  paused?: boolean;
-  /** Whether this container is restarting. */
-  restarting?: boolean;
-  /**
-   * Whether a process within this container has been killed because it ran
-   * out of memory since the container was last started.
-   */
-  oOMKilled?: boolean;
-  dead?: boolean;
-  /** The process ID of this container */
-  pid?: number;
-  /** The last exit code of this container */
-  exitCode?: number;
-  error?: string;
-  /** The time when this container was last started. */
-  startedAt?: string;
-  /** The time when this container last exited. */
-  finishedAt?: string;
-  health?: Health;
+    /**
+     * String representation of the container state. Can be one of "created",
+     * "running", "paused", "restarting", "removing", "exited", or "dead".
+     */
+    status?: ContainerState.StatusEnum;
+    /**
+     * Whether this container is running. Note that a running container can be
+     * _paused_. The `Running` and `Paused` booleans are not mutually exclusive:
+     * When pausing a container (on Linux), the freezer cgroup is used to
+     * suspend all processes in the container. Freezing the process requires the
+     * process to be running. As a result, paused containers are both `Running`
+     * _and_ `Paused`. Use the `Status` field instead to determine if a
+     * container's state is "running".
+     */
+    running?: boolean;
+    /** Whether this container is paused. */
+    paused?: boolean;
+    /** Whether this container is restarting. */
+    restarting?: boolean;
+    /**
+     * Whether a process within this container has been killed because it ran
+     * out of memory since the container was last started.
+     */
+    oOMKilled?: boolean;
+    dead?: boolean;
+    /** The process ID of this container */
+    pid?: number;
+    /** The last exit code of this container */
+    exitCode?: number;
+    error?: string;
+    /** The time when this container was last started. */
+    startedAt?: string;
+    /** The time when this container last exited. */
+    finishedAt?: string;
+    health?: Health;
 }
 
 export namespace ContainerState {
-  export enum StatusEnum {
-    Created = "created",
-    Running = "running",
-    Paused = "paused",
-    Restarting = "restarting",
-    Removing = "removing",
-    Exited = "exited",
-    Dead = "dead",
-  }
+    export enum StatusEnum {
+        Created = "created",
+        Running = "running",
+        Paused = "paused",
+        Restarting = "restarting",
+        Removing = "removing",
+        Exited = "exited",
+        Dead = "dead",
+    }
 }
 
 export interface ContainerSummary {
-  /** The ID of this container */
-  id?: string;
-  /** The names that this container has been given */
-  names?: Array<string>;
-  /** The name of the image used when creating this container */
-  image?: string;
-  /** The ID of the image that this container was created from */
-  imageID?: string;
-  /** Command to run when starting the container */
-  command?: string;
-  /** When the container was created */
-  created?: number;
-  /** The ports exposed by this container */
-  ports?: Array<Port>;
-  /** The size of files that have been created or changed by this container */
-  sizeRw?: number;
-  /** The total size of all the files in this container */
-  sizeRootFs?: number;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  /** The state of this container (e.g. `Exited`) */
-  state?: string;
-  /** Additional human-readable status of this container (e.g. `Exit 0`) */
-  status?: string;
-  hostConfig?: ContainerSummaryHostConfig;
-  networkSettings?: ContainerSummaryNetworkSettings;
-  mounts?: Array<MountPoint>;
+    /** The ID of this container */
+    id?: string;
+    /** The names that this container has been given */
+    names?: Array<string>;
+    /** The name of the image used when creating this container */
+    image?: string;
+    /** The ID of the image that this container was created from */
+    imageID?: string;
+    /** Command to run when starting the container */
+    command?: string;
+    /** When the container was created */
+    created?: number;
+    /** The ports exposed by this container */
+    ports?: Array<Port>;
+    /** The size of files that have been created or changed by this container */
+    sizeRw?: number;
+    /** The total size of all the files in this container */
+    sizeRootFs?: number;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    /** The state of this container (e.g. `Exited`) */
+    state?: string;
+    /** Additional human-readable status of this container (e.g. `Exit 0`) */
+    status?: string;
+    hostConfig?: ContainerSummaryHostConfig;
+    networkSettings?: ContainerSummaryNetworkSettings;
+    mounts?: Array<MountPoint>;
 }
 
 export interface ContainerSummaryHostConfig {
-  networkMode?: string;
+    networkMode?: string;
 }
 
 /** A summary of the container's network settings */
 export interface ContainerSummaryNetworkSettings {
-  networks?: { [key: string]: EndpointSettings };
+    networks?: { [key: string]: EndpointSettings };
 }
 
 /** OK response to ContainerTop operation */
 export interface ContainerTopResponse {
-  /** The ps column titles */
-  titles?: Array<string>;
-  /**
-   * Each process running in the container, where each is process is an array
-   * of values corresponding to the titles.
-   */
-  processes?: Array<Array<string>>;
+    /** The ps column titles */
+    titles?: Array<string>;
+    /**
+     * Each process running in the container, where each is process is an array
+     * of values corresponding to the titles.
+     */
+    processes?: Array<Array<string>>;
 }
 
 /** OK response to ContainerUpdate operation */
 export interface ContainerUpdateResponse {
-  warnings?: Array<string>;
+    warnings?: Array<string>;
 }
 
 /** Container waiting error, if any */
 export interface ContainerWaitExitError {
-  /** Details of an error */
-  message?: string;
+    /** Details of an error */
+    message?: string;
 }
 
 /** OK response to ContainerWait operation */
 export interface ContainerWaitResponse {
-  /** Exit code of the container */
-  statusCode: number;
-  error?: ContainerWaitExitError;
+    /** Exit code of the container */
+    statusCode: number;
+    error?: ContainerWaitExitError;
 }
 
 export interface ContainersCreateBody extends ContainerConfig {
-  hostConfig?: HostConfig;
-  networkingConfig?: NetworkingConfig;
+    hostConfig?: HostConfig;
+    networkingConfig?: NetworkingConfig;
 }
 
 export interface ContainersCreateBody1 extends ContainerConfig {
-  hostConfig?: HostConfig;
-  networkingConfig?: NetworkingConfig;
+    hostConfig?: HostConfig;
+    networkingConfig?: NetworkingConfig;
 }
 
 export interface CreateImageInfo {
-  id?: string;
-  error?: string;
-  errorDetail?: ErrorDetail;
-  status?: string;
-  progress?: string;
-  progressDetail?: ProgressDetail;
+    id?: string;
+    error?: string;
+    errorDetail?: ErrorDetail;
+    status?: string;
+    progress?: string;
+    progressDetail?: ProgressDetail;
 }
 
 /** A device mapping between the host and container */
 export interface DeviceMapping {
-  pathOnHost?: string;
-  pathInContainer?: string;
-  cgroupPermissions?: string;
+    pathOnHost?: string;
+    pathInContainer?: string;
+    cgroupPermissions?: string;
 }
 
 /** A request for devices to be sent to device drivers */
 export interface DeviceRequest {
-  driver?: string;
-  count?: number;
-  deviceIDs?: Array<string>;
-  /** A list of capabilities; an OR list of AND lists of capabilities. */
-  capabilities?: Array<Array<string>>;
-  /**
-   * Driver-specific options, specified as a key/value pairs. These options
-   * are passed directly to the driver.
-   */
-  options?: { [key: string]: string };
+    driver?: string;
+    count?: number;
+    deviceIDs?: Array<string>;
+    /** A list of capabilities; an OR list of AND lists of capabilities. */
+    capabilities?: Array<Array<string>>;
+    /**
+     * Driver-specific options, specified as a key/value pairs. These options
+     * are passed directly to the driver.
+     */
+    options?: { [key: string]: string };
 }
 
 /**
@@ -737,127 +737,127 @@ export interface DeviceRequest {
  * metadata.
  */
 export interface DistributionInspect {
-  descriptor: OCIDescriptor;
-  /** An array containing all platforms supported by the image. */
-  platforms: Array<OCIPlatform>;
+    descriptor: OCIDescriptor;
+    /** An array containing all platforms supported by the image. */
+    platforms: Array<OCIPlatform>;
 }
 
 /** Driver represents a driver (network, logging, secrets). */
 export interface Driver {
-  /** Name of the driver. */
-  name: string;
-  /** Key/value map of driver-specific options. */
-  options?: { [key: string]: string };
+    /** Name of the driver. */
+    name: string;
+    /** Key/value map of driver-specific options. */
+    options?: { [key: string]: string };
 }
 
 /** EndpointIPAMConfig represents an endpoint's IPAM configuration. */
 export interface EndpointIPAMConfig {
-  iPv4Address?: string;
-  iPv6Address?: string;
-  linkLocalIPs?: Array<string>;
+    iPv4Address?: string;
+    iPv6Address?: string;
+    linkLocalIPs?: Array<string>;
 }
 
 export interface EndpointPortConfig {
-  name?: string;
-  protocol?: EndpointPortConfig.ProtocolEnum;
-  /** The port inside the container. */
-  targetPort?: number;
-  /** The port on the swarm hosts. */
-  publishedPort?: number;
-  /**
-   * The mode in which port is published. <p><br /></p> - "ingress" makes the
-   * target port accessible on every node, regardless of whether there is a
-   * task for the service running on that node or not. - "host" bypasses the
-   * routing mesh and publish the port directly on the swarm node where that
-   * service is running.
-   */
-  publishMode?: EndpointPortConfig.PublishModeEnum;
+    name?: string;
+    protocol?: EndpointPortConfig.ProtocolEnum;
+    /** The port inside the container. */
+    targetPort?: number;
+    /** The port on the swarm hosts. */
+    publishedPort?: number;
+    /**
+     * The mode in which port is published. <p><br /></p> - "ingress" makes the
+     * target port accessible on every node, regardless of whether there is a
+     * task for the service running on that node or not. - "host" bypasses the
+     * routing mesh and publish the port directly on the swarm node where that
+     * service is running.
+     */
+    publishMode?: EndpointPortConfig.PublishModeEnum;
 }
 
 export namespace EndpointPortConfig {
-  export enum ProtocolEnum {
-    Tcp = "tcp",
-    Udp = "udp",
-    Sctp = "sctp",
-  }
-  export enum PublishModeEnum {
-    Ingress = "ingress",
-    Host = "host",
-  }
+    export enum ProtocolEnum {
+        Tcp = "tcp",
+        Udp = "udp",
+        Sctp = "sctp",
+    }
+    export enum PublishModeEnum {
+        Ingress = "ingress",
+        Host = "host",
+    }
 }
 
 /** Configuration for a network endpoint. */
 export interface EndpointSettings {
-  iPAMConfig?: EndpointIPAMConfig;
-  links?: Array<string>;
-  /**
-   * MAC address for the endpoint on this network. The network driver might
-   * ignore this parameter.
-   */
-  macAddress?: string;
-  aliases?: Array<string>;
-  /** Unique ID of the network. */
-  networkID?: string;
-  /** Unique ID for the service endpoint in a Sandbox. */
-  endpointID?: string;
-  /** Gateway address for this network. */
-  gateway?: string;
-  /** IPv4 address. */
-  iPAddress?: string;
-  /** Mask length of the IPv4 address. */
-  iPPrefixLen?: number;
-  /** IPv6 gateway address. */
-  iPv6Gateway?: string;
-  /** Global IPv6 address. */
-  globalIPv6Address?: string;
-  /** Mask length of the global IPv6 address. */
-  globalIPv6PrefixLen?: number;
-  /**
-   * DriverOpts is a mapping of driver options and values. These options are
-   * passed directly to the driver and are driver specific.
-   */
-  driverOpts?: { [key: string]: string };
+    iPAMConfig?: EndpointIPAMConfig;
+    links?: Array<string>;
+    /**
+     * MAC address for the endpoint on this network. The network driver might
+     * ignore this parameter.
+     */
+    macAddress?: string;
+    aliases?: Array<string>;
+    /** Unique ID of the network. */
+    networkID?: string;
+    /** Unique ID for the service endpoint in a Sandbox. */
+    endpointID?: string;
+    /** Gateway address for this network. */
+    gateway?: string;
+    /** IPv4 address. */
+    iPAddress?: string;
+    /** Mask length of the IPv4 address. */
+    iPPrefixLen?: number;
+    /** IPv6 gateway address. */
+    iPv6Gateway?: string;
+    /** Global IPv6 address. */
+    globalIPv6Address?: string;
+    /** Mask length of the global IPv6 address. */
+    globalIPv6PrefixLen?: number;
+    /**
+     * DriverOpts is a mapping of driver options and values. These options are
+     * passed directly to the driver and are driver specific.
+     */
+    driverOpts?: { [key: string]: string };
 }
 
 /** Properties that can be configured to access and load balance a service. */
 export interface EndpointSpec {
-  /** The mode of resolution to use for internal load balancing between tasks. */
-  mode?: EndpointSpec.ModeEnum;
-  /**
-   * List of exposed ports that this service is accessible on from the
-   * outside. Ports can only be provided if `vip` resolution mode is used.
-   */
-  ports?: Array<EndpointPortConfig>;
+    /** The mode of resolution to use for internal load balancing between tasks. */
+    mode?: EndpointSpec.ModeEnum;
+    /**
+     * List of exposed ports that this service is accessible on from the
+     * outside. Ports can only be provided if `vip` resolution mode is used.
+     */
+    ports?: Array<EndpointPortConfig>;
 }
 
 export namespace EndpointSpec {
-  export enum ModeEnum {
-    Vip = "vip",
-    Dnsrr = "dnsrr",
-  }
+    export enum ModeEnum {
+        Vip = "vip",
+        Dnsrr = "dnsrr",
+    }
 }
 
 /** EngineDescription provides information about an engine. */
 export interface EngineDescription {
-  engineVersion?: string;
-  labels?: { [key: string]: string };
-  plugins?: Array<EngineDescriptionPlugins>;
+    engineVersion?: string;
+    labels?: { [key: string]: string };
+    plugins?: Array<EngineDescriptionPlugins>;
 }
 
 export interface EngineDescriptionPlugins {
-  type?: string;
-  name?: string;
+    type?: string;
+    name?: string;
 }
 
 export interface ErrorDetail {
-  code?: number;
-  message?: string;
+    code?: number;
+    message?: string;
 }
 
 /** Represents an error. */
 export interface ErrorResponse {
-  /** The error message. */
-  message: string;
+    /** The error message. */
+    message: string;
 }
 
 /**
@@ -865,111 +865,111 @@ export interface ErrorResponse {
  * or a volume.
  */
 export interface EventActor {
-  /** The ID of the object emitting the event */
-  ID?: string;
-  /** Various key/value attributes of the object, depending on its type. */
-  attributes?: { [key: string]: string };
+    /** The ID of the object emitting the event */
+    ID?: string;
+    /** Various key/value attributes of the object, depending on its type. */
+    attributes?: { [key: string]: string };
 }
 
 /** EventMessage represents the information an event contains. */
 export interface EventMessage {
-  /** The type of object emitting the event */
-  type?: EventMessage.TypeEnum;
-  /** The type of event */
-  action?: string;
-  actor?: EventActor;
-  /**
-   * Scope of the event. Engine events are `local` scope. Cluster (Swarm)
-   * events are `swarm` scope.
-   */
-  scope?: EventMessage.ScopeEnum;
-  /** Timestamp of event */
-  time?: number;
-  /** Timestamp of event, with nanosecond accuracy */
-  timeNano?: number;
+    /** The type of object emitting the event */
+    type?: EventMessage.TypeEnum;
+    /** The type of event */
+    action?: string;
+    actor?: EventActor;
+    /**
+     * Scope of the event. Engine events are `local` scope. Cluster (Swarm)
+     * events are `swarm` scope.
+     */
+    scope?: EventMessage.ScopeEnum;
+    /** Timestamp of event */
+    time?: number;
+    /** Timestamp of event, with nanosecond accuracy */
+    timeNano?: number;
 }
 
 export namespace EventMessage {
-  export enum TypeEnum {
-    Builder = "builder",
-    Config = "config",
-    Container = "container",
-    Daemon = "daemon",
-    Image = "image",
-    Network = "network",
-    Node = "node",
-    Plugin = "plugin",
-    Secret = "secret",
-    Service = "service",
-    Volume = "volume",
-  }
-  export enum ScopeEnum {
-    Local = "local",
-    Swarm = "swarm",
-  }
+    export enum TypeEnum {
+        Builder = "builder",
+        Config = "config",
+        Container = "container",
+        Daemon = "daemon",
+        Image = "image",
+        Network = "network",
+        Node = "node",
+        Plugin = "plugin",
+        Secret = "secret",
+        Service = "service",
+        Volume = "volume",
+    }
+    export enum ScopeEnum {
+        Local = "local",
+        Swarm = "swarm",
+    }
 }
 
 export interface ExecConfig {
-  /** Attach to `stdin` of the exec command. */
-  attachStdin?: boolean;
-  /** Attach to `stdout` of the exec command. */
-  attachStdout?: boolean;
-  /** Attach to `stderr` of the exec command. */
-  attachStderr?: boolean;
-  /** Initial console size, as an `[height, width]` array. */
-  consoleSize?: Array<number>;
-  /**
-   * Override the key sequence for detaching a container. Format is a single
-   * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
-   * `@`, `^`, `[`, `,` or `_`.
-   */
-  detachKeys?: string;
-  /** Allocate a pseudo-TTY. */
-  tty?: boolean;
-  /** A list of environment variables in the form `[\"VAR=value\", ...]`. */
-  env?: Array<string>;
-  /** Command to run, as a string or array of strings. */
-  cmd?: Array<string>;
-  /** Runs the exec process with extended privileges. */
-  privileged?: boolean;
-  /**
-   * The user, and optionally, group to run the exec process inside the
-   * container. Format is one of: `user`, `user:group`, `uid`, or `uid:gid`.
-   */
-  user?: string;
-  /** The working directory for the exec process inside the container. */
-  workingDir?: string;
+    /** Attach to `stdin` of the exec command. */
+    attachStdin?: boolean;
+    /** Attach to `stdout` of the exec command. */
+    attachStdout?: boolean;
+    /** Attach to `stderr` of the exec command. */
+    attachStderr?: boolean;
+    /** Initial console size, as an `[height, width]` array. */
+    consoleSize?: Array<number>;
+    /**
+     * Override the key sequence for detaching a container. Format is a single
+     * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
+     * `@`, `^`, `[`, `,` or `_`.
+     */
+    detachKeys?: string;
+    /** Allocate a pseudo-TTY. */
+    tty?: boolean;
+    /** A list of environment variables in the form `[\"VAR=value\", ...]`. */
+    env?: Array<string>;
+    /** Command to run, as a string or array of strings. */
+    cmd?: Array<string>;
+    /** Runs the exec process with extended privileges. */
+    privileged?: boolean;
+    /**
+     * The user, and optionally, group to run the exec process inside the
+     * container. Format is one of: `user`, `user:group`, `uid`, or `uid:gid`.
+     */
+    user?: string;
+    /** The working directory for the exec process inside the container. */
+    workingDir?: string;
 }
 
 export interface ExecInspectResponse {
-  canRemove?: boolean;
-  detachKeys?: string;
-  ID?: string;
-  running?: boolean;
-  exitCode?: number;
-  processConfig?: ProcessConfig;
-  openStdin?: boolean;
-  openStderr?: boolean;
-  openStdout?: boolean;
-  containerID?: string;
-  /** The system process ID for the exec process. */
-  pid?: number;
+    canRemove?: boolean;
+    detachKeys?: string;
+    ID?: string;
+    running?: boolean;
+    exitCode?: number;
+    processConfig?: ProcessConfig;
+    openStdin?: boolean;
+    openStderr?: boolean;
+    openStdout?: boolean;
+    containerID?: string;
+    /** The system process ID for the exec process. */
+    pid?: number;
 }
 
 export interface ExecStartConfig {
-  /** Detach from the command. */
-  detach?: boolean;
-  /** Allocate a pseudo-TTY. */
-  tty?: boolean;
-  /** Initial console size, as an `[height, width]` array. */
-  consoleSize?: Array<number>;
+    /** Detach from the command. */
+    detach?: boolean;
+    /** Allocate a pseudo-TTY. */
+    tty?: boolean;
+    /** Initial console size, as an `[height, width]` array. */
+    consoleSize?: Array<number>;
 }
 
 /** Change in the container's filesystem. */
 export interface FilesystemChange {
-  /** Path to file or directory that has changed. */
-  path: string;
-  kind: ChangeType;
+    /** Path to file or directory that has changed. */
+    path: string;
+    kind: ChangeType;
 }
 
 /**
@@ -979,8 +979,8 @@ export interface FilesystemChange {
 export interface GenericResources extends Array<GenericResourcesInner> {}
 
 export interface GenericResourcesInner {
-  namedResourceSpec?: any;
-  discreteResourceSpec?: any;
+    namedResourceSpec?: any;
+    discreteResourceSpec?: any;
 }
 
 /**
@@ -988,76 +988,76 @@ export interface GenericResourcesInner {
  * image's filesystem.
  */
 export interface GraphDriverData {
-  /** Name of the storage driver. */
-  name: string;
-  /**
-   * Low-level storage metadata, provided as key/value pairs. This information
-   * is driver-specific, and depends on the storage-driver in use, and should
-   * be used for informational purposes only.
-   */
-  data: { [key: string]: string };
+    /** Name of the storage driver. */
+    name: string;
+    /**
+     * Low-level storage metadata, provided as key/value pairs. This information
+     * is driver-specific, and depends on the storage-driver in use, and should
+     * be used for informational purposes only.
+     */
+    data: { [key: string]: string };
 }
 
 /** Health stores information about the container's healthcheck results. */
 export interface Health {
-  /**
-   * Status is one of `none`, `starting`, `healthy` or `unhealthy` - "none"
-   * Indicates there is no healthcheck - "starting" Starting indicates that
-   * the container is not yet ready - "healthy" Healthy indicates that the
-   * container is running correctly - "unhealthy" Unhealthy indicates that the
-   * container has a problem
-   */
-  status?: Health.StatusEnum;
-  /** FailingStreak is the number of consecutive failures */
-  failingStreak?: number;
-  /** Log contains the last few results (oldest first) */
-  log?: Array<HealthcheckResult>;
+    /**
+     * Status is one of `none`, `starting`, `healthy` or `unhealthy` - "none"
+     * Indicates there is no healthcheck - "starting" Starting indicates that
+     * the container is not yet ready - "healthy" Healthy indicates that the
+     * container is running correctly - "unhealthy" Unhealthy indicates that the
+     * container has a problem
+     */
+    status?: Health.StatusEnum;
+    /** FailingStreak is the number of consecutive failures */
+    failingStreak?: number;
+    /** Log contains the last few results (oldest first) */
+    log?: Array<HealthcheckResult>;
 }
 
 export namespace Health {
-  export enum StatusEnum {
-    None = "none",
-    Starting = "starting",
-    Healthy = "healthy",
-    Unhealthy = "unhealthy",
-  }
+    export enum StatusEnum {
+        None = "none",
+        Starting = "starting",
+        Healthy = "healthy",
+        Unhealthy = "unhealthy",
+    }
 }
 
 /** A test to perform to check that the container is healthy. */
 export interface HealthConfig {
-  /**
-   * The test to perform. Possible values are: - `[]` inherit healthcheck from
-   * image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\",
-   * args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run
-   * command with system's default shell
-   */
-  test?: Array<string>;
-  /**
-   * The time to wait between checks in nanoseconds. It should be 0 or at
-   * least 1000000 (1 ms). 0 means inherit.
-   */
-  interval?: number;
-  /**
-   * The time to wait before considering the check to have hung. It should be
-   * 0 or at least 1000000 (1 ms). 0 means inherit.
-   */
-  timeout?: number;
-  /**
-   * The number of consecutive failures needed to consider a container as
-   * unhealthy. 0 means inherit.
-   */
-  retries?: number;
-  /**
-   * Start period for the container to initialize before starting
-   * health-retries countdown in nanoseconds. It should be 0 or at least
-   * 1000000 (1 ms). 0 means inherit.
-   */
-  startPeriod?: number;
-  /**
-   * The time to wait between checks in nanoseconds during the start period.
-   * It should be 0 or at least 1000000 (1 ms). 0 means inherit.
-   */
-  startInterval?: number;
+    /**
+     * The test to perform. Possible values are: - `[]` inherit healthcheck from
+     * image or parent image - `[\"NONE\"]` disable healthcheck - `[\"CMD\",
+     * args...]` exec arguments directly - `[\"CMD-SHELL\", command]` run
+     * command with system's default shell
+     */
+    test?: Array<string>;
+    /**
+     * The time to wait between checks in nanoseconds. It should be 0 or at
+     * least 1000000 (1 ms). 0 means inherit.
+     */
+    interval?: number;
+    /**
+     * The time to wait before considering the check to have hung. It should be
+     * 0 or at least 1000000 (1 ms). 0 means inherit.
+     */
+    timeout?: number;
+    /**
+     * The number of consecutive failures needed to consider a container as
+     * unhealthy. 0 means inherit.
+     */
+    retries?: number;
+    /**
+     * Start period for the container to initialize before starting
+     * health-retries countdown in nanoseconds. It should be 0 or at least
+     * 1000000 (1 ms). 0 means inherit.
+     */
+    startPeriod?: number;
+    /**
+     * The time to wait between checks in nanoseconds during the start period.
+     * It should be 0 or at least 1000000 (1 ms). 0 means inherit.
+     */
+    startInterval?: number;
 }
 
 /**
@@ -1065,372 +1065,372 @@ export interface HealthConfig {
  * probe
  */
 export interface HealthcheckResult {
-  /**
-   * Date and time at which this check started in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  start?: Date;
-  /**
-   * Date and time at which this check ended in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  end?: string;
-  /**
-   * ExitCode meanings: - `0` healthy - `1` unhealthy - `2` reserved
-   * (considered unhealthy) - other values: error running probe
-   */
-  exitCode?: number;
-  /** Output from last check */
-  output?: string;
+    /**
+     * Date and time at which this check started in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    start?: Date;
+    /**
+     * Date and time at which this check ended in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    end?: string;
+    /**
+     * ExitCode meanings: - `0` healthy - `1` unhealthy - `2` reserved
+     * (considered unhealthy) - other values: error running probe
+     */
+    exitCode?: number;
+    /** Output from last check */
+    output?: string;
 }
 
 /** Individual image layer information in response to ImageHistory operation */
 export interface HistoryResponseItem {
-  id: string;
-  created: number;
-  createdBy: string;
-  tags: Array<string>;
-  size: number;
-  comment: string;
+    id: string;
+    created: number;
+    createdBy: string;
+    tags: Array<string>;
+    size: number;
+    comment: string;
 }
 
 /** Container configuration that depends on the host we are running on */
 export interface HostConfig extends Resources {
-  /**
-   * A list of volume bindings for this container. Each volume binding is a
-   * string in one of these forms: - `host-src:container-dest[:options]` to
-   * bind-mount a host path into the container. Both `host-src`, and
-   * `container-dest` must be an _absolute_ path. -
-   * `volume-name:container-dest[:options]` to bind-mount a volume managed by
-   * a volume driver into the container. `container-dest` must be an
-   * _absolute_ path. `options` is an optional, comma-delimited list of: -
-   * `nocopy` disables automatic copying of data from the container path to
-   * the volume. The `nocopy` flag only applies to named volumes. - `[ro|rw]`
-   * mounts a volume read-only or read-write, respectively. If omitted or set
-   * to `rw`, volumes are mounted read-write. - `[z|Z]` applies SELinux labels
-   * to allow or deny multiple containers to read and write to the same
-   * volume. - `z`: a _shared_ content label is applied to the content. This
-   * label indicates that multiple containers can share the volume content,
-   * for both reading and writing. - `Z`: a _private unshared_ label is
-   * applied to the content. This label indicates that only the current
-   * container can use a private volume. Labeling systems such as SELinux
-   * require proper labels to be placed on volume content that is mounted into
-   * a container. Without a label, the security system can prevent a
-   * container's processes from using the content. By default, the labels set
-   * by the host operating system are not modified. -
-   * `[[r]shared|[r]slave|[r]private]` specifies mount [propagation
-   * behavior](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt).
-   * This only applies to bind-mounted volumes, not internal volumes or named
-   * volumes. Mount propagation requires the source mount point (the location
-   * where the source directory is mounted in the host operating system) to
-   * have the correct propagation properties. For shared volumes, the source
-   * mount point must be set to `shared`. For slave volumes, the mount must be
-   * set to either `shared` or `slave`.
-   */
-  binds?: Array<string>;
-  /** Path to a file where the container ID is written */
-  containerIDFile?: string;
-  logConfig?: HostConfigLogConfig;
-  /**
-   * Network mode to use for this container. Supported standard values are:
-   * `bridge`, `host`, `none`, and `container:<name|id>`. Any other value is
-   * taken as a custom network's name to which this container should connect
-   * to.
-   */
-  networkMode?: string;
-  portBindings?: PortMap;
-  restartPolicy?: RestartPolicy;
-  /**
-   * Automatically remove the container when the container's process exits.
-   * This has no effect if `RestartPolicy` is set.
-   */
-  autoRemove?: boolean;
-  /** Driver that this container uses to mount volumes. */
-  volumeDriver?: string;
-  /**
-   * A list of volumes to inherit from another container, specified in the
-   * form `<container name>[:<ro|rw>]`.
-   */
-  volumesFrom?: Array<string>;
-  /** Specification for mounts to be added to the container. */
-  mounts?: Array<Mount>;
-  /** Initial console size, as an `[height, width]` array. */
-  consoleSize?: Array<number>;
-  /**
-   * Arbitrary non-identifying metadata attached to container and provided to
-   * the runtime when the container is started.
-   */
-  annotations?: { [key: string]: string };
-  /**
-   * A list of kernel capabilities to add to the container. Conflicts with
-   * option 'Capabilities'.
-   */
-  capAdd?: Array<string>;
-  /**
-   * A list of kernel capabilities to drop from the container. Conflicts with
-   * option 'Capabilities'.
-   */
-  capDrop?: Array<string>;
-  /**
-   * Cgroup namespace mode for the container. Possible values are: -
-   * `\"private\"`: the container runs in its own private cgroup namespace -
-   * `\"host\"`: use the host system's cgroup namespace If not specified, the
-   * daemon default is used, which can either be `\"private\"` or `\"host\"`,
-   * depending on daemon version, kernel support and configuration.
-   */
-  cgroupnsMode?: HostConfig.CgroupnsModeEnum;
-  /** A list of DNS servers for the container to use. */
-  dns?: Array<string>;
-  /** A list of DNS options. */
-  dnsOptions?: Array<string>;
-  /** A list of DNS search domains. */
-  dnsSearch?: Array<string>;
-  /**
-   * A list of hostnames/IP mappings to add to the container's `/etc/hosts`
-   * file. Specified in the form `[\"hostname:IP\"]`.
-   */
-  extraHosts?: Array<string>;
-  /** A list of additional groups that the container process will run as. */
-  groupAdd?: Array<string>;
-  /**
-   * IPC sharing mode for the container. Possible values are: - `\"none\"`:
-   * own private IPC namespace, with /dev/shm not mounted - `\"private\"`: own
-   * private IPC namespace - `\"shareable\"`: own private IPC namespace, with
-   * a possibility to share it with other containers -
-   * `\"container:<name|id>\"`: join another (shareable) container's IPC
-   * namespace - `\"host\"`: use the host system's IPC namespace If not
-   * specified, daemon default is used, which can either be `\"private\"` or
-   * `\"shareable\"`, depending on daemon version and configuration.
-   */
-  ipcMode?: string;
-  /** Cgroup to use for the container. */
-  cgroup?: string;
-  /** A list of links for the container in the form `container_name:alias`. */
-  links?: Array<string>;
-  /**
-   * An integer value containing the score given to the container in order to
-   * tune OOM killer preferences.
-   */
-  oomScoreAdj?: number;
-  /**
-   * Set the PID (Process) Namespace mode for the container. It can be either:
-   * - `\"container:<name|id>\"`: joins another container's PID namespace -
-   * `\"host\"`: use the host's PID namespace inside the container
-   */
-  pidMode?: string;
-  /** Gives the container full access to the host. */
-  privileged?: boolean;
-  /**
-   * Allocates an ephemeral host port for all of a container's exposed ports.
-   * Ports are de-allocated when the container stops and allocated when the
-   * container starts. The allocated port might be changed when restarting the
-   * container. The port is selected from the ephemeral port range that
-   * depends on the kernel. For example, on Linux the range is defined by
-   * `/proc/sys/net/ipv4/ip_local_port_range`.
-   */
-  publishAllPorts?: boolean;
-  /** Mount the container's root filesystem as read only. */
-  readonlyRootfs?: boolean;
-  /**
-   * A list of string values to customize labels for MLS systems, such as
-   * SELinux.
-   */
-  securityOpt?: Array<string>;
-  /**
-   * Storage driver options for this container, in the form `{\"size\":
-   * \"120G\"}`.
-   */
-  storageOpt?: { [key: string]: string };
-  /**
-   * A map of container directories which should be replaced by tmpfs mounts,
-   * and their corresponding mount options. For example: `{ \"/run\":
-   * \"rw,noexec,nosuid,size=65536k\" }`
-   */
-  tmpfs?: { [key: string]: string };
-  /** UTS namespace to use for the container. */
-  uTSMode?: string;
-  /**
-   * Sets the usernamespace mode for the container when usernamespace
-   * remapping option is enabled.
-   */
-  usernsMode?: string;
-  /** Size of `/dev/shm` in bytes. If omitted, the system uses 64MB. */
-  shmSize?: number;
-  /**
-   * A list of kernel parameters (sysctls) to set in the container. For
-   * example: `{\"net.ipv4.ip_forward\": \"1\"}`
-   */
-  sysctls?: { [key: string]: string };
-  /** Runtime to use with this container. */
-  runtime?: string;
-  /** Isolation technology of the container. (Windows only) */
-  isolation?: HostConfig.IsolationEnum;
-  /**
-   * The list of paths to be masked inside the container (this overrides the
-   * default set of paths).
-   */
-  maskedPaths?: Array<string>;
-  /**
-   * The list of paths to be set as read-only inside the container (this
-   * overrides the default set of paths).
-   */
-  readonlyPaths?: Array<string>;
+    /**
+     * A list of volume bindings for this container. Each volume binding is a
+     * string in one of these forms: - `host-src:container-dest[:options]` to
+     * bind-mount a host path into the container. Both `host-src`, and
+     * `container-dest` must be an _absolute_ path. -
+     * `volume-name:container-dest[:options]` to bind-mount a volume managed by
+     * a volume driver into the container. `container-dest` must be an
+     * _absolute_ path. `options` is an optional, comma-delimited list of: -
+     * `nocopy` disables automatic copying of data from the container path to
+     * the volume. The `nocopy` flag only applies to named volumes. - `[ro|rw]`
+     * mounts a volume read-only or read-write, respectively. If omitted or set
+     * to `rw`, volumes are mounted read-write. - `[z|Z]` applies SELinux labels
+     * to allow or deny multiple containers to read and write to the same
+     * volume. - `z`: a _shared_ content label is applied to the content. This
+     * label indicates that multiple containers can share the volume content,
+     * for both reading and writing. - `Z`: a _private unshared_ label is
+     * applied to the content. This label indicates that only the current
+     * container can use a private volume. Labeling systems such as SELinux
+     * require proper labels to be placed on volume content that is mounted into
+     * a container. Without a label, the security system can prevent a
+     * container's processes from using the content. By default, the labels set
+     * by the host operating system are not modified. -
+     * `[[r]shared|[r]slave|[r]private]` specifies mount [propagation
+     * behavior](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt).
+     * This only applies to bind-mounted volumes, not internal volumes or named
+     * volumes. Mount propagation requires the source mount point (the location
+     * where the source directory is mounted in the host operating system) to
+     * have the correct propagation properties. For shared volumes, the source
+     * mount point must be set to `shared`. For slave volumes, the mount must be
+     * set to either `shared` or `slave`.
+     */
+    binds?: Array<string>;
+    /** Path to a file where the container ID is written */
+    containerIDFile?: string;
+    logConfig?: HostConfigLogConfig;
+    /**
+     * Network mode to use for this container. Supported standard values are:
+     * `bridge`, `host`, `none`, and `container:<name|id>`. Any other value is
+     * taken as a custom network's name to which this container should connect
+     * to.
+     */
+    networkMode?: string;
+    portBindings?: PortMap;
+    restartPolicy?: RestartPolicy;
+    /**
+     * Automatically remove the container when the container's process exits.
+     * This has no effect if `RestartPolicy` is set.
+     */
+    autoRemove?: boolean;
+    /** Driver that this container uses to mount volumes. */
+    volumeDriver?: string;
+    /**
+     * A list of volumes to inherit from another container, specified in the
+     * form `<container name>[:<ro|rw>]`.
+     */
+    volumesFrom?: Array<string>;
+    /** Specification for mounts to be added to the container. */
+    mounts?: Array<Mount>;
+    /** Initial console size, as an `[height, width]` array. */
+    consoleSize?: Array<number>;
+    /**
+     * Arbitrary non-identifying metadata attached to container and provided to
+     * the runtime when the container is started.
+     */
+    annotations?: { [key: string]: string };
+    /**
+     * A list of kernel capabilities to add to the container. Conflicts with
+     * option 'Capabilities'.
+     */
+    capAdd?: Array<string>;
+    /**
+     * A list of kernel capabilities to drop from the container. Conflicts with
+     * option 'Capabilities'.
+     */
+    capDrop?: Array<string>;
+    /**
+     * Cgroup namespace mode for the container. Possible values are: -
+     * `\"private\"`: the container runs in its own private cgroup namespace -
+     * `\"host\"`: use the host system's cgroup namespace If not specified, the
+     * daemon default is used, which can either be `\"private\"` or `\"host\"`,
+     * depending on daemon version, kernel support and configuration.
+     */
+    cgroupnsMode?: HostConfig.CgroupnsModeEnum;
+    /** A list of DNS servers for the container to use. */
+    dns?: Array<string>;
+    /** A list of DNS options. */
+    dnsOptions?: Array<string>;
+    /** A list of DNS search domains. */
+    dnsSearch?: Array<string>;
+    /**
+     * A list of hostnames/IP mappings to add to the container's `/etc/hosts`
+     * file. Specified in the form `[\"hostname:IP\"]`.
+     */
+    extraHosts?: Array<string>;
+    /** A list of additional groups that the container process will run as. */
+    groupAdd?: Array<string>;
+    /**
+     * IPC sharing mode for the container. Possible values are: - `\"none\"`:
+     * own private IPC namespace, with /dev/shm not mounted - `\"private\"`: own
+     * private IPC namespace - `\"shareable\"`: own private IPC namespace, with
+     * a possibility to share it with other containers -
+     * `\"container:<name|id>\"`: join another (shareable) container's IPC
+     * namespace - `\"host\"`: use the host system's IPC namespace If not
+     * specified, daemon default is used, which can either be `\"private\"` or
+     * `\"shareable\"`, depending on daemon version and configuration.
+     */
+    ipcMode?: string;
+    /** Cgroup to use for the container. */
+    cgroup?: string;
+    /** A list of links for the container in the form `container_name:alias`. */
+    links?: Array<string>;
+    /**
+     * An integer value containing the score given to the container in order to
+     * tune OOM killer preferences.
+     */
+    oomScoreAdj?: number;
+    /**
+     * Set the PID (Process) Namespace mode for the container. It can be either:
+     * - `\"container:<name|id>\"`: joins another container's PID namespace -
+     * `\"host\"`: use the host's PID namespace inside the container
+     */
+    pidMode?: string;
+    /** Gives the container full access to the host. */
+    privileged?: boolean;
+    /**
+     * Allocates an ephemeral host port for all of a container's exposed ports.
+     * Ports are de-allocated when the container stops and allocated when the
+     * container starts. The allocated port might be changed when restarting the
+     * container. The port is selected from the ephemeral port range that
+     * depends on the kernel. For example, on Linux the range is defined by
+     * `/proc/sys/net/ipv4/ip_local_port_range`.
+     */
+    publishAllPorts?: boolean;
+    /** Mount the container's root filesystem as read only. */
+    readonlyRootfs?: boolean;
+    /**
+     * A list of string values to customize labels for MLS systems, such as
+     * SELinux.
+     */
+    securityOpt?: Array<string>;
+    /**
+     * Storage driver options for this container, in the form `{\"size\":
+     * \"120G\"}`.
+     */
+    storageOpt?: { [key: string]: string };
+    /**
+     * A map of container directories which should be replaced by tmpfs mounts,
+     * and their corresponding mount options. For example: `{ \"/run\":
+     * \"rw,noexec,nosuid,size=65536k\" }`
+     */
+    tmpfs?: { [key: string]: string };
+    /** UTS namespace to use for the container. */
+    uTSMode?: string;
+    /**
+     * Sets the usernamespace mode for the container when usernamespace
+     * remapping option is enabled.
+     */
+    usernsMode?: string;
+    /** Size of `/dev/shm` in bytes. If omitted, the system uses 64MB. */
+    shmSize?: number;
+    /**
+     * A list of kernel parameters (sysctls) to set in the container. For
+     * example: `{\"net.ipv4.ip_forward\": \"1\"}`
+     */
+    sysctls?: { [key: string]: string };
+    /** Runtime to use with this container. */
+    runtime?: string;
+    /** Isolation technology of the container. (Windows only) */
+    isolation?: HostConfig.IsolationEnum;
+    /**
+     * The list of paths to be masked inside the container (this overrides the
+     * default set of paths).
+     */
+    maskedPaths?: Array<string>;
+    /**
+     * The list of paths to be set as read-only inside the container (this
+     * overrides the default set of paths).
+     */
+    readonlyPaths?: Array<string>;
 }
 
 export namespace HostConfig {
-  export enum CgroupnsModeEnum {
-    Private = "private",
-    Host = "host",
-  }
-  export enum IsolationEnum {
-    Default = "default",
-    Process = "process",
-    Hyperv = "hyperv",
-  }
+    export enum CgroupnsModeEnum {
+        Private = "private",
+        Host = "host",
+    }
+    export enum IsolationEnum {
+        Default = "default",
+        Process = "process",
+        Hyperv = "hyperv",
+    }
 }
 
 /** The logging configuration for this container */
 export interface HostConfigLogConfig {
-  type?: HostConfigLogConfig.TypeEnum;
-  config?: { [key: string]: string };
+    type?: HostConfigLogConfig.TypeEnum;
+    config?: { [key: string]: string };
 }
 
 export namespace HostConfigLogConfig {
-  export enum TypeEnum {
-    JsonFile = "json-file",
-    Syslog = "syslog",
-    Journald = "journald",
-    Gelf = "gelf",
-    Fluentd = "fluentd",
-    Awslogs = "awslogs",
-    Splunk = "splunk",
-    Etwlogs = "etwlogs",
-    None = "none",
-  }
+    export enum TypeEnum {
+        JsonFile = "json-file",
+        Syslog = "syslog",
+        Journald = "journald",
+        Gelf = "gelf",
+        Fluentd = "fluentd",
+        Awslogs = "awslogs",
+        Splunk = "splunk",
+        Etwlogs = "etwlogs",
+        None = "none",
+    }
 }
 
 export interface IPAM {
-  /** Name of the IPAM driver to use. */
-  driver?: string;
-  /**
-   * List of IPAM configuration options, specified as a map: `{\"Subnet\":
-   * <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\":
-   * <device_name:IP address>}`
-   */
-  config?: Array<IPAMConfig>;
-  /** Driver-specific options, specified as a map. */
-  options?: { [key: string]: string };
+    /** Name of the IPAM driver to use. */
+    driver?: string;
+    /**
+     * List of IPAM configuration options, specified as a map: `{\"Subnet\":
+     * <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\":
+     * <device_name:IP address>}`
+     */
+    config?: Array<IPAMConfig>;
+    /** Driver-specific options, specified as a map. */
+    options?: { [key: string]: string };
 }
 
 export interface IPAMConfig {
-  subnet?: string;
-  iPRange?: string;
-  gateway?: string;
-  auxiliaryAddresses?: { [key: string]: string };
+    subnet?: string;
+    iPRange?: string;
+    gateway?: string;
+    auxiliaryAddresses?: { [key: string]: string };
 }
 
 /** Response to an API call that returns just an Id */
 export interface IdResponse {
-  /** The id of the newly created object. */
-  id: string;
+    /** The id of the newly created object. */
+    id: string;
 }
 
 export interface IdUpdateBody extends Resources {
-  restartPolicy?: RestartPolicy;
+    restartPolicy?: RestartPolicy;
 }
 
 export interface IdUpdateBody1 extends ServiceSpec {}
 
 export interface ImageDeleteResponseItem {
-  /** The image ID of an image that was untagged */
-  untagged?: string;
-  /** The image ID of an image that was deleted */
-  deleted?: string;
+    /** The image ID of an image that was untagged */
+    untagged?: string;
+    /** The image ID of an image that was deleted */
+    deleted?: string;
 }
 
 /** Image ID or Digest */
 export interface ImageID {
-  ID?: string;
+    ID?: string;
 }
 
 /** Information about an image in the local image cache. */
 export interface ImageInspect {
-  /**
-   * ID is the content-addressable ID of an image. This identifier is a
-   * content-addressable digest calculated from the image's configuration
-   * (which includes the digests of layers used by the image). Note that this
-   * digest differs from the `RepoDigests` below, which holds digests of image
-   * manifests that reference the image.
-   */
-  id?: string;
-  /**
-   * List of image names/tags in the local image cache that reference this
-   * image. Multiple image tags can refer to the same image, and this list may
-   * be empty if no tags reference the image, in which case the image is
-   * "untagged", in which case it can still be referenced by its ID.
-   */
-  repoTags?: Array<string>;
-  /**
-   * List of content-addressable digests of locally available image manifests
-   * that the image is referenced from. Multiple manifests can refer to the
-   * same image. These digests are usually only available if the image was
-   * either pulled from a registry, or if the image was pushed to a registry,
-   * which is when the manifest is generated and its digest calculated.
-   */
-  repoDigests?: Array<string>;
-  /**
-   * ID of the parent image. Depending on how the image was created, this
-   * field may be empty and is only set for images that were built/created
-   * locally. This field is empty if the image was pulled from an image
-   * registry.
-   */
-  parent?: string;
-  /** Optional message that was set when committing or importing the image. */
-  comment?: string;
-  /**
-   * Date and time at which the image was created, formatted in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  created?: string;
-  /**
-   * The ID of the container that was used to create the image. Depending on
-   * how the image was created, this field may be empty.
-   */
-  container?: string;
-  containerConfig?: ContainerConfig;
-  /**
-   * The version of Docker that was used to build the image. Depending on how
-   * the image was created, this field may be empty.
-   */
-  dockerVersion?: string;
-  /**
-   * Name of the author that was specified when committing the image, or as
-   * specified through MAINTAINER (deprecated) in the Dockerfile.
-   */
-  author?: string;
-  config?: ContainerConfig;
-  /** Hardware CPU architecture that the image runs on. */
-  architecture?: string;
-  /** CPU architecture variant (presently ARM-only). */
-  variant?: string;
-  /** Operating System the image is built to run on. */
-  os?: string;
-  /**
-   * Operating System version the image is built to run on (especially for
-   * Windows).
-   */
-  osVersion?: string;
-  /** Total size of the image including all layers it is composed of. */
-  size?: number;
-  /**
-   * Total size of the image including all layers it is composed of.
-   * Deprecated: this field is omitted in API v1.44, but kept for backward
-   * compatibility. Use Size instead.
-   */
-  virtualSize?: number;
-  graphDriver?: GraphDriverData;
-  rootFS?: ImageInspectRootFS;
-  metadata?: ImageInspectMetadata;
+    /**
+     * ID is the content-addressable ID of an image. This identifier is a
+     * content-addressable digest calculated from the image's configuration
+     * (which includes the digests of layers used by the image). Note that this
+     * digest differs from the `RepoDigests` below, which holds digests of image
+     * manifests that reference the image.
+     */
+    id?: string;
+    /**
+     * List of image names/tags in the local image cache that reference this
+     * image. Multiple image tags can refer to the same image, and this list may
+     * be empty if no tags reference the image, in which case the image is
+     * "untagged", in which case it can still be referenced by its ID.
+     */
+    repoTags?: Array<string>;
+    /**
+     * List of content-addressable digests of locally available image manifests
+     * that the image is referenced from. Multiple manifests can refer to the
+     * same image. These digests are usually only available if the image was
+     * either pulled from a registry, or if the image was pushed to a registry,
+     * which is when the manifest is generated and its digest calculated.
+     */
+    repoDigests?: Array<string>;
+    /**
+     * ID of the parent image. Depending on how the image was created, this
+     * field may be empty and is only set for images that were built/created
+     * locally. This field is empty if the image was pulled from an image
+     * registry.
+     */
+    parent?: string;
+    /** Optional message that was set when committing or importing the image. */
+    comment?: string;
+    /**
+     * Date and time at which the image was created, formatted in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    created?: string;
+    /**
+     * The ID of the container that was used to create the image. Depending on
+     * how the image was created, this field may be empty.
+     */
+    container?: string;
+    containerConfig?: ContainerConfig;
+    /**
+     * The version of Docker that was used to build the image. Depending on how
+     * the image was created, this field may be empty.
+     */
+    dockerVersion?: string;
+    /**
+     * Name of the author that was specified when committing the image, or as
+     * specified through MAINTAINER (deprecated) in the Dockerfile.
+     */
+    author?: string;
+    config?: ContainerConfig;
+    /** Hardware CPU architecture that the image runs on. */
+    architecture?: string;
+    /** CPU architecture variant (presently ARM-only). */
+    variant?: string;
+    /** Operating System the image is built to run on. */
+    os?: string;
+    /**
+     * Operating System version the image is built to run on (especially for
+     * Windows).
+     */
+    osVersion?: string;
+    /** Total size of the image including all layers it is composed of. */
+    size?: number;
+    /**
+     * Total size of the image including all layers it is composed of.
+     * Deprecated: this field is omitted in API v1.44, but kept for backward
+     * compatibility. Use Size instead.
+     */
+    virtualSize?: number;
+    graphDriver?: GraphDriverData;
+    rootFS?: ImageInspectRootFS;
+    metadata?: ImageInspectMetadata;
 }
 
 /**
@@ -1438,153 +1438,153 @@ export interface ImageInspect {
  * local to the daemon, and not part of the image itself.
  */
 export interface ImageInspectMetadata {
-  /**
-   * Date and time at which the image was last tagged in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   * This information is only available if the image was tagged locally, and
-   * omitted otherwise.
-   */
-  lastTagTime?: string;
+    /**
+     * Date and time at which the image was last tagged in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     * This information is only available if the image was tagged locally, and
+     * omitted otherwise.
+     */
+    lastTagTime?: string;
 }
 
 /** Information about the image's RootFS, including the layer IDs. */
 export interface ImageInspectRootFS {
-  type: string;
-  layers?: Array<string>;
+    type: string;
+    layers?: Array<string>;
 }
 
 export interface ImagePruneResponse {
-  /** Images that were deleted */
-  imagesDeleted?: Array<ImageDeleteResponseItem>;
-  /** Disk space reclaimed in bytes */
-  spaceReclaimed?: number;
+    /** Images that were deleted */
+    imagesDeleted?: Array<ImageDeleteResponseItem>;
+    /** Disk space reclaimed in bytes */
+    spaceReclaimed?: number;
 }
 
 export interface ImageSearchResponseItem {
-  description?: string;
-  isOfficial?: boolean;
-  /**
-   * Whether this repository has automated builds enabled. <p><br /></p> >
-   * **Deprecated**: This field is deprecated and will always > be "false" in
-   * future.
-   */
-  isAutomated?: boolean;
-  name?: string;
-  starCount?: number;
+    description?: string;
+    isOfficial?: boolean;
+    /**
+     * Whether this repository has automated builds enabled. <p><br /></p> >
+     * **Deprecated**: This field is deprecated and will always > be "false" in
+     * future.
+     */
+    isAutomated?: boolean;
+    name?: string;
+    starCount?: number;
 }
 
 export interface ImageSummary {
-  /**
-   * ID is the content-addressable ID of an image. This identifier is a
-   * content-addressable digest calculated from the image's configuration
-   * (which includes the digests of layers used by the image). Note that this
-   * digest differs from the `RepoDigests` below, which holds digests of image
-   * manifests that reference the image.
-   */
-  id: string;
-  /**
-   * ID of the parent image. Depending on how the image was created, this
-   * field may be empty and is only set for images that were built/created
-   * locally. This field is empty if the image was pulled from an image
-   * registry.
-   */
-  parentId: string;
-  /**
-   * List of image names/tags in the local image cache that reference this
-   * image. Multiple image tags can refer to the same image, and this list may
-   * be empty if no tags reference the image, in which case the image is
-   * "untagged", in which case it can still be referenced by its ID.
-   */
-  repoTags: Array<string>;
-  /**
-   * List of content-addressable digests of locally available image manifests
-   * that the image is referenced from. Multiple manifests can refer to the
-   * same image. These digests are usually only available if the image was
-   * either pulled from a registry, or if the image was pushed to a registry,
-   * which is when the manifest is generated and its digest calculated.
-   */
-  repoDigests: Array<string>;
-  /**
-   * Date and time at which the image was created as a Unix timestamp (number
-   * of seconds sinds EPOCH).
-   */
-  created: number;
-  /** Total size of the image including all layers it is composed of. */
-  size: number;
-  /**
-   * Total size of image layers that are shared between this image and other
-   * images. This size is not calculated by default. `-1` indicates that the
-   * value has not been set / calculated.
-   */
-  sharedSize: number;
-  /**
-   * Total size of the image including all layers it is composed of.
-   * Deprecated: this field is omitted in API v1.44, but kept for backward
-   * compatibility. Use Size instead.
-   */
-  virtualSize?: number;
-  /** User-defined key/value metadata. */
-  labels: { [key: string]: string };
-  /**
-   * Number of containers using this image. Includes both stopped and running
-   * containers. This size is not calculated by default, and depends on which
-   * API endpoint is used. `-1` indicates that the value has not been set /
-   * calculated.
-   */
-  containers: number;
+    /**
+     * ID is the content-addressable ID of an image. This identifier is a
+     * content-addressable digest calculated from the image's configuration
+     * (which includes the digests of layers used by the image). Note that this
+     * digest differs from the `RepoDigests` below, which holds digests of image
+     * manifests that reference the image.
+     */
+    id: string;
+    /**
+     * ID of the parent image. Depending on how the image was created, this
+     * field may be empty and is only set for images that were built/created
+     * locally. This field is empty if the image was pulled from an image
+     * registry.
+     */
+    parentId: string;
+    /**
+     * List of image names/tags in the local image cache that reference this
+     * image. Multiple image tags can refer to the same image, and this list may
+     * be empty if no tags reference the image, in which case the image is
+     * "untagged", in which case it can still be referenced by its ID.
+     */
+    repoTags: Array<string>;
+    /**
+     * List of content-addressable digests of locally available image manifests
+     * that the image is referenced from. Multiple manifests can refer to the
+     * same image. These digests are usually only available if the image was
+     * either pulled from a registry, or if the image was pushed to a registry,
+     * which is when the manifest is generated and its digest calculated.
+     */
+    repoDigests: Array<string>;
+    /**
+     * Date and time at which the image was created as a Unix timestamp (number
+     * of seconds sinds EPOCH).
+     */
+    created: number;
+    /** Total size of the image including all layers it is composed of. */
+    size: number;
+    /**
+     * Total size of image layers that are shared between this image and other
+     * images. This size is not calculated by default. `-1` indicates that the
+     * value has not been set / calculated.
+     */
+    sharedSize: number;
+    /**
+     * Total size of the image including all layers it is composed of.
+     * Deprecated: this field is omitted in API v1.44, but kept for backward
+     * compatibility. Use Size instead.
+     */
+    virtualSize?: number;
+    /** User-defined key/value metadata. */
+    labels: { [key: string]: string };
+    /**
+     * Number of containers using this image. Includes both stopped and running
+     * containers. This size is not calculated by default, and depends on which
+     * API endpoint is used. `-1` indicates that the value has not been set /
+     * calculated.
+     */
+    containers: number;
 }
 
 /** IndexInfo contains information about a registry. */
 export interface IndexInfo {
-  /** Name of the registry, such as "docker.io". */
-  name?: string;
-  /** List of mirrors, expressed as URIs. */
-  mirrors?: Array<string>;
-  /**
-   * Indicates if the registry is part of the list of insecure registries. If
-   * `false`, the registry is insecure. Insecure registries accept
-   * un-encrypted (HTTP) and/or untrusted (HTTPS with certificates from
-   * unknown CAs) communication. > **Warning**: Insecure registries can be
-   * useful when running a local > registry. However, because its use creates
-   * security vulnerabilities > it should ONLY be enabled for testing
-   * purposes. For increased > security, users should add their CA to their
-   * system's list of > trusted CAs instead of enabling this option.
-   */
-  secure?: boolean;
-  /**
-   * Indicates whether this is an official registry (i.e., Docker Hub /
-   * docker.io)
-   */
-  official?: boolean;
+    /** Name of the registry, such as "docker.io". */
+    name?: string;
+    /** List of mirrors, expressed as URIs. */
+    mirrors?: Array<string>;
+    /**
+     * Indicates if the registry is part of the list of insecure registries. If
+     * `false`, the registry is insecure. Insecure registries accept
+     * un-encrypted (HTTP) and/or untrusted (HTTPS with certificates from
+     * unknown CAs) communication. > **Warning**: Insecure registries can be
+     * useful when running a local > registry. However, because its use creates
+     * security vulnerabilities > it should ONLY be enabled for testing
+     * purposes. For increased > security, users should add their CA to their
+     * system's list of > trusted CAs instead of enabling this option.
+     */
+    secure?: boolean;
+    /**
+     * Indicates whether this is an official registry (i.e., Docker Hub /
+     * docker.io)
+     */
+    official?: boolean;
 }
 
 /** JoinTokens contains the tokens workers and managers need to join the swarm. */
 export interface JoinTokens {
-  /** The token workers can use to join the swarm. */
-  worker?: string;
-  /** The token managers can use to join the swarm. */
-  manager?: string;
+    /** The token workers can use to join the swarm. */
+    worker?: string;
+    /** The token managers can use to join the swarm. */
+    manager?: string;
 }
 
 /** An object describing a limit on resources which can be requested by a task. */
 export interface Limit {
-  nanoCPUs?: number;
-  memoryBytes?: number;
-  /**
-   * Limits the maximum number of PIDs in the container. Set `0` for
-   * unlimited.
-   */
-  pids?: number;
+    nanoCPUs?: number;
+    memoryBytes?: number;
+    /**
+     * Limits the maximum number of PIDs in the container. Set `0` for
+     * unlimited.
+     */
+    pids?: number;
 }
 
 /** Current local status of this node. */
 export enum LocalNodeState {
-  Empty = "",
-  Inactive = "inactive",
-  Pending = "pending",
-  Active = "active",
-  Error = "error",
-  Locked = "locked",
+    Empty = "",
+    Inactive = "inactive",
+    Pending = "pending",
+    Active = "active",
+    Error = "error",
+    Locked = "locked",
 }
 
 /**
@@ -1592,79 +1592,79 @@ export enum LocalNodeState {
  * status of a node's manager component, if the node is a manager.
  */
 export interface ManagerStatus {
-  leader?: boolean;
-  reachability?: Reachability;
-  /** The IP address and port at which the manager is reachable. */
-  addr?: string;
+    leader?: boolean;
+    reachability?: Reachability;
+    /** The IP address and port at which the manager is reachable. */
+    addr?: string;
 }
 
 export interface Mount {
-  /** Container path. */
-  target?: string;
-  /** Mount source (e.g. a volume name, a host path). */
-  source?: string;
-  /**
-   * The mount type. Available types: - `bind` Mounts a file or directory from
-   * the host into the container. Must exist prior to creating the container.
-   * - `volume` Creates a volume with the given name and options (or uses a
-   * pre-existing volume with the same name and options). These are **not**
-   * removed when the container is removed. - `tmpfs` Create a tmpfs with the
-   * given options. The mount source cannot be specified for tmpfs. - `npipe`
-   * Mounts a named pipe from the host into the container. Must exist prior to
-   * creating the container. - `cluster` a Swarm cluster volume
-   */
-  type?: Mount.TypeEnum;
-  /** Whether the mount should be read-only. */
-  readOnly?: boolean;
-  /**
-   * The consistency requirement for the mount: `default`, `consistent`,
-   * `cached`, or `delegated`.
-   */
-  consistency?: string;
-  bindOptions?: MountBindOptions;
-  volumeOptions?: MountVolumeOptions;
-  tmpfsOptions?: MountTmpfsOptions;
+    /** Container path. */
+    target?: string;
+    /** Mount source (e.g. a volume name, a host path). */
+    source?: string;
+    /**
+     * The mount type. Available types: - `bind` Mounts a file or directory from
+     * the host into the container. Must exist prior to creating the container.
+     * - `volume` Creates a volume with the given name and options (or uses a
+     * pre-existing volume with the same name and options). These are **not**
+     * removed when the container is removed. - `tmpfs` Create a tmpfs with the
+     * given options. The mount source cannot be specified for tmpfs. - `npipe`
+     * Mounts a named pipe from the host into the container. Must exist prior to
+     * creating the container. - `cluster` a Swarm cluster volume
+     */
+    type?: Mount.TypeEnum;
+    /** Whether the mount should be read-only. */
+    readOnly?: boolean;
+    /**
+     * The consistency requirement for the mount: `default`, `consistent`,
+     * `cached`, or `delegated`.
+     */
+    consistency?: string;
+    bindOptions?: MountBindOptions;
+    volumeOptions?: MountVolumeOptions;
+    tmpfsOptions?: MountTmpfsOptions;
 }
 
 export namespace Mount {
-  export enum TypeEnum {
-    Bind = "bind",
-    Volume = "volume",
-    Tmpfs = "tmpfs",
-    Npipe = "npipe",
-    Cluster = "cluster",
-  }
+    export enum TypeEnum {
+        Bind = "bind",
+        Volume = "volume",
+        Tmpfs = "tmpfs",
+        Npipe = "npipe",
+        Cluster = "cluster",
+    }
 }
 
 /** Optional configuration for the `bind` type. */
 export interface MountBindOptions {
-  /**
-   * A propagation mode with the value `[r]private`, `[r]shared`, or
-   * `[r]slave`.
-   */
-  propagation?: MountBindOptions.PropagationEnum;
-  /** Disable recursive bind mount. */
-  nonRecursive?: boolean;
-  /** Create mount point on host if missing */
-  createMountpoint?: boolean;
-  /**
-   * Make the mount non-recursively read-only, but still leave the mount
-   * recursive (unless NonRecursive is set to true in conjunction).
-   */
-  readOnlyNonRecursive?: boolean;
-  /** Raise an error if the mount cannot be made recursively read-only. */
-  readOnlyForceRecursive?: boolean;
+    /**
+     * A propagation mode with the value `[r]private`, `[r]shared`, or
+     * `[r]slave`.
+     */
+    propagation?: MountBindOptions.PropagationEnum;
+    /** Disable recursive bind mount. */
+    nonRecursive?: boolean;
+    /** Create mount point on host if missing */
+    createMountpoint?: boolean;
+    /**
+     * Make the mount non-recursively read-only, but still leave the mount
+     * recursive (unless NonRecursive is set to true in conjunction).
+     */
+    readOnlyNonRecursive?: boolean;
+    /** Raise an error if the mount cannot be made recursively read-only. */
+    readOnlyForceRecursive?: boolean;
 }
 
 export namespace MountBindOptions {
-  export enum PropagationEnum {
-    Private = "private",
-    Rprivate = "rprivate",
-    Shared = "shared",
-    Rshared = "rshared",
-    Slave = "slave",
-    Rslave = "rslave",
-  }
+    export enum PropagationEnum {
+        Private = "private",
+        Rprivate = "rprivate",
+        Shared = "shared",
+        Rshared = "rshared",
+        Slave = "slave",
+        Rslave = "rslave",
+    }
 }
 
 /**
@@ -1672,263 +1672,263 @@ export namespace MountBindOptions {
  * is used for reporting the mountpoints in use by a container.
  */
 export interface MountPoint {
-  /**
-   * The mount type: - `bind` a mount of a file or directory from the host
-   * into the container. - `volume` a docker volume with the given `Name`. -
-   * `tmpfs` a `tmpfs`. - `npipe` a named pipe from the host into the
-   * container. - `cluster` a Swarm cluster volume
-   */
-  type?: MountPoint.TypeEnum;
-  /**
-   * Name is the name reference to the underlying data defined by `Source`
-   * e.g., the volume name.
-   */
-  name?: string;
-  /**
-   * Source location of the mount. For volumes, this contains the storage
-   * location of the volume (within `/var/lib/docker/volumes/`). For
-   * bind-mounts, and `npipe`, this contains the source (host) part of the
-   * bind-mount. For `tmpfs` mount points, this field is empty.
-   */
-  source?: string;
-  /**
-   * Destination is the path relative to the container root (`/`) where the
-   * `Source` is mounted inside the container.
-   */
-  destination?: string;
-  /**
-   * Driver is the volume driver used to create the volume (if it is a
-   * volume).
-   */
-  driver?: string;
-  /**
-   * Mode is a comma separated list of options supplied by the user when
-   * creating the bind/volume mount. The default is platform-specific (`\"z\"`
-   * on Linux, empty on Windows).
-   */
-  mode?: string;
-  /** Whether the mount is mounted writable (read-write). */
-  RW?: boolean;
-  /**
-   * Propagation describes how mounts are propagated from the host into the
-   * mount point, and vice-versa. Refer to the [Linux kernel
-   * documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt)
-   * for details. This field is not used on Windows.
-   */
-  propagation?: string;
+    /**
+     * The mount type: - `bind` a mount of a file or directory from the host
+     * into the container. - `volume` a docker volume with the given `Name`. -
+     * `tmpfs` a `tmpfs`. - `npipe` a named pipe from the host into the
+     * container. - `cluster` a Swarm cluster volume
+     */
+    type?: MountPoint.TypeEnum;
+    /**
+     * Name is the name reference to the underlying data defined by `Source`
+     * e.g., the volume name.
+     */
+    name?: string;
+    /**
+     * Source location of the mount. For volumes, this contains the storage
+     * location of the volume (within `/var/lib/docker/volumes/`). For
+     * bind-mounts, and `npipe`, this contains the source (host) part of the
+     * bind-mount. For `tmpfs` mount points, this field is empty.
+     */
+    source?: string;
+    /**
+     * Destination is the path relative to the container root (`/`) where the
+     * `Source` is mounted inside the container.
+     */
+    destination?: string;
+    /**
+     * Driver is the volume driver used to create the volume (if it is a
+     * volume).
+     */
+    driver?: string;
+    /**
+     * Mode is a comma separated list of options supplied by the user when
+     * creating the bind/volume mount. The default is platform-specific (`\"z\"`
+     * on Linux, empty on Windows).
+     */
+    mode?: string;
+    /** Whether the mount is mounted writable (read-write). */
+    RW?: boolean;
+    /**
+     * Propagation describes how mounts are propagated from the host into the
+     * mount point, and vice-versa. Refer to the [Linux kernel
+     * documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt)
+     * for details. This field is not used on Windows.
+     */
+    propagation?: string;
 }
 
 export namespace MountPoint {
-  export enum TypeEnum {
-    Bind = "bind",
-    Volume = "volume",
-    Tmpfs = "tmpfs",
-    Npipe = "npipe",
-    Cluster = "cluster",
-  }
+    export enum TypeEnum {
+        Bind = "bind",
+        Volume = "volume",
+        Tmpfs = "tmpfs",
+        Npipe = "npipe",
+        Cluster = "cluster",
+    }
 }
 
 /** Optional configuration for the `tmpfs` type. */
 export interface MountTmpfsOptions {
-  /** The size for the tmpfs mount in bytes. */
-  sizeBytes?: number;
-  /** The permission mode for the tmpfs mount in an integer. */
-  mode?: number;
+    /** The size for the tmpfs mount in bytes. */
+    sizeBytes?: number;
+    /** The permission mode for the tmpfs mount in an integer. */
+    mode?: number;
 }
 
 /** Optional configuration for the `volume` type. */
 export interface MountVolumeOptions {
-  /** Populate volume with data from the target. */
-  noCopy?: boolean;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  driverConfig?: MountVolumeOptionsDriverConfig;
+    /** Populate volume with data from the target. */
+    noCopy?: boolean;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    driverConfig?: MountVolumeOptionsDriverConfig;
 }
 
 /** Map of driver specific options */
 export interface MountVolumeOptionsDriverConfig {
-  /** Name of the driver to use to create the volume. */
-  name?: string;
-  /** Key/value map of driver specific options. */
-  options?: { [key: string]: string };
+    /** Name of the driver to use to create the volume. */
+    name?: string;
+    /** Key/value map of driver specific options. */
+    options?: { [key: string]: string };
 }
 
 export interface Network {
-  name?: string;
-  id?: string;
-  created?: string;
-  scope?: string;
-  driver?: string;
-  enableIPv6?: boolean;
-  IPAM?: IPAM;
-  internal?: boolean;
-  attachable?: boolean;
-  ingress?: boolean;
-  containers?: { [key: string]: NetworkContainer };
-  options?: { [key: string]: string };
-  labels?: { [key: string]: string };
+    name?: string;
+    id?: string;
+    created?: string;
+    scope?: string;
+    driver?: string;
+    enableIPv6?: boolean;
+    IPAM?: IPAM;
+    internal?: boolean;
+    attachable?: boolean;
+    ingress?: boolean;
+    containers?: { [key: string]: NetworkContainer };
+    options?: { [key: string]: string };
+    labels?: { [key: string]: string };
 }
 
 /** Specifies how a service should be attached to a particular network. */
 export interface NetworkAttachmentConfig {
-  /** The target network for attachment. Must be a network name or ID. */
-  target?: string;
-  /** Discoverable alternate names for the service on this network. */
-  aliases?: Array<string>;
-  /** Driver attachment options for the network target. */
-  driverOpts?: { [key: string]: string };
+    /** The target network for attachment. Must be a network name or ID. */
+    target?: string;
+    /** Discoverable alternate names for the service on this network. */
+    aliases?: Array<string>;
+    /** Driver attachment options for the network target. */
+    driverOpts?: { [key: string]: string };
 }
 
 export interface NetworkConnectRequest {
-  /** The ID or name of the container to connect to the network. */
-  container?: string;
-  endpointConfig?: EndpointSettings;
+    /** The ID or name of the container to connect to the network. */
+    container?: string;
+    endpointConfig?: EndpointSettings;
 }
 
 export interface NetworkContainer {
-  name?: string;
-  endpointID?: string;
-  macAddress?: string;
-  iPv4Address?: string;
-  iPv6Address?: string;
+    name?: string;
+    endpointID?: string;
+    macAddress?: string;
+    iPv4Address?: string;
+    iPv6Address?: string;
 }
 
 export interface NetworkCreateRequest {
-  /** The network's name. */
-  name: string;
-  /** Deprecated: CheckDuplicate is now always enabled. */
-  checkDuplicate?: boolean;
-  /** Name of the network driver plugin to use. */
-  driver?: string;
-  /** Restrict external access to the network. */
-  internal?: boolean;
-  /**
-   * Globally scoped network is manually attachable by regular containers from
-   * workers in swarm mode.
-   */
-  attachable?: boolean;
-  /**
-   * Ingress network is the network which provides the routing-mesh in swarm
-   * mode.
-   */
-  ingress?: boolean;
-  IPAM?: IPAM;
-  /** Enable IPv6 on the network. */
-  enableIPv6?: boolean;
-  /** Network specific options to be used by the drivers. */
-  options?: { [key: string]: string };
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
+    /** The network's name. */
+    name: string;
+    /** Deprecated: CheckDuplicate is now always enabled. */
+    checkDuplicate?: boolean;
+    /** Name of the network driver plugin to use. */
+    driver?: string;
+    /** Restrict external access to the network. */
+    internal?: boolean;
+    /**
+     * Globally scoped network is manually attachable by regular containers from
+     * workers in swarm mode.
+     */
+    attachable?: boolean;
+    /**
+     * Ingress network is the network which provides the routing-mesh in swarm
+     * mode.
+     */
+    ingress?: boolean;
+    IPAM?: IPAM;
+    /** Enable IPv6 on the network. */
+    enableIPv6?: boolean;
+    /** Network specific options to be used by the drivers. */
+    options?: { [key: string]: string };
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
 }
 
 export interface NetworkCreateResponse {
-  /** The ID of the created network. */
-  id?: string;
-  warning?: string;
+    /** The ID of the created network. */
+    id?: string;
+    warning?: string;
 }
 
 export interface NetworkDisconnectRequest {
-  /** The ID or name of the container to disconnect from the network. */
-  container?: string;
-  /** Force the container to disconnect from the network. */
-  force?: boolean;
+    /** The ID or name of the container to disconnect from the network. */
+    container?: string;
+    /** Force the container to disconnect from the network. */
+    force?: boolean;
 }
 
 export interface NetworkPruneResponse {
-  /** Networks that were deleted */
-  networksDeleted?: Array<string>;
+    /** Networks that were deleted */
+    networksDeleted?: Array<string>;
 }
 
 /** NetworkSettings exposes the network settings in the API */
 export interface NetworkSettings {
-  /** Name of the network's bridge (for example, `docker0`). */
-  bridge?: string;
-  /** SandboxID uniquely represents a container's network stack. */
-  sandboxID?: string;
-  /** Indicates if hairpin NAT should be enabled on the virtual interface. */
-  hairpinMode?: boolean;
-  /** IPv6 unicast address using the link-local prefix. */
-  linkLocalIPv6Address?: string;
-  /** Prefix length of the IPv6 unicast address. */
-  linkLocalIPv6PrefixLen?: number;
-  ports?: PortMap;
-  /** SandboxKey identifies the sandbox */
-  sandboxKey?: string;
-  secondaryIPAddresses?: Array<Address>;
-  secondaryIPv6Addresses?: Array<Address>;
-  /**
-   * EndpointID uniquely represents a service endpoint in a Sandbox. <p><br
-   * /></p> > **Deprecated**: This field is only propagated when attached to
-   * the > default "bridge" network. Use the information from the "bridge" >
-   * network inside the `Networks` map instead, which contains the same >
-   * information. This field was deprecated in Docker 1.9 and is scheduled >
-   * to be removed in Docker 17.12.0
-   */
-  endpointID?: string;
-  /**
-   * Gateway address for the default "bridge" network. <p><br /></p> >
-   * **Deprecated**: This field is only propagated when attached to the >
-   * default "bridge" network. Use the information from the "bridge" > network
-   * inside the `Networks` map instead, which contains the same > information.
-   * This field was deprecated in Docker 1.9 and is scheduled > to be removed
-   * in Docker 17.12.0
-   */
-  gateway?: string;
-  /**
-   * Global IPv6 address for the default "bridge" network. <p><br /></p> >
-   * **Deprecated**: This field is only propagated when attached to the >
-   * default "bridge" network. Use the information from the "bridge" > network
-   * inside the `Networks` map instead, which contains the same > information.
-   * This field was deprecated in Docker 1.9 and is scheduled > to be removed
-   * in Docker 17.12.0
-   */
-  globalIPv6Address?: string;
-  /**
-   * Mask length of the global IPv6 address. <p><br /></p> > **Deprecated**:
-   * This field is only propagated when attached to the > default "bridge"
-   * network. Use the information from the "bridge" > network inside the
-   * `Networks` map instead, which contains the same > information. This field
-   * was deprecated in Docker 1.9 and is scheduled > to be removed in Docker
-   * 17.12.0
-   */
-  globalIPv6PrefixLen?: number;
-  /**
-   * IPv4 address for the default "bridge" network. <p><br /></p> >
-   * **Deprecated**: This field is only propagated when attached to the >
-   * default "bridge" network. Use the information from the "bridge" > network
-   * inside the `Networks` map instead, which contains the same > information.
-   * This field was deprecated in Docker 1.9 and is scheduled > to be removed
-   * in Docker 17.12.0
-   */
-  iPAddress?: string;
-  /**
-   * Mask length of the IPv4 address. <p><br /></p> > **Deprecated**: This
-   * field is only propagated when attached to the > default "bridge" network.
-   * Use the information from the "bridge" > network inside the `Networks` map
-   * instead, which contains the same > information. This field was deprecated
-   * in Docker 1.9 and is scheduled > to be removed in Docker 17.12.0
-   */
-  iPPrefixLen?: number;
-  /**
-   * IPv6 gateway address for this network. <p><br /></p> > **Deprecated**:
-   * This field is only propagated when attached to the > default "bridge"
-   * network. Use the information from the "bridge" > network inside the
-   * `Networks` map instead, which contains the same > information. This field
-   * was deprecated in Docker 1.9 and is scheduled > to be removed in Docker
-   * 17.12.0
-   */
-  iPv6Gateway?: string;
-  /**
-   * MAC address for the container on the default "bridge" network. <p><br
-   * /></p> > **Deprecated**: This field is only propagated when attached to
-   * the > default "bridge" network. Use the information from the "bridge" >
-   * network inside the `Networks` map instead, which contains the same >
-   * information. This field was deprecated in Docker 1.9 and is scheduled >
-   * to be removed in Docker 17.12.0
-   */
-  macAddress?: string;
-  /** Information about all networks that the container is connected to. */
-  networks?: { [key: string]: EndpointSettings };
+    /** Name of the network's bridge (for example, `docker0`). */
+    bridge?: string;
+    /** SandboxID uniquely represents a container's network stack. */
+    sandboxID?: string;
+    /** Indicates if hairpin NAT should be enabled on the virtual interface. */
+    hairpinMode?: boolean;
+    /** IPv6 unicast address using the link-local prefix. */
+    linkLocalIPv6Address?: string;
+    /** Prefix length of the IPv6 unicast address. */
+    linkLocalIPv6PrefixLen?: number;
+    ports?: PortMap;
+    /** SandboxKey identifies the sandbox */
+    sandboxKey?: string;
+    secondaryIPAddresses?: Array<Address>;
+    secondaryIPv6Addresses?: Array<Address>;
+    /**
+     * EndpointID uniquely represents a service endpoint in a Sandbox. <p><br
+     * /></p> > **Deprecated**: This field is only propagated when attached to
+     * the > default "bridge" network. Use the information from the "bridge" >
+     * network inside the `Networks` map instead, which contains the same >
+     * information. This field was deprecated in Docker 1.9 and is scheduled >
+     * to be removed in Docker 17.12.0
+     */
+    endpointID?: string;
+    /**
+     * Gateway address for the default "bridge" network. <p><br /></p> >
+     * **Deprecated**: This field is only propagated when attached to the >
+     * default "bridge" network. Use the information from the "bridge" > network
+     * inside the `Networks` map instead, which contains the same > information.
+     * This field was deprecated in Docker 1.9 and is scheduled > to be removed
+     * in Docker 17.12.0
+     */
+    gateway?: string;
+    /**
+     * Global IPv6 address for the default "bridge" network. <p><br /></p> >
+     * **Deprecated**: This field is only propagated when attached to the >
+     * default "bridge" network. Use the information from the "bridge" > network
+     * inside the `Networks` map instead, which contains the same > information.
+     * This field was deprecated in Docker 1.9 and is scheduled > to be removed
+     * in Docker 17.12.0
+     */
+    globalIPv6Address?: string;
+    /**
+     * Mask length of the global IPv6 address. <p><br /></p> > **Deprecated**:
+     * This field is only propagated when attached to the > default "bridge"
+     * network. Use the information from the "bridge" > network inside the
+     * `Networks` map instead, which contains the same > information. This field
+     * was deprecated in Docker 1.9 and is scheduled > to be removed in Docker
+     * 17.12.0
+     */
+    globalIPv6PrefixLen?: number;
+    /**
+     * IPv4 address for the default "bridge" network. <p><br /></p> >
+     * **Deprecated**: This field is only propagated when attached to the >
+     * default "bridge" network. Use the information from the "bridge" > network
+     * inside the `Networks` map instead, which contains the same > information.
+     * This field was deprecated in Docker 1.9 and is scheduled > to be removed
+     * in Docker 17.12.0
+     */
+    iPAddress?: string;
+    /**
+     * Mask length of the IPv4 address. <p><br /></p> > **Deprecated**: This
+     * field is only propagated when attached to the > default "bridge" network.
+     * Use the information from the "bridge" > network inside the `Networks` map
+     * instead, which contains the same > information. This field was deprecated
+     * in Docker 1.9 and is scheduled > to be removed in Docker 17.12.0
+     */
+    iPPrefixLen?: number;
+    /**
+     * IPv6 gateway address for this network. <p><br /></p> > **Deprecated**:
+     * This field is only propagated when attached to the > default "bridge"
+     * network. Use the information from the "bridge" > network inside the
+     * `Networks` map instead, which contains the same > information. This field
+     * was deprecated in Docker 1.9 and is scheduled > to be removed in Docker
+     * 17.12.0
+     */
+    iPv6Gateway?: string;
+    /**
+     * MAC address for the container on the default "bridge" network. <p><br
+     * /></p> > **Deprecated**: This field is only propagated when attached to
+     * the > default "bridge" network. Use the information from the "bridge" >
+     * network inside the `Networks` map instead, which contains the same >
+     * information. This field was deprecated in Docker 1.9 and is scheduled >
+     * to be removed in Docker 17.12.0
+     */
+    macAddress?: string;
+    /** Information about all networks that the container is connected to. */
+    networks?: { [key: string]: EndpointSettings };
 }
 
 /**
@@ -1937,31 +1937,31 @@ export interface NetworkSettings {
  * `docker create` and `docker network connect` commands.
  */
 export interface NetworkingConfig {
-  /**
-   * A mapping of network name to endpoint configuration for that network. The
-   * endpoint configuration can be left empty to connect to that network with
-   * no particular endpoint configuration.
-   */
-  endpointsConfig?: { [key: string]: EndpointSettings };
+    /**
+     * A mapping of network name to endpoint configuration for that network. The
+     * endpoint configuration can be left empty to connect to that network with
+     * no particular endpoint configuration.
+     */
+    endpointsConfig?: { [key: string]: EndpointSettings };
 }
 
 export interface Node {
-  ID?: string;
-  version?: ObjectVersion;
-  /**
-   * Date and time at which the node was added to the swarm in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  createdAt?: string;
-  /**
-   * Date and time at which the node was last updated in [RFC
-   * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-   */
-  updatedAt?: string;
-  spec?: NodeSpec;
-  description?: NodeDescription;
-  status?: NodeStatus;
-  managerStatus?: ManagerStatus;
+    ID?: string;
+    version?: ObjectVersion;
+    /**
+     * Date and time at which the node was added to the swarm in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    createdAt?: string;
+    /**
+     * Date and time at which the node was last updated in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    updatedAt?: string;
+    spec?: NodeSpec;
+    description?: NodeDescription;
+    status?: NodeStatus;
+    managerStatus?: ManagerStatus;
 }
 
 /**
@@ -1969,42 +1969,42 @@ export interface Node {
  * agent.
  */
 export interface NodeDescription {
-  hostname?: string;
-  platform?: Platform;
-  resources?: ResourceObject;
-  engine?: EngineDescription;
-  tLSInfo?: TLSInfo;
+    hostname?: string;
+    platform?: Platform;
+    resources?: ResourceObject;
+    engine?: EngineDescription;
+    tLSInfo?: TLSInfo;
 }
 
 export interface NodeSpec {
-  /** Name for the node. */
-  name?: string;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  /** Role of the node. */
-  role?: NodeSpec.RoleEnum;
-  /** Availability of the node. */
-  availability?: NodeSpec.AvailabilityEnum;
+    /** Name for the node. */
+    name?: string;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    /** Role of the node. */
+    role?: NodeSpec.RoleEnum;
+    /** Availability of the node. */
+    availability?: NodeSpec.AvailabilityEnum;
 }
 
 export namespace NodeSpec {
-  export enum RoleEnum {
-    Worker = "worker",
-    Manager = "manager",
-  }
-  export enum AvailabilityEnum {
-    Active = "active",
-    Pause = "pause",
-    Drain = "drain",
-  }
+    export enum RoleEnum {
+        Worker = "worker",
+        Manager = "manager",
+    }
+    export enum AvailabilityEnum {
+        Active = "active",
+        Pause = "pause",
+        Drain = "drain",
+    }
 }
 
 /** NodeState represents the state of a node. */
 export enum NodeState {
-  Unknown = "unknown",
-  Down = "down",
-  Ready = "ready",
-  Disconnected = "disconnected",
+    Unknown = "unknown",
+    Down = "down",
+    Ready = "ready",
+    Disconnected = "disconnected",
 }
 
 /**
@@ -2012,10 +2012,10 @@ export enum NodeState {
  * the node, as seen by the manager.
  */
 export interface NodeStatus {
-  state?: NodeState;
-  message?: string;
-  /** IP address of the node. */
-  addr?: string;
+    state?: NodeState;
+    message?: string;
+    /** IP address of the node. */
+    addr?: string;
 }
 
 /**
@@ -2024,12 +2024,12 @@ export interface NodeStatus {
  * Specification](https://github.com/opencontainers/image-spec/blob/v1.0.1/descriptor.md).
  */
 export interface OCIDescriptor {
-  /** The media type of the object this schema refers to. */
-  mediaType?: string;
-  /** The digest of the targeted content. */
-  digest?: string;
-  /** The size in bytes of the blob. */
-  size?: number;
+    /** The media type of the object this schema refers to. */
+    mediaType?: string;
+    /** The digest of the targeted content. */
+    digest?: string;
+    /** The size in bytes of the blob. */
+    size?: number;
 }
 
 /**
@@ -2038,25 +2038,25 @@ export interface OCIDescriptor {
  * Specification](https://github.com/opencontainers/image-spec/blob/v1.0.1/image-index.md).
  */
 export interface OCIPlatform {
-  /** The CPU architecture, for example `amd64` or `ppc64`. */
-  architecture?: string;
-  /** The operating system, for example `linux` or `windows`. */
-  os?: string;
-  /**
-   * Optional field specifying the operating system version, for example on
-   * Windows `10.0.19041.1165`.
-   */
-  osVersion?: string;
-  /**
-   * Optional field specifying an array of strings, each listing a required OS
-   * feature (for example on Windows `win32k`).
-   */
-  osFeatures?: Array<string>;
-  /**
-   * Optional field specifying a variant of the CPU, for example `v7` to
-   * specify ARMv7 when architecture is `arm`.
-   */
-  variant?: string;
+    /** The CPU architecture, for example `amd64` or `ppc64`. */
+    architecture?: string;
+    /** The operating system, for example `linux` or `windows`. */
+    os?: string;
+    /**
+     * Optional field specifying the operating system version, for example on
+     * Windows `10.0.19041.1165`.
+     */
+    osVersion?: string;
+    /**
+     * Optional field specifying an array of strings, each listing a required OS
+     * feature (for example on Windows `win32k`).
+     */
+    osFeatures?: Array<string>;
+    /**
+     * Optional field specifying a variant of the CPU, for example `v7` to
+     * specify ARMv7 when architecture is `arm`.
+     */
+    variant?: string;
 }
 
 /**
@@ -2070,149 +2070,149 @@ export interface OCIPlatform {
  * at the same time will not unintentionally overwrite each other.
  */
 export interface ObjectVersion {
-  index?: number;
+    index?: number;
 }
 
 /** Represents a peer-node in the swarm */
 export interface PeerNode {
-  /** Unique identifier of for this node in the swarm. */
-  nodeID?: string;
-  /** IP address and ports at which this node can be reached. */
-  addr?: string;
+    /** Unique identifier of for this node in the swarm. */
+    nodeID?: string;
+    /** IP address and ports at which this node can be reached. */
+    addr?: string;
 }
 
 /** Platform represents the platform (Arch/OS). */
 export interface Platform {
-  /**
-   * Architecture represents the hardware architecture (for example,
-   * `x86_64`).
-   */
-  architecture?: string;
-  /** OS represents the Operating System (for example, `linux` or `windows`). */
-  OS?: string;
+    /**
+     * Architecture represents the hardware architecture (for example,
+     * `x86_64`).
+     */
+    architecture?: string;
+    /** OS represents the Operating System (for example, `linux` or `windows`). */
+    OS?: string;
 }
 
 /** A plugin for the Engine API */
 export interface Plugin {
-  id?: string;
-  name: string;
-  /**
-   * True if the plugin is running. False if the plugin is not running, only
-   * installed.
-   */
-  enabled: boolean;
-  settings: PluginSettings;
-  /** Plugin remote reference used to push/pull the plugin */
-  pluginReference?: string;
-  config: PluginConfig;
+    id?: string;
+    name: string;
+    /**
+     * True if the plugin is running. False if the plugin is not running, only
+     * installed.
+     */
+    enabled: boolean;
+    settings: PluginSettings;
+    /** Plugin remote reference used to push/pull the plugin */
+    pluginReference?: string;
+    config: PluginConfig;
 }
 
 /** The config of a plugin. */
 export interface PluginConfig {
-  /** Docker Version used to create the plugin */
-  dockerVersion?: string;
-  description: string;
-  documentation: string;
-  _interface: PluginConfigInterface;
-  entrypoint: Array<string>;
-  workDir: string;
-  user?: PluginConfigUser;
-  network: PluginConfigNetwork;
-  linux: PluginConfigLinux;
-  propagatedMount: string;
-  ipcHost: boolean;
-  pidHost: boolean;
-  mounts: Array<PluginMount>;
-  env: Array<PluginEnv>;
-  args: PluginConfigArgs;
-  rootfs?: PluginConfigRootfs;
+    /** Docker Version used to create the plugin */
+    dockerVersion?: string;
+    description: string;
+    documentation: string;
+    _interface: PluginConfigInterface;
+    entrypoint: Array<string>;
+    workDir: string;
+    user?: PluginConfigUser;
+    network: PluginConfigNetwork;
+    linux: PluginConfigLinux;
+    propagatedMount: string;
+    ipcHost: boolean;
+    pidHost: boolean;
+    mounts: Array<PluginMount>;
+    env: Array<PluginEnv>;
+    args: PluginConfigArgs;
+    rootfs?: PluginConfigRootfs;
 }
 
 export interface PluginConfigArgs {
-  name: string;
-  description: string;
-  settable: Array<string>;
-  value: Array<string>;
+    name: string;
+    description: string;
+    settable: Array<string>;
+    value: Array<string>;
 }
 
 /** The interface between Docker and the plugin */
 export interface PluginConfigInterface {
-  types: Array<PluginInterfaceType>;
-  socket: string;
-  /** Protocol to use for clients connecting to the plugin. */
-  protocolScheme?: PluginConfigInterface.ProtocolSchemeEnum;
+    types: Array<PluginInterfaceType>;
+    socket: string;
+    /** Protocol to use for clients connecting to the plugin. */
+    protocolScheme?: PluginConfigInterface.ProtocolSchemeEnum;
 }
 
 export namespace PluginConfigInterface {
-  export enum ProtocolSchemeEnum {
-    Empty = "",
-    MobyPluginsHttpv1 = "moby.plugins.http/v1",
-  }
+    export enum ProtocolSchemeEnum {
+        Empty = "",
+        MobyPluginsHttpv1 = "moby.plugins.http/v1",
+    }
 }
 
 export interface PluginConfigLinux {
-  capabilities: Array<string>;
-  allowAllDevices: boolean;
-  devices: Array<PluginDevice>;
+    capabilities: Array<string>;
+    allowAllDevices: boolean;
+    devices: Array<PluginDevice>;
 }
 
 export interface PluginConfigNetwork {
-  type: string;
+    type: string;
 }
 
 export interface PluginConfigRootfs {
-  type?: string;
-  diffIds?: Array<string>;
+    type?: string;
+    diffIds?: Array<string>;
 }
 
 export interface PluginConfigUser {
-  UID?: number;
-  GID?: number;
+    UID?: number;
+    GID?: number;
 }
 
 export interface PluginDevice {
-  name: string;
-  description: string;
-  settable: Array<string>;
-  path: string;
+    name: string;
+    description: string;
+    settable: Array<string>;
+    path: string;
 }
 
 export interface PluginEnv {
-  name: string;
-  description: string;
-  settable: Array<string>;
-  value: string;
+    name: string;
+    description: string;
+    settable: Array<string>;
+    value: string;
 }
 
 export interface PluginInterfaceType {
-  prefix: string;
-  capability: string;
-  version: string;
+    prefix: string;
+    capability: string;
+    version: string;
 }
 
 export interface PluginMount {
-  name: string;
-  description: string;
-  settable: Array<string>;
-  source: string;
-  destination: string;
-  type: string;
-  options: Array<string>;
+    name: string;
+    description: string;
+    settable: Array<string>;
+    source: string;
+    destination: string;
+    type: string;
+    options: Array<string>;
 }
 
 /** Describes a permission the user has to accept upon installing the plugin. */
 export interface PluginPrivilege {
-  name?: string;
-  description?: string;
-  value?: Array<string>;
+    name?: string;
+    description?: string;
+    value?: Array<string>;
 }
 
 /** Settings that can be modified by users. */
 export interface PluginSettings {
-  mounts: Array<PluginMount>;
-  env: Array<string>;
-  args: Array<string>;
-  devices: Array<PluginDevice>;
+    mounts: Array<PluginMount>;
+    env: Array<string>;
+    args: Array<string>;
+    devices: Array<PluginDevice>;
 }
 
 /**
@@ -2221,41 +2221,41 @@ export interface PluginSettings {
  * not returned in this list > if there is no resource using the plugin.
  */
 export interface PluginsInfo {
-  /** Names of available volume-drivers, and network-driver plugins. */
-  volume?: Array<string>;
-  /** Names of available network-drivers, and network-driver plugins. */
-  network?: Array<string>;
-  /** Names of available authorization plugins. */
-  authorization?: Array<string>;
-  /** Names of available logging-drivers, and logging-driver plugins. */
-  log?: Array<string>;
+    /** Names of available volume-drivers, and network-driver plugins. */
+    volume?: Array<string>;
+    /** Names of available network-drivers, and network-driver plugins. */
+    network?: Array<string>;
+    /** Names of available authorization plugins. */
+    authorization?: Array<string>;
+    /** Names of available logging-drivers, and logging-driver plugins. */
+    log?: Array<string>;
 }
 
 /** An open port on a container */
 export interface Port {
-  /** Host IP address that the container's port is mapped to */
-  IP?: string;
-  /** Port on the container */
-  privatePort: number;
-  /** Port exposed on the host */
-  publicPort?: number;
-  type: Port.TypeEnum;
+    /** Host IP address that the container's port is mapped to */
+    IP?: string;
+    /** Port on the container */
+    privatePort: number;
+    /** Port exposed on the host */
+    publicPort?: number;
+    type: Port.TypeEnum;
 }
 
 export namespace Port {
-  export enum TypeEnum {
-    Tcp = "tcp",
-    Udp = "udp",
-    Sctp = "sctp",
-  }
+    export enum TypeEnum {
+        Tcp = "tcp",
+        Udp = "udp",
+        Sctp = "sctp",
+    }
 }
 
 /** PortBinding represents a binding between a host IP address and a host port. */
 export interface PortBinding {
-  /** Host IP address that the container's port is mapped to. */
-  hostIp?: string;
-  /** Host port number that the container's port is mapped to. */
-  hostPort?: string;
+    /** Host IP address that the container's port is mapped to. */
+    hostIp?: string;
+    /** Host port number that the container's port is mapped to. */
+    hostPort?: string;
 }
 
 /**
@@ -2265,97 +2265,97 @@ export interface PortBinding {
  * for multiple protocols, separate entries are added to the mapping table.
  */
 export interface PortMap extends null<String, Array> {
-  [key: string]: Array<PortBinding>;
+    [key: string]: Array<PortBinding>;
 }
 
 export interface ProcessConfig {
-  privileged?: boolean;
-  user?: string;
-  tty?: boolean;
-  entrypoint?: string;
-  arguments?: Array<string>;
+    privileged?: boolean;
+    user?: string;
+    tty?: boolean;
+    entrypoint?: string;
+    arguments?: Array<string>;
 }
 
 export interface ProgressDetail {
-  current?: number;
-  total?: number;
+    current?: number;
+    total?: number;
 }
 
 export interface PushImageInfo {
-  error?: string;
-  status?: string;
-  progress?: string;
-  progressDetail?: ProgressDetail;
+    error?: string;
+    status?: string;
+    progress?: string;
+    progressDetail?: ProgressDetail;
 }
 
 /** Reachability represents the reachability of a node. */
 export enum Reachability {
-  Unknown = "unknown",
-  Unreachable = "unreachable",
-  Reachable = "reachable",
+    Unknown = "unknown",
+    Unreachable = "unreachable",
+    Reachable = "reachable",
 }
 
 /** RegistryServiceConfig stores daemon registry services configuration. */
 export interface RegistryServiceConfig {
-  /**
-   * List of IP ranges to which nondistributable artifacts can be pushed,
-   * using the CIDR syntax [RFC 4632](https://tools.ietf.org/html/4632). Some
-   * images (for example, Windows base images) contain artifacts whose
-   * distribution is restricted by license. When these images are pushed to a
-   * registry, restricted artifacts are not included. This configuration
-   * override this behavior, and enables the daemon to push nondistributable
-   * artifacts to all registries whose resolved IP address is within the
-   * subnet described by the CIDR syntax. This option is useful when pushing
-   * images containing nondistributable artifacts to a registry on an
-   * air-gapped network so hosts on that network can pull the images without
-   * connecting to another server. > **Warning**: Nondistributable artifacts
-   * typically have restrictions > on how and where they can be distributed
-   * and shared. Only use this > feature to push artifacts to private
-   * registries and ensure that you > are in compliance with any terms that
-   * cover redistributing > nondistributable artifacts.
-   */
-  allowNondistributableArtifactsCIDRs?: Array<string>;
-  /**
-   * List of registry hostnames to which nondistributable artifacts can be
-   * pushed, using the format `<hostname>[:<port>]` or `<IP
-   * address>[:<port>]`. Some images (for example, Windows base images)
-   * contain artifacts whose distribution is restricted by license. When these
-   * images are pushed to a registry, restricted artifacts are not included.
-   * This configuration override this behavior for the specified registries.
-   * This option is useful when pushing images containing nondistributable
-   * artifacts to a registry on an air-gapped network so hosts on that network
-   * can pull the images without connecting to another server. > **Warning**:
-   * Nondistributable artifacts typically have restrictions > on how and where
-   * they can be distributed and shared. Only use this > feature to push
-   * artifacts to private registries and ensure that you > are in compliance
-   * with any terms that cover redistributing > nondistributable artifacts.
-   */
-  allowNondistributableArtifactsHostnames?: Array<string>;
-  /**
-   * List of IP ranges of insecure registries, using the CIDR syntax ([RFC
-   * 4632](https://tools.ietf.org/html/4632)). Insecure registries accept
-   * un-encrypted (HTTP) and/or untrusted (HTTPS with certificates from
-   * unknown CAs) communication. By default, local registries (`127.0.0.0/8`)
-   * are configured as insecure. All other registries are secure.
-   * Communicating with an insecure registry is not possible if the daemon
-   * assumes that registry is secure. This configuration override this
-   * behavior, insecure communication with registries whose resolved IP
-   * address is within the subnet described by the CIDR syntax. Registries can
-   * also be marked insecure by hostname. Those registries are listed under
-   * `IndexConfigs` and have their `Secure` field set to `false`. >
-   * **Warning**: Using this option can be useful when running a local >
-   * registry, but introduces security vulnerabilities. This option > should
-   * therefore ONLY be used for testing purposes. For increased > security,
-   * users should add their CA to their system's list of trusted > CAs instead
-   * of enabling this option.
-   */
-  insecureRegistryCIDRs?: Array<string>;
-  indexConfigs?: { [key: string]: IndexInfo };
-  /**
-   * List of registry URLs that act as a mirror for the official (`docker.io`)
-   * registry.
-   */
-  mirrors?: Array<string>;
+    /**
+     * List of IP ranges to which nondistributable artifacts can be pushed,
+     * using the CIDR syntax [RFC 4632](https://tools.ietf.org/html/4632). Some
+     * images (for example, Windows base images) contain artifacts whose
+     * distribution is restricted by license. When these images are pushed to a
+     * registry, restricted artifacts are not included. This configuration
+     * override this behavior, and enables the daemon to push nondistributable
+     * artifacts to all registries whose resolved IP address is within the
+     * subnet described by the CIDR syntax. This option is useful when pushing
+     * images containing nondistributable artifacts to a registry on an
+     * air-gapped network so hosts on that network can pull the images without
+     * connecting to another server. > **Warning**: Nondistributable artifacts
+     * typically have restrictions > on how and where they can be distributed
+     * and shared. Only use this > feature to push artifacts to private
+     * registries and ensure that you > are in compliance with any terms that
+     * cover redistributing > nondistributable artifacts.
+     */
+    allowNondistributableArtifactsCIDRs?: Array<string>;
+    /**
+     * List of registry hostnames to which nondistributable artifacts can be
+     * pushed, using the format `<hostname>[:<port>]` or `<IP
+     * address>[:<port>]`. Some images (for example, Windows base images)
+     * contain artifacts whose distribution is restricted by license. When these
+     * images are pushed to a registry, restricted artifacts are not included.
+     * This configuration override this behavior for the specified registries.
+     * This option is useful when pushing images containing nondistributable
+     * artifacts to a registry on an air-gapped network so hosts on that network
+     * can pull the images without connecting to another server. > **Warning**:
+     * Nondistributable artifacts typically have restrictions > on how and where
+     * they can be distributed and shared. Only use this > feature to push
+     * artifacts to private registries and ensure that you > are in compliance
+     * with any terms that cover redistributing > nondistributable artifacts.
+     */
+    allowNondistributableArtifactsHostnames?: Array<string>;
+    /**
+     * List of IP ranges of insecure registries, using the CIDR syntax ([RFC
+     * 4632](https://tools.ietf.org/html/4632)). Insecure registries accept
+     * un-encrypted (HTTP) and/or untrusted (HTTPS with certificates from
+     * unknown CAs) communication. By default, local registries (`127.0.0.0/8`)
+     * are configured as insecure. All other registries are secure.
+     * Communicating with an insecure registry is not possible if the daemon
+     * assumes that registry is secure. This configuration override this
+     * behavior, insecure communication with registries whose resolved IP
+     * address is within the subnet described by the CIDR syntax. Registries can
+     * also be marked insecure by hostname. Those registries are listed under
+     * `IndexConfigs` and have their `Secure` field set to `false`. >
+     * **Warning**: Using this option can be useful when running a local >
+     * registry, but introduces security vulnerabilities. This option > should
+     * therefore ONLY be used for testing purposes. For increased > security,
+     * users should add their CA to their system's list of trusted > CAs instead
+     * of enabling this option.
+     */
+    insecureRegistryCIDRs?: Array<string>;
+    indexConfigs?: { [key: string]: IndexInfo };
+    /**
+     * List of registry URLs that act as a mirror for the official (`docker.io`)
+     * registry.
+     */
+    mirrors?: Array<string>;
 }
 
 /**
@@ -2363,150 +2363,150 @@ export interface RegistryServiceConfig {
  * requested by a task.
  */
 export interface ResourceObject {
-  nanoCPUs?: number;
-  memoryBytes?: number;
-  genericResources?: GenericResources;
+    nanoCPUs?: number;
+    memoryBytes?: number;
+    genericResources?: GenericResources;
 }
 
 /** A container's resources (cgroups config, ulimits, etc) */
 export interface Resources {
-  /**
-   * An integer value representing this container's relative CPU weight versus
-   * other containers.
-   */
-  cpuShares?: number;
-  /** Memory limit in bytes. */
-  memory?: number;
-  /**
-   * Path to `cgroups` under which the container's `cgroup` is created. If the
-   * path is not absolute, the path is considered to be relative to the
-   * `cgroups` path of the init process. Cgroups are created if they do not
-   * already exist.
-   */
-  cgroupParent?: string;
-  /** Block IO weight (relative weight). */
-  blkioWeight?: number;
-  /**
-   * Block IO weight (relative device weight) in the form: `[{\"Path\":
-   * \"device_path\", \"Weight\": weight}]`
-   */
-  blkioWeightDevice?: Array<ResourcesBlkioWeightDevice>;
-  /**
-   * Limit read rate (bytes per second) from a device, in the form:
-   * `[{\"Path\": \"device_path\", \"Rate\": rate}]`
-   */
-  blkioDeviceReadBps?: Array<ThrottleDevice>;
-  /**
-   * Limit write rate (bytes per second) to a device, in the form:
-   * `[{\"Path\": \"device_path\", \"Rate\": rate}]`
-   */
-  blkioDeviceWriteBps?: Array<ThrottleDevice>;
-  /**
-   * Limit read rate (IO per second) from a device, in the form: `[{\"Path\":
-   * \"device_path\", \"Rate\": rate}]`
-   */
-  blkioDeviceReadIOps?: Array<ThrottleDevice>;
-  /**
-   * Limit write rate (IO per second) to a device, in the form: `[{\"Path\":
-   * \"device_path\", \"Rate\": rate}]`
-   */
-  blkioDeviceWriteIOps?: Array<ThrottleDevice>;
-  /** The length of a CPU period in microseconds. */
-  cpuPeriod?: number;
-  /** Microseconds of CPU time that the container can get in a CPU period. */
-  cpuQuota?: number;
-  /**
-   * The length of a CPU real-time period in microseconds. Set to 0 to
-   * allocate no time allocated to real-time tasks.
-   */
-  cpuRealtimePeriod?: number;
-  /**
-   * The length of a CPU real-time runtime in microseconds. Set to 0 to
-   * allocate no time allocated to real-time tasks.
-   */
-  cpuRealtimeRuntime?: number;
-  /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
-  cpusetCpus?: string;
-  /**
-   * Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
-   * effective on NUMA systems.
-   */
-  cpusetMems?: string;
-  /** A list of devices to add to the container. */
-  devices?: Array<DeviceMapping>;
-  /** A list of cgroup rules to apply to the container */
-  deviceCgroupRules?: Array<string>;
-  /** A list of requests for devices to be sent to device drivers. */
-  deviceRequests?: Array<DeviceRequest>;
-  /**
-   * Hard limit for kernel TCP buffer memory (in bytes). Depending on the OCI
-   * runtime in use, this option may be ignored. It is no longer supported by
-   * the default (runc) runtime. This field is omitted when empty.
-   */
-  kernelMemoryTCP?: number;
-  /** Memory soft limit in bytes. */
-  memoryReservation?: number;
-  /** Total memory limit (memory + swap). Set as `-1` to enable unlimited swap. */
-  memorySwap?: number;
-  /**
-   * Tune a container's memory swappiness behavior. Accepts an integer between
-   * 0 and 100.
-   */
-  memorySwappiness?: number;
-  /** CPU quota in units of 10<sup>-9</sup> CPUs. */
-  nanoCpus?: number;
-  /** Disable OOM Killer for the container. */
-  oomKillDisable?: boolean;
-  /**
-   * Run an init inside the container that forwards signals and reaps
-   * processes. This field is omitted if empty, and the default (as configured
-   * on the daemon) is used.
-   */
-  init?: boolean;
-  /**
-   * Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
-   * to not change.
-   */
-  pidsLimit?: number;
-  /**
-   * A list of resource limits to set in the container. For example:
-   * `{\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048}`
-   */
-  ulimits?: Array<ResourcesUlimits>;
-  /**
-   * The number of usable CPUs (Windows only). On Windows Server containers,
-   * the processor resource controls are mutually exclusive. The order of
-   * precedence is `CPUCount` first, then `CPUShares`, and `CPUPercent` last.
-   */
-  cpuCount?: number;
-  /**
-   * The usable percentage of the available CPUs (Windows only). On Windows
-   * Server containers, the processor resource controls are mutually
-   * exclusive. The order of precedence is `CPUCount` first, then `CPUShares`,
-   * and `CPUPercent` last.
-   */
-  cpuPercent?: number;
-  /** Maximum IOps for the container system drive (Windows only) */
-  iOMaximumIOps?: number;
-  /**
-   * Maximum IO in bytes per second for the container system drive (Windows
-   * only).
-   */
-  iOMaximumBandwidth?: number;
+    /**
+     * An integer value representing this container's relative CPU weight versus
+     * other containers.
+     */
+    cpuShares?: number;
+    /** Memory limit in bytes. */
+    memory?: number;
+    /**
+     * Path to `cgroups` under which the container's `cgroup` is created. If the
+     * path is not absolute, the path is considered to be relative to the
+     * `cgroups` path of the init process. Cgroups are created if they do not
+     * already exist.
+     */
+    cgroupParent?: string;
+    /** Block IO weight (relative weight). */
+    blkioWeight?: number;
+    /**
+     * Block IO weight (relative device weight) in the form: `[{\"Path\":
+     * \"device_path\", \"Weight\": weight}]`
+     */
+    blkioWeightDevice?: Array<ResourcesBlkioWeightDevice>;
+    /**
+     * Limit read rate (bytes per second) from a device, in the form:
+     * `[{\"Path\": \"device_path\", \"Rate\": rate}]`
+     */
+    blkioDeviceReadBps?: Array<ThrottleDevice>;
+    /**
+     * Limit write rate (bytes per second) to a device, in the form:
+     * `[{\"Path\": \"device_path\", \"Rate\": rate}]`
+     */
+    blkioDeviceWriteBps?: Array<ThrottleDevice>;
+    /**
+     * Limit read rate (IO per second) from a device, in the form: `[{\"Path\":
+     * \"device_path\", \"Rate\": rate}]`
+     */
+    blkioDeviceReadIOps?: Array<ThrottleDevice>;
+    /**
+     * Limit write rate (IO per second) to a device, in the form: `[{\"Path\":
+     * \"device_path\", \"Rate\": rate}]`
+     */
+    blkioDeviceWriteIOps?: Array<ThrottleDevice>;
+    /** The length of a CPU period in microseconds. */
+    cpuPeriod?: number;
+    /** Microseconds of CPU time that the container can get in a CPU period. */
+    cpuQuota?: number;
+    /**
+     * The length of a CPU real-time period in microseconds. Set to 0 to
+     * allocate no time allocated to real-time tasks.
+     */
+    cpuRealtimePeriod?: number;
+    /**
+     * The length of a CPU real-time runtime in microseconds. Set to 0 to
+     * allocate no time allocated to real-time tasks.
+     */
+    cpuRealtimeRuntime?: number;
+    /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
+    cpusetCpus?: string;
+    /**
+     * Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
+     * effective on NUMA systems.
+     */
+    cpusetMems?: string;
+    /** A list of devices to add to the container. */
+    devices?: Array<DeviceMapping>;
+    /** A list of cgroup rules to apply to the container */
+    deviceCgroupRules?: Array<string>;
+    /** A list of requests for devices to be sent to device drivers. */
+    deviceRequests?: Array<DeviceRequest>;
+    /**
+     * Hard limit for kernel TCP buffer memory (in bytes). Depending on the OCI
+     * runtime in use, this option may be ignored. It is no longer supported by
+     * the default (runc) runtime. This field is omitted when empty.
+     */
+    kernelMemoryTCP?: number;
+    /** Memory soft limit in bytes. */
+    memoryReservation?: number;
+    /** Total memory limit (memory + swap). Set as `-1` to enable unlimited swap. */
+    memorySwap?: number;
+    /**
+     * Tune a container's memory swappiness behavior. Accepts an integer between
+     * 0 and 100.
+     */
+    memorySwappiness?: number;
+    /** CPU quota in units of 10<sup>-9</sup> CPUs. */
+    nanoCpus?: number;
+    /** Disable OOM Killer for the container. */
+    oomKillDisable?: boolean;
+    /**
+     * Run an init inside the container that forwards signals and reaps
+     * processes. This field is omitted if empty, and the default (as configured
+     * on the daemon) is used.
+     */
+    init?: boolean;
+    /**
+     * Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
+     * to not change.
+     */
+    pidsLimit?: number;
+    /**
+     * A list of resource limits to set in the container. For example:
+     * `{\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048}`
+     */
+    ulimits?: Array<ResourcesUlimits>;
+    /**
+     * The number of usable CPUs (Windows only). On Windows Server containers,
+     * the processor resource controls are mutually exclusive. The order of
+     * precedence is `CPUCount` first, then `CPUShares`, and `CPUPercent` last.
+     */
+    cpuCount?: number;
+    /**
+     * The usable percentage of the available CPUs (Windows only). On Windows
+     * Server containers, the processor resource controls are mutually
+     * exclusive. The order of precedence is `CPUCount` first, then `CPUShares`,
+     * and `CPUPercent` last.
+     */
+    cpuPercent?: number;
+    /** Maximum IOps for the container system drive (Windows only) */
+    iOMaximumIOps?: number;
+    /**
+     * Maximum IO in bytes per second for the container system drive (Windows
+     * only).
+     */
+    iOMaximumBandwidth?: number;
 }
 
 export interface ResourcesBlkioWeightDevice {
-  path?: string;
-  weight?: number;
+    path?: string;
+    weight?: number;
 }
 
 export interface ResourcesUlimits {
-  /** Name of ulimit */
-  name?: string;
-  /** Soft limit */
-  soft?: number;
-  /** Hard limit */
-  hard?: number;
+    /** Name of ulimit */
+    name?: string;
+    /** Soft limit */
+    soft?: number;
+    /** Hard limit */
+    hard?: number;
 }
 
 /**
@@ -2515,25 +2515,25 @@ export interface ResourcesUlimits {
  * 100ms) is added before each restart to prevent flooding the server.
  */
 export interface RestartPolicy {
-  /**
-   * - Empty string means not to restart - `no` Do not automatically restart -
-   *   `always` Always restart - `unless-stopped` Restart always except when
-   *   the user has manually stopped the container - `on-failure` Restart only
-   *   when the container exit code is non-zero
-   */
-  name?: RestartPolicy.NameEnum;
-  /** If `on-failure` is used, the number of times to retry before giving up. */
-  maximumRetryCount?: number;
+    /**
+     * - Empty string means not to restart - `no` Do not automatically restart -
+     *   `always` Always restart - `unless-stopped` Restart always except when
+     *   the user has manually stopped the container - `on-failure` Restart only
+     *   when the container exit code is non-zero
+     */
+    name?: RestartPolicy.NameEnum;
+    /** If `on-failure` is used, the number of times to retry before giving up. */
+    maximumRetryCount?: number;
 }
 
 export namespace RestartPolicy {
-  export enum NameEnum {
-    Empty = "",
-    No = "no",
-    Always = "always",
-    UnlessStopped = "unless-stopped",
-    OnFailure = "on-failure",
-  }
+    export enum NameEnum {
+        Empty = "",
+        No = "no",
+        Always = "always",
+        UnlessStopped = "unless-stopped",
+        OnFailure = "on-failure",
+    }
 }
 
 /**
@@ -2543,52 +2543,52 @@ export namespace RestartPolicy {
  * act as an interface to the Linux kernel namespaces, cgroups, and SELinux.
  */
 export interface Runtime {
-  /**
-   * Name and, optional, path, of the OCI executable binary. If the path is
-   * omitted, the daemon searches the host's `$PATH` for the binary and uses
-   * the first result.
-   */
-  path?: string;
-  /** List of command-line arguments to pass to the runtime when invoked. */
-  runtimeArgs?: Array<string>;
+    /**
+     * Name and, optional, path, of the OCI executable binary. If the path is
+     * omitted, the daemon searches the host's `$PATH` for the binary and uses
+     * the first result.
+     */
+    path?: string;
+    /** List of command-line arguments to pass to the runtime when invoked. */
+    runtimeArgs?: Array<string>;
 }
 
 export interface Secret {
-  ID?: string;
-  version?: ObjectVersion;
-  createdAt?: string;
-  updatedAt?: string;
-  spec?: SecretSpec;
+    ID?: string;
+    version?: ObjectVersion;
+    createdAt?: string;
+    updatedAt?: string;
+    spec?: SecretSpec;
 }
 
 export interface SecretSpec {
-  /** User-defined name of the secret. */
-  name?: string;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  /**
-   * Base64-url-safe-encoded ([RFC
-   * 4648](https://tools.ietf.org/html/rfc4648#section-5)) data to store as
-   * secret. This field is only used to _create_ a secret, and is not returned
-   * by other endpoints.
-   */
-  data?: string;
-  driver?: Driver;
-  templating?: Driver;
+    /** User-defined name of the secret. */
+    name?: string;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    /**
+     * Base64-url-safe-encoded ([RFC
+     * 4648](https://tools.ietf.org/html/rfc4648#section-5)) data to store as
+     * secret. This field is only used to _create_ a secret, and is not returned
+     * by other endpoints.
+     */
+    data?: string;
+    driver?: Driver;
+    templating?: Driver;
 }
 
 export interface SecretsCreateBody extends SecretSpec {}
 
 export interface Service {
-  ID?: string;
-  version?: ObjectVersion;
-  createdAt?: string;
-  updatedAt?: string;
-  spec?: ServiceSpec;
-  endpoint?: ServiceEndpoint;
-  updateStatus?: ServiceUpdateStatus;
-  serviceStatus?: ServiceServiceStatus;
-  jobStatus?: ServiceJobStatus;
+    ID?: string;
+    version?: ObjectVersion;
+    createdAt?: string;
+    updatedAt?: string;
+    spec?: ServiceSpec;
+    endpoint?: ServiceEndpoint;
+    updateStatus?: ServiceUpdateStatus;
+    serviceStatus?: ServiceServiceStatus;
+    jobStatus?: ServiceJobStatus;
 }
 
 /**
@@ -2596,24 +2596,24 @@ export interface Service {
  * service.
  */
 export interface ServiceCreateResponse {
-  /** The ID of the created service. */
-  ID?: string;
-  /**
-   * Optional warning message. FIXME(thaJeztah): this should have "omitempty"
-   * in the generated type.
-   */
-  warnings?: Array<string>;
+    /** The ID of the created service. */
+    ID?: string;
+    /**
+     * Optional warning message. FIXME(thaJeztah): this should have "omitempty"
+     * in the generated type.
+     */
+    warnings?: Array<string>;
 }
 
 export interface ServiceEndpoint {
-  spec?: EndpointSpec;
-  ports?: Array<EndpointPortConfig>;
-  virtualIPs?: Array<ServiceEndpointVirtualIPs>;
+    spec?: EndpointSpec;
+    ports?: Array<EndpointPortConfig>;
+    virtualIPs?: Array<ServiceEndpointVirtualIPs>;
 }
 
 export interface ServiceEndpointVirtualIPs {
-  networkID?: string;
-  addr?: string;
+    networkID?: string;
+    addr?: string;
 }
 
 /**
@@ -2623,9 +2623,9 @@ export interface ServiceEndpointVirtualIPs {
  * with an update request.
  */
 export interface ServiceJobStatus {
-  jobIteration?: ObjectVersion;
-  /** The last time, as observed by the server, that this job was started. */
-  lastExecution?: string;
+    jobIteration?: ObjectVersion;
+    /** The last time, as observed by the server, that this job was started. */
+    lastExecution?: string;
 }
 
 /**
@@ -2633,57 +2633,57 @@ export interface ServiceJobStatus {
  * ServiceList operation.
  */
 export interface ServiceServiceStatus {
-  /** The number of tasks for the service currently in the Running state. */
-  runningTasks?: number;
-  /**
-   * The number of tasks for the service desired to be running. For replicated
-   * services, this is the replica count from the service spec. For global
-   * services, this is computed by taking count of all tasks for the service
-   * with a Desired State other than Shutdown.
-   */
-  desiredTasks?: number;
-  /**
-   * The number of tasks for a job that are in the Completed state. This field
-   * must be cross-referenced with the service type, as the value of 0 may
-   * mean the service is not in a job mode, or it may mean the job-mode
-   * service has no tasks yet Completed.
-   */
-  completedTasks?: number;
+    /** The number of tasks for the service currently in the Running state. */
+    runningTasks?: number;
+    /**
+     * The number of tasks for the service desired to be running. For replicated
+     * services, this is the replica count from the service spec. For global
+     * services, this is computed by taking count of all tasks for the service
+     * with a Desired State other than Shutdown.
+     */
+    desiredTasks?: number;
+    /**
+     * The number of tasks for a job that are in the Completed state. This field
+     * must be cross-referenced with the service type, as the value of 0 may
+     * mean the service is not in a job mode, or it may mean the job-mode
+     * service has no tasks yet Completed.
+     */
+    completedTasks?: number;
 }
 
 /** User modifiable configuration for a service. */
 export interface ServiceSpec {
-  /** Name of the service. */
-  name?: string;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  taskTemplate?: TaskSpec;
-  mode?: ServiceSpecMode;
-  updateConfig?: ServiceSpecUpdateConfig;
-  rollbackConfig?: ServiceSpecRollbackConfig;
-  /**
-   * Specifies which networks the service should attach to. Deprecated: This
-   * field is deprecated since v1.44. The Networks field in TaskSpec should be
-   * used instead.
-   */
-  networks?: Array<NetworkAttachmentConfig>;
-  endpointSpec?: EndpointSpec;
+    /** Name of the service. */
+    name?: string;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    taskTemplate?: TaskSpec;
+    mode?: ServiceSpecMode;
+    updateConfig?: ServiceSpecUpdateConfig;
+    rollbackConfig?: ServiceSpecRollbackConfig;
+    /**
+     * Specifies which networks the service should attach to. Deprecated: This
+     * field is deprecated since v1.44. The Networks field in TaskSpec should be
+     * used instead.
+     */
+    networks?: Array<NetworkAttachmentConfig>;
+    endpointSpec?: EndpointSpec;
 }
 
 /** Scheduling mode for the service. */
 export interface ServiceSpecMode {
-  replicated?: ServiceSpecModeReplicated;
-  global?: any;
-  replicatedJob?: ServiceSpecModeReplicatedJob;
-  /**
-   * The mode used for services which run a task to the completed state on
-   * each valid node.
-   */
-  globalJob?: any;
+    replicated?: ServiceSpecModeReplicated;
+    global?: any;
+    replicatedJob?: ServiceSpecModeReplicatedJob;
+    /**
+     * The mode used for services which run a task to the completed state on
+     * each valid node.
+     */
+    globalJob?: any;
 }
 
 export interface ServiceSpecModeReplicated {
-  replicas?: number;
+    replicas?: number;
 }
 
 /**
@@ -2691,432 +2691,432 @@ export interface ServiceSpecModeReplicated {
  * completed state.
  */
 export interface ServiceSpecModeReplicatedJob {
-  /** The maximum number of replicas to run simultaneously. */
-  maxConcurrent?: number;
-  /**
-   * The total number of replicas desired to reach the Completed state. If
-   * unset, will default to the value of `MaxConcurrent`
-   */
-  totalCompletions?: number;
+    /** The maximum number of replicas to run simultaneously. */
+    maxConcurrent?: number;
+    /**
+     * The total number of replicas desired to reach the Completed state. If
+     * unset, will default to the value of `MaxConcurrent`
+     */
+    totalCompletions?: number;
 }
 
 /** Specification for the rollback strategy of the service. */
 export interface ServiceSpecRollbackConfig {
-  /**
-   * Maximum number of tasks to be rolled back in one iteration (0 means
-   * unlimited parallelism).
-   */
-  parallelism?: number;
-  /** Amount of time between rollback iterations, in nanoseconds. */
-  delay?: number;
-  /**
-   * Action to take if an rolled back task fails to run, or stops running
-   * during the rollback.
-   */
-  failureAction?: ServiceSpecRollbackConfig.FailureActionEnum;
-  /**
-   * Amount of time to monitor each rolled back task for failures, in
-   * nanoseconds.
-   */
-  monitor?: number;
-  /**
-   * The fraction of tasks that may fail during a rollback before the failure
-   * action is invoked, specified as a floating point number between 0 and 1.
-   */
-  maxFailureRatio?: number;
-  /**
-   * The order of operations when rolling back a task. Either the old task is
-   * shut down before the new task is started, or the new task is started
-   * before the old task is shut down.
-   */
-  order?: ServiceSpecRollbackConfig.OrderEnum;
+    /**
+     * Maximum number of tasks to be rolled back in one iteration (0 means
+     * unlimited parallelism).
+     */
+    parallelism?: number;
+    /** Amount of time between rollback iterations, in nanoseconds. */
+    delay?: number;
+    /**
+     * Action to take if an rolled back task fails to run, or stops running
+     * during the rollback.
+     */
+    failureAction?: ServiceSpecRollbackConfig.FailureActionEnum;
+    /**
+     * Amount of time to monitor each rolled back task for failures, in
+     * nanoseconds.
+     */
+    monitor?: number;
+    /**
+     * The fraction of tasks that may fail during a rollback before the failure
+     * action is invoked, specified as a floating point number between 0 and 1.
+     */
+    maxFailureRatio?: number;
+    /**
+     * The order of operations when rolling back a task. Either the old task is
+     * shut down before the new task is started, or the new task is started
+     * before the old task is shut down.
+     */
+    order?: ServiceSpecRollbackConfig.OrderEnum;
 }
 
 export namespace ServiceSpecRollbackConfig {
-  export enum FailureActionEnum {
-    Continue = "continue",
-    Pause = "pause",
-  }
-  export enum OrderEnum {
-    StopFirst = "stop-first",
-    StartFirst = "start-first",
-  }
+    export enum FailureActionEnum {
+        Continue = "continue",
+        Pause = "pause",
+    }
+    export enum OrderEnum {
+        StopFirst = "stop-first",
+        StartFirst = "start-first",
+    }
 }
 
 /** Specification for the update strategy of the service. */
 export interface ServiceSpecUpdateConfig {
-  /**
-   * Maximum number of tasks to be updated in one iteration (0 means unlimited
-   * parallelism).
-   */
-  parallelism?: number;
-  /** Amount of time between updates, in nanoseconds. */
-  delay?: number;
-  /**
-   * Action to take if an updated task fails to run, or stops running during
-   * the update.
-   */
-  failureAction?: ServiceSpecUpdateConfig.FailureActionEnum;
-  /** Amount of time to monitor each updated task for failures, in nanoseconds. */
-  monitor?: number;
-  /**
-   * The fraction of tasks that may fail during an update before the failure
-   * action is invoked, specified as a floating point number between 0 and 1.
-   */
-  maxFailureRatio?: number;
-  /**
-   * The order of operations when rolling out an updated task. Either the old
-   * task is shut down before the new task is started, or the new task is
-   * started before the old task is shut down.
-   */
-  order?: ServiceSpecUpdateConfig.OrderEnum;
+    /**
+     * Maximum number of tasks to be updated in one iteration (0 means unlimited
+     * parallelism).
+     */
+    parallelism?: number;
+    /** Amount of time between updates, in nanoseconds. */
+    delay?: number;
+    /**
+     * Action to take if an updated task fails to run, or stops running during
+     * the update.
+     */
+    failureAction?: ServiceSpecUpdateConfig.FailureActionEnum;
+    /** Amount of time to monitor each updated task for failures, in nanoseconds. */
+    monitor?: number;
+    /**
+     * The fraction of tasks that may fail during an update before the failure
+     * action is invoked, specified as a floating point number between 0 and 1.
+     */
+    maxFailureRatio?: number;
+    /**
+     * The order of operations when rolling out an updated task. Either the old
+     * task is shut down before the new task is started, or the new task is
+     * started before the old task is shut down.
+     */
+    order?: ServiceSpecUpdateConfig.OrderEnum;
 }
 
 export namespace ServiceSpecUpdateConfig {
-  export enum FailureActionEnum {
-    Continue = "continue",
-    Pause = "pause",
-    Rollback = "rollback",
-  }
-  export enum OrderEnum {
-    StopFirst = "stop-first",
-    StartFirst = "start-first",
-  }
+    export enum FailureActionEnum {
+        Continue = "continue",
+        Pause = "pause",
+        Rollback = "rollback",
+    }
+    export enum OrderEnum {
+        StopFirst = "stop-first",
+        StartFirst = "start-first",
+    }
 }
 
 export interface ServiceUpdateResponse {
-  /** Optional warning messages */
-  warnings?: Array<string>;
+    /** Optional warning messages */
+    warnings?: Array<string>;
 }
 
 /** The status of a service update. */
 export interface ServiceUpdateStatus {
-  state?: ServiceUpdateStatus.StateEnum;
-  startedAt?: string;
-  completedAt?: string;
-  message?: string;
+    state?: ServiceUpdateStatus.StateEnum;
+    startedAt?: string;
+    completedAt?: string;
+    message?: string;
 }
 
 export namespace ServiceUpdateStatus {
-  export enum StateEnum {
-    Updating = "updating",
-    Paused = "paused",
-    Completed = "completed",
-  }
+    export enum StateEnum {
+        Updating = "updating",
+        Paused = "paused",
+        Completed = "completed",
+    }
 }
 
 export interface ServicesCreateBody extends ServiceSpec {}
 
 export interface Swarm extends ClusterInfo {
-  joinTokens?: JoinTokens;
+    joinTokens?: JoinTokens;
 }
 
 /** Represents generic information about swarm. */
 export interface SwarmInfo {
-  /** Unique identifier of for this node in the swarm. */
-  nodeID?: string;
-  /** IP address at which this node can be reached by other nodes in the swarm. */
-  nodeAddr?: string;
-  localNodeState?: LocalNodeState;
-  controlAvailable?: boolean;
-  error?: string;
-  /** List of ID's and addresses of other managers in the swarm. */
-  remoteManagers?: Array<PeerNode>;
-  /** Total number of nodes in the swarm. */
-  nodes?: number;
-  /** Total number of managers in the swarm. */
-  managers?: number;
-  cluster?: ClusterInfo;
+    /** Unique identifier of for this node in the swarm. */
+    nodeID?: string;
+    /** IP address at which this node can be reached by other nodes in the swarm. */
+    nodeAddr?: string;
+    localNodeState?: LocalNodeState;
+    controlAvailable?: boolean;
+    error?: string;
+    /** List of ID's and addresses of other managers in the swarm. */
+    remoteManagers?: Array<PeerNode>;
+    /** Total number of nodes in the swarm. */
+    nodes?: number;
+    /** Total number of managers in the swarm. */
+    managers?: number;
+    cluster?: ClusterInfo;
 }
 
 export interface SwarmInitRequest {
-  /**
-   * Listen address used for inter-manager communication, as well as
-   * determining the networking interface used for the VXLAN Tunnel Endpoint
-   * (VTEP). This can either be an address/port combination in the form
-   * `192.168.1.1:4567`, or an interface followed by a port number, like
-   * `eth0:4567`. If the port number is omitted, the default swarm listening
-   * port is used.
-   */
-  listenAddr?: string;
-  /**
-   * Externally reachable address advertised to other nodes. This can either
-   * be an address/port combination in the form `192.168.1.1:4567`, or an
-   * interface followed by a port number, like `eth0:4567`. If the port number
-   * is omitted, the port number from the listen address is used. If
-   * `AdvertiseAddr` is not specified, it will be automatically detected when
-   * possible.
-   */
-  advertiseAddr?: string;
-  /**
-   * Address or interface to use for data path traffic (format:
-   * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
-   * `eth0`. If `DataPathAddr` is unspecified, the same address as
-   * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
-   * global scope network drivers will publish towards other nodes in order to
-   * reach the containers running on this node. Using this parameter it is
-   * possible to separate the container data traffic from the management
-   * traffic of the cluster.
-   */
-  dataPathAddr?: string;
-  /**
-   * DataPathPort specifies the data path port number for data traffic.
-   * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
-   * default port 4789 will be used.
-   */
-  dataPathPort?: number;
-  /**
-   * Default Address Pool specifies default subnet pools for global scope
-   * networks.
-   */
-  defaultAddrPool?: Array<string>;
-  /** Force creation of a new swarm. */
-  forceNewCluster?: boolean;
-  /**
-   * SubnetSize specifies the subnet size of the networks created from the
-   * default subnet pool.
-   */
-  subnetSize?: number;
-  spec?: SwarmSpec;
+    /**
+     * Listen address used for inter-manager communication, as well as
+     * determining the networking interface used for the VXLAN Tunnel Endpoint
+     * (VTEP). This can either be an address/port combination in the form
+     * `192.168.1.1:4567`, or an interface followed by a port number, like
+     * `eth0:4567`. If the port number is omitted, the default swarm listening
+     * port is used.
+     */
+    listenAddr?: string;
+    /**
+     * Externally reachable address advertised to other nodes. This can either
+     * be an address/port combination in the form `192.168.1.1:4567`, or an
+     * interface followed by a port number, like `eth0:4567`. If the port number
+     * is omitted, the port number from the listen address is used. If
+     * `AdvertiseAddr` is not specified, it will be automatically detected when
+     * possible.
+     */
+    advertiseAddr?: string;
+    /**
+     * Address or interface to use for data path traffic (format:
+     * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
+     * `eth0`. If `DataPathAddr` is unspecified, the same address as
+     * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
+     * global scope network drivers will publish towards other nodes in order to
+     * reach the containers running on this node. Using this parameter it is
+     * possible to separate the container data traffic from the management
+     * traffic of the cluster.
+     */
+    dataPathAddr?: string;
+    /**
+     * DataPathPort specifies the data path port number for data traffic.
+     * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
+     * default port 4789 will be used.
+     */
+    dataPathPort?: number;
+    /**
+     * Default Address Pool specifies default subnet pools for global scope
+     * networks.
+     */
+    defaultAddrPool?: Array<string>;
+    /** Force creation of a new swarm. */
+    forceNewCluster?: boolean;
+    /**
+     * SubnetSize specifies the subnet size of the networks created from the
+     * default subnet pool.
+     */
+    subnetSize?: number;
+    spec?: SwarmSpec;
 }
 
 export interface SwarmInitRequest1 {
-  /**
-   * Listen address used for inter-manager communication, as well as
-   * determining the networking interface used for the VXLAN Tunnel Endpoint
-   * (VTEP). This can either be an address/port combination in the form
-   * `192.168.1.1:4567`, or an interface followed by a port number, like
-   * `eth0:4567`. If the port number is omitted, the default swarm listening
-   * port is used.
-   */
-  listenAddr?: string;
-  /**
-   * Externally reachable address advertised to other nodes. This can either
-   * be an address/port combination in the form `192.168.1.1:4567`, or an
-   * interface followed by a port number, like `eth0:4567`. If the port number
-   * is omitted, the port number from the listen address is used. If
-   * `AdvertiseAddr` is not specified, it will be automatically detected when
-   * possible.
-   */
-  advertiseAddr?: string;
-  /**
-   * Address or interface to use for data path traffic (format:
-   * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
-   * `eth0`. If `DataPathAddr` is unspecified, the same address as
-   * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
-   * global scope network drivers will publish towards other nodes in order to
-   * reach the containers running on this node. Using this parameter it is
-   * possible to separate the container data traffic from the management
-   * traffic of the cluster.
-   */
-  dataPathAddr?: string;
-  /**
-   * DataPathPort specifies the data path port number for data traffic.
-   * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
-   * default port 4789 will be used.
-   */
-  dataPathPort?: number;
-  /**
-   * Default Address Pool specifies default subnet pools for global scope
-   * networks.
-   */
-  defaultAddrPool?: Array<string>;
-  /** Force creation of a new swarm. */
-  forceNewCluster?: boolean;
-  /**
-   * SubnetSize specifies the subnet size of the networks created from the
-   * default subnet pool.
-   */
-  subnetSize?: number;
-  spec?: SwarmSpec;
+    /**
+     * Listen address used for inter-manager communication, as well as
+     * determining the networking interface used for the VXLAN Tunnel Endpoint
+     * (VTEP). This can either be an address/port combination in the form
+     * `192.168.1.1:4567`, or an interface followed by a port number, like
+     * `eth0:4567`. If the port number is omitted, the default swarm listening
+     * port is used.
+     */
+    listenAddr?: string;
+    /**
+     * Externally reachable address advertised to other nodes. This can either
+     * be an address/port combination in the form `192.168.1.1:4567`, or an
+     * interface followed by a port number, like `eth0:4567`. If the port number
+     * is omitted, the port number from the listen address is used. If
+     * `AdvertiseAddr` is not specified, it will be automatically detected when
+     * possible.
+     */
+    advertiseAddr?: string;
+    /**
+     * Address or interface to use for data path traffic (format:
+     * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
+     * `eth0`. If `DataPathAddr` is unspecified, the same address as
+     * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
+     * global scope network drivers will publish towards other nodes in order to
+     * reach the containers running on this node. Using this parameter it is
+     * possible to separate the container data traffic from the management
+     * traffic of the cluster.
+     */
+    dataPathAddr?: string;
+    /**
+     * DataPathPort specifies the data path port number for data traffic.
+     * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
+     * default port 4789 will be used.
+     */
+    dataPathPort?: number;
+    /**
+     * Default Address Pool specifies default subnet pools for global scope
+     * networks.
+     */
+    defaultAddrPool?: Array<string>;
+    /** Force creation of a new swarm. */
+    forceNewCluster?: boolean;
+    /**
+     * SubnetSize specifies the subnet size of the networks created from the
+     * default subnet pool.
+     */
+    subnetSize?: number;
+    spec?: SwarmSpec;
 }
 
 export interface SwarmJoinRequest {
-  /**
-   * Listen address used for inter-manager communication if the node gets
-   * promoted to manager, as well as determining the networking interface used
-   * for the VXLAN Tunnel Endpoint (VTEP).
-   */
-  listenAddr?: string;
-  /**
-   * Externally reachable address advertised to other nodes. This can either
-   * be an address/port combination in the form `192.168.1.1:4567`, or an
-   * interface followed by a port number, like `eth0:4567`. If the port number
-   * is omitted, the port number from the listen address is used. If
-   * `AdvertiseAddr` is not specified, it will be automatically detected when
-   * possible.
-   */
-  advertiseAddr?: string;
-  /**
-   * Address or interface to use for data path traffic (format:
-   * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
-   * `eth0`. If `DataPathAddr` is unspecified, the same address as
-   * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
-   * global scope network drivers will publish towards other nodes in order to
-   * reach the containers running on this node. Using this parameter it is
-   * possible to separate the container data traffic from the management
-   * traffic of the cluster.
-   */
-  dataPathAddr?: string;
-  /** Addresses of manager nodes already participating in the swarm. */
-  remoteAddrs?: Array<string>;
-  /** Secret token for joining this swarm. */
-  joinToken?: string;
+    /**
+     * Listen address used for inter-manager communication if the node gets
+     * promoted to manager, as well as determining the networking interface used
+     * for the VXLAN Tunnel Endpoint (VTEP).
+     */
+    listenAddr?: string;
+    /**
+     * Externally reachable address advertised to other nodes. This can either
+     * be an address/port combination in the form `192.168.1.1:4567`, or an
+     * interface followed by a port number, like `eth0:4567`. If the port number
+     * is omitted, the port number from the listen address is used. If
+     * `AdvertiseAddr` is not specified, it will be automatically detected when
+     * possible.
+     */
+    advertiseAddr?: string;
+    /**
+     * Address or interface to use for data path traffic (format:
+     * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
+     * `eth0`. If `DataPathAddr` is unspecified, the same address as
+     * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
+     * global scope network drivers will publish towards other nodes in order to
+     * reach the containers running on this node. Using this parameter it is
+     * possible to separate the container data traffic from the management
+     * traffic of the cluster.
+     */
+    dataPathAddr?: string;
+    /** Addresses of manager nodes already participating in the swarm. */
+    remoteAddrs?: Array<string>;
+    /** Secret token for joining this swarm. */
+    joinToken?: string;
 }
 
 export interface SwarmJoinRequest1 {
-  /**
-   * Listen address used for inter-manager communication if the node gets
-   * promoted to manager, as well as determining the networking interface used
-   * for the VXLAN Tunnel Endpoint (VTEP).
-   */
-  listenAddr?: string;
-  /**
-   * Externally reachable address advertised to other nodes. This can either
-   * be an address/port combination in the form `192.168.1.1:4567`, or an
-   * interface followed by a port number, like `eth0:4567`. If the port number
-   * is omitted, the port number from the listen address is used. If
-   * `AdvertiseAddr` is not specified, it will be automatically detected when
-   * possible.
-   */
-  advertiseAddr?: string;
-  /**
-   * Address or interface to use for data path traffic (format:
-   * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
-   * `eth0`. If `DataPathAddr` is unspecified, the same address as
-   * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
-   * global scope network drivers will publish towards other nodes in order to
-   * reach the containers running on this node. Using this parameter it is
-   * possible to separate the container data traffic from the management
-   * traffic of the cluster.
-   */
-  dataPathAddr?: string;
-  /** Addresses of manager nodes already participating in the swarm. */
-  remoteAddrs?: Array<string>;
-  /** Secret token for joining this swarm. */
-  joinToken?: string;
+    /**
+     * Listen address used for inter-manager communication if the node gets
+     * promoted to manager, as well as determining the networking interface used
+     * for the VXLAN Tunnel Endpoint (VTEP).
+     */
+    listenAddr?: string;
+    /**
+     * Externally reachable address advertised to other nodes. This can either
+     * be an address/port combination in the form `192.168.1.1:4567`, or an
+     * interface followed by a port number, like `eth0:4567`. If the port number
+     * is omitted, the port number from the listen address is used. If
+     * `AdvertiseAddr` is not specified, it will be automatically detected when
+     * possible.
+     */
+    advertiseAddr?: string;
+    /**
+     * Address or interface to use for data path traffic (format:
+     * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
+     * `eth0`. If `DataPathAddr` is unspecified, the same address as
+     * `AdvertiseAddr` is used. The `DataPathAddr` specifies the address that
+     * global scope network drivers will publish towards other nodes in order to
+     * reach the containers running on this node. Using this parameter it is
+     * possible to separate the container data traffic from the management
+     * traffic of the cluster.
+     */
+    dataPathAddr?: string;
+    /** Addresses of manager nodes already participating in the swarm. */
+    remoteAddrs?: Array<string>;
+    /** Secret token for joining this swarm. */
+    joinToken?: string;
 }
 
 /** User modifiable swarm configuration. */
 export interface SwarmSpec {
-  /** Name of the swarm. */
-  name?: string;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  orchestration?: SwarmSpecOrchestration;
-  raft?: SwarmSpecRaft;
-  dispatcher?: SwarmSpecDispatcher;
-  cAConfig?: SwarmSpecCAConfig;
-  encryptionConfig?: SwarmSpecEncryptionConfig;
-  taskDefaults?: SwarmSpecTaskDefaults;
+    /** Name of the swarm. */
+    name?: string;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    orchestration?: SwarmSpecOrchestration;
+    raft?: SwarmSpecRaft;
+    dispatcher?: SwarmSpecDispatcher;
+    cAConfig?: SwarmSpecCAConfig;
+    encryptionConfig?: SwarmSpecEncryptionConfig;
+    taskDefaults?: SwarmSpecTaskDefaults;
 }
 
 /** CA configuration. */
 export interface SwarmSpecCAConfig {
-  /** The duration node certificates are issued for. */
-  nodeCertExpiry?: number;
-  /**
-   * Configuration for forwarding signing requests to an external certificate
-   * authority.
-   */
-  externalCAs?: Array<SwarmSpecCAConfigExternalCAs>;
-  /**
-   * The desired signing CA certificate for all swarm node TLS leaf
-   * certificates, in PEM format.
-   */
-  signingCACert?: string;
-  /**
-   * The desired signing CA key for all swarm node TLS leaf certificates, in
-   * PEM format.
-   */
-  signingCAKey?: string;
-  /**
-   * An integer whose purpose is to force swarm to generate a new signing CA
-   * certificate and key, if none have been specified in `SigningCACert` and
-   * `SigningCAKey`
-   */
-  forceRotate?: number;
+    /** The duration node certificates are issued for. */
+    nodeCertExpiry?: number;
+    /**
+     * Configuration for forwarding signing requests to an external certificate
+     * authority.
+     */
+    externalCAs?: Array<SwarmSpecCAConfigExternalCAs>;
+    /**
+     * The desired signing CA certificate for all swarm node TLS leaf
+     * certificates, in PEM format.
+     */
+    signingCACert?: string;
+    /**
+     * The desired signing CA key for all swarm node TLS leaf certificates, in
+     * PEM format.
+     */
+    signingCAKey?: string;
+    /**
+     * An integer whose purpose is to force swarm to generate a new signing CA
+     * certificate and key, if none have been specified in `SigningCACert` and
+     * `SigningCAKey`
+     */
+    forceRotate?: number;
 }
 
 export interface SwarmSpecCAConfigExternalCAs {
-  /**
-   * Protocol for communication with the external CA (currently only `cfssl`
-   * is supported).
-   */
-  protocol?: SwarmSpecCAConfigExternalCAs.ProtocolEnum;
-  /** URL where certificate signing requests should be sent. */
-  URL?: string;
-  /**
-   * An object with key/value pairs that are interpreted as protocol-specific
-   * options for the external CA driver.
-   */
-  options?: { [key: string]: string };
-  /**
-   * The root CA certificate (in PEM format) this external CA uses to issue
-   * TLS certificates (assumed to be to the current swarm root CA certificate
-   * if not provided).
-   */
-  cACert?: string;
+    /**
+     * Protocol for communication with the external CA (currently only `cfssl`
+     * is supported).
+     */
+    protocol?: SwarmSpecCAConfigExternalCAs.ProtocolEnum;
+    /** URL where certificate signing requests should be sent. */
+    URL?: string;
+    /**
+     * An object with key/value pairs that are interpreted as protocol-specific
+     * options for the external CA driver.
+     */
+    options?: { [key: string]: string };
+    /**
+     * The root CA certificate (in PEM format) this external CA uses to issue
+     * TLS certificates (assumed to be to the current swarm root CA certificate
+     * if not provided).
+     */
+    cACert?: string;
 }
 
 export namespace SwarmSpecCAConfigExternalCAs {
-  export enum ProtocolEnum {
-    Cfssl = "cfssl",
-  }
+    export enum ProtocolEnum {
+        Cfssl = "cfssl",
+    }
 }
 
 /** Dispatcher configuration. */
 export interface SwarmSpecDispatcher {
-  /** The delay for an agent to send a heartbeat to the dispatcher. */
-  heartbeatPeriod?: number;
+    /** The delay for an agent to send a heartbeat to the dispatcher. */
+    heartbeatPeriod?: number;
 }
 
 /** Parameters related to encryption-at-rest. */
 export interface SwarmSpecEncryptionConfig {
-  /** If set, generate a key and use it to lock data stored on the managers. */
-  autoLockManagers?: boolean;
+    /** If set, generate a key and use it to lock data stored on the managers. */
+    autoLockManagers?: boolean;
 }
 
 /** Orchestration configuration. */
 export interface SwarmSpecOrchestration {
-  /**
-   * The number of historic tasks to keep per instance or node. If negative,
-   * never remove completed or failed tasks.
-   */
-  taskHistoryRetentionLimit?: number;
+    /**
+     * The number of historic tasks to keep per instance or node. If negative,
+     * never remove completed or failed tasks.
+     */
+    taskHistoryRetentionLimit?: number;
 }
 
 /** Raft configuration. */
 export interface SwarmSpecRaft {
-  /** The number of log entries between snapshots. */
-  snapshotInterval?: number;
-  /** The number of snapshots to keep beyond the current snapshot. */
-  keepOldSnapshots?: number;
-  /**
-   * The number of log entries to keep around to sync up slow followers after
-   * a snapshot is created.
-   */
-  logEntriesForSlowFollowers?: number;
-  /**
-   * The number of ticks that a follower will wait for a message from the
-   * leader before becoming a candidate and starting an election.
-   * `ElectionTick` must be greater than `HeartbeatTick`. A tick currently
-   * defaults to one second, so these translate directly to seconds currently,
-   * but this is NOT guaranteed.
-   */
-  electionTick?: number;
-  /**
-   * The number of ticks between heartbeats. Every HeartbeatTick ticks, the
-   * leader will send a heartbeat to the followers. A tick currently defaults
-   * to one second, so these translate directly to seconds currently, but this
-   * is NOT guaranteed.
-   */
-  heartbeatTick?: number;
+    /** The number of log entries between snapshots. */
+    snapshotInterval?: number;
+    /** The number of snapshots to keep beyond the current snapshot. */
+    keepOldSnapshots?: number;
+    /**
+     * The number of log entries to keep around to sync up slow followers after
+     * a snapshot is created.
+     */
+    logEntriesForSlowFollowers?: number;
+    /**
+     * The number of ticks that a follower will wait for a message from the
+     * leader before becoming a candidate and starting an election.
+     * `ElectionTick` must be greater than `HeartbeatTick`. A tick currently
+     * defaults to one second, so these translate directly to seconds currently,
+     * but this is NOT guaranteed.
+     */
+    electionTick?: number;
+    /**
+     * The number of ticks between heartbeats. Every HeartbeatTick ticks, the
+     * leader will send a heartbeat to the followers. A tick currently defaults
+     * to one second, so these translate directly to seconds currently, but this
+     * is NOT guaranteed.
+     */
+    heartbeatTick?: number;
 }
 
 /** Defaults for creating tasks in this cluster. */
 export interface SwarmSpecTaskDefaults {
-  logDriver?: SwarmSpecTaskDefaultsLogDriver;
+    logDriver?: SwarmSpecTaskDefaultsLogDriver;
 }
 
 /**
@@ -3125,382 +3125,382 @@ export interface SwarmSpecTaskDefaults {
  * continue to use their previously configured log driver until recreated.
  */
 export interface SwarmSpecTaskDefaultsLogDriver {
-  /** The log driver to use as a default for new tasks. */
-  name?: string;
-  /**
-   * Driver-specific options for the selectd log driver, specified as
-   * key/value pairs.
-   */
-  options?: { [key: string]: string };
+    /** The log driver to use as a default for new tasks. */
+    name?: string;
+    /**
+     * Driver-specific options for the selectd log driver, specified as
+     * key/value pairs.
+     */
+    options?: { [key: string]: string };
 }
 
 export interface SwarmUnlockRequest {
-  /** The swarm's unlock key. */
-  unlockKey?: string;
+    /** The swarm's unlock key. */
+    unlockKey?: string;
 }
 
 export interface SystemAuthResponse {
-  /** The status of the authentication */
-  status: string;
-  /** An opaque token used to authenticate a user after a successful login */
-  identityToken?: string;
+    /** The status of the authentication */
+    status: string;
+    /** An opaque token used to authenticate a user after a successful login */
+    identityToken?: string;
 }
 
 export interface SystemDataUsageResponse {
-  layersSize?: number;
-  images?: Array<ImageSummary>;
-  containers?: Array<ContainerSummary>;
-  volumes?: Array<Volume>;
-  buildCache?: Array<BuildCache>;
+    layersSize?: number;
+    images?: Array<ImageSummary>;
+    containers?: Array<ContainerSummary>;
+    volumes?: Array<Volume>;
+    buildCache?: Array<BuildCache>;
 }
 
 export interface SystemInfo {
-  /**
-   * Unique identifier of the daemon. <p><br /></p> > **Note**: The format of
-   * the ID itself is not part of the API, and > should not be considered
-   * stable.
-   */
-  ID?: string;
-  /** Total number of containers on the host. */
-  containers?: number;
-  /** Number of containers with status `\"running\"`. */
-  containersRunning?: number;
-  /** Number of containers with status `\"paused\"`. */
-  containersPaused?: number;
-  /** Number of containers with status `\"stopped\"`. */
-  containersStopped?: number;
-  /**
-   * Total number of images on the host. Both _tagged_ and _untagged_
-   * (dangling) images are counted.
-   */
-  images?: number;
-  /** Name of the storage driver in use. */
-  driver?: string;
-  /**
-   * Information specific to the storage driver, provided as "label" / "value"
-   * pairs. This information is provided by the storage driver, and formatted
-   * in a way consistent with the output of `docker info` on the command line.
-   * <p><br /></p> > **Note**: The information returned in this field,
-   * including the > formatting of values and labels, should not be considered
-   * stable, > and may change without notice.
-   */
-  driverStatus?: Array<Array<string>>;
-  /**
-   * Root directory of persistent Docker state. Defaults to `/var/lib/docker`
-   * on Linux, and `C:\\ProgramData\\docker` on Windows.
-   */
-  dockerRootDir?: string;
-  plugins?: PluginsInfo;
-  /** Indicates if the host has memory limit support enabled. */
-  memoryLimit?: boolean;
-  /** Indicates if the host has memory swap limit support enabled. */
-  swapLimit?: boolean;
-  /**
-   * Indicates if the host has kernel memory TCP limit support enabled. This
-   * field is omitted if not supported. Kernel memory TCP limits are not
-   * supported when using cgroups v2, which does not support the corresponding
-   * `memory.kmem.tcp.limit_in_bytes` cgroup.
-   */
-  kernelMemoryTCP?: boolean;
-  /**
-   * Indicates if CPU CFS(Completely Fair Scheduler) period is supported by
-   * the host.
-   */
-  cpuCfsPeriod?: boolean;
-  /**
-   * Indicates if CPU CFS(Completely Fair Scheduler) quota is supported by the
-   * host.
-   */
-  cpuCfsQuota?: boolean;
-  /** Indicates if CPU Shares limiting is supported by the host. */
-  cPUShares?: boolean;
-  /**
-   * Indicates if CPUsets (cpuset.cpus, cpuset.mems) are supported by the
-   * host. See
-   * [cpuset(7)](https://www.kernel.org/doc/Documentation/cgroup-v1/cpusets.txt)
-   */
-  cPUSet?: boolean;
-  /** Indicates if the host kernel has PID limit support enabled. */
-  pidsLimit?: boolean;
-  /** Indicates if OOM killer disable is supported on the host. */
-  oomKillDisable?: boolean;
-  /** Indicates IPv4 forwarding is enabled. */
-  iPv4Forwarding?: boolean;
-  /** Indicates if `bridge-nf-call-iptables` is available on the host. */
-  bridgeNfIptables?: boolean;
-  /** Indicates if `bridge-nf-call-ip6tables` is available on the host. */
-  bridgeNfIp6tables?: boolean;
-  /**
-   * Indicates if the daemon is running in debug-mode / with debug-level
-   * logging enabled.
-   */
-  debug?: boolean;
-  /**
-   * The total number of file Descriptors in use by the daemon process. This
-   * information is only returned if debug-mode is enabled.
-   */
-  nFd?: number;
-  /**
-   * The number of goroutines that currently exist. This information is only
-   * returned if debug-mode is enabled.
-   */
-  nGoroutines?: number;
-  /**
-   * Current system-time in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
-   * format with nano-seconds.
-   */
-  systemTime?: string;
-  /** The logging driver to use as a default for new containers. */
-  loggingDriver?: string;
-  /** The driver to use for managing cgroups. */
-  cgroupDriver?: SystemInfo.CgroupDriverEnum;
-  /** The version of the cgroup. */
-  cgroupVersion?: SystemInfo.CgroupVersionEnum;
-  /** Number of event listeners subscribed. */
-  nEventsListener?: number;
-  /**
-   * Kernel version of the host. On Linux, this information obtained from
-   * `uname`. On Windows this information is queried from the
-   * <kbd>HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows
-   * NT\\CurrentVersion\\</kbd> registry value, for example _"10.0 14393
-   * (14393.1198.amd64fre.rs1_release_sec.170427-1353)"_.
-   */
-  kernelVersion?: string;
-  /**
-   * Name of the host's operating system, for example: "Ubuntu 16.04.2 LTS" or
-   * "Windows Server 2016 Datacenter"
-   */
-  operatingSystem?: string;
-  /**
-   * Version of the host's operating system <p><br /></p> > **Note**: The
-   * information returned in this field, including its > very existence, and
-   * the formatting of values, should not be considered > stable, and may
-   * change without notice.
-   */
-  oSVersion?: string;
-  /**
-   * Generic type of the operating system of the host, as returned by the Go
-   * runtime (`GOOS`). Currently returned values are "linux" and "windows". A
-   * full list of possible values can be found in the [Go
-   * documentation](https://go.dev/doc/install/source#environment).
-   */
-  oSType?: string;
-  /**
-   * Hardware architecture of the host, as returned by the Go runtime
-   * (`GOARCH`). A full list of possible values can be found in the [Go
-   * documentation](https://go.dev/doc/install/source#environment).
-   */
-  architecture?: string;
-  /**
-   * The number of logical CPUs usable by the daemon. The number of available
-   * CPUs is checked by querying the operating system when the daemon starts.
-   * Changes to operating system CPU allocation after the daemon is started
-   * are not reflected.
-   */
-  NCPU?: number;
-  /** Total amount of physical memory available on the host, in bytes. */
-  memTotal?: number;
-  /**
-   * Address / URL of the index server that is used for image search, and as a
-   * default for user authentication for Docker Hub and Docker Cloud.
-   */
-  indexServerAddress?: string;
-  registryConfig?: RegistryServiceConfig;
-  genericResources?: GenericResources;
-  /**
-   * HTTP-proxy configured for the daemon. This value is obtained from the
-   * [`HTTP_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
-   * environment variable. Credentials ([user info
-   * component](https://tools.ietf.org/html/rfc3986#section-3.2.1)) in the
-   * proxy URL are masked in the API response. Containers do not automatically
-   * inherit this configuration.
-   */
-  httpProxy?: string;
-  /**
-   * HTTPS-proxy configured for the daemon. This value is obtained from the
-   * [`HTTPS_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
-   * environment variable. Credentials ([user info
-   * component](https://tools.ietf.org/html/rfc3986#section-3.2.1)) in the
-   * proxy URL are masked in the API response. Containers do not automatically
-   * inherit this configuration.
-   */
-  httpsProxy?: string;
-  /**
-   * Comma-separated list of domain extensions for which no proxy should be
-   * used. This value is obtained from the
-   * [`NO_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
-   * environment variable. Containers do not automatically inherit this
-   * configuration.
-   */
-  noProxy?: string;
-  /** Hostname of the host. */
-  name?: string;
-  /**
-   * User-defined labels (key/value metadata) as set on the daemon. <p><br
-   * /></p> > **Note**: When part of a Swarm, nodes can both have _daemon_
-   * labels, > set through the daemon configuration, and _node_ labels, set
-   * from a > manager node in the Swarm. Node labels are not included in this
-   * > field. Node labels can be retrieved using the `/nodes/(id)` endpoint >
-   * on a manager node in the Swarm.
-   */
-  labels?: Array<string>;
-  /** Indicates if experimental features are enabled on the daemon. */
-  experimentalBuild?: boolean;
-  /** Version string of the daemon. */
-  serverVersion?: string;
-  /**
-   * List of [OCI compliant](https://github.com/opencontainers/runtime-spec)
-   * runtimes configured on the daemon. Keys hold the "name" used to reference
-   * the runtime. The Docker daemon relies on an OCI compliant runtime
-   * (invoked via the `containerd` daemon) as its interface to the Linux
-   * kernel namespaces, cgroups, and SELinux. The default runtime is `runc`,
-   * and automatically configured. Additional runtimes can be configured by
-   * the user and will be listed here.
-   */
-  runtimes?: { [key: string]: Runtime };
-  /**
-   * Name of the default OCI runtime that is used when starting containers.
-   * The default can be overridden per-container at create time.
-   */
-  defaultRuntime?: string;
-  swarm?: SwarmInfo;
-  /**
-   * Indicates if live restore is enabled. If enabled, containers are kept
-   * running when the daemon is shutdown or upon daemon start if running
-   * containers are detected.
-   */
-  liveRestoreEnabled?: boolean;
-  /**
-   * Represents the isolation technology to use as a default for containers.
-   * The supported values are platform-specific. If no isolation value is
-   * specified on daemon start, on Windows client, the default is `hyperv`,
-   * and on Windows server, the default is `process`. This option is currently
-   * not used on other platforms.
-   */
-  isolation?: SystemInfo.IsolationEnum;
-  /**
-   * Name and, optional, path of the `docker-init` binary. If the path is
-   * omitted, the daemon searches the host's `$PATH` for the binary and uses
-   * the first result.
-   */
-  initBinary?: string;
-  containerdCommit?: Commit;
-  runcCommit?: Commit;
-  initCommit?: Commit;
-  /**
-   * List of security features that are enabled on the daemon, such as
-   * apparmor, seccomp, SELinux, user-namespaces (userns), rootless and
-   * no-new-privileges. Additional configuration options for each security
-   * feature may be present, and are included as a comma-separated list of
-   * key/value pairs.
-   */
-  securityOptions?: Array<string>;
-  /**
-   * Reports a summary of the product license on the daemon. If a commercial
-   * license has been applied to the daemon, information such as number of
-   * nodes, and expiration are included.
-   */
-  productLicense?: string;
-  /**
-   * List of custom default address pools for local networks, which can be
-   * specified in the daemon.json file or dockerd option. Example: a Base
-   * "10.10.0.0/16" with Size 24 will define the set of 256 10.10.[0-255].0/24
-   * address pools.
-   */
-  defaultAddressPools?: Array<SystemInfoDefaultAddressPools>;
-  /**
-   * List of warnings / informational messages about missing features, or
-   * issues related to the daemon configuration. These messages can be printed
-   * by the client as information to the user.
-   */
-  warnings?: Array<string>;
-  /**
-   * List of directories where (Container Device Interface) CDI specifications
-   * are located. These specifications define vendor-specific modifications to
-   * an OCI runtime specification for a container being created. An empty list
-   * indicates that CDI device injection is disabled. Note that since using
-   * CDI device injection requires the daemon to have experimental enabled.
-   * For non-experimental daemons an empty list will always be returned.
-   */
-  cDISpecDirs?: Array<string>;
+    /**
+     * Unique identifier of the daemon. <p><br /></p> > **Note**: The format of
+     * the ID itself is not part of the API, and > should not be considered
+     * stable.
+     */
+    ID?: string;
+    /** Total number of containers on the host. */
+    containers?: number;
+    /** Number of containers with status `\"running\"`. */
+    containersRunning?: number;
+    /** Number of containers with status `\"paused\"`. */
+    containersPaused?: number;
+    /** Number of containers with status `\"stopped\"`. */
+    containersStopped?: number;
+    /**
+     * Total number of images on the host. Both _tagged_ and _untagged_
+     * (dangling) images are counted.
+     */
+    images?: number;
+    /** Name of the storage driver in use. */
+    driver?: string;
+    /**
+     * Information specific to the storage driver, provided as "label" / "value"
+     * pairs. This information is provided by the storage driver, and formatted
+     * in a way consistent with the output of `docker info` on the command line.
+     * <p><br /></p> > **Note**: The information returned in this field,
+     * including the > formatting of values and labels, should not be considered
+     * stable, > and may change without notice.
+     */
+    driverStatus?: Array<Array<string>>;
+    /**
+     * Root directory of persistent Docker state. Defaults to `/var/lib/docker`
+     * on Linux, and `C:\\ProgramData\\docker` on Windows.
+     */
+    dockerRootDir?: string;
+    plugins?: PluginsInfo;
+    /** Indicates if the host has memory limit support enabled. */
+    memoryLimit?: boolean;
+    /** Indicates if the host has memory swap limit support enabled. */
+    swapLimit?: boolean;
+    /**
+     * Indicates if the host has kernel memory TCP limit support enabled. This
+     * field is omitted if not supported. Kernel memory TCP limits are not
+     * supported when using cgroups v2, which does not support the corresponding
+     * `memory.kmem.tcp.limit_in_bytes` cgroup.
+     */
+    kernelMemoryTCP?: boolean;
+    /**
+     * Indicates if CPU CFS(Completely Fair Scheduler) period is supported by
+     * the host.
+     */
+    cpuCfsPeriod?: boolean;
+    /**
+     * Indicates if CPU CFS(Completely Fair Scheduler) quota is supported by the
+     * host.
+     */
+    cpuCfsQuota?: boolean;
+    /** Indicates if CPU Shares limiting is supported by the host. */
+    cPUShares?: boolean;
+    /**
+     * Indicates if CPUsets (cpuset.cpus, cpuset.mems) are supported by the
+     * host. See
+     * [cpuset(7)](https://www.kernel.org/doc/Documentation/cgroup-v1/cpusets.txt)
+     */
+    cPUSet?: boolean;
+    /** Indicates if the host kernel has PID limit support enabled. */
+    pidsLimit?: boolean;
+    /** Indicates if OOM killer disable is supported on the host. */
+    oomKillDisable?: boolean;
+    /** Indicates IPv4 forwarding is enabled. */
+    iPv4Forwarding?: boolean;
+    /** Indicates if `bridge-nf-call-iptables` is available on the host. */
+    bridgeNfIptables?: boolean;
+    /** Indicates if `bridge-nf-call-ip6tables` is available on the host. */
+    bridgeNfIp6tables?: boolean;
+    /**
+     * Indicates if the daemon is running in debug-mode / with debug-level
+     * logging enabled.
+     */
+    debug?: boolean;
+    /**
+     * The total number of file Descriptors in use by the daemon process. This
+     * information is only returned if debug-mode is enabled.
+     */
+    nFd?: number;
+    /**
+     * The number of goroutines that currently exist. This information is only
+     * returned if debug-mode is enabled.
+     */
+    nGoroutines?: number;
+    /**
+     * Current system-time in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
+     * format with nano-seconds.
+     */
+    systemTime?: string;
+    /** The logging driver to use as a default for new containers. */
+    loggingDriver?: string;
+    /** The driver to use for managing cgroups. */
+    cgroupDriver?: SystemInfo.CgroupDriverEnum;
+    /** The version of the cgroup. */
+    cgroupVersion?: SystemInfo.CgroupVersionEnum;
+    /** Number of event listeners subscribed. */
+    nEventsListener?: number;
+    /**
+     * Kernel version of the host. On Linux, this information obtained from
+     * `uname`. On Windows this information is queried from the
+     * <kbd>HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows
+     * NT\\CurrentVersion\\</kbd> registry value, for example _"10.0 14393
+     * (14393.1198.amd64fre.rs1_release_sec.170427-1353)"_.
+     */
+    kernelVersion?: string;
+    /**
+     * Name of the host's operating system, for example: "Ubuntu 16.04.2 LTS" or
+     * "Windows Server 2016 Datacenter"
+     */
+    operatingSystem?: string;
+    /**
+     * Version of the host's operating system <p><br /></p> > **Note**: The
+     * information returned in this field, including its > very existence, and
+     * the formatting of values, should not be considered > stable, and may
+     * change without notice.
+     */
+    oSVersion?: string;
+    /**
+     * Generic type of the operating system of the host, as returned by the Go
+     * runtime (`GOOS`). Currently returned values are "linux" and "windows". A
+     * full list of possible values can be found in the [Go
+     * documentation](https://go.dev/doc/install/source#environment).
+     */
+    oSType?: string;
+    /**
+     * Hardware architecture of the host, as returned by the Go runtime
+     * (`GOARCH`). A full list of possible values can be found in the [Go
+     * documentation](https://go.dev/doc/install/source#environment).
+     */
+    architecture?: string;
+    /**
+     * The number of logical CPUs usable by the daemon. The number of available
+     * CPUs is checked by querying the operating system when the daemon starts.
+     * Changes to operating system CPU allocation after the daemon is started
+     * are not reflected.
+     */
+    NCPU?: number;
+    /** Total amount of physical memory available on the host, in bytes. */
+    memTotal?: number;
+    /**
+     * Address / URL of the index server that is used for image search, and as a
+     * default for user authentication for Docker Hub and Docker Cloud.
+     */
+    indexServerAddress?: string;
+    registryConfig?: RegistryServiceConfig;
+    genericResources?: GenericResources;
+    /**
+     * HTTP-proxy configured for the daemon. This value is obtained from the
+     * [`HTTP_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
+     * environment variable. Credentials ([user info
+     * component](https://tools.ietf.org/html/rfc3986#section-3.2.1)) in the
+     * proxy URL are masked in the API response. Containers do not automatically
+     * inherit this configuration.
+     */
+    httpProxy?: string;
+    /**
+     * HTTPS-proxy configured for the daemon. This value is obtained from the
+     * [`HTTPS_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
+     * environment variable. Credentials ([user info
+     * component](https://tools.ietf.org/html/rfc3986#section-3.2.1)) in the
+     * proxy URL are masked in the API response. Containers do not automatically
+     * inherit this configuration.
+     */
+    httpsProxy?: string;
+    /**
+     * Comma-separated list of domain extensions for which no proxy should be
+     * used. This value is obtained from the
+     * [`NO_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
+     * environment variable. Containers do not automatically inherit this
+     * configuration.
+     */
+    noProxy?: string;
+    /** Hostname of the host. */
+    name?: string;
+    /**
+     * User-defined labels (key/value metadata) as set on the daemon. <p><br
+     * /></p> > **Note**: When part of a Swarm, nodes can both have _daemon_
+     * labels, > set through the daemon configuration, and _node_ labels, set
+     * from a > manager node in the Swarm. Node labels are not included in this
+     * > field. Node labels can be retrieved using the `/nodes/(id)` endpoint >
+     * on a manager node in the Swarm.
+     */
+    labels?: Array<string>;
+    /** Indicates if experimental features are enabled on the daemon. */
+    experimentalBuild?: boolean;
+    /** Version string of the daemon. */
+    serverVersion?: string;
+    /**
+     * List of [OCI compliant](https://github.com/opencontainers/runtime-spec)
+     * runtimes configured on the daemon. Keys hold the "name" used to reference
+     * the runtime. The Docker daemon relies on an OCI compliant runtime
+     * (invoked via the `containerd` daemon) as its interface to the Linux
+     * kernel namespaces, cgroups, and SELinux. The default runtime is `runc`,
+     * and automatically configured. Additional runtimes can be configured by
+     * the user and will be listed here.
+     */
+    runtimes?: { [key: string]: Runtime };
+    /**
+     * Name of the default OCI runtime that is used when starting containers.
+     * The default can be overridden per-container at create time.
+     */
+    defaultRuntime?: string;
+    swarm?: SwarmInfo;
+    /**
+     * Indicates if live restore is enabled. If enabled, containers are kept
+     * running when the daemon is shutdown or upon daemon start if running
+     * containers are detected.
+     */
+    liveRestoreEnabled?: boolean;
+    /**
+     * Represents the isolation technology to use as a default for containers.
+     * The supported values are platform-specific. If no isolation value is
+     * specified on daemon start, on Windows client, the default is `hyperv`,
+     * and on Windows server, the default is `process`. This option is currently
+     * not used on other platforms.
+     */
+    isolation?: SystemInfo.IsolationEnum;
+    /**
+     * Name and, optional, path of the `docker-init` binary. If the path is
+     * omitted, the daemon searches the host's `$PATH` for the binary and uses
+     * the first result.
+     */
+    initBinary?: string;
+    containerdCommit?: Commit;
+    runcCommit?: Commit;
+    initCommit?: Commit;
+    /**
+     * List of security features that are enabled on the daemon, such as
+     * apparmor, seccomp, SELinux, user-namespaces (userns), rootless and
+     * no-new-privileges. Additional configuration options for each security
+     * feature may be present, and are included as a comma-separated list of
+     * key/value pairs.
+     */
+    securityOptions?: Array<string>;
+    /**
+     * Reports a summary of the product license on the daemon. If a commercial
+     * license has been applied to the daemon, information such as number of
+     * nodes, and expiration are included.
+     */
+    productLicense?: string;
+    /**
+     * List of custom default address pools for local networks, which can be
+     * specified in the daemon.json file or dockerd option. Example: a Base
+     * "10.10.0.0/16" with Size 24 will define the set of 256 10.10.[0-255].0/24
+     * address pools.
+     */
+    defaultAddressPools?: Array<SystemInfoDefaultAddressPools>;
+    /**
+     * List of warnings / informational messages about missing features, or
+     * issues related to the daemon configuration. These messages can be printed
+     * by the client as information to the user.
+     */
+    warnings?: Array<string>;
+    /**
+     * List of directories where (Container Device Interface) CDI specifications
+     * are located. These specifications define vendor-specific modifications to
+     * an OCI runtime specification for a container being created. An empty list
+     * indicates that CDI device injection is disabled. Note that since using
+     * CDI device injection requires the daemon to have experimental enabled.
+     * For non-experimental daemons an empty list will always be returned.
+     */
+    cDISpecDirs?: Array<string>;
 }
 
 export namespace SystemInfo {
-  export enum CgroupDriverEnum {
-    Cgroupfs = "cgroupfs",
-    Systemd = "systemd",
-    None = "none",
-  }
-  export enum CgroupVersionEnum {
-    _1 = "1",
-    _2 = "2",
-  }
-  export enum IsolationEnum {
-    Default = "default",
-    Hyperv = "hyperv",
-    Process = "process",
-  }
+    export enum CgroupDriverEnum {
+        Cgroupfs = "cgroupfs",
+        Systemd = "systemd",
+        None = "none",
+    }
+    export enum CgroupVersionEnum {
+        _1 = "1",
+        _2 = "2",
+    }
+    export enum IsolationEnum {
+        Default = "default",
+        Hyperv = "hyperv",
+        Process = "process",
+    }
 }
 
 export interface SystemInfoDefaultAddressPools {
-  /** The network address in CIDR format */
-  base?: string;
-  /** The network pool size */
-  size?: number;
+    /** The network address in CIDR format */
+    base?: string;
+    /** The network pool size */
+    size?: number;
 }
 
 /** Response of Engine API: GET "/version" */
 export interface SystemVersion {
-  platform?: SystemVersionPlatform;
-  /** Information about system components */
-  components?: Array<SystemVersionComponents>;
-  /** The version of the daemon */
-  version?: string;
-  /** The default (and highest) API version that is supported by the daemon */
-  apiVersion?: string;
-  /** The minimum API version that is supported by the daemon */
-  minAPIVersion?: string;
-  /** The Git commit of the source code that was used to build the daemon */
-  gitCommit?: string;
-  /**
-   * The version Go used to compile the daemon, and the version of the Go
-   * runtime in use.
-   */
-  goVersion?: string;
-  /** The operating system that the daemon is running on ("linux" or "windows") */
-  os?: string;
-  /** The architecture that the daemon is running on */
-  arch?: string;
-  /**
-   * The kernel version (`uname -r`) that the daemon is running on. This field
-   * is omitted when empty.
-   */
-  kernelVersion?: string;
-  /**
-   * Indicates if the daemon is started with experimental features enabled.
-   * This field is omitted when empty / false.
-   */
-  experimental?: boolean;
-  /** The date and time that the daemon was compiled. */
-  buildTime?: string;
+    platform?: SystemVersionPlatform;
+    /** Information about system components */
+    components?: Array<SystemVersionComponents>;
+    /** The version of the daemon */
+    version?: string;
+    /** The default (and highest) API version that is supported by the daemon */
+    apiVersion?: string;
+    /** The minimum API version that is supported by the daemon */
+    minAPIVersion?: string;
+    /** The Git commit of the source code that was used to build the daemon */
+    gitCommit?: string;
+    /**
+     * The version Go used to compile the daemon, and the version of the Go
+     * runtime in use.
+     */
+    goVersion?: string;
+    /** The operating system that the daemon is running on ("linux" or "windows") */
+    os?: string;
+    /** The architecture that the daemon is running on */
+    arch?: string;
+    /**
+     * The kernel version (`uname -r`) that the daemon is running on. This field
+     * is omitted when empty.
+     */
+    kernelVersion?: string;
+    /**
+     * Indicates if the daemon is started with experimental features enabled.
+     * This field is omitted when empty / false.
+     */
+    experimental?: boolean;
+    /** The date and time that the daemon was compiled. */
+    buildTime?: string;
 }
 
 export interface SystemVersionComponents {
-  /** Name of the component */
-  name: string;
-  /** Version of the component */
-  version: string;
-  /**
-   * Key/value pairs of strings with additional information about the
-   * component. These values are intended for informational purposes only, and
-   * their content is not defined, and not part of the API specification.
-   * These messages can be printed by the client as information to the user.
-   */
-  details?: any;
+    /** Name of the component */
+    name: string;
+    /** Version of the component */
+    version: string;
+    /**
+     * Key/value pairs of strings with additional information about the
+     * component. These values are intended for informational purposes only, and
+     * their content is not defined, and not part of the API specification.
+     * These messages can be printed by the client as information to the user.
+     */
+    details?: any;
 }
 
 export interface SystemVersionPlatform {
-  name: string;
+    name: string;
 }
 
 /**
@@ -3508,57 +3508,57 @@ export interface SystemVersionPlatform {
  * certificate.
  */
 export interface TLSInfo {
-  /**
-   * The root CA certificate(s) that are used to validate leaf TLS
-   * certificates.
-   */
-  trustRoot?: string;
-  /** The base64-url-safe-encoded raw subject bytes of the issuer. */
-  certIssuerSubject?: string;
-  /** The base64-url-safe-encoded raw public key bytes of the issuer. */
-  certIssuerPublicKey?: string;
+    /**
+     * The root CA certificate(s) that are used to validate leaf TLS
+     * certificates.
+     */
+    trustRoot?: string;
+    /** The base64-url-safe-encoded raw subject bytes of the issuer. */
+    certIssuerSubject?: string;
+    /** The base64-url-safe-encoded raw public key bytes of the issuer. */
+    certIssuerPublicKey?: string;
 }
 
 export interface Task {
-  /** The ID of the task. */
-  ID?: string;
-  version?: ObjectVersion;
-  createdAt?: string;
-  updatedAt?: string;
-  /** Name of the task. */
-  name?: string;
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  spec?: TaskSpec;
-  /** The ID of the service this task is part of. */
-  serviceID?: string;
-  slot?: number;
-  /** The ID of the node that this task is on. */
-  nodeID?: string;
-  assignedGenericResources?: GenericResources;
-  status?: TaskStatus;
-  desiredState?: TaskState;
-  jobIteration?: ObjectVersion;
+    /** The ID of the task. */
+    ID?: string;
+    version?: ObjectVersion;
+    createdAt?: string;
+    updatedAt?: string;
+    /** Name of the task. */
+    name?: string;
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    spec?: TaskSpec;
+    /** The ID of the service this task is part of. */
+    serviceID?: string;
+    slot?: number;
+    /** The ID of the node that this task is on. */
+    nodeID?: string;
+    assignedGenericResources?: GenericResources;
+    status?: TaskStatus;
+    desiredState?: TaskState;
+    jobIteration?: ObjectVersion;
 }
 
 /** User modifiable task configuration. */
 export interface TaskSpec {
-  pluginSpec?: TaskSpecPluginSpec;
-  containerSpec?: TaskSpecContainerSpec;
-  networkAttachmentSpec?: TaskSpecNetworkAttachmentSpec;
-  resources?: TaskSpecResources;
-  restartPolicy?: TaskSpecRestartPolicy;
-  placement?: TaskSpecPlacement;
-  /**
-   * A counter that triggers an update even if no relevant parameters have
-   * been changed.
-   */
-  forceUpdate?: number;
-  /** Runtime is the type of runtime specified for the task executor. */
-  runtime?: string;
-  /** Specifies which networks the service should attach to. */
-  networks?: Array<NetworkAttachmentConfig>;
-  logDriver?: TaskSpecLogDriver;
+    pluginSpec?: TaskSpecPluginSpec;
+    containerSpec?: TaskSpecContainerSpec;
+    networkAttachmentSpec?: TaskSpecNetworkAttachmentSpec;
+    resources?: TaskSpecResources;
+    restartPolicy?: TaskSpecRestartPolicy;
+    placement?: TaskSpecPlacement;
+    /**
+     * A counter that triggers an update even if no relevant parameters have
+     * been changed.
+     */
+    forceUpdate?: number;
+    /** Runtime is the type of runtime specified for the task executor. */
+    runtime?: string;
+    /** Specifies which networks the service should attach to. */
+    networks?: Array<NetworkAttachmentConfig>;
+    logDriver?: TaskSpecLogDriver;
 }
 
 /**
@@ -3568,126 +3568,126 @@ export interface TaskSpec {
  * is used when the Runtime > field is set to `attachment`.
  */
 export interface TaskSpecContainerSpec {
-  /** The image name to use for the container */
-  image?: string;
-  /** User-defined key/value data. */
-  labels?: { [key: string]: string };
-  /** The command to be run in the image. */
-  command?: Array<string>;
-  /** Arguments to the command. */
-  args?: Array<string>;
-  /**
-   * The hostname to use for the container, as a valid [RFC
-   * 1123](https://tools.ietf.org/html/rfc1123) hostname.
-   */
-  hostname?: string;
-  /** A list of environment variables in the form `VAR=value`. */
-  env?: Array<string>;
-  /** The working directory for commands to run in. */
-  dir?: string;
-  /** The user inside the container. */
-  user?: string;
-  /** A list of additional groups that the container process will run as. */
-  groups?: Array<string>;
-  privileges?: TaskSpecContainerSpecPrivileges;
-  /** Whether a pseudo-TTY should be allocated. */
-  TTY?: boolean;
-  /** Open `stdin` */
-  openStdin?: boolean;
-  /** Mount the container's root filesystem as read only. */
-  readOnly?: boolean;
-  /**
-   * Specification for mounts to be added to containers created as part of the
-   * service.
-   */
-  mounts?: Array<Mount>;
-  /** Signal to stop the container. */
-  stopSignal?: string;
-  /**
-   * Amount of time to wait for the container to terminate before forcefully
-   * killing it.
-   */
-  stopGracePeriod?: number;
-  healthCheck?: HealthConfig;
-  /**
-   * A list of hostname/IP mappings to add to the container's `hosts` file.
-   * The format of extra hosts is specified in the
-   * [hosts(5)](http://man7.org/linux/man-pages/man5/hosts.5.html) man page:
-   * IP_address canonical_hostname [aliases...]
-   */
-  hosts?: Array<string>;
-  dNSConfig?: TaskSpecContainerSpecDNSConfig;
-  /**
-   * Secrets contains references to zero or more secrets that will be exposed
-   * to the service.
-   */
-  secrets?: Array<TaskSpecContainerSpecSecrets>;
-  /**
-   * Configs contains references to zero or more configs that will be exposed
-   * to the service.
-   */
-  configs?: Array<TaskSpecContainerSpecConfigs>;
-  /**
-   * Isolation technology of the containers running the service. (Windows
-   * only)
-   */
-  isolation?: TaskSpecContainerSpec.IsolationEnum;
-  /**
-   * Run an init inside the container that forwards signals and reaps
-   * processes. This field is omitted if empty, and the default (as configured
-   * on the daemon) is used.
-   */
-  init?: boolean;
-  /**
-   * Set kernel namedspaced parameters (sysctls) in the container. The Sysctls
-   * option on services accepts the same sysctls as the are supported on
-   * containers. Note that while the same sysctls are supported, no guarantees
-   * or checks are made about their suitability for a clustered environment,
-   * and it's up to the user to determine whether a given sysctl will work
-   * properly in a Service.
-   */
-  sysctls?: { [key: string]: string };
-  /**
-   * A list of kernel capabilities to add to the default set for the
-   * container.
-   */
-  capabilityAdd?: Array<string>;
-  /**
-   * A list of kernel capabilities to drop from the default set for the
-   * container.
-   */
-  capabilityDrop?: Array<string>;
-  /**
-   * A list of resource limits to set in the container. For example:
-   * `{\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048}`"
-   */
-  ulimits?: Array<ResourcesUlimits>;
+    /** The image name to use for the container */
+    image?: string;
+    /** User-defined key/value data. */
+    labels?: { [key: string]: string };
+    /** The command to be run in the image. */
+    command?: Array<string>;
+    /** Arguments to the command. */
+    args?: Array<string>;
+    /**
+     * The hostname to use for the container, as a valid [RFC
+     * 1123](https://tools.ietf.org/html/rfc1123) hostname.
+     */
+    hostname?: string;
+    /** A list of environment variables in the form `VAR=value`. */
+    env?: Array<string>;
+    /** The working directory for commands to run in. */
+    dir?: string;
+    /** The user inside the container. */
+    user?: string;
+    /** A list of additional groups that the container process will run as. */
+    groups?: Array<string>;
+    privileges?: TaskSpecContainerSpecPrivileges;
+    /** Whether a pseudo-TTY should be allocated. */
+    TTY?: boolean;
+    /** Open `stdin` */
+    openStdin?: boolean;
+    /** Mount the container's root filesystem as read only. */
+    readOnly?: boolean;
+    /**
+     * Specification for mounts to be added to containers created as part of the
+     * service.
+     */
+    mounts?: Array<Mount>;
+    /** Signal to stop the container. */
+    stopSignal?: string;
+    /**
+     * Amount of time to wait for the container to terminate before forcefully
+     * killing it.
+     */
+    stopGracePeriod?: number;
+    healthCheck?: HealthConfig;
+    /**
+     * A list of hostname/IP mappings to add to the container's `hosts` file.
+     * The format of extra hosts is specified in the
+     * [hosts(5)](http://man7.org/linux/man-pages/man5/hosts.5.html) man page:
+     * IP_address canonical_hostname [aliases...]
+     */
+    hosts?: Array<string>;
+    dNSConfig?: TaskSpecContainerSpecDNSConfig;
+    /**
+     * Secrets contains references to zero or more secrets that will be exposed
+     * to the service.
+     */
+    secrets?: Array<TaskSpecContainerSpecSecrets>;
+    /**
+     * Configs contains references to zero or more configs that will be exposed
+     * to the service.
+     */
+    configs?: Array<TaskSpecContainerSpecConfigs>;
+    /**
+     * Isolation technology of the containers running the service. (Windows
+     * only)
+     */
+    isolation?: TaskSpecContainerSpec.IsolationEnum;
+    /**
+     * Run an init inside the container that forwards signals and reaps
+     * processes. This field is omitted if empty, and the default (as configured
+     * on the daemon) is used.
+     */
+    init?: boolean;
+    /**
+     * Set kernel namedspaced parameters (sysctls) in the container. The Sysctls
+     * option on services accepts the same sysctls as the are supported on
+     * containers. Note that while the same sysctls are supported, no guarantees
+     * or checks are made about their suitability for a clustered environment,
+     * and it's up to the user to determine whether a given sysctl will work
+     * properly in a Service.
+     */
+    sysctls?: { [key: string]: string };
+    /**
+     * A list of kernel capabilities to add to the default set for the
+     * container.
+     */
+    capabilityAdd?: Array<string>;
+    /**
+     * A list of kernel capabilities to drop from the default set for the
+     * container.
+     */
+    capabilityDrop?: Array<string>;
+    /**
+     * A list of resource limits to set in the container. For example:
+     * `{\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048}`"
+     */
+    ulimits?: Array<ResourcesUlimits>;
 }
 
 export namespace TaskSpecContainerSpec {
-  export enum IsolationEnum {
-    Default = "default",
-    Process = "process",
-    Hyperv = "hyperv",
-  }
+    export enum IsolationEnum {
+        Default = "default",
+        Process = "process",
+        Hyperv = "hyperv",
+    }
 }
 
 export interface TaskSpecContainerSpecConfigs {
-  file?: TaskSpecContainerSpecFile1;
-  /**
-   * Runtime represents a target that is not mounted into the container but is
-   * used by the task <p><br /><p> > **Note**: `Configs.File` and
-   * `Configs.Runtime` are mutually > exclusive
-   */
-  runtime?: any;
-  /** ConfigID represents the ID of the specific config that we're referencing. */
-  configID?: string;
-  /**
-   * ConfigName is the name of the config that this references, but this is
-   * just provided for lookup/display purposes. The config in the reference
-   * will be identified by its ID.
-   */
-  configName?: string;
+    file?: TaskSpecContainerSpecFile1;
+    /**
+     * Runtime represents a target that is not mounted into the container but is
+     * used by the task <p><br /><p> > **Note**: `Configs.File` and
+     * `Configs.Runtime` are mutually > exclusive
+     */
+    runtime?: any;
+    /** ConfigID represents the ID of the specific config that we're referencing. */
+    configID?: string;
+    /**
+     * ConfigName is the name of the config that this references, but this is
+     * just provided for lookup/display purposes. The config in the reference
+     * will be identified by its ID.
+     */
+    configName?: string;
 }
 
 /**
@@ -3695,27 +3695,27 @@ export interface TaskSpecContainerSpecConfigs {
  * (`resolv.conf`).
  */
 export interface TaskSpecContainerSpecDNSConfig {
-  /** The IP addresses of the name servers. */
-  nameservers?: Array<string>;
-  /** A search list for host-name lookup. */
-  search?: Array<string>;
-  /**
-   * A list of internal resolver variables to be modified (e.g., `debug`,
-   * `ndots:3`, etc.).
-   */
-  options?: Array<string>;
+    /** The IP addresses of the name servers. */
+    nameservers?: Array<string>;
+    /** A search list for host-name lookup. */
+    search?: Array<string>;
+    /**
+     * A list of internal resolver variables to be modified (e.g., `debug`,
+     * `ndots:3`, etc.).
+     */
+    options?: Array<string>;
 }
 
 /** File represents a specific target that is backed by a file. */
 export interface TaskSpecContainerSpecFile {
-  /** Name represents the final filename in the filesystem. */
-  name?: string;
-  /** UID represents the file UID. */
-  UID?: string;
-  /** GID represents the file GID. */
-  GID?: string;
-  /** Mode represents the FileMode of the file. */
-  mode?: number;
+    /** Name represents the final filename in the filesystem. */
+    name?: string;
+    /** UID represents the file UID. */
+    UID?: string;
+    /** GID represents the file GID. */
+    GID?: string;
+    /** Mode represents the FileMode of the file. */
+    mode?: number;
 }
 
 /**
@@ -3723,108 +3723,108 @@ export interface TaskSpecContainerSpecFile {
  * **Note**: `Configs.File` and `Configs.Runtime` are mutually exclusive
  */
 export interface TaskSpecContainerSpecFile1 {
-  /** Name represents the final filename in the filesystem. */
-  name?: string;
-  /** UID represents the file UID. */
-  UID?: string;
-  /** GID represents the file GID. */
-  GID?: string;
-  /** Mode represents the FileMode of the file. */
-  mode?: number;
+    /** Name represents the final filename in the filesystem. */
+    name?: string;
+    /** UID represents the file UID. */
+    UID?: string;
+    /** GID represents the file GID. */
+    GID?: string;
+    /** Mode represents the FileMode of the file. */
+    mode?: number;
 }
 
 /** Security options for the container */
 export interface TaskSpecContainerSpecPrivileges {
-  credentialSpec?: TaskSpecContainerSpecPrivilegesCredentialSpec;
-  sELinuxContext?: TaskSpecContainerSpecPrivilegesSELinuxContext;
-  seccomp?: TaskSpecContainerSpecPrivilegesSeccomp;
-  appArmor?: TaskSpecContainerSpecPrivilegesAppArmor;
-  /** Configuration of the no_new_privs bit in the container */
-  noNewPrivileges?: boolean;
+    credentialSpec?: TaskSpecContainerSpecPrivilegesCredentialSpec;
+    sELinuxContext?: TaskSpecContainerSpecPrivilegesSELinuxContext;
+    seccomp?: TaskSpecContainerSpecPrivilegesSeccomp;
+    appArmor?: TaskSpecContainerSpecPrivilegesAppArmor;
+    /** Configuration of the no_new_privs bit in the container */
+    noNewPrivileges?: boolean;
 }
 
 /** Options for configuring AppArmor on the container */
 export interface TaskSpecContainerSpecPrivilegesAppArmor {
-  mode?: TaskSpecContainerSpecPrivilegesAppArmor.ModeEnum;
+    mode?: TaskSpecContainerSpecPrivilegesAppArmor.ModeEnum;
 }
 
 export namespace TaskSpecContainerSpecPrivilegesAppArmor {
-  export enum ModeEnum {
-    Default = "default",
-    Disabled = "disabled",
-  }
+    export enum ModeEnum {
+        Default = "default",
+        Disabled = "disabled",
+    }
 }
 
 /** CredentialSpec for managed service account (Windows only) */
 export interface TaskSpecContainerSpecPrivilegesCredentialSpec {
-  /**
-   * Load credential spec from a Swarm Config with the given ID. The specified
-   * config must also be present in the Configs field with the Runtime
-   * property set. <p><br /></p> > **Note**: `CredentialSpec.File`,
-   * `CredentialSpec.Registry`, > and `CredentialSpec.Config` are mutually
-   * exclusive.
-   */
-  config?: string;
-  /**
-   * Load credential spec from this file. The file is read by the daemon, and
-   * must be present in the `CredentialSpecs` subdirectory in the docker data
-   * directory, which defaults to `C:\\ProgramData\\Docker\\` on Windows. For
-   * example, specifying `spec.json` loads
-   * `C:\\ProgramData\\Docker\\CredentialSpecs\\spec.json`. <p><br /></p> >
-   * **Note**: `CredentialSpec.File`, `CredentialSpec.Registry`, > and
-   * `CredentialSpec.Config` are mutually exclusive.
-   */
-  file?: string;
-  /**
-   * Load credential spec from this value in the Windows registry. The
-   * specified registry value must be located in:
-   * `HKLM\\SOFTWARE\\Microsoft\\Windows
-   * NT\\CurrentVersion\\Virtualization\\Containers\\CredentialSpecs` <p><br
-   * /></p> > **Note**: `CredentialSpec.File`, `CredentialSpec.Registry`, >
-   * and `CredentialSpec.Config` are mutually exclusive.
-   */
-  registry?: string;
+    /**
+     * Load credential spec from a Swarm Config with the given ID. The specified
+     * config must also be present in the Configs field with the Runtime
+     * property set. <p><br /></p> > **Note**: `CredentialSpec.File`,
+     * `CredentialSpec.Registry`, > and `CredentialSpec.Config` are mutually
+     * exclusive.
+     */
+    config?: string;
+    /**
+     * Load credential spec from this file. The file is read by the daemon, and
+     * must be present in the `CredentialSpecs` subdirectory in the docker data
+     * directory, which defaults to `C:\\ProgramData\\Docker\\` on Windows. For
+     * example, specifying `spec.json` loads
+     * `C:\\ProgramData\\Docker\\CredentialSpecs\\spec.json`. <p><br /></p> >
+     * **Note**: `CredentialSpec.File`, `CredentialSpec.Registry`, > and
+     * `CredentialSpec.Config` are mutually exclusive.
+     */
+    file?: string;
+    /**
+     * Load credential spec from this value in the Windows registry. The
+     * specified registry value must be located in:
+     * `HKLM\\SOFTWARE\\Microsoft\\Windows
+     * NT\\CurrentVersion\\Virtualization\\Containers\\CredentialSpecs` <p><br
+     * /></p> > **Note**: `CredentialSpec.File`, `CredentialSpec.Registry`, >
+     * and `CredentialSpec.Config` are mutually exclusive.
+     */
+    registry?: string;
 }
 
 /** SELinux labels of the container */
 export interface TaskSpecContainerSpecPrivilegesSELinuxContext {
-  /** Disable SELinux */
-  disable?: boolean;
-  /** SELinux user label */
-  user?: string;
-  /** SELinux role label */
-  role?: string;
-  /** SELinux type label */
-  type?: string;
-  /** SELinux level label */
-  level?: string;
+    /** Disable SELinux */
+    disable?: boolean;
+    /** SELinux user label */
+    user?: string;
+    /** SELinux role label */
+    role?: string;
+    /** SELinux type label */
+    type?: string;
+    /** SELinux level label */
+    level?: string;
 }
 
 /** Options for configuring seccomp on the container */
 export interface TaskSpecContainerSpecPrivilegesSeccomp {
-  mode?: TaskSpecContainerSpecPrivilegesSeccomp.ModeEnum;
-  /** The custom seccomp profile as a json object */
-  profile?: string;
+    mode?: TaskSpecContainerSpecPrivilegesSeccomp.ModeEnum;
+    /** The custom seccomp profile as a json object */
+    profile?: string;
 }
 
 export namespace TaskSpecContainerSpecPrivilegesSeccomp {
-  export enum ModeEnum {
-    Default = "default",
-    Unconfined = "unconfined",
-    Custom = "custom",
-  }
+    export enum ModeEnum {
+        Default = "default",
+        Unconfined = "unconfined",
+        Custom = "custom",
+    }
 }
 
 export interface TaskSpecContainerSpecSecrets {
-  file?: TaskSpecContainerSpecFile;
-  /** SecretID represents the ID of the specific secret that we're referencing. */
-  secretID?: string;
-  /**
-   * SecretName is the name of the secret that this references, but this is
-   * just provided for lookup/display purposes. The secret in the reference
-   * will be identified by its ID.
-   */
-  secretName?: string;
+    file?: TaskSpecContainerSpecFile;
+    /** SecretID represents the ID of the specific secret that we're referencing. */
+    secretID?: string;
+    /**
+     * SecretName is the name of the secret that this references, but this is
+     * just provided for lookup/display purposes. The secret in the reference
+     * will be identified by its ID.
+     */
+    secretName?: string;
 }
 
 /**
@@ -3833,8 +3833,8 @@ export interface TaskSpecContainerSpecSecrets {
  * the engine default if not specified.
  */
 export interface TaskSpecLogDriver {
-  name?: string;
-  options?: { [key: string]: string };
+    name?: string;
+    options?: { [key: string]: string };
 }
 
 /**
@@ -3845,56 +3845,56 @@ export interface TaskSpecLogDriver {
  * field is set to `attachment`.
  */
 export interface TaskSpecNetworkAttachmentSpec {
-  /** ID of the container represented by this task */
-  containerID?: string;
+    /** ID of the container represented by this task */
+    containerID?: string;
 }
 
 export interface TaskSpecPlacement {
-  /**
-   * An array of constraint expressions to limit the set of nodes where a task
-   * can be scheduled. Constraint expressions can either use a _match_ (`==`)
-   * or _exclude_ (`!=`) rule. Multiple constraints find nodes that satisfy
-   * every expression (AND match). Constraints can match node or Docker Engine
-   * labels as follows: node attribute | matches | example
-   * ---------------------|--------------------------------|-----------------------------------------------
-   * `node.id` | Node ID | `node.id==2ivku8v2gvtg4` `node.hostname` | Node
-   * hostname | `node.hostname!=node-2` `node.role` | Node role
-   * (`manager`/`worker`) | `node.role==manager` `node.platform.os` | Node
-   * operating system | `node.platform.os==windows` `node.platform.arch` |
-   * Node architecture | `node.platform.arch==x86_64` `node.labels` |
-   * User-defined node labels | `node.labels.security==high` `engine.labels` |
-   * Docker Engine's labels | `engine.labels.operatingsystem==ubuntu-14.04`
-   * `engine.labels` apply to Docker Engine labels like operating system,
-   * drivers, etc. Swarm administrators add `node.labels` for operational
-   * purposes by using the [`node update endpoint`](#operation/NodeUpdate).
-   */
-  constraints?: Array<string>;
-  /**
-   * Preferences provide a way to make the scheduler aware of factors such as
-   * topology. They are provided in order from highest to lowest precedence.
-   */
-  preferences?: Array<TaskSpecPlacementPreferences>;
-  /**
-   * Maximum number of replicas for per node (default value is 0, which is
-   * unlimited)
-   */
-  maxReplicas?: number;
-  /**
-   * Platforms stores all the platforms that the service's image can run on.
-   * This field is used in the platform filter for scheduling. If empty, then
-   * the platform filter is off, meaning there are no scheduling
-   * restrictions.
-   */
-  platforms?: Array<Platform>;
+    /**
+     * An array of constraint expressions to limit the set of nodes where a task
+     * can be scheduled. Constraint expressions can either use a _match_ (`==`)
+     * or _exclude_ (`!=`) rule. Multiple constraints find nodes that satisfy
+     * every expression (AND match). Constraints can match node or Docker Engine
+     * labels as follows: node attribute | matches | example
+     * ---------------------|--------------------------------|-----------------------------------------------
+     * `node.id` | Node ID | `node.id==2ivku8v2gvtg4` `node.hostname` | Node
+     * hostname | `node.hostname!=node-2` `node.role` | Node role
+     * (`manager`/`worker`) | `node.role==manager` `node.platform.os` | Node
+     * operating system | `node.platform.os==windows` `node.platform.arch` |
+     * Node architecture | `node.platform.arch==x86_64` `node.labels` |
+     * User-defined node labels | `node.labels.security==high` `engine.labels` |
+     * Docker Engine's labels | `engine.labels.operatingsystem==ubuntu-14.04`
+     * `engine.labels` apply to Docker Engine labels like operating system,
+     * drivers, etc. Swarm administrators add `node.labels` for operational
+     * purposes by using the [`node update endpoint`](#operation/NodeUpdate).
+     */
+    constraints?: Array<string>;
+    /**
+     * Preferences provide a way to make the scheduler aware of factors such as
+     * topology. They are provided in order from highest to lowest precedence.
+     */
+    preferences?: Array<TaskSpecPlacementPreferences>;
+    /**
+     * Maximum number of replicas for per node (default value is 0, which is
+     * unlimited)
+     */
+    maxReplicas?: number;
+    /**
+     * Platforms stores all the platforms that the service's image can run on.
+     * This field is used in the platform filter for scheduling. If empty, then
+     * the platform filter is off, meaning there are no scheduling
+     * restrictions.
+     */
+    platforms?: Array<Platform>;
 }
 
 export interface TaskSpecPlacementPreferences {
-  spread?: TaskSpecPlacementSpread;
+    spread?: TaskSpecPlacementSpread;
 }
 
 export interface TaskSpecPlacementSpread {
-  /** Label descriptor, such as `engine.labels.az`. */
-  spreadDescriptor?: string;
+    /** Label descriptor, such as `engine.labels.az`. */
+    spreadDescriptor?: string;
 }
 
 /**
@@ -3905,13 +3905,13 @@ export interface TaskSpecPlacementSpread {
  * `attachment`.
  */
 export interface TaskSpecPluginSpec {
-  /** The name or 'alias' to use for the plugin. */
-  name?: string;
-  /** The plugin image reference to use. */
-  remote?: string;
-  /** Disable the plugin once scheduled. */
-  disabled?: boolean;
-  pluginPrivilege?: Array<PluginPrivilege>;
+    /** The name or 'alias' to use for the plugin. */
+    name?: string;
+    /** The plugin image reference to use. */
+    remote?: string;
+    /** Disable the plugin once scheduled. */
+    disabled?: boolean;
+    pluginPrivilege?: Array<PluginPrivilege>;
 }
 
 /**
@@ -3919,8 +3919,8 @@ export interface TaskSpecPluginSpec {
  * part of the service.
  */
 export interface TaskSpecResources {
-  limits?: Limit;
-  reservations?: ResourceObject;
+    limits?: Limit;
+    reservations?: ResourceObject;
 }
 
 /**
@@ -3928,67 +3928,67 @@ export interface TaskSpecResources {
  * part of this service.
  */
 export interface TaskSpecRestartPolicy {
-  /** Condition for restart. */
-  condition?: TaskSpecRestartPolicy.ConditionEnum;
-  /** Delay between restart attempts. */
-  delay?: number;
-  /**
-   * Maximum attempts to restart a given container before giving up (default
-   * value is 0, which is ignored).
-   */
-  maxAttempts?: number;
-  /**
-   * Windows is the time window used to evaluate the restart policy (default
-   * value is 0, which is unbounded).
-   */
-  window?: number;
+    /** Condition for restart. */
+    condition?: TaskSpecRestartPolicy.ConditionEnum;
+    /** Delay between restart attempts. */
+    delay?: number;
+    /**
+     * Maximum attempts to restart a given container before giving up (default
+     * value is 0, which is ignored).
+     */
+    maxAttempts?: number;
+    /**
+     * Windows is the time window used to evaluate the restart policy (default
+     * value is 0, which is unbounded).
+     */
+    window?: number;
 }
 
 export namespace TaskSpecRestartPolicy {
-  export enum ConditionEnum {
-    None = "none",
-    OnFailure = "on-failure",
-    Any = "any",
-  }
+    export enum ConditionEnum {
+        None = "none",
+        OnFailure = "on-failure",
+        Any = "any",
+    }
 }
 
 export enum TaskState {
-  New = "new",
-  Allocated = "allocated",
-  Pending = "pending",
-  Assigned = "assigned",
-  Accepted = "accepted",
-  Preparing = "preparing",
-  Ready = "ready",
-  Starting = "starting",
-  Running = "running",
-  Complete = "complete",
-  Shutdown = "shutdown",
-  Failed = "failed",
-  Rejected = "rejected",
-  Remove = "remove",
-  Orphaned = "orphaned",
+    New = "new",
+    Allocated = "allocated",
+    Pending = "pending",
+    Assigned = "assigned",
+    Accepted = "accepted",
+    Preparing = "preparing",
+    Ready = "ready",
+    Starting = "starting",
+    Running = "running",
+    Complete = "complete",
+    Shutdown = "shutdown",
+    Failed = "failed",
+    Rejected = "rejected",
+    Remove = "remove",
+    Orphaned = "orphaned",
 }
 
 export interface TaskStatus {
-  timestamp?: string;
-  state?: TaskState;
-  message?: string;
-  err?: string;
-  containerStatus?: TaskStatusContainerStatus;
+    timestamp?: string;
+    state?: TaskState;
+    message?: string;
+    err?: string;
+    containerStatus?: TaskStatusContainerStatus;
 }
 
 export interface TaskStatusContainerStatus {
-  containerID?: string;
-  PID?: number;
-  exitCode?: number;
+    containerID?: string;
+    PID?: number;
+    exitCode?: number;
 }
 
 export interface ThrottleDevice {
-  /** Device path */
-  path?: string;
-  /** Rate */
-  rate?: number;
+    /** Device path */
+    path?: string;
+    /** Rate */
+    rate?: number;
 }
 
 /**
@@ -3996,80 +3996,80 @@ export interface ThrottleDevice {
  * see documentation for the Topology object in the CSI specification.
  */
 export interface Topology extends null<String, string> {
-  [key: string]: string;
+    [key: string]: string;
 }
 
 export interface UnlockKeyResponse {
-  /** The swarm's unlock key. */
-  unlockKey?: string;
+    /** The swarm's unlock key. */
+    unlockKey?: string;
 }
 
 export interface Volume {
-  /** Name of the volume. */
-  name: string;
-  /** Name of the volume driver used by the volume. */
-  driver: string;
-  /** Mount path of the volume on the host. */
-  mountpoint: string;
-  /** Date/Time the volume was created. */
-  createdAt?: string;
-  /**
-   * Low-level details about the volume, provided by the volume driver.
-   * Details are returned as a map with key/value pairs:
-   * `{\"key\":\"value\",\"key2\":\"value2\"}`. The `Status` field is
-   * optional, and is omitted if the volume driver does not support this
-   * feature.
-   */
-  status?: { [key: string]: any };
-  /** User-defined key/value metadata. */
-  labels: { [key: string]: string };
-  /**
-   * The level at which the volume exists. Either `global` for cluster-wide,
-   * or `local` for machine level.
-   */
-  scope: Volume.ScopeEnum;
-  clusterVolume?: ClusterVolume;
-  /** The driver specific options used when creating the volume. */
-  options: { [key: string]: string };
-  usageData?: VolumeUsageData;
+    /** Name of the volume. */
+    name: string;
+    /** Name of the volume driver used by the volume. */
+    driver: string;
+    /** Mount path of the volume on the host. */
+    mountpoint: string;
+    /** Date/Time the volume was created. */
+    createdAt?: string;
+    /**
+     * Low-level details about the volume, provided by the volume driver.
+     * Details are returned as a map with key/value pairs:
+     * `{\"key\":\"value\",\"key2\":\"value2\"}`. The `Status` field is
+     * optional, and is omitted if the volume driver does not support this
+     * feature.
+     */
+    status?: { [key: string]: any };
+    /** User-defined key/value metadata. */
+    labels: { [key: string]: string };
+    /**
+     * The level at which the volume exists. Either `global` for cluster-wide,
+     * or `local` for machine level.
+     */
+    scope: Volume.ScopeEnum;
+    clusterVolume?: ClusterVolume;
+    /** The driver specific options used when creating the volume. */
+    options: { [key: string]: string };
+    usageData?: VolumeUsageData;
 }
 
 export namespace Volume {
-  export enum ScopeEnum {
-    Local = "local",
-    Global = "global",
-  }
+    export enum ScopeEnum {
+        Local = "local",
+        Global = "global",
+    }
 }
 
 /** Volume configuration */
 export interface VolumeCreateOptions {
-  /** The new volume's name. If not specified, Docker generates a name. */
-  name?: string;
-  /** Name of the volume driver to use. */
-  driver?: string;
-  /**
-   * A mapping of driver options and values. These options are passed directly
-   * to the driver and are driver specific.
-   */
-  driverOpts?: { [key: string]: string };
-  /** User-defined key/value metadata. */
-  labels?: { [key: string]: string };
-  clusterVolumeSpec?: ClusterVolumeSpec;
+    /** The new volume's name. If not specified, Docker generates a name. */
+    name?: string;
+    /** Name of the volume driver to use. */
+    driver?: string;
+    /**
+     * A mapping of driver options and values. These options are passed directly
+     * to the driver and are driver specific.
+     */
+    driverOpts?: { [key: string]: string };
+    /** User-defined key/value metadata. */
+    labels?: { [key: string]: string };
+    clusterVolumeSpec?: ClusterVolumeSpec;
 }
 
 /** Volume list response */
 export interface VolumeListResponse {
-  /** List of volumes */
-  volumes?: Array<Volume>;
-  /** Warnings that occurred when fetching the list of volumes. */
-  warnings?: Array<string>;
+    /** List of volumes */
+    volumes?: Array<Volume>;
+    /** Warnings that occurred when fetching the list of volumes. */
+    warnings?: Array<string>;
 }
 
 export interface VolumePruneResponse {
-  /** Volumes that were deleted */
-  volumesDeleted?: Array<string>;
-  /** Disk space reclaimed in bytes */
-  spaceReclaimed?: number;
+    /** Volumes that were deleted */
+    volumesDeleted?: Array<string>;
+    /** Disk space reclaimed in bytes */
+    spaceReclaimed?: number;
 }
 
 /**
@@ -4077,23 +4077,23 @@ export interface VolumePruneResponse {
  * /system/df` endpoint, and omitted in other endpoints.
  */
 export interface VolumeUsageData {
-  /**
-   * Amount of disk space used by the volume (in bytes). This information is
-   * only available for volumes created with the `\"local\"` volume driver.
-   * For volumes created with other volume drivers, this field is set to `-1`
-   * ("not available")
-   */
-  size: number;
-  /**
-   * The number of containers referencing this volume. This field is set to
-   * `-1` if the reference-count is not available.
-   */
-  refCount: number;
+    /**
+     * Amount of disk space used by the volume (in bytes). This information is
+     * only available for volumes created with the `\"local\"` volume driver.
+     * For volumes created with other volume drivers, this field is set to `-1`
+     * ("not available")
+     */
+    size: number;
+    /**
+     * The number of containers referencing this volume. This field is set to
+     * `-1` if the reference-count is not available.
+     */
+    refCount: number;
 }
 
 /** Volume configuration */
 export interface VolumesNameBody {
-  spec?: ClusterVolumeSpec;
+    spec?: ClusterVolumeSpec;
 }
 
 /**
@@ -4104,45 +4104,33 @@ export interface VolumesNameBody {
  * @throws {RequiredError}
  * @summary Create a config fetch parameter creator
  */
-export const configCreateFetchParamCreator = (
-  body?: ConfigsCreateBody,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/configs/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const configCreateFetchParamCreator = (body?: ConfigsCreateBody, options: any = {}): FetchArguments => {
+    const localvariablePath = `/configs/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
+    localvariableHeaderParameter["Content-Type"] = "application/json";
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ConfigsCreateBody" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ConfigsCreateBody" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ConfigApi configDelete fetch parameter creator
@@ -4152,47 +4140,31 @@ export const configCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete a config fetch parameter creator
  */
-export const configDeleteFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling configDelete."
+export const configDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling configDelete.");
+    }
+    const localvariablePath = `/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/configs/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ConfigApi configInspect fetch parameter creator
@@ -4202,44 +4174,31 @@ export const configDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a config fetch parameter creator
  */
-export const configInspectFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling configInspect."
+export const configInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling configInspect.");
+    }
+    const localvariablePath = `/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/configs/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ConfigApi configList fetch parameter creator
@@ -4252,38 +4211,31 @@ export const configInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List configs fetch parameter creator
  */
-export const configListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/configs`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const configListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/configs`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ConfigApi configUpdate fetch parameter creator
@@ -4300,67 +4252,51 @@ export const configListFetchParamCreator = (
  * @summary Update a Config fetch parameter creator
  */
 export const configUpdateFetchParamCreator = (
-  id: string,
-  version: number,
-  body?: ConfigSpec,
-  options: any = {}
+    id: string,
+    version: number,
+    body?: ConfigSpec,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling configUpdate."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling configUpdate.");
+    }
+    // verify required parameter 'version' is not null or undefined
+    if (version === null || version === undefined) {
+        throw new RequiredError(
+            "version",
+            "Required parameter version was null or undefined when calling configUpdate."
+        );
+    }
+    const localvariablePath = `/configs/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (version !== undefined) {
+        localvariableQueryParameter["version"] = version;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'version' is not null or undefined
-  if (version === null || version === undefined) {
-    throw new RequiredError(
-      "version",
-      "Required parameter version was null or undefined when calling configUpdate."
-    );
-  }
-  const localvariablePath = `/configs/{id}/update`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ConfigSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (version !== undefined) {
-    localvariableQueryParameter["version"] = version;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ConfigSpec" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -4370,25 +4306,21 @@ export const configUpdateFetchParamCreator = (
  * @summary Create a config
  */
 export const configCreate = (
-  body?: ConfigsCreateBody,
-  options?: any
+    body?: ConfigsCreateBody,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-  const localvariableFetchArguments = configCreateFetchParamCreator(
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<IdResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = configCreateFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<IdResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID of the config
@@ -4397,25 +4329,21 @@ export const configCreate = (
  * @summary Delete a config
  */
 export const configDelete = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = configDeleteFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = configDeleteFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID of the config
@@ -4423,26 +4351,19 @@ export const configDelete = (
  * @throws {RequiredError}
  * @summary Inspect a config
  */
-export const configInspect = (
-  id: string,
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Config>) => {
-  const localvariableFetchArguments = configInspectFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Config>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const configInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Config>) => {
+    const localvariableFetchArguments = configInspectFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Config>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] A JSON encoded value of the filters (a
@@ -4454,25 +4375,21 @@ export const configInspect = (
  * @summary List configs
  */
 export const configList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Config>>) => {
-  const localvariableFetchArguments = configListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Config>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = configListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Config>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id The ID or name of the config
@@ -4487,29 +4404,23 @@ export const configList = (
  * @summary Update a Config
  */
 export const configUpdate = (
-  id: string,
-  version: number,
-  body?: ConfigSpec,
-  options?: any
+    id: string,
+    version: number,
+    body?: ConfigSpec,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = configUpdateFetchParamCreator(
-    id,
-    version,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = configUpdateFetchParamCreator(id, version, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -4519,64 +4430,59 @@ export const configUpdate = (
  * @interface ConfigApi
  */
 export interface ConfigApiInterface {
-  /**
-   * @memberof ConfigApiInterface
-   * @param {ConfigsCreateBody} [body]
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a config
-   */
-  configCreate(body?: ConfigsCreateBody, options?: any): Promise<IdResponse>;
+    /**
+     * @memberof ConfigApiInterface
+     * @param {ConfigsCreateBody} [body]
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a config
+     */
+    configCreate(body?: ConfigsCreateBody, options?: any): Promise<IdResponse>;
 
-  /**
-   * @memberof ConfigApiInterface
-   * @param {string} id ID of the config
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete a config
-   */
-  configDelete(id: string, options?: any): Promise<{}>;
+    /**
+     * @memberof ConfigApiInterface
+     * @param {string} id ID of the config
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete a config
+     */
+    configDelete(id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof ConfigApiInterface
-   * @param {string} id ID of the config
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a config
-   */
-  configInspect(id: string, options?: any): Promise<Config>;
+    /**
+     * @memberof ConfigApiInterface
+     * @param {string} id ID of the config
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a config
+     */
+    configInspect(id: string, options?: any): Promise<Config>;
 
-  /**
-   * @memberof ConfigApiInterface
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the configs list. Available
-   *   filters: - `id=<config id>` - `label=<key> or label=<key>=value` -
-   *   `name=<config name>` - `names=<config name>`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List configs
-   */
-  configList(filters?: string, options?: any): Promise<Array<Config>>;
+    /**
+     * @memberof ConfigApiInterface
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the configs list. Available
+     *   filters: - `id=<config id>` - `label=<key> or label=<key>=value` -
+     *   `name=<config name>` - `names=<config name>`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List configs
+     */
+    configList(filters?: string, options?: any): Promise<Array<Config>>;
 
-  /**
-   * @memberof ConfigApiInterface
-   * @param {string} id The ID or name of the config
-   * @param {number} version The version number of the config object being
-   *   updated. This is required to avoid conflicting writes.
-   * @param {ConfigSpec} [body] The spec of the config to update. Currently,
-   *   only the Labels field can be updated. All other fields must remain
-   *   unchanged from the [ConfigInspect endpoint](#operation/ConfigInspect)
-   *   response values.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Update a Config
-   */
-  configUpdate(
-    id: string,
-    version: number,
-    body?: ConfigSpec,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof ConfigApiInterface
+     * @param {string} id The ID or name of the config
+     * @param {number} version The version number of the config object being
+     *   updated. This is required to avoid conflicting writes.
+     * @param {ConfigSpec} [body] The spec of the config to update. Currently,
+     *   only the Labels field can be updated. All other fields must remain
+     *   unchanged from the [ConfigInspect endpoint](#operation/ConfigInspect)
+     *   response values.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Update a Config
+     */
+    configUpdate(id: string, version: number, body?: ConfigSpec, options?: any): Promise<{}>;
 }
 
 /**
@@ -4588,56 +4494,39 @@ export interface ConfigApiInterface {
  * @throws {RequiredError}
  * @summary Get an archive of a filesystem resource in a container fetch parameter creator
  */
-export const containerArchiveFetchParamCreator = (
-  id: string,
-  path: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerArchive."
+export const containerArchiveFetchParamCreator = (id: string, path: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerArchive.");
+    }
+    // verify required parameter 'path' is not null or undefined
+    if (path === null || path === undefined) {
+        throw new RequiredError("path", "Required parameter path was null or undefined when calling containerArchive.");
+    }
+    const localvariablePath = `/containers/{id}/archive`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (path !== undefined) {
+        localvariableQueryParameter["path"] = path;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'path' is not null or undefined
-  if (path === null || path === undefined) {
-    throw new RequiredError(
-      "path",
-      "Required parameter path was null or undefined when calling containerArchive."
-    );
-  }
-  const localvariablePath = `/containers/{id}/archive`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (path !== undefined) {
-    localvariableQueryParameter["path"] = path;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerArchiveInfo fetch parameter creator
@@ -4648,59 +4537,42 @@ export const containerArchiveFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get information about files in a container fetch parameter creator
  */
-export const containerArchiveInfoFetchParamCreator = (
-  id: string,
-  path: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerArchiveInfo."
+export const containerArchiveInfoFetchParamCreator = (id: string, path: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerArchiveInfo.");
+    }
+    // verify required parameter 'path' is not null or undefined
+    if (path === null || path === undefined) {
+        throw new RequiredError(
+            "path",
+            "Required parameter path was null or undefined when calling containerArchiveInfo."
+        );
+    }
+    const localvariablePath = `/containers/{id}/archive`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "HEAD" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (path !== undefined) {
+        localvariableQueryParameter["path"] = path;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'path' is not null or undefined
-  if (path === null || path === undefined) {
-    throw new RequiredError(
-      "path",
-      "Required parameter path was null or undefined when calling containerArchiveInfo."
-    );
-  }
-  const localvariablePath = `/containers/{id}/archive`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "HEAD" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (path !== undefined) {
-    localvariableQueryParameter["path"] = path;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerAttach fetch parameter creator
@@ -4724,76 +4596,63 @@ export const containerArchiveInfoFetchParamCreator = (
  * @summary Attach to a container fetch parameter creator
  */
 export const containerAttachFetchParamCreator = (
-  id: string,
-  detachKeys?: string,
-  logs?: boolean,
-  stream?: boolean,
-  stdin?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  options: any = {}
+    id: string,
+    detachKeys?: string,
+    logs?: boolean,
+    stream?: boolean,
+    stdin?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerAttach."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerAttach.");
+    }
+    const localvariablePath = `/containers/{id}/attach`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (detachKeys !== undefined) {
+        localvariableQueryParameter["detachKeys"] = detachKeys;
+    }
+
+    if (logs !== undefined) {
+        localvariableQueryParameter["logs"] = logs;
+    }
+
+    if (stream !== undefined) {
+        localvariableQueryParameter["stream"] = stream;
+    }
+
+    if (stdin !== undefined) {
+        localvariableQueryParameter["stdin"] = stdin;
+    }
+
+    if (stdout !== undefined) {
+        localvariableQueryParameter["stdout"] = stdout;
+    }
+
+    if (stderr !== undefined) {
+        localvariableQueryParameter["stderr"] = stderr;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/attach`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (detachKeys !== undefined) {
-    localvariableQueryParameter["detachKeys"] = detachKeys;
-  }
-
-  if (logs !== undefined) {
-    localvariableQueryParameter["logs"] = logs;
-  }
-
-  if (stream !== undefined) {
-    localvariableQueryParameter["stream"] = stream;
-  }
-
-  if (stdin !== undefined) {
-    localvariableQueryParameter["stdin"] = stdin;
-  }
-
-  if (stdout !== undefined) {
-    localvariableQueryParameter["stdout"] = stdout;
-  }
-
-  if (stderr !== undefined) {
-    localvariableQueryParameter["stderr"] = stderr;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerAttachWebsocket fetch parameter creator
@@ -4812,73 +4671,66 @@ export const containerAttachFetchParamCreator = (
  * @summary Attach to a container via a websocket fetch parameter creator
  */
 export const containerAttachWebsocketFetchParamCreator = (
-  id: string,
-  detachKeys?: string,
-  logs?: boolean,
-  stream?: boolean,
-  stdin?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  options: any = {}
+    id: string,
+    detachKeys?: string,
+    logs?: boolean,
+    stream?: boolean,
+    stdin?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerAttachWebsocket."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError(
+            "id",
+            "Required parameter id was null or undefined when calling containerAttachWebsocket."
+        );
+    }
+    const localvariablePath = `/containers/{id}/attach/ws`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (detachKeys !== undefined) {
+        localvariableQueryParameter["detachKeys"] = detachKeys;
+    }
+
+    if (logs !== undefined) {
+        localvariableQueryParameter["logs"] = logs;
+    }
+
+    if (stream !== undefined) {
+        localvariableQueryParameter["stream"] = stream;
+    }
+
+    if (stdin !== undefined) {
+        localvariableQueryParameter["stdin"] = stdin;
+    }
+
+    if (stdout !== undefined) {
+        localvariableQueryParameter["stdout"] = stdout;
+    }
+
+    if (stderr !== undefined) {
+        localvariableQueryParameter["stderr"] = stderr;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/attach/ws`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (detachKeys !== undefined) {
-    localvariableQueryParameter["detachKeys"] = detachKeys;
-  }
-
-  if (logs !== undefined) {
-    localvariableQueryParameter["logs"] = logs;
-  }
-
-  if (stream !== undefined) {
-    localvariableQueryParameter["stream"] = stream;
-  }
-
-  if (stdin !== undefined) {
-    localvariableQueryParameter["stdin"] = stdin;
-  }
-
-  if (stdout !== undefined) {
-    localvariableQueryParameter["stdout"] = stdout;
-  }
-
-  if (stderr !== undefined) {
-    localvariableQueryParameter["stderr"] = stderr;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerChanges fetch parameter creator
@@ -4888,44 +4740,31 @@ export const containerAttachWebsocketFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get changes on a container’s filesystem fetch parameter creator
  */
-export const containerChangesFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerChanges."
+export const containerChangesFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerChanges.");
+    }
+    const localvariablePath = `/containers/{id}/changes`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/changes`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerCreate fetch parameter creator
@@ -4949,61 +4788,49 @@ export const containerChangesFetchParamCreator = (
  * @summary Create a container fetch parameter creator
  */
 export const containerCreateFetchParamCreator = (
-  body: ContainersCreateBody,
-  name?: string,
-  platform?: string,
-  options: any = {}
+    body: ContainersCreateBody,
+    name?: string,
+    platform?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling containerCreate."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling containerCreate.");
+    }
+    const localvariablePath = `/containers/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (name !== undefined) {
+        localvariableQueryParameter["name"] = name;
+    }
+
+    if (platform !== undefined) {
+        localvariableQueryParameter["platform"] = platform;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ContainersCreateBody1" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (name !== undefined) {
-    localvariableQueryParameter["name"] = name;
-  }
-
-  if (platform !== undefined) {
-    localvariableQueryParameter["platform"] = platform;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ContainersCreateBody1" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerDelete fetch parameter creator
@@ -5019,61 +4846,48 @@ export const containerCreateFetchParamCreator = (
  * @summary Remove a container fetch parameter creator
  */
 export const containerDeleteFetchParamCreator = (
-  id: string,
-  v?: boolean,
-  force?: boolean,
-  link?: boolean,
-  options: any = {}
+    id: string,
+    v?: boolean,
+    force?: boolean,
+    link?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerDelete."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerDelete.");
+    }
+    const localvariablePath = `/containers/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (v !== undefined) {
+        localvariableQueryParameter["v"] = v;
+    }
+
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
+
+    if (link !== undefined) {
+        localvariableQueryParameter["link"] = link;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (v !== undefined) {
-    localvariableQueryParameter["v"] = v;
-  }
-
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
-
-  if (link !== undefined) {
-    localvariableQueryParameter["link"] = link;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerExport fetch parameter creator
@@ -5083,44 +4897,31 @@ export const containerDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Export a container fetch parameter creator
  */
-export const containerExportFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerExport."
+export const containerExportFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerExport.");
+    }
+    const localvariablePath = `/containers/{id}/export`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/export`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerInspect fetch parameter creator
@@ -5132,49 +4933,35 @@ export const containerExportFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a container fetch parameter creator
  */
-export const containerInspectFetchParamCreator = (
-  id: string,
-  size?: boolean,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerInspect."
+export const containerInspectFetchParamCreator = (id: string, size?: boolean, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerInspect.");
+    }
+    const localvariablePath = `/containers/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (size !== undefined) {
+        localvariableQueryParameter["size"] = size;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/json`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (size !== undefined) {
-    localvariableQueryParameter["size"] = size;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerKill fetch parameter creator
@@ -5186,52 +4973,35 @@ export const containerInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Kill a container fetch parameter creator
  */
-export const containerKillFetchParamCreator = (
-  id: string,
-  signal?: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerKill."
+export const containerKillFetchParamCreator = (id: string, signal?: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerKill.");
+    }
+    const localvariablePath = `/containers/{id}/kill`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (signal !== undefined) {
+        localvariableQueryParameter["signal"] = signal;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/kill`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (signal !== undefined) {
-    localvariableQueryParameter["signal"] = signal;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerList fetch parameter creator
@@ -5263,52 +5033,48 @@ export const containerKillFetchParamCreator = (
  * @summary List containers fetch parameter creator
  */
 export const containerListFetchParamCreator = (
-  all?: boolean,
-  limit?: number,
-  size?: boolean,
-  filters?: string,
-  options: any = {}
+    all?: boolean,
+    limit?: number,
+    size?: boolean,
+    filters?: string,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/containers/json`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/containers/json`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (all !== undefined) {
-    localvariableQueryParameter["all"] = all;
-  }
+    if (all !== undefined) {
+        localvariableQueryParameter["all"] = all;
+    }
 
-  if (limit !== undefined) {
-    localvariableQueryParameter["limit"] = limit;
-  }
+    if (limit !== undefined) {
+        localvariableQueryParameter["limit"] = limit;
+    }
 
-  if (size !== undefined) {
-    localvariableQueryParameter["size"] = size;
-  }
+    if (size !== undefined) {
+        localvariableQueryParameter["size"] = size;
+    }
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerLogs fetch parameter creator
@@ -5328,78 +5094,68 @@ export const containerListFetchParamCreator = (
  * @summary Get container logs fetch parameter creator
  */
 export const containerLogsFetchParamCreator = (
-  id: string,
-  follow?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  since?: number,
-  until?: number,
-  timestamps?: boolean,
-  tail?: string,
-  options: any = {}
+    id: string,
+    follow?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    since?: number,
+    until?: number,
+    timestamps?: boolean,
+    tail?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerLogs."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerLogs.");
+    }
+    const localvariablePath = `/containers/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (follow !== undefined) {
+        localvariableQueryParameter["follow"] = follow;
+    }
+
+    if (stdout !== undefined) {
+        localvariableQueryParameter["stdout"] = stdout;
+    }
+
+    if (stderr !== undefined) {
+        localvariableQueryParameter["stderr"] = stderr;
+    }
+
+    if (since !== undefined) {
+        localvariableQueryParameter["since"] = since;
+    }
+
+    if (until !== undefined) {
+        localvariableQueryParameter["until"] = until;
+    }
+
+    if (timestamps !== undefined) {
+        localvariableQueryParameter["timestamps"] = timestamps;
+    }
+
+    if (tail !== undefined) {
+        localvariableQueryParameter["tail"] = tail;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/logs`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (follow !== undefined) {
-    localvariableQueryParameter["follow"] = follow;
-  }
-
-  if (stdout !== undefined) {
-    localvariableQueryParameter["stdout"] = stdout;
-  }
-
-  if (stderr !== undefined) {
-    localvariableQueryParameter["stderr"] = stderr;
-  }
-
-  if (since !== undefined) {
-    localvariableQueryParameter["since"] = since;
-  }
-
-  if (until !== undefined) {
-    localvariableQueryParameter["until"] = until;
-  }
-
-  if (timestamps !== undefined) {
-    localvariableQueryParameter["timestamps"] = timestamps;
-  }
-
-  if (tail !== undefined) {
-    localvariableQueryParameter["tail"] = tail;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerPause fetch parameter creator
@@ -5409,47 +5165,31 @@ export const containerLogsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Pause a container fetch parameter creator
  */
-export const containerPauseFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerPause."
+export const containerPauseFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerPause.");
+    }
+    const localvariablePath = `/containers/{id}/pause`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/pause`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerPrune fetch parameter creator
@@ -5466,41 +5206,31 @@ export const containerPauseFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete stopped containers fetch parameter creator
  */
-export const containerPruneFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/containers/prune`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const containerPruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/containers/prune`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerRename fetch parameter creator
@@ -5511,59 +5241,39 @@ export const containerPruneFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Rename a container fetch parameter creator
  */
-export const containerRenameFetchParamCreator = (
-  id: string,
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerRename."
+export const containerRenameFetchParamCreator = (id: string, name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerRename.");
+    }
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling containerRename.");
+    }
+    const localvariablePath = `/containers/{id}/rename`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (name !== undefined) {
+        localvariableQueryParameter["name"] = name;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling containerRename."
-    );
-  }
-  const localvariablePath = `/containers/{id}/rename`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (name !== undefined) {
-    localvariableQueryParameter["name"] = name;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerResize fetch parameter creator
@@ -5576,56 +5286,43 @@ export const containerRenameFetchParamCreator = (
  * @summary Resize a container TTY fetch parameter creator
  */
 export const containerResizeFetchParamCreator = (
-  id: string,
-  h?: number,
-  w?: number,
-  options: any = {}
+    id: string,
+    h?: number,
+    w?: number,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerResize."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerResize.");
+    }
+    const localvariablePath = `/containers/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (h !== undefined) {
+        localvariableQueryParameter["h"] = h;
+    }
+
+    if (w !== undefined) {
+        localvariableQueryParameter["w"] = w;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/resize`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (h !== undefined) {
-    localvariableQueryParameter["h"] = h;
-  }
-
-  if (w !== undefined) {
-    localvariableQueryParameter["w"] = w;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerRestart fetch parameter creator
@@ -5639,56 +5336,43 @@ export const containerResizeFetchParamCreator = (
  * @summary Restart a container fetch parameter creator
  */
 export const containerRestartFetchParamCreator = (
-  id: string,
-  signal?: string,
-  t?: number,
-  options: any = {}
+    id: string,
+    signal?: string,
+    t?: number,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerRestart."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerRestart.");
+    }
+    const localvariablePath = `/containers/{id}/restart`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (signal !== undefined) {
+        localvariableQueryParameter["signal"] = signal;
+    }
+
+    if (t !== undefined) {
+        localvariableQueryParameter["t"] = t;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/restart`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (signal !== undefined) {
-    localvariableQueryParameter["signal"] = signal;
-  }
-
-  if (t !== undefined) {
-    localvariableQueryParameter["t"] = t;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerStart fetch parameter creator
@@ -5701,52 +5385,35 @@ export const containerRestartFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Start a container fetch parameter creator
  */
-export const containerStartFetchParamCreator = (
-  id: string,
-  detachKeys?: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerStart."
+export const containerStartFetchParamCreator = (id: string, detachKeys?: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerStart.");
+    }
+    const localvariablePath = `/containers/{id}/start`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (detachKeys !== undefined) {
+        localvariableQueryParameter["detachKeys"] = detachKeys;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/start`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (detachKeys !== undefined) {
-    localvariableQueryParameter["detachKeys"] = detachKeys;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerStats fetch parameter creator
@@ -5761,53 +5428,43 @@ export const containerStartFetchParamCreator = (
  * @summary Get container stats based on resource usage fetch parameter creator
  */
 export const containerStatsFetchParamCreator = (
-  id: string,
-  stream?: boolean,
-  oneShot?: boolean,
-  options: any = {}
+    id: string,
+    stream?: boolean,
+    oneShot?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerStats."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerStats.");
+    }
+    const localvariablePath = `/containers/{id}/stats`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (stream !== undefined) {
+        localvariableQueryParameter["stream"] = stream;
+    }
+
+    if (oneShot !== undefined) {
+        localvariableQueryParameter["one-shot"] = oneShot;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/stats`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (stream !== undefined) {
-    localvariableQueryParameter["stream"] = stream;
-  }
-
-  if (oneShot !== undefined) {
-    localvariableQueryParameter["one-shot"] = oneShot;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerStop fetch parameter creator
@@ -5821,56 +5478,43 @@ export const containerStatsFetchParamCreator = (
  * @summary Stop a container fetch parameter creator
  */
 export const containerStopFetchParamCreator = (
-  id: string,
-  signal?: string,
-  t?: number,
-  options: any = {}
+    id: string,
+    signal?: string,
+    t?: number,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerStop."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerStop.");
+    }
+    const localvariablePath = `/containers/{id}/stop`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (signal !== undefined) {
+        localvariableQueryParameter["signal"] = signal;
+    }
+
+    if (t !== undefined) {
+        localvariableQueryParameter["t"] = t;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/stop`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (signal !== undefined) {
-    localvariableQueryParameter["signal"] = signal;
-  }
-
-  if (t !== undefined) {
-    localvariableQueryParameter["t"] = t;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerTop fetch parameter creator
@@ -5881,49 +5525,35 @@ export const containerStopFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List processes running inside a container fetch parameter creator
  */
-export const containerTopFetchParamCreator = (
-  id: string,
-  psArgs?: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerTop."
+export const containerTopFetchParamCreator = (id: string, psArgs?: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerTop.");
+    }
+    const localvariablePath = `/containers/{id}/top`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (psArgs !== undefined) {
+        localvariableQueryParameter["ps_args"] = psArgs;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/top`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (psArgs !== undefined) {
-    localvariableQueryParameter["ps_args"] = psArgs;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerUnpause fetch parameter creator
@@ -5933,47 +5563,31 @@ export const containerTopFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Unpause a container fetch parameter creator
  */
-export const containerUnpauseFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerUnpause."
+export const containerUnpauseFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerUnpause.");
+    }
+    const localvariablePath = `/containers/{id}/unpause`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/unpause`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerUpdate fetch parameter creator
@@ -5984,63 +5598,40 @@ export const containerUnpauseFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Update a container fetch parameter creator
  */
-export const containerUpdateFetchParamCreator = (
-  body: IdUpdateBody,
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling containerUpdate."
+export const containerUpdateFetchParamCreator = (body: IdUpdateBody, id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling containerUpdate.");
+    }
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerUpdate.");
+    }
+    const localvariablePath = `/containers/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerUpdate."
-    );
-  }
-  const localvariablePath = `/containers/{id}/update`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"IdUpdateBody" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"IdUpdateBody" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi containerWait fetch parameter creator
@@ -6052,52 +5643,35 @@ export const containerUpdateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Wait for a container fetch parameter creator
  */
-export const containerWaitFetchParamCreator = (
-  id: string,
-  condition?: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerWait."
+export const containerWaitFetchParamCreator = (id: string, condition?: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerWait.");
+    }
+    const localvariablePath = `/containers/{id}/wait`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (condition !== undefined) {
+        localvariableQueryParameter["condition"] = condition;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/containers/{id}/wait`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (condition !== undefined) {
-    localvariableQueryParameter["condition"] = condition;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ContainerApi putContainerArchive fetch parameter creator
@@ -6118,81 +5692,68 @@ export const containerWaitFetchParamCreator = (
  * @summary Extract an archive of files or folders to a directory in a container fetch parameter creator
  */
 export const putContainerArchiveFetchParamCreator = (
-  body: Object,
-  id: string,
-  path: string,
-  noOverwriteDirNonDir?: string,
-  copyUIDGID?: string,
-  options: any = {}
+    body: Object,
+    id: string,
+    path: string,
+    noOverwriteDirNonDir?: string,
+    copyUIDGID?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling putContainerArchive."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError(
+            "body",
+            "Required parameter body was null or undefined when calling putContainerArchive."
+        );
+    }
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling putContainerArchive.");
+    }
+    // verify required parameter 'path' is not null or undefined
+    if (path === null || path === undefined) {
+        throw new RequiredError(
+            "path",
+            "Required parameter path was null or undefined when calling putContainerArchive."
+        );
+    }
+    const localvariablePath = `/containers/{id}/archive`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "PUT" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (path !== undefined) {
+        localvariableQueryParameter["path"] = path;
+    }
+
+    if (noOverwriteDirNonDir !== undefined) {
+        localvariableQueryParameter["noOverwriteDirNonDir"] = noOverwriteDirNonDir;
+    }
+
+    if (copyUIDGID !== undefined) {
+        localvariableQueryParameter["copyUIDGID"] = copyUIDGID;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/x-tar";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling putContainerArchive."
-    );
-  }
-  // verify required parameter 'path' is not null or undefined
-  if (path === null || path === undefined) {
-    throw new RequiredError(
-      "path",
-      "Required parameter path was null or undefined when calling putContainerArchive."
-    );
-  }
-  const localvariablePath = `/containers/{id}/archive`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "PUT" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (path !== undefined) {
-    localvariableQueryParameter["path"] = path;
-  }
-
-  if (noOverwriteDirNonDir !== undefined) {
-    localvariableQueryParameter["noOverwriteDirNonDir"] = noOverwriteDirNonDir;
-  }
-
-  if (copyUIDGID !== undefined) {
-    localvariableQueryParameter["copyUIDGID"] = copyUIDGID;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/x-tar";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Object" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -6205,27 +5766,22 @@ export const putContainerArchiveFetchParamCreator = (
  * @summary Get an archive of a filesystem resource in a container
  */
 export const containerArchive = (
-  id: string,
-  path: string,
-  options?: any
+    id: string,
+    path: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerArchiveFetchParamCreator(
-    id,
-    path,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerArchiveFetchParamCreator(id, path, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * A response header `X-Docker-Container-Path-Stat` is returned, containing a
@@ -6239,27 +5795,22 @@ export const containerArchive = (
  * @summary Get information about files in a container
  */
 export const containerArchiveInfo = (
-  id: string,
-  path: string,
-  options?: any
+    id: string,
+    path: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerArchiveInfoFetchParamCreator(
-    id,
-    path,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerArchiveInfoFetchParamCreator(id, path, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Attach to a container to read its output or send it input. You can attach to
@@ -6321,37 +5872,36 @@ export const containerArchiveInfo = (
  * @summary Attach to a container
  */
 export const containerAttach = (
-  id: string,
-  detachKeys?: string,
-  logs?: boolean,
-  stream?: boolean,
-  stdin?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  options?: any
+    id: string,
+    detachKeys?: string,
+    logs?: boolean,
+    stream?: boolean,
+    stdin?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerAttachFetchParamCreator(
-    id,
-    detachKeys,
-    logs,
-    stream,
-    stdin,
-    stdout,
-    stderr,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerAttachFetchParamCreator(
+        id,
+        detachKeys,
+        logs,
+        stream,
+        stdin,
+        stdout,
+        stderr,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of the container
@@ -6368,37 +5918,36 @@ export const containerAttach = (
  * @summary Attach to a container via a websocket
  */
 export const containerAttachWebsocket = (
-  id: string,
-  detachKeys?: string,
-  logs?: boolean,
-  stream?: boolean,
-  stdin?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  options?: any
+    id: string,
+    detachKeys?: string,
+    logs?: boolean,
+    stream?: boolean,
+    stdin?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerAttachWebsocketFetchParamCreator(
-    id,
-    detachKeys,
-    logs,
-    stream,
-    stdin,
-    stdout,
-    stderr,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerAttachWebsocketFetchParamCreator(
+        id,
+        detachKeys,
+        logs,
+        stream,
+        stdin,
+        stdout,
+        stderr,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Returns which files in a container's filesystem have been added, deleted, or
@@ -6411,28 +5960,21 @@ export const containerAttachWebsocket = (
  * @summary Get changes on a container’s filesystem
  */
 export const containerChanges = (
-  id: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<Array<FilesystemChange>>) => {
-  const localvariableFetchArguments = containerChangesFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<FilesystemChange>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    id: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<Array<FilesystemChange>>) => {
+    const localvariableFetchArguments = containerChangesFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<FilesystemChange>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {ContainersCreateBody} body Container to create
@@ -6454,32 +5996,23 @@ export const containerChanges = (
  * @summary Create a container
  */
 export const containerCreate = (
-  body: ContainersCreateBody,
-  name?: string,
-  platform?: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<ContainerCreateResponse>) => {
-  const localvariableFetchArguments = containerCreateFetchParamCreator(
-    body,
-    name,
-    platform,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ContainerCreateResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    body: ContainersCreateBody,
+    name?: string,
+    platform?: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerCreateResponse>) => {
+    const localvariableFetchArguments = containerCreateFetchParamCreator(body, name, platform, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ContainerCreateResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of the container
@@ -6493,31 +6026,24 @@ export const containerCreate = (
  * @summary Remove a container
  */
 export const containerDelete = (
-  id: string,
-  v?: boolean,
-  force?: boolean,
-  link?: boolean,
-  options?: any
+    id: string,
+    v?: boolean,
+    force?: boolean,
+    link?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerDeleteFetchParamCreator(
-    id,
-    v,
-    force,
-    link,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerDeleteFetchParamCreator(id, v, force, link, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Export the contents of a container as a tarball.
@@ -6528,25 +6054,21 @@ export const containerDelete = (
  * @summary Export a container
  */
 export const containerExport = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerExportFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerExportFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Return low-level information about a container.
@@ -6559,30 +6081,22 @@ export const containerExport = (
  * @summary Inspect a container
  */
 export const containerInspect = (
-  id: string,
-  size?: boolean,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<ContainerInspectResponse>) => {
-  const localvariableFetchArguments = containerInspectFetchParamCreator(
-    id,
-    size,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ContainerInspectResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    id: string,
+    size?: boolean,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerInspectResponse>) => {
+    const localvariableFetchArguments = containerInspectFetchParamCreator(id, size, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ContainerInspectResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Send a POSIX signal to a container, defaulting to killing to the container.
@@ -6595,27 +6109,22 @@ export const containerInspect = (
  * @summary Kill a container
  */
 export const containerKill = (
-  id: string,
-  signal?: string,
-  options?: any
+    id: string,
+    signal?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerKillFetchParamCreator(
-    id,
-    signal,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerKillFetchParamCreator(id, signal, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Returns a list of containers. For details on the format, see the [inspect
@@ -6650,34 +6159,24 @@ export const containerKill = (
  * @summary List containers
  */
 export const containerList = (
-  all?: boolean,
-  limit?: number,
-  size?: boolean,
-  filters?: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<Array<ContainerSummary>>) => {
-  const localvariableFetchArguments = containerListFetchParamCreator(
-    all,
-    limit,
-    size,
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<ContainerSummary>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    all?: boolean,
+    limit?: number,
+    size?: boolean,
+    filters?: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ContainerSummary>>) => {
+    const localvariableFetchArguments = containerListFetchParamCreator(all, limit, size, filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<ContainerSummary>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Get `stdout` and `stderr` logs from a container. Note: This endpoint works
@@ -6698,39 +6197,38 @@ export const containerList = (
  * @summary Get container logs
  */
 export const containerLogs = (
-  id: string,
-  follow?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  since?: number,
-  until?: number,
-  timestamps?: boolean,
-  tail?: string,
-  options?: any
+    id: string,
+    follow?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    since?: number,
+    until?: number,
+    timestamps?: boolean,
+    tail?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-  const localvariableFetchArguments = containerLogsFetchParamCreator(
-    id,
-    follow,
-    stdout,
-    stderr,
-    since,
-    until,
-    timestamps,
-    tail,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Blob>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerLogsFetchParamCreator(
+        id,
+        follow,
+        stdout,
+        stderr,
+        since,
+        until,
+        timestamps,
+        tail,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Blob>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Use the freezer cgroup to suspend all processes in a container.
@@ -6745,25 +6243,21 @@ export const containerLogs = (
  * @summary Pause a container
  */
 export const containerPause = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerPauseFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerPauseFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] Filters to process on the prune list, encoded as
@@ -6779,28 +6273,21 @@ export const containerPause = (
  * @summary Delete stopped containers
  */
 export const containerPrune = (
-  filters?: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<ContainerPruneResponse>) => {
-  const localvariableFetchArguments = containerPruneFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ContainerPruneResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    filters?: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerPruneResponse>) => {
+    const localvariableFetchArguments = containerPruneFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ContainerPruneResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of the container
@@ -6810,27 +6297,22 @@ export const containerPrune = (
  * @summary Rename a container
  */
 export const containerRename = (
-  id: string,
-  name: string,
-  options?: any
+    id: string,
+    name: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerRenameFetchParamCreator(
-    id,
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerRenameFetchParamCreator(id, name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Resize the TTY for a container.
@@ -6843,29 +6325,23 @@ export const containerRename = (
  * @summary Resize a container TTY
  */
 export const containerResize = (
-  id: string,
-  h?: number,
-  w?: number,
-  options?: any
+    id: string,
+    h?: number,
+    w?: number,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerResizeFetchParamCreator(
-    id,
-    h,
-    w,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerResizeFetchParamCreator(id, h, w, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of the container
@@ -6877,29 +6353,23 @@ export const containerResize = (
  * @summary Restart a container
  */
 export const containerRestart = (
-  id: string,
-  signal?: string,
-  t?: number,
-  options?: any
+    id: string,
+    signal?: string,
+    t?: number,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerRestartFetchParamCreator(
-    id,
-    signal,
-    t,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerRestartFetchParamCreator(id, signal, t, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of the container
@@ -6911,27 +6381,22 @@ export const containerRestart = (
  * @summary Start a container
  */
 export const containerStart = (
-  id: string,
-  detachKeys?: string,
-  options?: any
+    id: string,
+    detachKeys?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerStartFetchParamCreator(
-    id,
-    detachKeys,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerStartFetchParamCreator(id, detachKeys, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * This endpoint returns a live stream of a container’s resource usage
@@ -6964,29 +6429,23 @@ export const containerStart = (
  * @summary Get container stats based on resource usage
  */
 export const containerStats = (
-  id: string,
-  stream?: boolean,
-  oneShot?: boolean,
-  options?: any
+    id: string,
+    stream?: boolean,
+    oneShot?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<any>) => {
-  const localvariableFetchArguments = containerStatsFetchParamCreator(
-    id,
-    stream,
-    oneShot,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<any>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerStatsFetchParamCreator(id, stream, oneShot, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<any>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of the container
@@ -6998,29 +6457,23 @@ export const containerStats = (
  * @summary Stop a container
  */
 export const containerStop = (
-  id: string,
-  signal?: string,
-  t?: number,
-  options?: any
+    id: string,
+    signal?: string,
+    t?: number,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerStopFetchParamCreator(
-    id,
-    signal,
-    t,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerStopFetchParamCreator(id, signal, t, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * On Unix systems, this is done by running the `ps` command. This endpoint is
@@ -7033,27 +6486,22 @@ export const containerStop = (
  * @summary List processes running inside a container
  */
 export const containerTop = (
-  id: string,
-  psArgs?: string,
-  options?: any
+    id: string,
+    psArgs?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerTopResponse>) => {
-  const localvariableFetchArguments = containerTopFetchParamCreator(
-    id,
-    psArgs,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ContainerTopResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerTopFetchParamCreator(id, psArgs, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ContainerTopResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Resume a container which has been paused.
@@ -7064,25 +6512,21 @@ export const containerTop = (
  * @summary Unpause a container
  */
 export const containerUnpause = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = containerUnpauseFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerUnpauseFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Change various configuration options of a container without having to
@@ -7095,30 +6539,22 @@ export const containerUnpause = (
  * @summary Update a container
  */
 export const containerUpdate = (
-  body: IdUpdateBody,
-  id: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<ContainerUpdateResponse>) => {
-  const localvariableFetchArguments = containerUpdateFetchParamCreator(
-    body,
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ContainerUpdateResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    body: IdUpdateBody,
+    id: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerUpdateResponse>) => {
+    const localvariableFetchArguments = containerUpdateFetchParamCreator(body, id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ContainerUpdateResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Block until a container stops, then returns the exit code.
@@ -7131,27 +6567,22 @@ export const containerUpdate = (
  * @summary Wait for a container
  */
 export const containerWait = (
-  id: string,
-  condition?: string,
-  options?: any
+    id: string,
+    condition?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerWaitResponse>) => {
-  const localvariableFetchArguments = containerWaitFetchParamCreator(
-    id,
-    condition,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ContainerWaitResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerWaitFetchParamCreator(id, condition, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ContainerWaitResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Upload a tar archive to be extracted to a path in the filesystem of container
@@ -7174,33 +6605,32 @@ export const containerWait = (
  * @summary Extract an archive of files or folders to a directory in a container
  */
 export const putContainerArchive = (
-  body: Object,
-  id: string,
-  path: string,
-  noOverwriteDirNonDir?: string,
-  copyUIDGID?: string,
-  options?: any
+    body: Object,
+    id: string,
+    path: string,
+    noOverwriteDirNonDir?: string,
+    copyUIDGID?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = putContainerArchiveFetchParamCreator(
-    body,
-    id,
-    path,
-    noOverwriteDirNonDir,
-    copyUIDGID,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = putContainerArchiveFetchParamCreator(
+        body,
+        id,
+        path,
+        noOverwriteDirNonDir,
+        copyUIDGID,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -7210,552 +6640,507 @@ export const putContainerArchive = (
  * @interface ContainerApi
  */
 export interface ContainerApiInterface {
-  /**
-   * Get a tar archive of a resource in the filesystem of container id.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} path Resource in the container’s filesystem to archive.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get an archive of a filesystem resource in a container
-   */
-  containerArchive(id: string, path: string, options?: any): Promise<{}>;
+    /**
+     * Get a tar archive of a resource in the filesystem of container id.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} path Resource in the container’s filesystem to archive.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get an archive of a filesystem resource in a container
+     */
+    containerArchive(id: string, path: string, options?: any): Promise<{}>;
 
-  /**
-   * A response header `X-Docker-Container-Path-Stat` is returned, containing
-   * a base64 - encoded JSON object with some filesystem header information
-   * about the path.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} path Resource in the container’s filesystem to archive.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get information about files in a container
-   */
-  containerArchiveInfo(id: string, path: string, options?: any): Promise<{}>;
+    /**
+     * A response header `X-Docker-Container-Path-Stat` is returned, containing
+     * a base64 - encoded JSON object with some filesystem header information
+     * about the path.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} path Resource in the container’s filesystem to archive.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get information about files in a container
+     */
+    containerArchiveInfo(id: string, path: string, options?: any): Promise<{}>;
 
-  /**
-   * Attach to a container to read its output or send it input. You can attach
-   * to the same container multiple times and you can reattach to containers
-   * that have been detached. Either the `stream` or `logs` parameter must be
-   * `true` for this endpoint to do anything. See the [documentation for the
-   * `docker attach`
-   * command](https://docs.docker.com/engine/reference/commandline/attach/)
-   * for more details. ### Hijacking This endpoint hijacks the HTTP connection
-   * to transport `stdin`, `stdout`, and `stderr` on the same socket. This is
-   * the response from the daemon for an attach request: `HTTP/1.1 200 OK
-   * Content-Type: application/vnd.docker.raw-stream [STREAM]` After the
-   * headers and two new lines, the TCP connection can now be used for raw,
-   * bidirectional communication between the client and server. To hint
-   * potential proxies about connection hijacking, the Docker client can also
-   * optionally send connection upgrade headers. For example, the client sends
-   * this request to upgrade the connection: `POST
-   * /containers/16253994b7c4/attach?stream=1&stdout=1 HTTP/1.1 Upgrade: tcp
-   * Connection: Upgrade` The Docker daemon will respond with a `101 UPGRADED`
-   * response, and will similarly follow with the raw stream: `HTTP/1.1 101
-   * UPGRADED Content-Type: application/vnd.docker.raw-stream Connection:
-   * Upgrade Upgrade: tcp [STREAM]` ### Stream format When the TTY setting is
-   * disabled in [`POST /containers/create`](#operation/ContainerCreate), the
-   * HTTP Content-Type header is set to
-   * application/vnd.docker.multiplexed-stream and the stream over the
-   * hijacked connected is multiplexed to separate out `stdout` and `stderr`.
-   * The stream consists of a series of frames, each containing a header and a
-   * payload. The header contains the information which the stream writes
-   * (`stdout` or `stderr`). It also contains the size of the associated frame
-   * encoded in the last four bytes (`uint32`). It is encoded on the first
-   * eight bytes like this: `go header := [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1,
-   * SIZE2, SIZE3, SIZE4} ` `STREAM_TYPE` can be: - 0: `stdin` (is written on
-   * `stdout`) - 1: `stdout` - 2: `stderr` `SIZE1, SIZE2, SIZE3, SIZE4` are
-   * the four bytes of the `uint32` size encoded as big endian. Following the
-   * header is the payload, which is the specified number of bytes of
-   * `STREAM_TYPE`. The simplest way to implement this protocol is the
-   * following: 1. Read 8 bytes. 2. Choose `stdout` or `stderr` depending on
-   * the first byte. 3. Extract the frame size from the last four bytes. 4.
-   * Read the extracted size and output it on the correct output. 5. Goto 1.
-   * ### Stream format when using a TTY When the TTY setting is enabled in
-   * [`POST /containers/create`](#operation/ContainerCreate), the stream is
-   * not multiplexed. The data exchanged over the hijacked connection is
-   * simply the raw data from the process PTY and client's `stdin`.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [detachKeys] Override the key sequence for detaching a
-   *   container.Format is a single character `[a-Z]` or `ctrl-<value>` where
-   *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
-   * @param {boolean} [logs] Replay previous logs from the container. This is
-   *   useful for attaching to a container that has started and you want to
-   *   output everything since the container started. If `stream` is also
-   *   enabled, once all the previous output has been returned, it will
-   *   seamlessly transition into streaming current output.
-   * @param {boolean} [stream] Stream attached streams from the time the
-   *   request was made onwards.
-   * @param {boolean} [stdin] Attach to `stdin`
-   * @param {boolean} [stdout] Attach to `stdout`
-   * @param {boolean} [stderr] Attach to `stderr`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Attach to a container
-   */
-  containerAttach(
-    id: string,
-    detachKeys?: string,
-    logs?: boolean,
-    stream?: boolean,
-    stdin?: boolean,
-    stdout?: boolean,
-    stderr?: boolean,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Attach to a container to read its output or send it input. You can attach
+     * to the same container multiple times and you can reattach to containers
+     * that have been detached. Either the `stream` or `logs` parameter must be
+     * `true` for this endpoint to do anything. See the [documentation for the
+     * `docker attach`
+     * command](https://docs.docker.com/engine/reference/commandline/attach/)
+     * for more details. ### Hijacking This endpoint hijacks the HTTP connection
+     * to transport `stdin`, `stdout`, and `stderr` on the same socket. This is
+     * the response from the daemon for an attach request: `HTTP/1.1 200 OK
+     * Content-Type: application/vnd.docker.raw-stream [STREAM]` After the
+     * headers and two new lines, the TCP connection can now be used for raw,
+     * bidirectional communication between the client and server. To hint
+     * potential proxies about connection hijacking, the Docker client can also
+     * optionally send connection upgrade headers. For example, the client sends
+     * this request to upgrade the connection: `POST
+     * /containers/16253994b7c4/attach?stream=1&stdout=1 HTTP/1.1 Upgrade: tcp
+     * Connection: Upgrade` The Docker daemon will respond with a `101 UPGRADED`
+     * response, and will similarly follow with the raw stream: `HTTP/1.1 101
+     * UPGRADED Content-Type: application/vnd.docker.raw-stream Connection:
+     * Upgrade Upgrade: tcp [STREAM]` ### Stream format When the TTY setting is
+     * disabled in [`POST /containers/create`](#operation/ContainerCreate), the
+     * HTTP Content-Type header is set to
+     * application/vnd.docker.multiplexed-stream and the stream over the
+     * hijacked connected is multiplexed to separate out `stdout` and `stderr`.
+     * The stream consists of a series of frames, each containing a header and a
+     * payload. The header contains the information which the stream writes
+     * (`stdout` or `stderr`). It also contains the size of the associated frame
+     * encoded in the last four bytes (`uint32`). It is encoded on the first
+     * eight bytes like this: `go header := [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1,
+     * SIZE2, SIZE3, SIZE4} ` `STREAM_TYPE` can be: - 0: `stdin` (is written on
+     * `stdout`) - 1: `stdout` - 2: `stderr` `SIZE1, SIZE2, SIZE3, SIZE4` are
+     * the four bytes of the `uint32` size encoded as big endian. Following the
+     * header is the payload, which is the specified number of bytes of
+     * `STREAM_TYPE`. The simplest way to implement this protocol is the
+     * following: 1. Read 8 bytes. 2. Choose `stdout` or `stderr` depending on
+     * the first byte. 3. Extract the frame size from the last four bytes. 4.
+     * Read the extracted size and output it on the correct output. 5. Goto 1.
+     * ### Stream format when using a TTY When the TTY setting is enabled in
+     * [`POST /containers/create`](#operation/ContainerCreate), the stream is
+     * not multiplexed. The data exchanged over the hijacked connection is
+     * simply the raw data from the process PTY and client's `stdin`.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [detachKeys] Override the key sequence for detaching a
+     *   container.Format is a single character `[a-Z]` or `ctrl-<value>` where
+     *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
+     * @param {boolean} [logs] Replay previous logs from the container. This is
+     *   useful for attaching to a container that has started and you want to
+     *   output everything since the container started. If `stream` is also
+     *   enabled, once all the previous output has been returned, it will
+     *   seamlessly transition into streaming current output.
+     * @param {boolean} [stream] Stream attached streams from the time the
+     *   request was made onwards.
+     * @param {boolean} [stdin] Attach to `stdin`
+     * @param {boolean} [stdout] Attach to `stdout`
+     * @param {boolean} [stderr] Attach to `stderr`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Attach to a container
+     */
+    containerAttach(
+        id: string,
+        detachKeys?: string,
+        logs?: boolean,
+        stream?: boolean,
+        stdin?: boolean,
+        stdout?: boolean,
+        stderr?: boolean,
+        options?: any
+    ): Promise<{}>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [detachKeys] Override the key sequence for detaching a
-   *   container.Format is a single character `[a-Z]` or `ctrl-<value>` where
-   *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,`, or `_`.
-   * @param {boolean} [logs] Return logs
-   * @param {boolean} [stream] Return stream
-   * @param {boolean} [stdin] Attach to `stdin`
-   * @param {boolean} [stdout] Attach to `stdout`
-   * @param {boolean} [stderr] Attach to `stderr`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Attach to a container via a websocket
-   */
-  containerAttachWebsocket(
-    id: string,
-    detachKeys?: string,
-    logs?: boolean,
-    stream?: boolean,
-    stdin?: boolean,
-    stdout?: boolean,
-    stderr?: boolean,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [detachKeys] Override the key sequence for detaching a
+     *   container.Format is a single character `[a-Z]` or `ctrl-<value>` where
+     *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,`, or `_`.
+     * @param {boolean} [logs] Return logs
+     * @param {boolean} [stream] Return stream
+     * @param {boolean} [stdin] Attach to `stdin`
+     * @param {boolean} [stdout] Attach to `stdout`
+     * @param {boolean} [stderr] Attach to `stderr`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Attach to a container via a websocket
+     */
+    containerAttachWebsocket(
+        id: string,
+        detachKeys?: string,
+        logs?: boolean,
+        stream?: boolean,
+        stdin?: boolean,
+        stdout?: boolean,
+        stderr?: boolean,
+        options?: any
+    ): Promise<{}>;
 
-  /**
-   * Returns which files in a container's filesystem have been added, deleted,
-   * or modified. The `Kind` of modification can be one of: - `0`: Modified
-   * ("C") - `1`: Added ("A") - `2`: Deleted ("D")
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get changes on a container’s filesystem
-   */
-  containerChanges(id: string, options?: any): Promise<Array<FilesystemChange>>;
+    /**
+     * Returns which files in a container's filesystem have been added, deleted,
+     * or modified. The `Kind` of modification can be one of: - `0`: Modified
+     * ("C") - `1`: Added ("A") - `2`: Deleted ("D")
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get changes on a container’s filesystem
+     */
+    containerChanges(id: string, options?: any): Promise<Array<FilesystemChange>>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {ContainersCreateBody} body Container to create
-   * @param {string} [name] Assign the specified name to the container. Must
-   *   match `/?[a-zA-Z0-9][a-zA-Z0-9_.-]+`.
-   * @param {string} [platform] Platform in the format `os[/arch[/variant]]`
-   *   used for image lookup. When specified, the daemon checks if the
-   *   requested image is present in the local image cache with the given OS
-   *   and Architecture, and otherwise returns a `404` status. If the option
-   *   is not set, the host's native OS and Architecture are used to look up
-   *   the image in the image cache. However, if no platform is passed and the
-   *   given image does exist in the local image cache, but its OS or
-   *   architecture does not match, the container is created with the
-   *   available image, and a warning is added to the `Warnings` field in the
-   *   response, for example; WARNING: The requested image's platform
-   *   (linux/arm64/v8) does not match the detected host platform
-   *   (linux/amd64) and no specific platform was requested
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a container
-   */
-  containerCreate(
-    body: ContainersCreateBody,
-    name?: string,
-    platform?: string,
-    options?: any
-  ): Promise<ContainerCreateResponse>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {ContainersCreateBody} body Container to create
+     * @param {string} [name] Assign the specified name to the container. Must
+     *   match `/?[a-zA-Z0-9][a-zA-Z0-9_.-]+`.
+     * @param {string} [platform] Platform in the format `os[/arch[/variant]]`
+     *   used for image lookup. When specified, the daemon checks if the
+     *   requested image is present in the local image cache with the given OS
+     *   and Architecture, and otherwise returns a `404` status. If the option
+     *   is not set, the host's native OS and Architecture are used to look up
+     *   the image in the image cache. However, if no platform is passed and the
+     *   given image does exist in the local image cache, but its OS or
+     *   architecture does not match, the container is created with the
+     *   available image, and a warning is added to the `Warnings` field in the
+     *   response, for example; WARNING: The requested image's platform
+     *   (linux/arm64/v8) does not match the detected host platform
+     *   (linux/amd64) and no specific platform was requested
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a container
+     */
+    containerCreate(
+        body: ContainersCreateBody,
+        name?: string,
+        platform?: string,
+        options?: any
+    ): Promise<ContainerCreateResponse>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {boolean} [v] Remove anonymous volumes associated with the
-   *   container.
-   * @param {boolean} [force] If the container is running, kill it before
-   *   removing it.
-   * @param {boolean} [link] Remove the specified link associated with the
-   *   container.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Remove a container
-   */
-  containerDelete(
-    id: string,
-    v?: boolean,
-    force?: boolean,
-    link?: boolean,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {boolean} [v] Remove anonymous volumes associated with the
+     *   container.
+     * @param {boolean} [force] If the container is running, kill it before
+     *   removing it.
+     * @param {boolean} [link] Remove the specified link associated with the
+     *   container.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Remove a container
+     */
+    containerDelete(id: string, v?: boolean, force?: boolean, link?: boolean, options?: any): Promise<{}>;
 
-  /**
-   * Export the contents of a container as a tarball.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Export a container
-   */
-  containerExport(id: string, options?: any): Promise<{}>;
+    /**
+     * Export the contents of a container as a tarball.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Export a container
+     */
+    containerExport(id: string, options?: any): Promise<{}>;
 
-  /**
-   * Return low-level information about a container.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {boolean} [size] Return the size of container as fields `SizeRw`
-   *   and `SizeRootFs`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a container
-   */
-  containerInspect(
-    id: string,
-    size?: boolean,
-    options?: any
-  ): Promise<ContainerInspectResponse>;
+    /**
+     * Return low-level information about a container.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {boolean} [size] Return the size of container as fields `SizeRw`
+     *   and `SizeRootFs`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a container
+     */
+    containerInspect(id: string, size?: boolean, options?: any): Promise<ContainerInspectResponse>;
 
-  /**
-   * Send a POSIX signal to a container, defaulting to killing to the
-   * container.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [signal] Signal to send to the container as an integer or
-   *   string (e.g. `SIGINT`).
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Kill a container
-   */
-  containerKill(id: string, signal?: string, options?: any): Promise<{}>;
+    /**
+     * Send a POSIX signal to a container, defaulting to killing to the
+     * container.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [signal] Signal to send to the container as an integer or
+     *   string (e.g. `SIGINT`).
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Kill a container
+     */
+    containerKill(id: string, signal?: string, options?: any): Promise<{}>;
 
-  /**
-   * Returns a list of containers. For details on the format, see the [inspect
-   * endpoint](#operation/ContainerInspect). Note that it uses a different,
-   * smaller representation of a container than inspecting a single container.
-   * For example, the list of linked containers is not propagated .
-   *
-   * @memberof ContainerApiInterface
-   * @param {boolean} [all] Return all containers. By default, only running
-   *   containers are shown.
-   * @param {number} [limit] Return this number of most recently created
-   *   containers, including non-running ones.
-   * @param {boolean} [size] Return the size of container as fields `SizeRw`
-   *   and `SizeRootFs`.
-   * @param {string} [filters] Filters to process on the container list,
-   *   encoded as JSON (a `map[string][]string`). For example,
-   *   `{&quot;status&quot;: [&quot;paused&quot;]}` will only return paused
-   *   containers. Available filters: - `ancestor`=(`<image-name>[:<tag>]`,
-   *   `<image id>`, or `<image@digest>`) - `before`=(`<container id>` or
-   *   `<container name>`) -
-   *   `expose`=(`<port>[/<proto>]`|`<startport-endport>/[<proto>]`) -
-   *   `exited=<int>` containers with exit code of `<int>` -
-   *   `health`=(`starting`|`healthy`|`unhealthy`|`none`) - `id=<ID>` a
-   *   container's ID - `isolation=`(`default`|`process`|`hyperv`) (Windows
-   *   daemon only) - `is-task=`(`true`|`false`) - `label=key` or
-   *   `label=&quot;key=value&quot;` of a container label - `name=<name>` a
-   *   container's name - `network`=(`<network id>` or `<network name>`) -
-   *   `publish`=(`<port>[/<proto>]`|`<startport-endport>/[<proto>]`) -
-   *   `since`=(`<container id>` or `<container name>`) -
-   *   `status=`(`created`|`restarting`|`running`|`removing`|`paused`|`exited`|`dead`)
-   *   - `volume`=(`<volume name>` or `<mount point destination>`)
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List containers
-   */
-  containerList(
-    all?: boolean,
-    limit?: number,
-    size?: boolean,
-    filters?: string,
-    options?: any
-  ): Promise<Array<ContainerSummary>>;
+    /**
+     * Returns a list of containers. For details on the format, see the [inspect
+     * endpoint](#operation/ContainerInspect). Note that it uses a different,
+     * smaller representation of a container than inspecting a single container.
+     * For example, the list of linked containers is not propagated .
+     *
+     * @memberof ContainerApiInterface
+     * @param {boolean} [all] Return all containers. By default, only running
+     *   containers are shown.
+     * @param {number} [limit] Return this number of most recently created
+     *   containers, including non-running ones.
+     * @param {boolean} [size] Return the size of container as fields `SizeRw`
+     *   and `SizeRootFs`.
+     * @param {string} [filters] Filters to process on the container list,
+     *   encoded as JSON (a `map[string][]string`). For example,
+     *   `{&quot;status&quot;: [&quot;paused&quot;]}` will only return paused
+     *   containers. Available filters: - `ancestor`=(`<image-name>[:<tag>]`,
+     *   `<image id>`, or `<image@digest>`) - `before`=(`<container id>` or
+     *   `<container name>`) -
+     *   `expose`=(`<port>[/<proto>]`|`<startport-endport>/[<proto>]`) -
+     *   `exited=<int>` containers with exit code of `<int>` -
+     *   `health`=(`starting`|`healthy`|`unhealthy`|`none`) - `id=<ID>` a
+     *   container's ID - `isolation=`(`default`|`process`|`hyperv`) (Windows
+     *   daemon only) - `is-task=`(`true`|`false`) - `label=key` or
+     *   `label=&quot;key=value&quot;` of a container label - `name=<name>` a
+     *   container's name - `network`=(`<network id>` or `<network name>`) -
+     *   `publish`=(`<port>[/<proto>]`|`<startport-endport>/[<proto>]`) -
+     *   `since`=(`<container id>` or `<container name>`) -
+     *   `status=`(`created`|`restarting`|`running`|`removing`|`paused`|`exited`|`dead`)
+     *   - `volume`=(`<volume name>` or `<mount point destination>`)
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List containers
+     */
+    containerList(
+        all?: boolean,
+        limit?: number,
+        size?: boolean,
+        filters?: string,
+        options?: any
+    ): Promise<Array<ContainerSummary>>;
 
-  /**
-   * Get `stdout` and `stderr` logs from a container. Note: This endpoint
-   * works only for containers with the `json-file` or `journald` logging
-   * driver.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {boolean} [follow] Keep connection after returning logs.
-   * @param {boolean} [stdout] Return logs from `stdout`
-   * @param {boolean} [stderr] Return logs from `stderr`
-   * @param {number} [since] Only return logs since this time, as a UNIX
-   *   timestamp
-   * @param {number} [until] Only return logs before this time, as a UNIX
-   *   timestamp
-   * @param {boolean} [timestamps] Add timestamps to every log line
-   * @param {string} [tail] Only return this number of log lines from the end
-   *   of the logs. Specify as an integer or `all` to output all log lines.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get container logs
-   */
-  containerLogs(
-    id: string,
-    follow?: boolean,
-    stdout?: boolean,
-    stderr?: boolean,
-    since?: number,
-    until?: number,
-    timestamps?: boolean,
-    tail?: string,
-    options?: any
-  ): Promise<Blob>;
+    /**
+     * Get `stdout` and `stderr` logs from a container. Note: This endpoint
+     * works only for containers with the `json-file` or `journald` logging
+     * driver.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {boolean} [follow] Keep connection after returning logs.
+     * @param {boolean} [stdout] Return logs from `stdout`
+     * @param {boolean} [stderr] Return logs from `stderr`
+     * @param {number} [since] Only return logs since this time, as a UNIX
+     *   timestamp
+     * @param {number} [until] Only return logs before this time, as a UNIX
+     *   timestamp
+     * @param {boolean} [timestamps] Add timestamps to every log line
+     * @param {string} [tail] Only return this number of log lines from the end
+     *   of the logs. Specify as an integer or `all` to output all log lines.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get container logs
+     */
+    containerLogs(
+        id: string,
+        follow?: boolean,
+        stdout?: boolean,
+        stderr?: boolean,
+        since?: number,
+        until?: number,
+        timestamps?: boolean,
+        tail?: string,
+        options?: any
+    ): Promise<Blob>;
 
-  /**
-   * Use the freezer cgroup to suspend all processes in a container.
-   * Traditionally, when suspending a process the `SIGSTOP` signal is used,
-   * which is observable by the process being suspended. With the freezer
-   * cgroup the process is unaware, and unable to capture, that it is being
-   * suspended, and subsequently resumed.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Pause a container
-   */
-  containerPause(id: string, options?: any): Promise<{}>;
+    /**
+     * Use the freezer cgroup to suspend all processes in a container.
+     * Traditionally, when suspending a process the `SIGSTOP` signal is used,
+     * which is observable by the process being suspended. With the freezer
+     * cgroup the process is unaware, and unable to capture, that it is being
+     * suspended, and subsequently resumed.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Pause a container
+     */
+    containerPause(id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} [filters] Filters to process on the prune list, encoded
-   *   as JSON (a `map[string][]string`). Available filters: -
-   *   `until=<timestamp>` Prune containers created before this timestamp. The
-   *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
-   *   duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
-   *   machine’s time. - `label` (`label=<key>`, `label=<key>=<value>`,
-   *   `label!=<key>`, or `label!=<key>=<value>`) Prune containers with (or
-   *   without, in case `label!=...` is used) the specified labels.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete stopped containers
-   */
-  containerPrune(
-    filters?: string,
-    options?: any
-  ): Promise<ContainerPruneResponse>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} [filters] Filters to process on the prune list, encoded
+     *   as JSON (a `map[string][]string`). Available filters: -
+     *   `until=<timestamp>` Prune containers created before this timestamp. The
+     *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
+     *   duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
+     *   machine’s time. - `label` (`label=<key>`, `label=<key>=<value>`,
+     *   `label!=<key>`, or `label!=<key>=<value>`) Prune containers with (or
+     *   without, in case `label!=...` is used) the specified labels.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete stopped containers
+     */
+    containerPrune(filters?: string, options?: any): Promise<ContainerPruneResponse>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} name New name for the container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Rename a container
-   */
-  containerRename(id: string, name: string, options?: any): Promise<{}>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} name New name for the container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Rename a container
+     */
+    containerRename(id: string, name: string, options?: any): Promise<{}>;
 
-  /**
-   * Resize the TTY for a container.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {number} [h] Height of the TTY session in characters
-   * @param {number} [w] Width of the TTY session in characters
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Resize a container TTY
-   */
-  containerResize(
-    id: string,
-    h?: number,
-    w?: number,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Resize the TTY for a container.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {number} [h] Height of the TTY session in characters
+     * @param {number} [w] Width of the TTY session in characters
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Resize a container TTY
+     */
+    containerResize(id: string, h?: number, w?: number, options?: any): Promise<{}>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [signal] Signal to send to the container as an integer or
-   *   string (e.g. `SIGINT`).
-   * @param {number} [t] Number of seconds to wait before killing the
-   *   container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Restart a container
-   */
-  containerRestart(
-    id: string,
-    signal?: string,
-    t?: number,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [signal] Signal to send to the container as an integer or
+     *   string (e.g. `SIGINT`).
+     * @param {number} [t] Number of seconds to wait before killing the
+     *   container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Restart a container
+     */
+    containerRestart(id: string, signal?: string, t?: number, options?: any): Promise<{}>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [detachKeys] Override the key sequence for detaching a
-   *   container. Format is a single character `[a-Z]` or `ctrl-<value>` where
-   *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Start a container
-   */
-  containerStart(id: string, detachKeys?: string, options?: any): Promise<{}>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [detachKeys] Override the key sequence for detaching a
+     *   container. Format is a single character `[a-Z]` or `ctrl-<value>` where
+     *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Start a container
+     */
+    containerStart(id: string, detachKeys?: string, options?: any): Promise<{}>;
 
-  /**
-   * This endpoint returns a live stream of a container’s resource usage
-   * statistics. The `precpu_stats` is the CPU statistic of the _previous_
-   * read, and is used to calculate the CPU usage percentage. It is not an
-   * exact copy of the `cpu_stats` field. If either `precpu_stats.online_cpus`
-   * or `cpu_stats.online_cpus` is nil then for compatibility with older
-   * daemons the length of the corresponding `cpu_usage.percpu_usage` array
-   * should be used. On a cgroup v2 host, the following fields are not set *
-   * `blkio_stats`: all fields other than `io_service_bytes_recursive` *
-   * `cpu_stats`: `cpu_usage.percpu_usage` * `memory_stats`: `max_usage` and
-   * `failcnt` Also, `memory_stats.stats` fields are incompatible with cgroup
-   * v1. To calculate the values shown by the `stats` command of the docker
-   * cli tool the following formulas can be used: * used_memory =
-   * `memory_stats.usage - memory_stats.stats.cache` * available_memory =
-   * `memory_stats.limit` * Memory usage % = `(used_memory / available_memory)
-   * * 100.0` * cpu_delta = `cpu_stats.cpu_usage.total_usage -
-   * precpu_stats.cpu_usage.total_usage` * system_cpu_delta =
-   * `cpu_stats.system_cpu_usage - precpu_stats.system_cpu_usage` *
-   * number_cpus = `lenght(cpu_stats.cpu_usage.percpu_usage)` or
-   * `cpu_stats.online_cpus` * CPU usage % = `(cpu_delta / system_cpu_delta) *
-   * number_cpus * 100.0`
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {boolean} [stream] Stream the output. If false, the stats will be
-   *   output once and then it will disconnect.
-   * @param {boolean} [oneShot] Only get a single stat instead of waiting for
-   *   2 cycles. Must be used with `stream=false`.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get container stats based on resource usage
-   */
-  containerStats(
-    id: string,
-    stream?: boolean,
-    oneShot?: boolean,
-    options?: any
-  ): Promise<any>;
+    /**
+     * This endpoint returns a live stream of a container’s resource usage
+     * statistics. The `precpu_stats` is the CPU statistic of the _previous_
+     * read, and is used to calculate the CPU usage percentage. It is not an
+     * exact copy of the `cpu_stats` field. If either `precpu_stats.online_cpus`
+     * or `cpu_stats.online_cpus` is nil then for compatibility with older
+     * daemons the length of the corresponding `cpu_usage.percpu_usage` array
+     * should be used. On a cgroup v2 host, the following fields are not set *
+     * `blkio_stats`: all fields other than `io_service_bytes_recursive` *
+     * `cpu_stats`: `cpu_usage.percpu_usage` * `memory_stats`: `max_usage` and
+     * `failcnt` Also, `memory_stats.stats` fields are incompatible with cgroup
+     * v1. To calculate the values shown by the `stats` command of the docker
+     * cli tool the following formulas can be used: * used_memory =
+     * `memory_stats.usage - memory_stats.stats.cache` * available_memory =
+     * `memory_stats.limit` * Memory usage % = `(used_memory / available_memory)
+     * * 100.0` * cpu_delta = `cpu_stats.cpu_usage.total_usage -
+     * precpu_stats.cpu_usage.total_usage` * system_cpu_delta =
+     * `cpu_stats.system_cpu_usage - precpu_stats.system_cpu_usage` *
+     * number_cpus = `lenght(cpu_stats.cpu_usage.percpu_usage)` or
+     * `cpu_stats.online_cpus` * CPU usage % = `(cpu_delta / system_cpu_delta) *
+     * number_cpus * 100.0`
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {boolean} [stream] Stream the output. If false, the stats will be
+     *   output once and then it will disconnect.
+     * @param {boolean} [oneShot] Only get a single stat instead of waiting for
+     *   2 cycles. Must be used with `stream=false`.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get container stats based on resource usage
+     */
+    containerStats(id: string, stream?: boolean, oneShot?: boolean, options?: any): Promise<any>;
 
-  /**
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [signal] Signal to send to the container as an integer or
-   *   string (e.g. `SIGINT`).
-   * @param {number} [t] Number of seconds to wait before killing the
-   *   container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Stop a container
-   */
-  containerStop(
-    id: string,
-    signal?: string,
-    t?: number,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [signal] Signal to send to the container as an integer or
+     *   string (e.g. `SIGINT`).
+     * @param {number} [t] Number of seconds to wait before killing the
+     *   container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Stop a container
+     */
+    containerStop(id: string, signal?: string, t?: number, options?: any): Promise<{}>;
 
-  /**
-   * On Unix systems, this is done by running the `ps` command. This endpoint
-   * is not supported on Windows.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [psArgs] The arguments to pass to `ps`. For example,
-   *   `aux`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List processes running inside a container
-   */
-  containerTop(
-    id: string,
-    psArgs?: string,
-    options?: any
-  ): Promise<ContainerTopResponse>;
+    /**
+     * On Unix systems, this is done by running the `ps` command. This endpoint
+     * is not supported on Windows.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [psArgs] The arguments to pass to `ps`. For example,
+     *   `aux`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List processes running inside a container
+     */
+    containerTop(id: string, psArgs?: string, options?: any): Promise<ContainerTopResponse>;
 
-  /**
-   * Resume a container which has been paused.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Unpause a container
-   */
-  containerUnpause(id: string, options?: any): Promise<{}>;
+    /**
+     * Resume a container which has been paused.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Unpause a container
+     */
+    containerUnpause(id: string, options?: any): Promise<{}>;
 
-  /**
-   * Change various configuration options of a container without having to
-   * recreate it.
-   *
-   * @memberof ContainerApiInterface
-   * @param {IdUpdateBody} body
-   * @param {string} id ID or name of the container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Update a container
-   */
-  containerUpdate(
-    body: IdUpdateBody,
-    id: string,
-    options?: any
-  ): Promise<ContainerUpdateResponse>;
+    /**
+     * Change various configuration options of a container without having to
+     * recreate it.
+     *
+     * @memberof ContainerApiInterface
+     * @param {IdUpdateBody} body
+     * @param {string} id ID or name of the container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Update a container
+     */
+    containerUpdate(body: IdUpdateBody, id: string, options?: any): Promise<ContainerUpdateResponse>;
 
-  /**
-   * Block until a container stops, then returns the exit code.
-   *
-   * @memberof ContainerApiInterface
-   * @param {string} id ID or name of the container
-   * @param {string} [condition] Wait until a container state reaches the
-   *   given condition. Defaults to `not-running` if omitted or empty.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Wait for a container
-   */
-  containerWait(
-    id: string,
-    condition?: string,
-    options?: any
-  ): Promise<ContainerWaitResponse>;
+    /**
+     * Block until a container stops, then returns the exit code.
+     *
+     * @memberof ContainerApiInterface
+     * @param {string} id ID or name of the container
+     * @param {string} [condition] Wait until a container state reaches the
+     *   given condition. Defaults to `not-running` if omitted or empty.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Wait for a container
+     */
+    containerWait(id: string, condition?: string, options?: any): Promise<ContainerWaitResponse>;
 
-  /**
-   * Upload a tar archive to be extracted to a path in the filesystem of
-   * container id. `path` parameter is asserted to be a directory. If it
-   * exists as a file, 400 error will be returned with message "not a
-   * directory".
-   *
-   * @memberof ContainerApiInterface
-   * @param {Object} body The input stream must be a tar archive compressed
-   *   with one of the following algorithms: `identity` (no compression),
-   *   `gzip`, `bzip2`, or `xz`.
-   * @param {string} id ID or name of the container
-   * @param {string} path Path to a directory in the container to extract the
-   *   archive’s contents into.
-   * @param {string} [noOverwriteDirNonDir] If `1`, `true`, or `True` then it
-   *   will be an error if unpacking the given content would cause an existing
-   *   directory to be replaced with a non-directory and vice versa.
-   * @param {string} [copyUIDGID] If `1`, `true`, then it will copy UID/GID
-   *   maps to the dest file or dir
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Extract an archive of files or folders to a directory in a container
-   */
-  putContainerArchive(
-    body: Object,
-    id: string,
-    path: string,
-    noOverwriteDirNonDir?: string,
-    copyUIDGID?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Upload a tar archive to be extracted to a path in the filesystem of
+     * container id. `path` parameter is asserted to be a directory. If it
+     * exists as a file, 400 error will be returned with message "not a
+     * directory".
+     *
+     * @memberof ContainerApiInterface
+     * @param {Object} body The input stream must be a tar archive compressed
+     *   with one of the following algorithms: `identity` (no compression),
+     *   `gzip`, `bzip2`, or `xz`.
+     * @param {string} id ID or name of the container
+     * @param {string} path Path to a directory in the container to extract the
+     *   archive’s contents into.
+     * @param {string} [noOverwriteDirNonDir] If `1`, `true`, or `True` then it
+     *   will be an error if unpacking the given content would cause an existing
+     *   directory to be replaced with a non-directory and vice versa.
+     * @param {string} [copyUIDGID] If `1`, `true`, then it will copy UID/GID
+     *   maps to the dest file or dir
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Extract an archive of files or folders to a directory in a container
+     */
+    putContainerArchive(
+        body: Object,
+        id: string,
+        path: string,
+        noOverwriteDirNonDir?: string,
+        copyUIDGID?: string,
+        options?: any
+    ): Promise<{}>;
 }
 
 /**
@@ -7766,44 +7151,34 @@ export interface ContainerApiInterface {
  * @throws {RequiredError}
  * @summary Get image information from the registry fetch parameter creator
  */
-export const distributionInspectFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling distributionInspect."
+export const distributionInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError(
+            "name",
+            "Required parameter name was null or undefined when calling distributionInspect."
+        );
+    }
+    const localvariablePath = `/distribution/{name}/json`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/distribution/{name}/json`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -7815,25 +7190,21 @@ export const distributionInspectFetchParamCreator = (
  * @summary Get image information from the registry
  */
 export const distributionInspect = (
-  name: string,
-  options?: any
+    name: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<DistributionInspect>) => {
-  const localvariableFetchArguments = distributionInspectFetchParamCreator(
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<DistributionInspect>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = distributionInspectFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<DistributionInspect>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -7843,19 +7214,16 @@ export const distributionInspect = (
  * @interface DistributionApi
  */
 export interface DistributionApiInterface {
-  /**
-   * Return image digest and platform information by contacting the registry.
-   *
-   * @memberof DistributionApiInterface
-   * @param {string} name Image name or id
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get image information from the registry
-   */
-  distributionInspect(
-    name: string,
-    options?: any
-  ): Promise<DistributionInspect>;
+    /**
+     * Return image digest and platform information by contacting the registry.
+     *
+     * @memberof DistributionApiInterface
+     * @param {string} name Image name or id
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get image information from the registry
+     */
+    distributionInspect(name: string, options?: any): Promise<DistributionInspect>;
 }
 
 /**
@@ -7867,63 +7235,40 @@ export interface DistributionApiInterface {
  * @throws {RequiredError}
  * @summary Create an exec instance fetch parameter creator
  */
-export const containerExecFetchParamCreator = (
-  body: ExecConfig,
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling containerExec."
+export const containerExecFetchParamCreator = (body: ExecConfig, id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling containerExec.");
+    }
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling containerExec.");
+    }
+    const localvariablePath = `/containers/{id}/exec`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling containerExec."
-    );
-  }
-  const localvariablePath = `/containers/{id}/exec`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ExecConfig" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ExecConfig" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ExecApi execInspect fetch parameter creator
@@ -7933,44 +7278,31 @@ export const containerExecFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect an exec instance fetch parameter creator
  */
-export const execInspectFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling execInspect."
+export const execInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling execInspect.");
+    }
+    const localvariablePath = `/exec/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/exec/{id}/json`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ExecApi execResize fetch parameter creator
@@ -7982,57 +7314,39 @@ export const execInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Resize an exec instance fetch parameter creator
  */
-export const execResizeFetchParamCreator = (
-  id: string,
-  h?: number,
-  w?: number,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling execResize."
+export const execResizeFetchParamCreator = (id: string, h?: number, w?: number, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling execResize.");
+    }
+    const localvariablePath = `/exec/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (h !== undefined) {
+        localvariableQueryParameter["h"] = h;
+    }
+
+    if (w !== undefined) {
+        localvariableQueryParameter["w"] = w;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/exec/{id}/resize`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (h !== undefined) {
-    localvariableQueryParameter["h"] = h;
-  }
-
-  if (w !== undefined) {
-    localvariableQueryParameter["w"] = w;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ExecApi execStart fetch parameter creator
@@ -8043,56 +7357,37 @@ export const execResizeFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Start an exec instance fetch parameter creator
  */
-export const execStartFetchParamCreator = (
-  id: string,
-  body?: ExecStartConfig,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling execStart."
+export const execStartFetchParamCreator = (id: string, body?: ExecStartConfig, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling execStart.");
+    }
+    const localvariablePath = `/exec/{id}/start`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/exec/{id}/start`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ExecStartConfig" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ExecStartConfig" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -8105,27 +7400,22 @@ export const execStartFetchParamCreator = (
  * @summary Create an exec instance
  */
 export const containerExec = (
-  body: ExecConfig,
-  id: string,
-  options?: any
+    body: ExecConfig,
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-  const localvariableFetchArguments = containerExecFetchParamCreator(
-    body,
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<IdResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = containerExecFetchParamCreator(body, id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<IdResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Return low-level information about an exec instance.
@@ -8136,22 +7426,21 @@ export const containerExec = (
  * @summary Inspect an exec instance
  */
 export const execInspect = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ExecInspectResponse>) => {
-  const localvariableFetchArguments = execInspectFetchParamCreator(id, options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ExecInspectResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = execInspectFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ExecInspectResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Resize the TTY session used by an exec instance. This endpoint only works if
@@ -8165,29 +7454,23 @@ export const execInspect = (
  * @summary Resize an exec instance
  */
 export const execResize = (
-  id: string,
-  h?: number,
-  w?: number,
-  options?: any
+    id: string,
+    h?: number,
+    w?: number,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = execResizeFetchParamCreator(
-    id,
-    h,
-    w,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = execResizeFetchParamCreator(id, h, w, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Starts a previously set up exec instance. If detach is true, this endpoint
@@ -8201,27 +7484,22 @@ export const execResize = (
  * @summary Start an exec instance
  */
 export const execStart = (
-  id: string,
-  body?: ExecStartConfig,
-  options?: any
+    id: string,
+    body?: ExecStartConfig,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = execStartFetchParamCreator(
-    id,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = execStartFetchParamCreator(id, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -8231,61 +7509,57 @@ export const execStart = (
  * @interface ExecApi
  */
 export interface ExecApiInterface {
-  /**
-   * Run a command inside a running container.
-   *
-   * @memberof ExecApiInterface
-   * @param {ExecConfig} body Exec configuration
-   * @param {string} id ID or name of container
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create an exec instance
-   */
-  containerExec(
-    body: ExecConfig,
-    id: string,
-    options?: any
-  ): Promise<IdResponse>;
+    /**
+     * Run a command inside a running container.
+     *
+     * @memberof ExecApiInterface
+     * @param {ExecConfig} body Exec configuration
+     * @param {string} id ID or name of container
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create an exec instance
+     */
+    containerExec(body: ExecConfig, id: string, options?: any): Promise<IdResponse>;
 
-  /**
-   * Return low-level information about an exec instance.
-   *
-   * @memberof ExecApiInterface
-   * @param {string} id Exec instance ID
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect an exec instance
-   */
-  execInspect(id: string, options?: any): Promise<ExecInspectResponse>;
+    /**
+     * Return low-level information about an exec instance.
+     *
+     * @memberof ExecApiInterface
+     * @param {string} id Exec instance ID
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect an exec instance
+     */
+    execInspect(id: string, options?: any): Promise<ExecInspectResponse>;
 
-  /**
-   * Resize the TTY session used by an exec instance. This endpoint only works
-   * if `tty` was specified as part of creating and starting the exec
-   * instance.
-   *
-   * @memberof ExecApiInterface
-   * @param {string} id Exec instance ID
-   * @param {number} [h] Height of the TTY session in characters
-   * @param {number} [w] Width of the TTY session in characters
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Resize an exec instance
-   */
-  execResize(id: string, h?: number, w?: number, options?: any): Promise<{}>;
+    /**
+     * Resize the TTY session used by an exec instance. This endpoint only works
+     * if `tty` was specified as part of creating and starting the exec
+     * instance.
+     *
+     * @memberof ExecApiInterface
+     * @param {string} id Exec instance ID
+     * @param {number} [h] Height of the TTY session in characters
+     * @param {number} [w] Width of the TTY session in characters
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Resize an exec instance
+     */
+    execResize(id: string, h?: number, w?: number, options?: any): Promise<{}>;
 
-  /**
-   * Starts a previously set up exec instance. If detach is true, this
-   * endpoint returns immediately after starting the command. Otherwise, it
-   * sets up an interactive session with the command.
-   *
-   * @memberof ExecApiInterface
-   * @param {string} id Exec instance ID
-   * @param {ExecStartConfig} [body]
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Start an exec instance
-   */
-  execStart(id: string, body?: ExecStartConfig, options?: any): Promise<{}>;
+    /**
+     * Starts a previously set up exec instance. If detach is true, this
+     * endpoint returns immediately after starting the command. Otherwise, it
+     * sets up an interactive session with the command.
+     *
+     * @memberof ExecApiInterface
+     * @param {string} id Exec instance ID
+     * @param {ExecStartConfig} [body]
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Start an exec instance
+     */
+    execStart(id: string, body?: ExecStartConfig, options?: any): Promise<{}>;
 }
 
 /**
@@ -8305,50 +7579,43 @@ export interface ExecApiInterface {
  * @summary Delete builder cache fetch parameter creator
  */
 export const buildPruneFetchParamCreator = (
-  keepStorage?: number,
-  all?: boolean,
-  filters?: string,
-  options: any = {}
+    keepStorage?: number,
+    all?: boolean,
+    filters?: string,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/build/prune`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/build/prune`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (keepStorage !== undefined) {
-    localvariableQueryParameter["keep-storage"] = keepStorage;
-  }
+    if (keepStorage !== undefined) {
+        localvariableQueryParameter["keep-storage"] = keepStorage;
+    }
 
-  if (all !== undefined) {
-    localvariableQueryParameter["all"] = all;
-  }
+    if (all !== undefined) {
+        localvariableQueryParameter["all"] = all;
+    }
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageBuild fetch parameter creator
@@ -8430,174 +7697,164 @@ export const buildPruneFetchParamCreator = (
  * @summary Build an image fetch parameter creator
  */
 export const imageBuildFetchParamCreator = (
-  body?: Object,
-  dockerfile?: string,
-  t?: string,
-  extrahosts?: string,
-  remote?: string,
-  q?: boolean,
-  nocache?: boolean,
-  cachefrom?: string,
-  pull?: string,
-  rm?: boolean,
-  forcerm?: boolean,
-  memory?: number,
-  memswap?: number,
-  cpushares?: number,
-  cpusetcpus?: string,
-  cpuperiod?: number,
-  cpuquota?: number,
-  buildargs?: string,
-  shmsize?: number,
-  squash?: boolean,
-  labels?: string,
-  networkmode?: string,
-  contentType?: string,
-  xRegistryConfig?: string,
-  platform?: string,
-  target?: string,
-  outputs?: string,
-  options: any = {}
+    body?: Object,
+    dockerfile?: string,
+    t?: string,
+    extrahosts?: string,
+    remote?: string,
+    q?: boolean,
+    nocache?: boolean,
+    cachefrom?: string,
+    pull?: string,
+    rm?: boolean,
+    forcerm?: boolean,
+    memory?: number,
+    memswap?: number,
+    cpushares?: number,
+    cpusetcpus?: string,
+    cpuperiod?: number,
+    cpuquota?: number,
+    buildargs?: string,
+    shmsize?: number,
+    squash?: boolean,
+    labels?: string,
+    networkmode?: string,
+    contentType?: string,
+    xRegistryConfig?: string,
+    platform?: string,
+    target?: string,
+    outputs?: string,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/build`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/build`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (dockerfile !== undefined) {
-    localvariableQueryParameter["dockerfile"] = dockerfile;
-  }
+    if (dockerfile !== undefined) {
+        localvariableQueryParameter["dockerfile"] = dockerfile;
+    }
 
-  if (t !== undefined) {
-    localvariableQueryParameter["t"] = t;
-  }
+    if (t !== undefined) {
+        localvariableQueryParameter["t"] = t;
+    }
 
-  if (extrahosts !== undefined) {
-    localvariableQueryParameter["extrahosts"] = extrahosts;
-  }
+    if (extrahosts !== undefined) {
+        localvariableQueryParameter["extrahosts"] = extrahosts;
+    }
 
-  if (remote !== undefined) {
-    localvariableQueryParameter["remote"] = remote;
-  }
+    if (remote !== undefined) {
+        localvariableQueryParameter["remote"] = remote;
+    }
 
-  if (q !== undefined) {
-    localvariableQueryParameter["q"] = q;
-  }
+    if (q !== undefined) {
+        localvariableQueryParameter["q"] = q;
+    }
 
-  if (nocache !== undefined) {
-    localvariableQueryParameter["nocache"] = nocache;
-  }
+    if (nocache !== undefined) {
+        localvariableQueryParameter["nocache"] = nocache;
+    }
 
-  if (cachefrom !== undefined) {
-    localvariableQueryParameter["cachefrom"] = cachefrom;
-  }
+    if (cachefrom !== undefined) {
+        localvariableQueryParameter["cachefrom"] = cachefrom;
+    }
 
-  if (pull !== undefined) {
-    localvariableQueryParameter["pull"] = pull;
-  }
+    if (pull !== undefined) {
+        localvariableQueryParameter["pull"] = pull;
+    }
 
-  if (rm !== undefined) {
-    localvariableQueryParameter["rm"] = rm;
-  }
+    if (rm !== undefined) {
+        localvariableQueryParameter["rm"] = rm;
+    }
 
-  if (forcerm !== undefined) {
-    localvariableQueryParameter["forcerm"] = forcerm;
-  }
+    if (forcerm !== undefined) {
+        localvariableQueryParameter["forcerm"] = forcerm;
+    }
 
-  if (memory !== undefined) {
-    localvariableQueryParameter["memory"] = memory;
-  }
+    if (memory !== undefined) {
+        localvariableQueryParameter["memory"] = memory;
+    }
 
-  if (memswap !== undefined) {
-    localvariableQueryParameter["memswap"] = memswap;
-  }
+    if (memswap !== undefined) {
+        localvariableQueryParameter["memswap"] = memswap;
+    }
 
-  if (cpushares !== undefined) {
-    localvariableQueryParameter["cpushares"] = cpushares;
-  }
+    if (cpushares !== undefined) {
+        localvariableQueryParameter["cpushares"] = cpushares;
+    }
 
-  if (cpusetcpus !== undefined) {
-    localvariableQueryParameter["cpusetcpus"] = cpusetcpus;
-  }
+    if (cpusetcpus !== undefined) {
+        localvariableQueryParameter["cpusetcpus"] = cpusetcpus;
+    }
 
-  if (cpuperiod !== undefined) {
-    localvariableQueryParameter["cpuperiod"] = cpuperiod;
-  }
+    if (cpuperiod !== undefined) {
+        localvariableQueryParameter["cpuperiod"] = cpuperiod;
+    }
 
-  if (cpuquota !== undefined) {
-    localvariableQueryParameter["cpuquota"] = cpuquota;
-  }
+    if (cpuquota !== undefined) {
+        localvariableQueryParameter["cpuquota"] = cpuquota;
+    }
 
-  if (buildargs !== undefined) {
-    localvariableQueryParameter["buildargs"] = buildargs;
-  }
+    if (buildargs !== undefined) {
+        localvariableQueryParameter["buildargs"] = buildargs;
+    }
 
-  if (shmsize !== undefined) {
-    localvariableQueryParameter["shmsize"] = shmsize;
-  }
+    if (shmsize !== undefined) {
+        localvariableQueryParameter["shmsize"] = shmsize;
+    }
 
-  if (squash !== undefined) {
-    localvariableQueryParameter["squash"] = squash;
-  }
+    if (squash !== undefined) {
+        localvariableQueryParameter["squash"] = squash;
+    }
 
-  if (labels !== undefined) {
-    localvariableQueryParameter["labels"] = labels;
-  }
+    if (labels !== undefined) {
+        localvariableQueryParameter["labels"] = labels;
+    }
 
-  if (networkmode !== undefined) {
-    localvariableQueryParameter["networkmode"] = networkmode;
-  }
+    if (networkmode !== undefined) {
+        localvariableQueryParameter["networkmode"] = networkmode;
+    }
 
-  if (platform !== undefined) {
-    localvariableQueryParameter["platform"] = platform;
-  }
+    if (platform !== undefined) {
+        localvariableQueryParameter["platform"] = platform;
+    }
 
-  if (target !== undefined) {
-    localvariableQueryParameter["target"] = target;
-  }
+    if (target !== undefined) {
+        localvariableQueryParameter["target"] = target;
+    }
 
-  if (outputs !== undefined) {
-    localvariableQueryParameter["outputs"] = outputs;
-  }
+    if (outputs !== undefined) {
+        localvariableQueryParameter["outputs"] = outputs;
+    }
 
-  if (contentType !== undefined && contentType !== null) {
-    localvariableHeaderParameter["Content-type"] = String(contentType);
-  }
+    if (contentType !== undefined && contentType !== null) {
+        localvariableHeaderParameter["Content-type"] = String(contentType);
+    }
 
-  if (xRegistryConfig !== undefined && xRegistryConfig !== null) {
-    localvariableHeaderParameter["X-Registry-Config"] = String(xRegistryConfig);
-  }
+    if (xRegistryConfig !== undefined && xRegistryConfig !== null) {
+        localvariableHeaderParameter["X-Registry-Config"] = String(xRegistryConfig);
+    }
 
-  localvariableHeaderParameter["Content-Type"] = "application/octet-stream";
+    localvariableHeaderParameter["Content-Type"] = "application/octet-stream";
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Object" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageCommit fetch parameter creator
@@ -8616,79 +7873,70 @@ export const imageBuildFetchParamCreator = (
  * @summary Create a new image from a container fetch parameter creator
  */
 export const imageCommitFetchParamCreator = (
-  body?: ContainerConfig,
-  container?: string,
-  repo?: string,
-  tag?: string,
-  comment?: string,
-  author?: string,
-  pause?: boolean,
-  changes?: string,
-  options: any = {}
+    body?: ContainerConfig,
+    container?: string,
+    repo?: string,
+    tag?: string,
+    comment?: string,
+    author?: string,
+    pause?: boolean,
+    changes?: string,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/commit`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/commit`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (container !== undefined) {
-    localvariableQueryParameter["container"] = container;
-  }
+    if (container !== undefined) {
+        localvariableQueryParameter["container"] = container;
+    }
 
-  if (repo !== undefined) {
-    localvariableQueryParameter["repo"] = repo;
-  }
+    if (repo !== undefined) {
+        localvariableQueryParameter["repo"] = repo;
+    }
 
-  if (tag !== undefined) {
-    localvariableQueryParameter["tag"] = tag;
-  }
+    if (tag !== undefined) {
+        localvariableQueryParameter["tag"] = tag;
+    }
 
-  if (comment !== undefined) {
-    localvariableQueryParameter["comment"] = comment;
-  }
+    if (comment !== undefined) {
+        localvariableQueryParameter["comment"] = comment;
+    }
 
-  if (author !== undefined) {
-    localvariableQueryParameter["author"] = author;
-  }
+    if (author !== undefined) {
+        localvariableQueryParameter["author"] = author;
+    }
 
-  if (pause !== undefined) {
-    localvariableQueryParameter["pause"] = pause;
-  }
+    if (pause !== undefined) {
+        localvariableQueryParameter["pause"] = pause;
+    }
 
-  if (changes !== undefined) {
-    localvariableQueryParameter["changes"] = changes;
-  }
+    if (changes !== undefined) {
+        localvariableQueryParameter["changes"] = changes;
+    }
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
+    localvariableHeaderParameter["Content-Type"] = "application/json";
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ContainerConfig" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ContainerConfig" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageCreate fetch parameter creator
@@ -8731,86 +7979,74 @@ export const imageCommitFetchParamCreator = (
  * @summary Create an image fetch parameter creator
  */
 export const imageCreateFetchParamCreator = (
-  body?: string,
-  fromImage?: string,
-  fromSrc?: string,
-  repo?: string,
-  tag?: string,
-  message?: string,
-  xRegistryAuth?: string,
-  changes?: Array<string>,
-  platform?: string,
-  options: any = {}
+    body?: string,
+    fromImage?: string,
+    fromSrc?: string,
+    repo?: string,
+    tag?: string,
+    message?: string,
+    xRegistryAuth?: string,
+    changes?: Array<string>,
+    platform?: string,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/images/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/images/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (fromImage !== undefined) {
-    localvariableQueryParameter["fromImage"] = fromImage;
-  }
+    if (fromImage !== undefined) {
+        localvariableQueryParameter["fromImage"] = fromImage;
+    }
 
-  if (fromSrc !== undefined) {
-    localvariableQueryParameter["fromSrc"] = fromSrc;
-  }
+    if (fromSrc !== undefined) {
+        localvariableQueryParameter["fromSrc"] = fromSrc;
+    }
 
-  if (repo !== undefined) {
-    localvariableQueryParameter["repo"] = repo;
-  }
+    if (repo !== undefined) {
+        localvariableQueryParameter["repo"] = repo;
+    }
 
-  if (tag !== undefined) {
-    localvariableQueryParameter["tag"] = tag;
-  }
+    if (tag !== undefined) {
+        localvariableQueryParameter["tag"] = tag;
+    }
 
-  if (message !== undefined) {
-    localvariableQueryParameter["message"] = message;
-  }
+    if (message !== undefined) {
+        localvariableQueryParameter["message"] = message;
+    }
 
-  if (changes) {
-    localvariableQueryParameter["changes"] = changes.join(
-      COLLECTION_FORMATS["csv"]
+    if (changes) {
+        localvariableQueryParameter["changes"] = changes.join(COLLECTION_FORMATS["csv"]);
+    }
+
+    if (platform !== undefined) {
+        localvariableQueryParameter["platform"] = platform;
+    }
+
+    if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
+        localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "text/plain";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"string" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (platform !== undefined) {
-    localvariableQueryParameter["platform"] = platform;
-  }
-
-  if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
-    localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "text/plain";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"string" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageDelete fetch parameter creator
@@ -8824,56 +8060,43 @@ export const imageCreateFetchParamCreator = (
  * @summary Remove an image fetch parameter creator
  */
 export const imageDeleteFetchParamCreator = (
-  name: string,
-  force?: boolean,
-  noprune?: boolean,
-  options: any = {}
+    name: string,
+    force?: boolean,
+    noprune?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling imageDelete."
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling imageDelete.");
+    }
+    const localvariablePath = `/images/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
+
+    if (noprune !== undefined) {
+        localvariableQueryParameter["noprune"] = noprune;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/images/{name}`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
-
-  if (noprune !== undefined) {
-    localvariableQueryParameter["noprune"] = noprune;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageGet fetch parameter creator
@@ -8883,44 +8106,31 @@ export const imageDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Export an image fetch parameter creator
  */
-export const imageGetFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling imageGet."
+export const imageGetFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling imageGet.");
+    }
+    const localvariablePath = `/images/{name}/get`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/images/{name}/get`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageGetAll fetch parameter creator
@@ -8930,40 +8140,31 @@ export const imageGetFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Export several images fetch parameter creator
  */
-export const imageGetAllFetchParamCreator = (
-  names?: Array<string>,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/images/get`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const imageGetAllFetchParamCreator = (names?: Array<string>, options: any = {}): FetchArguments => {
+    const localvariablePath = `/images/get`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (names) {
-    localvariableQueryParameter["names"] = names.join(
-      COLLECTION_FORMATS["csv"]
+    if (names) {
+        localvariableQueryParameter["names"] = names.join(COLLECTION_FORMATS["csv"]);
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageHistory fetch parameter creator
@@ -8973,44 +8174,31 @@ export const imageGetAllFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get the history of an image fetch parameter creator
  */
-export const imageHistoryFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling imageHistory."
+export const imageHistoryFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling imageHistory.");
+    }
+    const localvariablePath = `/images/{name}/history`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/images/{name}/history`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageInspect fetch parameter creator
@@ -9020,44 +8208,31 @@ export const imageHistoryFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect an image fetch parameter creator
  */
-export const imageInspectFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling imageInspect."
+export const imageInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling imageInspect.");
+    }
+    const localvariablePath = `/images/{name}/json`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/images/{name}/json`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageList fetch parameter creator
@@ -9080,52 +8255,48 @@ export const imageInspectFetchParamCreator = (
  * @summary List Images fetch parameter creator
  */
 export const imageListFetchParamCreator = (
-  all?: boolean,
-  filters?: string,
-  sharedSize?: boolean,
-  digests?: boolean,
-  options: any = {}
+    all?: boolean,
+    filters?: string,
+    sharedSize?: boolean,
+    digests?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/images/json`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/images/json`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (all !== undefined) {
-    localvariableQueryParameter["all"] = all;
-  }
+    if (all !== undefined) {
+        localvariableQueryParameter["all"] = all;
+    }
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  if (sharedSize !== undefined) {
-    localvariableQueryParameter["shared-size"] = sharedSize;
-  }
+    if (sharedSize !== undefined) {
+        localvariableQueryParameter["shared-size"] = sharedSize;
+    }
 
-  if (digests !== undefined) {
-    localvariableQueryParameter["digests"] = digests;
-  }
+    if (digests !== undefined) {
+        localvariableQueryParameter["digests"] = digests;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageLoad fetch parameter creator
@@ -9136,50 +8307,36 @@ export const imageListFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Import images fetch parameter creator
  */
-export const imageLoadFetchParamCreator = (
-  body?: Object,
-  quiet?: boolean,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/images/load`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const imageLoadFetchParamCreator = (body?: Object, quiet?: boolean, options: any = {}): FetchArguments => {
+    const localvariablePath = `/images/load`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (quiet !== undefined) {
-    localvariableQueryParameter["quiet"] = quiet;
-  }
+    if (quiet !== undefined) {
+        localvariableQueryParameter["quiet"] = quiet;
+    }
 
-  localvariableHeaderParameter["Content-Type"] = "application/x-tar";
+    localvariableHeaderParameter["Content-Type"] = "application/x-tar";
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Object" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imagePrune fetch parameter creator
@@ -9198,41 +8355,31 @@ export const imageLoadFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete unused images fetch parameter creator
  */
-export const imagePruneFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/images/prune`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const imagePruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/images/prune`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imagePush fetch parameter creator
@@ -9246,63 +8393,50 @@ export const imagePruneFetchParamCreator = (
  * @summary Push an image fetch parameter creator
  */
 export const imagePushFetchParamCreator = (
-  name: string,
-  xRegistryAuth: string,
-  tag?: string,
-  options: any = {}
+    name: string,
+    xRegistryAuth: string,
+    tag?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling imagePush."
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling imagePush.");
+    }
+    // verify required parameter 'xRegistryAuth' is not null or undefined
+    if (xRegistryAuth === null || xRegistryAuth === undefined) {
+        throw new RequiredError(
+            "xRegistryAuth",
+            "Required parameter xRegistryAuth was null or undefined when calling imagePush."
+        );
+    }
+    const localvariablePath = `/images/{name}/push`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (tag !== undefined) {
+        localvariableQueryParameter["tag"] = tag;
+    }
+
+    if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
+        localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'xRegistryAuth' is not null or undefined
-  if (xRegistryAuth === null || xRegistryAuth === undefined) {
-    throw new RequiredError(
-      "xRegistryAuth",
-      "Required parameter xRegistryAuth was null or undefined when calling imagePush."
-    );
-  }
-  const localvariablePath = `/images/{name}/push`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (tag !== undefined) {
-    localvariableQueryParameter["tag"] = tag;
-  }
-
-  if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
-    localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageSearch fetch parameter creator
@@ -9321,54 +8455,47 @@ export const imagePushFetchParamCreator = (
  * @summary Search images fetch parameter creator
  */
 export const imageSearchFetchParamCreator = (
-  term: string,
-  limit?: number,
-  filters?: string,
-  options: any = {}
+    term: string,
+    limit?: number,
+    filters?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'term' is not null or undefined
-  if (term === null || term === undefined) {
-    throw new RequiredError(
-      "term",
-      "Required parameter term was null or undefined when calling imageSearch."
+    // verify required parameter 'term' is not null or undefined
+    if (term === null || term === undefined) {
+        throw new RequiredError("term", "Required parameter term was null or undefined when calling imageSearch.");
+    }
+    const localvariablePath = `/images/search`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (term !== undefined) {
+        localvariableQueryParameter["term"] = term;
+    }
+
+    if (limit !== undefined) {
+        localvariableQueryParameter["limit"] = limit;
+    }
+
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/images/search`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (term !== undefined) {
-    localvariableQueryParameter["term"] = term;
-  }
-
-  if (limit !== undefined) {
-    localvariableQueryParameter["limit"] = limit;
-  }
-
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ImageApi imageTag fetch parameter creator
@@ -9382,56 +8509,43 @@ export const imageSearchFetchParamCreator = (
  * @summary Tag an image fetch parameter creator
  */
 export const imageTagFetchParamCreator = (
-  name: string,
-  repo?: string,
-  tag?: string,
-  options: any = {}
+    name: string,
+    repo?: string,
+    tag?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling imageTag."
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling imageTag.");
+    }
+    const localvariablePath = `/images/{name}/tag`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (repo !== undefined) {
+        localvariableQueryParameter["repo"] = repo;
+    }
+
+    if (tag !== undefined) {
+        localvariableQueryParameter["tag"] = tag;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/images/{name}/tag`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (repo !== undefined) {
-    localvariableQueryParameter["repo"] = repo;
-  }
-
-  if (tag !== undefined) {
-    localvariableQueryParameter["tag"] = tag;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -9449,29 +8563,23 @@ export const imageTagFetchParamCreator = (
  * @summary Delete builder cache
  */
 export const buildPrune = (
-  keepStorage?: number,
-  all?: boolean,
-  filters?: string,
-  options?: any
+    keepStorage?: number,
+    all?: boolean,
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<BuildPruneResponse>) => {
-  const localvariableFetchArguments = buildPruneFetchParamCreator(
-    keepStorage,
-    all,
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<BuildPruneResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = buildPruneFetchParamCreator(keepStorage, all, filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<BuildPruneResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Build an image from a tar archive with a `Dockerfile` in it. The `Dockerfile`
@@ -9562,77 +8670,76 @@ export const buildPrune = (
  * @summary Build an image
  */
 export const imageBuild = (
-  body?: Object,
-  dockerfile?: string,
-  t?: string,
-  extrahosts?: string,
-  remote?: string,
-  q?: boolean,
-  nocache?: boolean,
-  cachefrom?: string,
-  pull?: string,
-  rm?: boolean,
-  forcerm?: boolean,
-  memory?: number,
-  memswap?: number,
-  cpushares?: number,
-  cpusetcpus?: string,
-  cpuperiod?: number,
-  cpuquota?: number,
-  buildargs?: string,
-  shmsize?: number,
-  squash?: boolean,
-  labels?: string,
-  networkmode?: string,
-  contentType?: string,
-  xRegistryConfig?: string,
-  platform?: string,
-  target?: string,
-  outputs?: string,
-  options?: any
+    body?: Object,
+    dockerfile?: string,
+    t?: string,
+    extrahosts?: string,
+    remote?: string,
+    q?: boolean,
+    nocache?: boolean,
+    cachefrom?: string,
+    pull?: string,
+    rm?: boolean,
+    forcerm?: boolean,
+    memory?: number,
+    memswap?: number,
+    cpushares?: number,
+    cpusetcpus?: string,
+    cpuperiod?: number,
+    cpuquota?: number,
+    buildargs?: string,
+    shmsize?: number,
+    squash?: boolean,
+    labels?: string,
+    networkmode?: string,
+    contentType?: string,
+    xRegistryConfig?: string,
+    platform?: string,
+    target?: string,
+    outputs?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = imageBuildFetchParamCreator(
-    body,
-    dockerfile,
-    t,
-    extrahosts,
-    remote,
-    q,
-    nocache,
-    cachefrom,
-    pull,
-    rm,
-    forcerm,
-    memory,
-    memswap,
-    cpushares,
-    cpusetcpus,
-    cpuperiod,
-    cpuquota,
-    buildargs,
-    shmsize,
-    squash,
-    labels,
-    networkmode,
-    contentType,
-    xRegistryConfig,
-    platform,
-    target,
-    outputs,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageBuildFetchParamCreator(
+        body,
+        dockerfile,
+        t,
+        extrahosts,
+        remote,
+        q,
+        nocache,
+        cachefrom,
+        pull,
+        rm,
+        forcerm,
+        memory,
+        memswap,
+        cpushares,
+        cpusetcpus,
+        cpuperiod,
+        cpuquota,
+        buildargs,
+        shmsize,
+        squash,
+        labels,
+        networkmode,
+        contentType,
+        xRegistryConfig,
+        platform,
+        target,
+        outputs,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {ContainerConfig} [body] The container configuration
@@ -9649,39 +8756,38 @@ export const imageBuild = (
  * @summary Create a new image from a container
  */
 export const imageCommit = (
-  body?: ContainerConfig,
-  container?: string,
-  repo?: string,
-  tag?: string,
-  comment?: string,
-  author?: string,
-  pause?: boolean,
-  changes?: string,
-  options?: any
+    body?: ContainerConfig,
+    container?: string,
+    repo?: string,
+    tag?: string,
+    comment?: string,
+    author?: string,
+    pause?: boolean,
+    changes?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-  const localvariableFetchArguments = imageCommitFetchParamCreator(
-    body,
-    container,
-    repo,
-    tag,
-    comment,
-    author,
-    pause,
-    changes,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<IdResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageCommitFetchParamCreator(
+        body,
+        container,
+        repo,
+        tag,
+        comment,
+        author,
+        pause,
+        changes,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<IdResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Pull or import an image.
@@ -9724,41 +8830,40 @@ export const imageCommit = (
  * @summary Create an image
  */
 export const imageCreate = (
-  body?: string,
-  fromImage?: string,
-  fromSrc?: string,
-  repo?: string,
-  tag?: string,
-  message?: string,
-  xRegistryAuth?: string,
-  changes?: Array<string>,
-  platform?: string,
-  options?: any
+    body?: string,
+    fromImage?: string,
+    fromSrc?: string,
+    repo?: string,
+    tag?: string,
+    message?: string,
+    xRegistryAuth?: string,
+    changes?: Array<string>,
+    platform?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = imageCreateFetchParamCreator(
-    body,
-    fromImage,
-    fromSrc,
-    repo,
-    tag,
-    message,
-    xRegistryAuth,
-    changes,
-    platform,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageCreateFetchParamCreator(
+        body,
+        fromImage,
+        fromSrc,
+        repo,
+        tag,
+        message,
+        xRegistryAuth,
+        changes,
+        platform,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Remove an image, along with any untagged parent images that were referenced
@@ -9774,32 +8879,23 @@ export const imageCreate = (
  * @summary Remove an image
  */
 export const imageDelete = (
-  name: string,
-  force?: boolean,
-  noprune?: boolean,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<Array<ImageDeleteResponseItem>>) => {
-  const localvariableFetchArguments = imageDeleteFetchParamCreator(
-    name,
-    force,
-    noprune,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<ImageDeleteResponseItem>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    name: string,
+    force?: boolean,
+    noprune?: boolean,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ImageDeleteResponseItem>>) => {
+    const localvariableFetchArguments = imageDeleteFetchParamCreator(name, force, noprune, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<ImageDeleteResponseItem>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Get a tarball containing all images and metadata for a repository. If `name`
@@ -9824,23 +8920,19 @@ export const imageDelete = (
  * @throws {RequiredError}
  * @summary Export an image
  */
-export const imageGet = (
-  name: string,
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-  const localvariableFetchArguments = imageGetFetchParamCreator(name, options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Blob>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const imageGet = (name: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
+    const localvariableFetchArguments = imageGetFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Blob>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Get a tarball containing all images and metadata for several image
@@ -9857,25 +8949,21 @@ export const imageGet = (
  * @summary Export several images
  */
 export const imageGetAll = (
-  names?: Array<string>,
-  options?: any
+    names?: Array<string>,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-  const localvariableFetchArguments = imageGetAllFetchParamCreator(
-    names,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Blob>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageGetAllFetchParamCreator(names, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Blob>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Return parent layers of an image.
@@ -9886,28 +8974,21 @@ export const imageGetAll = (
  * @summary Get the history of an image
  */
 export const imageHistory = (
-  name: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<Array<HistoryResponseItem>>) => {
-  const localvariableFetchArguments = imageHistoryFetchParamCreator(
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<HistoryResponseItem>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    name: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<Array<HistoryResponseItem>>) => {
+    const localvariableFetchArguments = imageHistoryFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<HistoryResponseItem>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Return low-level information about an image.
@@ -9918,25 +8999,21 @@ export const imageHistory = (
  * @summary Inspect an image
  */
 export const imageInspect = (
-  name: string,
-  options?: any
+    name: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ImageInspect>) => {
-  const localvariableFetchArguments = imageInspectFetchParamCreator(
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ImageInspect>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageInspectFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ImageInspect>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Returns a list of images on the server. Note that it uses a different,
@@ -9960,31 +9037,24 @@ export const imageInspect = (
  * @summary List Images
  */
 export const imageList = (
-  all?: boolean,
-  filters?: string,
-  sharedSize?: boolean,
-  digests?: boolean,
-  options?: any
+    all?: boolean,
+    filters?: string,
+    sharedSize?: boolean,
+    digests?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ImageSummary>>) => {
-  const localvariableFetchArguments = imageListFetchParamCreator(
-    all,
-    filters,
-    sharedSize,
-    digests,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<ImageSummary>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageListFetchParamCreator(all, filters, sharedSize, digests, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<ImageSummary>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Load a set of images and tags into a repository. For details on the format,
@@ -9997,27 +9067,22 @@ export const imageList = (
  * @summary Import images
  */
 export const imageLoad = (
-  body?: Object,
-  quiet?: boolean,
-  options?: any
+    body?: Object,
+    quiet?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = imageLoadFetchParamCreator(
-    body,
-    quiet,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageLoadFetchParamCreator(body, quiet, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] Filters to process on the prune list, encoded as
@@ -10035,25 +9100,21 @@ export const imageLoad = (
  * @summary Delete unused images
  */
 export const imagePrune = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ImagePruneResponse>) => {
-  const localvariableFetchArguments = imagePruneFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ImagePruneResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imagePruneFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ImagePruneResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Push an image to a registry. If you wish to push an image on to a private
@@ -10070,29 +9131,23 @@ export const imagePrune = (
  * @summary Push an image
  */
 export const imagePush = (
-  name: string,
-  xRegistryAuth: string,
-  tag?: string,
-  options?: any
+    name: string,
+    xRegistryAuth: string,
+    tag?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = imagePushFetchParamCreator(
-    name,
-    xRegistryAuth,
-    tag,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imagePushFetchParamCreator(name, xRegistryAuth, tag, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Search for an image on Docker Hub.
@@ -10111,32 +9166,23 @@ export const imagePush = (
  * @summary Search images
  */
 export const imageSearch = (
-  term: string,
-  limit?: number,
-  filters?: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<Array<ImageSearchResponseItem>>) => {
-  const localvariableFetchArguments = imageSearchFetchParamCreator(
-    term,
-    limit,
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<ImageSearchResponseItem>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    term: string,
+    limit?: number,
+    filters?: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ImageSearchResponseItem>>) => {
+    const localvariableFetchArguments = imageSearchFetchParamCreator(term, limit, filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<ImageSearchResponseItem>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Tag an image so that it becomes part of a repository.
@@ -10150,29 +9196,23 @@ export const imageSearch = (
  * @summary Tag an image
  */
 export const imageTag = (
-  name: string,
-  repo?: string,
-  tag?: string,
-  options?: any
+    name: string,
+    repo?: string,
+    tag?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = imageTagFetchParamCreator(
-    name,
-    repo,
-    tag,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = imageTagFetchParamCreator(name, repo, tag, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -10182,455 +9222,432 @@ export const imageTag = (
  * @interface ImageApi
  */
 export interface ImageApiInterface {
-  /**
-   * @memberof ImageApiInterface
-   * @param {number} [keepStorage] Amount of disk space in bytes to keep for
-   *   cache
-   * @param {boolean} [all] Remove all types of build cache
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the list of build cache objects.
-   *   Available filters: - `until=<timestamp>` remove cache older than
-   *   `<timestamp>`. The `<timestamp>` can be Unix timestamps, date formatted
-   *   timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed
-   *   relative to the daemon's local time. - `id=<id>` - `parent=<id>` -
-   *   `type=<string>` - `description=<string>` - `inuse` - `shared` -
-   *   `private`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete builder cache
-   */
-  buildPrune(
-    keepStorage?: number,
-    all?: boolean,
-    filters?: string,
-    options?: any
-  ): Promise<BuildPruneResponse>;
+    /**
+     * @memberof ImageApiInterface
+     * @param {number} [keepStorage] Amount of disk space in bytes to keep for
+     *   cache
+     * @param {boolean} [all] Remove all types of build cache
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the list of build cache objects.
+     *   Available filters: - `until=<timestamp>` remove cache older than
+     *   `<timestamp>`. The `<timestamp>` can be Unix timestamps, date formatted
+     *   timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed
+     *   relative to the daemon's local time. - `id=<id>` - `parent=<id>` -
+     *   `type=<string>` - `description=<string>` - `inuse` - `shared` -
+     *   `private`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete builder cache
+     */
+    buildPrune(keepStorage?: number, all?: boolean, filters?: string, options?: any): Promise<BuildPruneResponse>;
 
-  /**
-   * Build an image from a tar archive with a `Dockerfile` in it. The
-   * `Dockerfile` specifies how the image is built from the tar archive. It is
-   * typically in the archive's root, but can be at a different path or have a
-   * different name by specifying the `dockerfile` parameter. [See the
-   * `Dockerfile` reference for more
-   * information](https://docs.docker.com/engine/reference/builder/). The
-   * Docker daemon performs a preliminary validation of the `Dockerfile`
-   * before starting the build, and returns an error if the syntax is
-   * incorrect. After that, each instruction is run one-by-one until the ID of
-   * the new image is output. The build is canceled if the client drops the
-   * connection by quitting or being killed.
-   *
-   * @memberof ImageApiInterface
-   * @param {Object} [body] A tar archive compressed with one of the following
-   *   algorithms: identity (no compression), gzip, bzip2, xz.
-   * @param {string} [dockerfile] Path within the build context to the
-   *   `Dockerfile`. This is ignored if `remote` is specified and points to an
-   *   external `Dockerfile`.
-   * @param {string} [t] A name and optional tag to apply to the image in the
-   *   `name:tag` format. If you omit the tag the default `latest` value is
-   *   assumed. You can provide several `t` parameters.
-   * @param {string} [extrahosts] Extra hosts to add to /etc/hosts
-   * @param {string} [remote] A Git repository URI or HTTP/HTTPS context URI.
-   *   If the URI points to a single text file, the file’s contents are placed
-   *   into a file called `Dockerfile` and the image is built from that file.
-   *   If the URI points to a tarball, the file is downloaded by the daemon
-   *   and the contents therein used as the context for the build. If the URI
-   *   points to a tarball and the `dockerfile` parameter is also specified,
-   *   there must be a file with the corresponding path inside the tarball.
-   * @param {boolean} [q] Suppress verbose build output.
-   * @param {boolean} [nocache] Do not use the cache when building the image.
-   * @param {string} [cachefrom] JSON array of images used for build cache
-   *   resolution.
-   * @param {string} [pull] Attempt to pull the image even if an older image
-   *   exists locally.
-   * @param {boolean} [rm] Remove intermediate containers after a successful
-   *   build.
-   * @param {boolean} [forcerm] Always remove intermediate containers, even
-   *   upon failure.
-   * @param {number} [memory] Set memory limit for build.
-   * @param {number} [memswap] Total memory (memory + swap). Set as `-1` to
-   *   disable swap.
-   * @param {number} [cpushares] CPU shares (relative weight).
-   * @param {string} [cpusetcpus] CPUs in which to allow execution (e.g.,
-   *   `0-3`, `0,1`).
-   * @param {number} [cpuperiod] The length of a CPU period in microseconds.
-   * @param {number} [cpuquota] Microseconds of CPU time that the container
-   *   can get in a CPU period.
-   * @param {string} [buildargs] JSON map of string pairs for build-time
-   *   variables. Users pass these values at build-time. Docker uses the
-   *   buildargs as the environment context for commands run via the
-   *   `Dockerfile` RUN instruction, or for variable expansion in other
-   *   `Dockerfile` instructions. This is not meant for passing secret values.
-   *   For example, the build arg `FOO=bar` would become
-   *   `{&quot;FOO&quot;:&quot;bar&quot;}` in JSON. This would result in the
-   *   query parameter `buildargs={&quot;FOO&quot;:&quot;bar&quot;}`. Note
-   *   that `{&quot;FOO&quot;:&quot;bar&quot;}` should be URI component
-   *   encoded. [Read more about the buildargs
-   *   instruction.](https://docs.docker.com/engine/reference/builder/#arg)
-   * @param {number} [shmsize] Size of `/dev/shm` in bytes. The size must be
-   *   greater than 0. If omitted the system uses 64MB.
-   * @param {boolean} [squash] Squash the resulting images layers into a
-   *   single layer. _(Experimental release only.)_
-   * @param {string} [labels] Arbitrary key/value labels to set on the image,
-   *   as a JSON map of string pairs.
-   * @param {string} [networkmode] Sets the networking mode for the run
-   *   commands during build. Supported standard values are: `bridge`, `host`,
-   *   `none`, and `container:<name|id>`. Any other value is taken as a custom
-   *   network's name or ID to which this container should connect to.
-   * @param {string} [contentType]
-   * @param {string} [xRegistryConfig] This is a base64-encoded JSON object
-   *   with auth configurations for multiple registries that a build may refer
-   *   to. The key is a registry URL, and the value is an auth configuration
-   *   object, [as described in the authentication
-   *   section](#section/Authentication). For example: ``` {
-   *   &quot;docker.example.com&quot;: { &quot;username&quot;:
-   *   &quot;janedoe&quot;, &quot;password&quot;: &quot;hunter2&quot; },
-   *   &quot;https://index.docker.io/v1/&quot;: { &quot;username&quot;:
-   *   &quot;mobydock&quot;, &quot;password&quot;: &quot;conta1n3rize14&quot;
-   *   } } ``` Only the registry domain name (and port if not the default 443)
-   *   are required. However, for legacy reasons, the Docker Hub registry must
-   *   be specified with both a `https://` prefix and a `/v1/` suffix even
-   *   though Docker will prefer to use the v2 registry API.
-   * @param {string} [platform] Platform in the format os[/arch[/variant]]
-   * @param {string} [target] Target build stage
-   * @param {string} [outputs] BuildKit output configuration
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Build an image
-   */
-  imageBuild(
-    body?: Object,
-    dockerfile?: string,
-    t?: string,
-    extrahosts?: string,
-    remote?: string,
-    q?: boolean,
-    nocache?: boolean,
-    cachefrom?: string,
-    pull?: string,
-    rm?: boolean,
-    forcerm?: boolean,
-    memory?: number,
-    memswap?: number,
-    cpushares?: number,
-    cpusetcpus?: string,
-    cpuperiod?: number,
-    cpuquota?: number,
-    buildargs?: string,
-    shmsize?: number,
-    squash?: boolean,
-    labels?: string,
-    networkmode?: string,
-    contentType?: string,
-    xRegistryConfig?: string,
-    platform?: string,
-    target?: string,
-    outputs?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Build an image from a tar archive with a `Dockerfile` in it. The
+     * `Dockerfile` specifies how the image is built from the tar archive. It is
+     * typically in the archive's root, but can be at a different path or have a
+     * different name by specifying the `dockerfile` parameter. [See the
+     * `Dockerfile` reference for more
+     * information](https://docs.docker.com/engine/reference/builder/). The
+     * Docker daemon performs a preliminary validation of the `Dockerfile`
+     * before starting the build, and returns an error if the syntax is
+     * incorrect. After that, each instruction is run one-by-one until the ID of
+     * the new image is output. The build is canceled if the client drops the
+     * connection by quitting or being killed.
+     *
+     * @memberof ImageApiInterface
+     * @param {Object} [body] A tar archive compressed with one of the following
+     *   algorithms: identity (no compression), gzip, bzip2, xz.
+     * @param {string} [dockerfile] Path within the build context to the
+     *   `Dockerfile`. This is ignored if `remote` is specified and points to an
+     *   external `Dockerfile`.
+     * @param {string} [t] A name and optional tag to apply to the image in the
+     *   `name:tag` format. If you omit the tag the default `latest` value is
+     *   assumed. You can provide several `t` parameters.
+     * @param {string} [extrahosts] Extra hosts to add to /etc/hosts
+     * @param {string} [remote] A Git repository URI or HTTP/HTTPS context URI.
+     *   If the URI points to a single text file, the file’s contents are placed
+     *   into a file called `Dockerfile` and the image is built from that file.
+     *   If the URI points to a tarball, the file is downloaded by the daemon
+     *   and the contents therein used as the context for the build. If the URI
+     *   points to a tarball and the `dockerfile` parameter is also specified,
+     *   there must be a file with the corresponding path inside the tarball.
+     * @param {boolean} [q] Suppress verbose build output.
+     * @param {boolean} [nocache] Do not use the cache when building the image.
+     * @param {string} [cachefrom] JSON array of images used for build cache
+     *   resolution.
+     * @param {string} [pull] Attempt to pull the image even if an older image
+     *   exists locally.
+     * @param {boolean} [rm] Remove intermediate containers after a successful
+     *   build.
+     * @param {boolean} [forcerm] Always remove intermediate containers, even
+     *   upon failure.
+     * @param {number} [memory] Set memory limit for build.
+     * @param {number} [memswap] Total memory (memory + swap). Set as `-1` to
+     *   disable swap.
+     * @param {number} [cpushares] CPU shares (relative weight).
+     * @param {string} [cpusetcpus] CPUs in which to allow execution (e.g.,
+     *   `0-3`, `0,1`).
+     * @param {number} [cpuperiod] The length of a CPU period in microseconds.
+     * @param {number} [cpuquota] Microseconds of CPU time that the container
+     *   can get in a CPU period.
+     * @param {string} [buildargs] JSON map of string pairs for build-time
+     *   variables. Users pass these values at build-time. Docker uses the
+     *   buildargs as the environment context for commands run via the
+     *   `Dockerfile` RUN instruction, or for variable expansion in other
+     *   `Dockerfile` instructions. This is not meant for passing secret values.
+     *   For example, the build arg `FOO=bar` would become
+     *   `{&quot;FOO&quot;:&quot;bar&quot;}` in JSON. This would result in the
+     *   query parameter `buildargs={&quot;FOO&quot;:&quot;bar&quot;}`. Note
+     *   that `{&quot;FOO&quot;:&quot;bar&quot;}` should be URI component
+     *   encoded. [Read more about the buildargs
+     *   instruction.](https://docs.docker.com/engine/reference/builder/#arg)
+     * @param {number} [shmsize] Size of `/dev/shm` in bytes. The size must be
+     *   greater than 0. If omitted the system uses 64MB.
+     * @param {boolean} [squash] Squash the resulting images layers into a
+     *   single layer. _(Experimental release only.)_
+     * @param {string} [labels] Arbitrary key/value labels to set on the image,
+     *   as a JSON map of string pairs.
+     * @param {string} [networkmode] Sets the networking mode for the run
+     *   commands during build. Supported standard values are: `bridge`, `host`,
+     *   `none`, and `container:<name|id>`. Any other value is taken as a custom
+     *   network's name or ID to which this container should connect to.
+     * @param {string} [contentType]
+     * @param {string} [xRegistryConfig] This is a base64-encoded JSON object
+     *   with auth configurations for multiple registries that a build may refer
+     *   to. The key is a registry URL, and the value is an auth configuration
+     *   object, [as described in the authentication
+     *   section](#section/Authentication). For example: ``` {
+     *   &quot;docker.example.com&quot;: { &quot;username&quot;:
+     *   &quot;janedoe&quot;, &quot;password&quot;: &quot;hunter2&quot; },
+     *   &quot;https://index.docker.io/v1/&quot;: { &quot;username&quot;:
+     *   &quot;mobydock&quot;, &quot;password&quot;: &quot;conta1n3rize14&quot;
+     *   } } ``` Only the registry domain name (and port if not the default 443)
+     *   are required. However, for legacy reasons, the Docker Hub registry must
+     *   be specified with both a `https://` prefix and a `/v1/` suffix even
+     *   though Docker will prefer to use the v2 registry API.
+     * @param {string} [platform] Platform in the format os[/arch[/variant]]
+     * @param {string} [target] Target build stage
+     * @param {string} [outputs] BuildKit output configuration
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Build an image
+     */
+    imageBuild(
+        body?: Object,
+        dockerfile?: string,
+        t?: string,
+        extrahosts?: string,
+        remote?: string,
+        q?: boolean,
+        nocache?: boolean,
+        cachefrom?: string,
+        pull?: string,
+        rm?: boolean,
+        forcerm?: boolean,
+        memory?: number,
+        memswap?: number,
+        cpushares?: number,
+        cpusetcpus?: string,
+        cpuperiod?: number,
+        cpuquota?: number,
+        buildargs?: string,
+        shmsize?: number,
+        squash?: boolean,
+        labels?: string,
+        networkmode?: string,
+        contentType?: string,
+        xRegistryConfig?: string,
+        platform?: string,
+        target?: string,
+        outputs?: string,
+        options?: any
+    ): Promise<{}>;
 
-  /**
-   * @memberof ImageApiInterface
-   * @param {ContainerConfig} [body] The container configuration
-   * @param {string} [container] The ID or name of the container to commit
-   * @param {string} [repo] Repository name for the created image
-   * @param {string} [tag] Tag name for the create image
-   * @param {string} [comment] Commit message
-   * @param {string} [author] Author of the image (e.g., `John Hannibal Smith
-   *   <hannibal@a-team.com>`)
-   * @param {boolean} [pause] Whether to pause the container before committing
-   * @param {string} [changes] `Dockerfile` instructions to apply while
-   *   committing
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a new image from a container
-   */
-  imageCommit(
-    body?: ContainerConfig,
-    container?: string,
-    repo?: string,
-    tag?: string,
-    comment?: string,
-    author?: string,
-    pause?: boolean,
-    changes?: string,
-    options?: any
-  ): Promise<IdResponse>;
+    /**
+     * @memberof ImageApiInterface
+     * @param {ContainerConfig} [body] The container configuration
+     * @param {string} [container] The ID or name of the container to commit
+     * @param {string} [repo] Repository name for the created image
+     * @param {string} [tag] Tag name for the create image
+     * @param {string} [comment] Commit message
+     * @param {string} [author] Author of the image (e.g., `John Hannibal Smith
+     *   <hannibal@a-team.com>`)
+     * @param {boolean} [pause] Whether to pause the container before committing
+     * @param {string} [changes] `Dockerfile` instructions to apply while
+     *   committing
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a new image from a container
+     */
+    imageCommit(
+        body?: ContainerConfig,
+        container?: string,
+        repo?: string,
+        tag?: string,
+        comment?: string,
+        author?: string,
+        pause?: boolean,
+        changes?: string,
+        options?: any
+    ): Promise<IdResponse>;
 
-  /**
-   * Pull or import an image.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} [body] Image content if the value `-` has been specified
-   *   in fromSrc query parameter
-   * @param {string} [fromImage] Name of the image to pull. The name may
-   *   include a tag or digest. This parameter may only be used when pulling
-   *   an image. The pull is cancelled if the HTTP connection is closed.
-   * @param {string} [fromSrc] Source to import. The value may be a URL from
-   *   which the image can be retrieved or `-` to read the image from the
-   *   request body. This parameter may only be used when importing an image.
-   * @param {string} [repo] Repository name given to an image when it is
-   *   imported. The repo may include a tag. This parameter may only be used
-   *   when importing an image.
-   * @param {string} [tag] Tag or digest. If empty when pulling an image, this
-   *   causes all tags for the given image to be pulled.
-   * @param {string} [message] Set commit message for imported image.
-   * @param {string} [xRegistryAuth] A base64url-encoded auth configuration.
-   *   Refer to the [authentication section](#section/Authentication) for
-   *   details.
-   * @param {string[]} [changes] Apply `Dockerfile` instructions to the image
-   *   that is created, for example: `changes=ENV DEBUG=true`. Note that `ENV
-   *   DEBUG=true` should be URI component encoded. Supported `Dockerfile`
-   *   instructions:
-   *   `CMD`|`ENTRYPOINT`|`ENV`|`EXPOSE`|`ONBUILD`|`USER`|`VOLUME`|`WORKDIR`
-   * @param {string} [platform] Platform in the format os[/arch[/variant]].
-   *   When used in combination with the `fromImage` option, the daemon checks
-   *   if the given image is present in the local image cache with the given
-   *   OS and Architecture, and otherwise attempts to pull the image. If the
-   *   option is not set, the host's native OS and Architecture are used. If
-   *   the given image does not exist in the local image cache, the daemon
-   *   attempts to pull the image with the host's native OS and Architecture.
-   *   If the given image does exists in the local image cache, but its OS or
-   *   architecture does not match, a warning is produced. When used with the
-   *   `fromSrc` option to import an image from an archive, this option sets
-   *   the platform information for the imported image. If the option is not
-   *   set, the host's native OS and Architecture are used for the imported
-   *   image.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create an image
-   */
-  imageCreate(
-    body?: string,
-    fromImage?: string,
-    fromSrc?: string,
-    repo?: string,
-    tag?: string,
-    message?: string,
-    xRegistryAuth?: string,
-    changes?: Array<string>,
-    platform?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Pull or import an image.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} [body] Image content if the value `-` has been specified
+     *   in fromSrc query parameter
+     * @param {string} [fromImage] Name of the image to pull. The name may
+     *   include a tag or digest. This parameter may only be used when pulling
+     *   an image. The pull is cancelled if the HTTP connection is closed.
+     * @param {string} [fromSrc] Source to import. The value may be a URL from
+     *   which the image can be retrieved or `-` to read the image from the
+     *   request body. This parameter may only be used when importing an image.
+     * @param {string} [repo] Repository name given to an image when it is
+     *   imported. The repo may include a tag. This parameter may only be used
+     *   when importing an image.
+     * @param {string} [tag] Tag or digest. If empty when pulling an image, this
+     *   causes all tags for the given image to be pulled.
+     * @param {string} [message] Set commit message for imported image.
+     * @param {string} [xRegistryAuth] A base64url-encoded auth configuration.
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
+     * @param {string[]} [changes] Apply `Dockerfile` instructions to the image
+     *   that is created, for example: `changes=ENV DEBUG=true`. Note that `ENV
+     *   DEBUG=true` should be URI component encoded. Supported `Dockerfile`
+     *   instructions:
+     *   `CMD`|`ENTRYPOINT`|`ENV`|`EXPOSE`|`ONBUILD`|`USER`|`VOLUME`|`WORKDIR`
+     * @param {string} [platform] Platform in the format os[/arch[/variant]].
+     *   When used in combination with the `fromImage` option, the daemon checks
+     *   if the given image is present in the local image cache with the given
+     *   OS and Architecture, and otherwise attempts to pull the image. If the
+     *   option is not set, the host's native OS and Architecture are used. If
+     *   the given image does not exist in the local image cache, the daemon
+     *   attempts to pull the image with the host's native OS and Architecture.
+     *   If the given image does exists in the local image cache, but its OS or
+     *   architecture does not match, a warning is produced. When used with the
+     *   `fromSrc` option to import an image from an archive, this option sets
+     *   the platform information for the imported image. If the option is not
+     *   set, the host's native OS and Architecture are used for the imported
+     *   image.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create an image
+     */
+    imageCreate(
+        body?: string,
+        fromImage?: string,
+        fromSrc?: string,
+        repo?: string,
+        tag?: string,
+        message?: string,
+        xRegistryAuth?: string,
+        changes?: Array<string>,
+        platform?: string,
+        options?: any
+    ): Promise<{}>;
 
-  /**
-   * Remove an image, along with any untagged parent images that were
-   * referenced by that image. Images can't be removed if they have descendant
-   * images, are being used by a running container or are being used by a
-   * build.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} name Image name or ID
-   * @param {boolean} [force] Remove the image even if it is being used by
-   *   stopped containers or has other tags
-   * @param {boolean} [noprune] Do not delete untagged parent images
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Remove an image
-   */
-  imageDelete(
-    name: string,
-    force?: boolean,
-    noprune?: boolean,
-    options?: any
-  ): Promise<Array<ImageDeleteResponseItem>>;
+    /**
+     * Remove an image, along with any untagged parent images that were
+     * referenced by that image. Images can't be removed if they have descendant
+     * images, are being used by a running container or are being used by a
+     * build.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} name Image name or ID
+     * @param {boolean} [force] Remove the image even if it is being used by
+     *   stopped containers or has other tags
+     * @param {boolean} [noprune] Do not delete untagged parent images
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Remove an image
+     */
+    imageDelete(
+        name: string,
+        force?: boolean,
+        noprune?: boolean,
+        options?: any
+    ): Promise<Array<ImageDeleteResponseItem>>;
 
-  /**
-   * Get a tarball containing all images and metadata for a repository. If
-   * `name` is a specific name and tag (e.g. `ubuntu:latest`), then only that
-   * image (and its parents) are returned. If `name` is an image ID, similarly
-   * only that image (and its parents) are returned, but with the exclusion of
-   * the `repositories` file in the tarball, as there were no image names
-   * referenced. ### Image tarball format An image tarball contains one
-   * directory per image layer (named using its long ID), each containing
-   * these files: - `VERSION`: currently `1.0` - the file format version -
-   * `json`: detailed layer information, similar to `docker inspect layer_id`
-   * - `layer.tar`: A tarfile containing the filesystem changes in this layer
-   * The `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and
-   * directories for storing attribute changes and deletions. If the tarball
-   * defines a repository, the tarball should also include a `repositories`
-   * file at the root that contains a list of repository and tag names mapped
-   * to layer IDs. `json { \"hello-world\": { \"latest\":
-   * \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\" } }
-   * `
-   *
-   * @memberof ImageApiInterface
-   * @param {string} name Image name or ID
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Export an image
-   */
-  imageGet(name: string, options?: any): Promise<Blob>;
+    /**
+     * Get a tarball containing all images and metadata for a repository. If
+     * `name` is a specific name and tag (e.g. `ubuntu:latest`), then only that
+     * image (and its parents) are returned. If `name` is an image ID, similarly
+     * only that image (and its parents) are returned, but with the exclusion of
+     * the `repositories` file in the tarball, as there were no image names
+     * referenced. ### Image tarball format An image tarball contains one
+     * directory per image layer (named using its long ID), each containing
+     * these files: - `VERSION`: currently `1.0` - the file format version -
+     * `json`: detailed layer information, similar to `docker inspect layer_id`
+     * - `layer.tar`: A tarfile containing the filesystem changes in this layer
+     * The `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and
+     * directories for storing attribute changes and deletions. If the tarball
+     * defines a repository, the tarball should also include a `repositories`
+     * file at the root that contains a list of repository and tag names mapped
+     * to layer IDs. `json { \"hello-world\": { \"latest\":
+     * \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\" } }
+     * `
+     *
+     * @memberof ImageApiInterface
+     * @param {string} name Image name or ID
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Export an image
+     */
+    imageGet(name: string, options?: any): Promise<Blob>;
 
-  /**
-   * Get a tarball containing all images and metadata for several image
-   * repositories. For each value of the `names` parameter: if it is a
-   * specific name and tag (e.g. `ubuntu:latest`), then only that image (and
-   * its parents) are returned; if it is an image ID, similarly only that
-   * image (and its parents) are returned and there would be no names
-   * referenced in the 'repositories' file for this image ID. For details on
-   * the format, see the [export image endpoint](#operation/ImageGet).
-   *
-   * @memberof ImageApiInterface
-   * @param {string[]} [names] Image names to filter by
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Export several images
-   */
-  imageGetAll(names?: Array<string>, options?: any): Promise<Blob>;
+    /**
+     * Get a tarball containing all images and metadata for several image
+     * repositories. For each value of the `names` parameter: if it is a
+     * specific name and tag (e.g. `ubuntu:latest`), then only that image (and
+     * its parents) are returned; if it is an image ID, similarly only that
+     * image (and its parents) are returned and there would be no names
+     * referenced in the 'repositories' file for this image ID. For details on
+     * the format, see the [export image endpoint](#operation/ImageGet).
+     *
+     * @memberof ImageApiInterface
+     * @param {string[]} [names] Image names to filter by
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Export several images
+     */
+    imageGetAll(names?: Array<string>, options?: any): Promise<Blob>;
 
-  /**
-   * Return parent layers of an image.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} name Image name or ID
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get the history of an image
-   */
-  imageHistory(
-    name: string,
-    options?: any
-  ): Promise<Array<HistoryResponseItem>>;
+    /**
+     * Return parent layers of an image.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} name Image name or ID
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get the history of an image
+     */
+    imageHistory(name: string, options?: any): Promise<Array<HistoryResponseItem>>;
 
-  /**
-   * Return low-level information about an image.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} name Image name or id
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect an image
-   */
-  imageInspect(name: string, options?: any): Promise<ImageInspect>;
+    /**
+     * Return low-level information about an image.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} name Image name or id
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect an image
+     */
+    imageInspect(name: string, options?: any): Promise<ImageInspect>;
 
-  /**
-   * Returns a list of images on the server. Note that it uses a different,
-   * smaller representation of an image than inspecting a single image.
-   *
-   * @memberof ImageApiInterface
-   * @param {boolean} [all] Show all images. Only images from a final layer
-   *   (no children) are shown by default.
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the images list. Available
-   *   filters: - `before`=(`<image-name>[:<tag>]`, `<image id>` or
-   *   `<image@digest>`) - `dangling=true` - `label=key` or
-   *   `label=&quot;key=value&quot;` of an image label -
-   *   `reference`=(`<image-name>[:<tag>]`) - `since`=(`<image-name>[:<tag>]`,
-   *   `<image id>` or `<image@digest>`) - `until=<timestamp>`
-   * @param {boolean} [sharedSize] Compute and show shared size as a
-   *   `SharedSize` field on each image.
-   * @param {boolean} [digests] Show digest information as a `RepoDigests`
-   *   field on each image.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List Images
-   */
-  imageList(
-    all?: boolean,
-    filters?: string,
-    sharedSize?: boolean,
-    digests?: boolean,
-    options?: any
-  ): Promise<Array<ImageSummary>>;
+    /**
+     * Returns a list of images on the server. Note that it uses a different,
+     * smaller representation of an image than inspecting a single image.
+     *
+     * @memberof ImageApiInterface
+     * @param {boolean} [all] Show all images. Only images from a final layer
+     *   (no children) are shown by default.
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the images list. Available
+     *   filters: - `before`=(`<image-name>[:<tag>]`, `<image id>` or
+     *   `<image@digest>`) - `dangling=true` - `label=key` or
+     *   `label=&quot;key=value&quot;` of an image label -
+     *   `reference`=(`<image-name>[:<tag>]`) - `since`=(`<image-name>[:<tag>]`,
+     *   `<image id>` or `<image@digest>`) - `until=<timestamp>`
+     * @param {boolean} [sharedSize] Compute and show shared size as a
+     *   `SharedSize` field on each image.
+     * @param {boolean} [digests] Show digest information as a `RepoDigests`
+     *   field on each image.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List Images
+     */
+    imageList(
+        all?: boolean,
+        filters?: string,
+        sharedSize?: boolean,
+        digests?: boolean,
+        options?: any
+    ): Promise<Array<ImageSummary>>;
 
-  /**
-   * Load a set of images and tags into a repository. For details on the
-   * format, see the [export image endpoint](#operation/ImageGet).
-   *
-   * @memberof ImageApiInterface
-   * @param {Object} [body] Tar archive containing images
-   * @param {boolean} [quiet] Suppress progress details during load.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Import images
-   */
-  imageLoad(body?: Object, quiet?: boolean, options?: any): Promise<{}>;
+    /**
+     * Load a set of images and tags into a repository. For details on the
+     * format, see the [export image endpoint](#operation/ImageGet).
+     *
+     * @memberof ImageApiInterface
+     * @param {Object} [body] Tar archive containing images
+     * @param {boolean} [quiet] Suppress progress details during load.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Import images
+     */
+    imageLoad(body?: Object, quiet?: boolean, options?: any): Promise<{}>;
 
-  /**
-   * @memberof ImageApiInterface
-   * @param {string} [filters] Filters to process on the prune list, encoded
-   *   as JSON (a `map[string][]string`). Available filters: -
-   *   `dangling=<boolean>` When set to `true` (or `1`), prune only unused
-   *   _and_ untagged images. When set to `false` (or `0`), all unused images
-   *   are pruned. - `until=<string>` Prune images created before this
-   *   timestamp. The `<timestamp>` can be Unix timestamps, date formatted
-   *   timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed
-   *   relative to the daemon machine’s time. - `label` (`label=<key>`,
-   *   `label=<key>=<value>`, `label!=<key>`, or `label!=<key>=<value>`) Prune
-   *   images with (or without, in case `label!=...` is used) the specified
-   *   labels.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete unused images
-   */
-  imagePrune(filters?: string, options?: any): Promise<ImagePruneResponse>;
+    /**
+     * @memberof ImageApiInterface
+     * @param {string} [filters] Filters to process on the prune list, encoded
+     *   as JSON (a `map[string][]string`). Available filters: -
+     *   `dangling=<boolean>` When set to `true` (or `1`), prune only unused
+     *   _and_ untagged images. When set to `false` (or `0`), all unused images
+     *   are pruned. - `until=<string>` Prune images created before this
+     *   timestamp. The `<timestamp>` can be Unix timestamps, date formatted
+     *   timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed
+     *   relative to the daemon machine’s time. - `label` (`label=<key>`,
+     *   `label=<key>=<value>`, `label!=<key>`, or `label!=<key>=<value>`) Prune
+     *   images with (or without, in case `label!=...` is used) the specified
+     *   labels.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete unused images
+     */
+    imagePrune(filters?: string, options?: any): Promise<ImagePruneResponse>;
 
-  /**
-   * Push an image to a registry. If you wish to push an image on to a private
-   * registry, that image must already have a tag which references the
-   * registry. For example, `registry.example.com/myimage:latest`. The push is
-   * cancelled if the HTTP connection is closed.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} name Image name or ID.
-   * @param {string} xRegistryAuth A base64url-encoded auth configuration.
-   *   Refer to the [authentication section](#section/Authentication) for
-   *   details.
-   * @param {string} [tag] The tag to associate with the image on the
-   *   registry.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Push an image
-   */
-  imagePush(
-    name: string,
-    xRegistryAuth: string,
-    tag?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Push an image to a registry. If you wish to push an image on to a private
+     * registry, that image must already have a tag which references the
+     * registry. For example, `registry.example.com/myimage:latest`. The push is
+     * cancelled if the HTTP connection is closed.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} name Image name or ID.
+     * @param {string} xRegistryAuth A base64url-encoded auth configuration.
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
+     * @param {string} [tag] The tag to associate with the image on the
+     *   registry.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Push an image
+     */
+    imagePush(name: string, xRegistryAuth: string, tag?: string, options?: any): Promise<{}>;
 
-  /**
-   * Search for an image on Docker Hub.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} term Term to search
-   * @param {number} [limit] Maximum number of results to return
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the images list. Available
-   *   filters: - `is-automated=(true|false)` (deprecated, see below) -
-   *   `is-official=(true|false)` - `stars=<number>` Matches images that has
-   *   at least 'number' stars. The `is-automated` filter is deprecated. The
-   *   `is_automated` field has been deprecated by Docker Hub's search API.
-   *   Consequently, searching for `is-automated=true` will yield no results.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Search images
-   */
-  imageSearch(
-    term: string,
-    limit?: number,
-    filters?: string,
-    options?: any
-  ): Promise<Array<ImageSearchResponseItem>>;
+    /**
+     * Search for an image on Docker Hub.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} term Term to search
+     * @param {number} [limit] Maximum number of results to return
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the images list. Available
+     *   filters: - `is-automated=(true|false)` (deprecated, see below) -
+     *   `is-official=(true|false)` - `stars=<number>` Matches images that has
+     *   at least 'number' stars. The `is-automated` filter is deprecated. The
+     *   `is_automated` field has been deprecated by Docker Hub's search API.
+     *   Consequently, searching for `is-automated=true` will yield no results.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Search images
+     */
+    imageSearch(term: string, limit?: number, filters?: string, options?: any): Promise<Array<ImageSearchResponseItem>>;
 
-  /**
-   * Tag an image so that it becomes part of a repository.
-   *
-   * @memberof ImageApiInterface
-   * @param {string} name Image name or ID to tag.
-   * @param {string} [repo] The repository to tag in. For example,
-   *   `someuser/someimage`.
-   * @param {string} [tag] The name of the new tag.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Tag an image
-   */
-  imageTag(
-    name: string,
-    repo?: string,
-    tag?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Tag an image so that it becomes part of a repository.
+     *
+     * @memberof ImageApiInterface
+     * @param {string} name Image name or ID to tag.
+     * @param {string} [repo] The repository to tag in. For example,
+     *   `someuser/someimage`.
+     * @param {string} [tag] The name of the new tag.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Tag an image
+     */
+    imageTag(name: string, repo?: string, tag?: string, options?: any): Promise<{}>;
 }
 
 /**
@@ -10643,62 +9660,44 @@ export interface ImageApiInterface {
  * @summary Connect a container to a network fetch parameter creator
  */
 export const networkConnectFetchParamCreator = (
-  body: NetworkConnectRequest,
-  id: string,
-  options: any = {}
+    body: NetworkConnectRequest,
+    id: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling networkConnect."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling networkConnect.");
+    }
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling networkConnect.");
+    }
+    const localvariablePath = `/networks/{id}/connect`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling networkConnect."
-    );
-  }
-  const localvariablePath = `/networks/{id}/connect`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"NetworkConnectRequest" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"NetworkConnectRequest" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NetworkApi networkCreate fetch parameter creator
@@ -10708,52 +9707,37 @@ export const networkConnectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Create a network fetch parameter creator
  */
-export const networkCreateFetchParamCreator = (
-  body: NetworkCreateRequest,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling networkCreate."
+export const networkCreateFetchParamCreator = (body: NetworkCreateRequest, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling networkCreate.");
+    }
+    const localvariablePath = `/networks/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/networks/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"NetworkCreateRequest" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"NetworkCreateRequest" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NetworkApi networkDelete fetch parameter creator
@@ -10763,47 +9747,31 @@ export const networkCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Remove a network fetch parameter creator
  */
-export const networkDeleteFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling networkDelete."
+export const networkDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling networkDelete.");
+    }
+    const localvariablePath = `/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/networks/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NetworkApi networkDisconnect fetch parameter creator
@@ -10815,62 +9783,47 @@ export const networkDeleteFetchParamCreator = (
  * @summary Disconnect a container from a network fetch parameter creator
  */
 export const networkDisconnectFetchParamCreator = (
-  body: NetworkDisconnectRequest,
-  id: string,
-  options: any = {}
+    body: NetworkDisconnectRequest,
+    id: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling networkDisconnect."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError(
+            "body",
+            "Required parameter body was null or undefined when calling networkDisconnect."
+        );
+    }
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling networkDisconnect.");
+    }
+    const localvariablePath = `/networks/{id}/disconnect`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling networkDisconnect."
-    );
-  }
-  const localvariablePath = `/networks/{id}/disconnect`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"NetworkDisconnectRequest" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"NetworkDisconnectRequest" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NetworkApi networkInspect fetch parameter creator
@@ -10883,53 +9836,43 @@ export const networkDisconnectFetchParamCreator = (
  * @summary Inspect a network fetch parameter creator
  */
 export const networkInspectFetchParamCreator = (
-  id: string,
-  verbose?: boolean,
-  scope?: string,
-  options: any = {}
+    id: string,
+    verbose?: boolean,
+    scope?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling networkInspect."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling networkInspect.");
+    }
+    const localvariablePath = `/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (verbose !== undefined) {
+        localvariableQueryParameter["verbose"] = verbose;
+    }
+
+    if (scope !== undefined) {
+        localvariableQueryParameter["scope"] = scope;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/networks/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (verbose !== undefined) {
-    localvariableQueryParameter["verbose"] = verbose;
-  }
-
-  if (scope !== undefined) {
-    localvariableQueryParameter["scope"] = scope;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NetworkApi networkList fetch parameter creator
@@ -10951,38 +9894,31 @@ export const networkInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List networks fetch parameter creator
  */
-export const networkListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/networks`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const networkListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/networks`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NetworkApi networkPrune fetch parameter creator
@@ -10999,41 +9935,31 @@ export const networkListFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete unused networks fetch parameter creator
  */
-export const networkPruneFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/networks/prune`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const networkPruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/networks/prune`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -11048,27 +9974,22 @@ export const networkPruneFetchParamCreator = (
  * @summary Connect a container to a network
  */
 export const networkConnect = (
-  body: NetworkConnectRequest,
-  id: string,
-  options?: any
+    body: NetworkConnectRequest,
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = networkConnectFetchParamCreator(
-    body,
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkConnectFetchParamCreator(body, id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {NetworkCreateRequest} body Network configuration
@@ -11077,25 +9998,21 @@ export const networkConnect = (
  * @summary Create a network
  */
 export const networkCreate = (
-  body: NetworkCreateRequest,
-  options?: any
+    body: NetworkCreateRequest,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<NetworkCreateResponse>) => {
-  const localvariableFetchArguments = networkCreateFetchParamCreator(
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<NetworkCreateResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkCreateFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<NetworkCreateResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id Network ID or name
@@ -11104,25 +10021,21 @@ export const networkCreate = (
  * @summary Remove a network
  */
 export const networkDelete = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = networkDeleteFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkDeleteFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {NetworkDisconnectRequest} body
@@ -11132,27 +10045,22 @@ export const networkDelete = (
  * @summary Disconnect a container from a network
  */
 export const networkDisconnect = (
-  body: NetworkDisconnectRequest,
-  id: string,
-  options?: any
+    body: NetworkDisconnectRequest,
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = networkDisconnectFetchParamCreator(
-    body,
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkDisconnectFetchParamCreator(body, id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id Network ID or name
@@ -11163,29 +10071,23 @@ export const networkDisconnect = (
  * @summary Inspect a network
  */
 export const networkInspect = (
-  id: string,
-  verbose?: boolean,
-  scope?: string,
-  options?: any
+    id: string,
+    verbose?: boolean,
+    scope?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Network>) => {
-  const localvariableFetchArguments = networkInspectFetchParamCreator(
-    id,
-    verbose,
-    scope,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Network>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkInspectFetchParamCreator(id, verbose, scope, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Network>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Returns a list of networks. For details on the format, see the [network
@@ -11212,25 +10114,21 @@ export const networkInspect = (
  * @summary List networks
  */
 export const networkList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Network>>) => {
-  const localvariableFetchArguments = networkListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Network>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Network>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] Filters to process on the prune list, encoded as
@@ -11246,25 +10144,21 @@ export const networkList = (
  * @summary Delete unused networks
  */
 export const networkPrune = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<NetworkPruneResponse>) => {
-  const localvariableFetchArguments = networkPruneFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<NetworkPruneResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = networkPruneFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<NetworkPruneResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -11274,118 +10168,102 @@ export const networkPrune = (
  * @interface NetworkApi
  */
 export interface NetworkApiInterface {
-  /**
-   * The network must be either a local-scoped network or a swarm-scoped
-   * network with the `attachable` option set. A network cannot be re-attached
-   * to a running container
-   *
-   * @memberof NetworkApiInterface
-   * @param {NetworkConnectRequest} body
-   * @param {string} id Network ID or name
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Connect a container to a network
-   */
-  networkConnect(
-    body: NetworkConnectRequest,
-    id: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * The network must be either a local-scoped network or a swarm-scoped
+     * network with the `attachable` option set. A network cannot be re-attached
+     * to a running container
+     *
+     * @memberof NetworkApiInterface
+     * @param {NetworkConnectRequest} body
+     * @param {string} id Network ID or name
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Connect a container to a network
+     */
+    networkConnect(body: NetworkConnectRequest, id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof NetworkApiInterface
-   * @param {NetworkCreateRequest} body Network configuration
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a network
-   */
-  networkCreate(
-    body: NetworkCreateRequest,
-    options?: any
-  ): Promise<NetworkCreateResponse>;
+    /**
+     * @memberof NetworkApiInterface
+     * @param {NetworkCreateRequest} body Network configuration
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a network
+     */
+    networkCreate(body: NetworkCreateRequest, options?: any): Promise<NetworkCreateResponse>;
 
-  /**
-   * @memberof NetworkApiInterface
-   * @param {string} id Network ID or name
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Remove a network
-   */
-  networkDelete(id: string, options?: any): Promise<{}>;
+    /**
+     * @memberof NetworkApiInterface
+     * @param {string} id Network ID or name
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Remove a network
+     */
+    networkDelete(id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof NetworkApiInterface
-   * @param {NetworkDisconnectRequest} body
-   * @param {string} id Network ID or name
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Disconnect a container from a network
-   */
-  networkDisconnect(
-    body: NetworkDisconnectRequest,
-    id: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof NetworkApiInterface
+     * @param {NetworkDisconnectRequest} body
+     * @param {string} id Network ID or name
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Disconnect a container from a network
+     */
+    networkDisconnect(body: NetworkDisconnectRequest, id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof NetworkApiInterface
-   * @param {string} id Network ID or name
-   * @param {boolean} [verbose] Detailed inspect output for troubleshooting
-   * @param {string} [scope] Filter the network by scope (swarm, global, or
-   *   local)
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a network
-   */
-  networkInspect(
-    id: string,
-    verbose?: boolean,
-    scope?: string,
-    options?: any
-  ): Promise<Network>;
+    /**
+     * @memberof NetworkApiInterface
+     * @param {string} id Network ID or name
+     * @param {boolean} [verbose] Detailed inspect output for troubleshooting
+     * @param {string} [scope] Filter the network by scope (swarm, global, or
+     *   local)
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a network
+     */
+    networkInspect(id: string, verbose?: boolean, scope?: string, options?: any): Promise<Network>;
 
-  /**
-   * Returns a list of networks. For details on the format, see the [network
-   * inspect endpoint](#operation/NetworkInspect). Note that it uses a
-   * different, smaller representation of a network than inspecting a single
-   * network. For example, the list of containers attached to the network is
-   * not propagated in API versions 1.28 and up.
-   *
-   * @memberof NetworkApiInterface
-   * @param {string} [filters] JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the networks list. Available
-   *   filters: - `dangling=<boolean>` When set to `true` (or `1`), returns
-   *   all networks that are not in use by a container. When set to `false`
-   *   (or `0`), only networks that are in use by one or more containers are
-   *   returned. - `driver=<driver-name>` Matches a network's driver. -
-   *   `id=<network-id>` Matches all or part of a network ID. - `label=<key>`
-   *   or `label=<key>=<value>` of a network label. - `name=<network-name>`
-   *   Matches all or part of a network name. -
-   *   `scope=[&quot;swarm&quot;|&quot;global&quot;|&quot;local&quot;]`
-   *   Filters networks by scope (`swarm`, `global`, or `local`). -
-   *   `type=[&quot;custom&quot;|&quot;builtin&quot;]` Filters networks by
-   *   type. The `custom` keyword returns all user-defined networks.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List networks
-   */
-  networkList(filters?: string, options?: any): Promise<Array<Network>>;
+    /**
+     * Returns a list of networks. For details on the format, see the [network
+     * inspect endpoint](#operation/NetworkInspect). Note that it uses a
+     * different, smaller representation of a network than inspecting a single
+     * network. For example, the list of containers attached to the network is
+     * not propagated in API versions 1.28 and up.
+     *
+     * @memberof NetworkApiInterface
+     * @param {string} [filters] JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the networks list. Available
+     *   filters: - `dangling=<boolean>` When set to `true` (or `1`), returns
+     *   all networks that are not in use by a container. When set to `false`
+     *   (or `0`), only networks that are in use by one or more containers are
+     *   returned. - `driver=<driver-name>` Matches a network's driver. -
+     *   `id=<network-id>` Matches all or part of a network ID. - `label=<key>`
+     *   or `label=<key>=<value>` of a network label. - `name=<network-name>`
+     *   Matches all or part of a network name. -
+     *   `scope=[&quot;swarm&quot;|&quot;global&quot;|&quot;local&quot;]`
+     *   Filters networks by scope (`swarm`, `global`, or `local`). -
+     *   `type=[&quot;custom&quot;|&quot;builtin&quot;]` Filters networks by
+     *   type. The `custom` keyword returns all user-defined networks.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List networks
+     */
+    networkList(filters?: string, options?: any): Promise<Array<Network>>;
 
-  /**
-   * @memberof NetworkApiInterface
-   * @param {string} [filters] Filters to process on the prune list, encoded
-   *   as JSON (a `map[string][]string`). Available filters: -
-   *   `until=<timestamp>` Prune networks created before this timestamp. The
-   *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
-   *   duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
-   *   machine’s time. - `label` (`label=<key>`, `label=<key>=<value>`,
-   *   `label!=<key>`, or `label!=<key>=<value>`) Prune networks with (or
-   *   without, in case `label!=...` is used) the specified labels.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete unused networks
-   */
-  networkPrune(filters?: string, options?: any): Promise<NetworkPruneResponse>;
+    /**
+     * @memberof NetworkApiInterface
+     * @param {string} [filters] Filters to process on the prune list, encoded
+     *   as JSON (a `map[string][]string`). Available filters: -
+     *   `until=<timestamp>` Prune networks created before this timestamp. The
+     *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
+     *   duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
+     *   machine’s time. - `label` (`label=<key>`, `label=<key>=<value>`,
+     *   `label!=<key>`, or `label!=<key>=<value>`) Prune networks with (or
+     *   without, in case `label!=...` is used) the specified labels.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete unused networks
+     */
+    networkPrune(filters?: string, options?: any): Promise<NetworkPruneResponse>;
 }
 
 /**
@@ -11397,52 +10275,35 @@ export interface NetworkApiInterface {
  * @throws {RequiredError}
  * @summary Delete a node fetch parameter creator
  */
-export const nodeDeleteFetchParamCreator = (
-  id: string,
-  force?: boolean,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling nodeDelete."
+export const nodeDeleteFetchParamCreator = (id: string, force?: boolean, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling nodeDelete.");
+    }
+    const localvariablePath = `/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/nodes/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NodeApi nodeInspect fetch parameter creator
@@ -11452,44 +10313,31 @@ export const nodeDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a node fetch parameter creator
  */
-export const nodeInspectFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling nodeInspect."
+export const nodeInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling nodeInspect.");
+    }
+    const localvariablePath = `/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/nodes/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NodeApi nodeList fetch parameter creator
@@ -11502,38 +10350,31 @@ export const nodeInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List nodes fetch parameter creator
  */
-export const nodeListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/nodes`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const nodeListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/nodes`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * NodeApi nodeUpdate fetch parameter creator
@@ -11547,67 +10388,48 @@ export const nodeListFetchParamCreator = (
  * @summary Update a node fetch parameter creator
  */
 export const nodeUpdateFetchParamCreator = (
-  id: string,
-  version: number,
-  body?: NodeSpec,
-  options: any = {}
+    id: string,
+    version: number,
+    body?: NodeSpec,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling nodeUpdate."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling nodeUpdate.");
+    }
+    // verify required parameter 'version' is not null or undefined
+    if (version === null || version === undefined) {
+        throw new RequiredError("version", "Required parameter version was null or undefined when calling nodeUpdate.");
+    }
+    const localvariablePath = `/nodes/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (version !== undefined) {
+        localvariableQueryParameter["version"] = version;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'version' is not null or undefined
-  if (version === null || version === undefined) {
-    throw new RequiredError(
-      "version",
-      "Required parameter version was null or undefined when calling nodeUpdate."
-    );
-  }
-  const localvariablePath = `/nodes/{id}/update`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"NodeSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (version !== undefined) {
-    localvariableQueryParameter["version"] = version;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"NodeSpec" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -11618,27 +10440,22 @@ export const nodeUpdateFetchParamCreator = (
  * @summary Delete a node
  */
 export const nodeDelete = (
-  id: string,
-  force?: boolean,
-  options?: any
+    id: string,
+    force?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = nodeDeleteFetchParamCreator(
-    id,
-    force,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = nodeDeleteFetchParamCreator(id, force, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id The ID or name of the node
@@ -11646,23 +10463,19 @@ export const nodeDelete = (
  * @throws {RequiredError}
  * @summary Inspect a node
  */
-export const nodeInspect = (
-  id: string,
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Node>) => {
-  const localvariableFetchArguments = nodeInspectFetchParamCreator(id, options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Node>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const nodeInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Node>) => {
+    const localvariableFetchArguments = nodeInspectFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Node>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] Filters to process on the nodes list, encoded as
@@ -11674,25 +10487,21 @@ export const nodeInspect = (
  * @summary List nodes
  */
 export const nodeList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Node>>) => {
-  const localvariableFetchArguments = nodeListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Node>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = nodeListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Node>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id The ID of the node
@@ -11704,29 +10513,23 @@ export const nodeList = (
  * @summary Update a node
  */
 export const nodeUpdate = (
-  id: string,
-  version: number,
-  body?: NodeSpec,
-  options?: any
+    id: string,
+    version: number,
+    body?: NodeSpec,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = nodeUpdateFetchParamCreator(
-    id,
-    version,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = nodeUpdateFetchParamCreator(id, version, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -11736,54 +10539,49 @@ export const nodeUpdate = (
  * @interface NodeApi
  */
 export interface NodeApiInterface {
-  /**
-   * @memberof NodeApiInterface
-   * @param {string} id The ID or name of the node
-   * @param {boolean} [force] Force remove a node from the swarm
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete a node
-   */
-  nodeDelete(id: string, force?: boolean, options?: any): Promise<{}>;
+    /**
+     * @memberof NodeApiInterface
+     * @param {string} id The ID or name of the node
+     * @param {boolean} [force] Force remove a node from the swarm
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete a node
+     */
+    nodeDelete(id: string, force?: boolean, options?: any): Promise<{}>;
 
-  /**
-   * @memberof NodeApiInterface
-   * @param {string} id The ID or name of the node
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a node
-   */
-  nodeInspect(id: string, options?: any): Promise<Node>;
+    /**
+     * @memberof NodeApiInterface
+     * @param {string} id The ID or name of the node
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a node
+     */
+    nodeInspect(id: string, options?: any): Promise<Node>;
 
-  /**
-   * @memberof NodeApiInterface
-   * @param {string} [filters] Filters to process on the nodes list, encoded
-   *   as JSON (a `map[string][]string`). Available filters: - `id=<node id>`
-   *   - `label=<engine label>` - `membership=`(`accepted`|`pending`)` -
-   *   `name=<node name>` - `node.label=<node label>` -
-   *   `role=`(`manager`|`worker`)`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List nodes
-   */
-  nodeList(filters?: string, options?: any): Promise<Array<Node>>;
+    /**
+     * @memberof NodeApiInterface
+     * @param {string} [filters] Filters to process on the nodes list, encoded
+     *   as JSON (a `map[string][]string`). Available filters: - `id=<node id>`
+     *   - `label=<engine label>` - `membership=`(`accepted`|`pending`)` -
+     *   `name=<node name>` - `node.label=<node label>` -
+     *   `role=`(`manager`|`worker`)`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List nodes
+     */
+    nodeList(filters?: string, options?: any): Promise<Array<Node>>;
 
-  /**
-   * @memberof NodeApiInterface
-   * @param {string} id The ID of the node
-   * @param {number} version The version number of the node object being
-   *   updated. This is required to avoid conflicting writes.
-   * @param {NodeSpec} [body]
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Update a node
-   */
-  nodeUpdate(
-    id: string,
-    version: number,
-    body?: NodeSpec,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof NodeApiInterface
+     * @param {string} id The ID of the node
+     * @param {number} version The version number of the node object being
+     *   updated. This is required to avoid conflicting writes.
+     * @param {NodeSpec} [body]
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Update a node
+     */
+    nodeUpdate(id: string, version: number, body?: NodeSpec, options?: any): Promise<{}>;
 }
 
 /**
@@ -11795,45 +10593,38 @@ export interface NodeApiInterface {
  * @throws {RequiredError}
  * @summary Get plugin privileges fetch parameter creator
  */
-export const getPluginPrivilegesFetchParamCreator = (
-  remote: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'remote' is not null or undefined
-  if (remote === null || remote === undefined) {
-    throw new RequiredError(
-      "remote",
-      "Required parameter remote was null or undefined when calling getPluginPrivileges."
+export const getPluginPrivilegesFetchParamCreator = (remote: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'remote' is not null or undefined
+    if (remote === null || remote === undefined) {
+        throw new RequiredError(
+            "remote",
+            "Required parameter remote was null or undefined when calling getPluginPrivileges."
+        );
+    }
+    const localvariablePath = `/plugins/privileges`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (remote !== undefined) {
+        localvariableQueryParameter["remote"] = remote;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/privileges`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (remote !== undefined) {
-    localvariableQueryParameter["remote"] = remote;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginCreate fetch parameter creator
@@ -11845,57 +10636,40 @@ export const getPluginPrivilegesFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Create a plugin fetch parameter creator
  */
-export const pluginCreateFetchParamCreator = (
-  name: string,
-  body?: Object,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginCreate."
+export const pluginCreateFetchParamCreator = (name: string, body?: Object, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginCreate.");
+    }
+    const localvariablePath = `/plugins/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (name !== undefined) {
+        localvariableQueryParameter["name"] = name;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/x-tar";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (name !== undefined) {
-    localvariableQueryParameter["name"] = name;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/x-tar";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Object" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginDelete fetch parameter creator
@@ -11908,52 +10682,35 @@ export const pluginCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Remove a plugin fetch parameter creator
  */
-export const pluginDeleteFetchParamCreator = (
-  name: string,
-  force?: boolean,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginDelete."
+export const pluginDeleteFetchParamCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginDelete.");
+    }
+    const localvariablePath = `/plugins/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/{name}`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginDisable fetch parameter creator
@@ -11965,52 +10722,35 @@ export const pluginDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Disable a plugin fetch parameter creator
  */
-export const pluginDisableFetchParamCreator = (
-  name: string,
-  force?: boolean,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginDisable."
+export const pluginDisableFetchParamCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginDisable.");
+    }
+    const localvariablePath = `/plugins/{name}/disable`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/{name}/disable`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginEnable fetch parameter creator
@@ -12022,52 +10762,35 @@ export const pluginDisableFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Enable a plugin fetch parameter creator
  */
-export const pluginEnableFetchParamCreator = (
-  name: string,
-  timeout?: number,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginEnable."
+export const pluginEnableFetchParamCreator = (name: string, timeout?: number, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginEnable.");
+    }
+    const localvariablePath = `/plugins/{name}/enable`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (timeout !== undefined) {
+        localvariableQueryParameter["timeout"] = timeout;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/{name}/enable`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (timeout !== undefined) {
-    localvariableQueryParameter["timeout"] = timeout;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginInspect fetch parameter creator
@@ -12078,44 +10801,31 @@ export const pluginEnableFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a plugin fetch parameter creator
  */
-export const pluginInspectFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginInspect."
+export const pluginInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginInspect.");
+    }
+    const localvariablePath = `/plugins/{name}/json`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/{name}/json`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginList fetch parameter creator
@@ -12127,38 +10837,31 @@ export const pluginInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List plugins fetch parameter creator
  */
-export const pluginListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/plugins`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const pluginListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/plugins`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginPull fetch parameter creator
@@ -12176,66 +10879,54 @@ export const pluginListFetchParamCreator = (
  * @summary Install a plugin fetch parameter creator
  */
 export const pluginPullFetchParamCreator = (
-  remote: string,
-  body?: Array<PluginPrivilege>,
-  name?: string,
-  xRegistryAuth?: string,
-  options: any = {}
+    remote: string,
+    body?: Array<PluginPrivilege>,
+    name?: string,
+    xRegistryAuth?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'remote' is not null or undefined
-  if (remote === null || remote === undefined) {
-    throw new RequiredError(
-      "remote",
-      "Required parameter remote was null or undefined when calling pluginPull."
+    // verify required parameter 'remote' is not null or undefined
+    if (remote === null || remote === undefined) {
+        throw new RequiredError("remote", "Required parameter remote was null or undefined when calling pluginPull.");
+    }
+    const localvariablePath = `/plugins/pull`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (remote !== undefined) {
+        localvariableQueryParameter["remote"] = remote;
+    }
+
+    if (name !== undefined) {
+        localvariableQueryParameter["name"] = name;
+    }
+
+    if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
+        localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/pull`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Array&lt;PluginPrivilege&gt;" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (remote !== undefined) {
-    localvariableQueryParameter["remote"] = remote;
-  }
-
-  if (name !== undefined) {
-    localvariableQueryParameter["name"] = name;
-  }
-
-  if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
-    localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Array&lt;PluginPrivilege&gt;" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginPush fetch parameter creator
@@ -12246,47 +10937,31 @@ export const pluginPullFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Push a plugin fetch parameter creator
  */
-export const pluginPushFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginPush."
+export const pluginPushFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginPush.");
+    }
+    const localvariablePath = `/plugins/{name}/push`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/{name}/push`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginSet fetch parameter creator
@@ -12298,56 +10973,37 @@ export const pluginPushFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Configure a plugin fetch parameter creator
  */
-export const pluginSetFetchParamCreator = (
-  name: string,
-  body?: Array<string>,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginSet."
+export const pluginSetFetchParamCreator = (name: string, body?: Array<string>, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginSet.");
+    }
+    const localvariablePath = `/plugins/{name}/set`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/plugins/{name}/set`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Array&lt;string&gt;" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Array&lt;string&gt;" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * PluginApi pluginUpgrade fetch parameter creator
@@ -12365,72 +11021,57 @@ export const pluginSetFetchParamCreator = (
  * @summary Upgrade a plugin fetch parameter creator
  */
 export const pluginUpgradeFetchParamCreator = (
-  name: string,
-  remote: string,
-  body?: Array<PluginPrivilege>,
-  xRegistryAuth?: string,
-  options: any = {}
+    name: string,
+    remote: string,
+    body?: Array<PluginPrivilege>,
+    xRegistryAuth?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling pluginUpgrade."
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginUpgrade.");
+    }
+    // verify required parameter 'remote' is not null or undefined
+    if (remote === null || remote === undefined) {
+        throw new RequiredError(
+            "remote",
+            "Required parameter remote was null or undefined when calling pluginUpgrade."
+        );
+    }
+    const localvariablePath = `/plugins/{name}/upgrade`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (remote !== undefined) {
+        localvariableQueryParameter["remote"] = remote;
+    }
+
+    if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
+        localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'remote' is not null or undefined
-  if (remote === null || remote === undefined) {
-    throw new RequiredError(
-      "remote",
-      "Required parameter remote was null or undefined when calling pluginUpgrade."
-    );
-  }
-  const localvariablePath = `/plugins/{name}/upgrade`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"Array&lt;PluginPrivilege&gt;" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (remote !== undefined) {
-    localvariableQueryParameter["remote"] = remote;
-  }
-
-  if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
-    localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"Array&lt;PluginPrivilege&gt;" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -12441,28 +11082,21 @@ export const pluginUpgradeFetchParamCreator = (
  * @summary Get plugin privileges
  */
 export const getPluginPrivileges = (
-  remote: string,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<Array<PluginPrivilege>>) => {
-  const localvariableFetchArguments = getPluginPrivilegesFetchParamCreator(
-    remote,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<PluginPrivilege>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    remote: string,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<Array<PluginPrivilege>>) => {
+    const localvariableFetchArguments = getPluginPrivilegesFetchParamCreator(remote, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<PluginPrivilege>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12473,27 +11107,22 @@ export const getPluginPrivileges = (
  * @summary Create a plugin
  */
 export const pluginCreate = (
-  name: string,
-  body?: Object,
-  options?: any
+    name: string,
+    body?: Object,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginCreateFetchParamCreator(
-    name,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginCreateFetchParamCreator(name, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12505,27 +11134,22 @@ export const pluginCreate = (
  * @summary Remove a plugin
  */
 export const pluginDelete = (
-  name: string,
-  force?: boolean,
-  options?: any
+    name: string,
+    force?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Plugin>) => {
-  const localvariableFetchArguments = pluginDeleteFetchParamCreator(
-    name,
-    force,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Plugin>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginDeleteFetchParamCreator(name, force, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Plugin>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12536,27 +11160,22 @@ export const pluginDelete = (
  * @summary Disable a plugin
  */
 export const pluginDisable = (
-  name: string,
-  force?: boolean,
-  options?: any
+    name: string,
+    force?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginDisableFetchParamCreator(
-    name,
-    force,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginDisableFetchParamCreator(name, force, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12567,27 +11186,22 @@ export const pluginDisable = (
  * @summary Enable a plugin
  */
 export const pluginEnable = (
-  name: string,
-  timeout?: number,
-  options?: any
+    name: string,
+    timeout?: number,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginEnableFetchParamCreator(
-    name,
-    timeout,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginEnableFetchParamCreator(name, timeout, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12597,25 +11211,21 @@ export const pluginEnable = (
  * @summary Inspect a plugin
  */
 export const pluginInspect = (
-  name: string,
-  options?: any
+    name: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Plugin>) => {
-  const localvariableFetchArguments = pluginInspectFetchParamCreator(
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Plugin>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginInspectFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Plugin>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Returns information about installed plugins.
@@ -12628,25 +11238,21 @@ export const pluginInspect = (
  * @summary List plugins
  */
 export const pluginList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Plugin>>) => {
-  const localvariableFetchArguments = pluginListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Plugin>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Plugin>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Pulls and installs a plugin. After the plugin is installed, it can be enabled
@@ -12666,31 +11272,24 @@ export const pluginList = (
  * @summary Install a plugin
  */
 export const pluginPull = (
-  remote: string,
-  body?: Array<PluginPrivilege>,
-  name?: string,
-  xRegistryAuth?: string,
-  options?: any
+    remote: string,
+    body?: Array<PluginPrivilege>,
+    name?: string,
+    xRegistryAuth?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginPullFetchParamCreator(
-    remote,
-    body,
-    name,
-    xRegistryAuth,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginPullFetchParamCreator(remote, body, name, xRegistryAuth, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Push a plugin to the registry.
@@ -12702,25 +11301,21 @@ export const pluginPull = (
  * @summary Push a plugin
  */
 export const pluginPush = (
-  name: string,
-  options?: any
+    name: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginPushFetchParamCreator(
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginPushFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12731,27 +11326,22 @@ export const pluginPush = (
  * @summary Configure a plugin
  */
 export const pluginSet = (
-  name: string,
-  body?: Array<string>,
-  options?: any
+    name: string,
+    body?: Array<string>,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginSetFetchParamCreator(
-    name,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginSetFetchParamCreator(name, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name of the plugin. The `:latest` tag is optional,
@@ -12767,31 +11357,24 @@ export const pluginSet = (
  * @summary Upgrade a plugin
  */
 export const pluginUpgrade = (
-  name: string,
-  remote: string,
-  body?: Array<PluginPrivilege>,
-  xRegistryAuth?: string,
-  options?: any
+    name: string,
+    remote: string,
+    body?: Array<PluginPrivilege>,
+    xRegistryAuth?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = pluginUpgradeFetchParamCreator(
-    name,
-    remote,
-    body,
-    xRegistryAuth,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = pluginUpgradeFetchParamCreator(name, remote, body, xRegistryAuth, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -12801,157 +11384,154 @@ export const pluginUpgrade = (
  * @interface PluginApi
  */
 export interface PluginApiInterface {
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} remote The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get plugin privileges
-   */
-  getPluginPrivileges(
-    remote: string,
-    options?: any
-  ): Promise<Array<PluginPrivilege>>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} remote The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get plugin privileges
+     */
+    getPluginPrivileges(remote: string, options?: any): Promise<Array<PluginPrivilege>>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {Object} [body] Path to tar containing plugin rootfs and manifest
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a plugin
-   */
-  pluginCreate(name: string, body?: Object, options?: any): Promise<{}>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {Object} [body] Path to tar containing plugin rootfs and manifest
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a plugin
+     */
+    pluginCreate(name: string, body?: Object, options?: any): Promise<{}>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {boolean} [force] Disable the plugin before removing. This may
-   *   result in issues if the plugin is in use by a container.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Remove a plugin
-   */
-  pluginDelete(name: string, force?: boolean, options?: any): Promise<Plugin>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {boolean} [force] Disable the plugin before removing. This may
+     *   result in issues if the plugin is in use by a container.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Remove a plugin
+     */
+    pluginDelete(name: string, force?: boolean, options?: any): Promise<Plugin>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {boolean} [force] Force disable a plugin even if still in use.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Disable a plugin
-   */
-  pluginDisable(name: string, force?: boolean, options?: any): Promise<{}>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {boolean} [force] Force disable a plugin even if still in use.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Disable a plugin
+     */
+    pluginDisable(name: string, force?: boolean, options?: any): Promise<{}>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {number} [timeout] Set the HTTP client timeout (in seconds)
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Enable a plugin
-   */
-  pluginEnable(name: string, timeout?: number, options?: any): Promise<{}>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {number} [timeout] Set the HTTP client timeout (in seconds)
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Enable a plugin
+     */
+    pluginEnable(name: string, timeout?: number, options?: any): Promise<{}>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a plugin
-   */
-  pluginInspect(name: string, options?: any): Promise<Plugin>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a plugin
+     */
+    pluginInspect(name: string, options?: any): Promise<Plugin>;
 
-  /**
-   * Returns information about installed plugins.
-   *
-   * @memberof PluginApiInterface
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the plugin list. Available
-   *   filters: - `capability=<capability name>` - `enable=<true>|<false>`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List plugins
-   */
-  pluginList(filters?: string, options?: any): Promise<Array<Plugin>>;
+    /**
+     * Returns information about installed plugins.
+     *
+     * @memberof PluginApiInterface
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the plugin list. Available
+     *   filters: - `capability=<capability name>` - `enable=<true>|<false>`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List plugins
+     */
+    pluginList(filters?: string, options?: any): Promise<Array<Plugin>>;
 
-  /**
-   * Pulls and installs a plugin. After the plugin is installed, it can be
-   * enabled using the [`POST /plugins/{name}/enable`
-   * endpoint](#operation/PostPluginsEnable).
-   *
-   * @memberof PluginApiInterface
-   * @param {string} remote Remote reference for plugin to install. The
-   *   `:latest` tag is optional, and is used as the default if omitted.
-   * @param {PluginPrivilege[]} [body]
-   * @param {string} [name] Local name for the pulled plugin. The `:latest`
-   *   tag is optional, and is used as the default if omitted.
-   * @param {string} [xRegistryAuth] A base64url-encoded auth configuration to
-   *   use when pulling a plugin from a registry. Refer to the [authentication
-   *   section](#section/Authentication) for details.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Install a plugin
-   */
-  pluginPull(
-    remote: string,
-    body?: Array<PluginPrivilege>,
-    name?: string,
-    xRegistryAuth?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * Pulls and installs a plugin. After the plugin is installed, it can be
+     * enabled using the [`POST /plugins/{name}/enable`
+     * endpoint](#operation/PostPluginsEnable).
+     *
+     * @memberof PluginApiInterface
+     * @param {string} remote Remote reference for plugin to install. The
+     *   `:latest` tag is optional, and is used as the default if omitted.
+     * @param {PluginPrivilege[]} [body]
+     * @param {string} [name] Local name for the pulled plugin. The `:latest`
+     *   tag is optional, and is used as the default if omitted.
+     * @param {string} [xRegistryAuth] A base64url-encoded auth configuration to
+     *   use when pulling a plugin from a registry. Refer to the [authentication
+     *   section](#section/Authentication) for details.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Install a plugin
+     */
+    pluginPull(
+        remote: string,
+        body?: Array<PluginPrivilege>,
+        name?: string,
+        xRegistryAuth?: string,
+        options?: any
+    ): Promise<{}>;
 
-  /**
-   * Push a plugin to the registry.
-   *
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Push a plugin
-   */
-  pluginPush(name: string, options?: any): Promise<{}>;
+    /**
+     * Push a plugin to the registry.
+     *
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Push a plugin
+     */
+    pluginPush(name: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {string[]} [body]
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Configure a plugin
-   */
-  pluginSet(name: string, body?: Array<string>, options?: any): Promise<{}>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {string[]} [body]
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Configure a plugin
+     */
+    pluginSet(name: string, body?: Array<string>, options?: any): Promise<{}>;
 
-  /**
-   * @memberof PluginApiInterface
-   * @param {string} name The name of the plugin. The `:latest` tag is
-   *   optional, and is the default if omitted.
-   * @param {string} remote Remote reference to upgrade to. The `:latest` tag
-   *   is optional, and is used as the default if omitted.
-   * @param {PluginPrivilege[]} [body]
-   * @param {string} [xRegistryAuth] A base64url-encoded auth configuration to
-   *   use when pulling a plugin from a registry. Refer to the [authentication
-   *   section](#section/Authentication) for details.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Upgrade a plugin
-   */
-  pluginUpgrade(
-    name: string,
-    remote: string,
-    body?: Array<PluginPrivilege>,
-    xRegistryAuth?: string,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof PluginApiInterface
+     * @param {string} name The name of the plugin. The `:latest` tag is
+     *   optional, and is the default if omitted.
+     * @param {string} remote Remote reference to upgrade to. The `:latest` tag
+     *   is optional, and is used as the default if omitted.
+     * @param {PluginPrivilege[]} [body]
+     * @param {string} [xRegistryAuth] A base64url-encoded auth configuration to
+     *   use when pulling a plugin from a registry. Refer to the [authentication
+     *   section](#section/Authentication) for details.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Upgrade a plugin
+     */
+    pluginUpgrade(
+        name: string,
+        remote: string,
+        body?: Array<PluginPrivilege>,
+        xRegistryAuth?: string,
+        options?: any
+    ): Promise<{}>;
 }
 
 /**
@@ -12962,45 +11542,33 @@ export interface PluginApiInterface {
  * @throws {RequiredError}
  * @summary Create a secret fetch parameter creator
  */
-export const secretCreateFetchParamCreator = (
-  body?: SecretsCreateBody,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/secrets/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const secretCreateFetchParamCreator = (body?: SecretsCreateBody, options: any = {}): FetchArguments => {
+    const localvariablePath = `/secrets/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
+    localvariableHeaderParameter["Content-Type"] = "application/json";
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"SecretsCreateBody" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"SecretsCreateBody" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SecretApi secretDelete fetch parameter creator
@@ -13010,47 +11578,31 @@ export const secretCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete a secret fetch parameter creator
  */
-export const secretDeleteFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling secretDelete."
+export const secretDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling secretDelete.");
+    }
+    const localvariablePath = `/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/secrets/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SecretApi secretInspect fetch parameter creator
@@ -13060,44 +11612,31 @@ export const secretDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a secret fetch parameter creator
  */
-export const secretInspectFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling secretInspect."
+export const secretInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling secretInspect.");
+    }
+    const localvariablePath = `/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/secrets/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SecretApi secretList fetch parameter creator
@@ -13110,38 +11649,31 @@ export const secretInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List secrets fetch parameter creator
  */
-export const secretListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/secrets`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const secretListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/secrets`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SecretApi secretUpdate fetch parameter creator
@@ -13158,67 +11690,51 @@ export const secretListFetchParamCreator = (
  * @summary Update a Secret fetch parameter creator
  */
 export const secretUpdateFetchParamCreator = (
-  id: string,
-  version: number,
-  body?: SecretSpec,
-  options: any = {}
+    id: string,
+    version: number,
+    body?: SecretSpec,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling secretUpdate."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling secretUpdate.");
+    }
+    // verify required parameter 'version' is not null or undefined
+    if (version === null || version === undefined) {
+        throw new RequiredError(
+            "version",
+            "Required parameter version was null or undefined when calling secretUpdate."
+        );
+    }
+    const localvariablePath = `/secrets/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (version !== undefined) {
+        localvariableQueryParameter["version"] = version;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'version' is not null or undefined
-  if (version === null || version === undefined) {
-    throw new RequiredError(
-      "version",
-      "Required parameter version was null or undefined when calling secretUpdate."
-    );
-  }
-  const localvariablePath = `/secrets/{id}/update`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"SecretSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (version !== undefined) {
-    localvariableQueryParameter["version"] = version;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"SecretSpec" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -13228,25 +11744,21 @@ export const secretUpdateFetchParamCreator = (
  * @summary Create a secret
  */
 export const secretCreate = (
-  body?: SecretsCreateBody,
-  options?: any
+    body?: SecretsCreateBody,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-  const localvariableFetchArguments = secretCreateFetchParamCreator(
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<IdResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = secretCreateFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<IdResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID of the secret
@@ -13255,25 +11767,21 @@ export const secretCreate = (
  * @summary Delete a secret
  */
 export const secretDelete = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = secretDeleteFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = secretDeleteFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID of the secret
@@ -13281,26 +11789,19 @@ export const secretDelete = (
  * @throws {RequiredError}
  * @summary Inspect a secret
  */
-export const secretInspect = (
-  id: string,
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Secret>) => {
-  const localvariableFetchArguments = secretInspectFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Secret>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const secretInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Secret>) => {
+    const localvariableFetchArguments = secretInspectFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Secret>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] A JSON encoded value of the filters (a
@@ -13312,25 +11813,21 @@ export const secretInspect = (
  * @summary List secrets
  */
 export const secretList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Secret>>) => {
-  const localvariableFetchArguments = secretListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Secret>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = secretListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Secret>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id The ID or name of the secret
@@ -13345,29 +11842,23 @@ export const secretList = (
  * @summary Update a Secret
  */
 export const secretUpdate = (
-  id: string,
-  version: number,
-  body?: SecretSpec,
-  options?: any
+    id: string,
+    version: number,
+    body?: SecretSpec,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = secretUpdateFetchParamCreator(
-    id,
-    version,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = secretUpdateFetchParamCreator(id, version, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -13377,64 +11868,59 @@ export const secretUpdate = (
  * @interface SecretApi
  */
 export interface SecretApiInterface {
-  /**
-   * @memberof SecretApiInterface
-   * @param {SecretsCreateBody} [body]
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a secret
-   */
-  secretCreate(body?: SecretsCreateBody, options?: any): Promise<IdResponse>;
+    /**
+     * @memberof SecretApiInterface
+     * @param {SecretsCreateBody} [body]
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a secret
+     */
+    secretCreate(body?: SecretsCreateBody, options?: any): Promise<IdResponse>;
 
-  /**
-   * @memberof SecretApiInterface
-   * @param {string} id ID of the secret
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete a secret
-   */
-  secretDelete(id: string, options?: any): Promise<{}>;
+    /**
+     * @memberof SecretApiInterface
+     * @param {string} id ID of the secret
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete a secret
+     */
+    secretDelete(id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof SecretApiInterface
-   * @param {string} id ID of the secret
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a secret
-   */
-  secretInspect(id: string, options?: any): Promise<Secret>;
+    /**
+     * @memberof SecretApiInterface
+     * @param {string} id ID of the secret
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a secret
+     */
+    secretInspect(id: string, options?: any): Promise<Secret>;
 
-  /**
-   * @memberof SecretApiInterface
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the secrets list. Available
-   *   filters: - `id=<secret id>` - `label=<key> or label=<key>=value` -
-   *   `name=<secret name>` - `names=<secret name>`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List secrets
-   */
-  secretList(filters?: string, options?: any): Promise<Array<Secret>>;
+    /**
+     * @memberof SecretApiInterface
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the secrets list. Available
+     *   filters: - `id=<secret id>` - `label=<key> or label=<key>=value` -
+     *   `name=<secret name>` - `names=<secret name>`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List secrets
+     */
+    secretList(filters?: string, options?: any): Promise<Array<Secret>>;
 
-  /**
-   * @memberof SecretApiInterface
-   * @param {string} id The ID or name of the secret
-   * @param {number} version The version number of the secret object being
-   *   updated. This is required to avoid conflicting writes.
-   * @param {SecretSpec} [body] The spec of the secret to update. Currently,
-   *   only the Labels field can be updated. All other fields must remain
-   *   unchanged from the [SecretInspect endpoint](#operation/SecretInspect)
-   *   response values.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Update a Secret
-   */
-  secretUpdate(
-    id: string,
-    version: number,
-    body?: SecretSpec,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof SecretApiInterface
+     * @param {string} id The ID or name of the secret
+     * @param {number} version The version number of the secret object being
+     *   updated. This is required to avoid conflicting writes.
+     * @param {SecretSpec} [body] The spec of the secret to update. Currently,
+     *   only the Labels field can be updated. All other fields must remain
+     *   unchanged from the [SecretInspect endpoint](#operation/SecretInspect)
+     *   response values.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Update a Secret
+     */
+    secretUpdate(id: string, version: number, body?: SecretSpec, options?: any): Promise<{}>;
 }
 
 /**
@@ -13449,56 +11935,44 @@ export interface SecretApiInterface {
  * @summary Create a service fetch parameter creator
  */
 export const serviceCreateFetchParamCreator = (
-  body: ServicesCreateBody,
-  xRegistryAuth?: string,
-  options: any = {}
+    body: ServicesCreateBody,
+    xRegistryAuth?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling serviceCreate."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling serviceCreate.");
+    }
+    const localvariablePath = `/services/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
+        localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/services/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"ServicesCreateBody" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
-    localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"ServicesCreateBody" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ServiceApi serviceDelete fetch parameter creator
@@ -13508,47 +11982,31 @@ export const serviceCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete a service fetch parameter creator
  */
-export const serviceDeleteFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling serviceDelete."
+export const serviceDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceDelete.");
+    }
+    const localvariablePath = `/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/services/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ServiceApi serviceInspect fetch parameter creator
@@ -13560,48 +12018,38 @@ export const serviceDeleteFetchParamCreator = (
  * @summary Inspect a service fetch parameter creator
  */
 export const serviceInspectFetchParamCreator = (
-  id: string,
-  insertDefaults?: boolean,
-  options: any = {}
+    id: string,
+    insertDefaults?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling serviceInspect."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceInspect.");
+    }
+    const localvariablePath = `/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (insertDefaults !== undefined) {
+        localvariableQueryParameter["insertDefaults"] = insertDefaults;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/services/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (insertDefaults !== undefined) {
-    localvariableQueryParameter["insertDefaults"] = insertDefaults;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ServiceApi serviceList fetch parameter creator
@@ -13616,43 +12064,35 @@ export const serviceInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List services fetch parameter creator
  */
-export const serviceListFetchParamCreator = (
-  filters?: string,
-  status?: boolean,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/services`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const serviceListFetchParamCreator = (filters?: string, status?: boolean, options: any = {}): FetchArguments => {
+    const localvariablePath = `/services`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  if (status !== undefined) {
-    localvariableQueryParameter["status"] = status;
-  }
+    if (status !== undefined) {
+        localvariableQueryParameter["status"] = status;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ServiceApi serviceLogs fetch parameter creator
@@ -13672,78 +12112,68 @@ export const serviceListFetchParamCreator = (
  * @summary Get service logs fetch parameter creator
  */
 export const serviceLogsFetchParamCreator = (
-  id: string,
-  details?: boolean,
-  follow?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  since?: number,
-  timestamps?: boolean,
-  tail?: string,
-  options: any = {}
+    id: string,
+    details?: boolean,
+    follow?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    since?: number,
+    timestamps?: boolean,
+    tail?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling serviceLogs."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceLogs.");
+    }
+    const localvariablePath = `/services/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (details !== undefined) {
+        localvariableQueryParameter["details"] = details;
+    }
+
+    if (follow !== undefined) {
+        localvariableQueryParameter["follow"] = follow;
+    }
+
+    if (stdout !== undefined) {
+        localvariableQueryParameter["stdout"] = stdout;
+    }
+
+    if (stderr !== undefined) {
+        localvariableQueryParameter["stderr"] = stderr;
+    }
+
+    if (since !== undefined) {
+        localvariableQueryParameter["since"] = since;
+    }
+
+    if (timestamps !== undefined) {
+        localvariableQueryParameter["timestamps"] = timestamps;
+    }
+
+    if (tail !== undefined) {
+        localvariableQueryParameter["tail"] = tail;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/services/{id}/logs`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (details !== undefined) {
-    localvariableQueryParameter["details"] = details;
-  }
-
-  if (follow !== undefined) {
-    localvariableQueryParameter["follow"] = follow;
-  }
-
-  if (stdout !== undefined) {
-    localvariableQueryParameter["stdout"] = stdout;
-  }
-
-  if (stderr !== undefined) {
-    localvariableQueryParameter["stderr"] = stderr;
-  }
-
-  if (since !== undefined) {
-    localvariableQueryParameter["since"] = since;
-  }
-
-  if (timestamps !== undefined) {
-    localvariableQueryParameter["timestamps"] = timestamps;
-  }
-
-  if (tail !== undefined) {
-    localvariableQueryParameter["tail"] = tail;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * ServiceApi serviceUpdate fetch parameter creator
@@ -13768,89 +12198,70 @@ export const serviceLogsFetchParamCreator = (
  * @summary Update a service fetch parameter creator
  */
 export const serviceUpdateFetchParamCreator = (
-  body: IdUpdateBody1,
-  id: string,
-  version: number,
-  registryAuthFrom?: string,
-  rollback?: string,
-  xRegistryAuth?: string,
-  options: any = {}
+    body: IdUpdateBody1,
+    id: string,
+    version: number,
+    registryAuthFrom?: string,
+    rollback?: string,
+    xRegistryAuth?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling serviceUpdate."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling serviceUpdate.");
+    }
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceUpdate.");
+    }
+    // verify required parameter 'version' is not null or undefined
+    if (version === null || version === undefined) {
+        throw new RequiredError(
+            "version",
+            "Required parameter version was null or undefined when calling serviceUpdate."
+        );
+    }
+    const localvariablePath = `/services/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (version !== undefined) {
+        localvariableQueryParameter["version"] = version;
+    }
+
+    if (registryAuthFrom !== undefined) {
+        localvariableQueryParameter["registryAuthFrom"] = registryAuthFrom;
+    }
+
+    if (rollback !== undefined) {
+        localvariableQueryParameter["rollback"] = rollback;
+    }
+
+    if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
+        localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling serviceUpdate."
-    );
-  }
-  // verify required parameter 'version' is not null or undefined
-  if (version === null || version === undefined) {
-    throw new RequiredError(
-      "version",
-      "Required parameter version was null or undefined when calling serviceUpdate."
-    );
-  }
-  const localvariablePath = `/services/{id}/update`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"IdUpdateBody1" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (version !== undefined) {
-    localvariableQueryParameter["version"] = version;
-  }
-
-  if (registryAuthFrom !== undefined) {
-    localvariableQueryParameter["registryAuthFrom"] = registryAuthFrom;
-  }
-
-  if (rollback !== undefined) {
-    localvariableQueryParameter["rollback"] = rollback;
-  }
-
-  if (xRegistryAuth !== undefined && xRegistryAuth !== null) {
-    localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"IdUpdateBody1" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -13863,27 +12274,22 @@ export const serviceUpdateFetchParamCreator = (
  * @summary Create a service
  */
 export const serviceCreate = (
-  body: ServicesCreateBody,
-  xRegistryAuth?: string,
-  options?: any
+    body: ServicesCreateBody,
+    xRegistryAuth?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ServiceCreateResponse>) => {
-  const localvariableFetchArguments = serviceCreateFetchParamCreator(
-    body,
-    xRegistryAuth,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ServiceCreateResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = serviceCreateFetchParamCreator(body, xRegistryAuth, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ServiceCreateResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of service.
@@ -13892,25 +12298,21 @@ export const serviceCreate = (
  * @summary Delete a service
  */
 export const serviceDelete = (
-  id: string,
-  options?: any
+    id: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = serviceDeleteFetchParamCreator(
-    id,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = serviceDeleteFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} id ID or name of service.
@@ -13920,27 +12322,22 @@ export const serviceDelete = (
  * @summary Inspect a service
  */
 export const serviceInspect = (
-  id: string,
-  insertDefaults?: boolean,
-  options?: any
+    id: string,
+    insertDefaults?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Service>) => {
-  const localvariableFetchArguments = serviceInspectFetchParamCreator(
-    id,
-    insertDefaults,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Service>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = serviceInspectFetchParamCreator(id, insertDefaults, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Service>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] A JSON encoded value of the filters (a
@@ -13954,27 +12351,22 @@ export const serviceInspect = (
  * @summary List services
  */
 export const serviceList = (
-  filters?: string,
-  status?: boolean,
-  options?: any
+    filters?: string,
+    status?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Service>>) => {
-  const localvariableFetchArguments = serviceListFetchParamCreator(
-    filters,
-    status,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Service>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = serviceListFetchParamCreator(filters, status, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Service>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Get `stdout` and `stderr` logs from a service. See also
@@ -13997,39 +12389,38 @@ export const serviceList = (
  * @summary Get service logs
  */
 export const serviceLogs = (
-  id: string,
-  details?: boolean,
-  follow?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  since?: number,
-  timestamps?: boolean,
-  tail?: string,
-  options?: any
+    id: string,
+    details?: boolean,
+    follow?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    since?: number,
+    timestamps?: boolean,
+    tail?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-  const localvariableFetchArguments = serviceLogsFetchParamCreator(
-    id,
-    details,
-    follow,
-    stdout,
-    stderr,
-    since,
-    timestamps,
-    tail,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Blob>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = serviceLogsFetchParamCreator(
+        id,
+        details,
+        follow,
+        stdout,
+        stderr,
+        since,
+        timestamps,
+        tail,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Blob>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {IdUpdateBody1} body
@@ -14052,35 +12443,34 @@ export const serviceLogs = (
  * @summary Update a service
  */
 export const serviceUpdate = (
-  body: IdUpdateBody1,
-  id: string,
-  version: number,
-  registryAuthFrom?: string,
-  rollback?: string,
-  xRegistryAuth?: string,
-  options?: any
+    body: IdUpdateBody1,
+    id: string,
+    version: number,
+    registryAuthFrom?: string,
+    rollback?: string,
+    xRegistryAuth?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ServiceUpdateResponse>) => {
-  const localvariableFetchArguments = serviceUpdateFetchParamCreator(
-    body,
-    id,
-    version,
-    registryAuthFrom,
-    rollback,
-    xRegistryAuth,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<ServiceUpdateResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = serviceUpdateFetchParamCreator(
+        body,
+        id,
+        version,
+        registryAuthFrom,
+        rollback,
+        xRegistryAuth,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<ServiceUpdateResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -14090,129 +12480,117 @@ export const serviceUpdate = (
  * @interface ServiceApi
  */
 export interface ServiceApiInterface {
-  /**
-   * @memberof ServiceApiInterface
-   * @param {ServicesCreateBody} body
-   * @param {string} [xRegistryAuth] A base64url-encoded auth configuration
-   *   for pulling from private registries. Refer to the [authentication
-   *   section](#section/Authentication) for details.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a service
-   */
-  serviceCreate(
-    body: ServicesCreateBody,
-    xRegistryAuth?: string,
-    options?: any
-  ): Promise<ServiceCreateResponse>;
+    /**
+     * @memberof ServiceApiInterface
+     * @param {ServicesCreateBody} body
+     * @param {string} [xRegistryAuth] A base64url-encoded auth configuration
+     *   for pulling from private registries. Refer to the [authentication
+     *   section](#section/Authentication) for details.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a service
+     */
+    serviceCreate(body: ServicesCreateBody, xRegistryAuth?: string, options?: any): Promise<ServiceCreateResponse>;
 
-  /**
-   * @memberof ServiceApiInterface
-   * @param {string} id ID or name of service.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete a service
-   */
-  serviceDelete(id: string, options?: any): Promise<{}>;
+    /**
+     * @memberof ServiceApiInterface
+     * @param {string} id ID or name of service.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete a service
+     */
+    serviceDelete(id: string, options?: any): Promise<{}>;
 
-  /**
-   * @memberof ServiceApiInterface
-   * @param {string} id ID or name of service.
-   * @param {boolean} [insertDefaults] Fill empty fields with default values.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a service
-   */
-  serviceInspect(
-    id: string,
-    insertDefaults?: boolean,
-    options?: any
-  ): Promise<Service>;
+    /**
+     * @memberof ServiceApiInterface
+     * @param {string} id ID or name of service.
+     * @param {boolean} [insertDefaults] Fill empty fields with default values.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a service
+     */
+    serviceInspect(id: string, insertDefaults?: boolean, options?: any): Promise<Service>;
 
-  /**
-   * @memberof ServiceApiInterface
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the services list. Available
-   *   filters: - `id=<service id>` - `label=<service label>` -
-   *   `mode=[&quot;replicated&quot;|&quot;global&quot;]` - `name=<service
-   *   name>`
-   * @param {boolean} [status] Include service status, with count of running
-   *   and desired tasks.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List services
-   */
-  serviceList(
-    filters?: string,
-    status?: boolean,
-    options?: any
-  ): Promise<Array<Service>>;
+    /**
+     * @memberof ServiceApiInterface
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the services list. Available
+     *   filters: - `id=<service id>` - `label=<service label>` -
+     *   `mode=[&quot;replicated&quot;|&quot;global&quot;]` - `name=<service
+     *   name>`
+     * @param {boolean} [status] Include service status, with count of running
+     *   and desired tasks.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List services
+     */
+    serviceList(filters?: string, status?: boolean, options?: any): Promise<Array<Service>>;
 
-  /**
-   * Get `stdout` and `stderr` logs from a service. See also
-   * [`/containers/{id}/logs`](#operation/ContainerLogs). **Note**: This
-   * endpoint works only for services with the `local`, `json-file` or
-   * `journald` logging drivers.
-   *
-   * @memberof ServiceApiInterface
-   * @param {string} id ID or name of the service
-   * @param {boolean} [details] Show service context and extra details
-   *   provided to logs.
-   * @param {boolean} [follow] Keep connection after returning logs.
-   * @param {boolean} [stdout] Return logs from `stdout`
-   * @param {boolean} [stderr] Return logs from `stderr`
-   * @param {number} [since] Only return logs since this time, as a UNIX
-   *   timestamp
-   * @param {boolean} [timestamps] Add timestamps to every log line
-   * @param {string} [tail] Only return this number of log lines from the end
-   *   of the logs. Specify as an integer or `all` to output all log lines.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get service logs
-   */
-  serviceLogs(
-    id: string,
-    details?: boolean,
-    follow?: boolean,
-    stdout?: boolean,
-    stderr?: boolean,
-    since?: number,
-    timestamps?: boolean,
-    tail?: string,
-    options?: any
-  ): Promise<Blob>;
+    /**
+     * Get `stdout` and `stderr` logs from a service. See also
+     * [`/containers/{id}/logs`](#operation/ContainerLogs). **Note**: This
+     * endpoint works only for services with the `local`, `json-file` or
+     * `journald` logging drivers.
+     *
+     * @memberof ServiceApiInterface
+     * @param {string} id ID or name of the service
+     * @param {boolean} [details] Show service context and extra details
+     *   provided to logs.
+     * @param {boolean} [follow] Keep connection after returning logs.
+     * @param {boolean} [stdout] Return logs from `stdout`
+     * @param {boolean} [stderr] Return logs from `stderr`
+     * @param {number} [since] Only return logs since this time, as a UNIX
+     *   timestamp
+     * @param {boolean} [timestamps] Add timestamps to every log line
+     * @param {string} [tail] Only return this number of log lines from the end
+     *   of the logs. Specify as an integer or `all` to output all log lines.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get service logs
+     */
+    serviceLogs(
+        id: string,
+        details?: boolean,
+        follow?: boolean,
+        stdout?: boolean,
+        stderr?: boolean,
+        since?: number,
+        timestamps?: boolean,
+        tail?: string,
+        options?: any
+    ): Promise<Blob>;
 
-  /**
-   * @memberof ServiceApiInterface
-   * @param {IdUpdateBody1} body
-   * @param {string} id ID or name of service.
-   * @param {number} version The version number of the service object being
-   *   updated. This is required to avoid conflicting writes. This version
-   *   number should be the value as currently set on the service _before_ the
-   *   update. You can find the current version by calling `GET
-   *   /services/{id}`
-   * @param {string} [registryAuthFrom] If the `X-Registry-Auth` header is not
-   *   specified, this parameter indicates where to find registry
-   *   authorization credentials.
-   * @param {string} [rollback] Set to this parameter to `previous` to cause a
-   *   server-side rollback to the previous service spec. The supplied spec
-   *   will be ignored in this case.
-   * @param {string} [xRegistryAuth] A base64url-encoded auth configuration
-   *   for pulling from private registries. Refer to the [authentication
-   *   section](#section/Authentication) for details.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Update a service
-   */
-  serviceUpdate(
-    body: IdUpdateBody1,
-    id: string,
-    version: number,
-    registryAuthFrom?: string,
-    rollback?: string,
-    xRegistryAuth?: string,
-    options?: any
-  ): Promise<ServiceUpdateResponse>;
+    /**
+     * @memberof ServiceApiInterface
+     * @param {IdUpdateBody1} body
+     * @param {string} id ID or name of service.
+     * @param {number} version The version number of the service object being
+     *   updated. This is required to avoid conflicting writes. This version
+     *   number should be the value as currently set on the service _before_ the
+     *   update. You can find the current version by calling `GET
+     *   /services/{id}`
+     * @param {string} [registryAuthFrom] If the `X-Registry-Auth` header is not
+     *   specified, this parameter indicates where to find registry
+     *   authorization credentials.
+     * @param {string} [rollback] Set to this parameter to `previous` to cause a
+     *   server-side rollback to the previous service spec. The supplied spec
+     *   will be ignored in this case.
+     * @param {string} [xRegistryAuth] A base64url-encoded auth configuration
+     *   for pulling from private registries. Refer to the [authentication
+     *   section](#section/Authentication) for details.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Update a service
+     */
+    serviceUpdate(
+        body: IdUpdateBody1,
+        id: string,
+        version: number,
+        registryAuthFrom?: string,
+        rollback?: string,
+        xRegistryAuth?: string,
+        options?: any
+    ): Promise<ServiceUpdateResponse>;
 }
 
 /**
@@ -14223,33 +12601,26 @@ export interface ServiceApiInterface {
  * @summary Initialize interactive session fetch parameter creator
  */
 export const sessionFetchParamCreator = (options: any = {}): FetchArguments => {
-  const localvariablePath = `/session`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/session`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -14266,22 +12637,19 @@ export const sessionFetchParamCreator = (options: any = {}): FetchArguments => {
  * @throws {RequiredError}
  * @summary Initialize interactive session
  */
-export const session = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = sessionFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const session = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
+    const localvariableFetchArguments = sessionFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -14291,22 +12659,22 @@ export const session = (
  * @interface SessionApi
  */
 export interface SessionApiInterface {
-  /**
-   * Start a new interactive session with a server. Session allows server to
-   * call back to the client for advanced capabilities. ### Hijacking This
-   * endpoint hijacks the HTTP connection to HTTP2 transport that allows the
-   * client to expose gPRC services on that connection. For example, the
-   * client sends this request to upgrade the connection: `POST /session
-   * HTTP/1.1 Upgrade: h2c Connection: Upgrade` The Docker daemon responds
-   * with a `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
-   * UPGRADED Connection: Upgrade Upgrade: h2c`
-   *
-   * @memberof SessionApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Initialize interactive session
-   */
-  session(options?: any): Promise<{}>;
+    /**
+     * Start a new interactive session with a server. Session allows server to
+     * call back to the client for advanced capabilities. ### Hijacking This
+     * endpoint hijacks the HTTP connection to HTTP2 transport that allows the
+     * client to expose gPRC services on that connection. For example, the
+     * client sends this request to upgrade the connection: `POST /session
+     * HTTP/1.1 Upgrade: h2c Connection: Upgrade` The Docker daemon responds
+     * with a `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
+     * UPGRADED Connection: Upgrade Upgrade: h2c`
+     *
+     * @memberof SessionApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Initialize interactive session
+     */
+    session(options?: any): Promise<{}>;
 }
 
 /**
@@ -14317,52 +12685,37 @@ export interface SessionApiInterface {
  * @throws {RequiredError}
  * @summary Initialize a new swarm fetch parameter creator
  */
-export const swarmInitFetchParamCreator = (
-  body: SwarmInitRequest,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling swarmInit."
+export const swarmInitFetchParamCreator = (body: SwarmInitRequest, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmInit.");
+    }
+    const localvariablePath = `/swarm/init`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/swarm/init`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"SwarmInitRequest1" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"SwarmInitRequest1" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SwarmApi swarmInspect fetch parameter creator
@@ -14371,33 +12724,27 @@ export const swarmInitFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect swarm fetch parameter creator
  */
-export const swarmInspectFetchParamCreator = (
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/swarm`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const swarmInspectFetchParamCreator = (options: any = {}): FetchArguments => {
+    const localvariablePath = `/swarm`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SwarmApi swarmJoin fetch parameter creator
@@ -14407,52 +12754,37 @@ export const swarmInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Join an existing swarm fetch parameter creator
  */
-export const swarmJoinFetchParamCreator = (
-  body: SwarmJoinRequest,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling swarmJoin."
+export const swarmJoinFetchParamCreator = (body: SwarmJoinRequest, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmJoin.");
+    }
+    const localvariablePath = `/swarm/join`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/swarm/join`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"SwarmJoinRequest1" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"SwarmJoinRequest1" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SwarmApi swarmLeave fetch parameter creator
@@ -14463,41 +12795,31 @@ export const swarmJoinFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Leave a swarm fetch parameter creator
  */
-export const swarmLeaveFetchParamCreator = (
-  force?: boolean,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/swarm/leave`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const swarmLeaveFetchParamCreator = (force?: boolean, options: any = {}): FetchArguments => {
+    const localvariablePath = `/swarm/leave`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SwarmApi swarmUnlock fetch parameter creator
@@ -14507,52 +12829,37 @@ export const swarmLeaveFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Unlock a locked manager fetch parameter creator
  */
-export const swarmUnlockFetchParamCreator = (
-  body: SwarmUnlockRequest,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling swarmUnlock."
+export const swarmUnlockFetchParamCreator = (body: SwarmUnlockRequest, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmUnlock.");
+    }
+    const localvariablePath = `/swarm/unlock`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/swarm/unlock`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"SwarmUnlockRequest" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"SwarmUnlockRequest" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SwarmApi swarmUnlockkey fetch parameter creator
@@ -14561,33 +12868,27 @@ export const swarmUnlockFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get the unlock key fetch parameter creator
  */
-export const swarmUnlockkeyFetchParamCreator = (
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/swarm/unlockkey`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const swarmUnlockkeyFetchParamCreator = (options: any = {}): FetchArguments => {
+    const localvariablePath = `/swarm/unlockkey`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SwarmApi swarmUpdate fetch parameter creator
@@ -14603,79 +12904,65 @@ export const swarmUnlockkeyFetchParamCreator = (
  * @summary Update a swarm fetch parameter creator
  */
 export const swarmUpdateFetchParamCreator = (
-  body: SwarmSpec,
-  version: number,
-  rotateWorkerToken?: boolean,
-  rotateManagerToken?: boolean,
-  rotateManagerUnlockKey?: boolean,
-  options: any = {}
+    body: SwarmSpec,
+    version: number,
+    rotateWorkerToken?: boolean,
+    rotateManagerToken?: boolean,
+    rotateManagerUnlockKey?: boolean,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling swarmUpdate."
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmUpdate.");
+    }
+    // verify required parameter 'version' is not null or undefined
+    if (version === null || version === undefined) {
+        throw new RequiredError(
+            "version",
+            "Required parameter version was null or undefined when calling swarmUpdate."
+        );
+    }
+    const localvariablePath = `/swarm/update`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (version !== undefined) {
+        localvariableQueryParameter["version"] = version;
+    }
+
+    if (rotateWorkerToken !== undefined) {
+        localvariableQueryParameter["rotateWorkerToken"] = rotateWorkerToken;
+    }
+
+    if (rotateManagerToken !== undefined) {
+        localvariableQueryParameter["rotateManagerToken"] = rotateManagerToken;
+    }
+
+    if (rotateManagerUnlockKey !== undefined) {
+        localvariableQueryParameter["rotateManagerUnlockKey"] = rotateManagerUnlockKey;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'version' is not null or undefined
-  if (version === null || version === undefined) {
-    throw new RequiredError(
-      "version",
-      "Required parameter version was null or undefined when calling swarmUpdate."
-    );
-  }
-  const localvariablePath = `/swarm/update`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"SwarmSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (version !== undefined) {
-    localvariableQueryParameter["version"] = version;
-  }
-
-  if (rotateWorkerToken !== undefined) {
-    localvariableQueryParameter["rotateWorkerToken"] = rotateWorkerToken;
-  }
-
-  if (rotateManagerToken !== undefined) {
-    localvariableQueryParameter["rotateManagerToken"] = rotateManagerToken;
-  }
-
-  if (rotateManagerUnlockKey !== undefined) {
-    localvariableQueryParameter["rotateManagerUnlockKey"] =
-      rotateManagerUnlockKey;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"SwarmSpec" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -14685,44 +12972,40 @@ export const swarmUpdateFetchParamCreator = (
  * @summary Initialize a new swarm
  */
 export const swarmInit = (
-  body: SwarmInitRequest,
-  options?: any
+    body: SwarmInitRequest,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
-  const localvariableFetchArguments = swarmInitFetchParamCreator(body, options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<string>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = swarmInitFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<string>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {any} [options] Override http request option.
  * @throws {RequiredError}
  * @summary Inspect swarm
  */
-export const swarmInspect = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Swarm>) => {
-  const localvariableFetchArguments = swarmInspectFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Swarm>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const swarmInspect = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Swarm>) => {
+    const localvariableFetchArguments = swarmInspectFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Swarm>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {SwarmJoinRequest} body
@@ -14731,22 +13014,21 @@ export const swarmInspect = (
  * @summary Join an existing swarm
  */
 export const swarmJoin = (
-  body: SwarmJoinRequest,
-  options?: any
+    body: SwarmJoinRequest,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = swarmJoinFetchParamCreator(body, options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = swarmJoinFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {boolean} [force] Force leave swarm, even if this is the last manager
@@ -14756,25 +13038,21 @@ export const swarmJoin = (
  * @summary Leave a swarm
  */
 export const swarmLeave = (
-  force?: boolean,
-  options?: any
+    force?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = swarmLeaveFetchParamCreator(
-    force,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = swarmLeaveFetchParamCreator(force, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {SwarmUnlockRequest} body
@@ -14783,47 +13061,40 @@ export const swarmLeave = (
  * @summary Unlock a locked manager
  */
 export const swarmUnlock = (
-  body: SwarmUnlockRequest,
-  options?: any
+    body: SwarmUnlockRequest,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = swarmUnlockFetchParamCreator(
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = swarmUnlockFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {any} [options] Override http request option.
  * @throws {RequiredError}
  * @summary Get the unlock key
  */
-export const swarmUnlockkey = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<UnlockKeyResponse>) => {
-  const localvariableFetchArguments = swarmUnlockkeyFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<UnlockKeyResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const swarmUnlockkey = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<UnlockKeyResponse>) => {
+    const localvariableFetchArguments = swarmUnlockkeyFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<UnlockKeyResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {SwarmSpec} body
@@ -14837,33 +13108,32 @@ export const swarmUnlockkey = (
  * @summary Update a swarm
  */
 export const swarmUpdate = (
-  body: SwarmSpec,
-  version: number,
-  rotateWorkerToken?: boolean,
-  rotateManagerToken?: boolean,
-  rotateManagerUnlockKey?: boolean,
-  options?: any
+    body: SwarmSpec,
+    version: number,
+    rotateWorkerToken?: boolean,
+    rotateManagerToken?: boolean,
+    rotateManagerUnlockKey?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = swarmUpdateFetchParamCreator(
-    body,
-    version,
-    rotateWorkerToken,
-    rotateManagerToken,
-    rotateManagerUnlockKey,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = swarmUpdateFetchParamCreator(
+        body,
+        version,
+        rotateWorkerToken,
+        rotateManagerToken,
+        rotateManagerUnlockKey,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -14873,79 +13143,79 @@ export const swarmUpdate = (
  * @interface SwarmApi
  */
 export interface SwarmApiInterface {
-  /**
-   * @memberof SwarmApiInterface
-   * @param {SwarmInitRequest} body
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Initialize a new swarm
-   */
-  swarmInit(body: SwarmInitRequest, options?: any): Promise<string>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {SwarmInitRequest} body
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Initialize a new swarm
+     */
+    swarmInit(body: SwarmInitRequest, options?: any): Promise<string>;
 
-  /**
-   * @memberof SwarmApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect swarm
-   */
-  swarmInspect(options?: any): Promise<Swarm>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect swarm
+     */
+    swarmInspect(options?: any): Promise<Swarm>;
 
-  /**
-   * @memberof SwarmApiInterface
-   * @param {SwarmJoinRequest} body
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Join an existing swarm
-   */
-  swarmJoin(body: SwarmJoinRequest, options?: any): Promise<{}>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {SwarmJoinRequest} body
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Join an existing swarm
+     */
+    swarmJoin(body: SwarmJoinRequest, options?: any): Promise<{}>;
 
-  /**
-   * @memberof SwarmApiInterface
-   * @param {boolean} [force] Force leave swarm, even if this is the last
-   *   manager or that it will break the cluster.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Leave a swarm
-   */
-  swarmLeave(force?: boolean, options?: any): Promise<{}>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {boolean} [force] Force leave swarm, even if this is the last
+     *   manager or that it will break the cluster.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Leave a swarm
+     */
+    swarmLeave(force?: boolean, options?: any): Promise<{}>;
 
-  /**
-   * @memberof SwarmApiInterface
-   * @param {SwarmUnlockRequest} body
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Unlock a locked manager
-   */
-  swarmUnlock(body: SwarmUnlockRequest, options?: any): Promise<{}>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {SwarmUnlockRequest} body
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Unlock a locked manager
+     */
+    swarmUnlock(body: SwarmUnlockRequest, options?: any): Promise<{}>;
 
-  /**
-   * @memberof SwarmApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get the unlock key
-   */
-  swarmUnlockkey(options?: any): Promise<UnlockKeyResponse>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get the unlock key
+     */
+    swarmUnlockkey(options?: any): Promise<UnlockKeyResponse>;
 
-  /**
-   * @memberof SwarmApiInterface
-   * @param {SwarmSpec} body
-   * @param {number} version The version number of the swarm object being
-   *   updated. This is required to avoid conflicting writes.
-   * @param {boolean} [rotateWorkerToken] Rotate the worker join token.
-   * @param {boolean} [rotateManagerToken] Rotate the manager join token.
-   * @param {boolean} [rotateManagerUnlockKey] Rotate the manager unlock key.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Update a swarm
-   */
-  swarmUpdate(
-    body: SwarmSpec,
-    version: number,
-    rotateWorkerToken?: boolean,
-    rotateManagerToken?: boolean,
-    rotateManagerUnlockKey?: boolean,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof SwarmApiInterface
+     * @param {SwarmSpec} body
+     * @param {number} version The version number of the swarm object being
+     *   updated. This is required to avoid conflicting writes.
+     * @param {boolean} [rotateWorkerToken] Rotate the worker join token.
+     * @param {boolean} [rotateManagerToken] Rotate the manager join token.
+     * @param {boolean} [rotateManagerUnlockKey] Rotate the manager unlock key.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Update a swarm
+     */
+    swarmUpdate(
+        body: SwarmSpec,
+        version: number,
+        rotateWorkerToken?: boolean,
+        rotateManagerToken?: boolean,
+        rotateManagerUnlockKey?: boolean,
+        options?: any
+    ): Promise<{}>;
 }
 
 /**
@@ -14956,45 +13226,32 @@ export interface SwarmApiInterface {
  * @throws {RequiredError}
  * @summary Check auth configuration fetch parameter creator
  */
-export const systemAuthFetchParamCreator = (
-  body?: AuthConfig,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/auth`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const systemAuthFetchParamCreator = (body?: AuthConfig, options: any = {}): FetchArguments => {
+    const localvariablePath = `/auth`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
+    localvariableHeaderParameter["Content-Type"] = "application/json";
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"AuthConfig" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"AuthConfig" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SystemApi systemDataUsage fetch parameter creator
@@ -15004,38 +13261,31 @@ export const systemAuthFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get data usage information fetch parameter creator
  */
-export const systemDataUsageFetchParamCreator = (
-  type?: Array<string>,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/system/df`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const systemDataUsageFetchParamCreator = (type?: Array<string>, options: any = {}): FetchArguments => {
+    const localvariablePath = `/system/df`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (type) {
-    localvariableQueryParameter["type"] = type;
-  }
+    if (type) {
+        localvariableQueryParameter["type"] = type;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SystemApi systemEvents fetch parameter creator
@@ -15060,47 +13310,43 @@ export const systemDataUsageFetchParamCreator = (
  * @summary Monitor events fetch parameter creator
  */
 export const systemEventsFetchParamCreator = (
-  since?: string,
-  until?: string,
-  filters?: string,
-  options: any = {}
+    since?: string,
+    until?: string,
+    filters?: string,
+    options: any = {}
 ): FetchArguments => {
-  const localvariablePath = `/events`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    const localvariablePath = `/events`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (since !== undefined) {
-    localvariableQueryParameter["since"] = since;
-  }
+    if (since !== undefined) {
+        localvariableQueryParameter["since"] = since;
+    }
 
-  if (until !== undefined) {
-    localvariableQueryParameter["until"] = until;
-  }
+    if (until !== undefined) {
+        localvariableQueryParameter["until"] = until;
+    }
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SystemApi systemInfo fetch parameter creator
@@ -15109,33 +13355,27 @@ export const systemEventsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get system information fetch parameter creator
  */
-export const systemInfoFetchParamCreator = (
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/info`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const systemInfoFetchParamCreator = (options: any = {}): FetchArguments => {
+    const localvariablePath = `/info`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SystemApi systemPing fetch parameter creator
@@ -15144,33 +13384,27 @@ export const systemInfoFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Ping fetch parameter creator
  */
-export const systemPingFetchParamCreator = (
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/_ping`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const systemPingFetchParamCreator = (options: any = {}): FetchArguments => {
+    const localvariablePath = `/_ping`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SystemApi systemPingHead fetch parameter creator
@@ -15179,36 +13413,27 @@ export const systemPingFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Ping fetch parameter creator
  */
-export const systemPingHeadFetchParamCreator = (
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/_ping`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "HEAD" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const systemPingHeadFetchParamCreator = (options: any = {}): FetchArguments => {
+    const localvariablePath = `/_ping`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "HEAD" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * SystemApi systemVersion fetch parameter creator
@@ -15217,33 +13442,27 @@ export const systemPingHeadFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get version fetch parameter creator
  */
-export const systemVersionFetchParamCreator = (
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/version`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const systemVersionFetchParamCreator = (options: any = {}): FetchArguments => {
+    const localvariablePath = `/version`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -15256,25 +13475,21 @@ export const systemVersionFetchParamCreator = (
  * @summary Check auth configuration
  */
 export const systemAuth = (
-  body?: AuthConfig,
-  options?: any
+    body?: AuthConfig,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<SystemAuthResponse>) => {
-  const localvariableFetchArguments = systemAuthFetchParamCreator(
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<SystemAuthResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = systemAuthFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<SystemAuthResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string[]} [type] Object types, for which to compute and return data.
@@ -15283,28 +13498,21 @@ export const systemAuth = (
  * @summary Get data usage information
  */
 export const systemDataUsage = (
-  type?: Array<string>,
-  options?: any
-): ((
-  fetch: FetchAPI,
-  basePath?: string
-) => Promise<SystemDataUsageResponse>) => {
-  const localvariableFetchArguments = systemDataUsageFetchParamCreator(
-    type,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<SystemDataUsageResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    type?: Array<string>,
+    options?: any
+): ((fetch: FetchAPI, basePath?: string) => Promise<SystemDataUsageResponse>) => {
+    const localvariableFetchArguments = systemDataUsageFetchParamCreator(type, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<SystemDataUsageResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Stream real-time events from the server. Various objects within Docker report
@@ -15343,51 +13551,42 @@ export const systemDataUsage = (
  * @summary Monitor events
  */
 export const systemEvents = (
-  since?: string,
-  until?: string,
-  filters?: string,
-  options?: any
+    since?: string,
+    until?: string,
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<EventMessage>) => {
-  const localvariableFetchArguments = systemEventsFetchParamCreator(
-    since,
-    until,
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<EventMessage>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = systemEventsFetchParamCreator(since, until, filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<EventMessage>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {any} [options] Override http request option.
  * @throws {RequiredError}
  * @summary Get system information
  */
-export const systemInfo = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<SystemInfo>) => {
-  const localvariableFetchArguments = systemInfoFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<SystemInfo>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const systemInfo = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<SystemInfo>) => {
+    const localvariableFetchArguments = systemInfoFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<SystemInfo>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
@@ -15396,22 +13595,19 @@ export const systemInfo = (
  * @throws {RequiredError}
  * @summary Ping
  */
-export const systemPing = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
-  const localvariableFetchArguments = systemPingFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<string>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const systemPing = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
+    const localvariableFetchArguments = systemPingFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<string>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
@@ -15420,22 +13616,19 @@ export const systemPing = (
  * @throws {RequiredError}
  * @summary Ping
  */
-export const systemPingHead = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
-  const localvariableFetchArguments = systemPingHeadFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<string>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const systemPingHead = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
+    const localvariableFetchArguments = systemPingHeadFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<string>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Returns the version of Docker that is running and various information about
@@ -15445,22 +13638,19 @@ export const systemPingHead = (
  * @throws {RequiredError}
  * @summary Get version
  */
-export const systemVersion = (
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<SystemVersion>) => {
-  const localvariableFetchArguments = systemVersionFetchParamCreator(options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<SystemVersion>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const systemVersion = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<SystemVersion>) => {
+    const localvariableFetchArguments = systemVersionFetchParamCreator(options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<SystemVersion>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -15470,114 +13660,106 @@ export const systemVersion = (
  * @interface SystemApi
  */
 export interface SystemApiInterface {
-  /**
-   * Validate credentials for a registry and, if available, get an identity
-   * token for accessing the registry without password.
-   *
-   * @memberof SystemApiInterface
-   * @param {AuthConfig} [body] Authentication to check
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Check auth configuration
-   */
-  systemAuth(body?: AuthConfig, options?: any): Promise<SystemAuthResponse>;
+    /**
+     * Validate credentials for a registry and, if available, get an identity
+     * token for accessing the registry without password.
+     *
+     * @memberof SystemApiInterface
+     * @param {AuthConfig} [body] Authentication to check
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Check auth configuration
+     */
+    systemAuth(body?: AuthConfig, options?: any): Promise<SystemAuthResponse>;
 
-  /**
-   * @memberof SystemApiInterface
-   * @param {string[]} [type] Object types, for which to compute and return
-   *   data.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get data usage information
-   */
-  systemDataUsage(
-    type?: Array<string>,
-    options?: any
-  ): Promise<SystemDataUsageResponse>;
+    /**
+     * @memberof SystemApiInterface
+     * @param {string[]} [type] Object types, for which to compute and return
+     *   data.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get data usage information
+     */
+    systemDataUsage(type?: Array<string>, options?: any): Promise<SystemDataUsageResponse>;
 
-  /**
-   * Stream real-time events from the server. Various objects within Docker
-   * report events when something happens to them. Containers report these
-   * events: `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`,
-   * `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`,
-   * `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`,
-   * `start`, `stop`, `top`, `unpause`, `update`, and `prune` Images report
-   * these events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`,
-   * `untag`, and `prune` Volumes report these events: `create`, `mount`,
-   * `unmount`, `destroy`, and `prune` Networks report these events: `create`,
-   * `connect`, `disconnect`, `destroy`, `update`, `remove`, and `prune` The
-   * Docker daemon reports these events: `reload` Services report these
-   * events: `create`, `update`, and `remove` Nodes report these events:
-   * `create`, `update`, and `remove` Secrets report these events: `create`,
-   * `update`, and `remove` Configs report these events: `create`, `update`,
-   * and `remove` The Builder reports `prune` events
-   *
-   * @memberof SystemApiInterface
-   * @param {string} [since] Show events created since this timestamp then
-   *   stream new events.
-   * @param {string} [until] Show events created until this timestamp then
-   *   stop streaming.
-   * @param {string} [filters] A JSON encoded value of filters (a
-   *   `map[string][]string`) to process on the event list. Available filters:
-   *   - `config=<string>` config name or ID - `container=<string>` container
-   *   name or ID - `daemon=<string>` daemon name or ID - `event=<string>`
-   *   event type - `image=<string>` image name or ID - `label=<string>` image
-   *   or container label - `network=<string>` network name or ID -
-   *   `node=<string>` node ID - `plugin`=<string> plugin name or ID -
-   *   `scope`=<string> local or swarm - `secret=<string>` secret name or ID -
-   *   `service=<string>` service name or ID - `type=<string>` object to
-   *   filter by, one of `container`, `image`, `volume`, `network`, `daemon`,
-   *   `plugin`, `node`, `service`, `secret` or `config` - `volume=<string>`
-   *   volume name
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Monitor events
-   */
-  systemEvents(
-    since?: string,
-    until?: string,
-    filters?: string,
-    options?: any
-  ): Promise<EventMessage>;
+    /**
+     * Stream real-time events from the server. Various objects within Docker
+     * report events when something happens to them. Containers report these
+     * events: `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`,
+     * `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`,
+     * `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`,
+     * `start`, `stop`, `top`, `unpause`, `update`, and `prune` Images report
+     * these events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`,
+     * `untag`, and `prune` Volumes report these events: `create`, `mount`,
+     * `unmount`, `destroy`, and `prune` Networks report these events: `create`,
+     * `connect`, `disconnect`, `destroy`, `update`, `remove`, and `prune` The
+     * Docker daemon reports these events: `reload` Services report these
+     * events: `create`, `update`, and `remove` Nodes report these events:
+     * `create`, `update`, and `remove` Secrets report these events: `create`,
+     * `update`, and `remove` Configs report these events: `create`, `update`,
+     * and `remove` The Builder reports `prune` events
+     *
+     * @memberof SystemApiInterface
+     * @param {string} [since] Show events created since this timestamp then
+     *   stream new events.
+     * @param {string} [until] Show events created until this timestamp then
+     *   stop streaming.
+     * @param {string} [filters] A JSON encoded value of filters (a
+     *   `map[string][]string`) to process on the event list. Available filters:
+     *   - `config=<string>` config name or ID - `container=<string>` container
+     *   name or ID - `daemon=<string>` daemon name or ID - `event=<string>`
+     *   event type - `image=<string>` image name or ID - `label=<string>` image
+     *   or container label - `network=<string>` network name or ID -
+     *   `node=<string>` node ID - `plugin`=<string> plugin name or ID -
+     *   `scope`=<string> local or swarm - `secret=<string>` secret name or ID -
+     *   `service=<string>` service name or ID - `type=<string>` object to
+     *   filter by, one of `container`, `image`, `volume`, `network`, `daemon`,
+     *   `plugin`, `node`, `service`, `secret` or `config` - `volume=<string>`
+     *   volume name
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Monitor events
+     */
+    systemEvents(since?: string, until?: string, filters?: string, options?: any): Promise<EventMessage>;
 
-  /**
-   * @memberof SystemApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get system information
-   */
-  systemInfo(options?: any): Promise<SystemInfo>;
+    /**
+     * @memberof SystemApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get system information
+     */
+    systemInfo(options?: any): Promise<SystemInfo>;
 
-  /**
-   * This is a dummy endpoint you can use to test if the server is accessible.
-   *
-   * @memberof SystemApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Ping
-   */
-  systemPing(options?: any): Promise<string>;
+    /**
+     * This is a dummy endpoint you can use to test if the server is accessible.
+     *
+     * @memberof SystemApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Ping
+     */
+    systemPing(options?: any): Promise<string>;
 
-  /**
-   * This is a dummy endpoint you can use to test if the server is accessible.
-   *
-   * @memberof SystemApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Ping
-   */
-  systemPingHead(options?: any): Promise<string>;
+    /**
+     * This is a dummy endpoint you can use to test if the server is accessible.
+     *
+     * @memberof SystemApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Ping
+     */
+    systemPingHead(options?: any): Promise<string>;
 
-  /**
-   * Returns the version of Docker that is running and various information
-   * about the system that Docker is running on.
-   *
-   * @memberof SystemApiInterface
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get version
-   */
-  systemVersion(options?: any): Promise<SystemVersion>;
+    /**
+     * Returns the version of Docker that is running and various information
+     * about the system that Docker is running on.
+     *
+     * @memberof SystemApiInterface
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get version
+     */
+    systemVersion(options?: any): Promise<SystemVersion>;
 }
 
 /**
@@ -15588,44 +13770,31 @@ export interface SystemApiInterface {
  * @throws {RequiredError}
  * @summary Inspect a task fetch parameter creator
  */
-export const taskInspectFetchParamCreator = (
-  id: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling taskInspect."
+export const taskInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling taskInspect.");
+    }
+    const localvariablePath = `/tasks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/tasks/{id}`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * TaskApi taskList fetch parameter creator
@@ -15639,38 +13808,31 @@ export const taskInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List tasks fetch parameter creator
  */
-export const taskListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/tasks`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const taskListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/tasks`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * TaskApi taskLogs fetch parameter creator
@@ -15690,78 +13852,68 @@ export const taskListFetchParamCreator = (
  * @summary Get task logs fetch parameter creator
  */
 export const taskLogsFetchParamCreator = (
-  id: string,
-  details?: boolean,
-  follow?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  since?: number,
-  timestamps?: boolean,
-  tail?: string,
-  options: any = {}
+    id: string,
+    details?: boolean,
+    follow?: boolean,
+    stdout?: boolean,
+    stderr?: boolean,
+    since?: number,
+    timestamps?: boolean,
+    tail?: string,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'id' is not null or undefined
-  if (id === null || id === undefined) {
-    throw new RequiredError(
-      "id",
-      "Required parameter id was null or undefined when calling taskLogs."
+    // verify required parameter 'id' is not null or undefined
+    if (id === null || id === undefined) {
+        throw new RequiredError("id", "Required parameter id was null or undefined when calling taskLogs.");
+    }
+    const localvariablePath = `/tasks/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (details !== undefined) {
+        localvariableQueryParameter["details"] = details;
+    }
+
+    if (follow !== undefined) {
+        localvariableQueryParameter["follow"] = follow;
+    }
+
+    if (stdout !== undefined) {
+        localvariableQueryParameter["stdout"] = stdout;
+    }
+
+    if (stderr !== undefined) {
+        localvariableQueryParameter["stderr"] = stderr;
+    }
+
+    if (since !== undefined) {
+        localvariableQueryParameter["since"] = since;
+    }
+
+    if (timestamps !== undefined) {
+        localvariableQueryParameter["timestamps"] = timestamps;
+    }
+
+    if (tail !== undefined) {
+        localvariableQueryParameter["tail"] = tail;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/tasks/{id}/logs`.replace(
-    `{${"id"}}`,
-    encodeURIComponent(String(id))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (details !== undefined) {
-    localvariableQueryParameter["details"] = details;
-  }
-
-  if (follow !== undefined) {
-    localvariableQueryParameter["follow"] = follow;
-  }
-
-  if (stdout !== undefined) {
-    localvariableQueryParameter["stdout"] = stdout;
-  }
-
-  if (stderr !== undefined) {
-    localvariableQueryParameter["stderr"] = stderr;
-  }
-
-  if (since !== undefined) {
-    localvariableQueryParameter["since"] = since;
-  }
-
-  if (timestamps !== undefined) {
-    localvariableQueryParameter["timestamps"] = timestamps;
-  }
-
-  if (tail !== undefined) {
-    localvariableQueryParameter["tail"] = tail;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -15770,23 +13922,19 @@ export const taskLogsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a task
  */
-export const taskInspect = (
-  id: string,
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Task>) => {
-  const localvariableFetchArguments = taskInspectFetchParamCreator(id, options);
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Task>;
-      } else {
-        throw response;
-      }
-    });
-  };
+export const taskInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Task>) => {
+    const localvariableFetchArguments = taskInspectFetchParamCreator(id, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Task>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] A JSON encoded value of the filters (a
@@ -15799,25 +13947,21 @@ export const taskInspect = (
  * @summary List tasks
  */
 export const taskList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Task>>) => {
-  const localvariableFetchArguments = taskListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Array<Task>>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = taskListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Array<Task>>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Get `stdout` and `stderr` logs from a task. See also
@@ -15840,93 +13984,6 @@ export const taskList = (
  * @summary Get task logs
  */
 export const taskLogs = (
-  id: string,
-  details?: boolean,
-  follow?: boolean,
-  stdout?: boolean,
-  stderr?: boolean,
-  since?: number,
-  timestamps?: boolean,
-  tail?: string,
-  options?: any
-): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-  const localvariableFetchArguments = taskLogsFetchParamCreator(
-    id,
-    details,
-    follow,
-    stdout,
-    stderr,
-    since,
-    timestamps,
-    tail,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Blob>;
-      } else {
-        throw response;
-      }
-    });
-  };
-};
-
-/**
- * TaskApi - interface
- *
- * @export
- * @interface TaskApi
- */
-export interface TaskApiInterface {
-  /**
-   * @memberof TaskApiInterface
-   * @param {string} id ID of the task
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a task
-   */
-  taskInspect(id: string, options?: any): Promise<Task>;
-
-  /**
-   * @memberof TaskApiInterface
-   * @param {string} [filters] A JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the tasks list. Available filters:
-   *   - `desired-state=(running | shutdown | accepted)` - `id=<task id>` -
-   *   `label=key` or `label=&quot;key=value&quot;` - `name=<task name>` -
-   *   `node=<node id or name>` - `service=<service name>`
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List tasks
-   */
-  taskList(filters?: string, options?: any): Promise<Array<Task>>;
-
-  /**
-   * Get `stdout` and `stderr` logs from a task. See also
-   * [`/containers/{id}/logs`](#operation/ContainerLogs). **Note**: This
-   * endpoint works only for services with the `local`, `json-file` or
-   * `journald` logging drivers.
-   *
-   * @memberof TaskApiInterface
-   * @param {string} id ID of the task
-   * @param {boolean} [details] Show task context and extra details provided
-   *   to logs.
-   * @param {boolean} [follow] Keep connection after returning logs.
-   * @param {boolean} [stdout] Return logs from `stdout`
-   * @param {boolean} [stderr] Return logs from `stderr`
-   * @param {number} [since] Only return logs since this time, as a UNIX
-   *   timestamp
-   * @param {boolean} [timestamps] Add timestamps to every log line
-   * @param {string} [tail] Only return this number of log lines from the end
-   *   of the logs. Specify as an integer or `all` to output all log lines.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Get task logs
-   */
-  taskLogs(
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -15936,7 +13993,93 @@ export interface TaskApiInterface {
     timestamps?: boolean,
     tail?: string,
     options?: any
-  ): Promise<Blob>;
+): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
+    const localvariableFetchArguments = taskLogsFetchParamCreator(
+        id,
+        details,
+        follow,
+        stdout,
+        stderr,
+        since,
+        timestamps,
+        tail,
+        options
+    );
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Blob>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
+};
+
+/**
+ * TaskApi - interface
+ *
+ * @export
+ * @interface TaskApi
+ */
+export interface TaskApiInterface {
+    /**
+     * @memberof TaskApiInterface
+     * @param {string} id ID of the task
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a task
+     */
+    taskInspect(id: string, options?: any): Promise<Task>;
+
+    /**
+     * @memberof TaskApiInterface
+     * @param {string} [filters] A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the tasks list. Available filters:
+     *   - `desired-state=(running | shutdown | accepted)` - `id=<task id>` -
+     *   `label=key` or `label=&quot;key=value&quot;` - `name=<task name>` -
+     *   `node=<node id or name>` - `service=<service name>`
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List tasks
+     */
+    taskList(filters?: string, options?: any): Promise<Array<Task>>;
+
+    /**
+     * Get `stdout` and `stderr` logs from a task. See also
+     * [`/containers/{id}/logs`](#operation/ContainerLogs). **Note**: This
+     * endpoint works only for services with the `local`, `json-file` or
+     * `journald` logging drivers.
+     *
+     * @memberof TaskApiInterface
+     * @param {string} id ID of the task
+     * @param {boolean} [details] Show task context and extra details provided
+     *   to logs.
+     * @param {boolean} [follow] Keep connection after returning logs.
+     * @param {boolean} [stdout] Return logs from `stdout`
+     * @param {boolean} [stderr] Return logs from `stderr`
+     * @param {number} [since] Only return logs since this time, as a UNIX
+     *   timestamp
+     * @param {boolean} [timestamps] Add timestamps to every log line
+     * @param {string} [tail] Only return this number of log lines from the end
+     *   of the logs. Specify as an integer or `all` to output all log lines.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Get task logs
+     */
+    taskLogs(
+        id: string,
+        details?: boolean,
+        follow?: boolean,
+        stdout?: boolean,
+        stderr?: boolean,
+        since?: number,
+        timestamps?: boolean,
+        tail?: string,
+        options?: any
+    ): Promise<Blob>;
 }
 
 /**
@@ -15947,52 +14090,37 @@ export interface TaskApiInterface {
  * @throws {RequiredError}
  * @summary Create a volume fetch parameter creator
  */
-export const volumeCreateFetchParamCreator = (
-  body: VolumeCreateOptions,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'body' is not null or undefined
-  if (body === null || body === undefined) {
-    throw new RequiredError(
-      "body",
-      "Required parameter body was null or undefined when calling volumeCreate."
+export const volumeCreateFetchParamCreator = (body: VolumeCreateOptions, options: any = {}): FetchArguments => {
+    // verify required parameter 'body' is not null or undefined
+    if (body === null || body === undefined) {
+        throw new RequiredError("body", "Required parameter body was null or undefined when calling volumeCreate.");
+    }
+    const localvariablePath = `/volumes/create`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/volumes/create`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"VolumeCreateOptions" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"VolumeCreateOptions" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * VolumeApi volumeDelete fetch parameter creator
@@ -16003,52 +14131,35 @@ export const volumeCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Remove a volume fetch parameter creator
  */
-export const volumeDeleteFetchParamCreator = (
-  name: string,
-  force?: boolean,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling volumeDelete."
+export const volumeDeleteFetchParamCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling volumeDelete.");
+    }
+    const localvariablePath = `/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (force !== undefined) {
+        localvariableQueryParameter["force"] = force;
+    }
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/volumes/{name}`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "DELETE" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  if (force !== undefined) {
-    localvariableQueryParameter["force"] = force;
-  }
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * VolumeApi volumeInspect fetch parameter creator
@@ -16058,44 +14169,31 @@ export const volumeDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a volume fetch parameter creator
  */
-export const volumeInspectFetchParamCreator = (
-  name: string,
-  options: any = {}
-): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling volumeInspect."
+export const volumeInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling volumeInspect.");
+    }
+    const localvariablePath = `/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  const localvariablePath = `/volumes/{name}`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * VolumeApi volumeList fetch parameter creator
@@ -16113,38 +14211,31 @@ export const volumeInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List volumes fetch parameter creator
  */
-export const volumeListFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/volumes`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const volumeListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/volumes`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * VolumeApi volumePrune fetch parameter creator
@@ -16159,41 +14250,31 @@ export const volumeListFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete unused volumes fetch parameter creator
  */
-export const volumePruneFetchParamCreator = (
-  filters?: string,
-  options: any = {}
-): FetchArguments => {
-  const localvariablePath = `/volumes/prune`;
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign(
-    { method: "POST" },
-    options
-  );
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+export const volumePruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+    const localvariablePath = `/volumes/prune`;
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
 
-  if (filters !== undefined) {
-    localvariableQueryParameter["filters"] = filters;
-  }
+    if (filters !== undefined) {
+        localvariableQueryParameter["filters"] = filters;
+    }
 
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
+    );
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 /**
  * VolumeApi volumeUpdate fetch parameter creator
@@ -16209,64 +14290,52 @@ export const volumePruneFetchParamCreator = (
  * @summary \"Update a volume. Valid only for Swarm cluster volumes\"  fetch parameter creator
  */
 export const volumeUpdateFetchParamCreator = (
-  name: string,
-  version: number,
-  body?: VolumesNameBody,
-  options: any = {}
+    name: string,
+    version: number,
+    body?: VolumesNameBody,
+    options: any = {}
 ): FetchArguments => {
-  // verify required parameter 'name' is not null or undefined
-  if (name === null || name === undefined) {
-    throw new RequiredError(
-      "name",
-      "Required parameter name was null or undefined when calling volumeUpdate."
+    // verify required parameter 'name' is not null or undefined
+    if (name === null || name === undefined) {
+        throw new RequiredError("name", "Required parameter name was null or undefined when calling volumeUpdate.");
+    }
+    // verify required parameter 'version' is not null or undefined
+    if (version === null || version === undefined) {
+        throw new RequiredError(
+            "version",
+            "Required parameter version was null or undefined when calling volumeUpdate."
+        );
+    }
+    const localvariablePath = `/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableRequestOptions = Object.assign({ method: "PUT" }, options);
+    const localvariableHeaderParameter = {} as any;
+    const localvariableQueryParameter = {} as any;
+
+    if (version !== undefined) {
+        localvariableQueryParameter["version"] = version;
+    }
+
+    localvariableHeaderParameter["Content-Type"] = "application/json";
+
+    localvariableUrlObj.query = Object.assign(
+        {},
+        localvariableUrlObj.query,
+        localvariableQueryParameter,
+        options.query
     );
-  }
-  // verify required parameter 'version' is not null or undefined
-  if (version === null || version === undefined) {
-    throw new RequiredError(
-      "version",
-      "Required parameter version was null or undefined when calling volumeUpdate."
-    );
-  }
-  const localvariablePath = `/volumes/{name}`.replace(
-    `{${"name"}}`,
-    encodeURIComponent(String(name))
-  );
-  const localvariableUrlObj = url.parse(localvariablePath, true);
-  const localvariableRequestOptions = Object.assign({ method: "PUT" }, options);
-  const localvariableHeaderParameter = {} as any;
-  const localvariableQueryParameter = {} as any;
+    // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
+    localvariableUrlObj.search = null;
+    localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
+    const needsSerialization =
+        <any>"VolumesNameBody" !== "string" ||
+        localvariableRequestOptions.headers["Content-Type"] === "application/json";
+    localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
-  if (version !== undefined) {
-    localvariableQueryParameter["version"] = version;
-  }
-
-  localvariableHeaderParameter["Content-Type"] = "application/json";
-
-  localvariableUrlObj.query = Object.assign(
-    {},
-    localvariableUrlObj.query,
-    localvariableQueryParameter,
-    options.query
-  );
-  // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-  localvariableUrlObj.search = null;
-  localvariableRequestOptions.headers = Object.assign(
-    {},
-    localvariableHeaderParameter,
-    options.headers
-  );
-  const needsSerialization =
-    <any>"VolumesNameBody" !== "string" ||
-    localvariableRequestOptions.headers["Content-Type"] === "application/json";
-  localvariableRequestOptions.body = needsSerialization
-    ? JSON.stringify(body || {})
-    : body || "";
-
-  return {
-    url: url.format(localvariableUrlObj),
-    options: localvariableRequestOptions,
-  };
+    return {
+        url: url.format(localvariableUrlObj),
+        options: localvariableRequestOptions,
+    };
 };
 
 /**
@@ -16276,25 +14345,21 @@ export const volumeUpdateFetchParamCreator = (
  * @summary Create a volume
  */
 export const volumeCreate = (
-  body: VolumeCreateOptions,
-  options?: any
+    body: VolumeCreateOptions,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Volume>) => {
-  const localvariableFetchArguments = volumeCreateFetchParamCreator(
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Volume>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = volumeCreateFetchParamCreator(body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Volume>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * Instruct the driver to remove the volume.
@@ -16306,27 +14371,22 @@ export const volumeCreate = (
  * @summary Remove a volume
  */
 export const volumeDelete = (
-  name: string,
-  force?: boolean,
-  options?: any
+    name: string,
+    force?: boolean,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = volumeDeleteFetchParamCreator(
-    name,
-    force,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = volumeDeleteFetchParamCreator(name, force, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name Volume name or ID
@@ -16335,25 +14395,21 @@ export const volumeDelete = (
  * @summary Inspect a volume
  */
 export const volumeInspect = (
-  name: string,
-  options?: any
+    name: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Volume>) => {
-  const localvariableFetchArguments = volumeInspectFetchParamCreator(
-    name,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<Volume>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = volumeInspectFetchParamCreator(name, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<Volume>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] JSON encoded value of the filters (a
@@ -16370,25 +14426,21 @@ export const volumeInspect = (
  * @summary List volumes
  */
 export const volumeList = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<VolumeListResponse>) => {
-  const localvariableFetchArguments = volumeListFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<VolumeListResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = volumeListFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<VolumeListResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} [filters] Filters to process on the prune list, encoded as
@@ -16402,25 +14454,21 @@ export const volumeList = (
  * @summary Delete unused volumes
  */
 export const volumePrune = (
-  filters?: string,
-  options?: any
+    filters?: string,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<VolumePruneResponse>) => {
-  const localvariableFetchArguments = volumePruneFetchParamCreator(
-    filters,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response.json() as Promise<VolumePruneResponse>;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = volumePruneFetchParamCreator(filters, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response.json() as Promise<VolumePruneResponse>;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 /**
  * @param {string} name The name or ID of the volume
@@ -16434,29 +14482,23 @@ export const volumePrune = (
  * @summary \"Update a volume. Valid only for Swarm cluster volumes\"
  */
 export const volumeUpdate = (
-  name: string,
-  version: number,
-  body?: VolumesNameBody,
-  options?: any
+    name: string,
+    version: number,
+    body?: VolumesNameBody,
+    options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-  const localvariableFetchArguments = volumeUpdateFetchParamCreator(
-    name,
-    version,
-    body,
-    options
-  );
-  return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
-    return fetch(
-      basePath + localvariableFetchArguments.url,
-      localvariableFetchArguments.options
-    ).then((response) => {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      } else {
-        throw response;
-      }
-    });
-  };
+    const localvariableFetchArguments = volumeUpdateFetchParamCreator(name, version, body, options);
+    return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
+        return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
+            (response) => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                } else {
+                    throw response;
+                }
+            }
+        );
+    };
 };
 
 /**
@@ -16466,85 +14508,80 @@ export const volumeUpdate = (
  * @interface VolumeApi
  */
 export interface VolumeApiInterface {
-  /**
-   * @memberof VolumeApiInterface
-   * @param {VolumeCreateOptions} body Volume configuration
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Create a volume
-   */
-  volumeCreate(body: VolumeCreateOptions, options?: any): Promise<Volume>;
+    /**
+     * @memberof VolumeApiInterface
+     * @param {VolumeCreateOptions} body Volume configuration
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Create a volume
+     */
+    volumeCreate(body: VolumeCreateOptions, options?: any): Promise<Volume>;
 
-  /**
-   * Instruct the driver to remove the volume.
-   *
-   * @memberof VolumeApiInterface
-   * @param {string} name Volume name or ID
-   * @param {boolean} [force] Force the removal of the volume
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Remove a volume
-   */
-  volumeDelete(name: string, force?: boolean, options?: any): Promise<{}>;
+    /**
+     * Instruct the driver to remove the volume.
+     *
+     * @memberof VolumeApiInterface
+     * @param {string} name Volume name or ID
+     * @param {boolean} [force] Force the removal of the volume
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Remove a volume
+     */
+    volumeDelete(name: string, force?: boolean, options?: any): Promise<{}>;
 
-  /**
-   * @memberof VolumeApiInterface
-   * @param {string} name Volume name or ID
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Inspect a volume
-   */
-  volumeInspect(name: string, options?: any): Promise<Volume>;
+    /**
+     * @memberof VolumeApiInterface
+     * @param {string} name Volume name or ID
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Inspect a volume
+     */
+    volumeInspect(name: string, options?: any): Promise<Volume>;
 
-  /**
-   * @memberof VolumeApiInterface
-   * @param {string} [filters] JSON encoded value of the filters (a
-   *   `map[string][]string`) to process on the volumes list. Available
-   *   filters: - `dangling=<boolean>` When set to `true` (or `1`), returns
-   *   all volumes that are not in use by a container. When set to `false` (or
-   *   `0`), only volumes that are in use by one or more containers are
-   *   returned. - `driver=<volume-driver-name>` Matches volumes based on
-   *   their driver. - `label=<key>` or `label=<key>:<value>` Matches volumes
-   *   based on the presence of a `label` alone or a `label` and a value. -
-   *   `name=<volume-name>` Matches all or part of a volume name.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary List volumes
-   */
-  volumeList(filters?: string, options?: any): Promise<VolumeListResponse>;
+    /**
+     * @memberof VolumeApiInterface
+     * @param {string} [filters] JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the volumes list. Available
+     *   filters: - `dangling=<boolean>` When set to `true` (or `1`), returns
+     *   all volumes that are not in use by a container. When set to `false` (or
+     *   `0`), only volumes that are in use by one or more containers are
+     *   returned. - `driver=<volume-driver-name>` Matches volumes based on
+     *   their driver. - `label=<key>` or `label=<key>:<value>` Matches volumes
+     *   based on the presence of a `label` alone or a `label` and a value. -
+     *   `name=<volume-name>` Matches all or part of a volume name.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary List volumes
+     */
+    volumeList(filters?: string, options?: any): Promise<VolumeListResponse>;
 
-  /**
-   * @memberof VolumeApiInterface
-   * @param {string} [filters] Filters to process on the prune list, encoded
-   *   as JSON (a `map[string][]string`). Available filters: - `label`
-   *   (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
-   *   `label!=<key>=<value>`) Prune volumes with (or without, in case
-   *   `label!=...` is used) the specified labels. - `all` (`all=true`) -
-   *   Consider all (local) volumes for pruning and not just anonymous
-   *   volumes.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary Delete unused volumes
-   */
-  volumePrune(filters?: string, options?: any): Promise<VolumePruneResponse>;
+    /**
+     * @memberof VolumeApiInterface
+     * @param {string} [filters] Filters to process on the prune list, encoded
+     *   as JSON (a `map[string][]string`). Available filters: - `label`
+     *   (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
+     *   `label!=<key>=<value>`) Prune volumes with (or without, in case
+     *   `label!=...` is used) the specified labels. - `all` (`all=true`) -
+     *   Consider all (local) volumes for pruning and not just anonymous
+     *   volumes.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary Delete unused volumes
+     */
+    volumePrune(filters?: string, options?: any): Promise<VolumePruneResponse>;
 
-  /**
-   * @memberof VolumeApiInterface
-   * @param {string} name The name or ID of the volume
-   * @param {number} version The version number of the volume being updated.
-   *   This is required to avoid conflicting writes. Found in the volume's
-   *   `ClusterVolume` field.
-   * @param {VolumesNameBody} [body] The spec of the volume to update.
-   *   Currently, only Availability may change. All other fields must remain
-   *   unchanged.
-   * @param {any} [options] Override http request option.
-   * @throws {RequiredError}
-   * @summary \"Update a volume. Valid only for Swarm cluster volumes\"
-   */
-  volumeUpdate(
-    name: string,
-    version: number,
-    body?: VolumesNameBody,
-    options?: any
-  ): Promise<{}>;
+    /**
+     * @memberof VolumeApiInterface
+     * @param {string} name The name or ID of the volume
+     * @param {number} version The version number of the volume being updated.
+     *   This is required to avoid conflicting writes. Found in the volume's
+     *   `ClusterVolume` field.
+     * @param {VolumesNameBody} [body] The spec of the volume to update.
+     *   Currently, only Availability may change. All other fields must remain
+     *   unchanged.
+     * @param {any} [options] Override http request option.
+     * @throws {RequiredError}
+     * @summary \"Update a volume. Valid only for Swarm cluster volumes\"
+     */
+    volumeUpdate(name: string, version: number, body?: VolumesNameBody, options?: any): Promise<{}>;
 }

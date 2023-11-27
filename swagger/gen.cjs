@@ -20,7 +20,7 @@ module.exports.runAsync = async () => {
 
     const prettierOptions = {
         parser: "typescript",
-        ...(await prettier.resolveConfig(process.cwd(), { editorconfig: true })),
+        ...(await prettier.resolveConfig(__dirname, { editorconfig: true })),
     };
 
     const source = fs.readFileSync(`${outputDirectory}/api.ts`, "utf8");
