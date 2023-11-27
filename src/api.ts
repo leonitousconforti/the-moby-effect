@@ -44,7 +44,7 @@
 
 import * as url from "node:url";
 
-const BASE_PATH = "/v1.44".replace(/\/+$/, "");
+const BASE_PATH = "/v1.44";
 
 const COLLECTION_FORMATS = {
     csv: ",",
@@ -3913,23 +3913,23 @@ export interface VolumesNameBody {
  * @throws {RequiredError}
  * @summary Create a config fetch parameter creator
  */
-export const configCreateFetchParamCreator = (body?: ConfigsCreateBody, options: any = {}): FetchArguments => {
+export const configCreateFetchParameterCreator = (body?: ConfigsCreateBody, options: any = {}): FetchArguments => {
     const localvariablePath = `/configs/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ConfigsCreateBody" !== "string" ||
@@ -3937,7 +3937,7 @@ export const configCreateFetchParamCreator = (body?: ConfigsCreateBody, options:
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -3949,29 +3949,29 @@ export const configCreateFetchParamCreator = (body?: ConfigsCreateBody, options:
  * @throws {RequiredError}
  * @summary Delete a config fetch parameter creator
  */
-export const configDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const configDeleteFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling configDelete.");
     }
     const localvariablePath = `/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -3983,29 +3983,29 @@ export const configDeleteFetchParamCreator = (id: string, options: any = {}): Fe
  * @throws {RequiredError}
  * @summary Inspect a config fetch parameter creator
  */
-export const configInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const configInspectFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling configInspect.");
     }
     const localvariablePath = `/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4020,9 +4020,9 @@ export const configInspectFetchParamCreator = (id: string, options: any = {}): F
  * @throws {RequiredError}
  * @summary List configs fetch parameter creator
  */
-export const configListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const configListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/configs`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4031,18 +4031,18 @@ export const configListFetchParamCreator = (filters?: string, options: any = {})
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4060,7 +4060,7 @@ export const configListFetchParamCreator = (filters?: string, options: any = {})
  * @throws {RequiredError}
  * @summary Update a Config fetch parameter creator
  */
-export const configUpdateFetchParamCreator = (
+export const configUpdateFetchParameterCreator = (
     id: string,
     version: number,
     body?: ConfigSpec,
@@ -4078,7 +4078,7 @@ export const configUpdateFetchParamCreator = (
         );
     }
     const localvariablePath = `/configs/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4089,21 +4089,21 @@ export const configUpdateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ConfigSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4118,7 +4118,7 @@ export const configCreate = (
     body?: ConfigsCreateBody,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-    const localvariableFetchArguments = configCreateFetchParamCreator(body, options);
+    const localvariableFetchArguments = configCreateFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -4141,7 +4141,7 @@ export const configDelete = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = configDeleteFetchParamCreator(id, options);
+    const localvariableFetchArguments = configDeleteFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -4161,7 +4161,7 @@ export const configDelete = (
  * @summary Inspect a config
  */
 export const configInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Config>) => {
-    const localvariableFetchArguments = configInspectFetchParamCreator(id, options);
+    const localvariableFetchArguments = configInspectFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -4187,7 +4187,7 @@ export const configList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Config>>) => {
-    const localvariableFetchArguments = configListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = configListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -4218,7 +4218,7 @@ export const configUpdate = (
     body?: ConfigSpec,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = configUpdateFetchParamCreator(id, version, body, options);
+    const localvariableFetchArguments = configUpdateFetchParameterCreator(id, version, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -4255,7 +4255,7 @@ export interface ConfigApiInterface {
      * @throws {RequiredError}
      * @summary Delete a config
      */
-    configDelete(id: string, options?: any): Promise<{}>;
+    configDelete(id: string, options?: any): Promise<void>;
 
     /**
      * @memberof ConfigApiInterface
@@ -4291,7 +4291,7 @@ export interface ConfigApiInterface {
      * @throws {RequiredError}
      * @summary Update a Config
      */
-    configUpdate(id: string, version: number, body?: ConfigSpec, options?: any): Promise<{}>;
+    configUpdate(id: string, version: number, body?: ConfigSpec, options?: any): Promise<void>;
 }
 
 /**
@@ -4303,7 +4303,7 @@ export interface ConfigApiInterface {
  * @throws {RequiredError}
  * @summary Get an archive of a filesystem resource in a container fetch parameter creator
  */
-export const containerArchiveFetchParamCreator = (id: string, path: string, options: any = {}): FetchArguments => {
+export const containerArchiveFetchParameterCreator = (id: string, path: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerArchive.");
@@ -4313,7 +4313,7 @@ export const containerArchiveFetchParamCreator = (id: string, path: string, opti
         throw new RequiredError("path", "Required parameter path was null or undefined when calling containerArchive.");
     }
     const localvariablePath = `/containers/{id}/archive`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4322,18 +4322,18 @@ export const containerArchiveFetchParamCreator = (id: string, path: string, opti
         localvariableQueryParameter["path"] = path;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4346,7 +4346,11 @@ export const containerArchiveFetchParamCreator = (id: string, path: string, opti
  * @throws {RequiredError}
  * @summary Get information about files in a container fetch parameter creator
  */
-export const containerArchiveInfoFetchParamCreator = (id: string, path: string, options: any = {}): FetchArguments => {
+export const containerArchiveInfoFetchParameterCreator = (
+    id: string,
+    path: string,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerArchiveInfo.");
@@ -4359,7 +4363,7 @@ export const containerArchiveInfoFetchParamCreator = (id: string, path: string, 
         );
     }
     const localvariablePath = `/containers/{id}/archive`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "HEAD" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4368,18 +4372,18 @@ export const containerArchiveInfoFetchParamCreator = (id: string, path: string, 
         localvariableQueryParameter["path"] = path;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4404,7 +4408,7 @@ export const containerArchiveInfoFetchParamCreator = (id: string, path: string, 
  * @throws {RequiredError}
  * @summary Attach to a container fetch parameter creator
  */
-export const containerAttachFetchParamCreator = (
+export const containerAttachFetchParameterCreator = (
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4419,7 +4423,7 @@ export const containerAttachFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerAttach.");
     }
     const localvariablePath = `/containers/{id}/attach`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4448,18 +4452,18 @@ export const containerAttachFetchParamCreator = (
         localvariableQueryParameter["stderr"] = stderr;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4479,7 +4483,7 @@ export const containerAttachFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Attach to a container via a websocket fetch parameter creator
  */
-export const containerAttachWebsocketFetchParamCreator = (
+export const containerAttachWebsocketFetchParameterCreator = (
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4497,7 +4501,7 @@ export const containerAttachWebsocketFetchParamCreator = (
         );
     }
     const localvariablePath = `/containers/{id}/attach/ws`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4526,18 +4530,18 @@ export const containerAttachWebsocketFetchParamCreator = (
         localvariableQueryParameter["stderr"] = stderr;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4549,29 +4553,29 @@ export const containerAttachWebsocketFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get changes on a container’s filesystem fetch parameter creator
  */
-export const containerChangesFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const containerChangesFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerChanges.");
     }
     const localvariablePath = `/containers/{id}/changes`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4596,7 +4600,7 @@ export const containerChangesFetchParamCreator = (id: string, options: any = {})
  * @throws {RequiredError}
  * @summary Create a container fetch parameter creator
  */
-export const containerCreateFetchParamCreator = (
+export const containerCreateFetchParameterCreator = (
     body: ContainersCreateBody,
     name?: string,
     platform?: string,
@@ -4607,7 +4611,7 @@ export const containerCreateFetchParamCreator = (
         throw new RequiredError("body", "Required parameter body was null or undefined when calling containerCreate.");
     }
     const localvariablePath = `/containers/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4622,14 +4626,14 @@ export const containerCreateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ContainersCreateBody1" !== "string" ||
@@ -4637,7 +4641,7 @@ export const containerCreateFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4654,7 +4658,7 @@ export const containerCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Remove a container fetch parameter creator
  */
-export const containerDeleteFetchParamCreator = (
+export const containerDeleteFetchParameterCreator = (
     id: string,
     v?: boolean,
     force?: boolean,
@@ -4666,7 +4670,7 @@ export const containerDeleteFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerDelete.");
     }
     const localvariablePath = `/containers/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4683,18 +4687,18 @@ export const containerDeleteFetchParamCreator = (
         localvariableQueryParameter["link"] = link;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4706,29 +4710,29 @@ export const containerDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Export a container fetch parameter creator
  */
-export const containerExportFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const containerExportFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerExport.");
     }
     const localvariablePath = `/containers/{id}/export`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4742,13 +4746,17 @@ export const containerExportFetchParamCreator = (id: string, options: any = {}):
  * @throws {RequiredError}
  * @summary Inspect a container fetch parameter creator
  */
-export const containerInspectFetchParamCreator = (id: string, size?: boolean, options: any = {}): FetchArguments => {
+export const containerInspectFetchParameterCreator = (
+    id: string,
+    size?: boolean,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerInspect.");
     }
     const localvariablePath = `/containers/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4757,18 +4765,18 @@ export const containerInspectFetchParamCreator = (id: string, size?: boolean, op
         localvariableQueryParameter["size"] = size;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4782,13 +4790,13 @@ export const containerInspectFetchParamCreator = (id: string, size?: boolean, op
  * @throws {RequiredError}
  * @summary Kill a container fetch parameter creator
  */
-export const containerKillFetchParamCreator = (id: string, signal?: string, options: any = {}): FetchArguments => {
+export const containerKillFetchParameterCreator = (id: string, signal?: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerKill.");
     }
     const localvariablePath = `/containers/{id}/kill`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4797,18 +4805,18 @@ export const containerKillFetchParamCreator = (id: string, signal?: string, opti
         localvariableQueryParameter["signal"] = signal;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4841,7 +4849,7 @@ export const containerKillFetchParamCreator = (id: string, signal?: string, opti
  * @throws {RequiredError}
  * @summary List containers fetch parameter creator
  */
-export const containerListFetchParamCreator = (
+export const containerListFetchParameterCreator = (
     all?: boolean,
     limit?: number,
     size?: boolean,
@@ -4849,7 +4857,7 @@ export const containerListFetchParamCreator = (
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/containers/json`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4870,18 +4878,18 @@ export const containerListFetchParamCreator = (
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4902,7 +4910,7 @@ export const containerListFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get container logs fetch parameter creator
  */
-export const containerLogsFetchParamCreator = (
+export const containerLogsFetchParameterCreator = (
     id: string,
     follow?: boolean,
     stdout?: boolean,
@@ -4918,7 +4926,7 @@ export const containerLogsFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerLogs.");
     }
     const localvariablePath = `/containers/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -4951,18 +4959,18 @@ export const containerLogsFetchParamCreator = (
         localvariableQueryParameter["tail"] = tail;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -4974,29 +4982,29 @@ export const containerLogsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Pause a container fetch parameter creator
  */
-export const containerPauseFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const containerPauseFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerPause.");
     }
     const localvariablePath = `/containers/{id}/pause`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5015,9 +5023,9 @@ export const containerPauseFetchParamCreator = (id: string, options: any = {}): 
  * @throws {RequiredError}
  * @summary Delete stopped containers fetch parameter creator
  */
-export const containerPruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const containerPruneFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/containers/prune`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5026,18 +5034,18 @@ export const containerPruneFetchParamCreator = (filters?: string, options: any =
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5050,7 +5058,7 @@ export const containerPruneFetchParamCreator = (filters?: string, options: any =
  * @throws {RequiredError}
  * @summary Rename a container fetch parameter creator
  */
-export const containerRenameFetchParamCreator = (id: string, name: string, options: any = {}): FetchArguments => {
+export const containerRenameFetchParameterCreator = (id: string, name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerRename.");
@@ -5060,7 +5068,7 @@ export const containerRenameFetchParamCreator = (id: string, name: string, optio
         throw new RequiredError("name", "Required parameter name was null or undefined when calling containerRename.");
     }
     const localvariablePath = `/containers/{id}/rename`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5069,18 +5077,18 @@ export const containerRenameFetchParamCreator = (id: string, name: string, optio
         localvariableQueryParameter["name"] = name;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5094,7 +5102,7 @@ export const containerRenameFetchParamCreator = (id: string, name: string, optio
  * @throws {RequiredError}
  * @summary Resize a container TTY fetch parameter creator
  */
-export const containerResizeFetchParamCreator = (
+export const containerResizeFetchParameterCreator = (
     id: string,
     h?: number,
     w?: number,
@@ -5105,7 +5113,7 @@ export const containerResizeFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerResize.");
     }
     const localvariablePath = `/containers/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5118,18 +5126,18 @@ export const containerResizeFetchParamCreator = (
         localvariableQueryParameter["w"] = w;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5144,7 +5152,7 @@ export const containerResizeFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Restart a container fetch parameter creator
  */
-export const containerRestartFetchParamCreator = (
+export const containerRestartFetchParameterCreator = (
     id: string,
     signal?: string,
     t?: number,
@@ -5155,7 +5163,7 @@ export const containerRestartFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerRestart.");
     }
     const localvariablePath = `/containers/{id}/restart`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5168,18 +5176,18 @@ export const containerRestartFetchParamCreator = (
         localvariableQueryParameter["t"] = t;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5194,13 +5202,17 @@ export const containerRestartFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Start a container fetch parameter creator
  */
-export const containerStartFetchParamCreator = (id: string, detachKeys?: string, options: any = {}): FetchArguments => {
+export const containerStartFetchParameterCreator = (
+    id: string,
+    detachKeys?: string,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerStart.");
     }
     const localvariablePath = `/containers/{id}/start`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5209,18 +5221,18 @@ export const containerStartFetchParamCreator = (id: string, detachKeys?: string,
         localvariableQueryParameter["detachKeys"] = detachKeys;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5236,7 +5248,7 @@ export const containerStartFetchParamCreator = (id: string, detachKeys?: string,
  * @throws {RequiredError}
  * @summary Get container stats based on resource usage fetch parameter creator
  */
-export const containerStatsFetchParamCreator = (
+export const containerStatsFetchParameterCreator = (
     id: string,
     stream?: boolean,
     oneShot?: boolean,
@@ -5247,7 +5259,7 @@ export const containerStatsFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerStats.");
     }
     const localvariablePath = `/containers/{id}/stats`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5260,18 +5272,18 @@ export const containerStatsFetchParamCreator = (
         localvariableQueryParameter["one-shot"] = oneShot;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5286,7 +5298,7 @@ export const containerStatsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Stop a container fetch parameter creator
  */
-export const containerStopFetchParamCreator = (
+export const containerStopFetchParameterCreator = (
     id: string,
     signal?: string,
     t?: number,
@@ -5297,7 +5309,7 @@ export const containerStopFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerStop.");
     }
     const localvariablePath = `/containers/{id}/stop`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5310,18 +5322,18 @@ export const containerStopFetchParamCreator = (
         localvariableQueryParameter["t"] = t;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5334,13 +5346,13 @@ export const containerStopFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List processes running inside a container fetch parameter creator
  */
-export const containerTopFetchParamCreator = (id: string, psArgs?: string, options: any = {}): FetchArguments => {
+export const containerTopFetchParameterCreator = (id: string, psArgs?: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerTop.");
     }
     const localvariablePath = `/containers/{id}/top`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5349,18 +5361,18 @@ export const containerTopFetchParamCreator = (id: string, psArgs?: string, optio
         localvariableQueryParameter["ps_args"] = psArgs;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5372,29 +5384,29 @@ export const containerTopFetchParamCreator = (id: string, psArgs?: string, optio
  * @throws {RequiredError}
  * @summary Unpause a container fetch parameter creator
  */
-export const containerUnpauseFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const containerUnpauseFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerUnpause.");
     }
     const localvariablePath = `/containers/{id}/unpause`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5407,7 +5419,11 @@ export const containerUnpauseFetchParamCreator = (id: string, options: any = {})
  * @throws {RequiredError}
  * @summary Update a container fetch parameter creator
  */
-export const containerUpdateFetchParamCreator = (body: IdUpdateBody, id: string, options: any = {}): FetchArguments => {
+export const containerUpdateFetchParameterCreator = (
+    body: IdUpdateBody,
+    id: string,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling containerUpdate.");
@@ -5417,28 +5433,28 @@ export const containerUpdateFetchParamCreator = (body: IdUpdateBody, id: string,
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerUpdate.");
     }
     const localvariablePath = `/containers/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"IdUpdateBody" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5452,13 +5468,17 @@ export const containerUpdateFetchParamCreator = (body: IdUpdateBody, id: string,
  * @throws {RequiredError}
  * @summary Wait for a container fetch parameter creator
  */
-export const containerWaitFetchParamCreator = (id: string, condition?: string, options: any = {}): FetchArguments => {
+export const containerWaitFetchParameterCreator = (
+    id: string,
+    condition?: string,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerWait.");
     }
     const localvariablePath = `/containers/{id}/wait`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5467,18 +5487,18 @@ export const containerWaitFetchParamCreator = (id: string, condition?: string, o
         localvariableQueryParameter["condition"] = condition;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5500,7 +5520,7 @@ export const containerWaitFetchParamCreator = (id: string, condition?: string, o
  * @throws {RequiredError}
  * @summary Extract an archive of files or folders to a directory in a container fetch parameter creator
  */
-export const putContainerArchiveFetchParamCreator = (
+export const putContainerArchiveFetchParameterCreator = (
     body: Object,
     id: string,
     path: string,
@@ -5527,7 +5547,7 @@ export const putContainerArchiveFetchParamCreator = (
         );
     }
     const localvariablePath = `/containers/{id}/archive`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "PUT" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -5546,21 +5566,21 @@ export const putContainerArchiveFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/x-tar";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -5579,7 +5599,7 @@ export const containerArchive = (
     path: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerArchiveFetchParamCreator(id, path, options);
+    const localvariableFetchArguments = containerArchiveFetchParameterCreator(id, path, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5608,7 +5628,7 @@ export const containerArchiveInfo = (
     path: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerArchiveInfoFetchParamCreator(id, path, options);
+    const localvariableFetchArguments = containerArchiveInfoFetchParameterCreator(id, path, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5690,7 +5710,7 @@ export const containerAttach = (
     stderr?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerAttachFetchParamCreator(
+    const localvariableFetchArguments = containerAttachFetchParameterCreator(
         id,
         detachKeys,
         logs,
@@ -5736,7 +5756,7 @@ export const containerAttachWebsocket = (
     stderr?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerAttachWebsocketFetchParamCreator(
+    const localvariableFetchArguments = containerAttachWebsocketFetchParameterCreator(
         id,
         detachKeys,
         logs,
@@ -5772,7 +5792,7 @@ export const containerChanges = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<FilesystemChange>>) => {
-    const localvariableFetchArguments = containerChangesFetchParamCreator(id, options);
+    const localvariableFetchArguments = containerChangesFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5810,7 +5830,7 @@ export const containerCreate = (
     platform?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerCreateResponse>) => {
-    const localvariableFetchArguments = containerCreateFetchParamCreator(body, name, platform, options);
+    const localvariableFetchArguments = containerCreateFetchParameterCreator(body, name, platform, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5841,7 +5861,7 @@ export const containerDelete = (
     link?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerDeleteFetchParamCreator(id, v, force, link, options);
+    const localvariableFetchArguments = containerDeleteFetchParameterCreator(id, v, force, link, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5866,7 +5886,7 @@ export const containerExport = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerExportFetchParamCreator(id, options);
+    const localvariableFetchArguments = containerExportFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5894,7 +5914,7 @@ export const containerInspect = (
     size?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerInspectResponse>) => {
-    const localvariableFetchArguments = containerInspectFetchParamCreator(id, size, options);
+    const localvariableFetchArguments = containerInspectFetchParameterCreator(id, size, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5922,7 +5942,7 @@ export const containerKill = (
     signal?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerKillFetchParamCreator(id, signal, options);
+    const localvariableFetchArguments = containerKillFetchParameterCreator(id, signal, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -5974,7 +5994,7 @@ export const containerList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ContainerSummary>>) => {
-    const localvariableFetchArguments = containerListFetchParamCreator(all, limit, size, filters, options);
+    const localvariableFetchArguments = containerListFetchParameterCreator(all, limit, size, filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6016,7 +6036,7 @@ export const containerLogs = (
     tail?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-    const localvariableFetchArguments = containerLogsFetchParamCreator(
+    const localvariableFetchArguments = containerLogsFetchParameterCreator(
         id,
         follow,
         stdout,
@@ -6055,7 +6075,7 @@ export const containerPause = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerPauseFetchParamCreator(id, options);
+    const localvariableFetchArguments = containerPauseFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6085,7 +6105,7 @@ export const containerPrune = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerPruneResponse>) => {
-    const localvariableFetchArguments = containerPruneFetchParamCreator(filters, options);
+    const localvariableFetchArguments = containerPruneFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6110,7 +6130,7 @@ export const containerRename = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerRenameFetchParamCreator(id, name, options);
+    const localvariableFetchArguments = containerRenameFetchParameterCreator(id, name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6139,7 +6159,7 @@ export const containerResize = (
     w?: number,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerResizeFetchParamCreator(id, h, w, options);
+    const localvariableFetchArguments = containerResizeFetchParameterCreator(id, h, w, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6167,7 +6187,7 @@ export const containerRestart = (
     t?: number,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerRestartFetchParamCreator(id, signal, t, options);
+    const localvariableFetchArguments = containerRestartFetchParameterCreator(id, signal, t, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6194,7 +6214,7 @@ export const containerStart = (
     detachKeys?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerStartFetchParamCreator(id, detachKeys, options);
+    const localvariableFetchArguments = containerStartFetchParameterCreator(id, detachKeys, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6243,7 +6263,7 @@ export const containerStats = (
     oneShot?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<any>) => {
-    const localvariableFetchArguments = containerStatsFetchParamCreator(id, stream, oneShot, options);
+    const localvariableFetchArguments = containerStatsFetchParameterCreator(id, stream, oneShot, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6271,7 +6291,7 @@ export const containerStop = (
     t?: number,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerStopFetchParamCreator(id, signal, t, options);
+    const localvariableFetchArguments = containerStopFetchParameterCreator(id, signal, t, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6299,7 +6319,7 @@ export const containerTop = (
     psArgs?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerTopResponse>) => {
-    const localvariableFetchArguments = containerTopFetchParamCreator(id, psArgs, options);
+    const localvariableFetchArguments = containerTopFetchParameterCreator(id, psArgs, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6324,7 +6344,7 @@ export const containerUnpause = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = containerUnpauseFetchParamCreator(id, options);
+    const localvariableFetchArguments = containerUnpauseFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6352,7 +6372,7 @@ export const containerUpdate = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerUpdateResponse>) => {
-    const localvariableFetchArguments = containerUpdateFetchParamCreator(body, id, options);
+    const localvariableFetchArguments = containerUpdateFetchParameterCreator(body, id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6380,7 +6400,7 @@ export const containerWait = (
     condition?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ContainerWaitResponse>) => {
-    const localvariableFetchArguments = containerWaitFetchParamCreator(id, condition, options);
+    const localvariableFetchArguments = containerWaitFetchParameterCreator(id, condition, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -6421,7 +6441,7 @@ export const putContainerArchive = (
     copyUIDGID?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = putContainerArchiveFetchParamCreator(
+    const localvariableFetchArguments = putContainerArchiveFetchParameterCreator(
         body,
         id,
         path,
@@ -6459,7 +6479,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Get an archive of a filesystem resource in a container
      */
-    containerArchive(id: string, path: string, options?: any): Promise<{}>;
+    containerArchive(id: string, path: string, options?: any): Promise<void>;
 
     /**
      * A response header `X-Docker-Container-Path-Stat` is returned, containing
@@ -6473,7 +6493,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Get information about files in a container
      */
-    containerArchiveInfo(id: string, path: string, options?: any): Promise<{}>;
+    containerArchiveInfo(id: string, path: string, options?: any): Promise<void>;
 
     /**
      * Attach to a container to read its output or send it input. You can attach
@@ -6546,7 +6566,7 @@ export interface ContainerApiInterface {
         stdout?: boolean,
         stderr?: boolean,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 
     /**
      * @memberof ContainerApiInterface
@@ -6572,7 +6592,7 @@ export interface ContainerApiInterface {
         stdout?: boolean,
         stderr?: boolean,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 
     /**
      * Returns which files in a container's filesystem have been added, deleted,
@@ -6628,7 +6648,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Remove a container
      */
-    containerDelete(id: string, v?: boolean, force?: boolean, link?: boolean, options?: any): Promise<{}>;
+    containerDelete(id: string, v?: boolean, force?: boolean, link?: boolean, options?: any): Promise<void>;
 
     /**
      * Export the contents of a container as a tarball.
@@ -6639,7 +6659,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Export a container
      */
-    containerExport(id: string, options?: any): Promise<{}>;
+    containerExport(id: string, options?: any): Promise<void>;
 
     /**
      * Return low-level information about a container.
@@ -6666,7 +6686,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Kill a container
      */
-    containerKill(id: string, signal?: string, options?: any): Promise<{}>;
+    containerKill(id: string, signal?: string, options?: any): Promise<void>;
 
     /**
      * Returns a list of containers. For details on the format, see the [inspect
@@ -6756,7 +6776,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Pause a container
      */
-    containerPause(id: string, options?: any): Promise<{}>;
+    containerPause(id: string, options?: any): Promise<void>;
 
     /**
      * @memberof ContainerApiInterface
@@ -6782,7 +6802,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Rename a container
      */
-    containerRename(id: string, name: string, options?: any): Promise<{}>;
+    containerRename(id: string, name: string, options?: any): Promise<void>;
 
     /**
      * Resize the TTY for a container.
@@ -6795,7 +6815,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Resize a container TTY
      */
-    containerResize(id: string, h?: number, w?: number, options?: any): Promise<{}>;
+    containerResize(id: string, h?: number, w?: number, options?: any): Promise<void>;
 
     /**
      * @memberof ContainerApiInterface
@@ -6808,7 +6828,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Restart a container
      */
-    containerRestart(id: string, signal?: string, t?: number, options?: any): Promise<{}>;
+    containerRestart(id: string, signal?: string, t?: number, options?: any): Promise<void>;
 
     /**
      * @memberof ContainerApiInterface
@@ -6820,7 +6840,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Start a container
      */
-    containerStart(id: string, detachKeys?: string, options?: any): Promise<{}>;
+    containerStart(id: string, detachKeys?: string, options?: any): Promise<void>;
 
     /**
      * This endpoint returns a live stream of a container’s resource usage
@@ -6867,7 +6887,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Stop a container
      */
-    containerStop(id: string, signal?: string, t?: number, options?: any): Promise<{}>;
+    containerStop(id: string, signal?: string, t?: number, options?: any): Promise<void>;
 
     /**
      * On Unix systems, this is done by running the `ps` command. This endpoint
@@ -6892,7 +6912,7 @@ export interface ContainerApiInterface {
      * @throws {RequiredError}
      * @summary Unpause a container
      */
-    containerUnpause(id: string, options?: any): Promise<{}>;
+    containerUnpause(id: string, options?: any): Promise<void>;
 
     /**
      * Change various configuration options of a container without having to
@@ -6949,7 +6969,7 @@ export interface ContainerApiInterface {
         noOverwriteDirNonDir?: string,
         copyUIDGID?: string,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 }
 
 /**
@@ -6960,7 +6980,7 @@ export interface ContainerApiInterface {
  * @throws {RequiredError}
  * @summary Get image information from the registry fetch parameter creator
  */
-export const distributionInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const distributionInspectFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError(
@@ -6969,23 +6989,23 @@ export const distributionInspectFetchParamCreator = (name: string, options: any 
         );
     }
     const localvariablePath = `/distribution/{name}/json`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7002,7 +7022,7 @@ export const distributionInspect = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<DistributionInspect>) => {
-    const localvariableFetchArguments = distributionInspectFetchParamCreator(name, options);
+    const localvariableFetchArguments = distributionInspectFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -7044,7 +7064,7 @@ export interface DistributionApiInterface {
  * @throws {RequiredError}
  * @summary Create an exec instance fetch parameter creator
  */
-export const containerExecFetchParamCreator = (body: ExecConfig, id: string, options: any = {}): FetchArguments => {
+export const containerExecFetchParameterCreator = (body: ExecConfig, id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling containerExec.");
@@ -7054,28 +7074,28 @@ export const containerExecFetchParamCreator = (body: ExecConfig, id: string, opt
         throw new RequiredError("id", "Required parameter id was null or undefined when calling containerExec.");
     }
     const localvariablePath = `/containers/{id}/exec`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ExecConfig" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7087,29 +7107,29 @@ export const containerExecFetchParamCreator = (body: ExecConfig, id: string, opt
  * @throws {RequiredError}
  * @summary Inspect an exec instance fetch parameter creator
  */
-export const execInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const execInspectFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling execInspect.");
     }
     const localvariablePath = `/exec/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7123,13 +7143,18 @@ export const execInspectFetchParamCreator = (id: string, options: any = {}): Fet
  * @throws {RequiredError}
  * @summary Resize an exec instance fetch parameter creator
  */
-export const execResizeFetchParamCreator = (id: string, h?: number, w?: number, options: any = {}): FetchArguments => {
+export const execResizeFetchParameterCreator = (
+    id: string,
+    h?: number,
+    w?: number,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling execResize.");
     }
     const localvariablePath = `/exec/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7142,18 +7167,18 @@ export const execResizeFetchParamCreator = (id: string, h?: number, w?: number, 
         localvariableQueryParameter["w"] = w;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7166,27 +7191,31 @@ export const execResizeFetchParamCreator = (id: string, h?: number, w?: number, 
  * @throws {RequiredError}
  * @summary Start an exec instance fetch parameter creator
  */
-export const execStartFetchParamCreator = (id: string, body?: ExecStartConfig, options: any = {}): FetchArguments => {
+export const execStartFetchParameterCreator = (
+    id: string,
+    body?: ExecStartConfig,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling execStart.");
     }
     const localvariablePath = `/exec/{id}/start`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ExecStartConfig" !== "string" ||
@@ -7194,7 +7223,7 @@ export const execStartFetchParamCreator = (id: string, body?: ExecStartConfig, o
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7213,7 +7242,7 @@ export const containerExec = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-    const localvariableFetchArguments = containerExecFetchParamCreator(body, id, options);
+    const localvariableFetchArguments = containerExecFetchParameterCreator(body, id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -7238,7 +7267,7 @@ export const execInspect = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ExecInspectResponse>) => {
-    const localvariableFetchArguments = execInspectFetchParamCreator(id, options);
+    const localvariableFetchArguments = execInspectFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -7268,7 +7297,7 @@ export const execResize = (
     w?: number,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = execResizeFetchParamCreator(id, h, w, options);
+    const localvariableFetchArguments = execResizeFetchParameterCreator(id, h, w, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -7297,7 +7326,7 @@ export const execStart = (
     body?: ExecStartConfig,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = execStartFetchParamCreator(id, body, options);
+    const localvariableFetchArguments = execStartFetchParameterCreator(id, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -7354,7 +7383,7 @@ export interface ExecApiInterface {
      * @throws {RequiredError}
      * @summary Resize an exec instance
      */
-    execResize(id: string, h?: number, w?: number, options?: any): Promise<{}>;
+    execResize(id: string, h?: number, w?: number, options?: any): Promise<void>;
 
     /**
      * Starts a previously set up exec instance. If detach is true, this
@@ -7368,7 +7397,7 @@ export interface ExecApiInterface {
      * @throws {RequiredError}
      * @summary Start an exec instance
      */
-    execStart(id: string, body?: ExecStartConfig, options?: any): Promise<{}>;
+    execStart(id: string, body?: ExecStartConfig, options?: any): Promise<void>;
 }
 
 /**
@@ -7387,14 +7416,14 @@ export interface ExecApiInterface {
  * @throws {RequiredError}
  * @summary Delete builder cache fetch parameter creator
  */
-export const buildPruneFetchParamCreator = (
+export const buildPruneFetchParameterCreator = (
     keepStorage?: number,
     all?: boolean,
     filters?: string,
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/build/prune`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7411,18 +7440,18 @@ export const buildPruneFetchParamCreator = (
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7505,7 +7534,7 @@ export const buildPruneFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Build an image fetch parameter creator
  */
-export const imageBuildFetchParamCreator = (
+export const imageBuildFetchParameterCreator = (
     body?: Object,
     dockerfile?: string,
     t?: string,
@@ -7536,7 +7565,7 @@ export const imageBuildFetchParamCreator = (
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/build`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7647,21 +7676,21 @@ export const imageBuildFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/octet-stream";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7681,7 +7710,7 @@ export const imageBuildFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Create a new image from a container fetch parameter creator
  */
-export const imageCommitFetchParamCreator = (
+export const imageCommitFetchParameterCreator = (
     body?: ContainerConfig,
     container?: string,
     repo?: string,
@@ -7693,7 +7722,7 @@ export const imageCommitFetchParamCreator = (
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/commit`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7728,14 +7757,14 @@ export const imageCommitFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ContainerConfig" !== "string" ||
@@ -7743,7 +7772,7 @@ export const imageCommitFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7787,7 +7816,7 @@ export const imageCommitFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Create an image fetch parameter creator
  */
-export const imageCreateFetchParamCreator = (
+export const imageCreateFetchParameterCreator = (
     body?: string,
     fromImage?: string,
     fromSrc?: string,
@@ -7800,7 +7829,7 @@ export const imageCreateFetchParamCreator = (
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/images/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7839,21 +7868,21 @@ export const imageCreateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "text/plain";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"string" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7868,7 +7897,7 @@ export const imageCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Remove an image fetch parameter creator
  */
-export const imageDeleteFetchParamCreator = (
+export const imageDeleteFetchParameterCreator = (
     name: string,
     force?: boolean,
     noprune?: boolean,
@@ -7879,7 +7908,7 @@ export const imageDeleteFetchParamCreator = (
         throw new RequiredError("name", "Required parameter name was null or undefined when calling imageDelete.");
     }
     const localvariablePath = `/images/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7892,18 +7921,18 @@ export const imageDeleteFetchParamCreator = (
         localvariableQueryParameter["noprune"] = noprune;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7915,29 +7944,29 @@ export const imageDeleteFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Export an image fetch parameter creator
  */
-export const imageGetFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const imageGetFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling imageGet.");
     }
     const localvariablePath = `/images/{name}/get`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7949,9 +7978,9 @@ export const imageGetFetchParamCreator = (name: string, options: any = {}): Fetc
  * @throws {RequiredError}
  * @summary Export several images fetch parameter creator
  */
-export const imageGetAllFetchParamCreator = (names?: Array<string>, options: any = {}): FetchArguments => {
+export const imageGetAllFetchParameterCreator = (names?: Array<string>, options: any = {}): FetchArguments => {
     const localvariablePath = `/images/get`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -7960,18 +7989,18 @@ export const imageGetAllFetchParamCreator = (names?: Array<string>, options: any
         localvariableQueryParameter["names"] = names.join(COLLECTION_FORMATS["csv"]);
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -7983,29 +8012,29 @@ export const imageGetAllFetchParamCreator = (names?: Array<string>, options: any
  * @throws {RequiredError}
  * @summary Get the history of an image fetch parameter creator
  */
-export const imageHistoryFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const imageHistoryFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling imageHistory.");
     }
     const localvariablePath = `/images/{name}/history`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8017,29 +8046,29 @@ export const imageHistoryFetchParamCreator = (name: string, options: any = {}): 
  * @throws {RequiredError}
  * @summary Inspect an image fetch parameter creator
  */
-export const imageInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const imageInspectFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling imageInspect.");
     }
     const localvariablePath = `/images/{name}/json`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8063,7 +8092,7 @@ export const imageInspectFetchParamCreator = (name: string, options: any = {}): 
  * @throws {RequiredError}
  * @summary List Images fetch parameter creator
  */
-export const imageListFetchParamCreator = (
+export const imageListFetchParameterCreator = (
     all?: boolean,
     filters?: string,
     sharedSize?: boolean,
@@ -8071,7 +8100,7 @@ export const imageListFetchParamCreator = (
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/images/json`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -8092,18 +8121,18 @@ export const imageListFetchParamCreator = (
         localvariableQueryParameter["digests"] = digests;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8116,9 +8145,9 @@ export const imageListFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Import images fetch parameter creator
  */
-export const imageLoadFetchParamCreator = (body?: Object, quiet?: boolean, options: any = {}): FetchArguments => {
+export const imageLoadFetchParameterCreator = (body?: Object, quiet?: boolean, options: any = {}): FetchArguments => {
     const localvariablePath = `/images/load`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -8129,21 +8158,21 @@ export const imageLoadFetchParamCreator = (body?: Object, quiet?: boolean, optio
 
     localvariableHeaderParameter["Content-Type"] = "application/x-tar";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8164,9 +8193,9 @@ export const imageLoadFetchParamCreator = (body?: Object, quiet?: boolean, optio
  * @throws {RequiredError}
  * @summary Delete unused images fetch parameter creator
  */
-export const imagePruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const imagePruneFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/images/prune`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -8175,18 +8204,18 @@ export const imagePruneFetchParamCreator = (filters?: string, options: any = {})
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8201,7 +8230,7 @@ export const imagePruneFetchParamCreator = (filters?: string, options: any = {})
  * @throws {RequiredError}
  * @summary Push an image fetch parameter creator
  */
-export const imagePushFetchParamCreator = (
+export const imagePushFetchParameterCreator = (
     name: string,
     xRegistryAuth: string,
     tag?: string,
@@ -8219,7 +8248,7 @@ export const imagePushFetchParamCreator = (
         );
     }
     const localvariablePath = `/images/{name}/push`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -8232,18 +8261,18 @@ export const imagePushFetchParamCreator = (
         localvariableHeaderParameter["X-Registry-Auth"] = String(xRegistryAuth);
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8263,7 +8292,7 @@ export const imagePushFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Search images fetch parameter creator
  */
-export const imageSearchFetchParamCreator = (
+export const imageSearchFetchParameterCreator = (
     term: string,
     limit?: number,
     filters?: string,
@@ -8274,7 +8303,7 @@ export const imageSearchFetchParamCreator = (
         throw new RequiredError("term", "Required parameter term was null or undefined when calling imageSearch.");
     }
     const localvariablePath = `/images/search`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -8291,18 +8320,18 @@ export const imageSearchFetchParamCreator = (
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8317,7 +8346,7 @@ export const imageSearchFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Tag an image fetch parameter creator
  */
-export const imageTagFetchParamCreator = (
+export const imageTagFetchParameterCreator = (
     name: string,
     repo?: string,
     tag?: string,
@@ -8328,7 +8357,7 @@ export const imageTagFetchParamCreator = (
         throw new RequiredError("name", "Required parameter name was null or undefined when calling imageTag.");
     }
     const localvariablePath = `/images/{name}/tag`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -8341,18 +8370,18 @@ export const imageTagFetchParamCreator = (
         localvariableQueryParameter["tag"] = tag;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -8377,7 +8406,7 @@ export const buildPrune = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<BuildPruneResponse>) => {
-    const localvariableFetchArguments = buildPruneFetchParamCreator(keepStorage, all, filters, options);
+    const localvariableFetchArguments = buildPruneFetchParameterCreator(keepStorage, all, filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8508,7 +8537,7 @@ export const imageBuild = (
     outputs?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = imageBuildFetchParamCreator(
+    const localvariableFetchArguments = imageBuildFetchParameterCreator(
         body,
         dockerfile,
         t,
@@ -8575,7 +8604,7 @@ export const imageCommit = (
     changes?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-    const localvariableFetchArguments = imageCommitFetchParamCreator(
+    const localvariableFetchArguments = imageCommitFetchParameterCreator(
         body,
         container,
         repo,
@@ -8650,7 +8679,7 @@ export const imageCreate = (
     platform?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = imageCreateFetchParamCreator(
+    const localvariableFetchArguments = imageCreateFetchParameterCreator(
         body,
         fromImage,
         fromSrc,
@@ -8693,7 +8722,7 @@ export const imageDelete = (
     noprune?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ImageDeleteResponseItem>>) => {
-    const localvariableFetchArguments = imageDeleteFetchParamCreator(name, force, noprune, options);
+    const localvariableFetchArguments = imageDeleteFetchParameterCreator(name, force, noprune, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8730,7 +8759,7 @@ export const imageDelete = (
  * @summary Export an image
  */
 export const imageGet = (name: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-    const localvariableFetchArguments = imageGetFetchParamCreator(name, options);
+    const localvariableFetchArguments = imageGetFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8761,7 +8790,7 @@ export const imageGetAll = (
     names?: Array<string>,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-    const localvariableFetchArguments = imageGetAllFetchParamCreator(names, options);
+    const localvariableFetchArguments = imageGetAllFetchParameterCreator(names, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8786,7 +8815,7 @@ export const imageHistory = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<HistoryResponseItem>>) => {
-    const localvariableFetchArguments = imageHistoryFetchParamCreator(name, options);
+    const localvariableFetchArguments = imageHistoryFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8811,7 +8840,7 @@ export const imageInspect = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ImageInspect>) => {
-    const localvariableFetchArguments = imageInspectFetchParamCreator(name, options);
+    const localvariableFetchArguments = imageInspectFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8852,7 +8881,7 @@ export const imageList = (
     digests?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ImageSummary>>) => {
-    const localvariableFetchArguments = imageListFetchParamCreator(all, filters, sharedSize, digests, options);
+    const localvariableFetchArguments = imageListFetchParameterCreator(all, filters, sharedSize, digests, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8880,7 +8909,7 @@ export const imageLoad = (
     quiet?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = imageLoadFetchParamCreator(body, quiet, options);
+    const localvariableFetchArguments = imageLoadFetchParameterCreator(body, quiet, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8912,7 +8941,7 @@ export const imagePrune = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ImagePruneResponse>) => {
-    const localvariableFetchArguments = imagePruneFetchParamCreator(filters, options);
+    const localvariableFetchArguments = imagePruneFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8945,7 +8974,7 @@ export const imagePush = (
     tag?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = imagePushFetchParamCreator(name, xRegistryAuth, tag, options);
+    const localvariableFetchArguments = imagePushFetchParameterCreator(name, xRegistryAuth, tag, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -8980,7 +9009,7 @@ export const imageSearch = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<ImageSearchResponseItem>>) => {
-    const localvariableFetchArguments = imageSearchFetchParamCreator(term, limit, filters, options);
+    const localvariableFetchArguments = imageSearchFetchParameterCreator(term, limit, filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9010,7 +9039,7 @@ export const imageTag = (
     tag?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = imageTagFetchParamCreator(name, repo, tag, options);
+    const localvariableFetchArguments = imageTagFetchParameterCreator(name, repo, tag, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9170,7 +9199,7 @@ export interface ImageApiInterface {
         target?: string,
         outputs?: string,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 
     /**
      * @memberof ImageApiInterface
@@ -9254,7 +9283,7 @@ export interface ImageApiInterface {
         changes?: Array<string>,
         platform?: string,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 
     /**
      * Remove an image, along with any untagged parent images that were
@@ -9385,7 +9414,7 @@ export interface ImageApiInterface {
      * @throws {RequiredError}
      * @summary Import images
      */
-    imageLoad(body?: Object, quiet?: boolean, options?: any): Promise<{}>;
+    imageLoad(body?: Object, quiet?: boolean, options?: any): Promise<void>;
 
     /**
      * @memberof ImageApiInterface
@@ -9423,7 +9452,7 @@ export interface ImageApiInterface {
      * @throws {RequiredError}
      * @summary Push an image
      */
-    imagePush(name: string, xRegistryAuth: string, tag?: string, options?: any): Promise<{}>;
+    imagePush(name: string, xRegistryAuth: string, tag?: string, options?: any): Promise<void>;
 
     /**
      * Search for an image on Docker Hub.
@@ -9456,7 +9485,7 @@ export interface ImageApiInterface {
      * @throws {RequiredError}
      * @summary Tag an image
      */
-    imageTag(name: string, repo?: string, tag?: string, options?: any): Promise<{}>;
+    imageTag(name: string, repo?: string, tag?: string, options?: any): Promise<void>;
 }
 
 /**
@@ -9468,7 +9497,7 @@ export interface ImageApiInterface {
  * @throws {RequiredError}
  * @summary Connect a container to a network fetch parameter creator
  */
-export const networkConnectFetchParamCreator = (
+export const networkConnectFetchParameterCreator = (
     body: NetworkConnectRequest,
     id: string,
     options: any = {}
@@ -9482,21 +9511,21 @@ export const networkConnectFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling networkConnect.");
     }
     const localvariablePath = `/networks/{id}/connect`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"NetworkConnectRequest" !== "string" ||
@@ -9504,7 +9533,7 @@ export const networkConnectFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9516,27 +9545,27 @@ export const networkConnectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Create a network fetch parameter creator
  */
-export const networkCreateFetchParamCreator = (body: NetworkCreateRequest, options: any = {}): FetchArguments => {
+export const networkCreateFetchParameterCreator = (body: NetworkCreateRequest, options: any = {}): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling networkCreate.");
     }
     const localvariablePath = `/networks/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"NetworkCreateRequest" !== "string" ||
@@ -9544,7 +9573,7 @@ export const networkCreateFetchParamCreator = (body: NetworkCreateRequest, optio
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9556,29 +9585,29 @@ export const networkCreateFetchParamCreator = (body: NetworkCreateRequest, optio
  * @throws {RequiredError}
  * @summary Remove a network fetch parameter creator
  */
-export const networkDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const networkDeleteFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling networkDelete.");
     }
     const localvariablePath = `/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9591,7 +9620,7 @@ export const networkDeleteFetchParamCreator = (id: string, options: any = {}): F
  * @throws {RequiredError}
  * @summary Disconnect a container from a network fetch parameter creator
  */
-export const networkDisconnectFetchParamCreator = (
+export const networkDisconnectFetchParameterCreator = (
     body: NetworkDisconnectRequest,
     id: string,
     options: any = {}
@@ -9608,21 +9637,21 @@ export const networkDisconnectFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling networkDisconnect.");
     }
     const localvariablePath = `/networks/{id}/disconnect`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"NetworkDisconnectRequest" !== "string" ||
@@ -9630,7 +9659,7 @@ export const networkDisconnectFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9644,7 +9673,7 @@ export const networkDisconnectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Inspect a network fetch parameter creator
  */
-export const networkInspectFetchParamCreator = (
+export const networkInspectFetchParameterCreator = (
     id: string,
     verbose?: boolean,
     scope?: string,
@@ -9655,7 +9684,7 @@ export const networkInspectFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling networkInspect.");
     }
     const localvariablePath = `/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -9668,18 +9697,18 @@ export const networkInspectFetchParamCreator = (
         localvariableQueryParameter["scope"] = scope;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9703,9 +9732,9 @@ export const networkInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List networks fetch parameter creator
  */
-export const networkListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const networkListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/networks`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -9714,18 +9743,18 @@ export const networkListFetchParamCreator = (filters?: string, options: any = {}
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9744,9 +9773,9 @@ export const networkListFetchParamCreator = (filters?: string, options: any = {}
  * @throws {RequiredError}
  * @summary Delete unused networks fetch parameter creator
  */
-export const networkPruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const networkPruneFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/networks/prune`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -9755,18 +9784,18 @@ export const networkPruneFetchParamCreator = (filters?: string, options: any = {
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -9787,7 +9816,7 @@ export const networkConnect = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = networkConnectFetchParamCreator(body, id, options);
+    const localvariableFetchArguments = networkConnectFetchParameterCreator(body, id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9810,7 +9839,7 @@ export const networkCreate = (
     body: NetworkCreateRequest,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<NetworkCreateResponse>) => {
-    const localvariableFetchArguments = networkCreateFetchParamCreator(body, options);
+    const localvariableFetchArguments = networkCreateFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9833,7 +9862,7 @@ export const networkDelete = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = networkDeleteFetchParamCreator(id, options);
+    const localvariableFetchArguments = networkDeleteFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9858,7 +9887,7 @@ export const networkDisconnect = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = networkDisconnectFetchParamCreator(body, id, options);
+    const localvariableFetchArguments = networkDisconnectFetchParameterCreator(body, id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9885,7 +9914,7 @@ export const networkInspect = (
     scope?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Network>) => {
-    const localvariableFetchArguments = networkInspectFetchParamCreator(id, verbose, scope, options);
+    const localvariableFetchArguments = networkInspectFetchParameterCreator(id, verbose, scope, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9926,7 +9955,7 @@ export const networkList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Network>>) => {
-    const localvariableFetchArguments = networkListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = networkListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9956,7 +9985,7 @@ export const networkPrune = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<NetworkPruneResponse>) => {
-    const localvariableFetchArguments = networkPruneFetchParamCreator(filters, options);
+    const localvariableFetchArguments = networkPruneFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -9989,7 +10018,7 @@ export interface NetworkApiInterface {
      * @throws {RequiredError}
      * @summary Connect a container to a network
      */
-    networkConnect(body: NetworkConnectRequest, id: string, options?: any): Promise<{}>;
+    networkConnect(body: NetworkConnectRequest, id: string, options?: any): Promise<void>;
 
     /**
      * @memberof NetworkApiInterface
@@ -10007,7 +10036,7 @@ export interface NetworkApiInterface {
      * @throws {RequiredError}
      * @summary Remove a network
      */
-    networkDelete(id: string, options?: any): Promise<{}>;
+    networkDelete(id: string, options?: any): Promise<void>;
 
     /**
      * @memberof NetworkApiInterface
@@ -10017,7 +10046,7 @@ export interface NetworkApiInterface {
      * @throws {RequiredError}
      * @summary Disconnect a container from a network
      */
-    networkDisconnect(body: NetworkDisconnectRequest, id: string, options?: any): Promise<{}>;
+    networkDisconnect(body: NetworkDisconnectRequest, id: string, options?: any): Promise<void>;
 
     /**
      * @memberof NetworkApiInterface
@@ -10084,13 +10113,13 @@ export interface NetworkApiInterface {
  * @throws {RequiredError}
  * @summary Delete a node fetch parameter creator
  */
-export const nodeDeleteFetchParamCreator = (id: string, force?: boolean, options: any = {}): FetchArguments => {
+export const nodeDeleteFetchParameterCreator = (id: string, force?: boolean, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling nodeDelete.");
     }
     const localvariablePath = `/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10099,18 +10128,18 @@ export const nodeDeleteFetchParamCreator = (id: string, force?: boolean, options
         localvariableQueryParameter["force"] = force;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10122,29 +10151,29 @@ export const nodeDeleteFetchParamCreator = (id: string, force?: boolean, options
  * @throws {RequiredError}
  * @summary Inspect a node fetch parameter creator
  */
-export const nodeInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const nodeInspectFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling nodeInspect.");
     }
     const localvariablePath = `/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10159,9 +10188,9 @@ export const nodeInspectFetchParamCreator = (id: string, options: any = {}): Fet
  * @throws {RequiredError}
  * @summary List nodes fetch parameter creator
  */
-export const nodeListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const nodeListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/nodes`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10170,18 +10199,18 @@ export const nodeListFetchParamCreator = (filters?: string, options: any = {}): 
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10196,7 +10225,7 @@ export const nodeListFetchParamCreator = (filters?: string, options: any = {}): 
  * @throws {RequiredError}
  * @summary Update a node fetch parameter creator
  */
-export const nodeUpdateFetchParamCreator = (
+export const nodeUpdateFetchParameterCreator = (
     id: string,
     version: number,
     body?: NodeSpec,
@@ -10211,7 +10240,7 @@ export const nodeUpdateFetchParamCreator = (
         throw new RequiredError("version", "Required parameter version was null or undefined when calling nodeUpdate.");
     }
     const localvariablePath = `/nodes/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10222,21 +10251,21 @@ export const nodeUpdateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"NodeSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10253,7 +10282,7 @@ export const nodeDelete = (
     force?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = nodeDeleteFetchParamCreator(id, force, options);
+    const localvariableFetchArguments = nodeDeleteFetchParameterCreator(id, force, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10273,7 +10302,7 @@ export const nodeDelete = (
  * @summary Inspect a node
  */
 export const nodeInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Node>) => {
-    const localvariableFetchArguments = nodeInspectFetchParamCreator(id, options);
+    const localvariableFetchArguments = nodeInspectFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10299,7 +10328,7 @@ export const nodeList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Node>>) => {
-    const localvariableFetchArguments = nodeListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = nodeListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10327,7 +10356,7 @@ export const nodeUpdate = (
     body?: NodeSpec,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = nodeUpdateFetchParamCreator(id, version, body, options);
+    const localvariableFetchArguments = nodeUpdateFetchParameterCreator(id, version, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10356,7 +10385,7 @@ export interface NodeApiInterface {
      * @throws {RequiredError}
      * @summary Delete a node
      */
-    nodeDelete(id: string, force?: boolean, options?: any): Promise<{}>;
+    nodeDelete(id: string, force?: boolean, options?: any): Promise<void>;
 
     /**
      * @memberof NodeApiInterface
@@ -10390,7 +10419,7 @@ export interface NodeApiInterface {
      * @throws {RequiredError}
      * @summary Update a node
      */
-    nodeUpdate(id: string, version: number, body?: NodeSpec, options?: any): Promise<{}>;
+    nodeUpdate(id: string, version: number, body?: NodeSpec, options?: any): Promise<void>;
 }
 
 /**
@@ -10402,7 +10431,7 @@ export interface NodeApiInterface {
  * @throws {RequiredError}
  * @summary Get plugin privileges fetch parameter creator
  */
-export const getPluginPrivilegesFetchParamCreator = (remote: string, options: any = {}): FetchArguments => {
+export const getPluginPrivilegesFetchParameterCreator = (remote: string, options: any = {}): FetchArguments => {
     // verify required parameter 'remote' is not null or undefined
     if (remote === null || remote === undefined) {
         throw new RequiredError(
@@ -10411,7 +10440,7 @@ export const getPluginPrivilegesFetchParamCreator = (remote: string, options: an
         );
     }
     const localvariablePath = `/plugins/privileges`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10420,18 +10449,18 @@ export const getPluginPrivilegesFetchParamCreator = (remote: string, options: an
         localvariableQueryParameter["remote"] = remote;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10445,13 +10474,13 @@ export const getPluginPrivilegesFetchParamCreator = (remote: string, options: an
  * @throws {RequiredError}
  * @summary Create a plugin fetch parameter creator
  */
-export const pluginCreateFetchParamCreator = (name: string, body?: Object, options: any = {}): FetchArguments => {
+export const pluginCreateFetchParameterCreator = (name: string, body?: Object, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginCreate.");
     }
     const localvariablePath = `/plugins/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10462,21 +10491,21 @@ export const pluginCreateFetchParamCreator = (name: string, body?: Object, optio
 
     localvariableHeaderParameter["Content-Type"] = "application/x-tar";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Object" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10491,13 +10520,13 @@ export const pluginCreateFetchParamCreator = (name: string, body?: Object, optio
  * @throws {RequiredError}
  * @summary Remove a plugin fetch parameter creator
  */
-export const pluginDeleteFetchParamCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
+export const pluginDeleteFetchParameterCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginDelete.");
     }
     const localvariablePath = `/plugins/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10506,18 +10535,18 @@ export const pluginDeleteFetchParamCreator = (name: string, force?: boolean, opt
         localvariableQueryParameter["force"] = force;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10531,13 +10560,17 @@ export const pluginDeleteFetchParamCreator = (name: string, force?: boolean, opt
  * @throws {RequiredError}
  * @summary Disable a plugin fetch parameter creator
  */
-export const pluginDisableFetchParamCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
+export const pluginDisableFetchParameterCreator = (
+    name: string,
+    force?: boolean,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginDisable.");
     }
     const localvariablePath = `/plugins/{name}/disable`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10546,18 +10579,18 @@ export const pluginDisableFetchParamCreator = (name: string, force?: boolean, op
         localvariableQueryParameter["force"] = force;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10571,13 +10604,17 @@ export const pluginDisableFetchParamCreator = (name: string, force?: boolean, op
  * @throws {RequiredError}
  * @summary Enable a plugin fetch parameter creator
  */
-export const pluginEnableFetchParamCreator = (name: string, timeout?: number, options: any = {}): FetchArguments => {
+export const pluginEnableFetchParameterCreator = (
+    name: string,
+    timeout?: number,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginEnable.");
     }
     const localvariablePath = `/plugins/{name}/enable`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10586,18 +10623,18 @@ export const pluginEnableFetchParamCreator = (name: string, timeout?: number, op
         localvariableQueryParameter["timeout"] = timeout;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10610,29 +10647,29 @@ export const pluginEnableFetchParamCreator = (name: string, timeout?: number, op
  * @throws {RequiredError}
  * @summary Inspect a plugin fetch parameter creator
  */
-export const pluginInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const pluginInspectFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginInspect.");
     }
     const localvariablePath = `/plugins/{name}/json`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10646,9 +10683,9 @@ export const pluginInspectFetchParamCreator = (name: string, options: any = {}):
  * @throws {RequiredError}
  * @summary List plugins fetch parameter creator
  */
-export const pluginListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const pluginListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/plugins`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10657,18 +10694,18 @@ export const pluginListFetchParamCreator = (filters?: string, options: any = {})
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10687,7 +10724,7 @@ export const pluginListFetchParamCreator = (filters?: string, options: any = {})
  * @throws {RequiredError}
  * @summary Install a plugin fetch parameter creator
  */
-export const pluginPullFetchParamCreator = (
+export const pluginPullFetchParameterCreator = (
     remote: string,
     body?: Array<PluginPrivilege>,
     name?: string,
@@ -10699,7 +10736,7 @@ export const pluginPullFetchParamCreator = (
         throw new RequiredError("remote", "Required parameter remote was null or undefined when calling pluginPull.");
     }
     const localvariablePath = `/plugins/pull`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10718,14 +10755,14 @@ export const pluginPullFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Array&lt;PluginPrivilege&gt;" !== "string" ||
@@ -10733,7 +10770,7 @@ export const pluginPullFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10746,29 +10783,29 @@ export const pluginPullFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Push a plugin fetch parameter creator
  */
-export const pluginPushFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const pluginPushFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginPush.");
     }
     const localvariablePath = `/plugins/{name}/push`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10782,27 +10819,31 @@ export const pluginPushFetchParamCreator = (name: string, options: any = {}): Fe
  * @throws {RequiredError}
  * @summary Configure a plugin fetch parameter creator
  */
-export const pluginSetFetchParamCreator = (name: string, body?: Array<string>, options: any = {}): FetchArguments => {
+export const pluginSetFetchParameterCreator = (
+    name: string,
+    body?: Array<string>,
+    options: any = {}
+): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling pluginSet.");
     }
     const localvariablePath = `/plugins/{name}/set`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Array&lt;string&gt;" !== "string" ||
@@ -10810,7 +10851,7 @@ export const pluginSetFetchParamCreator = (name: string, body?: Array<string>, o
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10829,7 +10870,7 @@ export const pluginSetFetchParamCreator = (name: string, body?: Array<string>, o
  * @throws {RequiredError}
  * @summary Upgrade a plugin fetch parameter creator
  */
-export const pluginUpgradeFetchParamCreator = (
+export const pluginUpgradeFetchParameterCreator = (
     name: string,
     remote: string,
     body?: Array<PluginPrivilege>,
@@ -10848,7 +10889,7 @@ export const pluginUpgradeFetchParamCreator = (
         );
     }
     const localvariablePath = `/plugins/{name}/upgrade`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -10863,14 +10904,14 @@ export const pluginUpgradeFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"Array&lt;PluginPrivilege&gt;" !== "string" ||
@@ -10878,7 +10919,7 @@ export const pluginUpgradeFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -10894,7 +10935,7 @@ export const getPluginPrivileges = (
     remote: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<PluginPrivilege>>) => {
-    const localvariableFetchArguments = getPluginPrivilegesFetchParamCreator(remote, options);
+    const localvariableFetchArguments = getPluginPrivilegesFetchParameterCreator(remote, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10920,7 +10961,7 @@ export const pluginCreate = (
     body?: Object,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginCreateFetchParamCreator(name, body, options);
+    const localvariableFetchArguments = pluginCreateFetchParameterCreator(name, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10947,7 +10988,7 @@ export const pluginDelete = (
     force?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Plugin>) => {
-    const localvariableFetchArguments = pluginDeleteFetchParamCreator(name, force, options);
+    const localvariableFetchArguments = pluginDeleteFetchParameterCreator(name, force, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10973,7 +11014,7 @@ export const pluginDisable = (
     force?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginDisableFetchParamCreator(name, force, options);
+    const localvariableFetchArguments = pluginDisableFetchParameterCreator(name, force, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -10999,7 +11040,7 @@ export const pluginEnable = (
     timeout?: number,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginEnableFetchParamCreator(name, timeout, options);
+    const localvariableFetchArguments = pluginEnableFetchParameterCreator(name, timeout, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11023,7 +11064,7 @@ export const pluginInspect = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Plugin>) => {
-    const localvariableFetchArguments = pluginInspectFetchParamCreator(name, options);
+    const localvariableFetchArguments = pluginInspectFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11050,7 +11091,7 @@ export const pluginList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Plugin>>) => {
-    const localvariableFetchArguments = pluginListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = pluginListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11087,7 +11128,7 @@ export const pluginPull = (
     xRegistryAuth?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginPullFetchParamCreator(remote, body, name, xRegistryAuth, options);
+    const localvariableFetchArguments = pluginPullFetchParameterCreator(remote, body, name, xRegistryAuth, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11113,7 +11154,7 @@ export const pluginPush = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginPushFetchParamCreator(name, options);
+    const localvariableFetchArguments = pluginPushFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11139,7 +11180,7 @@ export const pluginSet = (
     body?: Array<string>,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginSetFetchParamCreator(name, body, options);
+    const localvariableFetchArguments = pluginSetFetchParameterCreator(name, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11172,7 +11213,7 @@ export const pluginUpgrade = (
     xRegistryAuth?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = pluginUpgradeFetchParamCreator(name, remote, body, xRegistryAuth, options);
+    const localvariableFetchArguments = pluginUpgradeFetchParameterCreator(name, remote, body, xRegistryAuth, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11212,7 +11253,7 @@ export interface PluginApiInterface {
      * @throws {RequiredError}
      * @summary Create a plugin
      */
-    pluginCreate(name: string, body?: Object, options?: any): Promise<{}>;
+    pluginCreate(name: string, body?: Object, options?: any): Promise<void>;
 
     /**
      * @memberof PluginApiInterface
@@ -11235,7 +11276,7 @@ export interface PluginApiInterface {
      * @throws {RequiredError}
      * @summary Disable a plugin
      */
-    pluginDisable(name: string, force?: boolean, options?: any): Promise<{}>;
+    pluginDisable(name: string, force?: boolean, options?: any): Promise<void>;
 
     /**
      * @memberof PluginApiInterface
@@ -11246,7 +11287,7 @@ export interface PluginApiInterface {
      * @throws {RequiredError}
      * @summary Enable a plugin
      */
-    pluginEnable(name: string, timeout?: number, options?: any): Promise<{}>;
+    pluginEnable(name: string, timeout?: number, options?: any): Promise<void>;
 
     /**
      * @memberof PluginApiInterface
@@ -11295,7 +11336,7 @@ export interface PluginApiInterface {
         name?: string,
         xRegistryAuth?: string,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 
     /**
      * Push a plugin to the registry.
@@ -11307,7 +11348,7 @@ export interface PluginApiInterface {
      * @throws {RequiredError}
      * @summary Push a plugin
      */
-    pluginPush(name: string, options?: any): Promise<{}>;
+    pluginPush(name: string, options?: any): Promise<void>;
 
     /**
      * @memberof PluginApiInterface
@@ -11318,7 +11359,7 @@ export interface PluginApiInterface {
      * @throws {RequiredError}
      * @summary Configure a plugin
      */
-    pluginSet(name: string, body?: Array<string>, options?: any): Promise<{}>;
+    pluginSet(name: string, body?: Array<string>, options?: any): Promise<void>;
 
     /**
      * @memberof PluginApiInterface
@@ -11340,7 +11381,7 @@ export interface PluginApiInterface {
         body?: Array<PluginPrivilege>,
         xRegistryAuth?: string,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 }
 
 /**
@@ -11351,23 +11392,23 @@ export interface PluginApiInterface {
  * @throws {RequiredError}
  * @summary Create a secret fetch parameter creator
  */
-export const secretCreateFetchParamCreator = (body?: SecretsCreateBody, options: any = {}): FetchArguments => {
+export const secretCreateFetchParameterCreator = (body?: SecretsCreateBody, options: any = {}): FetchArguments => {
     const localvariablePath = `/secrets/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"SecretsCreateBody" !== "string" ||
@@ -11375,7 +11416,7 @@ export const secretCreateFetchParamCreator = (body?: SecretsCreateBody, options:
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11387,29 +11428,29 @@ export const secretCreateFetchParamCreator = (body?: SecretsCreateBody, options:
  * @throws {RequiredError}
  * @summary Delete a secret fetch parameter creator
  */
-export const secretDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const secretDeleteFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling secretDelete.");
     }
     const localvariablePath = `/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11421,29 +11462,29 @@ export const secretDeleteFetchParamCreator = (id: string, options: any = {}): Fe
  * @throws {RequiredError}
  * @summary Inspect a secret fetch parameter creator
  */
-export const secretInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const secretInspectFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling secretInspect.");
     }
     const localvariablePath = `/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11458,9 +11499,9 @@ export const secretInspectFetchParamCreator = (id: string, options: any = {}): F
  * @throws {RequiredError}
  * @summary List secrets fetch parameter creator
  */
-export const secretListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const secretListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/secrets`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -11469,18 +11510,18 @@ export const secretListFetchParamCreator = (filters?: string, options: any = {})
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11498,7 +11539,7 @@ export const secretListFetchParamCreator = (filters?: string, options: any = {})
  * @throws {RequiredError}
  * @summary Update a Secret fetch parameter creator
  */
-export const secretUpdateFetchParamCreator = (
+export const secretUpdateFetchParameterCreator = (
     id: string,
     version: number,
     body?: SecretSpec,
@@ -11516,7 +11557,7 @@ export const secretUpdateFetchParamCreator = (
         );
     }
     const localvariablePath = `/secrets/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -11527,21 +11568,21 @@ export const secretUpdateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"SecretSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11556,7 +11597,7 @@ export const secretCreate = (
     body?: SecretsCreateBody,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<IdResponse>) => {
-    const localvariableFetchArguments = secretCreateFetchParamCreator(body, options);
+    const localvariableFetchArguments = secretCreateFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11579,7 +11620,7 @@ export const secretDelete = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = secretDeleteFetchParamCreator(id, options);
+    const localvariableFetchArguments = secretDeleteFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11599,7 +11640,7 @@ export const secretDelete = (
  * @summary Inspect a secret
  */
 export const secretInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Secret>) => {
-    const localvariableFetchArguments = secretInspectFetchParamCreator(id, options);
+    const localvariableFetchArguments = secretInspectFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11625,7 +11666,7 @@ export const secretList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Secret>>) => {
-    const localvariableFetchArguments = secretListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = secretListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11656,7 +11697,7 @@ export const secretUpdate = (
     body?: SecretSpec,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = secretUpdateFetchParamCreator(id, version, body, options);
+    const localvariableFetchArguments = secretUpdateFetchParameterCreator(id, version, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -11693,7 +11734,7 @@ export interface SecretApiInterface {
      * @throws {RequiredError}
      * @summary Delete a secret
      */
-    secretDelete(id: string, options?: any): Promise<{}>;
+    secretDelete(id: string, options?: any): Promise<void>;
 
     /**
      * @memberof SecretApiInterface
@@ -11729,7 +11770,7 @@ export interface SecretApiInterface {
      * @throws {RequiredError}
      * @summary Update a Secret
      */
-    secretUpdate(id: string, version: number, body?: SecretSpec, options?: any): Promise<{}>;
+    secretUpdate(id: string, version: number, body?: SecretSpec, options?: any): Promise<void>;
 }
 
 /**
@@ -11743,7 +11784,7 @@ export interface SecretApiInterface {
  * @throws {RequiredError}
  * @summary Create a service fetch parameter creator
  */
-export const serviceCreateFetchParamCreator = (
+export const serviceCreateFetchParameterCreator = (
     body: ServicesCreateBody,
     xRegistryAuth?: string,
     options: any = {}
@@ -11753,7 +11794,7 @@ export const serviceCreateFetchParamCreator = (
         throw new RequiredError("body", "Required parameter body was null or undefined when calling serviceCreate.");
     }
     const localvariablePath = `/services/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -11764,14 +11805,14 @@ export const serviceCreateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"ServicesCreateBody" !== "string" ||
@@ -11779,7 +11820,7 @@ export const serviceCreateFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11791,29 +11832,29 @@ export const serviceCreateFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Delete a service fetch parameter creator
  */
-export const serviceDeleteFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const serviceDeleteFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceDelete.");
     }
     const localvariablePath = `/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11826,7 +11867,7 @@ export const serviceDeleteFetchParamCreator = (id: string, options: any = {}): F
  * @throws {RequiredError}
  * @summary Inspect a service fetch parameter creator
  */
-export const serviceInspectFetchParamCreator = (
+export const serviceInspectFetchParameterCreator = (
     id: string,
     insertDefaults?: boolean,
     options: any = {}
@@ -11836,7 +11877,7 @@ export const serviceInspectFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceInspect.");
     }
     const localvariablePath = `/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -11845,18 +11886,18 @@ export const serviceInspectFetchParamCreator = (
         localvariableQueryParameter["insertDefaults"] = insertDefaults;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11873,9 +11914,13 @@ export const serviceInspectFetchParamCreator = (
  * @throws {RequiredError}
  * @summary List services fetch parameter creator
  */
-export const serviceListFetchParamCreator = (filters?: string, status?: boolean, options: any = {}): FetchArguments => {
+export const serviceListFetchParameterCreator = (
+    filters?: string,
+    status?: boolean,
+    options: any = {}
+): FetchArguments => {
     const localvariablePath = `/services`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -11888,18 +11933,18 @@ export const serviceListFetchParamCreator = (filters?: string, status?: boolean,
         localvariableQueryParameter["status"] = status;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -11920,7 +11965,7 @@ export const serviceListFetchParamCreator = (filters?: string, status?: boolean,
  * @throws {RequiredError}
  * @summary Get service logs fetch parameter creator
  */
-export const serviceLogsFetchParamCreator = (
+export const serviceLogsFetchParameterCreator = (
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -11936,7 +11981,7 @@ export const serviceLogsFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling serviceLogs.");
     }
     const localvariablePath = `/services/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -11969,18 +12014,18 @@ export const serviceLogsFetchParamCreator = (
         localvariableQueryParameter["tail"] = tail;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12006,7 +12051,7 @@ export const serviceLogsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Update a service fetch parameter creator
  */
-export const serviceUpdateFetchParamCreator = (
+export const serviceUpdateFetchParameterCreator = (
     body: IdUpdateBody1,
     id: string,
     version: number,
@@ -12031,7 +12076,7 @@ export const serviceUpdateFetchParamCreator = (
         );
     }
     const localvariablePath = `/services/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -12054,21 +12099,21 @@ export const serviceUpdateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"IdUpdateBody1" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12087,7 +12132,7 @@ export const serviceCreate = (
     xRegistryAuth?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ServiceCreateResponse>) => {
-    const localvariableFetchArguments = serviceCreateFetchParamCreator(body, xRegistryAuth, options);
+    const localvariableFetchArguments = serviceCreateFetchParameterCreator(body, xRegistryAuth, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12110,7 +12155,7 @@ export const serviceDelete = (
     id: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = serviceDeleteFetchParamCreator(id, options);
+    const localvariableFetchArguments = serviceDeleteFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12135,7 +12180,7 @@ export const serviceInspect = (
     insertDefaults?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Service>) => {
-    const localvariableFetchArguments = serviceInspectFetchParamCreator(id, insertDefaults, options);
+    const localvariableFetchArguments = serviceInspectFetchParameterCreator(id, insertDefaults, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12164,7 +12209,7 @@ export const serviceList = (
     status?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Service>>) => {
-    const localvariableFetchArguments = serviceListFetchParamCreator(filters, status, options);
+    const localvariableFetchArguments = serviceListFetchParameterCreator(filters, status, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12208,7 +12253,7 @@ export const serviceLogs = (
     tail?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-    const localvariableFetchArguments = serviceLogsFetchParamCreator(
+    const localvariableFetchArguments = serviceLogsFetchParameterCreator(
         id,
         details,
         follow,
@@ -12260,7 +12305,7 @@ export const serviceUpdate = (
     xRegistryAuth?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<ServiceUpdateResponse>) => {
-    const localvariableFetchArguments = serviceUpdateFetchParamCreator(
+    const localvariableFetchArguments = serviceUpdateFetchParameterCreator(
         body,
         id,
         version,
@@ -12308,7 +12353,7 @@ export interface ServiceApiInterface {
      * @throws {RequiredError}
      * @summary Delete a service
      */
-    serviceDelete(id: string, options?: any): Promise<{}>;
+    serviceDelete(id: string, options?: any): Promise<void>;
 
     /**
      * @memberof ServiceApiInterface
@@ -12409,25 +12454,25 @@ export interface ServiceApiInterface {
  * @throws {RequiredError}
  * @summary Initialize interactive session fetch parameter creator
  */
-export const sessionFetchParamCreator = (options: any = {}): FetchArguments => {
+export const sessionFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/session`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12447,7 +12492,7 @@ export const sessionFetchParamCreator = (options: any = {}): FetchArguments => {
  * @summary Initialize interactive session
  */
 export const session = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = sessionFetchParamCreator(options);
+    const localvariableFetchArguments = sessionFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12483,7 +12528,7 @@ export interface SessionApiInterface {
      * @throws {RequiredError}
      * @summary Initialize interactive session
      */
-    session(options?: any): Promise<{}>;
+    session(options?: any): Promise<void>;
 }
 
 /**
@@ -12494,27 +12539,27 @@ export interface SessionApiInterface {
  * @throws {RequiredError}
  * @summary Initialize a new swarm fetch parameter creator
  */
-export const swarmInitFetchParamCreator = (body: SwarmInitRequest, options: any = {}): FetchArguments => {
+export const swarmInitFetchParameterCreator = (body: SwarmInitRequest, options: any = {}): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmInit.");
     }
     const localvariablePath = `/swarm/init`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"SwarmInitRequest1" !== "string" ||
@@ -12522,7 +12567,7 @@ export const swarmInitFetchParamCreator = (body: SwarmInitRequest, options: any 
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12533,25 +12578,25 @@ export const swarmInitFetchParamCreator = (body: SwarmInitRequest, options: any 
  * @throws {RequiredError}
  * @summary Inspect swarm fetch parameter creator
  */
-export const swarmInspectFetchParamCreator = (options: any = {}): FetchArguments => {
+export const swarmInspectFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/swarm`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12563,27 +12608,27 @@ export const swarmInspectFetchParamCreator = (options: any = {}): FetchArguments
  * @throws {RequiredError}
  * @summary Join an existing swarm fetch parameter creator
  */
-export const swarmJoinFetchParamCreator = (body: SwarmJoinRequest, options: any = {}): FetchArguments => {
+export const swarmJoinFetchParameterCreator = (body: SwarmJoinRequest, options: any = {}): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmJoin.");
     }
     const localvariablePath = `/swarm/join`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"SwarmJoinRequest1" !== "string" ||
@@ -12591,7 +12636,7 @@ export const swarmJoinFetchParamCreator = (body: SwarmJoinRequest, options: any 
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12604,9 +12649,9 @@ export const swarmJoinFetchParamCreator = (body: SwarmJoinRequest, options: any 
  * @throws {RequiredError}
  * @summary Leave a swarm fetch parameter creator
  */
-export const swarmLeaveFetchParamCreator = (force?: boolean, options: any = {}): FetchArguments => {
+export const swarmLeaveFetchParameterCreator = (force?: boolean, options: any = {}): FetchArguments => {
     const localvariablePath = `/swarm/leave`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -12615,18 +12660,18 @@ export const swarmLeaveFetchParamCreator = (force?: boolean, options: any = {}):
         localvariableQueryParameter["force"] = force;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12638,27 +12683,27 @@ export const swarmLeaveFetchParamCreator = (force?: boolean, options: any = {}):
  * @throws {RequiredError}
  * @summary Unlock a locked manager fetch parameter creator
  */
-export const swarmUnlockFetchParamCreator = (body: SwarmUnlockRequest, options: any = {}): FetchArguments => {
+export const swarmUnlockFetchParameterCreator = (body: SwarmUnlockRequest, options: any = {}): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling swarmUnlock.");
     }
     const localvariablePath = `/swarm/unlock`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"SwarmUnlockRequest" !== "string" ||
@@ -12666,7 +12711,7 @@ export const swarmUnlockFetchParamCreator = (body: SwarmUnlockRequest, options: 
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12677,25 +12722,25 @@ export const swarmUnlockFetchParamCreator = (body: SwarmUnlockRequest, options: 
  * @throws {RequiredError}
  * @summary Get the unlock key fetch parameter creator
  */
-export const swarmUnlockkeyFetchParamCreator = (options: any = {}): FetchArguments => {
+export const swarmUnlockkeyFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/swarm/unlockkey`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12712,7 +12757,7 @@ export const swarmUnlockkeyFetchParamCreator = (options: any = {}): FetchArgumen
  * @throws {RequiredError}
  * @summary Update a swarm fetch parameter creator
  */
-export const swarmUpdateFetchParamCreator = (
+export const swarmUpdateFetchParameterCreator = (
     body: SwarmSpec,
     version: number,
     rotateWorkerToken?: boolean,
@@ -12732,7 +12777,7 @@ export const swarmUpdateFetchParamCreator = (
         );
     }
     const localvariablePath = `/swarm/update`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -12755,21 +12800,21 @@ export const swarmUpdateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"SwarmSpec" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -12784,7 +12829,7 @@ export const swarmInit = (
     body: SwarmInitRequest,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
-    const localvariableFetchArguments = swarmInitFetchParamCreator(body, options);
+    const localvariableFetchArguments = swarmInitFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12803,7 +12848,7 @@ export const swarmInit = (
  * @summary Inspect swarm
  */
 export const swarmInspect = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Swarm>) => {
-    const localvariableFetchArguments = swarmInspectFetchParamCreator(options);
+    const localvariableFetchArguments = swarmInspectFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12826,7 +12871,7 @@ export const swarmJoin = (
     body: SwarmJoinRequest,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = swarmJoinFetchParamCreator(body, options);
+    const localvariableFetchArguments = swarmJoinFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12850,7 +12895,7 @@ export const swarmLeave = (
     force?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = swarmLeaveFetchParamCreator(force, options);
+    const localvariableFetchArguments = swarmLeaveFetchParameterCreator(force, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12873,7 +12918,7 @@ export const swarmUnlock = (
     body: SwarmUnlockRequest,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = swarmUnlockFetchParamCreator(body, options);
+    const localvariableFetchArguments = swarmUnlockFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12892,7 +12937,7 @@ export const swarmUnlock = (
  * @summary Get the unlock key
  */
 export const swarmUnlockkey = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<UnlockKeyResponse>) => {
-    const localvariableFetchArguments = swarmUnlockkeyFetchParamCreator(options);
+    const localvariableFetchArguments = swarmUnlockkeyFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -12924,7 +12969,7 @@ export const swarmUpdate = (
     rotateManagerUnlockKey?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = swarmUpdateFetchParamCreator(
+    const localvariableFetchArguments = swarmUpdateFetchParameterCreator(
         body,
         version,
         rotateWorkerToken,
@@ -12976,7 +13021,7 @@ export interface SwarmApiInterface {
      * @throws {RequiredError}
      * @summary Join an existing swarm
      */
-    swarmJoin(body: SwarmJoinRequest, options?: any): Promise<{}>;
+    swarmJoin(body: SwarmJoinRequest, options?: any): Promise<void>;
 
     /**
      * @memberof SwarmApiInterface
@@ -12986,7 +13031,7 @@ export interface SwarmApiInterface {
      * @throws {RequiredError}
      * @summary Leave a swarm
      */
-    swarmLeave(force?: boolean, options?: any): Promise<{}>;
+    swarmLeave(force?: boolean, options?: any): Promise<void>;
 
     /**
      * @memberof SwarmApiInterface
@@ -12995,7 +13040,7 @@ export interface SwarmApiInterface {
      * @throws {RequiredError}
      * @summary Unlock a locked manager
      */
-    swarmUnlock(body: SwarmUnlockRequest, options?: any): Promise<{}>;
+    swarmUnlock(body: SwarmUnlockRequest, options?: any): Promise<void>;
 
     /**
      * @memberof SwarmApiInterface
@@ -13024,7 +13069,7 @@ export interface SwarmApiInterface {
         rotateManagerToken?: boolean,
         rotateManagerUnlockKey?: boolean,
         options?: any
-    ): Promise<{}>;
+    ): Promise<void>;
 }
 
 /**
@@ -13035,30 +13080,30 @@ export interface SwarmApiInterface {
  * @throws {RequiredError}
  * @summary Check auth configuration fetch parameter creator
  */
-export const systemAuthFetchParamCreator = (body?: AuthConfig, options: any = {}): FetchArguments => {
+export const systemAuthFetchParameterCreator = (body?: AuthConfig, options: any = {}): FetchArguments => {
     const localvariablePath = `/auth`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"AuthConfig" !== "string" || localvariableRequestOptions.headers["Content-Type"] === "application/json";
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13070,9 +13115,9 @@ export const systemAuthFetchParamCreator = (body?: AuthConfig, options: any = {}
  * @throws {RequiredError}
  * @summary Get data usage information fetch parameter creator
  */
-export const systemDataUsageFetchParamCreator = (type?: Array<string>, options: any = {}): FetchArguments => {
+export const systemDataUsageFetchParameterCreator = (type?: Array<string>, options: any = {}): FetchArguments => {
     const localvariablePath = `/system/df`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -13081,18 +13126,18 @@ export const systemDataUsageFetchParamCreator = (type?: Array<string>, options: 
         localvariableQueryParameter["type"] = type;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13118,14 +13163,14 @@ export const systemDataUsageFetchParamCreator = (type?: Array<string>, options: 
  * @throws {RequiredError}
  * @summary Monitor events fetch parameter creator
  */
-export const systemEventsFetchParamCreator = (
+export const systemEventsFetchParameterCreator = (
     since?: string,
     until?: string,
     filters?: string,
     options: any = {}
 ): FetchArguments => {
     const localvariablePath = `/events`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -13142,18 +13187,18 @@ export const systemEventsFetchParamCreator = (
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13164,25 +13209,25 @@ export const systemEventsFetchParamCreator = (
  * @throws {RequiredError}
  * @summary Get system information fetch parameter creator
  */
-export const systemInfoFetchParamCreator = (options: any = {}): FetchArguments => {
+export const systemInfoFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/info`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13193,25 +13238,25 @@ export const systemInfoFetchParamCreator = (options: any = {}): FetchArguments =
  * @throws {RequiredError}
  * @summary Ping fetch parameter creator
  */
-export const systemPingFetchParamCreator = (options: any = {}): FetchArguments => {
+export const systemPingFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/_ping`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13222,25 +13267,25 @@ export const systemPingFetchParamCreator = (options: any = {}): FetchArguments =
  * @throws {RequiredError}
  * @summary Ping fetch parameter creator
  */
-export const systemPingHeadFetchParamCreator = (options: any = {}): FetchArguments => {
+export const systemPingHeadFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/_ping`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "HEAD" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13251,25 +13296,25 @@ export const systemPingHeadFetchParamCreator = (options: any = {}): FetchArgumen
  * @throws {RequiredError}
  * @summary Get version fetch parameter creator
  */
-export const systemVersionFetchParamCreator = (options: any = {}): FetchArguments => {
+export const systemVersionFetchParameterCreator = (options: any = {}): FetchArguments => {
     const localvariablePath = `/version`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13287,7 +13332,7 @@ export const systemAuth = (
     body?: AuthConfig,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<SystemAuthResponse>) => {
-    const localvariableFetchArguments = systemAuthFetchParamCreator(body, options);
+    const localvariableFetchArguments = systemAuthFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13310,7 +13355,7 @@ export const systemDataUsage = (
     type?: Array<string>,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<SystemDataUsageResponse>) => {
-    const localvariableFetchArguments = systemDataUsageFetchParamCreator(type, options);
+    const localvariableFetchArguments = systemDataUsageFetchParameterCreator(type, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13365,7 +13410,7 @@ export const systemEvents = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<EventMessage>) => {
-    const localvariableFetchArguments = systemEventsFetchParamCreator(since, until, filters, options);
+    const localvariableFetchArguments = systemEventsFetchParameterCreator(since, until, filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13384,7 +13429,7 @@ export const systemEvents = (
  * @summary Get system information
  */
 export const systemInfo = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<SystemInfo>) => {
-    const localvariableFetchArguments = systemInfoFetchParamCreator(options);
+    const localvariableFetchArguments = systemInfoFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13405,7 +13450,7 @@ export const systemInfo = (options?: any): ((fetch: FetchAPI, basePath?: string)
  * @summary Ping
  */
 export const systemPing = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
-    const localvariableFetchArguments = systemPingFetchParamCreator(options);
+    const localvariableFetchArguments = systemPingFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13426,7 +13471,7 @@ export const systemPing = (options?: any): ((fetch: FetchAPI, basePath?: string)
  * @summary Ping
  */
 export const systemPingHead = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<string>) => {
-    const localvariableFetchArguments = systemPingHeadFetchParamCreator(options);
+    const localvariableFetchArguments = systemPingHeadFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13448,7 +13493,7 @@ export const systemPingHead = (options?: any): ((fetch: FetchAPI, basePath?: str
  * @summary Get version
  */
 export const systemVersion = (options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<SystemVersion>) => {
-    const localvariableFetchArguments = systemVersionFetchParamCreator(options);
+    const localvariableFetchArguments = systemVersionFetchParameterCreator(options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13579,29 +13624,29 @@ export interface SystemApiInterface {
  * @throws {RequiredError}
  * @summary Inspect a task fetch parameter creator
  */
-export const taskInspectFetchParamCreator = (id: string, options: any = {}): FetchArguments => {
+export const taskInspectFetchParameterCreator = (id: string, options: any = {}): FetchArguments => {
     // verify required parameter 'id' is not null or undefined
     if (id === null || id === undefined) {
         throw new RequiredError("id", "Required parameter id was null or undefined when calling taskInspect.");
     }
     const localvariablePath = `/tasks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13617,9 +13662,9 @@ export const taskInspectFetchParamCreator = (id: string, options: any = {}): Fet
  * @throws {RequiredError}
  * @summary List tasks fetch parameter creator
  */
-export const taskListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const taskListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/tasks`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -13628,18 +13673,18 @@ export const taskListFetchParamCreator = (filters?: string, options: any = {}): 
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13660,7 +13705,7 @@ export const taskListFetchParamCreator = (filters?: string, options: any = {}): 
  * @throws {RequiredError}
  * @summary Get task logs fetch parameter creator
  */
-export const taskLogsFetchParamCreator = (
+export const taskLogsFetchParameterCreator = (
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -13676,7 +13721,7 @@ export const taskLogsFetchParamCreator = (
         throw new RequiredError("id", "Required parameter id was null or undefined when calling taskLogs.");
     }
     const localvariablePath = `/tasks/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -13709,18 +13754,18 @@ export const taskLogsFetchParamCreator = (
         localvariableQueryParameter["tail"] = tail;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13732,7 +13777,7 @@ export const taskLogsFetchParamCreator = (
  * @summary Inspect a task
  */
 export const taskInspect = (id: string, options?: any): ((fetch: FetchAPI, basePath?: string) => Promise<Task>) => {
-    const localvariableFetchArguments = taskInspectFetchParamCreator(id, options);
+    const localvariableFetchArguments = taskInspectFetchParameterCreator(id, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13759,7 +13804,7 @@ export const taskList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Array<Task>>) => {
-    const localvariableFetchArguments = taskListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = taskListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -13803,7 +13848,7 @@ export const taskLogs = (
     tail?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Blob>) => {
-    const localvariableFetchArguments = taskLogsFetchParamCreator(
+    const localvariableFetchArguments = taskLogsFetchParameterCreator(
         id,
         details,
         follow,
@@ -13899,27 +13944,27 @@ export interface TaskApiInterface {
  * @throws {RequiredError}
  * @summary Create a volume fetch parameter creator
  */
-export const volumeCreateFetchParamCreator = (body: VolumeCreateOptions, options: any = {}): FetchArguments => {
+export const volumeCreateFetchParameterCreator = (body: VolumeCreateOptions, options: any = {}): FetchArguments => {
     // verify required parameter 'body' is not null or undefined
     if (body === null || body === undefined) {
         throw new RequiredError("body", "Required parameter body was null or undefined when calling volumeCreate.");
     }
     const localvariablePath = `/volumes/create`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"VolumeCreateOptions" !== "string" ||
@@ -13927,7 +13972,7 @@ export const volumeCreateFetchParamCreator = (body: VolumeCreateOptions, options
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13940,13 +13985,13 @@ export const volumeCreateFetchParamCreator = (body: VolumeCreateOptions, options
  * @throws {RequiredError}
  * @summary Remove a volume fetch parameter creator
  */
-export const volumeDeleteFetchParamCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
+export const volumeDeleteFetchParameterCreator = (name: string, force?: boolean, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling volumeDelete.");
     }
     const localvariablePath = `/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "DELETE" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -13955,18 +14000,18 @@ export const volumeDeleteFetchParamCreator = (name: string, force?: boolean, opt
         localvariableQueryParameter["force"] = force;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -13978,29 +14023,29 @@ export const volumeDeleteFetchParamCreator = (name: string, force?: boolean, opt
  * @throws {RequiredError}
  * @summary Inspect a volume fetch parameter creator
  */
-export const volumeInspectFetchParamCreator = (name: string, options: any = {}): FetchArguments => {
+export const volumeInspectFetchParameterCreator = (name: string, options: any = {}): FetchArguments => {
     // verify required parameter 'name' is not null or undefined
     if (name === null || name === undefined) {
         throw new RequiredError("name", "Required parameter name was null or undefined when calling volumeInspect.");
     }
     const localvariablePath = `/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -14020,9 +14065,9 @@ export const volumeInspectFetchParamCreator = (name: string, options: any = {}):
  * @throws {RequiredError}
  * @summary List volumes fetch parameter creator
  */
-export const volumeListFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const volumeListFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/volumes`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "GET" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -14031,18 +14076,18 @@ export const volumeListFetchParamCreator = (filters?: string, options: any = {})
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -14059,9 +14104,9 @@ export const volumeListFetchParamCreator = (filters?: string, options: any = {})
  * @throws {RequiredError}
  * @summary Delete unused volumes fetch parameter creator
  */
-export const volumePruneFetchParamCreator = (filters?: string, options: any = {}): FetchArguments => {
+export const volumePruneFetchParameterCreator = (filters?: string, options: any = {}): FetchArguments => {
     const localvariablePath = `/volumes/prune`;
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "POST" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -14070,18 +14115,18 @@ export const volumePruneFetchParamCreator = (filters?: string, options: any = {}
         localvariableQueryParameter["filters"] = filters;
     }
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -14098,7 +14143,7 @@ export const volumePruneFetchParamCreator = (filters?: string, options: any = {}
  * @throws {RequiredError}
  * @summary \"Update a volume. Valid only for Swarm cluster volumes\"  fetch parameter creator
  */
-export const volumeUpdateFetchParamCreator = (
+export const volumeUpdateFetchParameterCreator = (
     name: string,
     version: number,
     body?: VolumesNameBody,
@@ -14116,7 +14161,7 @@ export const volumeUpdateFetchParamCreator = (
         );
     }
     const localvariablePath = `/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: "PUT" }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -14127,14 +14172,14 @@ export const volumeUpdateFetchParamCreator = (
 
     localvariableHeaderParameter["Content-Type"] = "application/json";
 
-    localvariableUrlObj.query = Object.assign(
+    localvariableUrlObject.query = Object.assign(
         {},
-        localvariableUrlObj.query,
+        localvariableUrlObject.query,
         localvariableQueryParameter,
         options.query
     );
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
     const needsSerialization =
         <any>"VolumesNameBody" !== "string" ||
@@ -14142,7 +14187,7 @@ export const volumeUpdateFetchParamCreator = (
     localvariableRequestOptions.body = needsSerialization ? JSON.stringify(body || {}) : body || "";
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 };
@@ -14157,7 +14202,7 @@ export const volumeCreate = (
     body: VolumeCreateOptions,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Volume>) => {
-    const localvariableFetchArguments = volumeCreateFetchParamCreator(body, options);
+    const localvariableFetchArguments = volumeCreateFetchParameterCreator(body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -14184,7 +14229,7 @@ export const volumeDelete = (
     force?: boolean,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = volumeDeleteFetchParamCreator(name, force, options);
+    const localvariableFetchArguments = volumeDeleteFetchParameterCreator(name, force, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -14207,7 +14252,7 @@ export const volumeInspect = (
     name: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Volume>) => {
-    const localvariableFetchArguments = volumeInspectFetchParamCreator(name, options);
+    const localvariableFetchArguments = volumeInspectFetchParameterCreator(name, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -14238,7 +14283,7 @@ export const volumeList = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<VolumeListResponse>) => {
-    const localvariableFetchArguments = volumeListFetchParamCreator(filters, options);
+    const localvariableFetchArguments = volumeListFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -14266,7 +14311,7 @@ export const volumePrune = (
     filters?: string,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<VolumePruneResponse>) => {
-    const localvariableFetchArguments = volumePruneFetchParamCreator(filters, options);
+    const localvariableFetchArguments = volumePruneFetchParameterCreator(filters, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -14296,7 +14341,7 @@ export const volumeUpdate = (
     body?: VolumesNameBody,
     options?: any
 ): ((fetch: FetchAPI, basePath?: string) => Promise<Response>) => {
-    const localvariableFetchArguments = volumeUpdateFetchParamCreator(name, version, body, options);
+    const localvariableFetchArguments = volumeUpdateFetchParameterCreator(name, version, body, options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then(
             (response) => {
@@ -14336,7 +14381,7 @@ export interface VolumeApiInterface {
      * @throws {RequiredError}
      * @summary Remove a volume
      */
-    volumeDelete(name: string, force?: boolean, options?: any): Promise<{}>;
+    volumeDelete(name: string, force?: boolean, options?: any): Promise<void>;
 
     /**
      * @memberof VolumeApiInterface
@@ -14392,5 +14437,5 @@ export interface VolumeApiInterface {
      * @throws {RequiredError}
      * @summary \"Update a volume. Valid only for Swarm cluster volumes\"
      */
-    volumeUpdate(name: string, version: number, body?: VolumesNameBody, options?: any): Promise<{}>;
+    volumeUpdate(name: string, version: number, body?: VolumesNameBody, options?: any): Promise<void>;
 }

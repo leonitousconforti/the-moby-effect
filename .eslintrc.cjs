@@ -10,8 +10,11 @@ module.exports = {
     env: { node: true, es2022: true },
     parser: "@typescript-eslint/parser",
     rules: {
-        "no-console": "warn",
-        "unicorn/no-array-callback-reference": "off",
+        "no-console": "error",
+        "unicorn/no-null": "off",
+        "unicorn/prevent-abbreviations": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/ban-types": ["error", { types: { Object: false }, extendDefaults: true }],
         "@typescript-eslint/naming-convention": [
             "error",
             { format: null, selector: "parameter", filter: { regex: "^_", match: false } },

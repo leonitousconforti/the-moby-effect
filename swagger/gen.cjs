@@ -25,5 +25,5 @@ module.exports.runAsync = async () => {
 
     const source = fs.readFileSync(`${outputDirectory}/api.ts`, "utf8");
     const formattedSource = await prettier.format(source, prettierOptions);
-    fs.writeFileSync(`${outputDirectory}/api.ts`, formattedSource, "utf8");
+    fs.writeFileSync(`${outputDirectory}/api.ts`, formattedSource.replaceAll(/Promise<{}>/gm, "Promise<void>"), "utf8");
 };

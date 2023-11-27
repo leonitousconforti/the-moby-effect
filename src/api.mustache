@@ -3,7 +3,7 @@
 
 import * as url from "node:url";
 
-const BASE_PATH = "{{{basePath}}}".replace(/\/+$/, "");
+const BASE_PATH = "{{{basePath}}}"
 
 const COLLECTION_FORMATS = {
     csv: ",",
@@ -51,7 +51,7 @@ export class RequiredError extends Error {
 * @param {*} [options] Override http request option.
 * @throws {RequiredError}
 */
-export const {{nickname}}FetchParamCreator = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}options: any = {}): FetchArguments => {
+export const {{nickname}}FetchParameterCreator = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}options: any = {}): FetchArguments => {
 {{#allParams}}
 {{#required}}
     // verify required parameter '{{paramName}}' is not null or undefined
@@ -62,7 +62,7 @@ export const {{nickname}}FetchParamCreator = ({{#allParams}}{{paramName}}{{^requ
 {{/allParams}}
     const localvariablePath = `{{{path}}}`{{#pathParams}}
         .replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
-    const localvariableUrlObj = url.parse(localvariablePath, true);
+    const localvariableUrlObject = url.parse(localvariablePath, true);
     const localvariableRequestOptions = Object.assign({ method: '{{httpMethod}}' }, options);
     const localvariableHeaderParameter = {} as any;
     const localvariableQueryParameter = {} as any;
@@ -146,9 +146,9 @@ export const {{nickname}}FetchParamCreator = ({{#allParams}}{{paramName}}{{^requ
     {{/consumes.0}}
 
 {{/bodyParam}}
-    localvariableUrlObj.query = Object.assign({}, localvariableUrlObj.query, localvariableQueryParameter, options.query);
+    localvariableUrlObject.query = Object.assign({}, localvariableUrlObject.query, localvariableQueryParameter, options.query);
     // fix override query string Detail: https://stackoverflow.com/a/7517673/1077943
-    localvariableUrlObj.search = null;
+    localvariableUrlObject.search = null;
     localvariableRequestOptions.headers = Object.assign({}, localvariableHeaderParameter, options.headers);
 {{#hasFormParams}}
     localvariableRequestOptions.body = localvariableFormParameters.toString();
@@ -159,7 +159,7 @@ export const {{nickname}}FetchParamCreator = ({{#allParams}}{{paramName}}{{^requ
 {{/bodyParam}}
 
     return {
-        url: url.format(localvariableUrlObj),
+        url: url.format(localvariableUrlObject),
         options: localvariableRequestOptions,
     };
 }
@@ -178,7 +178,7 @@ export const {{nickname}}FetchParamCreator = ({{#allParams}}{{paramName}}{{^requ
 * @throws {RequiredError}
 */
 export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}options?: any): (fetch: FetchAPI, basePath?: string) => Promise<{{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}Response{{/returnType}}> => {
-    const localvariableFetchArguments = {{nickname}}FetchParamCreator({{#allParams}}{{paramName}}, {{/allParams}}options);
+    const localvariableFetchArguments = {{nickname}}FetchParameterCreator({{#allParams}}{{paramName}}, {{/allParams}}options);
     return (fetch: FetchAPI, basePath: string = BASE_PATH) => {
         return fetch(basePath + localvariableFetchArguments.url, localvariableFetchArguments.options).then((response) => {
             if (response.status >= 200 && response.status < 300) {
