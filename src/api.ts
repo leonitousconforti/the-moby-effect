@@ -437,7 +437,7 @@ export interface ConfigSpec {
     templating?: Driver;
 }
 
-export interface ConfigsCreateBody extends ConfigSpec {}
+export interface ConfigsCreateBody {}
 
 /**
  * Configuration for a container that is portable between hosts. When used as
@@ -692,12 +692,12 @@ export interface ContainerWaitResponse {
     error?: ContainerWaitExitError;
 }
 
-export interface ContainersCreateBody extends ContainerConfig {
+export interface ContainersCreateBody extends ContainerConfig, ContainerConfig {
     hostConfig?: HostConfig;
     networkingConfig?: NetworkingConfig;
 }
 
-export interface ContainersCreateBody1 extends ContainerConfig {
+export interface ContainersCreateBody1 extends ContainerConfig, ContainerConfig {
     hostConfig?: HostConfig;
     networkingConfig?: NetworkingConfig;
 }
@@ -976,7 +976,7 @@ export interface FilesystemChange {
  * User-defined resources can be either Integer resources (e.g, `SSD=3`) or
  * String resources (e.g, `GPU=UUID1`).
  */
-export interface GenericResources extends Array<GenericResourcesInner> {}
+export interface GenericResources {}
 
 export interface GenericResourcesInner {
     namedResourceSpec?: any;
@@ -1095,7 +1095,46 @@ export interface HistoryResponseItem {
 }
 
 /** Container configuration that depends on the host we are running on */
-export interface HostConfig extends Resources {
+export interface HostConfig
+    extends Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources,
+        Resources {
     /**
      * A list of volume bindings for this container. Each volume binding is a
      * string in one of these forms: - `host-src:container-dest[:options]` to
@@ -1339,7 +1378,7 @@ export interface IdUpdateBody extends Resources {
     restartPolicy?: RestartPolicy;
 }
 
-export interface IdUpdateBody1 extends ServiceSpec {}
+export interface IdUpdateBody1 {}
 
 export interface ImageDeleteResponseItem {
     /** The image ID of an image that was untagged */
@@ -2264,7 +2303,7 @@ export interface PortBinding {
  * `<port>/<protocol>`, for example, `80/udp`. If a container's port is mapped
  * for multiple protocols, separate entries are added to the mapping table.
  */
-export interface PortMap extends null<String, Array> {
+export interface PortMap {
     [key: string]: Array<PortBinding>;
 }
 
@@ -2577,7 +2616,7 @@ export interface SecretSpec {
     templating?: Driver;
 }
 
-export interface SecretsCreateBody extends SecretSpec {}
+export interface SecretsCreateBody {}
 
 export interface Service {
     ID?: string;
@@ -2805,7 +2844,7 @@ export namespace ServiceUpdateStatus {
     }
 }
 
-export interface ServicesCreateBody extends ServiceSpec {}
+export interface ServicesCreateBody {}
 
 export interface Swarm extends ClusterInfo {
     joinTokens?: JoinTokens;
@@ -3995,7 +4034,7 @@ export interface ThrottleDevice {
  * A map of topological domains to topological segments. For in depth details,
  * see documentation for the Topology object in the CSI specification.
  */
-export interface Topology extends null<String, string> {
+export interface Topology {
     [key: string]: string;
 }
 
