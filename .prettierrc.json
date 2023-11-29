@@ -1,9 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/prettierrc",
-    "plugins": ["prettier-plugin-jsdoc", "prettier-plugin-packagejson"],
+    "plugins": ["prettier-plugin-packagejson"],
 
     "semi": true,
     "singleQuote": false,
-    "jsdocPrintWidth": 80,
     "trailingComma": "es5"
 }

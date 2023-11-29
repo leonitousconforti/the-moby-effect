@@ -1,26 +1,27 @@
 {
     "$schema": "https://developer.microsoft.com/json-schemas/heft/v0/heft.schema.json",
     "phasesByName": {
-        "build": {
-            "cleanFiles": [
-                { "sourcePath": "dist" },
-                {
-                    "includeGlobs": ["src/**/*"],
-                    "excludeGlobs": ["src/*.mustache"]
-                }
-            ],
+        "gen": {
+            "cleanFiles": [{ "sourcePath": "dist" }, { "includeGlobs": ["src/api.ts", "config/typescript.json"] }],
             "tasksByName": {
-                "swagger-codegen": {
+                "set-typescript-gen-config": {
                     "taskPlugin": {
                         "pluginPackage": "@rushstack/heft",
-                        "pluginName": "run-script-plugin",
+                        "pluginName": "copy-files-plugin",
                         "options": {
-                            "scriptPath": "swagger/gen.cjs"
+                            "copyOperations": [
+                                {
+                                    "hardlink": true,
+                                    "sourcePath": "gen/",
+                                    "destinationFolders": ["config/"],
+                                    "includeGlobs": ["typescript.json"]
+                                }
+                            ]
                         }
                     }
                 },
                 "typescript": {
-                    "taskDependencies": ["swagger-codegen"],
+                    "taskDependencies": ["set-typescript-gen-config"],
                     "taskPlugin": {
                         "pluginPackage": "@rushstack/heft-typescript-plugin"
                     }
@@ -29,6 +30,102 @@
                     "taskDependencies": ["typescript"],
                     "taskPlugin": {
                         "pluginPackage": "@rushstack/heft-lint-plugin"
+                    }
+                },
+                "codegen": {
+                    "taskDependencies": ["lint"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft",
+                        "pluginName": "run-script-plugin",
+                        "options": {
+                            "scriptPath": "dist/main.cjs"
+                        }
+                    }
+                },
+                "delete-build-folder": {
+                    "taskDependencies": ["codegen"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft",
+                        "pluginName": "delete-files-plugin",
+                        "options": {
+                            "deleteOperations": [
+                                {
+                                    "includeGlobs": ["dist/"]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "build": {
+            "cleanFiles": [{ "sourcePath": "dist" }, { "includeGlobs": ["config/typescript.json"] }],
+            "tasksByName": {
+                "set-typescript-src-config": {
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft",
+                        "pluginName": "copy-files-plugin",
+                        "options": {
+                            "copyOperations": [
+                                {
+                                    "hardlink": true,
+                                    "sourcePath": "src/",
+                                    "destinationFolders": ["config/"],
+                                    "includeGlobs": ["typescript.json"]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "typescript": {
+                    "taskDependencies": ["set-typescript-src-config"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-typescript-plugin"
+                    }
+                },
+                "lint": {
+                    "taskDependencies": ["typescript"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-lint-plugin"
+                    }
+                }
+            }
+        },
+        "test": {
+            "cleanFiles": [{ "sourcePath": "dist" }, { "includeGlobs": ["config/typescript.json"] }],
+            "tasksByName": {
+                "set-typescript-test-config": {
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft",
+                        "pluginName": "copy-files-plugin",
+                        "options": {
+                            "copyOperations": [
+                                {
+                                    "hardlink": true,
+                                    "sourcePath": "test/",
+                                    "destinationFolders": ["config/"],
+                                    "includeGlobs": ["typescript.json"]
+                                }
+                            ]
+                        }
+                    }
+                },
+                "typescript": {
+                    "taskDependencies": ["set-typescript-test-config"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-typescript-plugin"
+                    }
+                },
+                "lint": {
+                    "taskDependencies": ["typescript"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-lint-plugin"
+                    }
+                },
+                "jest": {
+                    "taskDependencies": ["lint"],
+                    "taskPlugin": {
+                        "pluginPackage": "@rushstack/heft-jest-plugin"
                     }
                 }
             }

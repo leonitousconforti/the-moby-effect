@@ -1,0 +1,100 @@
+// spell-checker: disable
+
+import { Effect, Data, identity } from "effect";
+import * as Schema from "@effect/schema/Schema";
+import * as Http from "@effect/platform/HttpClient";
+import { ParseError } from "@effect/schema/ParseResult";
+
+import {
+    any as anySchema,
+    array as arraySchema,
+    record as recordSchema,
+    Date as DateSchema,
+    string as stringSchema,
+    number as numberSchema,
+    boolean as booleanSchema,
+    unknown as unknownSchema,
+} from "@effect/schema/Schema";
+
+const BASE_PATH = "{{{basePath}}}"
+
+const COLLECTION_FORMATS = {
+    csv: ",",
+    ssv: " ",
+    tsv: "\t",
+    pipes: "|",
+};
+
+{{#models}}
+{{#model}}{{#isEnum}}{{>modelEnum}}{{/isEnum}}{{^isEnum}}{{>modelGeneric}}{{/isEnum}}{{/model}}
+{{/models}}
+// section: api
+{{#apiInfo}}{{#apis}}{{#operations}}
+{{#operation}}
+export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ message: string }> {}
+
+/**
+* {{&notes}}
+{{#summary}}
+* @summary {{&summary}}
+{{/summary}}
+{{#allParams}}
+* @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
+{{/allParams}}
+*/
+export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{^-last}}, {{/-last}}{{/allParams}}): Effect.Effect<never, {{nickname}}Error | Http.error.HttpClientError {{#bodyParam}}| Http.body.BodyError {{/bodyParam}}| ParseError, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+{{#allParams}}
+{{#required}}
+    if ({{paramName}} === null || {{paramName}} === undefined) {
+        yield* _(new {{nickname}}Error({ message: "Required parameter {{paramName}} was null or undefined" }));
+    }
+
+{{/required}}
+{{/allParams}}
+    const endpoint: string = `${BASE_PATH}{{{path}}}`{{#pathParams}}.replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
+    return Http.request.make("{{httpMethod}}")(endpoint);
+})
+{{#queryParams}}
+{{#isListContainer}}
+{{#isCollectionFormatMulti}}
+.pipe(Effect.map(Http.request.setUrlParam("{{baseName}}", String({{paramName}}))))
+{{/isCollectionFormatMulti}}
+{{^isCollectionFormatMulti}}
+.pipe(Effect.map(Http.request.setUrlParam("{{baseName}}", ({{paramName}} || []).join(COLLECTION_FORMATS["{{collectionFormat}}"]))))
+{{/isCollectionFormatMulti}}
+{{/isListContainer}}
+{{^isListContainer}}
+.pipe(Effect.map({{paramName}} ? Http.request.setUrlParam("{{baseName}}", String({{paramName}})) : identity))
+{{/isListContainer}}
+{{/queryParams}}
+{{#headerParams}}
+.pipe(Effect.map(Http.request.setHeader("{{baseName}}", String({{paramName}}))))
+{{/headerParams}}
+{{#bodyParam}}
+{{^consumes}}
+.pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+{{/consumes}}
+{{#consumes.0}}
+.pipe(Effect.map(Http.request.setHeader("Content-Type", "{{{mediaType}}}")))
+{{/consumes.0}}
+.pipe(
+    Effect.flatMap((clientRequest) => {
+        const needsSerialization =
+            ("{{dataType}}" as unknown) !== "string" ||
+            clientRequest.headers["Content-Type"] === "application/json";
+
+        return needsSerialization
+            ? Http.request.jsonBody(clientRequest, {{paramName}})
+            : Effect.succeed(Http.request.textBody(clientRequest, ({{paramName}} as unknown as string) || ""));
+    })
+)
+{{/bodyParam}}
+.pipe(
+    Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
+    Effect.flatMap(Http.client.fetchOk())
+    {{#returnType}},Effect.flatMap(Http.response.schemaBodyJson({{{returnType}}}Schema)){{/returnType}}
+)
+
+{{/operation}}
+
+{{/operations}}{{/apis}}{{/apiInfo}}

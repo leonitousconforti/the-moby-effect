@@ -1,0 +1,33 @@
+// section: {{classname}}Schema
+{{#hasEnums}}
+{{#vars}}
+{{#isEnum}}
+export enum {{classname}}_{{enumName}} {
+{{#allowableValues}}
+    {{#enumVars}}
+    {{{name}}} = {{{value}}},
+    {{/enumVars}}
+{{/allowableValues}}
+}
+
+{{/isEnum}}
+{{/vars}}
+{{/hasEnums}}
+{{#description}}
+/**
+ * {{{description}}}
+ */
+{{/description}}
+export const {{classname}}Schema = {{#parent}}Schema.extend({{{parent}}}Schema, {{/parent}}Schema.struct({
+{{#vars}}
+    {{#description}}
+    /**
+     * {{{description}}}
+     */
+    {{/description}}
+    {{name}}: {{^isEnum}}{{{datatype}}}Schema{{/isEnum}}{{#isEnum}}Schema.enums({{classname}}_{{enumName}}){{/isEnum}}{{^required}}.pipe(Schema.nullable).pipe(Schema.optional){{/required}}{{#required}}.pipe(identity){{/required}},
+{{/vars}}
+})
+{{#parent}}){{/parent}}
+
+export interface {{classname}} extends Schema.Schema.To<typeof {{classname}}Schema> {}
