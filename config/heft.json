@@ -69,7 +69,7 @@
                             "copyOperations": [
                                 {
                                     "hardlink": true,
-                                    "sourcePath": "src/",
+                                    "sourcePath": "test/",
                                     "destinationFolders": ["config/"],
                                     "includeGlobs": ["typescript.json"]
                                 }
@@ -92,38 +92,9 @@
             }
         },
         "test": {
-            "cleanFiles": [{ "sourcePath": "dist" }, { "includeGlobs": ["config/typescript.json"] }],
+            "phaseDependencies": ["build"],
             "tasksByName": {
-                "set-typescript-test-config": {
-                    "taskPlugin": {
-                        "pluginPackage": "@rushstack/heft",
-                        "pluginName": "copy-files-plugin",
-                        "options": {
-                            "copyOperations": [
-                                {
-                                    "hardlink": true,
-                                    "sourcePath": "test/",
-                                    "destinationFolders": ["config/"],
-                                    "includeGlobs": ["typescript.json"]
-                                }
-                            ]
-                        }
-                    }
-                },
-                "typescript": {
-                    "taskDependencies": ["set-typescript-test-config"],
-                    "taskPlugin": {
-                        "pluginPackage": "@rushstack/heft-typescript-plugin"
-                    }
-                },
-                "lint": {
-                    "taskDependencies": ["typescript"],
-                    "taskPlugin": {
-                        "pluginPackage": "@rushstack/heft-lint-plugin"
-                    }
-                },
                 "jest": {
-                    "taskDependencies": ["lint"],
                     "taskPlugin": {
                         "pluginPackage": "@rushstack/heft-jest-plugin"
                     }
