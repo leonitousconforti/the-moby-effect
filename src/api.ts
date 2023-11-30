@@ -8447,343 +8447,353 @@ export interface IDockerService {
     ) => ReturnType<typeof volumeUpdate>;
 }
 
-export const DockerService: Context.Tag<IDockerService, IDockerService> = Context.Tag<IDockerService>();
+export const DefaultDockerService: Context.Tag<IDockerService, IDockerService> =
+    Context.Tag<IDockerService>("defaultDockerService");
 
 export const makeDockerService = (
-    dockerConnectionOptions: DockerConnectionOptions
-): Layer.Layer<never, never, IDockerService> =>
-    Layer.succeed(
-        DockerService,
-        DockerService.of({
+    dockerConnectionOptions?: DockerConnectionOptions | undefined,
+    contextTag: Context.Tag<IDockerService, IDockerService> = DefaultDockerService
+): Layer.Layer<never, never, IDockerService> => {
+    const localDockerConnectionOptions =
+        dockerConnectionOptions ||
+        ({
+            protocol: "unix",
+            socketPath: "/var/run/docker.sock",
+        } as DockerConnectionOptions);
+
+    return Layer.succeed(
+        contextTag,
+        contextTag.of({
             configCreate: (
                 ...args: Parameters<typeof configCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configCreate(dockerConnectionOptions, ...args),
+            ) => configCreate(localDockerConnectionOptions, ...args),
             configDelete: (
                 ...args: Parameters<typeof configDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configDelete(dockerConnectionOptions, ...args),
+            ) => configDelete(localDockerConnectionOptions, ...args),
             configInspect: (
                 ...args: Parameters<typeof configInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configInspect(dockerConnectionOptions, ...args),
+            ) => configInspect(localDockerConnectionOptions, ...args),
             configList: (
                 ...args: Parameters<typeof configList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configList(dockerConnectionOptions, ...args),
+            ) => configList(localDockerConnectionOptions, ...args),
             configUpdate: (
                 ...args: Parameters<typeof configUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configUpdate(dockerConnectionOptions, ...args),
+            ) => configUpdate(localDockerConnectionOptions, ...args),
             containerArchive: (
                 ...args: Parameters<typeof containerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerArchive(dockerConnectionOptions, ...args),
+            ) => containerArchive(localDockerConnectionOptions, ...args),
             containerArchiveInfo: (
                 ...args: Parameters<typeof containerArchiveInfo> extends [DockerConnectionOptions, ...infer U]
                     ? U
                     : never
-            ) => containerArchiveInfo(dockerConnectionOptions, ...args),
+            ) => containerArchiveInfo(localDockerConnectionOptions, ...args),
             containerAttach: (
                 ...args: Parameters<typeof containerAttach> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerAttach(dockerConnectionOptions, ...args),
+            ) => containerAttach(localDockerConnectionOptions, ...args),
             containerAttachWebsocket: (
                 ...args: Parameters<typeof containerAttachWebsocket> extends [DockerConnectionOptions, ...infer U]
                     ? U
                     : never
-            ) => containerAttachWebsocket(dockerConnectionOptions, ...args),
+            ) => containerAttachWebsocket(localDockerConnectionOptions, ...args),
             containerChanges: (
                 ...args: Parameters<typeof containerChanges> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerChanges(dockerConnectionOptions, ...args),
+            ) => containerChanges(localDockerConnectionOptions, ...args),
             containerCreate: (
                 ...args: Parameters<typeof containerCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerCreate(dockerConnectionOptions, ...args),
+            ) => containerCreate(localDockerConnectionOptions, ...args),
             containerDelete: (
                 ...args: Parameters<typeof containerDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerDelete(dockerConnectionOptions, ...args),
+            ) => containerDelete(localDockerConnectionOptions, ...args),
             containerExport: (
                 ...args: Parameters<typeof containerExport> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerExport(dockerConnectionOptions, ...args),
+            ) => containerExport(localDockerConnectionOptions, ...args),
             containerInspect: (
                 ...args: Parameters<typeof containerInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerInspect(dockerConnectionOptions, ...args),
+            ) => containerInspect(localDockerConnectionOptions, ...args),
             containerKill: (
                 ...args: Parameters<typeof containerKill> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerKill(dockerConnectionOptions, ...args),
+            ) => containerKill(localDockerConnectionOptions, ...args),
             containerList: (
                 ...args: Parameters<typeof containerList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerList(dockerConnectionOptions, ...args),
+            ) => containerList(localDockerConnectionOptions, ...args),
             containerLogs: (
                 ...args: Parameters<typeof containerLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerLogs(dockerConnectionOptions, ...args),
+            ) => containerLogs(localDockerConnectionOptions, ...args),
             containerPause: (
                 ...args: Parameters<typeof containerPause> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerPause(dockerConnectionOptions, ...args),
+            ) => containerPause(localDockerConnectionOptions, ...args),
             containerPrune: (
                 ...args: Parameters<typeof containerPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerPrune(dockerConnectionOptions, ...args),
+            ) => containerPrune(localDockerConnectionOptions, ...args),
             containerRename: (
                 ...args: Parameters<typeof containerRename> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerRename(dockerConnectionOptions, ...args),
+            ) => containerRename(localDockerConnectionOptions, ...args),
             containerResize: (
                 ...args: Parameters<typeof containerResize> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerResize(dockerConnectionOptions, ...args),
+            ) => containerResize(localDockerConnectionOptions, ...args),
             containerRestart: (
                 ...args: Parameters<typeof containerRestart> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerRestart(dockerConnectionOptions, ...args),
+            ) => containerRestart(localDockerConnectionOptions, ...args),
             containerStart: (
                 ...args: Parameters<typeof containerStart> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerStart(dockerConnectionOptions, ...args),
+            ) => containerStart(localDockerConnectionOptions, ...args),
             containerStats: (
                 ...args: Parameters<typeof containerStats> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerStats(dockerConnectionOptions, ...args),
+            ) => containerStats(localDockerConnectionOptions, ...args),
             containerStop: (
                 ...args: Parameters<typeof containerStop> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerStop(dockerConnectionOptions, ...args),
+            ) => containerStop(localDockerConnectionOptions, ...args),
             containerTop: (
                 ...args: Parameters<typeof containerTop> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerTop(dockerConnectionOptions, ...args),
+            ) => containerTop(localDockerConnectionOptions, ...args),
             containerUnpause: (
                 ...args: Parameters<typeof containerUnpause> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerUnpause(dockerConnectionOptions, ...args),
+            ) => containerUnpause(localDockerConnectionOptions, ...args),
             containerUpdate: (
                 ...args: Parameters<typeof containerUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerUpdate(dockerConnectionOptions, ...args),
+            ) => containerUpdate(localDockerConnectionOptions, ...args),
             containerWait: (
                 ...args: Parameters<typeof containerWait> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerWait(dockerConnectionOptions, ...args),
+            ) => containerWait(localDockerConnectionOptions, ...args),
             putContainerArchive: (
                 ...args: Parameters<typeof putContainerArchive> extends [DockerConnectionOptions, ...infer U]
                     ? U
                     : never
-            ) => putContainerArchive(dockerConnectionOptions, ...args),
+            ) => putContainerArchive(localDockerConnectionOptions, ...args),
             distributionInspect: (
                 ...args: Parameters<typeof distributionInspect> extends [DockerConnectionOptions, ...infer U]
                     ? U
                     : never
-            ) => distributionInspect(dockerConnectionOptions, ...args),
+            ) => distributionInspect(localDockerConnectionOptions, ...args),
             containerExec: (
                 ...args: Parameters<typeof containerExec> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerExec(dockerConnectionOptions, ...args),
+            ) => containerExec(localDockerConnectionOptions, ...args),
             execInspect: (
                 ...args: Parameters<typeof execInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => execInspect(dockerConnectionOptions, ...args),
+            ) => execInspect(localDockerConnectionOptions, ...args),
             execResize: (
                 ...args: Parameters<typeof execResize> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => execResize(dockerConnectionOptions, ...args),
+            ) => execResize(localDockerConnectionOptions, ...args),
             execStart: (
                 ...args: Parameters<typeof execStart> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => execStart(dockerConnectionOptions, ...args),
+            ) => execStart(localDockerConnectionOptions, ...args),
             buildPrune: (
                 ...args: Parameters<typeof buildPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => buildPrune(dockerConnectionOptions, ...args),
+            ) => buildPrune(localDockerConnectionOptions, ...args),
             imageBuild: (
                 ...args: Parameters<typeof imageBuild> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageBuild(dockerConnectionOptions, ...args),
+            ) => imageBuild(localDockerConnectionOptions, ...args),
             imageCommit: (
                 ...args: Parameters<typeof imageCommit> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageCommit(dockerConnectionOptions, ...args),
+            ) => imageCommit(localDockerConnectionOptions, ...args),
             imageCreate: (
                 ...args: Parameters<typeof imageCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageCreate(dockerConnectionOptions, ...args),
+            ) => imageCreate(localDockerConnectionOptions, ...args),
             imageDelete: (
                 ...args: Parameters<typeof imageDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageDelete(dockerConnectionOptions, ...args),
+            ) => imageDelete(localDockerConnectionOptions, ...args),
             imageGet: (
                 ...args: Parameters<typeof imageGet> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageGet(dockerConnectionOptions, ...args),
+            ) => imageGet(localDockerConnectionOptions, ...args),
             imageGetAll: (
                 ...args: Parameters<typeof imageGetAll> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageGetAll(dockerConnectionOptions, ...args),
+            ) => imageGetAll(localDockerConnectionOptions, ...args),
             imageHistory: (
                 ...args: Parameters<typeof imageHistory> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageHistory(dockerConnectionOptions, ...args),
+            ) => imageHistory(localDockerConnectionOptions, ...args),
             imageInspect: (
                 ...args: Parameters<typeof imageInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageInspect(dockerConnectionOptions, ...args),
+            ) => imageInspect(localDockerConnectionOptions, ...args),
             imageList: (
                 ...args: Parameters<typeof imageList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageList(dockerConnectionOptions, ...args),
+            ) => imageList(localDockerConnectionOptions, ...args),
             imageLoad: (
                 ...args: Parameters<typeof imageLoad> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageLoad(dockerConnectionOptions, ...args),
+            ) => imageLoad(localDockerConnectionOptions, ...args),
             imagePrune: (
                 ...args: Parameters<typeof imagePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imagePrune(dockerConnectionOptions, ...args),
+            ) => imagePrune(localDockerConnectionOptions, ...args),
             imagePush: (
                 ...args: Parameters<typeof imagePush> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imagePush(dockerConnectionOptions, ...args),
+            ) => imagePush(localDockerConnectionOptions, ...args),
             imageSearch: (
                 ...args: Parameters<typeof imageSearch> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageSearch(dockerConnectionOptions, ...args),
+            ) => imageSearch(localDockerConnectionOptions, ...args),
             imageTag: (
                 ...args: Parameters<typeof imageTag> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageTag(dockerConnectionOptions, ...args),
+            ) => imageTag(localDockerConnectionOptions, ...args),
             networkConnect: (
                 ...args: Parameters<typeof networkConnect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkConnect(dockerConnectionOptions, ...args),
+            ) => networkConnect(localDockerConnectionOptions, ...args),
             networkCreate: (
                 ...args: Parameters<typeof networkCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkCreate(dockerConnectionOptions, ...args),
+            ) => networkCreate(localDockerConnectionOptions, ...args),
             networkDelete: (
                 ...args: Parameters<typeof networkDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkDelete(dockerConnectionOptions, ...args),
+            ) => networkDelete(localDockerConnectionOptions, ...args),
             networkDisconnect: (
                 ...args: Parameters<typeof networkDisconnect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkDisconnect(dockerConnectionOptions, ...args),
+            ) => networkDisconnect(localDockerConnectionOptions, ...args),
             networkInspect: (
                 ...args: Parameters<typeof networkInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkInspect(dockerConnectionOptions, ...args),
+            ) => networkInspect(localDockerConnectionOptions, ...args),
             networkList: (
                 ...args: Parameters<typeof networkList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkList(dockerConnectionOptions, ...args),
+            ) => networkList(localDockerConnectionOptions, ...args),
             networkPrune: (
                 ...args: Parameters<typeof networkPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkPrune(dockerConnectionOptions, ...args),
+            ) => networkPrune(localDockerConnectionOptions, ...args),
             nodeDelete: (
                 ...args: Parameters<typeof nodeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeDelete(dockerConnectionOptions, ...args),
+            ) => nodeDelete(localDockerConnectionOptions, ...args),
             nodeInspect: (
                 ...args: Parameters<typeof nodeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeInspect(dockerConnectionOptions, ...args),
+            ) => nodeInspect(localDockerConnectionOptions, ...args),
             nodeList: (
                 ...args: Parameters<typeof nodeList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeList(dockerConnectionOptions, ...args),
+            ) => nodeList(localDockerConnectionOptions, ...args),
             nodeUpdate: (
                 ...args: Parameters<typeof nodeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeUpdate(dockerConnectionOptions, ...args),
+            ) => nodeUpdate(localDockerConnectionOptions, ...args),
             getPluginPrivileges: (
                 ...args: Parameters<typeof getPluginPrivileges> extends [DockerConnectionOptions, ...infer U]
                     ? U
                     : never
-            ) => getPluginPrivileges(dockerConnectionOptions, ...args),
+            ) => getPluginPrivileges(localDockerConnectionOptions, ...args),
             pluginCreate: (
                 ...args: Parameters<typeof pluginCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginCreate(dockerConnectionOptions, ...args),
+            ) => pluginCreate(localDockerConnectionOptions, ...args),
             pluginDelete: (
                 ...args: Parameters<typeof pluginDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginDelete(dockerConnectionOptions, ...args),
+            ) => pluginDelete(localDockerConnectionOptions, ...args),
             pluginDisable: (
                 ...args: Parameters<typeof pluginDisable> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginDisable(dockerConnectionOptions, ...args),
+            ) => pluginDisable(localDockerConnectionOptions, ...args),
             pluginEnable: (
                 ...args: Parameters<typeof pluginEnable> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginEnable(dockerConnectionOptions, ...args),
+            ) => pluginEnable(localDockerConnectionOptions, ...args),
             pluginInspect: (
                 ...args: Parameters<typeof pluginInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginInspect(dockerConnectionOptions, ...args),
+            ) => pluginInspect(localDockerConnectionOptions, ...args),
             pluginList: (
                 ...args: Parameters<typeof pluginList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginList(dockerConnectionOptions, ...args),
+            ) => pluginList(localDockerConnectionOptions, ...args),
             pluginPull: (
                 ...args: Parameters<typeof pluginPull> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginPull(dockerConnectionOptions, ...args),
+            ) => pluginPull(localDockerConnectionOptions, ...args),
             pluginPush: (
                 ...args: Parameters<typeof pluginPush> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginPush(dockerConnectionOptions, ...args),
+            ) => pluginPush(localDockerConnectionOptions, ...args),
             pluginSet: (
                 ...args: Parameters<typeof pluginSet> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginSet(dockerConnectionOptions, ...args),
+            ) => pluginSet(localDockerConnectionOptions, ...args),
             pluginUpgrade: (
                 ...args: Parameters<typeof pluginUpgrade> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginUpgrade(dockerConnectionOptions, ...args),
+            ) => pluginUpgrade(localDockerConnectionOptions, ...args),
             secretCreate: (
                 ...args: Parameters<typeof secretCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretCreate(dockerConnectionOptions, ...args),
+            ) => secretCreate(localDockerConnectionOptions, ...args),
             secretDelete: (
                 ...args: Parameters<typeof secretDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretDelete(dockerConnectionOptions, ...args),
+            ) => secretDelete(localDockerConnectionOptions, ...args),
             secretInspect: (
                 ...args: Parameters<typeof secretInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretInspect(dockerConnectionOptions, ...args),
+            ) => secretInspect(localDockerConnectionOptions, ...args),
             secretList: (
                 ...args: Parameters<typeof secretList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretList(dockerConnectionOptions, ...args),
+            ) => secretList(localDockerConnectionOptions, ...args),
             secretUpdate: (
                 ...args: Parameters<typeof secretUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretUpdate(dockerConnectionOptions, ...args),
+            ) => secretUpdate(localDockerConnectionOptions, ...args),
             serviceCreate: (
                 ...args: Parameters<typeof serviceCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceCreate(dockerConnectionOptions, ...args),
+            ) => serviceCreate(localDockerConnectionOptions, ...args),
             serviceDelete: (
                 ...args: Parameters<typeof serviceDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceDelete(dockerConnectionOptions, ...args),
+            ) => serviceDelete(localDockerConnectionOptions, ...args),
             serviceInspect: (
                 ...args: Parameters<typeof serviceInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceInspect(dockerConnectionOptions, ...args),
+            ) => serviceInspect(localDockerConnectionOptions, ...args),
             serviceList: (
                 ...args: Parameters<typeof serviceList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceList(dockerConnectionOptions, ...args),
+            ) => serviceList(localDockerConnectionOptions, ...args),
             serviceLogs: (
                 ...args: Parameters<typeof serviceLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceLogs(dockerConnectionOptions, ...args),
+            ) => serviceLogs(localDockerConnectionOptions, ...args),
             serviceUpdate: (
                 ...args: Parameters<typeof serviceUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceUpdate(dockerConnectionOptions, ...args),
+            ) => serviceUpdate(localDockerConnectionOptions, ...args),
             session: (...args: Parameters<typeof session> extends [DockerConnectionOptions, ...infer U] ? U : never) =>
-                session(dockerConnectionOptions, ...args),
+                session(localDockerConnectionOptions, ...args),
             swarmInit: (
                 ...args: Parameters<typeof swarmInit> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmInit(dockerConnectionOptions, ...args),
+            ) => swarmInit(localDockerConnectionOptions, ...args),
             swarmInspect: (
                 ...args: Parameters<typeof swarmInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmInspect(dockerConnectionOptions, ...args),
+            ) => swarmInspect(localDockerConnectionOptions, ...args),
             swarmJoin: (
                 ...args: Parameters<typeof swarmJoin> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmJoin(dockerConnectionOptions, ...args),
+            ) => swarmJoin(localDockerConnectionOptions, ...args),
             swarmLeave: (
                 ...args: Parameters<typeof swarmLeave> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmLeave(dockerConnectionOptions, ...args),
+            ) => swarmLeave(localDockerConnectionOptions, ...args),
             swarmUnlock: (
                 ...args: Parameters<typeof swarmUnlock> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmUnlock(dockerConnectionOptions, ...args),
+            ) => swarmUnlock(localDockerConnectionOptions, ...args),
             swarmUnlockkey: (
                 ...args: Parameters<typeof swarmUnlockkey> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmUnlockkey(dockerConnectionOptions, ...args),
+            ) => swarmUnlockkey(localDockerConnectionOptions, ...args),
             swarmUpdate: (
                 ...args: Parameters<typeof swarmUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmUpdate(dockerConnectionOptions, ...args),
+            ) => swarmUpdate(localDockerConnectionOptions, ...args),
             systemAuth: (
                 ...args: Parameters<typeof systemAuth> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemAuth(dockerConnectionOptions, ...args),
+            ) => systemAuth(localDockerConnectionOptions, ...args),
             systemDataUsage: (
                 ...args: Parameters<typeof systemDataUsage> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemDataUsage(dockerConnectionOptions, ...args),
+            ) => systemDataUsage(localDockerConnectionOptions, ...args),
             systemEvents: (
                 ...args: Parameters<typeof systemEvents> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemEvents(dockerConnectionOptions, ...args),
+            ) => systemEvents(localDockerConnectionOptions, ...args),
             systemInfo: (
                 ...args: Parameters<typeof systemInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemInfo(dockerConnectionOptions, ...args),
+            ) => systemInfo(localDockerConnectionOptions, ...args),
             systemPing: (
                 ...args: Parameters<typeof systemPing> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemPing(dockerConnectionOptions, ...args),
+            ) => systemPing(localDockerConnectionOptions, ...args),
             systemPingHead: (
                 ...args: Parameters<typeof systemPingHead> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemPingHead(dockerConnectionOptions, ...args),
+            ) => systemPingHead(localDockerConnectionOptions, ...args),
             systemVersion: (
                 ...args: Parameters<typeof systemVersion> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemVersion(dockerConnectionOptions, ...args),
+            ) => systemVersion(localDockerConnectionOptions, ...args),
             taskInspect: (
                 ...args: Parameters<typeof taskInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => taskInspect(dockerConnectionOptions, ...args),
+            ) => taskInspect(localDockerConnectionOptions, ...args),
             taskList: (
                 ...args: Parameters<typeof taskList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => taskList(dockerConnectionOptions, ...args),
+            ) => taskList(localDockerConnectionOptions, ...args),
             taskLogs: (
                 ...args: Parameters<typeof taskLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => taskLogs(dockerConnectionOptions, ...args),
+            ) => taskLogs(localDockerConnectionOptions, ...args),
             volumeCreate: (
                 ...args: Parameters<typeof volumeCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeCreate(dockerConnectionOptions, ...args),
+            ) => volumeCreate(localDockerConnectionOptions, ...args),
             volumeDelete: (
                 ...args: Parameters<typeof volumeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeDelete(dockerConnectionOptions, ...args),
+            ) => volumeDelete(localDockerConnectionOptions, ...args),
             volumeInspect: (
                 ...args: Parameters<typeof volumeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeInspect(dockerConnectionOptions, ...args),
+            ) => volumeInspect(localDockerConnectionOptions, ...args),
             volumeList: (
                 ...args: Parameters<typeof volumeList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeList(dockerConnectionOptions, ...args),
+            ) => volumeList(localDockerConnectionOptions, ...args),
             volumePrune: (
                 ...args: Parameters<typeof volumePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumePrune(dockerConnectionOptions, ...args),
+            ) => volumePrune(localDockerConnectionOptions, ...args),
             volumeUpdate: (
                 ...args: Parameters<typeof volumeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeUpdate(dockerConnectionOptions, ...args),
+            ) => volumeUpdate(localDockerConnectionOptions, ...args),
         })
     );
+};

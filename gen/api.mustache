@@ -104,13 +104,24 @@ export interface IDockerService {
 {{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
 }
 
-export const DockerService: Context.Tag<IDockerService, IDockerService> = Context.Tag<IDockerService>();
+export const DefaultDockerService: Context.Tag<IDockerService, IDockerService> = Context.Tag<IDockerService>("defaultDockerService");
 
-export const makeDockerService = (dockerConnectionOptions: DockerConnectionOptions): Layer.Layer<never, never, IDockerService> =>
-    Layer.succeed(
-        DockerService,
-        DockerService.of({
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [DockerConnectionOptions, ...infer U] ? U : never) => {{nickname}}(dockerConnectionOptions, ...args),
+export const makeDockerService = (
+    dockerConnectionOptions?: DockerConnectionOptions | undefined,
+    contextTag: Context.Tag<IDockerService, IDockerService> = DefaultDockerService
+): Layer.Layer<never, never, IDockerService> => {
+    const localDockerConnectionOptions =
+        dockerConnectionOptions ||
+        ({
+            protocol: "unix",
+            socketPath: "/var/run/docker.sock",
+        } as DockerConnectionOptions);
+
+    return Layer.succeed(
+        contextTag,
+        contextTag.of({
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [DockerConnectionOptions, ...infer U] ? U : never) => {{nickname}}(localDockerConnectionOptions, ...args),
 {{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
         })
     );
+}
