@@ -1,5 +1,5 @@
 {
     "$schema": "https://developer.microsoft.com/json-schemas/heft/typescript.schema.json",
-    "project": "./test/tsconfig.test.json",
+    "project": "./tsconfig.json",
     "buildProjectReferences": true
 }

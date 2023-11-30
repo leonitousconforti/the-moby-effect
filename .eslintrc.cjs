@@ -33,16 +33,21 @@ module.exports = {
                 "@typescript-eslint/typedef": "off",
                 "unicorn/prevent-abbreviations": "off",
                 "unicorn/no-array-callback-reference": "off",
-                "@typescript-eslint/naming-convention": [
-                    "error",
-                    { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
-                ],
             },
         },
         {
             files: ["./gen/main.cts"],
             rules: {
                 "unicorn/prefer-module": "off",
+            },
+        },
+        {
+            files: ["./src/api.ts", "./test/api.test.ts"],
+            rules: {
+                "@typescript-eslint/naming-convention": [
+                    "error",
+                    { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
+                ],
             },
         },
     ],

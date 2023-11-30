@@ -1,5 +1,3 @@
-// TS_NODE_PROJECT=./test/tsconfig.test.json node --no-warnings=ExperimentalWarning --loader ts-node/esm ./test/playground.ts
-//
 // [
 //     {
 //         Id: "076e8836e221d40411064eaa6aab0c5b3d2e333873d5f39b1530e9712e1265ba",
@@ -21,5 +19,7 @@
 import { Effect } from "effect";
 import { ContainerSummary, containerList } from "../src/api.js";
 
-const data: readonly ContainerSummary[] = await Effect.runPromise(containerList(true));
+const data: readonly ContainerSummary[] = await Effect.runPromise(
+    containerList({ protocol: "unix", socketPath: "/var/run/docker.sock" }, true)
+);
 console.log(data);

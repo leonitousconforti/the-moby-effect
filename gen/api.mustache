@@ -1,9 +1,10 @@
 // spell-checker: disable
 
-import { Effect, Data, identity } from "effect";
-import * as Schema from "@effect/schema/Schema";
+import "./fetch.js";
+import { Schema, ParseResult } from "@effect/schema";
 import * as Http from "@effect/platform/HttpClient";
-import { ParseError } from "@effect/schema/ParseResult";
+import { Effect, Context, Data, Layer, identity } from "effect";
+import { DockerConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
 
 import {
     any as anySchema,
@@ -29,10 +30,11 @@ const COLLECTION_FORMATS = {
 {{#model}}{{#isEnum}}{{>modelEnum}}{{/isEnum}}{{^isEnum}}{{>modelGeneric}}{{/isEnum}}{{/model}}
 {{/models}}
 // section: api
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}
+export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ message: string }> {}{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+
 {{#apiInfo}}{{#apis}}{{#operations}}
 {{#operation}}
-export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ message: string }> {}
-
 /**
 * {{&notes}}
 {{#summary}}
@@ -42,7 +44,7 @@ export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ m
 * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
 {{/allParams}}
 */
-export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{^-last}}, {{/-last}}{{/allParams}}): Effect.Effect<never, {{nickname}}Error | Http.error.HttpClientError {{#bodyParam}}| Http.body.BodyError {{/bodyParam}}| ParseError, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+export const {{nickname}} = (dockerConnectionOptions: DockerConnectionOptions{{#allParams}}, {{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{/allParams}}): Effect.Effect<never, {{nickname}}Error | Http.error.HttpClientError {{#bodyParam}}| Http.body.BodyError {{/bodyParam}}| ParseResult.ParseError, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
 {{#allParams}}
 {{#required}}
     if ({{paramName}} === null || {{paramName}} === undefined) {
@@ -64,7 +66,7 @@ export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/require
 {{/isCollectionFormatMulti}}
 {{/isListContainer}}
 {{^isListContainer}}
-.pipe(Effect.map({{paramName}} ? Http.request.setUrlParam("{{baseName}}", String({{paramName}})) : identity))
+.pipe(Effect.map({{paramName}} === undefined ? identity : Http.request.setUrlParam("{{baseName}}", String({{paramName}}))))
 {{/isListContainer}}
 {{/queryParams}}
 {{#headerParams}}
@@ -90,11 +92,25 @@ export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/require
 )
 {{/bodyParam}}
 .pipe(
-    Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-    Effect.flatMap(Http.client.fetchOk())
+    Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+    Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
     {{#returnType}},Effect.flatMap(Http.response.schemaBodyJson({{{returnType}}}Schema)){{/returnType}}
 )
-
 {{/operation}}
-
 {{/operations}}{{/apis}}{{/apiInfo}}
+
+export interface IDockerService {
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [DockerConnectionOptions, ...infer U] ? U : never) => ReturnType<typeof {{nickname}}>;
+{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+}
+
+export const DockerService: Context.Tag<IDockerService, IDockerService> = Context.Tag<IDockerService>();
+
+export const makeDockerService = (dockerConnectionOptions: DockerConnectionOptions): Layer.Layer<never, never, IDockerService> =>
+    Layer.succeed(
+        DockerService,
+        DockerService.of({
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [DockerConnectionOptions, ...infer U] ? U : never) => {{nickname}}(dockerConnectionOptions, ...args),
+{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+        })
+    );

@@ -4,9 +4,9 @@
     "compilerOptions": {
         "rootDir": ".",
         "composite": true,
-        "types": ["node", "heft-jest"],
-        "rootDirs": ["../src", "../test"]
+        "types": ["node"],
+        "rootDirs": ["../src", "../examples"]
     },
     "include": ["./**/*.ts"],
-    "references": [{ "path": "../src/tsconfig.src.json" }, { "path": "../examples/tsconfig.examples.json" }]
+    "references": [{ "path": "../src/tsconfig.src.json" }]
 }

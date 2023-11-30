@@ -1,9 +1,10 @@
 // spell-checker: disable
 
-import { Effect, Data, identity } from "effect";
-import * as Schema from "@effect/schema/Schema";
+import "./fetch.js";
+import { Schema, ParseResult } from "@effect/schema";
 import * as Http from "@effect/platform/HttpClient";
-import { ParseError } from "@effect/schema/ParseResult";
+import { Effect, Context, Data, Layer, identity } from "effect";
+import { DockerConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
 
 import {
     any as anySchema,
@@ -4515,6 +4516,114 @@ export const VolumeListResponseSchema = Schema.struct({
 export interface VolumeListResponse extends Schema.Schema.To<typeof VolumeListResponseSchema> {}
 
 export class configCreateError extends Data.TaggedError("configCreateError")<{ message: string }> {}
+export class configDeleteError extends Data.TaggedError("configDeleteError")<{ message: string }> {}
+export class configInspectError extends Data.TaggedError("configInspectError")<{ message: string }> {}
+export class configListError extends Data.TaggedError("configListError")<{ message: string }> {}
+export class configUpdateError extends Data.TaggedError("configUpdateError")<{ message: string }> {}
+export class containerArchiveError extends Data.TaggedError("containerArchiveError")<{ message: string }> {}
+export class containerArchiveInfoError extends Data.TaggedError("containerArchiveInfoError")<{ message: string }> {}
+export class containerAttachError extends Data.TaggedError("containerAttachError")<{ message: string }> {}
+export class containerAttachWebsocketError extends Data.TaggedError("containerAttachWebsocketError")<{
+    message: string;
+}> {}
+export class containerChangesError extends Data.TaggedError("containerChangesError")<{ message: string }> {}
+export class containerCreateError extends Data.TaggedError("containerCreateError")<{ message: string }> {}
+export class containerDeleteError extends Data.TaggedError("containerDeleteError")<{ message: string }> {}
+export class containerExportError extends Data.TaggedError("containerExportError")<{ message: string }> {}
+export class containerInspectError extends Data.TaggedError("containerInspectError")<{ message: string }> {}
+export class containerKillError extends Data.TaggedError("containerKillError")<{ message: string }> {}
+export class containerListError extends Data.TaggedError("containerListError")<{ message: string }> {}
+export class containerLogsError extends Data.TaggedError("containerLogsError")<{ message: string }> {}
+export class containerPauseError extends Data.TaggedError("containerPauseError")<{ message: string }> {}
+export class containerPruneError extends Data.TaggedError("containerPruneError")<{ message: string }> {}
+export class containerRenameError extends Data.TaggedError("containerRenameError")<{ message: string }> {}
+export class containerResizeError extends Data.TaggedError("containerResizeError")<{ message: string }> {}
+export class containerRestartError extends Data.TaggedError("containerRestartError")<{ message: string }> {}
+export class containerStartError extends Data.TaggedError("containerStartError")<{ message: string }> {}
+export class containerStatsError extends Data.TaggedError("containerStatsError")<{ message: string }> {}
+export class containerStopError extends Data.TaggedError("containerStopError")<{ message: string }> {}
+export class containerTopError extends Data.TaggedError("containerTopError")<{ message: string }> {}
+export class containerUnpauseError extends Data.TaggedError("containerUnpauseError")<{ message: string }> {}
+export class containerUpdateError extends Data.TaggedError("containerUpdateError")<{ message: string }> {}
+export class containerWaitError extends Data.TaggedError("containerWaitError")<{ message: string }> {}
+export class putContainerArchiveError extends Data.TaggedError("putContainerArchiveError")<{ message: string }> {}
+export class distributionInspectError extends Data.TaggedError("distributionInspectError")<{ message: string }> {}
+export class containerExecError extends Data.TaggedError("containerExecError")<{ message: string }> {}
+export class execInspectError extends Data.TaggedError("execInspectError")<{ message: string }> {}
+export class execResizeError extends Data.TaggedError("execResizeError")<{ message: string }> {}
+export class execStartError extends Data.TaggedError("execStartError")<{ message: string }> {}
+export class buildPruneError extends Data.TaggedError("buildPruneError")<{ message: string }> {}
+export class imageBuildError extends Data.TaggedError("imageBuildError")<{ message: string }> {}
+export class imageCommitError extends Data.TaggedError("imageCommitError")<{ message: string }> {}
+export class imageCreateError extends Data.TaggedError("imageCreateError")<{ message: string }> {}
+export class imageDeleteError extends Data.TaggedError("imageDeleteError")<{ message: string }> {}
+export class imageGetError extends Data.TaggedError("imageGetError")<{ message: string }> {}
+export class imageGetAllError extends Data.TaggedError("imageGetAllError")<{ message: string }> {}
+export class imageHistoryError extends Data.TaggedError("imageHistoryError")<{ message: string }> {}
+export class imageInspectError extends Data.TaggedError("imageInspectError")<{ message: string }> {}
+export class imageListError extends Data.TaggedError("imageListError")<{ message: string }> {}
+export class imageLoadError extends Data.TaggedError("imageLoadError")<{ message: string }> {}
+export class imagePruneError extends Data.TaggedError("imagePruneError")<{ message: string }> {}
+export class imagePushError extends Data.TaggedError("imagePushError")<{ message: string }> {}
+export class imageSearchError extends Data.TaggedError("imageSearchError")<{ message: string }> {}
+export class imageTagError extends Data.TaggedError("imageTagError")<{ message: string }> {}
+export class networkConnectError extends Data.TaggedError("networkConnectError")<{ message: string }> {}
+export class networkCreateError extends Data.TaggedError("networkCreateError")<{ message: string }> {}
+export class networkDeleteError extends Data.TaggedError("networkDeleteError")<{ message: string }> {}
+export class networkDisconnectError extends Data.TaggedError("networkDisconnectError")<{ message: string }> {}
+export class networkInspectError extends Data.TaggedError("networkInspectError")<{ message: string }> {}
+export class networkListError extends Data.TaggedError("networkListError")<{ message: string }> {}
+export class networkPruneError extends Data.TaggedError("networkPruneError")<{ message: string }> {}
+export class nodeDeleteError extends Data.TaggedError("nodeDeleteError")<{ message: string }> {}
+export class nodeInspectError extends Data.TaggedError("nodeInspectError")<{ message: string }> {}
+export class nodeListError extends Data.TaggedError("nodeListError")<{ message: string }> {}
+export class nodeUpdateError extends Data.TaggedError("nodeUpdateError")<{ message: string }> {}
+export class getPluginPrivilegesError extends Data.TaggedError("getPluginPrivilegesError")<{ message: string }> {}
+export class pluginCreateError extends Data.TaggedError("pluginCreateError")<{ message: string }> {}
+export class pluginDeleteError extends Data.TaggedError("pluginDeleteError")<{ message: string }> {}
+export class pluginDisableError extends Data.TaggedError("pluginDisableError")<{ message: string }> {}
+export class pluginEnableError extends Data.TaggedError("pluginEnableError")<{ message: string }> {}
+export class pluginInspectError extends Data.TaggedError("pluginInspectError")<{ message: string }> {}
+export class pluginListError extends Data.TaggedError("pluginListError")<{ message: string }> {}
+export class pluginPullError extends Data.TaggedError("pluginPullError")<{ message: string }> {}
+export class pluginPushError extends Data.TaggedError("pluginPushError")<{ message: string }> {}
+export class pluginSetError extends Data.TaggedError("pluginSetError")<{ message: string }> {}
+export class pluginUpgradeError extends Data.TaggedError("pluginUpgradeError")<{ message: string }> {}
+export class secretCreateError extends Data.TaggedError("secretCreateError")<{ message: string }> {}
+export class secretDeleteError extends Data.TaggedError("secretDeleteError")<{ message: string }> {}
+export class secretInspectError extends Data.TaggedError("secretInspectError")<{ message: string }> {}
+export class secretListError extends Data.TaggedError("secretListError")<{ message: string }> {}
+export class secretUpdateError extends Data.TaggedError("secretUpdateError")<{ message: string }> {}
+export class serviceCreateError extends Data.TaggedError("serviceCreateError")<{ message: string }> {}
+export class serviceDeleteError extends Data.TaggedError("serviceDeleteError")<{ message: string }> {}
+export class serviceInspectError extends Data.TaggedError("serviceInspectError")<{ message: string }> {}
+export class serviceListError extends Data.TaggedError("serviceListError")<{ message: string }> {}
+export class serviceLogsError extends Data.TaggedError("serviceLogsError")<{ message: string }> {}
+export class serviceUpdateError extends Data.TaggedError("serviceUpdateError")<{ message: string }> {}
+export class sessionError extends Data.TaggedError("sessionError")<{ message: string }> {}
+export class swarmInitError extends Data.TaggedError("swarmInitError")<{ message: string }> {}
+export class swarmInspectError extends Data.TaggedError("swarmInspectError")<{ message: string }> {}
+export class swarmJoinError extends Data.TaggedError("swarmJoinError")<{ message: string }> {}
+export class swarmLeaveError extends Data.TaggedError("swarmLeaveError")<{ message: string }> {}
+export class swarmUnlockError extends Data.TaggedError("swarmUnlockError")<{ message: string }> {}
+export class swarmUnlockkeyError extends Data.TaggedError("swarmUnlockkeyError")<{ message: string }> {}
+export class swarmUpdateError extends Data.TaggedError("swarmUpdateError")<{ message: string }> {}
+export class systemAuthError extends Data.TaggedError("systemAuthError")<{ message: string }> {}
+export class systemDataUsageError extends Data.TaggedError("systemDataUsageError")<{ message: string }> {}
+export class systemEventsError extends Data.TaggedError("systemEventsError")<{ message: string }> {}
+export class systemInfoError extends Data.TaggedError("systemInfoError")<{ message: string }> {}
+export class systemPingError extends Data.TaggedError("systemPingError")<{ message: string }> {}
+export class systemPingHeadError extends Data.TaggedError("systemPingHeadError")<{ message: string }> {}
+export class systemVersionError extends Data.TaggedError("systemVersionError")<{ message: string }> {}
+export class taskInspectError extends Data.TaggedError("taskInspectError")<{ message: string }> {}
+export class taskListError extends Data.TaggedError("taskListError")<{ message: string }> {}
+export class taskLogsError extends Data.TaggedError("taskLogsError")<{ message: string }> {}
+export class volumeCreateError extends Data.TaggedError("volumeCreateError")<{ message: string }> {}
+export class volumeDeleteError extends Data.TaggedError("volumeDeleteError")<{ message: string }> {}
+export class volumeInspectError extends Data.TaggedError("volumeInspectError")<{ message: string }> {}
+export class volumeListError extends Data.TaggedError("volumeListError")<{ message: string }> {}
+export class volumePruneError extends Data.TaggedError("volumePruneError")<{ message: string }> {}
+export class volumeUpdateError extends Data.TaggedError("volumeUpdateError")<{ message: string }> {}
 
 /**
  *
@@ -4522,10 +4631,11 @@ export class configCreateError extends Data.TaggedError("configCreateError")<{ m
  * @param {ConfigsCreateBody} [body]
  */
 export const configCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: ConfigsCreateBody
 ): Effect.Effect<
     never,
-    configCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    configCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4545,21 +4655,19 @@ export const configCreate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
         );
-
-export class configDeleteError extends Data.TaggedError("configDeleteError")<{ message: string }> {}
-
 /**
  *
  * @summary Delete a config
  * @param {string} id ID of the config
  */
 export const configDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, configDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, configDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -4567,18 +4675,19 @@ export const configDelete = (
 
         const endpoint: string = `${BASE_PATH}/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("DELETE")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class configInspectError extends Data.TaggedError("configInspectError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  *
  * @summary Inspect a config
  * @param {string} id ID of the config
  */
 export const configInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, configInspectError | Http.error.HttpClientError | ParseError, Readonly<Config>> =>
+): Effect.Effect<never, configInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Config>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configInspectError({ message: "Required parameter id was null or undefined" }));
@@ -4587,34 +4696,33 @@ export const configInspect = (
         const endpoint: string = `${BASE_PATH}/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(ConfigSchema))
     );
-
-export class configListError extends Data.TaggedError("configListError")<{ message: string }> {}
-
 /**
  *
  * @summary List configs
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the configs list.  Available filters:  - &#x60;id&#x3D;&lt;config id&gt;&#x60; - &#x60;label&#x3D;&lt;key&gt; or label&#x3D;&lt;key&gt;&#x3D;value&#x60; - &#x60;name&#x3D;&lt;config name&gt;&#x60; - &#x60;names&#x3D;&lt;config name&gt;&#x60;
  */
 export const configList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, configListError | Http.error.HttpClientError | ParseError, Readonly<Array<Config>>> =>
+): Effect.Effect<
+    never,
+    configListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Config>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ConfigSchema)))
         );
-
-export class configUpdateError extends Data.TaggedError("configUpdateError")<{ message: string }> {}
-
 /**
 *
 * @summary Update a Config
@@ -4626,10 +4734,15 @@ can be updated. All other fields must remain unchanged from the
 
 */
 export const configUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     version: number,
     body?: ConfigSpec
-): Effect.Effect<never, configUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    configUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -4645,7 +4758,7 @@ export const configUpdate = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version ? Http.request.setUrlParam("version", String(version)) : identity))
+        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -4658,9 +4771,10 @@ export const configUpdate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerArchiveError extends Data.TaggedError("containerArchiveError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  * Get a tar archive of a resource in the filesystem of container id.
@@ -4669,9 +4783,10 @@ export class containerArchiveError extends Data.TaggedError("containerArchiveErr
  * @param {string} path Resource in the container’s filesystem to archive.
  */
 export const containerArchive = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     path: string
-): Effect.Effect<never, containerArchiveError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerArchiveError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveError({ message: "Required parameter id was null or undefined" }));
@@ -4687,11 +4802,11 @@ export const containerArchive = (
         );
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(path ? Http.request.setUrlParam("path", String(path)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerArchiveInfoError extends Data.TaggedError("containerArchiveInfoError")<{ message: string }> {}
-
+        .pipe(Effect.map(path === undefined ? identity : Http.request.setUrlParam("path", String(path))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * A response header `X-Docker-Container-Path-Stat` is returned, containing a base64 - encoded JSON object with some filesystem header information about the path.
  * @summary Get information about files in a container
@@ -4699,9 +4814,10 @@ export class containerArchiveInfoError extends Data.TaggedError("containerArchiv
  * @param {string} path Resource in the container’s filesystem to archive.
  */
 export const containerArchiveInfo = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     path: string
-): Effect.Effect<never, containerArchiveInfoError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerArchiveInfoError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveInfoError({ message: "Required parameter id was null or undefined" }));
@@ -4717,11 +4833,11 @@ export const containerArchiveInfo = (
         );
         return Http.request.make("HEAD")(endpoint);
     })
-        .pipe(Effect.map(path ? Http.request.setUrlParam("path", String(path)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerAttachError extends Data.TaggedError("containerAttachError")<{ message: string }> {}
-
+        .pipe(Effect.map(path === undefined ? identity : Http.request.setUrlParam("path", String(path))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Attach to a container to read its output or send it input. You can attach to the same container multiple times and you can reattach to containers that have been detached.  Either the `stream` or `logs` parameter must be `true` for this endpoint to do anything.  See the [documentation for the `docker attach` command](https://docs.docker.com/engine/reference/commandline/attach/) for more details.  ### Hijacking  This endpoint hijacks the HTTP connection to transport `stdin`, `stdout`, and `stderr` on the same socket.  This is the response from the daemon for an attach request:  ``` HTTP/1.1 200 OK Content-Type: application/vnd.docker.raw-stream  [STREAM] ```  After the headers and two new lines, the TCP connection can now be used for raw, bidirectional communication between the client and server.  To hint potential proxies about connection hijacking, the Docker client can also optionally send connection upgrade headers.  For example, the client sends this request to upgrade the connection:  ``` POST /containers/16253994b7c4/attach?stream=1&stdout=1 HTTP/1.1 Upgrade: tcp Connection: Upgrade ```  The Docker daemon will respond with a `101 UPGRADED` response, and will similarly follow with the raw stream:  ``` HTTP/1.1 101 UPGRADED Content-Type: application/vnd.docker.raw-stream Connection: Upgrade Upgrade: tcp  [STREAM] ```  ### Stream format  When the TTY setting is disabled in [`POST /containers/create`](#operation/ContainerCreate), the HTTP Content-Type header is set to application/vnd.docker.multiplexed-stream and the stream over the hijacked connected is multiplexed to separate out `stdout` and `stderr`. The stream consists of a series of frames, each containing a header and a payload.  The header contains the information which the stream writes (`stdout` or `stderr`). It also contains the size of the associated frame encoded in the last four bytes (`uint32`).  It is encoded on the first eight bytes like this:  ```go header := [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1, SIZE2, SIZE3, SIZE4} ```  `STREAM_TYPE` can be:  - 0: `stdin` (is written on `stdout`) - 1: `stdout` - 2: `stderr`  `SIZE1, SIZE2, SIZE3, SIZE4` are the four bytes of the `uint32` size encoded as big endian.  Following the header is the payload, which is the specified number of bytes of `STREAM_TYPE`.  The simplest way to implement this protocol is the following:  1. Read 8 bytes. 2. Choose `stdout` or `stderr` depending on the first byte. 3. Extract the frame size from the last four bytes. 4. Read the extracted size and output it on the correct output. 5. Goto 1.  ### Stream format when using a TTY  When the TTY setting is enabled in [`POST /containers/create`](#operation/ContainerCreate), the stream is not multiplexed. The data exchanged over the hijacked connection is simply the raw data from the process PTY and client's `stdin`.
  * @summary Attach to a container
@@ -4734,6 +4850,7 @@ export class containerAttachError extends Data.TaggedError("containerAttachError
  * @param {boolean} [stderr] Attach to &#x60;stderr&#x60;
  */
 export const containerAttach = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4741,7 +4858,7 @@ export const containerAttach = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<never, containerAttachError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerAttachError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachError({ message: "Required parameter id was null or undefined" }));
@@ -4753,18 +4870,18 @@ export const containerAttach = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(detachKeys ? Http.request.setUrlParam("detachKeys", String(detachKeys)) : identity))
-        .pipe(Effect.map(logs ? Http.request.setUrlParam("logs", String(logs)) : identity))
-        .pipe(Effect.map(stream ? Http.request.setUrlParam("stream", String(stream)) : identity))
-        .pipe(Effect.map(stdin ? Http.request.setUrlParam("stdin", String(stdin)) : identity))
-        .pipe(Effect.map(stdout ? Http.request.setUrlParam("stdout", String(stdout)) : identity))
-        .pipe(Effect.map(stderr ? Http.request.setUrlParam("stderr", String(stderr)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerAttachWebsocketError extends Data.TaggedError("containerAttachWebsocketError")<{
-    message: string;
-}> {}
-
+        .pipe(
+            Effect.map(detachKeys === undefined ? identity : Http.request.setUrlParam("detachKeys", String(detachKeys)))
+        )
+        .pipe(Effect.map(logs === undefined ? identity : Http.request.setUrlParam("logs", String(logs))))
+        .pipe(Effect.map(stream === undefined ? identity : Http.request.setUrlParam("stream", String(stream))))
+        .pipe(Effect.map(stdin === undefined ? identity : Http.request.setUrlParam("stdin", String(stdin))))
+        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Attach to a container via a websocket
@@ -4777,6 +4894,7 @@ export class containerAttachWebsocketError extends Data.TaggedError("containerAt
  * @param {boolean} [stderr] Attach to &#x60;stderr&#x60;
  */
 export const containerAttachWebsocket = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4784,7 +4902,7 @@ export const containerAttachWebsocket = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<never, containerAttachWebsocketError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerAttachWebsocketError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachWebsocketError({ message: "Required parameter id was null or undefined" }));
@@ -4796,26 +4914,29 @@ export const containerAttachWebsocket = (
         );
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(detachKeys ? Http.request.setUrlParam("detachKeys", String(detachKeys)) : identity))
-        .pipe(Effect.map(logs ? Http.request.setUrlParam("logs", String(logs)) : identity))
-        .pipe(Effect.map(stream ? Http.request.setUrlParam("stream", String(stream)) : identity))
-        .pipe(Effect.map(stdin ? Http.request.setUrlParam("stdin", String(stdin)) : identity))
-        .pipe(Effect.map(stdout ? Http.request.setUrlParam("stdout", String(stdout)) : identity))
-        .pipe(Effect.map(stderr ? Http.request.setUrlParam("stderr", String(stderr)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerChangesError extends Data.TaggedError("containerChangesError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(detachKeys === undefined ? identity : Http.request.setUrlParam("detachKeys", String(detachKeys)))
+        )
+        .pipe(Effect.map(logs === undefined ? identity : Http.request.setUrlParam("logs", String(logs))))
+        .pipe(Effect.map(stream === undefined ? identity : Http.request.setUrlParam("stream", String(stream))))
+        .pipe(Effect.map(stdin === undefined ? identity : Http.request.setUrlParam("stdin", String(stdin))))
+        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Returns which files in a container's filesystem have been added, deleted, or modified. The `Kind` of modification can be one of:  - `0`: Modified (\"C\") - `1`: Added (\"A\") - `2`: Deleted (\"D\")
  * @summary Get changes on a container’s filesystem
  * @param {string} id ID or name of the container
  */
 export const containerChanges = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
 ): Effect.Effect<
     never,
-    containerChangesError | Http.error.HttpClientError | ParseError,
+    containerChangesError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<FilesystemChange>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4829,13 +4950,10 @@ export const containerChanges = (
         );
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(arraySchema(FilesystemChangeSchema)))
     );
-
-export class containerCreateError extends Data.TaggedError("containerCreateError")<{ message: string }> {}
-
 /**
  *
  * @summary Create a container
@@ -4844,12 +4962,13 @@ export class containerCreateError extends Data.TaggedError("containerCreateError
  * @param {string} [platform] Platform in the format &#x60;os[/arch[/variant]]&#x60; used for image lookup.  When specified, the daemon checks if the requested image is present in the local image cache with the given OS and Architecture, and otherwise returns a &#x60;404&#x60; status.  If the option is not set, the host&#39;s native OS and Architecture are used to look up the image in the image cache. However, if no platform is passed and the given image does exist in the local image cache, but its OS or architecture does not match, the container is created with the available image, and a warning is added to the &#x60;Warnings&#x60; field in the response, for example;      WARNING: The requested image&#39;s platform (linux/arm64/v8) does not              match the detected host platform (linux/amd64) and no              specific platform was requested
  */
 export const containerCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: ContainersCreateBody,
     name?: string,
     platform?: string
 ): Effect.Effect<
     never,
-    containerCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    containerCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<ContainerCreateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4860,8 +4979,8 @@ export const containerCreate = (
         const endpoint: string = `${BASE_PATH}/containers/create`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(name ? Http.request.setUrlParam("name", String(name)) : identity))
-        .pipe(Effect.map(platform ? Http.request.setUrlParam("platform", String(platform)) : identity))
+        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
+        .pipe(Effect.map(platform === undefined ? identity : Http.request.setUrlParam("platform", String(platform))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -4875,13 +4994,10 @@ export const containerCreate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ContainerCreateResponseSchema))
         );
-
-export class containerDeleteError extends Data.TaggedError("containerDeleteError")<{ message: string }> {}
-
 /**
  *
  * @summary Remove a container
@@ -4891,11 +5007,12 @@ export class containerDeleteError extends Data.TaggedError("containerDeleteError
  * @param {boolean} [link] Remove the specified link associated with the container.
  */
 export const containerDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     v?: boolean,
     force?: boolean,
     link?: boolean
-): Effect.Effect<never, containerDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -4904,21 +5021,22 @@ export const containerDelete = (
         const endpoint: string = `${BASE_PATH}/containers/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(v ? Http.request.setUrlParam("v", String(v)) : identity))
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
-        .pipe(Effect.map(link ? Http.request.setUrlParam("link", String(link)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerExportError extends Data.TaggedError("containerExportError")<{ message: string }> {}
-
+        .pipe(Effect.map(v === undefined ? identity : Http.request.setUrlParam("v", String(v))))
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(link === undefined ? identity : Http.request.setUrlParam("link", String(link))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Export the contents of a container as a tarball.
  * @summary Export a container
  * @param {string} id ID or name of the container
  */
 export const containerExport = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, containerExportError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerExportError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerExportError({ message: "Required parameter id was null or undefined" }));
@@ -4929,10 +5047,10 @@ export const containerExport = (
             encodeURIComponent(String(id))
         );
         return Http.request.make("GET")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerInspectError extends Data.TaggedError("containerInspectError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  * Return low-level information about a container.
  * @summary Inspect a container
@@ -4940,11 +5058,12 @@ export class containerInspectError extends Data.TaggedError("containerInspectErr
  * @param {boolean} [size] Return the size of container as fields &#x60;SizeRw&#x60; and &#x60;SizeRootFs&#x60;
  */
 export const containerInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     size?: boolean
 ): Effect.Effect<
     never,
-    containerInspectError | Http.error.HttpClientError | ParseError,
+    containerInspectError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerInspectResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4958,15 +5077,12 @@ export const containerInspect = (
         );
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(size ? Http.request.setUrlParam("size", String(size)) : identity))
+        .pipe(Effect.map(size === undefined ? identity : Http.request.setUrlParam("size", String(size))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ContainerInspectResponseSchema))
         );
-
-export class containerKillError extends Data.TaggedError("containerKillError")<{ message: string }> {}
-
 /**
  * Send a POSIX signal to a container, defaulting to killing to the container.
  * @summary Kill a container
@@ -4974,9 +5090,10 @@ export class containerKillError extends Data.TaggedError("containerKillError")<{
  * @param {string} [signal] Signal to send to the container as an integer or string (e.g. &#x60;SIGINT&#x60;).
  */
 export const containerKill = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     signal?: string
-): Effect.Effect<never, containerKillError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerKillError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerKillError({ message: "Required parameter id was null or undefined" }));
@@ -4988,11 +5105,11 @@ export const containerKill = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(signal ? Http.request.setUrlParam("signal", String(signal)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerListError extends Data.TaggedError("containerListError")<{ message: string }> {}
-
+        .pipe(Effect.map(signal === undefined ? identity : Http.request.setUrlParam("signal", String(signal))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Returns a list of containers. For details on the format, see the [inspect endpoint](#operation/ContainerInspect).  Note that it uses a different, smaller representation of a container than inspecting a single container. For example, the list of linked containers is not propagated .
  * @summary List containers
@@ -5002,31 +5119,29 @@ export class containerListError extends Data.TaggedError("containerListError")<{
  * @param {string} [filters] Filters to process on the container list, encoded as JSON (a &#x60;map[string][]string&#x60;). For example, &#x60;{\&quot;status\&quot;: [\&quot;paused\&quot;]}&#x60; will only return paused containers.  Available filters:  - &#x60;ancestor&#x60;&#x3D;(&#x60;&lt;image-name&gt;[:&lt;tag&gt;]&#x60;, &#x60;&lt;image id&gt;&#x60;, or &#x60;&lt;image@digest&gt;&#x60;) - &#x60;before&#x60;&#x3D;(&#x60;&lt;container id&gt;&#x60; or &#x60;&lt;container name&gt;&#x60;) - &#x60;expose&#x60;&#x3D;(&#x60;&lt;port&gt;[/&lt;proto&gt;]&#x60;|&#x60;&lt;startport-endport&gt;/[&lt;proto&gt;]&#x60;) - &#x60;exited&#x3D;&lt;int&gt;&#x60; containers with exit code of &#x60;&lt;int&gt;&#x60; - &#x60;health&#x60;&#x3D;(&#x60;starting&#x60;|&#x60;healthy&#x60;|&#x60;unhealthy&#x60;|&#x60;none&#x60;) - &#x60;id&#x3D;&lt;ID&gt;&#x60; a container&#39;s ID - &#x60;isolation&#x3D;&#x60;(&#x60;default&#x60;|&#x60;process&#x60;|&#x60;hyperv&#x60;) (Windows daemon only) - &#x60;is-task&#x3D;&#x60;(&#x60;true&#x60;|&#x60;false&#x60;) - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; of a container label - &#x60;name&#x3D;&lt;name&gt;&#x60; a container&#39;s name - &#x60;network&#x60;&#x3D;(&#x60;&lt;network id&gt;&#x60; or &#x60;&lt;network name&gt;&#x60;) - &#x60;publish&#x60;&#x3D;(&#x60;&lt;port&gt;[/&lt;proto&gt;]&#x60;|&#x60;&lt;startport-endport&gt;/[&lt;proto&gt;]&#x60;) - &#x60;since&#x60;&#x3D;(&#x60;&lt;container id&gt;&#x60; or &#x60;&lt;container name&gt;&#x60;) - &#x60;status&#x3D;&#x60;(&#x60;created&#x60;|&#x60;restarting&#x60;|&#x60;running&#x60;|&#x60;removing&#x60;|&#x60;paused&#x60;|&#x60;exited&#x60;|&#x60;dead&#x60;) - &#x60;volume&#x60;&#x3D;(&#x60;&lt;volume name&gt;&#x60; or &#x60;&lt;mount point destination&gt;&#x60;)
  */
 export const containerList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     all?: boolean,
     limit?: number,
     size?: boolean,
     filters?: string
 ): Effect.Effect<
     never,
-    containerListError | Http.error.HttpClientError | ParseError,
+    containerListError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ContainerSummary>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/json`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(all ? Http.request.setUrlParam("all", String(all)) : identity))
-        .pipe(Effect.map(limit ? Http.request.setUrlParam("limit", String(limit)) : identity))
-        .pipe(Effect.map(size ? Http.request.setUrlParam("size", String(size)) : identity))
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(all === undefined ? identity : Http.request.setUrlParam("all", String(all))))
+        .pipe(Effect.map(limit === undefined ? identity : Http.request.setUrlParam("limit", String(limit))))
+        .pipe(Effect.map(size === undefined ? identity : Http.request.setUrlParam("size", String(size))))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ContainerSummarySchema)))
         );
-
-export class containerLogsError extends Data.TaggedError("containerLogsError")<{ message: string }> {}
-
 /**
  * Get `stdout` and `stderr` logs from a container.  Note: This endpoint works only for containers with the `json-file` or `journald` logging driver.
  * @summary Get container logs
@@ -5040,6 +5155,7 @@ export class containerLogsError extends Data.TaggedError("containerLogsError")<{
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const containerLogs = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     follow?: boolean,
     stdout?: boolean,
@@ -5048,7 +5164,7 @@ export const containerLogs = (
     until?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, containerLogsError | Http.error.HttpClientError | ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, containerLogsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerLogsError({ message: "Required parameter id was null or undefined" }));
@@ -5060,30 +5176,30 @@ export const containerLogs = (
         );
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(follow ? Http.request.setUrlParam("follow", String(follow)) : identity))
-        .pipe(Effect.map(stdout ? Http.request.setUrlParam("stdout", String(stdout)) : identity))
-        .pipe(Effect.map(stderr ? Http.request.setUrlParam("stderr", String(stderr)) : identity))
-        .pipe(Effect.map(since ? Http.request.setUrlParam("since", String(since)) : identity))
-        .pipe(Effect.map(until ? Http.request.setUrlParam("until", String(until)) : identity))
-        .pipe(Effect.map(timestamps ? Http.request.setUrlParam("timestamps", String(timestamps)) : identity))
-        .pipe(Effect.map(tail ? Http.request.setUrlParam("tail", String(tail)) : identity))
+        .pipe(Effect.map(follow === undefined ? identity : Http.request.setUrlParam("follow", String(follow))))
+        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
+        .pipe(Effect.map(until === undefined ? identity : Http.request.setUrlParam("until", String(until))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(timestamps === undefined ? identity : Http.request.setUrlParam("timestamps", String(timestamps)))
+        )
+        .pipe(Effect.map(tail === undefined ? identity : Http.request.setUrlParam("tail", String(tail))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
-
-export class containerPauseError extends Data.TaggedError("containerPauseError")<{ message: string }> {}
-
 /**
  * Use the freezer cgroup to suspend all processes in a container.  Traditionally, when suspending a process the `SIGSTOP` signal is used, which is observable by the process being suspended. With the freezer cgroup the process is unaware, and unable to capture, that it is being suspended, and subsequently resumed.
  * @summary Pause a container
  * @param {string} id ID or name of the container
  */
 export const containerPause = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, containerPauseError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerPauseError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerPauseError({ message: "Required parameter id was null or undefined" }));
@@ -5094,35 +5210,33 @@ export const containerPause = (
             encodeURIComponent(String(id))
         );
         return Http.request.make("POST")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerPruneError extends Data.TaggedError("containerPruneError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  *
  * @summary Delete stopped containers
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; Prune containers created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune containers with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const containerPrune = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    containerPruneError | Http.error.HttpClientError | ParseError,
+    containerPruneError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerPruneResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/prune`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ContainerPruneResponseSchema))
         );
-
-export class containerRenameError extends Data.TaggedError("containerRenameError")<{ message: string }> {}
-
 /**
  *
  * @summary Rename a container
@@ -5130,9 +5244,10 @@ export class containerRenameError extends Data.TaggedError("containerRenameError
  * @param {string} name New name for the container
  */
 export const containerRename = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     name: string
-): Effect.Effect<never, containerRenameError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerRenameError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRenameError({ message: "Required parameter id was null or undefined" }));
@@ -5148,11 +5263,11 @@ export const containerRename = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(name ? Http.request.setUrlParam("name", String(name)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerResizeError extends Data.TaggedError("containerResizeError")<{ message: string }> {}
-
+        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Resize the TTY for a container.
  * @summary Resize a container TTY
@@ -5161,10 +5276,11 @@ export class containerResizeError extends Data.TaggedError("containerResizeError
  * @param {number} [w] Width of the TTY session in characters
  */
 export const containerResize = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<never, containerResizeError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerResizeError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerResizeError({ message: "Required parameter id was null or undefined" }));
@@ -5176,12 +5292,12 @@ export const containerResize = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(h ? Http.request.setUrlParam("h", String(h)) : identity))
-        .pipe(Effect.map(w ? Http.request.setUrlParam("w", String(w)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerRestartError extends Data.TaggedError("containerRestartError")<{ message: string }> {}
-
+        .pipe(Effect.map(h === undefined ? identity : Http.request.setUrlParam("h", String(h))))
+        .pipe(Effect.map(w === undefined ? identity : Http.request.setUrlParam("w", String(w))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Restart a container
@@ -5190,10 +5306,11 @@ export class containerRestartError extends Data.TaggedError("containerRestartErr
  * @param {number} [t] Number of seconds to wait before killing the container
  */
 export const containerRestart = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<never, containerRestartError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerRestartError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRestartError({ message: "Required parameter id was null or undefined" }));
@@ -5205,12 +5322,12 @@ export const containerRestart = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(signal ? Http.request.setUrlParam("signal", String(signal)) : identity))
-        .pipe(Effect.map(t ? Http.request.setUrlParam("t", String(t)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerStartError extends Data.TaggedError("containerStartError")<{ message: string }> {}
-
+        .pipe(Effect.map(signal === undefined ? identity : Http.request.setUrlParam("signal", String(signal))))
+        .pipe(Effect.map(t === undefined ? identity : Http.request.setUrlParam("t", String(t))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Start a container
@@ -5218,9 +5335,10 @@ export class containerStartError extends Data.TaggedError("containerStartError")
  * @param {string} [detachKeys] Override the key sequence for detaching a container. Format is a single character &#x60;[a-Z]&#x60; or &#x60;ctrl-&lt;value&gt;&#x60; where &#x60;&lt;value&gt;&#x60; is one of: &#x60;a-z&#x60;, &#x60;@&#x60;, &#x60;^&#x60;, &#x60;[&#x60;, &#x60;,&#x60; or &#x60;_&#x60;.
  */
 export const containerStart = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     detachKeys?: string
-): Effect.Effect<never, containerStartError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerStartError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStartError({ message: "Required parameter id was null or undefined" }));
@@ -5232,11 +5350,13 @@ export const containerStart = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(detachKeys ? Http.request.setUrlParam("detachKeys", String(detachKeys)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerStatsError extends Data.TaggedError("containerStatsError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(detachKeys === undefined ? identity : Http.request.setUrlParam("detachKeys", String(detachKeys)))
+        )
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * This endpoint returns a live stream of a container’s resource usage statistics.  The `precpu_stats` is the CPU statistic of the *previous* read, and is used to calculate the CPU usage percentage. It is not an exact copy of the `cpu_stats` field.  If either `precpu_stats.online_cpus` or `cpu_stats.online_cpus` is nil then for compatibility with older daemons the length of the corresponding `cpu_usage.percpu_usage` array should be used.  On a cgroup v2 host, the following fields are not set * `blkio_stats`: all fields other than `io_service_bytes_recursive` * `cpu_stats`: `cpu_usage.percpu_usage` * `memory_stats`: `max_usage` and `failcnt` Also, `memory_stats.stats` fields are incompatible with cgroup v1.  To calculate the values shown by the `stats` command of the docker cli tool the following formulas can be used: * used_memory = `memory_stats.usage - memory_stats.stats.cache` * available_memory = `memory_stats.limit` * Memory usage % = `(used_memory / available_memory) * 100.0` * cpu_delta = `cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage` * system_cpu_delta = `cpu_stats.system_cpu_usage - precpu_stats.system_cpu_usage` * number_cpus = `lenght(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU usage % = `(cpu_delta / system_cpu_delta) * number_cpus * 100.0`
  * @summary Get container stats based on resource usage
@@ -5245,10 +5365,11 @@ export class containerStatsError extends Data.TaggedError("containerStatsError")
  * @param {boolean} [one_shot] Only get a single stat instead of waiting for 2 cycles. Must be used with &#x60;stream&#x3D;false&#x60;.
  */
 export const containerStats = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     stream?: boolean,
     one_shot?: boolean
-): Effect.Effect<never, containerStatsError | Http.error.HttpClientError | ParseError, Readonly<unknown>> =>
+): Effect.Effect<never, containerStatsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<unknown>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStatsError({ message: "Required parameter id was null or undefined" }));
@@ -5260,16 +5381,13 @@ export const containerStats = (
         );
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(stream ? Http.request.setUrlParam("stream", String(stream)) : identity))
-        .pipe(Effect.map(one_shot ? Http.request.setUrlParam("one-shot", String(one_shot)) : identity))
+        .pipe(Effect.map(stream === undefined ? identity : Http.request.setUrlParam("stream", String(stream))))
+        .pipe(Effect.map(one_shot === undefined ? identity : Http.request.setUrlParam("one-shot", String(one_shot))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(anySchema))
         );
-
-export class containerStopError extends Data.TaggedError("containerStopError")<{ message: string }> {}
-
 /**
  *
  * @summary Stop a container
@@ -5278,10 +5396,11 @@ export class containerStopError extends Data.TaggedError("containerStopError")<{
  * @param {number} [t] Number of seconds to wait before killing the container
  */
 export const containerStop = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<never, containerStopError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerStopError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStopError({ message: "Required parameter id was null or undefined" }));
@@ -5293,12 +5412,12 @@ export const containerStop = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(signal ? Http.request.setUrlParam("signal", String(signal)) : identity))
-        .pipe(Effect.map(t ? Http.request.setUrlParam("t", String(t)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerTopError extends Data.TaggedError("containerTopError")<{ message: string }> {}
-
+        .pipe(Effect.map(signal === undefined ? identity : Http.request.setUrlParam("signal", String(signal))))
+        .pipe(Effect.map(t === undefined ? identity : Http.request.setUrlParam("t", String(t))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * On Unix systems, this is done by running the `ps` command. This endpoint is not supported on Windows.
  * @summary List processes running inside a container
@@ -5306,9 +5425,14 @@ export class containerTopError extends Data.TaggedError("containerTopError")<{ m
  * @param {string} [ps_args] The arguments to pass to &#x60;ps&#x60;. For example, &#x60;aux&#x60;
  */
 export const containerTop = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     ps_args?: string
-): Effect.Effect<never, containerTopError | Http.error.HttpClientError | ParseError, Readonly<ContainerTopResponse>> =>
+): Effect.Effect<
+    never,
+    containerTopError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<ContainerTopResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerTopError({ message: "Required parameter id was null or undefined" }));
@@ -5320,23 +5444,21 @@ export const containerTop = (
         );
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(ps_args ? Http.request.setUrlParam("ps_args", String(ps_args)) : identity))
+        .pipe(Effect.map(ps_args === undefined ? identity : Http.request.setUrlParam("ps_args", String(ps_args))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ContainerTopResponseSchema))
         );
-
-export class containerUnpauseError extends Data.TaggedError("containerUnpauseError")<{ message: string }> {}
-
 /**
  * Resume a container which has been paused.
  * @summary Unpause a container
  * @param {string} id ID or name of the container
  */
 export const containerUnpause = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, containerUnpauseError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, containerUnpauseError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerUnpauseError({ message: "Required parameter id was null or undefined" }));
@@ -5347,10 +5469,10 @@ export const containerUnpause = (
             encodeURIComponent(String(id))
         );
         return Http.request.make("POST")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class containerUpdateError extends Data.TaggedError("containerUpdateError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  * Change various configuration options of a container without having to recreate it.
  * @summary Update a container
@@ -5358,11 +5480,12 @@ export class containerUpdateError extends Data.TaggedError("containerUpdateError
  * @param {string} id ID or name of the container
  */
 export const containerUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: IdUpdateBody,
     id: string
 ): Effect.Effect<
     never,
-    containerUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    containerUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<ContainerUpdateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5393,13 +5516,10 @@ export const containerUpdate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ContainerUpdateResponseSchema))
         );
-
-export class containerWaitError extends Data.TaggedError("containerWaitError")<{ message: string }> {}
-
 /**
  * Block until a container stops, then returns the exit code.
  * @summary Wait for a container
@@ -5407,11 +5527,12 @@ export class containerWaitError extends Data.TaggedError("containerWaitError")<{
  * @param {string} [condition] Wait until a container state reaches the given condition.  Defaults to &#x60;not-running&#x60; if omitted or empty.
  */
 export const containerWait = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     condition?: string
 ): Effect.Effect<
     never,
-    containerWaitError | Http.error.HttpClientError | ParseError,
+    containerWaitError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerWaitResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5425,15 +5546,12 @@ export const containerWait = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(condition ? Http.request.setUrlParam("condition", String(condition)) : identity))
+        .pipe(Effect.map(condition === undefined ? identity : Http.request.setUrlParam("condition", String(condition))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ContainerWaitResponseSchema))
         );
-
-export class putContainerArchiveError extends Data.TaggedError("putContainerArchiveError")<{ message: string }> {}
-
 /**
 * Upload a tar archive to be extracted to a path in the filesystem of container id. `path` parameter is asserted to be a directory. If it exists as a file, 400 error will be returned with message \"not a directory\".
 * @summary Extract an archive of files or folders to a directory in a container
@@ -5447,6 +5565,7 @@ or &#x60;xz&#x60;.
 * @param {string} [copyUIDGID] If &#x60;1&#x60;, &#x60;true&#x60;, then it will copy UID/GID maps to the dest file or dir
 */
 export const putContainerArchive = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: unknown,
     id: string,
     path: string,
@@ -5454,7 +5573,7 @@ export const putContainerArchive = (
     copyUIDGID?: string
 ): Effect.Effect<
     never,
-    putContainerArchiveError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    putContainerArchiveError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5476,15 +5595,17 @@ export const putContainerArchive = (
         );
         return Http.request.make("PUT")(endpoint);
     })
-        .pipe(Effect.map(path ? Http.request.setUrlParam("path", String(path)) : identity))
+        .pipe(Effect.map(path === undefined ? identity : Http.request.setUrlParam("path", String(path))))
         .pipe(
             Effect.map(
-                noOverwriteDirNonDir
-                    ? Http.request.setUrlParam("noOverwriteDirNonDir", String(noOverwriteDirNonDir))
-                    : identity
+                noOverwriteDirNonDir === undefined
+                    ? identity
+                    : Http.request.setUrlParam("noOverwriteDirNonDir", String(noOverwriteDirNonDir))
             )
         )
-        .pipe(Effect.map(copyUIDGID ? Http.request.setUrlParam("copyUIDGID", String(copyUIDGID)) : identity))
+        .pipe(
+            Effect.map(copyUIDGID === undefined ? identity : Http.request.setUrlParam("copyUIDGID", String(copyUIDGID)))
+        )
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/x-tar")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -5496,9 +5617,10 @@ export const putContainerArchive = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class distributionInspectError extends Data.TaggedError("distributionInspectError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  * Return image digest and platform information by contacting the registry.
@@ -5506,10 +5628,11 @@ export class distributionInspectError extends Data.TaggedError("distributionInsp
  * @param {string} name Image name or id
  */
 export const distributionInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
 ): Effect.Effect<
     never,
-    distributionInspectError | Http.error.HttpClientError | ParseError,
+    distributionInspectError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<DistributionInspect>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5523,12 +5646,10 @@ export const distributionInspect = (
         );
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(DistributionInspectSchema))
     );
-
-export class containerExecError extends Data.TaggedError("containerExecError")<{ message: string }> {}
 
 /**
  * Run a command inside a running container.
@@ -5537,11 +5658,12 @@ export class containerExecError extends Data.TaggedError("containerExecError")<{
  * @param {string} id ID or name of container
  */
 export const containerExec = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: ExecConfig,
     id: string
 ): Effect.Effect<
     never,
-    containerExecError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    containerExecError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5572,21 +5694,23 @@ export const containerExec = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
         );
-
-export class execInspectError extends Data.TaggedError("execInspectError")<{ message: string }> {}
-
 /**
  * Return low-level information about an exec instance.
  * @summary Inspect an exec instance
  * @param {string} id Exec instance ID
  */
 export const execInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, execInspectError | Http.error.HttpClientError | ParseError, Readonly<ExecInspectResponse>> =>
+): Effect.Effect<
+    never,
+    execInspectError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<ExecInspectResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execInspectError({ message: "Required parameter id was null or undefined" }));
@@ -5595,13 +5719,10 @@ export const execInspect = (
         const endpoint: string = `${BASE_PATH}/exec/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(ExecInspectResponseSchema))
     );
-
-export class execResizeError extends Data.TaggedError("execResizeError")<{ message: string }> {}
-
 /**
  * Resize the TTY session used by an exec instance. This endpoint only works if `tty` was specified as part of creating and starting the exec instance.
  * @summary Resize an exec instance
@@ -5610,10 +5731,11 @@ export class execResizeError extends Data.TaggedError("execResizeError")<{ messa
  * @param {number} [w] Width of the TTY session in characters
  */
 export const execResize = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<never, execResizeError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, execResizeError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execResizeError({ message: "Required parameter id was null or undefined" }));
@@ -5622,12 +5744,12 @@ export const execResize = (
         const endpoint: string = `${BASE_PATH}/exec/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(h ? Http.request.setUrlParam("h", String(h)) : identity))
-        .pipe(Effect.map(w ? Http.request.setUrlParam("w", String(w)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class execStartError extends Data.TaggedError("execStartError")<{ message: string }> {}
-
+        .pipe(Effect.map(h === undefined ? identity : Http.request.setUrlParam("h", String(h))))
+        .pipe(Effect.map(w === undefined ? identity : Http.request.setUrlParam("w", String(w))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Starts a previously set up exec instance. If detach is true, this endpoint returns immediately after starting the command. Otherwise, it sets up an interactive session with the command.
  * @summary Start an exec instance
@@ -5635,9 +5757,14 @@ export class execStartError extends Data.TaggedError("execStartError")<{ message
  * @param {ExecStartConfig} [body]
  */
 export const execStart = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     body?: ExecStartConfig
-): Effect.Effect<never, execStartError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    execStartError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execStartError({ message: "Required parameter id was null or undefined" }));
@@ -5658,9 +5785,10 @@ export const execStart = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class buildPruneError extends Data.TaggedError("buildPruneError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  *
@@ -5670,25 +5798,31 @@ export class buildPruneError extends Data.TaggedError("buildPruneError")<{ messa
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the list of build cache objects.  Available filters:  - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; remove cache older than &#x60;&lt;timestamp&gt;&#x60;. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon&#39;s local time. - &#x60;id&#x3D;&lt;id&gt;&#x60; - &#x60;parent&#x3D;&lt;id&gt;&#x60; - &#x60;type&#x3D;&lt;string&gt;&#x60; - &#x60;description&#x3D;&lt;string&gt;&#x60; - &#x60;inuse&#x60; - &#x60;shared&#x60; - &#x60;private&#x60;
  */
 export const buildPrune = (
+    dockerConnectionOptions: DockerConnectionOptions,
     keep_storage?: number,
     all?: boolean,
     filters?: string
-): Effect.Effect<never, buildPruneError | Http.error.HttpClientError | ParseError, Readonly<BuildPruneResponse>> =>
+): Effect.Effect<
+    never,
+    buildPruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<BuildPruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build/prune`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(keep_storage ? Http.request.setUrlParam("keep-storage", String(keep_storage)) : identity))
-        .pipe(Effect.map(all ? Http.request.setUrlParam("all", String(all)) : identity))
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(
+                keep_storage === undefined ? identity : Http.request.setUrlParam("keep-storage", String(keep_storage))
+            )
+        )
+        .pipe(Effect.map(all === undefined ? identity : Http.request.setUrlParam("all", String(all))))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(BuildPruneResponseSchema))
         );
-
-export class imageBuildError extends Data.TaggedError("imageBuildError")<{ message: string }> {}
-
 /**
  * Build an image from a tar archive with a `Dockerfile` in it.  The `Dockerfile` specifies how the image is built from the tar archive. It is typically in the archive's root, but can be at a different path or have a different name by specifying the `dockerfile` parameter. [See the `Dockerfile` reference for more information](https://docs.docker.com/engine/reference/builder/).  The Docker daemon performs a preliminary validation of the `Dockerfile` before starting the build, and returns an error if the syntax is incorrect. After that, each instruction is run one-by-one until the ID of the new image is output.  The build is canceled if the client drops the connection by quitting or being killed.
  * @summary Build an image
@@ -5721,6 +5855,7 @@ export class imageBuildError extends Data.TaggedError("imageBuildError")<{ messa
  * @param {string} [outputs] BuildKit output configuration
  */
 export const imageBuild = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: unknown,
     dockerfile?: string,
     t?: string,
@@ -5748,35 +5883,49 @@ export const imageBuild = (
     platform?: string,
     target?: string,
     outputs?: string
-): Effect.Effect<never, imageBuildError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    imageBuildError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(dockerfile ? Http.request.setUrlParam("dockerfile", String(dockerfile)) : identity))
-        .pipe(Effect.map(t ? Http.request.setUrlParam("t", String(t)) : identity))
-        .pipe(Effect.map(extrahosts ? Http.request.setUrlParam("extrahosts", String(extrahosts)) : identity))
-        .pipe(Effect.map(remote ? Http.request.setUrlParam("remote", String(remote)) : identity))
-        .pipe(Effect.map(q ? Http.request.setUrlParam("q", String(q)) : identity))
-        .pipe(Effect.map(nocache ? Http.request.setUrlParam("nocache", String(nocache)) : identity))
-        .pipe(Effect.map(cachefrom ? Http.request.setUrlParam("cachefrom", String(cachefrom)) : identity))
-        .pipe(Effect.map(pull ? Http.request.setUrlParam("pull", String(pull)) : identity))
-        .pipe(Effect.map(rm ? Http.request.setUrlParam("rm", String(rm)) : identity))
-        .pipe(Effect.map(forcerm ? Http.request.setUrlParam("forcerm", String(forcerm)) : identity))
-        .pipe(Effect.map(memory ? Http.request.setUrlParam("memory", String(memory)) : identity))
-        .pipe(Effect.map(memswap ? Http.request.setUrlParam("memswap", String(memswap)) : identity))
-        .pipe(Effect.map(cpushares ? Http.request.setUrlParam("cpushares", String(cpushares)) : identity))
-        .pipe(Effect.map(cpusetcpus ? Http.request.setUrlParam("cpusetcpus", String(cpusetcpus)) : identity))
-        .pipe(Effect.map(cpuperiod ? Http.request.setUrlParam("cpuperiod", String(cpuperiod)) : identity))
-        .pipe(Effect.map(cpuquota ? Http.request.setUrlParam("cpuquota", String(cpuquota)) : identity))
-        .pipe(Effect.map(buildargs ? Http.request.setUrlParam("buildargs", String(buildargs)) : identity))
-        .pipe(Effect.map(shmsize ? Http.request.setUrlParam("shmsize", String(shmsize)) : identity))
-        .pipe(Effect.map(squash ? Http.request.setUrlParam("squash", String(squash)) : identity))
-        .pipe(Effect.map(labels ? Http.request.setUrlParam("labels", String(labels)) : identity))
-        .pipe(Effect.map(networkmode ? Http.request.setUrlParam("networkmode", String(networkmode)) : identity))
-        .pipe(Effect.map(platform ? Http.request.setUrlParam("platform", String(platform)) : identity))
-        .pipe(Effect.map(target ? Http.request.setUrlParam("target", String(target)) : identity))
-        .pipe(Effect.map(outputs ? Http.request.setUrlParam("outputs", String(outputs)) : identity))
+        .pipe(
+            Effect.map(dockerfile === undefined ? identity : Http.request.setUrlParam("dockerfile", String(dockerfile)))
+        )
+        .pipe(Effect.map(t === undefined ? identity : Http.request.setUrlParam("t", String(t))))
+        .pipe(
+            Effect.map(extrahosts === undefined ? identity : Http.request.setUrlParam("extrahosts", String(extrahosts)))
+        )
+        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
+        .pipe(Effect.map(q === undefined ? identity : Http.request.setUrlParam("q", String(q))))
+        .pipe(Effect.map(nocache === undefined ? identity : Http.request.setUrlParam("nocache", String(nocache))))
+        .pipe(Effect.map(cachefrom === undefined ? identity : Http.request.setUrlParam("cachefrom", String(cachefrom))))
+        .pipe(Effect.map(pull === undefined ? identity : Http.request.setUrlParam("pull", String(pull))))
+        .pipe(Effect.map(rm === undefined ? identity : Http.request.setUrlParam("rm", String(rm))))
+        .pipe(Effect.map(forcerm === undefined ? identity : Http.request.setUrlParam("forcerm", String(forcerm))))
+        .pipe(Effect.map(memory === undefined ? identity : Http.request.setUrlParam("memory", String(memory))))
+        .pipe(Effect.map(memswap === undefined ? identity : Http.request.setUrlParam("memswap", String(memswap))))
+        .pipe(Effect.map(cpushares === undefined ? identity : Http.request.setUrlParam("cpushares", String(cpushares))))
+        .pipe(
+            Effect.map(cpusetcpus === undefined ? identity : Http.request.setUrlParam("cpusetcpus", String(cpusetcpus)))
+        )
+        .pipe(Effect.map(cpuperiod === undefined ? identity : Http.request.setUrlParam("cpuperiod", String(cpuperiod))))
+        .pipe(Effect.map(cpuquota === undefined ? identity : Http.request.setUrlParam("cpuquota", String(cpuquota))))
+        .pipe(Effect.map(buildargs === undefined ? identity : Http.request.setUrlParam("buildargs", String(buildargs))))
+        .pipe(Effect.map(shmsize === undefined ? identity : Http.request.setUrlParam("shmsize", String(shmsize))))
+        .pipe(Effect.map(squash === undefined ? identity : Http.request.setUrlParam("squash", String(squash))))
+        .pipe(Effect.map(labels === undefined ? identity : Http.request.setUrlParam("labels", String(labels))))
+        .pipe(
+            Effect.map(
+                networkmode === undefined ? identity : Http.request.setUrlParam("networkmode", String(networkmode))
+            )
+        )
+        .pipe(Effect.map(platform === undefined ? identity : Http.request.setUrlParam("platform", String(platform))))
+        .pipe(Effect.map(target === undefined ? identity : Http.request.setUrlParam("target", String(target))))
+        .pipe(Effect.map(outputs === undefined ? identity : Http.request.setUrlParam("outputs", String(outputs))))
         .pipe(Effect.map(Http.request.setHeader("Content-type", String(Content_type))))
         .pipe(Effect.map(Http.request.setHeader("X-Registry-Config", String(X_Registry_Config))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/octet-stream")))
@@ -5790,10 +5939,10 @@ export const imageBuild = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class imageCommitError extends Data.TaggedError("imageCommitError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Create a new image from a container
@@ -5807,6 +5956,7 @@ export class imageCommitError extends Data.TaggedError("imageCommitError")<{ mes
  * @param {string} [changes] &#x60;Dockerfile&#x60; instructions to apply while committing
  */
 export const imageCommit = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: ContainerConfig,
     container?: string,
     repo?: string,
@@ -5817,20 +5967,20 @@ export const imageCommit = (
     changes?: string
 ): Effect.Effect<
     never,
-    imageCommitError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    imageCommitError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/commit`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(container ? Http.request.setUrlParam("container", String(container)) : identity))
-        .pipe(Effect.map(repo ? Http.request.setUrlParam("repo", String(repo)) : identity))
-        .pipe(Effect.map(tag ? Http.request.setUrlParam("tag", String(tag)) : identity))
-        .pipe(Effect.map(comment ? Http.request.setUrlParam("comment", String(comment)) : identity))
-        .pipe(Effect.map(author ? Http.request.setUrlParam("author", String(author)) : identity))
-        .pipe(Effect.map(pause ? Http.request.setUrlParam("pause", String(pause)) : identity))
-        .pipe(Effect.map(changes ? Http.request.setUrlParam("changes", String(changes)) : identity))
+        .pipe(Effect.map(container === undefined ? identity : Http.request.setUrlParam("container", String(container))))
+        .pipe(Effect.map(repo === undefined ? identity : Http.request.setUrlParam("repo", String(repo))))
+        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
+        .pipe(Effect.map(comment === undefined ? identity : Http.request.setUrlParam("comment", String(comment))))
+        .pipe(Effect.map(author === undefined ? identity : Http.request.setUrlParam("author", String(author))))
+        .pipe(Effect.map(pause === undefined ? identity : Http.request.setUrlParam("pause", String(pause))))
+        .pipe(Effect.map(changes === undefined ? identity : Http.request.setUrlParam("changes", String(changes))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -5844,13 +5994,10 @@ export const imageCommit = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
         );
-
-export class imageCreateError extends Data.TaggedError("imageCreateError")<{ message: string }> {}
-
 /**
  * Create an image by either pulling it from a registry or importing it.
  * @summary Create an image
@@ -5865,6 +6012,7 @@ export class imageCreateError extends Data.TaggedError("imageCreateError")<{ mes
  * @param {string} [platform] Platform in the format os[/arch[/variant]].  When used in combination with the &#x60;fromImage&#x60; option, the daemon checks if the given image is present in the local image cache with the given OS and Architecture, and otherwise attempts to pull the image. If the option is not set, the host&#39;s native OS and Architecture are used. If the given image does not exist in the local image cache, the daemon attempts to pull the image with the host&#39;s native OS and Architecture. If the given image does exists in the local image cache, but its OS or architecture does not match, a warning is produced.  When used with the &#x60;fromSrc&#x60; option to import an image from an archive, this option sets the platform information for the imported image. If the option is not set, the host&#39;s native OS and Architecture are used for the imported image.
  */
 export const imageCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: string,
     fromImage?: string,
     fromSrc?: string,
@@ -5874,18 +6022,22 @@ export const imageCreate = (
     X_Registry_Auth?: string,
     changes?: Array<string>,
     platform?: string
-): Effect.Effect<never, imageCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    imageCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/create`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(fromImage ? Http.request.setUrlParam("fromImage", String(fromImage)) : identity))
-        .pipe(Effect.map(fromSrc ? Http.request.setUrlParam("fromSrc", String(fromSrc)) : identity))
-        .pipe(Effect.map(repo ? Http.request.setUrlParam("repo", String(repo)) : identity))
-        .pipe(Effect.map(tag ? Http.request.setUrlParam("tag", String(tag)) : identity))
-        .pipe(Effect.map(message ? Http.request.setUrlParam("message", String(message)) : identity))
+        .pipe(Effect.map(fromImage === undefined ? identity : Http.request.setUrlParam("fromImage", String(fromImage))))
+        .pipe(Effect.map(fromSrc === undefined ? identity : Http.request.setUrlParam("fromSrc", String(fromSrc))))
+        .pipe(Effect.map(repo === undefined ? identity : Http.request.setUrlParam("repo", String(repo))))
+        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
+        .pipe(Effect.map(message === undefined ? identity : Http.request.setUrlParam("message", String(message))))
         .pipe(Effect.map(Http.request.setUrlParam("changes", (changes || []).join(COLLECTION_FORMATS["csv"]))))
-        .pipe(Effect.map(platform ? Http.request.setUrlParam("platform", String(platform)) : identity))
+        .pipe(Effect.map(platform === undefined ? identity : Http.request.setUrlParam("platform", String(platform))))
         .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "text/plain")))
         .pipe(
@@ -5898,10 +6050,10 @@ export const imageCreate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class imageDeleteError extends Data.TaggedError("imageDeleteError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Remove an image, along with any untagged parent images that were referenced by that image.  Images can't be removed if they have descendant images, are being used by a running container or are being used by a build.
  * @summary Remove an image
@@ -5910,12 +6062,13 @@ export class imageDeleteError extends Data.TaggedError("imageDeleteError")<{ mes
  * @param {boolean} [noprune] Do not delete untagged parent images
  */
 export const imageDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     force?: boolean,
     noprune?: boolean
 ): Effect.Effect<
     never,
-    imageDeleteError | Http.error.HttpClientError | ParseError,
+    imageDeleteError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ImageDeleteResponseItem>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5926,24 +6079,22 @@ export const imageDelete = (
         const endpoint: string = `${BASE_PATH}/images/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
         return Http.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
-        .pipe(Effect.map(noprune ? Http.request.setUrlParam("noprune", String(noprune)) : identity))
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(noprune === undefined ? identity : Http.request.setUrlParam("noprune", String(noprune))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ImageDeleteResponseItemSchema)))
         );
-
-export class imageGetError extends Data.TaggedError("imageGetError")<{ message: string }> {}
-
 /**
  * Get a tarball containing all images and metadata for a repository.  If `name` is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and its parents) are returned. If `name` is an image ID, similarly only that image (and its parents) are returned, but with the exclusion of the `repositories` file in the tarball, as there were no image names referenced.  ### Image tarball format  An image tarball contains one directory per image layer (named using its long ID), each containing these files:  - `VERSION`: currently `1.0` - the file format version - `json`: detailed layer information, similar to `docker inspect layer_id` - `layer.tar`: A tarfile containing the filesystem changes in this layer  The `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and directories for storing attribute changes and deletions.  If the tarball defines a repository, the tarball should also include a `repositories` file at the root that contains a list of repository and tag names mapped to layer IDs.  ```json {   \"hello-world\": {     \"latest\": \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\"   } } ```
  * @summary Export an image
  * @param {string} name Image name or ID
  */
 export const imageGet = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
-): Effect.Effect<never, imageGetError | Http.error.HttpClientError | ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, imageGetError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageGetError({ message: "Required parameter name was null or undefined" }));
@@ -5955,46 +6106,42 @@ export const imageGet = (
         );
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap((clientResponse) => clientResponse.text),
         Effect.map((responseText) => new Blob([responseText]))
     );
-
-export class imageGetAllError extends Data.TaggedError("imageGetAllError")<{ message: string }> {}
-
 /**
  * Get a tarball containing all images and metadata for several image repositories.  For each value of the `names` parameter: if it is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and its parents) are returned; if it is an image ID, similarly only that image (and its parents) are returned and there would be no names referenced in the 'repositories' file for this image ID.  For details on the format, see the [export image endpoint](#operation/ImageGet).
  * @summary Export several images
  * @param {Array<string>} [names] Image names to filter by
  */
 export const imageGetAll = (
+    dockerConnectionOptions: DockerConnectionOptions,
     names?: Array<string>
-): Effect.Effect<never, imageGetAllError | Http.error.HttpClientError | ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, imageGetAllError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/get`;
         return Http.request.make("GET")(endpoint);
     })
         .pipe(Effect.map(Http.request.setUrlParam("names", (names || []).join(COLLECTION_FORMATS["csv"]))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
-
-export class imageHistoryError extends Data.TaggedError("imageHistoryError")<{ message: string }> {}
-
 /**
  * Return parent layers of an image.
  * @summary Get the history of an image
  * @param {string} name Image name or ID
  */
 export const imageHistory = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
 ): Effect.Effect<
     never,
-    imageHistoryError | Http.error.HttpClientError | ParseError,
+    imageHistoryError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<HistoryResponseItem>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6008,21 +6155,23 @@ export const imageHistory = (
         );
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(arraySchema(HistoryResponseItemSchema)))
     );
-
-export class imageInspectError extends Data.TaggedError("imageInspectError")<{ message: string }> {}
-
 /**
  * Return low-level information about an image.
  * @summary Inspect an image
  * @param {string} name Image name or id
  */
 export const imageInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
-): Effect.Effect<never, imageInspectError | Http.error.HttpClientError | ParseError, Readonly<ImageInspect>> =>
+): Effect.Effect<
+    never,
+    imageInspectError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<ImageInspect>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageInspectError({ message: "Required parameter name was null or undefined" }));
@@ -6034,13 +6183,10 @@ export const imageInspect = (
         );
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(ImageInspectSchema))
     );
-
-export class imageListError extends Data.TaggedError("imageListError")<{ message: string }> {}
-
 /**
  * Returns a list of images on the server. Note that it uses a different, smaller representation of an image than inspecting a single image.
  * @summary List Images
@@ -6050,27 +6196,33 @@ export class imageListError extends Data.TaggedError("imageListError")<{ message
  * @param {boolean} [digests] Show digest information as a &#x60;RepoDigests&#x60; field on each image.
  */
 export const imageList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     all?: boolean,
     filters?: string,
     shared_size?: boolean,
     digests?: boolean
-): Effect.Effect<never, imageListError | Http.error.HttpClientError | ParseError, Readonly<Array<ImageSummary>>> =>
+): Effect.Effect<
+    never,
+    imageListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<ImageSummary>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/json`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(all ? Http.request.setUrlParam("all", String(all)) : identity))
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
-        .pipe(Effect.map(shared_size ? Http.request.setUrlParam("shared-size", String(shared_size)) : identity))
-        .pipe(Effect.map(digests ? Http.request.setUrlParam("digests", String(digests)) : identity))
+        .pipe(Effect.map(all === undefined ? identity : Http.request.setUrlParam("all", String(all))))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(
+                shared_size === undefined ? identity : Http.request.setUrlParam("shared-size", String(shared_size))
+            )
+        )
+        .pipe(Effect.map(digests === undefined ? identity : Http.request.setUrlParam("digests", String(digests))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ImageSummarySchema)))
         );
-
-export class imageLoadError extends Data.TaggedError("imageLoadError")<{ message: string }> {}
-
 /**
  * Load a set of images and tags into a repository.  For details on the format, see the [export image endpoint](#operation/ImageGet).
  * @summary Import images
@@ -6078,14 +6230,19 @@ export class imageLoadError extends Data.TaggedError("imageLoadError")<{ message
  * @param {boolean} [quiet] Suppress progress details during load.
  */
 export const imageLoad = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: unknown,
     quiet?: boolean
-): Effect.Effect<never, imageLoadError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    imageLoadError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/load`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(quiet ? Http.request.setUrlParam("quiet", String(quiet)) : identity))
+        .pipe(Effect.map(quiet === undefined ? identity : Http.request.setUrlParam("quiet", String(quiet))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/x-tar")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -6097,31 +6254,33 @@ export const imageLoad = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class imagePruneError extends Data.TaggedError("imagePruneError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Delete unused images
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;). Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), prune only    unused *and* untagged images. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), all unused images are pruned. - &#x60;until&#x3D;&lt;string&gt;&#x60; Prune images created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune images with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const imagePrune = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, imagePruneError | Http.error.HttpClientError | ParseError, Readonly<ImagePruneResponse>> =>
+): Effect.Effect<
+    never,
+    imagePruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<ImagePruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/prune`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ImagePruneResponseSchema))
         );
-
-export class imagePushError extends Data.TaggedError("imagePushError")<{ message: string }> {}
-
 /**
  * Push an image to a registry.  If you wish to push an image on to a private registry, that image must already have a tag which references the registry. For example, `registry.example.com/myimage:latest`.  The push is cancelled if the HTTP connection is closed.
  * @summary Push an image
@@ -6130,10 +6289,11 @@ export class imagePushError extends Data.TaggedError("imagePushError")<{ message
  * @param {string} [tag] The tag to associate with the image on the registry.
  */
 export const imagePush = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     X_Registry_Auth: string,
     tag?: string
-): Effect.Effect<never, imagePushError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, imagePushError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imagePushError({ message: "Required parameter name was null or undefined" }));
@@ -6149,12 +6309,12 @@ export const imagePush = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(tag ? Http.request.setUrlParam("tag", String(tag)) : identity))
+        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
         .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class imageSearchError extends Data.TaggedError("imageSearchError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Search for an image on Docker Hub.
  * @summary Search images
@@ -6163,12 +6323,13 @@ export class imageSearchError extends Data.TaggedError("imageSearchError")<{ mes
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the images list. Available filters:  - &#x60;is-automated&#x3D;(true|false)&#x60; - &#x60;is-official&#x3D;(true|false)&#x60; - &#x60;stars&#x3D;&lt;number&gt;&#x60; Matches images that has at least &#39;number&#39; stars.
  */
 export const imageSearch = (
+    dockerConnectionOptions: DockerConnectionOptions,
     term: string,
     limit?: number,
     filters?: string
 ): Effect.Effect<
     never,
-    imageSearchError | Http.error.HttpClientError | ParseError,
+    imageSearchError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ImageSearchResponseItem>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6179,17 +6340,14 @@ export const imageSearch = (
         const endpoint: string = `${BASE_PATH}/images/search`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(term ? Http.request.setUrlParam("term", String(term)) : identity))
-        .pipe(Effect.map(limit ? Http.request.setUrlParam("limit", String(limit)) : identity))
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(term === undefined ? identity : Http.request.setUrlParam("term", String(term))))
+        .pipe(Effect.map(limit === undefined ? identity : Http.request.setUrlParam("limit", String(limit))))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ImageSearchResponseItemSchema)))
         );
-
-export class imageTagError extends Data.TaggedError("imageTagError")<{ message: string }> {}
-
 /**
  * Tag an image so that it becomes part of a repository.
  * @summary Tag an image
@@ -6198,10 +6356,11 @@ export class imageTagError extends Data.TaggedError("imageTagError")<{ message: 
  * @param {string} [tag] The name of the new tag.
  */
 export const imageTag = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     repo?: string,
     tag?: string
-): Effect.Effect<never, imageTagError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, imageTagError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageTagError({ message: "Required parameter name was null or undefined" }));
@@ -6213,11 +6372,12 @@ export const imageTag = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(repo ? Http.request.setUrlParam("repo", String(repo)) : identity))
-        .pipe(Effect.map(tag ? Http.request.setUrlParam("tag", String(tag)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class networkConnectError extends Data.TaggedError("networkConnectError")<{ message: string }> {}
+        .pipe(Effect.map(repo === undefined ? identity : Http.request.setUrlParam("repo", String(repo))))
+        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  *
@@ -6226,9 +6386,14 @@ export class networkConnectError extends Data.TaggedError("networkConnectError")
  * @param {string} id Network ID or name
  */
 export const networkConnect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: NetworkConnectRequest,
     id: string
-): Effect.Effect<never, networkConnectError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    networkConnectError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkConnectError({ message: "Required parameter body was null or undefined" }));
@@ -6256,20 +6421,21 @@ export const networkConnect = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class networkCreateError extends Data.TaggedError("networkCreateError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Create a network
  * @param {NetworkCreateRequest} body Network configuration
  */
 export const networkCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: NetworkCreateRequest
 ): Effect.Effect<
     never,
-    networkCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    networkCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<NetworkCreateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6293,21 +6459,19 @@ export const networkCreate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(NetworkCreateResponseSchema))
         );
-
-export class networkDeleteError extends Data.TaggedError("networkDeleteError")<{ message: string }> {}
-
 /**
  *
  * @summary Remove a network
  * @param {string} id Network ID or name
  */
 export const networkDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, networkDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, networkDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -6315,10 +6479,10 @@ export const networkDelete = (
 
         const endpoint: string = `${BASE_PATH}/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("DELETE")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class networkDisconnectError extends Data.TaggedError("networkDisconnectError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  *
  * @summary Disconnect a container from a network
@@ -6326,9 +6490,14 @@ export class networkDisconnectError extends Data.TaggedError("networkDisconnectE
  * @param {string} id Network ID or name
  */
 export const networkDisconnect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: NetworkDisconnectRequest,
     id: string
-): Effect.Effect<never, networkDisconnectError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    networkDisconnectError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkDisconnectError({ message: "Required parameter body was null or undefined" }));
@@ -6356,10 +6525,10 @@ export const networkDisconnect = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class networkInspectError extends Data.TaggedError("networkInspectError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Inspect a network
@@ -6368,10 +6537,11 @@ export class networkInspectError extends Data.TaggedError("networkInspectError")
  * @param {string} [scope] Filter the network by scope (swarm, global, or local)
  */
 export const networkInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     verbose?: boolean,
     scope?: string
-): Effect.Effect<never, networkInspectError | Http.error.HttpClientError | ParseError, Readonly<Network>> =>
+): Effect.Effect<never, networkInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Network>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkInspectError({ message: "Required parameter id was null or undefined" }));
@@ -6380,57 +6550,59 @@ export const networkInspect = (
         const endpoint: string = `${BASE_PATH}/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(verbose ? Http.request.setUrlParam("verbose", String(verbose)) : identity))
-        .pipe(Effect.map(scope ? Http.request.setUrlParam("scope", String(scope)) : identity))
+        .pipe(Effect.map(verbose === undefined ? identity : Http.request.setUrlParam("verbose", String(verbose))))
+        .pipe(Effect.map(scope === undefined ? identity : Http.request.setUrlParam("scope", String(scope))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(NetworkSchema))
         );
-
-export class networkListError extends Data.TaggedError("networkListError")<{ message: string }> {}
-
 /**
  * Returns a list of networks. For details on the format, see the [network inspect endpoint](#operation/NetworkInspect).  Note that it uses a different, smaller representation of a network than inspecting a single network. For example, the list of containers attached to the network is not propagated in API versions 1.28 and up.
  * @summary List networks
  * @param {string} [filters] JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the networks list.  Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), returns all    networks that are not in use by a container. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), only networks that are in use by one or more    containers are returned. - &#x60;driver&#x3D;&lt;driver-name&gt;&#x60; Matches a network&#39;s driver. - &#x60;id&#x3D;&lt;network-id&gt;&#x60; Matches all or part of a network ID. - &#x60;label&#x3D;&lt;key&gt;&#x60; or &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60; of a network label. - &#x60;name&#x3D;&lt;network-name&gt;&#x60; Matches all or part of a network name. - &#x60;scope&#x3D;[\&quot;swarm\&quot;|\&quot;global\&quot;|\&quot;local\&quot;]&#x60; Filters networks by scope (&#x60;swarm&#x60;, &#x60;global&#x60;, or &#x60;local&#x60;). - &#x60;type&#x3D;[\&quot;custom\&quot;|\&quot;builtin\&quot;]&#x60; Filters networks by type. The &#x60;custom&#x60; keyword returns all user-defined networks.
  */
 export const networkList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, networkListError | Http.error.HttpClientError | ParseError, Readonly<Array<Network>>> =>
+): Effect.Effect<
+    never,
+    networkListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Network>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(NetworkSchema)))
         );
-
-export class networkPruneError extends Data.TaggedError("networkPruneError")<{ message: string }> {}
-
 /**
  *
  * @summary Delete unused networks
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; Prune networks created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune networks with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const networkPrune = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, networkPruneError | Http.error.HttpClientError | ParseError, Readonly<NetworkPruneResponse>> =>
+): Effect.Effect<
+    never,
+    networkPruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<NetworkPruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks/prune`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(NetworkPruneResponseSchema))
         );
-
-export class nodeDeleteError extends Data.TaggedError("nodeDeleteError")<{ message: string }> {}
 
 /**
  *
@@ -6439,9 +6611,10 @@ export class nodeDeleteError extends Data.TaggedError("nodeDeleteError")<{ messa
  * @param {boolean} [force] Force remove a node from the swarm
  */
 export const nodeDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     force?: boolean
-): Effect.Effect<never, nodeDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, nodeDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -6450,19 +6623,20 @@ export const nodeDelete = (
         const endpoint: string = `${BASE_PATH}/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class nodeInspectError extends Data.TaggedError("nodeInspectError")<{ message: string }> {}
-
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Inspect a node
  * @param {string} id The ID or name of the node
  */
 export const nodeInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, nodeInspectError | Http.error.HttpClientError | ParseError, Readonly<Node>> =>
+): Effect.Effect<never, nodeInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Node>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeInspectError({ message: "Required parameter id was null or undefined" }));
@@ -6471,34 +6645,29 @@ export const nodeInspect = (
         const endpoint: string = `${BASE_PATH}/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(NodeSchema))
     );
-
-export class nodeListError extends Data.TaggedError("nodeListError")<{ message: string }> {}
-
 /**
  *
  * @summary List nodes
  * @param {string} [filters] Filters to process on the nodes list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;id&#x3D;&lt;node id&gt;&#x60; - &#x60;label&#x3D;&lt;engine label&gt;&#x60; - &#x60;membership&#x3D;&#x60;(&#x60;accepted&#x60;|&#x60;pending&#x60;)&#x60; - &#x60;name&#x3D;&lt;node name&gt;&#x60; - &#x60;node.label&#x3D;&lt;node label&gt;&#x60; - &#x60;role&#x3D;&#x60;(&#x60;manager&#x60;|&#x60;worker&#x60;)&#x60;
  */
 export const nodeList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, nodeListError | Http.error.HttpClientError | ParseError, Readonly<Array<Node>>> =>
+): Effect.Effect<never, nodeListError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Array<Node>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/nodes`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(NodeSchema)))
         );
-
-export class nodeUpdateError extends Data.TaggedError("nodeUpdateError")<{ message: string }> {}
-
 /**
  *
  * @summary Update a node
@@ -6507,10 +6676,15 @@ export class nodeUpdateError extends Data.TaggedError("nodeUpdateError")<{ messa
  * @param {NodeSpec} [body]
  */
 export const nodeUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     version: number,
     body?: NodeSpec
-): Effect.Effect<never, nodeUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    nodeUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -6523,7 +6697,7 @@ export const nodeUpdate = (
         const endpoint: string = `${BASE_PATH}/nodes/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version ? Http.request.setUrlParam("version", String(version)) : identity))
+        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -6536,9 +6710,10 @@ export const nodeUpdate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class getPluginPrivilegesError extends Data.TaggedError("getPluginPrivilegesError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  *
@@ -6546,10 +6721,11 @@ export class getPluginPrivilegesError extends Data.TaggedError("getPluginPrivile
  * @param {string} remote The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const getPluginPrivileges = (
+    dockerConnectionOptions: DockerConnectionOptions,
     remote: string
 ): Effect.Effect<
     never,
-    getPluginPrivilegesError | Http.error.HttpClientError | ParseError,
+    getPluginPrivilegesError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<PluginPrivilege>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6560,15 +6736,12 @@ export const getPluginPrivileges = (
         const endpoint: string = `${BASE_PATH}/plugins/privileges`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(remote ? Http.request.setUrlParam("remote", String(remote)) : identity))
+        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(PluginPrivilegeSchema)))
         );
-
-export class pluginCreateError extends Data.TaggedError("pluginCreateError")<{ message: string }> {}
-
 /**
  *
  * @summary Create a plugin
@@ -6576,9 +6749,14 @@ export class pluginCreateError extends Data.TaggedError("pluginCreateError")<{ m
  * @param {Object} [body] Path to tar containing plugin rootfs and manifest
  */
 export const pluginCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     body?: unknown
-): Effect.Effect<never, pluginCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    pluginCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginCreateError({ message: "Required parameter name was null or undefined" }));
@@ -6587,7 +6765,7 @@ export const pluginCreate = (
         const endpoint: string = `${BASE_PATH}/plugins/create`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(name ? Http.request.setUrlParam("name", String(name)) : identity))
+        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/x-tar")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -6599,10 +6777,10 @@ export const pluginCreate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class pluginDeleteError extends Data.TaggedError("pluginDeleteError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Remove a plugin
@@ -6610,9 +6788,10 @@ export class pluginDeleteError extends Data.TaggedError("pluginDeleteError")<{ m
  * @param {boolean} [force] Disable the plugin before removing. This may result in issues if the plugin is in use by a container.
  */
 export const pluginDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, pluginDeleteError | Http.error.HttpClientError | ParseError, Readonly<Plugin>> =>
+): Effect.Effect<never, pluginDeleteError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Plugin>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDeleteError({ message: "Required parameter name was null or undefined" }));
@@ -6621,15 +6800,12 @@ export const pluginDelete = (
         const endpoint: string = `${BASE_PATH}/plugins/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
         return Http.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(PluginSchema))
         );
-
-export class pluginDisableError extends Data.TaggedError("pluginDisableError")<{ message: string }> {}
-
 /**
  *
  * @summary Disable a plugin
@@ -6637,9 +6813,10 @@ export class pluginDisableError extends Data.TaggedError("pluginDisableError")<{
  * @param {boolean} [force] Force disable a plugin even if still in use.
  */
 export const pluginDisable = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, pluginDisableError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, pluginDisableError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDisableError({ message: "Required parameter name was null or undefined" }));
@@ -6651,11 +6828,11 @@ export const pluginDisable = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class pluginEnableError extends Data.TaggedError("pluginEnableError")<{ message: string }> {}
-
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Enable a plugin
@@ -6663,9 +6840,10 @@ export class pluginEnableError extends Data.TaggedError("pluginEnableError")<{ m
  * @param {number} [timeout] Set the HTTP client timeout (in seconds)
  */
 export const pluginEnable = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     timeout?: number
-): Effect.Effect<never, pluginEnableError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, pluginEnableError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginEnableError({ message: "Required parameter name was null or undefined" }));
@@ -6677,19 +6855,20 @@ export const pluginEnable = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(timeout ? Http.request.setUrlParam("timeout", String(timeout)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class pluginInspectError extends Data.TaggedError("pluginInspectError")<{ message: string }> {}
-
+        .pipe(Effect.map(timeout === undefined ? identity : Http.request.setUrlParam("timeout", String(timeout))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Inspect a plugin
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const pluginInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
-): Effect.Effect<never, pluginInspectError | Http.error.HttpClientError | ParseError, Readonly<Plugin>> =>
+): Effect.Effect<never, pluginInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Plugin>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginInspectError({ message: "Required parameter name was null or undefined" }));
@@ -6701,34 +6880,33 @@ export const pluginInspect = (
         );
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(PluginSchema))
     );
-
-export class pluginListError extends Data.TaggedError("pluginListError")<{ message: string }> {}
-
 /**
  * Returns information about installed plugins.
  * @summary List plugins
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the plugin list.  Available filters:  - &#x60;capability&#x3D;&lt;capability name&gt;&#x60; - &#x60;enable&#x3D;&lt;true&gt;|&lt;false&gt;&#x60;
  */
 export const pluginList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, pluginListError | Http.error.HttpClientError | ParseError, Readonly<Array<Plugin>>> =>
+): Effect.Effect<
+    never,
+    pluginListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Plugin>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/plugins`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(PluginSchema)))
         );
-
-export class pluginPullError extends Data.TaggedError("pluginPullError")<{ message: string }> {}
-
 /**
  * Pulls and installs a plugin. After the plugin is installed, it can be enabled using the [`POST /plugins/{name}/enable` endpoint](#operation/PostPluginsEnable).
  * @summary Install a plugin
@@ -6738,11 +6916,16 @@ export class pluginPullError extends Data.TaggedError("pluginPullError")<{ messa
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration to use when pulling a plugin from a registry.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const pluginPull = (
+    dockerConnectionOptions: DockerConnectionOptions,
     remote: string,
     body?: Array<PluginPrivilege>,
     name?: string,
     X_Registry_Auth?: string
-): Effect.Effect<never, pluginPullError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    pluginPullError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (remote === null || remote === undefined) {
             yield* _(new pluginPullError({ message: "Required parameter remote was null or undefined" }));
@@ -6751,8 +6934,8 @@ export const pluginPull = (
         const endpoint: string = `${BASE_PATH}/plugins/pull`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(remote ? Http.request.setUrlParam("remote", String(remote)) : identity))
-        .pipe(Effect.map(name ? Http.request.setUrlParam("name", String(name)) : identity))
+        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
+        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
         .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
@@ -6766,18 +6949,19 @@ export const pluginPull = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class pluginPushError extends Data.TaggedError("pluginPushError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  * Push a plugin to the registry.
  * @summary Push a plugin
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const pluginPush = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
-): Effect.Effect<never, pluginPushError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, pluginPushError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginPushError({ message: "Required parameter name was null or undefined" }));
@@ -6788,10 +6972,10 @@ export const pluginPush = (
             encodeURIComponent(String(name))
         );
         return Http.request.make("POST")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class pluginSetError extends Data.TaggedError("pluginSetError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  *
  * @summary Configure a plugin
@@ -6799,9 +6983,14 @@ export class pluginSetError extends Data.TaggedError("pluginSetError")<{ message
  * @param {Array<string>} [body]
  */
 export const pluginSet = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     body?: Array<string>
-): Effect.Effect<never, pluginSetError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    pluginSetError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginSetError({ message: "Required parameter name was null or undefined" }));
@@ -6825,10 +7014,10 @@ export const pluginSet = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class pluginUpgradeError extends Data.TaggedError("pluginUpgradeError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Upgrade a plugin
@@ -6838,11 +7027,16 @@ export class pluginUpgradeError extends Data.TaggedError("pluginUpgradeError")<{
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration to use when pulling a plugin from a registry.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const pluginUpgrade = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     remote: string,
     body?: Array<PluginPrivilege>,
     X_Registry_Auth?: string
-): Effect.Effect<never, pluginUpgradeError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    pluginUpgradeError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginUpgradeError({ message: "Required parameter name was null or undefined" }));
@@ -6858,7 +7052,7 @@ export const pluginUpgrade = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(remote ? Http.request.setUrlParam("remote", String(remote)) : identity))
+        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
         .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
@@ -6872,9 +7066,10 @@ export const pluginUpgrade = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class secretCreateError extends Data.TaggedError("secretCreateError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  *
@@ -6882,10 +7077,11 @@ export class secretCreateError extends Data.TaggedError("secretCreateError")<{ m
  * @param {SecretsCreateBody} [body]
  */
 export const secretCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: SecretsCreateBody
 ): Effect.Effect<
     never,
-    secretCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    secretCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6905,21 +7101,19 @@ export const secretCreate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
         );
-
-export class secretDeleteError extends Data.TaggedError("secretDeleteError")<{ message: string }> {}
-
 /**
  *
  * @summary Delete a secret
  * @param {string} id ID of the secret
  */
 export const secretDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, secretDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, secretDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -6927,18 +7121,19 @@ export const secretDelete = (
 
         const endpoint: string = `${BASE_PATH}/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("DELETE")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class secretInspectError extends Data.TaggedError("secretInspectError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  *
  * @summary Inspect a secret
  * @param {string} id ID of the secret
  */
 export const secretInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, secretInspectError | Http.error.HttpClientError | ParseError, Readonly<Secret>> =>
+): Effect.Effect<never, secretInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Secret>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretInspectError({ message: "Required parameter id was null or undefined" }));
@@ -6947,34 +7142,33 @@ export const secretInspect = (
         const endpoint: string = `${BASE_PATH}/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(SecretSchema))
     );
-
-export class secretListError extends Data.TaggedError("secretListError")<{ message: string }> {}
-
 /**
  *
  * @summary List secrets
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the secrets list.  Available filters:  - &#x60;id&#x3D;&lt;secret id&gt;&#x60; - &#x60;label&#x3D;&lt;key&gt; or label&#x3D;&lt;key&gt;&#x3D;value&#x60; - &#x60;name&#x3D;&lt;secret name&gt;&#x60; - &#x60;names&#x3D;&lt;secret name&gt;&#x60;
  */
 export const secretList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, secretListError | Http.error.HttpClientError | ParseError, Readonly<Array<Secret>>> =>
+): Effect.Effect<
+    never,
+    secretListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Secret>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(SecretSchema)))
         );
-
-export class secretUpdateError extends Data.TaggedError("secretUpdateError")<{ message: string }> {}
-
 /**
 *
 * @summary Update a Secret
@@ -6986,10 +7180,15 @@ can be updated. All other fields must remain unchanged from the
 
 */
 export const secretUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     version: number,
     body?: SecretSpec
-): Effect.Effect<never, secretUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    secretUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -7005,7 +7204,7 @@ export const secretUpdate = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version ? Http.request.setUrlParam("version", String(version)) : identity))
+        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -7018,9 +7217,10 @@ export const secretUpdate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class serviceCreateError extends Data.TaggedError("serviceCreateError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  *
@@ -7029,11 +7229,12 @@ export class serviceCreateError extends Data.TaggedError("serviceCreateError")<{
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration for pulling from private registries.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const serviceCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: ServicesCreateBody,
     X_Registry_Auth?: string
 ): Effect.Effect<
     never,
-    serviceCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    serviceCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<ServiceCreateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7058,21 +7259,19 @@ export const serviceCreate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ServiceCreateResponseSchema))
         );
-
-export class serviceDeleteError extends Data.TaggedError("serviceDeleteError")<{ message: string }> {}
-
 /**
  *
  * @summary Delete a service
  * @param {string} id ID or name of service.
  */
 export const serviceDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, serviceDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, serviceDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -7080,10 +7279,10 @@ export const serviceDelete = (
 
         const endpoint: string = `${BASE_PATH}/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("DELETE")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class serviceInspectError extends Data.TaggedError("serviceInspectError")<{ message: string }> {}
-
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 /**
  *
  * @summary Inspect a service
@@ -7091,9 +7290,10 @@ export class serviceInspectError extends Data.TaggedError("serviceInspectError")
  * @param {boolean} [insertDefaults] Fill empty fields with default values.
  */
 export const serviceInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     insertDefaults?: boolean
-): Effect.Effect<never, serviceInspectError | Http.error.HttpClientError | ParseError, Readonly<Service>> =>
+): Effect.Effect<never, serviceInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Service>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceInspectError({ message: "Required parameter id was null or undefined" }));
@@ -7103,16 +7303,17 @@ export const serviceInspect = (
         return Http.request.make("GET")(endpoint);
     })
         .pipe(
-            Effect.map(insertDefaults ? Http.request.setUrlParam("insertDefaults", String(insertDefaults)) : identity)
+            Effect.map(
+                insertDefaults === undefined
+                    ? identity
+                    : Http.request.setUrlParam("insertDefaults", String(insertDefaults))
+            )
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ServiceSchema))
         );
-
-export class serviceListError extends Data.TaggedError("serviceListError")<{ message: string }> {}
-
 /**
  *
  * @summary List services
@@ -7120,23 +7321,25 @@ export class serviceListError extends Data.TaggedError("serviceListError")<{ mes
  * @param {boolean} [status] Include service status, with count of running and desired tasks.
  */
 export const serviceList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string,
     status?: boolean
-): Effect.Effect<never, serviceListError | Http.error.HttpClientError | ParseError, Readonly<Array<Service>>> =>
+): Effect.Effect<
+    never,
+    serviceListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Service>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/services`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
-        .pipe(Effect.map(status ? Http.request.setUrlParam("status", String(status)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(status === undefined ? identity : Http.request.setUrlParam("status", String(status))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ServiceSchema)))
         );
-
-export class serviceLogsError extends Data.TaggedError("serviceLogsError")<{ message: string }> {}
-
 /**
  * Get `stdout` and `stderr` logs from a service. See also [`/containers/{id}/logs`](#operation/ContainerLogs).  **Note**: This endpoint works only for services with the `local`, `json-file` or `journald` logging drivers.
  * @summary Get service logs
@@ -7150,6 +7353,7 @@ export class serviceLogsError extends Data.TaggedError("serviceLogsError")<{ mes
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const serviceLogs = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -7158,7 +7362,7 @@ export const serviceLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, serviceLogsError | Http.error.HttpClientError | ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, serviceLogsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceLogsError({ message: "Required parameter id was null or undefined" }));
@@ -7167,22 +7371,21 @@ export const serviceLogs = (
         const endpoint: string = `${BASE_PATH}/services/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(details ? Http.request.setUrlParam("details", String(details)) : identity))
-        .pipe(Effect.map(follow ? Http.request.setUrlParam("follow", String(follow)) : identity))
-        .pipe(Effect.map(stdout ? Http.request.setUrlParam("stdout", String(stdout)) : identity))
-        .pipe(Effect.map(stderr ? Http.request.setUrlParam("stderr", String(stderr)) : identity))
-        .pipe(Effect.map(since ? Http.request.setUrlParam("since", String(since)) : identity))
-        .pipe(Effect.map(timestamps ? Http.request.setUrlParam("timestamps", String(timestamps)) : identity))
-        .pipe(Effect.map(tail ? Http.request.setUrlParam("tail", String(tail)) : identity))
+        .pipe(Effect.map(details === undefined ? identity : Http.request.setUrlParam("details", String(details))))
+        .pipe(Effect.map(follow === undefined ? identity : Http.request.setUrlParam("follow", String(follow))))
+        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(timestamps === undefined ? identity : Http.request.setUrlParam("timestamps", String(timestamps)))
+        )
+        .pipe(Effect.map(tail === undefined ? identity : Http.request.setUrlParam("tail", String(tail))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
-
-export class serviceUpdateError extends Data.TaggedError("serviceUpdateError")<{ message: string }> {}
-
 /**
  *
  * @summary Update a service
@@ -7194,6 +7397,7 @@ export class serviceUpdateError extends Data.TaggedError("serviceUpdateError")<{
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration for pulling from private registries.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const serviceUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: IdUpdateBody1,
     id: string,
     version: number,
@@ -7202,7 +7406,7 @@ export const serviceUpdate = (
     X_Registry_Auth?: string
 ): Effect.Effect<
     never,
-    serviceUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    serviceUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<ServiceUpdateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7224,13 +7428,15 @@ export const serviceUpdate = (
         );
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version ? Http.request.setUrlParam("version", String(version)) : identity))
+        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
         .pipe(
             Effect.map(
-                registryAuthFrom ? Http.request.setUrlParam("registryAuthFrom", String(registryAuthFrom)) : identity
+                registryAuthFrom === undefined
+                    ? identity
+                    : Http.request.setUrlParam("registryAuthFrom", String(registryAuthFrom))
             )
         )
-        .pipe(Effect.map(rollback ? Http.request.setUrlParam("rollback", String(rollback)) : identity))
+        .pipe(Effect.map(rollback === undefined ? identity : Http.request.setUrlParam("rollback", String(rollback))))
         .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
@@ -7245,24 +7451,25 @@ export const serviceUpdate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(ServiceUpdateResponseSchema))
         );
-
-export class sessionError extends Data.TaggedError("sessionError")<{ message: string }> {}
 
 /**
  * Start a new interactive session with a server. Session allows server to call back to the client for advanced capabilities.  ### Hijacking  This endpoint hijacks the HTTP connection to HTTP2 transport that allows the client to expose gPRC services on that connection.  For example, the client sends this request to upgrade the connection:  ``` POST /session HTTP/1.1 Upgrade: h2c Connection: Upgrade ```  The Docker daemon responds with a `101 UPGRADED` response follow with the raw stream:  ``` HTTP/1.1 101 UPGRADED Connection: Upgrade Upgrade: h2c ```
  * @summary Initialize interactive session
  */
-export const session = (): Effect.Effect<never, sessionError | Http.error.HttpClientError | ParseError, void> =>
+export const session = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<never, sessionError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/session`;
         return Http.request.make("POST")(endpoint);
-    }).pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class swarmInitError extends Data.TaggedError("swarmInitError")<{ message: string }> {}
+    }).pipe(
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+    );
 
 /**
  *
@@ -7270,10 +7477,11 @@ export class swarmInitError extends Data.TaggedError("swarmInitError")<{ message
  * @param {SwarmInitRequest} body
  */
 export const swarmInit = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: SwarmInitRequest
 ): Effect.Effect<
     never,
-    swarmInitError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    swarmInitError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<string>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7297,41 +7505,38 @@ export const swarmInit = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(stringSchema))
         );
-
-export class swarmInspectError extends Data.TaggedError("swarmInspectError")<{ message: string }> {}
-
 /**
  *
  * @summary Inspect swarm
  */
-export const swarmInspect = (): Effect.Effect<
-    never,
-    swarmInspectError | Http.error.HttpClientError | ParseError,
-    Readonly<Swarm>
-> =>
+export const swarmInspect = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<never, swarmInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Swarm>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm`;
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(SwarmSchema))
     );
-
-export class swarmJoinError extends Data.TaggedError("swarmJoinError")<{ message: string }> {}
-
 /**
  *
  * @summary Join an existing swarm
  * @param {SwarmJoinRequest} body
  */
 export const swarmJoin = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: SwarmJoinRequest
-): Effect.Effect<never, swarmJoinError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    swarmJoinError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmJoinError({ message: "Required parameter body was null or undefined" }));
@@ -7352,35 +7557,41 @@ export const swarmJoin = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class swarmLeaveError extends Data.TaggedError("swarmLeaveError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Leave a swarm
  * @param {boolean} [force] Force leave swarm, even if this is the last manager or that it will break the cluster.
  */
 export const swarmLeave = (
+    dockerConnectionOptions: DockerConnectionOptions,
     force?: boolean
-): Effect.Effect<never, swarmLeaveError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, swarmLeaveError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/leave`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class swarmUnlockError extends Data.TaggedError("swarmUnlockError")<{ message: string }> {}
-
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Unlock a locked manager
  * @param {SwarmUnlockRequest} body
  */
 export const swarmUnlock = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: SwarmUnlockRequest
-): Effect.Effect<never, swarmUnlockError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    swarmUnlockError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmUnlockError({ message: "Required parameter body was null or undefined" }));
@@ -7401,30 +7612,29 @@ export const swarmUnlock = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class swarmUnlockkeyError extends Data.TaggedError("swarmUnlockkeyError")<{ message: string }> {}
-
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Get the unlock key
  */
-export const swarmUnlockkey = (): Effect.Effect<
+export const swarmUnlockkey = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<
     never,
-    swarmUnlockkeyError | Http.error.HttpClientError | ParseError,
+    swarmUnlockkeyError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<UnlockKeyResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/unlockkey`;
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(UnlockKeyResponseSchema))
     );
-
-export class swarmUpdateError extends Data.TaggedError("swarmUpdateError")<{ message: string }> {}
-
 /**
  *
  * @summary Update a swarm
@@ -7435,12 +7645,17 @@ export class swarmUpdateError extends Data.TaggedError("swarmUpdateError")<{ mes
  * @param {boolean} [rotateManagerUnlockKey] Rotate the manager unlock key.
  */
 export const swarmUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: SwarmSpec,
     version: number,
     rotateWorkerToken?: boolean,
     rotateManagerToken?: boolean,
     rotateManagerUnlockKey?: boolean
-): Effect.Effect<never, swarmUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    swarmUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -7453,24 +7668,26 @@ export const swarmUpdate = (
         const endpoint: string = `${BASE_PATH}/swarm/update`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version ? Http.request.setUrlParam("version", String(version)) : identity))
+        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
         .pipe(
             Effect.map(
-                rotateWorkerToken ? Http.request.setUrlParam("rotateWorkerToken", String(rotateWorkerToken)) : identity
+                rotateWorkerToken === undefined
+                    ? identity
+                    : Http.request.setUrlParam("rotateWorkerToken", String(rotateWorkerToken))
             )
         )
         .pipe(
             Effect.map(
-                rotateManagerToken
-                    ? Http.request.setUrlParam("rotateManagerToken", String(rotateManagerToken))
-                    : identity
+                rotateManagerToken === undefined
+                    ? identity
+                    : Http.request.setUrlParam("rotateManagerToken", String(rotateManagerToken))
             )
         )
         .pipe(
             Effect.map(
-                rotateManagerUnlockKey
-                    ? Http.request.setUrlParam("rotateManagerUnlockKey", String(rotateManagerUnlockKey))
-                    : identity
+                rotateManagerUnlockKey === undefined
+                    ? identity
+                    : Http.request.setUrlParam("rotateManagerUnlockKey", String(rotateManagerUnlockKey))
             )
         )
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
@@ -7485,9 +7702,10 @@ export const swarmUpdate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class systemAuthError extends Data.TaggedError("systemAuthError")<{ message: string }> {}
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 
 /**
  * Validate credentials for a registry and, if available, get an identity token for accessing the registry without password.
@@ -7495,10 +7713,11 @@ export class systemAuthError extends Data.TaggedError("systemAuthError")<{ messa
  * @param {AuthConfig} [body] Authentication to check
  */
 export const systemAuth = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body?: AuthConfig
 ): Effect.Effect<
     never,
-    systemAuthError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    systemAuthError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<SystemAuthResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7518,23 +7737,21 @@ export const systemAuth = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(SystemAuthResponseSchema))
         );
-
-export class systemDataUsageError extends Data.TaggedError("systemDataUsageError")<{ message: string }> {}
-
 /**
  *
  * @summary Get data usage information
  * @param {Array<string>} [type] Object types, for which to compute and return data.
  */
 export const systemDataUsage = (
+    dockerConnectionOptions: DockerConnectionOptions,
     type?: Array<string>
 ): Effect.Effect<
     never,
-    systemDataUsageError | Http.error.HttpClientError | ParseError,
+    systemDataUsageError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<SystemDataUsageResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7543,13 +7760,10 @@ export const systemDataUsage = (
     })
         .pipe(Effect.map(Http.request.setUrlParam("type", String(type))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(SystemDataUsageResponseSchema))
         );
-
-export class systemEventsError extends Data.TaggedError("systemEventsError")<{ message: string }> {}
-
 /**
  * Stream real-time events from the server.  Various objects within Docker report events when something happens to them.  Containers report these events: `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`, `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`, `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`, `start`, `stop`, `top`, `unpause`, `update`, and `prune`  Images report these events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`, `untag`, and `prune`  Volumes report these events: `create`, `mount`, `unmount`, `destroy`, and `prune`  Networks report these events: `create`, `connect`, `disconnect`, `destroy`, `update`, `remove`, and `prune`  The Docker daemon reports these events: `reload`  Services report these events: `create`, `update`, and `remove`  Nodes report these events: `create`, `update`, and `remove`  Secrets report these events: `create`, `update`, and `remove`  Configs report these events: `create`, `update`, and `remove`  The Builder reports `prune` events
  * @summary Monitor events
@@ -7558,104 +7772,91 @@ export class systemEventsError extends Data.TaggedError("systemEventsError")<{ m
  * @param {string} [filters] A JSON encoded value of filters (a &#x60;map[string][]string&#x60;) to process on the event list. Available filters:  - &#x60;config&#x3D;&lt;string&gt;&#x60; config name or ID - &#x60;container&#x3D;&lt;string&gt;&#x60; container name or ID - &#x60;daemon&#x3D;&lt;string&gt;&#x60; daemon name or ID - &#x60;event&#x3D;&lt;string&gt;&#x60; event type - &#x60;image&#x3D;&lt;string&gt;&#x60; image name or ID - &#x60;label&#x3D;&lt;string&gt;&#x60; image or container label - &#x60;network&#x3D;&lt;string&gt;&#x60; network name or ID - &#x60;node&#x3D;&lt;string&gt;&#x60; node ID - &#x60;plugin&#x60;&#x3D;&lt;string&gt; plugin name or ID - &#x60;scope&#x60;&#x3D;&lt;string&gt; local or swarm - &#x60;secret&#x3D;&lt;string&gt;&#x60; secret name or ID - &#x60;service&#x3D;&lt;string&gt;&#x60; service name or ID - &#x60;type&#x3D;&lt;string&gt;&#x60; object to filter by, one of &#x60;container&#x60;, &#x60;image&#x60;, &#x60;volume&#x60;, &#x60;network&#x60;, &#x60;daemon&#x60;, &#x60;plugin&#x60;, &#x60;node&#x60;, &#x60;service&#x60;, &#x60;secret&#x60; or &#x60;config&#x60; - &#x60;volume&#x3D;&lt;string&gt;&#x60; volume name
  */
 export const systemEvents = (
+    dockerConnectionOptions: DockerConnectionOptions,
     since?: string,
     until?: string,
     filters?: string
-): Effect.Effect<never, systemEventsError | Http.error.HttpClientError | ParseError, Readonly<EventMessage>> =>
+): Effect.Effect<
+    never,
+    systemEventsError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<EventMessage>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/events`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(since ? Http.request.setUrlParam("since", String(since)) : identity))
-        .pipe(Effect.map(until ? Http.request.setUrlParam("until", String(until)) : identity))
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
+        .pipe(Effect.map(until === undefined ? identity : Http.request.setUrlParam("until", String(until))))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(EventMessageSchema))
         );
-
-export class systemInfoError extends Data.TaggedError("systemInfoError")<{ message: string }> {}
-
 /**
  *
  * @summary Get system information
  */
-export const systemInfo = (): Effect.Effect<
-    never,
-    systemInfoError | Http.error.HttpClientError | ParseError,
-    Readonly<SystemInfo>
-> =>
+export const systemInfo = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<never, systemInfoError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<SystemInfo>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/info`;
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(SystemInfoSchema))
     );
-
-export class systemPingError extends Data.TaggedError("systemPingError")<{ message: string }> {}
-
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
-export const systemPing = (): Effect.Effect<
-    never,
-    systemPingError | Http.error.HttpClientError | ParseError,
-    Readonly<string>
-> =>
+export const systemPing = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<never, systemPingError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(stringSchema))
     );
-
-export class systemPingHeadError extends Data.TaggedError("systemPingHeadError")<{ message: string }> {}
-
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
-export const systemPingHead = (): Effect.Effect<
-    never,
-    systemPingHeadError | Http.error.HttpClientError | ParseError,
-    Readonly<string>
-> =>
+export const systemPingHead = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<never, systemPingHeadError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
         return Http.request.make("HEAD")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(stringSchema))
     );
-
-export class systemVersionError extends Data.TaggedError("systemVersionError")<{ message: string }> {}
-
 /**
  * Returns the version of Docker that is running and various information about the system that Docker is running on.
  * @summary Get version
  */
-export const systemVersion = (): Effect.Effect<
+export const systemVersion = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Effect.Effect<
     never,
-    systemVersionError | Http.error.HttpClientError | ParseError,
+    systemVersionError | Http.error.HttpClientError | ParseResult.ParseError,
     Readonly<SystemVersion>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/version`;
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(SystemVersionSchema))
     );
-
-export class taskInspectError extends Data.TaggedError("taskInspectError")<{ message: string }> {}
 
 /**
  *
@@ -7663,8 +7864,9 @@ export class taskInspectError extends Data.TaggedError("taskInspectError")<{ mes
  * @param {string} id ID of the task
  */
 export const taskInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string
-): Effect.Effect<never, taskInspectError | Http.error.HttpClientError | ParseError, Readonly<Task>> =>
+): Effect.Effect<never, taskInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Task>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskInspectError({ message: "Required parameter id was null or undefined" }));
@@ -7673,34 +7875,29 @@ export const taskInspect = (
         const endpoint: string = `${BASE_PATH}/tasks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(TaskSchema))
     );
-
-export class taskListError extends Data.TaggedError("taskListError")<{ message: string }> {}
-
 /**
  *
  * @summary List tasks
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the tasks list.  Available filters:  - &#x60;desired-state&#x3D;(running | shutdown | accepted)&#x60; - &#x60;id&#x3D;&lt;task id&gt;&#x60; - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; - &#x60;name&#x3D;&lt;task name&gt;&#x60; - &#x60;node&#x3D;&lt;node id or name&gt;&#x60; - &#x60;service&#x3D;&lt;service name&gt;&#x60;
  */
 export const taskList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, taskListError | Http.error.HttpClientError | ParseError, Readonly<Array<Task>>> =>
+): Effect.Effect<never, taskListError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Array<Task>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/tasks`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(arraySchema(TaskSchema)))
         );
-
-export class taskLogsError extends Data.TaggedError("taskLogsError")<{ message: string }> {}
-
 /**
  * Get `stdout` and `stderr` logs from a task. See also [`/containers/{id}/logs`](#operation/ContainerLogs).  **Note**: This endpoint works only for services with the `local`, `json-file` or `journald` logging drivers.
  * @summary Get task logs
@@ -7714,6 +7911,7 @@ export class taskLogsError extends Data.TaggedError("taskLogsError")<{ message: 
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const taskLogs = (
+    dockerConnectionOptions: DockerConnectionOptions,
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -7722,7 +7920,7 @@ export const taskLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, taskLogsError | Http.error.HttpClientError | ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, taskLogsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskLogsError({ message: "Required parameter id was null or undefined" }));
@@ -7731,21 +7929,21 @@ export const taskLogs = (
         const endpoint: string = `${BASE_PATH}/tasks/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(details ? Http.request.setUrlParam("details", String(details)) : identity))
-        .pipe(Effect.map(follow ? Http.request.setUrlParam("follow", String(follow)) : identity))
-        .pipe(Effect.map(stdout ? Http.request.setUrlParam("stdout", String(stdout)) : identity))
-        .pipe(Effect.map(stderr ? Http.request.setUrlParam("stderr", String(stderr)) : identity))
-        .pipe(Effect.map(since ? Http.request.setUrlParam("since", String(since)) : identity))
-        .pipe(Effect.map(timestamps ? Http.request.setUrlParam("timestamps", String(timestamps)) : identity))
-        .pipe(Effect.map(tail ? Http.request.setUrlParam("tail", String(tail)) : identity))
+        .pipe(Effect.map(details === undefined ? identity : Http.request.setUrlParam("details", String(details))))
+        .pipe(Effect.map(follow === undefined ? identity : Http.request.setUrlParam("follow", String(follow))))
+        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(timestamps === undefined ? identity : Http.request.setUrlParam("timestamps", String(timestamps)))
+        )
+        .pipe(Effect.map(tail === undefined ? identity : Http.request.setUrlParam("tail", String(tail))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
-
-export class volumeCreateError extends Data.TaggedError("volumeCreateError")<{ message: string }> {}
 
 /**
  *
@@ -7753,10 +7951,11 @@ export class volumeCreateError extends Data.TaggedError("volumeCreateError")<{ m
  * @param {VolumeCreateOptions} body Volume configuration
  */
 export const volumeCreate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     body: VolumeCreateOptions
 ): Effect.Effect<
     never,
-    volumeCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseError,
+    volumeCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
     Readonly<Volume>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7780,13 +7979,10 @@ export const volumeCreate = (
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(VolumeSchema))
         );
-
-export class volumeDeleteError extends Data.TaggedError("volumeDeleteError")<{ message: string }> {}
-
 /**
  * Instruct the driver to remove the volume.
  * @summary Remove a volume
@@ -7794,9 +7990,10 @@ export class volumeDeleteError extends Data.TaggedError("volumeDeleteError")<{ m
  * @param {boolean} [force] Force the removal of the volume
  */
 export const volumeDelete = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, volumeDeleteError | Http.error.HttpClientError | ParseError, void> =>
+): Effect.Effect<never, volumeDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeDeleteError({ message: "Required parameter name was null or undefined" }));
@@ -7805,19 +8002,20 @@ export const volumeDelete = (
         const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
         return Http.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force ? Http.request.setUrlParam("force", String(force)) : identity))
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
-
-export class volumeInspectError extends Data.TaggedError("volumeInspectError")<{ message: string }> {}
-
+        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
 /**
  *
  * @summary Inspect a volume
  * @param {string} name Volume name or ID
  */
 export const volumeInspect = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string
-): Effect.Effect<never, volumeInspectError | Http.error.HttpClientError | ParseError, Readonly<Volume>> =>
+): Effect.Effect<never, volumeInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Volume>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeInspectError({ message: "Required parameter name was null or undefined" }));
@@ -7826,55 +8024,56 @@ export const volumeInspect = (
         const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
         return Http.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-        Effect.flatMap(Http.client.fetchOk()),
+        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
         Effect.flatMap(Http.response.schemaBodyJson(VolumeSchema))
     );
-
-export class volumeListError extends Data.TaggedError("volumeListError")<{ message: string }> {}
-
 /**
  *
  * @summary List volumes
  * @param {string} [filters] JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the volumes list. Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), returns all    volumes that are not in use by a container. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), only volumes that are in use by one or more    containers are returned. - &#x60;driver&#x3D;&lt;volume-driver-name&gt;&#x60; Matches volumes based on their driver. - &#x60;label&#x3D;&lt;key&gt;&#x60; or &#x60;label&#x3D;&lt;key&gt;:&lt;value&gt;&#x60; Matches volumes based on    the presence of a &#x60;label&#x60; alone or a &#x60;label&#x60; and a value. - &#x60;name&#x3D;&lt;volume-name&gt;&#x60; Matches all or part of a volume name.
  */
 export const volumeList = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, volumeListError | Http.error.HttpClientError | ParseError, Readonly<VolumeListResponse>> =>
+): Effect.Effect<
+    never,
+    volumeListError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<VolumeListResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes`;
         return Http.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(VolumeListResponseSchema))
         );
-
-export class volumePruneError extends Data.TaggedError("volumePruneError")<{ message: string }> {}
-
 /**
  *
  * @summary Delete unused volumes
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune volumes with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels. - &#x60;all&#x60; (&#x60;all&#x3D;true&#x60;) - Consider all (local) volumes for pruning and not just anonymous volumes.
  */
 export const volumePrune = (
+    dockerConnectionOptions: DockerConnectionOptions,
     filters?: string
-): Effect.Effect<never, volumePruneError | Http.error.HttpClientError | ParseError, Readonly<VolumePruneResponse>> =>
+): Effect.Effect<
+    never,
+    volumePruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    Readonly<VolumePruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes/prune`;
         return Http.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters ? Http.request.setUrlParam("filters", String(filters)) : identity))
+        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(`http://localhost:2375`)),
-            Effect.flatMap(Http.client.fetchOk()),
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
             Effect.flatMap(Http.response.schemaBodyJson(VolumePruneResponseSchema))
         );
-
-export class volumeUpdateError extends Data.TaggedError("volumeUpdateError")<{ message: string }> {}
-
 /**
 *
 * @summary \"Update a volume. Valid only for Swarm cluster volumes\"
@@ -7885,10 +8084,15 @@ change. All other fields must remain unchanged.
 
 */
 export const volumeUpdate = (
+    dockerConnectionOptions: DockerConnectionOptions,
     name: string,
     version: number,
     body?: VolumesNameBody
-): Effect.Effect<never, volumeUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseError, void> =>
+): Effect.Effect<
+    never,
+    volumeUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeUpdateError({ message: "Required parameter name was null or undefined" }));
@@ -7901,7 +8105,7 @@ export const volumeUpdate = (
         const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
         return Http.request.make("PUT")(endpoint);
     })
-        .pipe(Effect.map(version ? Http.request.setUrlParam("version", String(version)) : identity))
+        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
         .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
@@ -7914,4 +8118,672 @@ export const volumeUpdate = (
                     : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
-        .pipe(Effect.map(Http.request.prependUrl(`http://localhost:2375`)), Effect.flatMap(Http.client.fetchOk()));
+        .pipe(
+            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
+            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        );
+
+export interface IDockerService {
+    readonly configCreate: (
+        ...args: Parameters<typeof configCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof configCreate>;
+    readonly configDelete: (
+        ...args: Parameters<typeof configDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof configDelete>;
+    readonly configInspect: (
+        ...args: Parameters<typeof configInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof configInspect>;
+    readonly configList: (
+        ...args: Parameters<typeof configList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof configList>;
+    readonly configUpdate: (
+        ...args: Parameters<typeof configUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof configUpdate>;
+    readonly containerArchive: (
+        ...args: Parameters<typeof containerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerArchive>;
+    readonly containerArchiveInfo: (
+        ...args: Parameters<typeof containerArchiveInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerArchiveInfo>;
+    readonly containerAttach: (
+        ...args: Parameters<typeof containerAttach> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerAttach>;
+    readonly containerAttachWebsocket: (
+        ...args: Parameters<typeof containerAttachWebsocket> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerAttachWebsocket>;
+    readonly containerChanges: (
+        ...args: Parameters<typeof containerChanges> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerChanges>;
+    readonly containerCreate: (
+        ...args: Parameters<typeof containerCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerCreate>;
+    readonly containerDelete: (
+        ...args: Parameters<typeof containerDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerDelete>;
+    readonly containerExport: (
+        ...args: Parameters<typeof containerExport> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerExport>;
+    readonly containerInspect: (
+        ...args: Parameters<typeof containerInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerInspect>;
+    readonly containerKill: (
+        ...args: Parameters<typeof containerKill> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerKill>;
+    readonly containerList: (
+        ...args: Parameters<typeof containerList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerList>;
+    readonly containerLogs: (
+        ...args: Parameters<typeof containerLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerLogs>;
+    readonly containerPause: (
+        ...args: Parameters<typeof containerPause> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerPause>;
+    readonly containerPrune: (
+        ...args: Parameters<typeof containerPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerPrune>;
+    readonly containerRename: (
+        ...args: Parameters<typeof containerRename> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerRename>;
+    readonly containerResize: (
+        ...args: Parameters<typeof containerResize> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerResize>;
+    readonly containerRestart: (
+        ...args: Parameters<typeof containerRestart> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerRestart>;
+    readonly containerStart: (
+        ...args: Parameters<typeof containerStart> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerStart>;
+    readonly containerStats: (
+        ...args: Parameters<typeof containerStats> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerStats>;
+    readonly containerStop: (
+        ...args: Parameters<typeof containerStop> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerStop>;
+    readonly containerTop: (
+        ...args: Parameters<typeof containerTop> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerTop>;
+    readonly containerUnpause: (
+        ...args: Parameters<typeof containerUnpause> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerUnpause>;
+    readonly containerUpdate: (
+        ...args: Parameters<typeof containerUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerUpdate>;
+    readonly containerWait: (
+        ...args: Parameters<typeof containerWait> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerWait>;
+    readonly putContainerArchive: (
+        ...args: Parameters<typeof putContainerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof putContainerArchive>;
+    readonly distributionInspect: (
+        ...args: Parameters<typeof distributionInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof distributionInspect>;
+    readonly containerExec: (
+        ...args: Parameters<typeof containerExec> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof containerExec>;
+    readonly execInspect: (
+        ...args: Parameters<typeof execInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof execInspect>;
+    readonly execResize: (
+        ...args: Parameters<typeof execResize> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof execResize>;
+    readonly execStart: (
+        ...args: Parameters<typeof execStart> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof execStart>;
+    readonly buildPrune: (
+        ...args: Parameters<typeof buildPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof buildPrune>;
+    readonly imageBuild: (
+        ...args: Parameters<typeof imageBuild> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageBuild>;
+    readonly imageCommit: (
+        ...args: Parameters<typeof imageCommit> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageCommit>;
+    readonly imageCreate: (
+        ...args: Parameters<typeof imageCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageCreate>;
+    readonly imageDelete: (
+        ...args: Parameters<typeof imageDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageDelete>;
+    readonly imageGet: (
+        ...args: Parameters<typeof imageGet> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageGet>;
+    readonly imageGetAll: (
+        ...args: Parameters<typeof imageGetAll> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageGetAll>;
+    readonly imageHistory: (
+        ...args: Parameters<typeof imageHistory> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageHistory>;
+    readonly imageInspect: (
+        ...args: Parameters<typeof imageInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageInspect>;
+    readonly imageList: (
+        ...args: Parameters<typeof imageList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageList>;
+    readonly imageLoad: (
+        ...args: Parameters<typeof imageLoad> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageLoad>;
+    readonly imagePrune: (
+        ...args: Parameters<typeof imagePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imagePrune>;
+    readonly imagePush: (
+        ...args: Parameters<typeof imagePush> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imagePush>;
+    readonly imageSearch: (
+        ...args: Parameters<typeof imageSearch> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageSearch>;
+    readonly imageTag: (
+        ...args: Parameters<typeof imageTag> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof imageTag>;
+    readonly networkConnect: (
+        ...args: Parameters<typeof networkConnect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkConnect>;
+    readonly networkCreate: (
+        ...args: Parameters<typeof networkCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkCreate>;
+    readonly networkDelete: (
+        ...args: Parameters<typeof networkDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkDelete>;
+    readonly networkDisconnect: (
+        ...args: Parameters<typeof networkDisconnect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkDisconnect>;
+    readonly networkInspect: (
+        ...args: Parameters<typeof networkInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkInspect>;
+    readonly networkList: (
+        ...args: Parameters<typeof networkList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkList>;
+    readonly networkPrune: (
+        ...args: Parameters<typeof networkPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof networkPrune>;
+    readonly nodeDelete: (
+        ...args: Parameters<typeof nodeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof nodeDelete>;
+    readonly nodeInspect: (
+        ...args: Parameters<typeof nodeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof nodeInspect>;
+    readonly nodeList: (
+        ...args: Parameters<typeof nodeList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof nodeList>;
+    readonly nodeUpdate: (
+        ...args: Parameters<typeof nodeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof nodeUpdate>;
+    readonly getPluginPrivileges: (
+        ...args: Parameters<typeof getPluginPrivileges> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof getPluginPrivileges>;
+    readonly pluginCreate: (
+        ...args: Parameters<typeof pluginCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginCreate>;
+    readonly pluginDelete: (
+        ...args: Parameters<typeof pluginDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginDelete>;
+    readonly pluginDisable: (
+        ...args: Parameters<typeof pluginDisable> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginDisable>;
+    readonly pluginEnable: (
+        ...args: Parameters<typeof pluginEnable> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginEnable>;
+    readonly pluginInspect: (
+        ...args: Parameters<typeof pluginInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginInspect>;
+    readonly pluginList: (
+        ...args: Parameters<typeof pluginList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginList>;
+    readonly pluginPull: (
+        ...args: Parameters<typeof pluginPull> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginPull>;
+    readonly pluginPush: (
+        ...args: Parameters<typeof pluginPush> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginPush>;
+    readonly pluginSet: (
+        ...args: Parameters<typeof pluginSet> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginSet>;
+    readonly pluginUpgrade: (
+        ...args: Parameters<typeof pluginUpgrade> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof pluginUpgrade>;
+    readonly secretCreate: (
+        ...args: Parameters<typeof secretCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof secretCreate>;
+    readonly secretDelete: (
+        ...args: Parameters<typeof secretDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof secretDelete>;
+    readonly secretInspect: (
+        ...args: Parameters<typeof secretInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof secretInspect>;
+    readonly secretList: (
+        ...args: Parameters<typeof secretList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof secretList>;
+    readonly secretUpdate: (
+        ...args: Parameters<typeof secretUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof secretUpdate>;
+    readonly serviceCreate: (
+        ...args: Parameters<typeof serviceCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof serviceCreate>;
+    readonly serviceDelete: (
+        ...args: Parameters<typeof serviceDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof serviceDelete>;
+    readonly serviceInspect: (
+        ...args: Parameters<typeof serviceInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof serviceInspect>;
+    readonly serviceList: (
+        ...args: Parameters<typeof serviceList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof serviceList>;
+    readonly serviceLogs: (
+        ...args: Parameters<typeof serviceLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof serviceLogs>;
+    readonly serviceUpdate: (
+        ...args: Parameters<typeof serviceUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof serviceUpdate>;
+    readonly session: (
+        ...args: Parameters<typeof session> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof session>;
+    readonly swarmInit: (
+        ...args: Parameters<typeof swarmInit> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmInit>;
+    readonly swarmInspect: (
+        ...args: Parameters<typeof swarmInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmInspect>;
+    readonly swarmJoin: (
+        ...args: Parameters<typeof swarmJoin> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmJoin>;
+    readonly swarmLeave: (
+        ...args: Parameters<typeof swarmLeave> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmLeave>;
+    readonly swarmUnlock: (
+        ...args: Parameters<typeof swarmUnlock> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmUnlock>;
+    readonly swarmUnlockkey: (
+        ...args: Parameters<typeof swarmUnlockkey> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmUnlockkey>;
+    readonly swarmUpdate: (
+        ...args: Parameters<typeof swarmUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof swarmUpdate>;
+    readonly systemAuth: (
+        ...args: Parameters<typeof systemAuth> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemAuth>;
+    readonly systemDataUsage: (
+        ...args: Parameters<typeof systemDataUsage> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemDataUsage>;
+    readonly systemEvents: (
+        ...args: Parameters<typeof systemEvents> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemEvents>;
+    readonly systemInfo: (
+        ...args: Parameters<typeof systemInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemInfo>;
+    readonly systemPing: (
+        ...args: Parameters<typeof systemPing> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemPing>;
+    readonly systemPingHead: (
+        ...args: Parameters<typeof systemPingHead> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemPingHead>;
+    readonly systemVersion: (
+        ...args: Parameters<typeof systemVersion> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof systemVersion>;
+    readonly taskInspect: (
+        ...args: Parameters<typeof taskInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof taskInspect>;
+    readonly taskList: (
+        ...args: Parameters<typeof taskList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof taskList>;
+    readonly taskLogs: (
+        ...args: Parameters<typeof taskLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof taskLogs>;
+    readonly volumeCreate: (
+        ...args: Parameters<typeof volumeCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof volumeCreate>;
+    readonly volumeDelete: (
+        ...args: Parameters<typeof volumeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof volumeDelete>;
+    readonly volumeInspect: (
+        ...args: Parameters<typeof volumeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof volumeInspect>;
+    readonly volumeList: (
+        ...args: Parameters<typeof volumeList> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof volumeList>;
+    readonly volumePrune: (
+        ...args: Parameters<typeof volumePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof volumePrune>;
+    readonly volumeUpdate: (
+        ...args: Parameters<typeof volumeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+    ) => ReturnType<typeof volumeUpdate>;
+}
+
+export const DockerService: Context.Tag<IDockerService, IDockerService> = Context.Tag<IDockerService>();
+
+export const makeDockerService = (
+    dockerConnectionOptions: DockerConnectionOptions
+): Layer.Layer<never, never, IDockerService> =>
+    Layer.succeed(
+        DockerService,
+        DockerService.of({
+            configCreate: (
+                ...args: Parameters<typeof configCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => configCreate(dockerConnectionOptions, ...args),
+            configDelete: (
+                ...args: Parameters<typeof configDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => configDelete(dockerConnectionOptions, ...args),
+            configInspect: (
+                ...args: Parameters<typeof configInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => configInspect(dockerConnectionOptions, ...args),
+            configList: (
+                ...args: Parameters<typeof configList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => configList(dockerConnectionOptions, ...args),
+            configUpdate: (
+                ...args: Parameters<typeof configUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => configUpdate(dockerConnectionOptions, ...args),
+            containerArchive: (
+                ...args: Parameters<typeof containerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerArchive(dockerConnectionOptions, ...args),
+            containerArchiveInfo: (
+                ...args: Parameters<typeof containerArchiveInfo> extends [DockerConnectionOptions, ...infer U]
+                    ? U
+                    : never
+            ) => containerArchiveInfo(dockerConnectionOptions, ...args),
+            containerAttach: (
+                ...args: Parameters<typeof containerAttach> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerAttach(dockerConnectionOptions, ...args),
+            containerAttachWebsocket: (
+                ...args: Parameters<typeof containerAttachWebsocket> extends [DockerConnectionOptions, ...infer U]
+                    ? U
+                    : never
+            ) => containerAttachWebsocket(dockerConnectionOptions, ...args),
+            containerChanges: (
+                ...args: Parameters<typeof containerChanges> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerChanges(dockerConnectionOptions, ...args),
+            containerCreate: (
+                ...args: Parameters<typeof containerCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerCreate(dockerConnectionOptions, ...args),
+            containerDelete: (
+                ...args: Parameters<typeof containerDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerDelete(dockerConnectionOptions, ...args),
+            containerExport: (
+                ...args: Parameters<typeof containerExport> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerExport(dockerConnectionOptions, ...args),
+            containerInspect: (
+                ...args: Parameters<typeof containerInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerInspect(dockerConnectionOptions, ...args),
+            containerKill: (
+                ...args: Parameters<typeof containerKill> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerKill(dockerConnectionOptions, ...args),
+            containerList: (
+                ...args: Parameters<typeof containerList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerList(dockerConnectionOptions, ...args),
+            containerLogs: (
+                ...args: Parameters<typeof containerLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerLogs(dockerConnectionOptions, ...args),
+            containerPause: (
+                ...args: Parameters<typeof containerPause> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerPause(dockerConnectionOptions, ...args),
+            containerPrune: (
+                ...args: Parameters<typeof containerPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerPrune(dockerConnectionOptions, ...args),
+            containerRename: (
+                ...args: Parameters<typeof containerRename> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerRename(dockerConnectionOptions, ...args),
+            containerResize: (
+                ...args: Parameters<typeof containerResize> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerResize(dockerConnectionOptions, ...args),
+            containerRestart: (
+                ...args: Parameters<typeof containerRestart> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerRestart(dockerConnectionOptions, ...args),
+            containerStart: (
+                ...args: Parameters<typeof containerStart> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerStart(dockerConnectionOptions, ...args),
+            containerStats: (
+                ...args: Parameters<typeof containerStats> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerStats(dockerConnectionOptions, ...args),
+            containerStop: (
+                ...args: Parameters<typeof containerStop> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerStop(dockerConnectionOptions, ...args),
+            containerTop: (
+                ...args: Parameters<typeof containerTop> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerTop(dockerConnectionOptions, ...args),
+            containerUnpause: (
+                ...args: Parameters<typeof containerUnpause> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerUnpause(dockerConnectionOptions, ...args),
+            containerUpdate: (
+                ...args: Parameters<typeof containerUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerUpdate(dockerConnectionOptions, ...args),
+            containerWait: (
+                ...args: Parameters<typeof containerWait> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerWait(dockerConnectionOptions, ...args),
+            putContainerArchive: (
+                ...args: Parameters<typeof putContainerArchive> extends [DockerConnectionOptions, ...infer U]
+                    ? U
+                    : never
+            ) => putContainerArchive(dockerConnectionOptions, ...args),
+            distributionInspect: (
+                ...args: Parameters<typeof distributionInspect> extends [DockerConnectionOptions, ...infer U]
+                    ? U
+                    : never
+            ) => distributionInspect(dockerConnectionOptions, ...args),
+            containerExec: (
+                ...args: Parameters<typeof containerExec> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => containerExec(dockerConnectionOptions, ...args),
+            execInspect: (
+                ...args: Parameters<typeof execInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => execInspect(dockerConnectionOptions, ...args),
+            execResize: (
+                ...args: Parameters<typeof execResize> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => execResize(dockerConnectionOptions, ...args),
+            execStart: (
+                ...args: Parameters<typeof execStart> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => execStart(dockerConnectionOptions, ...args),
+            buildPrune: (
+                ...args: Parameters<typeof buildPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => buildPrune(dockerConnectionOptions, ...args),
+            imageBuild: (
+                ...args: Parameters<typeof imageBuild> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageBuild(dockerConnectionOptions, ...args),
+            imageCommit: (
+                ...args: Parameters<typeof imageCommit> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageCommit(dockerConnectionOptions, ...args),
+            imageCreate: (
+                ...args: Parameters<typeof imageCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageCreate(dockerConnectionOptions, ...args),
+            imageDelete: (
+                ...args: Parameters<typeof imageDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageDelete(dockerConnectionOptions, ...args),
+            imageGet: (
+                ...args: Parameters<typeof imageGet> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageGet(dockerConnectionOptions, ...args),
+            imageGetAll: (
+                ...args: Parameters<typeof imageGetAll> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageGetAll(dockerConnectionOptions, ...args),
+            imageHistory: (
+                ...args: Parameters<typeof imageHistory> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageHistory(dockerConnectionOptions, ...args),
+            imageInspect: (
+                ...args: Parameters<typeof imageInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageInspect(dockerConnectionOptions, ...args),
+            imageList: (
+                ...args: Parameters<typeof imageList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageList(dockerConnectionOptions, ...args),
+            imageLoad: (
+                ...args: Parameters<typeof imageLoad> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageLoad(dockerConnectionOptions, ...args),
+            imagePrune: (
+                ...args: Parameters<typeof imagePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imagePrune(dockerConnectionOptions, ...args),
+            imagePush: (
+                ...args: Parameters<typeof imagePush> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imagePush(dockerConnectionOptions, ...args),
+            imageSearch: (
+                ...args: Parameters<typeof imageSearch> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageSearch(dockerConnectionOptions, ...args),
+            imageTag: (
+                ...args: Parameters<typeof imageTag> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => imageTag(dockerConnectionOptions, ...args),
+            networkConnect: (
+                ...args: Parameters<typeof networkConnect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkConnect(dockerConnectionOptions, ...args),
+            networkCreate: (
+                ...args: Parameters<typeof networkCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkCreate(dockerConnectionOptions, ...args),
+            networkDelete: (
+                ...args: Parameters<typeof networkDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkDelete(dockerConnectionOptions, ...args),
+            networkDisconnect: (
+                ...args: Parameters<typeof networkDisconnect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkDisconnect(dockerConnectionOptions, ...args),
+            networkInspect: (
+                ...args: Parameters<typeof networkInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkInspect(dockerConnectionOptions, ...args),
+            networkList: (
+                ...args: Parameters<typeof networkList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkList(dockerConnectionOptions, ...args),
+            networkPrune: (
+                ...args: Parameters<typeof networkPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => networkPrune(dockerConnectionOptions, ...args),
+            nodeDelete: (
+                ...args: Parameters<typeof nodeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => nodeDelete(dockerConnectionOptions, ...args),
+            nodeInspect: (
+                ...args: Parameters<typeof nodeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => nodeInspect(dockerConnectionOptions, ...args),
+            nodeList: (
+                ...args: Parameters<typeof nodeList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => nodeList(dockerConnectionOptions, ...args),
+            nodeUpdate: (
+                ...args: Parameters<typeof nodeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => nodeUpdate(dockerConnectionOptions, ...args),
+            getPluginPrivileges: (
+                ...args: Parameters<typeof getPluginPrivileges> extends [DockerConnectionOptions, ...infer U]
+                    ? U
+                    : never
+            ) => getPluginPrivileges(dockerConnectionOptions, ...args),
+            pluginCreate: (
+                ...args: Parameters<typeof pluginCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginCreate(dockerConnectionOptions, ...args),
+            pluginDelete: (
+                ...args: Parameters<typeof pluginDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginDelete(dockerConnectionOptions, ...args),
+            pluginDisable: (
+                ...args: Parameters<typeof pluginDisable> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginDisable(dockerConnectionOptions, ...args),
+            pluginEnable: (
+                ...args: Parameters<typeof pluginEnable> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginEnable(dockerConnectionOptions, ...args),
+            pluginInspect: (
+                ...args: Parameters<typeof pluginInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginInspect(dockerConnectionOptions, ...args),
+            pluginList: (
+                ...args: Parameters<typeof pluginList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginList(dockerConnectionOptions, ...args),
+            pluginPull: (
+                ...args: Parameters<typeof pluginPull> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginPull(dockerConnectionOptions, ...args),
+            pluginPush: (
+                ...args: Parameters<typeof pluginPush> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginPush(dockerConnectionOptions, ...args),
+            pluginSet: (
+                ...args: Parameters<typeof pluginSet> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginSet(dockerConnectionOptions, ...args),
+            pluginUpgrade: (
+                ...args: Parameters<typeof pluginUpgrade> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => pluginUpgrade(dockerConnectionOptions, ...args),
+            secretCreate: (
+                ...args: Parameters<typeof secretCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => secretCreate(dockerConnectionOptions, ...args),
+            secretDelete: (
+                ...args: Parameters<typeof secretDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => secretDelete(dockerConnectionOptions, ...args),
+            secretInspect: (
+                ...args: Parameters<typeof secretInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => secretInspect(dockerConnectionOptions, ...args),
+            secretList: (
+                ...args: Parameters<typeof secretList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => secretList(dockerConnectionOptions, ...args),
+            secretUpdate: (
+                ...args: Parameters<typeof secretUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => secretUpdate(dockerConnectionOptions, ...args),
+            serviceCreate: (
+                ...args: Parameters<typeof serviceCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => serviceCreate(dockerConnectionOptions, ...args),
+            serviceDelete: (
+                ...args: Parameters<typeof serviceDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => serviceDelete(dockerConnectionOptions, ...args),
+            serviceInspect: (
+                ...args: Parameters<typeof serviceInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => serviceInspect(dockerConnectionOptions, ...args),
+            serviceList: (
+                ...args: Parameters<typeof serviceList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => serviceList(dockerConnectionOptions, ...args),
+            serviceLogs: (
+                ...args: Parameters<typeof serviceLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => serviceLogs(dockerConnectionOptions, ...args),
+            serviceUpdate: (
+                ...args: Parameters<typeof serviceUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => serviceUpdate(dockerConnectionOptions, ...args),
+            session: (...args: Parameters<typeof session> extends [DockerConnectionOptions, ...infer U] ? U : never) =>
+                session(dockerConnectionOptions, ...args),
+            swarmInit: (
+                ...args: Parameters<typeof swarmInit> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmInit(dockerConnectionOptions, ...args),
+            swarmInspect: (
+                ...args: Parameters<typeof swarmInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmInspect(dockerConnectionOptions, ...args),
+            swarmJoin: (
+                ...args: Parameters<typeof swarmJoin> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmJoin(dockerConnectionOptions, ...args),
+            swarmLeave: (
+                ...args: Parameters<typeof swarmLeave> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmLeave(dockerConnectionOptions, ...args),
+            swarmUnlock: (
+                ...args: Parameters<typeof swarmUnlock> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmUnlock(dockerConnectionOptions, ...args),
+            swarmUnlockkey: (
+                ...args: Parameters<typeof swarmUnlockkey> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmUnlockkey(dockerConnectionOptions, ...args),
+            swarmUpdate: (
+                ...args: Parameters<typeof swarmUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => swarmUpdate(dockerConnectionOptions, ...args),
+            systemAuth: (
+                ...args: Parameters<typeof systemAuth> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemAuth(dockerConnectionOptions, ...args),
+            systemDataUsage: (
+                ...args: Parameters<typeof systemDataUsage> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemDataUsage(dockerConnectionOptions, ...args),
+            systemEvents: (
+                ...args: Parameters<typeof systemEvents> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemEvents(dockerConnectionOptions, ...args),
+            systemInfo: (
+                ...args: Parameters<typeof systemInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemInfo(dockerConnectionOptions, ...args),
+            systemPing: (
+                ...args: Parameters<typeof systemPing> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemPing(dockerConnectionOptions, ...args),
+            systemPingHead: (
+                ...args: Parameters<typeof systemPingHead> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemPingHead(dockerConnectionOptions, ...args),
+            systemVersion: (
+                ...args: Parameters<typeof systemVersion> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => systemVersion(dockerConnectionOptions, ...args),
+            taskInspect: (
+                ...args: Parameters<typeof taskInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => taskInspect(dockerConnectionOptions, ...args),
+            taskList: (
+                ...args: Parameters<typeof taskList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => taskList(dockerConnectionOptions, ...args),
+            taskLogs: (
+                ...args: Parameters<typeof taskLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => taskLogs(dockerConnectionOptions, ...args),
+            volumeCreate: (
+                ...args: Parameters<typeof volumeCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => volumeCreate(dockerConnectionOptions, ...args),
+            volumeDelete: (
+                ...args: Parameters<typeof volumeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => volumeDelete(dockerConnectionOptions, ...args),
+            volumeInspect: (
+                ...args: Parameters<typeof volumeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => volumeInspect(dockerConnectionOptions, ...args),
+            volumeList: (
+                ...args: Parameters<typeof volumeList> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => volumeList(dockerConnectionOptions, ...args),
+            volumePrune: (
+                ...args: Parameters<typeof volumePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => volumePrune(dockerConnectionOptions, ...args),
+            volumeUpdate: (
+                ...args: Parameters<typeof volumeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+            ) => volumeUpdate(dockerConnectionOptions, ...args),
+        })
+    );

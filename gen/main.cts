@@ -19,7 +19,7 @@ module.exports.runAsync = async () => {
     // Run swagger codegen and delete any unwanted files after
     await $`wget https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.51/swagger-codegen-cli-3.0.51.jar -O temp/swagger-codegen-cli.jar`;
     await $`java -jar ${swaggerJar} generate --lang typescript-fetch --template-engine mustache --input-spec ${swaggerFile} --output ${outputDirectory} --template-dir ${templateDirectory} --config ${configFile}`;
-    await rimraf([`${outputDirectory}/!(api.ts|tsconfig.*|typescript.json)`, `${outputDirectory}/.*`], { glob: true });
+    await rimraf([`${outputDirectory}/!(api.ts|fetch.ts|*.json)`, `${outputDirectory}/.*`], { glob: true });
 
     // Manual formatting of the source code
     const source: string = fs

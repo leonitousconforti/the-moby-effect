@@ -8,7 +8,10 @@
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/devcontainers/features/java:1": {},
         "ghcr.io/devcontainers/features/common-utils:2": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "moby": false,
+            "dockerDashComposeVersion": "v2"
+        }
     },
 
     "customizations": {
@@ -52,11 +55,12 @@
                     "packagejson",
                     "rushstack",
                     "tsdoc",
-                    "typeclass"
+                    "typeclass",
+                    "undici"
                 ]
             }
         }
     },
 
-    "postCreateCommand": "npm install && npm run build"
+    "postCreateCommand": "npm install && npm run gen && npm run test"
 }
