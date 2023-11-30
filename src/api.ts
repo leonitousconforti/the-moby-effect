@@ -1,10 +1,10 @@
 // spell-checker: disable
 
-import "./fetch.js";
 import { Schema, ParseResult } from "@effect/schema";
-import * as Http from "@effect/platform/HttpClient";
 import { Effect, Context, Data, Layer, identity } from "effect";
-import { DockerConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
+import * as NodeHttp from "@effect/platform-node/HttpClient";
+
+import { MobyConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
 
 import {
     any as anySchema,
@@ -4631,18 +4631,18 @@ export class volumeUpdateError extends Data.TaggedError("volumeUpdateError")<{ m
  * @param {ConfigsCreateBody} [body]
  */
 export const configCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: ConfigsCreateBody
 ): Effect.Effect<
     never,
-    configCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    configCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -4650,79 +4650,87 @@ export const configCreate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
         );
+
 /**
  *
  * @summary Delete a config
  * @param {string} id ID of the config
  */
 export const configDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, configDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, configDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  *
  * @summary Inspect a config
  * @param {string} id ID of the config
  */
 export const configInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, configInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Config>> =>
+): Effect.Effect<
+    never,
+    configInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Config>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(ConfigSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(ConfigSchema))
     );
+
 /**
  *
  * @summary List configs
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the configs list.  Available filters:  - &#x60;id&#x3D;&lt;config id&gt;&#x60; - &#x60;label&#x3D;&lt;key&gt; or label&#x3D;&lt;key&gt;&#x3D;value&#x60; - &#x60;name&#x3D;&lt;config name&gt;&#x60; - &#x60;names&#x3D;&lt;config name&gt;&#x60;
  */
 export const configList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    configListError | Http.error.HttpClientError | ParseResult.ParseError,
+    configListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<Config>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ConfigSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ConfigSchema)))
         );
+
 /**
 *
 * @summary Update a Config
@@ -4734,13 +4742,13 @@ can be updated. All other fields must remain unchanged from the
 
 */
 export const configUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     version: number,
     body?: ConfigSpec
 ): Effect.Effect<
     never,
-    configUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    configUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4756,10 +4764,10 @@ export const configUpdate = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -4767,13 +4775,13 @@ export const configUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -4783,10 +4791,10 @@ export const configUpdate = (
  * @param {string} path Resource in the container’s filesystem to archive.
  */
 export const containerArchive = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     path: string
-): Effect.Effect<never, containerArchiveError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerArchiveError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveError({ message: "Required parameter id was null or undefined" }));
@@ -4800,13 +4808,14 @@ export const containerArchive = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(path === undefined ? identity : Http.request.setUrlParam("path", String(path))))
+        .pipe(Effect.map(path === undefined ? identity : NodeHttp.request.setUrlParam("path", String(path))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * A response header `X-Docker-Container-Path-Stat` is returned, containing a base64 - encoded JSON object with some filesystem header information about the path.
  * @summary Get information about files in a container
@@ -4814,10 +4823,10 @@ export const containerArchive = (
  * @param {string} path Resource in the container’s filesystem to archive.
  */
 export const containerArchiveInfo = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     path: string
-): Effect.Effect<never, containerArchiveInfoError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerArchiveInfoError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveInfoError({ message: "Required parameter id was null or undefined" }));
@@ -4831,13 +4840,14 @@ export const containerArchiveInfo = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("HEAD")(endpoint);
+        return NodeHttp.request.make("HEAD")(endpoint);
     })
-        .pipe(Effect.map(path === undefined ? identity : Http.request.setUrlParam("path", String(path))))
+        .pipe(Effect.map(path === undefined ? identity : NodeHttp.request.setUrlParam("path", String(path))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Attach to a container to read its output or send it input. You can attach to the same container multiple times and you can reattach to containers that have been detached.  Either the `stream` or `logs` parameter must be `true` for this endpoint to do anything.  See the [documentation for the `docker attach` command](https://docs.docker.com/engine/reference/commandline/attach/) for more details.  ### Hijacking  This endpoint hijacks the HTTP connection to transport `stdin`, `stdout`, and `stderr` on the same socket.  This is the response from the daemon for an attach request:  ``` HTTP/1.1 200 OK Content-Type: application/vnd.docker.raw-stream  [STREAM] ```  After the headers and two new lines, the TCP connection can now be used for raw, bidirectional communication between the client and server.  To hint potential proxies about connection hijacking, the Docker client can also optionally send connection upgrade headers.  For example, the client sends this request to upgrade the connection:  ``` POST /containers/16253994b7c4/attach?stream=1&stdout=1 HTTP/1.1 Upgrade: tcp Connection: Upgrade ```  The Docker daemon will respond with a `101 UPGRADED` response, and will similarly follow with the raw stream:  ``` HTTP/1.1 101 UPGRADED Content-Type: application/vnd.docker.raw-stream Connection: Upgrade Upgrade: tcp  [STREAM] ```  ### Stream format  When the TTY setting is disabled in [`POST /containers/create`](#operation/ContainerCreate), the HTTP Content-Type header is set to application/vnd.docker.multiplexed-stream and the stream over the hijacked connected is multiplexed to separate out `stdout` and `stderr`. The stream consists of a series of frames, each containing a header and a payload.  The header contains the information which the stream writes (`stdout` or `stderr`). It also contains the size of the associated frame encoded in the last four bytes (`uint32`).  It is encoded on the first eight bytes like this:  ```go header := [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1, SIZE2, SIZE3, SIZE4} ```  `STREAM_TYPE` can be:  - 0: `stdin` (is written on `stdout`) - 1: `stdout` - 2: `stderr`  `SIZE1, SIZE2, SIZE3, SIZE4` are the four bytes of the `uint32` size encoded as big endian.  Following the header is the payload, which is the specified number of bytes of `STREAM_TYPE`.  The simplest way to implement this protocol is the following:  1. Read 8 bytes. 2. Choose `stdout` or `stderr` depending on the first byte. 3. Extract the frame size from the last four bytes. 4. Read the extracted size and output it on the correct output. 5. Goto 1.  ### Stream format when using a TTY  When the TTY setting is enabled in [`POST /containers/create`](#operation/ContainerCreate), the stream is not multiplexed. The data exchanged over the hijacked connection is simply the raw data from the process PTY and client's `stdin`.
  * @summary Attach to a container
@@ -4850,7 +4860,7 @@ export const containerArchiveInfo = (
  * @param {boolean} [stderr] Attach to &#x60;stderr&#x60;
  */
 export const containerAttach = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4858,7 +4868,7 @@ export const containerAttach = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<never, containerAttachError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerAttachError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachError({ message: "Required parameter id was null or undefined" }));
@@ -4868,20 +4878,23 @@ export const containerAttach = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
         .pipe(
-            Effect.map(detachKeys === undefined ? identity : Http.request.setUrlParam("detachKeys", String(detachKeys)))
+            Effect.map(
+                detachKeys === undefined ? identity : NodeHttp.request.setUrlParam("detachKeys", String(detachKeys))
+            )
         )
-        .pipe(Effect.map(logs === undefined ? identity : Http.request.setUrlParam("logs", String(logs))))
-        .pipe(Effect.map(stream === undefined ? identity : Http.request.setUrlParam("stream", String(stream))))
-        .pipe(Effect.map(stdin === undefined ? identity : Http.request.setUrlParam("stdin", String(stdin))))
-        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(logs === undefined ? identity : NodeHttp.request.setUrlParam("logs", String(logs))))
+        .pipe(Effect.map(stream === undefined ? identity : NodeHttp.request.setUrlParam("stream", String(stream))))
+        .pipe(Effect.map(stdin === undefined ? identity : NodeHttp.request.setUrlParam("stdin", String(stdin))))
+        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Attach to a container via a websocket
@@ -4894,7 +4907,7 @@ export const containerAttach = (
  * @param {boolean} [stderr] Attach to &#x60;stderr&#x60;
  */
 export const containerAttachWebsocket = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4902,7 +4915,11 @@ export const containerAttachWebsocket = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<never, containerAttachWebsocketError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<
+    never,
+    containerAttachWebsocketError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachWebsocketError({ message: "Required parameter id was null or undefined" }));
@@ -4912,31 +4929,34 @@ export const containerAttachWebsocket = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
         .pipe(
-            Effect.map(detachKeys === undefined ? identity : Http.request.setUrlParam("detachKeys", String(detachKeys)))
+            Effect.map(
+                detachKeys === undefined ? identity : NodeHttp.request.setUrlParam("detachKeys", String(detachKeys))
+            )
         )
-        .pipe(Effect.map(logs === undefined ? identity : Http.request.setUrlParam("logs", String(logs))))
-        .pipe(Effect.map(stream === undefined ? identity : Http.request.setUrlParam("stream", String(stream))))
-        .pipe(Effect.map(stdin === undefined ? identity : Http.request.setUrlParam("stdin", String(stdin))))
-        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(logs === undefined ? identity : NodeHttp.request.setUrlParam("logs", String(logs))))
+        .pipe(Effect.map(stream === undefined ? identity : NodeHttp.request.setUrlParam("stream", String(stream))))
+        .pipe(Effect.map(stdin === undefined ? identity : NodeHttp.request.setUrlParam("stdin", String(stdin))))
+        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Returns which files in a container's filesystem have been added, deleted, or modified. The `Kind` of modification can be one of:  - `0`: Modified (\"C\") - `1`: Added (\"A\") - `2`: Deleted (\"D\")
  * @summary Get changes on a container’s filesystem
  * @param {string} id ID or name of the container
  */
 export const containerChanges = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
 ): Effect.Effect<
     never,
-    containerChangesError | Http.error.HttpClientError | ParseResult.ParseError,
+    containerChangesError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<FilesystemChange>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4948,12 +4968,13 @@ export const containerChanges = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(arraySchema(FilesystemChangeSchema)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(FilesystemChangeSchema)))
     );
+
 /**
  *
  * @summary Create a container
@@ -4962,13 +4983,13 @@ export const containerChanges = (
  * @param {string} [platform] Platform in the format &#x60;os[/arch[/variant]]&#x60; used for image lookup.  When specified, the daemon checks if the requested image is present in the local image cache with the given OS and Architecture, and otherwise returns a &#x60;404&#x60; status.  If the option is not set, the host&#39;s native OS and Architecture are used to look up the image in the image cache. However, if no platform is passed and the given image does exist in the local image cache, but its OS or architecture does not match, the container is created with the available image, and a warning is added to the &#x60;Warnings&#x60; field in the response, for example;      WARNING: The requested image&#39;s platform (linux/arm64/v8) does not              match the detected host platform (linux/amd64) and no              specific platform was requested
  */
 export const containerCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: ContainersCreateBody,
     name?: string,
     platform?: string
 ): Effect.Effect<
     never,
-    containerCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    containerCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<ContainerCreateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -4977,11 +4998,13 @@ export const containerCreate = (
         }
 
         const endpoint: string = `${BASE_PATH}/containers/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
-        .pipe(Effect.map(platform === undefined ? identity : Http.request.setUrlParam("platform", String(platform))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
+        .pipe(
+            Effect.map(platform === undefined ? identity : NodeHttp.request.setUrlParam("platform", String(platform)))
+        )
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -4989,15 +5012,16 @@ export const containerCreate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ContainerCreateResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerCreateResponseSchema))
         );
+
 /**
  *
  * @summary Remove a container
@@ -5007,36 +5031,37 @@ export const containerCreate = (
  * @param {boolean} [link] Remove the specified link associated with the container.
  */
 export const containerDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     v?: boolean,
     force?: boolean,
     link?: boolean
-): Effect.Effect<never, containerDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/containers/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(v === undefined ? identity : Http.request.setUrlParam("v", String(v))))
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
-        .pipe(Effect.map(link === undefined ? identity : Http.request.setUrlParam("link", String(link))))
+        .pipe(Effect.map(v === undefined ? identity : NodeHttp.request.setUrlParam("v", String(v))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(link === undefined ? identity : NodeHttp.request.setUrlParam("link", String(link))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Export the contents of a container as a tarball.
  * @summary Export a container
  * @param {string} id ID or name of the container
  */
 export const containerExport = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, containerExportError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerExportError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerExportError({ message: "Required parameter id was null or undefined" }));
@@ -5046,11 +5071,12 @@ export const containerExport = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  * Return low-level information about a container.
  * @summary Inspect a container
@@ -5058,12 +5084,12 @@ export const containerExport = (
  * @param {boolean} [size] Return the size of container as fields &#x60;SizeRw&#x60; and &#x60;SizeRootFs&#x60;
  */
 export const containerInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     size?: boolean
 ): Effect.Effect<
     never,
-    containerInspectError | Http.error.HttpClientError | ParseResult.ParseError,
+    containerInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerInspectResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5075,14 +5101,15 @@ export const containerInspect = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(size === undefined ? identity : Http.request.setUrlParam("size", String(size))))
+        .pipe(Effect.map(size === undefined ? identity : NodeHttp.request.setUrlParam("size", String(size))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ContainerInspectResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerInspectResponseSchema))
         );
+
 /**
  * Send a POSIX signal to a container, defaulting to killing to the container.
  * @summary Kill a container
@@ -5090,10 +5117,10 @@ export const containerInspect = (
  * @param {string} [signal] Signal to send to the container as an integer or string (e.g. &#x60;SIGINT&#x60;).
  */
 export const containerKill = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     signal?: string
-): Effect.Effect<never, containerKillError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerKillError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerKillError({ message: "Required parameter id was null or undefined" }));
@@ -5103,13 +5130,14 @@ export const containerKill = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(signal === undefined ? identity : Http.request.setUrlParam("signal", String(signal))))
+        .pipe(Effect.map(signal === undefined ? identity : NodeHttp.request.setUrlParam("signal", String(signal))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Returns a list of containers. For details on the format, see the [inspect endpoint](#operation/ContainerInspect).  Note that it uses a different, smaller representation of a container than inspecting a single container. For example, the list of linked containers is not propagated .
  * @summary List containers
@@ -5119,29 +5147,30 @@ export const containerKill = (
  * @param {string} [filters] Filters to process on the container list, encoded as JSON (a &#x60;map[string][]string&#x60;). For example, &#x60;{\&quot;status\&quot;: [\&quot;paused\&quot;]}&#x60; will only return paused containers.  Available filters:  - &#x60;ancestor&#x60;&#x3D;(&#x60;&lt;image-name&gt;[:&lt;tag&gt;]&#x60;, &#x60;&lt;image id&gt;&#x60;, or &#x60;&lt;image@digest&gt;&#x60;) - &#x60;before&#x60;&#x3D;(&#x60;&lt;container id&gt;&#x60; or &#x60;&lt;container name&gt;&#x60;) - &#x60;expose&#x60;&#x3D;(&#x60;&lt;port&gt;[/&lt;proto&gt;]&#x60;|&#x60;&lt;startport-endport&gt;/[&lt;proto&gt;]&#x60;) - &#x60;exited&#x3D;&lt;int&gt;&#x60; containers with exit code of &#x60;&lt;int&gt;&#x60; - &#x60;health&#x60;&#x3D;(&#x60;starting&#x60;|&#x60;healthy&#x60;|&#x60;unhealthy&#x60;|&#x60;none&#x60;) - &#x60;id&#x3D;&lt;ID&gt;&#x60; a container&#39;s ID - &#x60;isolation&#x3D;&#x60;(&#x60;default&#x60;|&#x60;process&#x60;|&#x60;hyperv&#x60;) (Windows daemon only) - &#x60;is-task&#x3D;&#x60;(&#x60;true&#x60;|&#x60;false&#x60;) - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; of a container label - &#x60;name&#x3D;&lt;name&gt;&#x60; a container&#39;s name - &#x60;network&#x60;&#x3D;(&#x60;&lt;network id&gt;&#x60; or &#x60;&lt;network name&gt;&#x60;) - &#x60;publish&#x60;&#x3D;(&#x60;&lt;port&gt;[/&lt;proto&gt;]&#x60;|&#x60;&lt;startport-endport&gt;/[&lt;proto&gt;]&#x60;) - &#x60;since&#x60;&#x3D;(&#x60;&lt;container id&gt;&#x60; or &#x60;&lt;container name&gt;&#x60;) - &#x60;status&#x3D;&#x60;(&#x60;created&#x60;|&#x60;restarting&#x60;|&#x60;running&#x60;|&#x60;removing&#x60;|&#x60;paused&#x60;|&#x60;exited&#x60;|&#x60;dead&#x60;) - &#x60;volume&#x60;&#x3D;(&#x60;&lt;volume name&gt;&#x60; or &#x60;&lt;mount point destination&gt;&#x60;)
  */
 export const containerList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     all?: boolean,
     limit?: number,
     size?: boolean,
     filters?: string
 ): Effect.Effect<
     never,
-    containerListError | Http.error.HttpClientError | ParseResult.ParseError,
+    containerListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ContainerSummary>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/json`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(all === undefined ? identity : Http.request.setUrlParam("all", String(all))))
-        .pipe(Effect.map(limit === undefined ? identity : Http.request.setUrlParam("limit", String(limit))))
-        .pipe(Effect.map(size === undefined ? identity : Http.request.setUrlParam("size", String(size))))
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(all === undefined ? identity : NodeHttp.request.setUrlParam("all", String(all))))
+        .pipe(Effect.map(limit === undefined ? identity : NodeHttp.request.setUrlParam("limit", String(limit))))
+        .pipe(Effect.map(size === undefined ? identity : NodeHttp.request.setUrlParam("size", String(size))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ContainerSummarySchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ContainerSummarySchema)))
         );
+
 /**
  * Get `stdout` and `stderr` logs from a container.  Note: This endpoint works only for containers with the `json-file` or `journald` logging driver.
  * @summary Get container logs
@@ -5155,7 +5184,7 @@ export const containerList = (
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const containerLogs = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     follow?: boolean,
     stdout?: boolean,
@@ -5164,7 +5193,7 @@ export const containerLogs = (
     until?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, containerLogsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, containerLogsError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerLogsError({ message: "Required parameter id was null or undefined" }));
@@ -5174,32 +5203,35 @@ export const containerLogs = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(follow === undefined ? identity : Http.request.setUrlParam("follow", String(follow))))
-        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
-        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
-        .pipe(Effect.map(until === undefined ? identity : Http.request.setUrlParam("until", String(until))))
+        .pipe(Effect.map(follow === undefined ? identity : NodeHttp.request.setUrlParam("follow", String(follow))))
+        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
+        .pipe(Effect.map(until === undefined ? identity : NodeHttp.request.setUrlParam("until", String(until))))
         .pipe(
-            Effect.map(timestamps === undefined ? identity : Http.request.setUrlParam("timestamps", String(timestamps)))
+            Effect.map(
+                timestamps === undefined ? identity : NodeHttp.request.setUrlParam("timestamps", String(timestamps))
+            )
         )
-        .pipe(Effect.map(tail === undefined ? identity : Http.request.setUrlParam("tail", String(tail))))
+        .pipe(Effect.map(tail === undefined ? identity : NodeHttp.request.setUrlParam("tail", String(tail))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
+
 /**
  * Use the freezer cgroup to suspend all processes in a container.  Traditionally, when suspending a process the `SIGSTOP` signal is used, which is observable by the process being suspended. With the freezer cgroup the process is unaware, and unable to capture, that it is being suspended, and subsequently resumed.
  * @summary Pause a container
  * @param {string} id ID or name of the container
  */
 export const containerPause = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, containerPauseError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerPauseError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerPauseError({ message: "Required parameter id was null or undefined" }));
@@ -5209,34 +5241,36 @@ export const containerPause = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  *
  * @summary Delete stopped containers
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; Prune containers created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune containers with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const containerPrune = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    containerPruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    containerPruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerPruneResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/prune`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ContainerPruneResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerPruneResponseSchema))
         );
+
 /**
  *
  * @summary Rename a container
@@ -5244,10 +5278,10 @@ export const containerPrune = (
  * @param {string} name New name for the container
  */
 export const containerRename = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     name: string
-): Effect.Effect<never, containerRenameError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerRenameError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRenameError({ message: "Required parameter id was null or undefined" }));
@@ -5261,13 +5295,14 @@ export const containerRename = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
+        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Resize the TTY for a container.
  * @summary Resize a container TTY
@@ -5276,11 +5311,11 @@ export const containerRename = (
  * @param {number} [w] Width of the TTY session in characters
  */
 export const containerResize = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<never, containerResizeError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerResizeError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerResizeError({ message: "Required parameter id was null or undefined" }));
@@ -5290,14 +5325,15 @@ export const containerResize = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(h === undefined ? identity : Http.request.setUrlParam("h", String(h))))
-        .pipe(Effect.map(w === undefined ? identity : Http.request.setUrlParam("w", String(w))))
+        .pipe(Effect.map(h === undefined ? identity : NodeHttp.request.setUrlParam("h", String(h))))
+        .pipe(Effect.map(w === undefined ? identity : NodeHttp.request.setUrlParam("w", String(w))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Restart a container
@@ -5306,11 +5342,11 @@ export const containerResize = (
  * @param {number} [t] Number of seconds to wait before killing the container
  */
 export const containerRestart = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<never, containerRestartError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerRestartError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRestartError({ message: "Required parameter id was null or undefined" }));
@@ -5320,14 +5356,15 @@ export const containerRestart = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(signal === undefined ? identity : Http.request.setUrlParam("signal", String(signal))))
-        .pipe(Effect.map(t === undefined ? identity : Http.request.setUrlParam("t", String(t))))
+        .pipe(Effect.map(signal === undefined ? identity : NodeHttp.request.setUrlParam("signal", String(signal))))
+        .pipe(Effect.map(t === undefined ? identity : NodeHttp.request.setUrlParam("t", String(t))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Start a container
@@ -5335,10 +5372,10 @@ export const containerRestart = (
  * @param {string} [detachKeys] Override the key sequence for detaching a container. Format is a single character &#x60;[a-Z]&#x60; or &#x60;ctrl-&lt;value&gt;&#x60; where &#x60;&lt;value&gt;&#x60; is one of: &#x60;a-z&#x60;, &#x60;@&#x60;, &#x60;^&#x60;, &#x60;[&#x60;, &#x60;,&#x60; or &#x60;_&#x60;.
  */
 export const containerStart = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     detachKeys?: string
-): Effect.Effect<never, containerStartError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerStartError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStartError({ message: "Required parameter id was null or undefined" }));
@@ -5348,15 +5385,18 @@ export const containerStart = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
         .pipe(
-            Effect.map(detachKeys === undefined ? identity : Http.request.setUrlParam("detachKeys", String(detachKeys)))
+            Effect.map(
+                detachKeys === undefined ? identity : NodeHttp.request.setUrlParam("detachKeys", String(detachKeys))
+            )
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * This endpoint returns a live stream of a container’s resource usage statistics.  The `precpu_stats` is the CPU statistic of the *previous* read, and is used to calculate the CPU usage percentage. It is not an exact copy of the `cpu_stats` field.  If either `precpu_stats.online_cpus` or `cpu_stats.online_cpus` is nil then for compatibility with older daemons the length of the corresponding `cpu_usage.percpu_usage` array should be used.  On a cgroup v2 host, the following fields are not set * `blkio_stats`: all fields other than `io_service_bytes_recursive` * `cpu_stats`: `cpu_usage.percpu_usage` * `memory_stats`: `max_usage` and `failcnt` Also, `memory_stats.stats` fields are incompatible with cgroup v1.  To calculate the values shown by the `stats` command of the docker cli tool the following formulas can be used: * used_memory = `memory_stats.usage - memory_stats.stats.cache` * available_memory = `memory_stats.limit` * Memory usage % = `(used_memory / available_memory) * 100.0` * cpu_delta = `cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage` * system_cpu_delta = `cpu_stats.system_cpu_usage - precpu_stats.system_cpu_usage` * number_cpus = `lenght(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU usage % = `(cpu_delta / system_cpu_delta) * number_cpus * 100.0`
  * @summary Get container stats based on resource usage
@@ -5365,11 +5405,15 @@ export const containerStart = (
  * @param {boolean} [one_shot] Only get a single stat instead of waiting for 2 cycles. Must be used with &#x60;stream&#x3D;false&#x60;.
  */
 export const containerStats = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     stream?: boolean,
     one_shot?: boolean
-): Effect.Effect<never, containerStatsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<unknown>> =>
+): Effect.Effect<
+    never,
+    containerStatsError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<unknown>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStatsError({ message: "Required parameter id was null or undefined" }));
@@ -5379,15 +5423,18 @@ export const containerStats = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(stream === undefined ? identity : Http.request.setUrlParam("stream", String(stream))))
-        .pipe(Effect.map(one_shot === undefined ? identity : Http.request.setUrlParam("one-shot", String(one_shot))))
+        .pipe(Effect.map(stream === undefined ? identity : NodeHttp.request.setUrlParam("stream", String(stream))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(anySchema))
+            Effect.map(one_shot === undefined ? identity : NodeHttp.request.setUrlParam("one-shot", String(one_shot)))
+        )
+        .pipe(
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(anySchema))
         );
+
 /**
  *
  * @summary Stop a container
@@ -5396,11 +5443,11 @@ export const containerStats = (
  * @param {number} [t] Number of seconds to wait before killing the container
  */
 export const containerStop = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<never, containerStopError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerStopError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStopError({ message: "Required parameter id was null or undefined" }));
@@ -5410,14 +5457,15 @@ export const containerStop = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(signal === undefined ? identity : Http.request.setUrlParam("signal", String(signal))))
-        .pipe(Effect.map(t === undefined ? identity : Http.request.setUrlParam("t", String(t))))
+        .pipe(Effect.map(signal === undefined ? identity : NodeHttp.request.setUrlParam("signal", String(signal))))
+        .pipe(Effect.map(t === undefined ? identity : NodeHttp.request.setUrlParam("t", String(t))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * On Unix systems, this is done by running the `ps` command. This endpoint is not supported on Windows.
  * @summary List processes running inside a container
@@ -5425,12 +5473,12 @@ export const containerStop = (
  * @param {string} [ps_args] The arguments to pass to &#x60;ps&#x60;. For example, &#x60;aux&#x60;
  */
 export const containerTop = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     ps_args?: string
 ): Effect.Effect<
     never,
-    containerTopError | Http.error.HttpClientError | ParseResult.ParseError,
+    containerTopError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerTopResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5442,23 +5490,24 @@ export const containerTop = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(ps_args === undefined ? identity : Http.request.setUrlParam("ps_args", String(ps_args))))
+        .pipe(Effect.map(ps_args === undefined ? identity : NodeHttp.request.setUrlParam("ps_args", String(ps_args))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ContainerTopResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerTopResponseSchema))
         );
+
 /**
  * Resume a container which has been paused.
  * @summary Unpause a container
  * @param {string} id ID or name of the container
  */
 export const containerUnpause = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, containerUnpauseError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, containerUnpauseError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerUnpauseError({ message: "Required parameter id was null or undefined" }));
@@ -5468,11 +5517,12 @@ export const containerUnpause = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  * Change various configuration options of a container without having to recreate it.
  * @summary Update a container
@@ -5480,12 +5530,12 @@ export const containerUnpause = (
  * @param {string} id ID or name of the container
  */
 export const containerUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: IdUpdateBody,
     id: string
 ): Effect.Effect<
     never,
-    containerUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    containerUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<ContainerUpdateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5501,9 +5551,9 @@ export const containerUpdate = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -5511,15 +5561,16 @@ export const containerUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ContainerUpdateResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerUpdateResponseSchema))
         );
+
 /**
  * Block until a container stops, then returns the exit code.
  * @summary Wait for a container
@@ -5527,12 +5578,12 @@ export const containerUpdate = (
  * @param {string} [condition] Wait until a container state reaches the given condition.  Defaults to &#x60;not-running&#x60; if omitted or empty.
  */
 export const containerWait = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     condition?: string
 ): Effect.Effect<
     never,
-    containerWaitError | Http.error.HttpClientError | ParseResult.ParseError,
+    containerWaitError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ContainerWaitResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5544,14 +5595,19 @@ export const containerWait = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(condition === undefined ? identity : Http.request.setUrlParam("condition", String(condition))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ContainerWaitResponseSchema))
+            Effect.map(
+                condition === undefined ? identity : NodeHttp.request.setUrlParam("condition", String(condition))
+            )
+        )
+        .pipe(
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerWaitResponseSchema))
         );
+
 /**
 * Upload a tar archive to be extracted to a path in the filesystem of container id. `path` parameter is asserted to be a directory. If it exists as a file, 400 error will be returned with message \"not a directory\".
 * @summary Extract an archive of files or folders to a directory in a container
@@ -5565,7 +5621,7 @@ or &#x60;xz&#x60;.
 * @param {string} [copyUIDGID] If &#x60;1&#x60;, &#x60;true&#x60;, then it will copy UID/GID maps to the dest file or dir
 */
 export const putContainerArchive = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: unknown,
     id: string,
     path: string,
@@ -5573,7 +5629,7 @@ export const putContainerArchive = (
     copyUIDGID?: string
 ): Effect.Effect<
     never,
-    putContainerArchiveError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    putContainerArchiveError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5593,33 +5649,35 @@ export const putContainerArchive = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("PUT")(endpoint);
+        return NodeHttp.request.make("PUT")(endpoint);
     })
-        .pipe(Effect.map(path === undefined ? identity : Http.request.setUrlParam("path", String(path))))
+        .pipe(Effect.map(path === undefined ? identity : NodeHttp.request.setUrlParam("path", String(path))))
         .pipe(
             Effect.map(
                 noOverwriteDirNonDir === undefined
                     ? identity
-                    : Http.request.setUrlParam("noOverwriteDirNonDir", String(noOverwriteDirNonDir))
+                    : NodeHttp.request.setUrlParam("noOverwriteDirNonDir", String(noOverwriteDirNonDir))
             )
         )
         .pipe(
-            Effect.map(copyUIDGID === undefined ? identity : Http.request.setUrlParam("copyUIDGID", String(copyUIDGID)))
+            Effect.map(
+                copyUIDGID === undefined ? identity : NodeHttp.request.setUrlParam("copyUIDGID", String(copyUIDGID))
+            )
         )
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/x-tar")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/x-tar")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
                     ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -5628,11 +5686,11 @@ export const putContainerArchive = (
  * @param {string} name Image name or id
  */
 export const distributionInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
 ): Effect.Effect<
     never,
-    distributionInspectError | Http.error.HttpClientError | ParseResult.ParseError,
+    distributionInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<DistributionInspect>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5644,11 +5702,11 @@ export const distributionInspect = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(DistributionInspectSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(DistributionInspectSchema))
     );
 
 /**
@@ -5658,12 +5716,12 @@ export const distributionInspect = (
  * @param {string} id ID or name of container
  */
 export const containerExec = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: ExecConfig,
     id: string
 ): Effect.Effect<
     never,
-    containerExecError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    containerExecError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5679,9 +5737,9 @@ export const containerExec = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -5689,26 +5747,27 @@ export const containerExec = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
         );
+
 /**
  * Return low-level information about an exec instance.
  * @summary Inspect an exec instance
  * @param {string} id Exec instance ID
  */
 export const execInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
 ): Effect.Effect<
     never,
-    execInspectError | Http.error.HttpClientError | ParseResult.ParseError,
+    execInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ExecInspectResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5717,12 +5776,13 @@ export const execInspect = (
         }
 
         const endpoint: string = `${BASE_PATH}/exec/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(ExecInspectResponseSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(ExecInspectResponseSchema))
     );
+
 /**
  * Resize the TTY session used by an exec instance. This endpoint only works if `tty` was specified as part of creating and starting the exec instance.
  * @summary Resize an exec instance
@@ -5731,25 +5791,26 @@ export const execInspect = (
  * @param {number} [w] Width of the TTY session in characters
  */
 export const execResize = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<never, execResizeError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, execResizeError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execResizeError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/exec/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(h === undefined ? identity : Http.request.setUrlParam("h", String(h))))
-        .pipe(Effect.map(w === undefined ? identity : Http.request.setUrlParam("w", String(w))))
+        .pipe(Effect.map(h === undefined ? identity : NodeHttp.request.setUrlParam("h", String(h))))
+        .pipe(Effect.map(w === undefined ? identity : NodeHttp.request.setUrlParam("w", String(w))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Starts a previously set up exec instance. If detach is true, this endpoint returns immediately after starting the command. Otherwise, it sets up an interactive session with the command.
  * @summary Start an exec instance
@@ -5757,12 +5818,12 @@ export const execResize = (
  * @param {ExecStartConfig} [body]
  */
 export const execStart = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     body?: ExecStartConfig
 ): Effect.Effect<
     never,
-    execStartError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    execStartError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -5771,9 +5832,9 @@ export const execStart = (
         }
 
         const endpoint: string = `${BASE_PATH}/exec/{id}/start`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -5781,13 +5842,13 @@ export const execStart = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -5798,31 +5859,34 @@ export const execStart = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the list of build cache objects.  Available filters:  - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; remove cache older than &#x60;&lt;timestamp&gt;&#x60;. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon&#39;s local time. - &#x60;id&#x3D;&lt;id&gt;&#x60; - &#x60;parent&#x3D;&lt;id&gt;&#x60; - &#x60;type&#x3D;&lt;string&gt;&#x60; - &#x60;description&#x3D;&lt;string&gt;&#x60; - &#x60;inuse&#x60; - &#x60;shared&#x60; - &#x60;private&#x60;
  */
 export const buildPrune = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     keep_storage?: number,
     all?: boolean,
     filters?: string
 ): Effect.Effect<
     never,
-    buildPruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    buildPruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<BuildPruneResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build/prune`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
         .pipe(
             Effect.map(
-                keep_storage === undefined ? identity : Http.request.setUrlParam("keep-storage", String(keep_storage))
+                keep_storage === undefined
+                    ? identity
+                    : NodeHttp.request.setUrlParam("keep-storage", String(keep_storage))
             )
         )
-        .pipe(Effect.map(all === undefined ? identity : Http.request.setUrlParam("all", String(all))))
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(all === undefined ? identity : NodeHttp.request.setUrlParam("all", String(all))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(BuildPruneResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(BuildPruneResponseSchema))
         );
+
 /**
  * Build an image from a tar archive with a `Dockerfile` in it.  The `Dockerfile` specifies how the image is built from the tar archive. It is typically in the archive's root, but can be at a different path or have a different name by specifying the `dockerfile` parameter. [See the `Dockerfile` reference for more information](https://docs.docker.com/engine/reference/builder/).  The Docker daemon performs a preliminary validation of the `Dockerfile` before starting the build, and returns an error if the syntax is incorrect. After that, each instruction is run one-by-one until the ID of the new image is output.  The build is canceled if the client drops the connection by quitting or being killed.
  * @summary Build an image
@@ -5855,7 +5919,7 @@ export const buildPrune = (
  * @param {string} [outputs] BuildKit output configuration
  */
 export const imageBuild = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: unknown,
     dockerfile?: string,
     t?: string,
@@ -5885,64 +5949,91 @@ export const imageBuild = (
     outputs?: string
 ): Effect.Effect<
     never,
-    imageBuildError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    imageBuildError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
         .pipe(
-            Effect.map(dockerfile === undefined ? identity : Http.request.setUrlParam("dockerfile", String(dockerfile)))
-        )
-        .pipe(Effect.map(t === undefined ? identity : Http.request.setUrlParam("t", String(t))))
-        .pipe(
-            Effect.map(extrahosts === undefined ? identity : Http.request.setUrlParam("extrahosts", String(extrahosts)))
-        )
-        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
-        .pipe(Effect.map(q === undefined ? identity : Http.request.setUrlParam("q", String(q))))
-        .pipe(Effect.map(nocache === undefined ? identity : Http.request.setUrlParam("nocache", String(nocache))))
-        .pipe(Effect.map(cachefrom === undefined ? identity : Http.request.setUrlParam("cachefrom", String(cachefrom))))
-        .pipe(Effect.map(pull === undefined ? identity : Http.request.setUrlParam("pull", String(pull))))
-        .pipe(Effect.map(rm === undefined ? identity : Http.request.setUrlParam("rm", String(rm))))
-        .pipe(Effect.map(forcerm === undefined ? identity : Http.request.setUrlParam("forcerm", String(forcerm))))
-        .pipe(Effect.map(memory === undefined ? identity : Http.request.setUrlParam("memory", String(memory))))
-        .pipe(Effect.map(memswap === undefined ? identity : Http.request.setUrlParam("memswap", String(memswap))))
-        .pipe(Effect.map(cpushares === undefined ? identity : Http.request.setUrlParam("cpushares", String(cpushares))))
-        .pipe(
-            Effect.map(cpusetcpus === undefined ? identity : Http.request.setUrlParam("cpusetcpus", String(cpusetcpus)))
-        )
-        .pipe(Effect.map(cpuperiod === undefined ? identity : Http.request.setUrlParam("cpuperiod", String(cpuperiod))))
-        .pipe(Effect.map(cpuquota === undefined ? identity : Http.request.setUrlParam("cpuquota", String(cpuquota))))
-        .pipe(Effect.map(buildargs === undefined ? identity : Http.request.setUrlParam("buildargs", String(buildargs))))
-        .pipe(Effect.map(shmsize === undefined ? identity : Http.request.setUrlParam("shmsize", String(shmsize))))
-        .pipe(Effect.map(squash === undefined ? identity : Http.request.setUrlParam("squash", String(squash))))
-        .pipe(Effect.map(labels === undefined ? identity : Http.request.setUrlParam("labels", String(labels))))
-        .pipe(
             Effect.map(
-                networkmode === undefined ? identity : Http.request.setUrlParam("networkmode", String(networkmode))
+                dockerfile === undefined ? identity : NodeHttp.request.setUrlParam("dockerfile", String(dockerfile))
             )
         )
-        .pipe(Effect.map(platform === undefined ? identity : Http.request.setUrlParam("platform", String(platform))))
-        .pipe(Effect.map(target === undefined ? identity : Http.request.setUrlParam("target", String(target))))
-        .pipe(Effect.map(outputs === undefined ? identity : Http.request.setUrlParam("outputs", String(outputs))))
-        .pipe(Effect.map(Http.request.setHeader("Content-type", String(Content_type))))
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Config", String(X_Registry_Config))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/octet-stream")))
+        .pipe(Effect.map(t === undefined ? identity : NodeHttp.request.setUrlParam("t", String(t))))
+        .pipe(
+            Effect.map(
+                extrahosts === undefined ? identity : NodeHttp.request.setUrlParam("extrahosts", String(extrahosts))
+            )
+        )
+        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
+        .pipe(Effect.map(q === undefined ? identity : NodeHttp.request.setUrlParam("q", String(q))))
+        .pipe(Effect.map(nocache === undefined ? identity : NodeHttp.request.setUrlParam("nocache", String(nocache))))
+        .pipe(
+            Effect.map(
+                cachefrom === undefined ? identity : NodeHttp.request.setUrlParam("cachefrom", String(cachefrom))
+            )
+        )
+        .pipe(Effect.map(pull === undefined ? identity : NodeHttp.request.setUrlParam("pull", String(pull))))
+        .pipe(Effect.map(rm === undefined ? identity : NodeHttp.request.setUrlParam("rm", String(rm))))
+        .pipe(Effect.map(forcerm === undefined ? identity : NodeHttp.request.setUrlParam("forcerm", String(forcerm))))
+        .pipe(Effect.map(memory === undefined ? identity : NodeHttp.request.setUrlParam("memory", String(memory))))
+        .pipe(Effect.map(memswap === undefined ? identity : NodeHttp.request.setUrlParam("memswap", String(memswap))))
+        .pipe(
+            Effect.map(
+                cpushares === undefined ? identity : NodeHttp.request.setUrlParam("cpushares", String(cpushares))
+            )
+        )
+        .pipe(
+            Effect.map(
+                cpusetcpus === undefined ? identity : NodeHttp.request.setUrlParam("cpusetcpus", String(cpusetcpus))
+            )
+        )
+        .pipe(
+            Effect.map(
+                cpuperiod === undefined ? identity : NodeHttp.request.setUrlParam("cpuperiod", String(cpuperiod))
+            )
+        )
+        .pipe(
+            Effect.map(cpuquota === undefined ? identity : NodeHttp.request.setUrlParam("cpuquota", String(cpuquota)))
+        )
+        .pipe(
+            Effect.map(
+                buildargs === undefined ? identity : NodeHttp.request.setUrlParam("buildargs", String(buildargs))
+            )
+        )
+        .pipe(Effect.map(shmsize === undefined ? identity : NodeHttp.request.setUrlParam("shmsize", String(shmsize))))
+        .pipe(Effect.map(squash === undefined ? identity : NodeHttp.request.setUrlParam("squash", String(squash))))
+        .pipe(Effect.map(labels === undefined ? identity : NodeHttp.request.setUrlParam("labels", String(labels))))
+        .pipe(
+            Effect.map(
+                networkmode === undefined ? identity : NodeHttp.request.setUrlParam("networkmode", String(networkmode))
+            )
+        )
+        .pipe(
+            Effect.map(platform === undefined ? identity : NodeHttp.request.setUrlParam("platform", String(platform)))
+        )
+        .pipe(Effect.map(target === undefined ? identity : NodeHttp.request.setUrlParam("target", String(target))))
+        .pipe(Effect.map(outputs === undefined ? identity : NodeHttp.request.setUrlParam("outputs", String(outputs))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-type", String(Content_type))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Config", String(X_Registry_Config))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/octet-stream")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
                     ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Create a new image from a container
@@ -5956,7 +6047,7 @@ export const imageBuild = (
  * @param {string} [changes] &#x60;Dockerfile&#x60; instructions to apply while committing
  */
 export const imageCommit = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: ContainerConfig,
     container?: string,
     repo?: string,
@@ -5967,21 +6058,25 @@ export const imageCommit = (
     changes?: string
 ): Effect.Effect<
     never,
-    imageCommitError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    imageCommitError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/commit`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(container === undefined ? identity : Http.request.setUrlParam("container", String(container))))
-        .pipe(Effect.map(repo === undefined ? identity : Http.request.setUrlParam("repo", String(repo))))
-        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
-        .pipe(Effect.map(comment === undefined ? identity : Http.request.setUrlParam("comment", String(comment))))
-        .pipe(Effect.map(author === undefined ? identity : Http.request.setUrlParam("author", String(author))))
-        .pipe(Effect.map(pause === undefined ? identity : Http.request.setUrlParam("pause", String(pause))))
-        .pipe(Effect.map(changes === undefined ? identity : Http.request.setUrlParam("changes", String(changes))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(
+            Effect.map(
+                container === undefined ? identity : NodeHttp.request.setUrlParam("container", String(container))
+            )
+        )
+        .pipe(Effect.map(repo === undefined ? identity : NodeHttp.request.setUrlParam("repo", String(repo))))
+        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
+        .pipe(Effect.map(comment === undefined ? identity : NodeHttp.request.setUrlParam("comment", String(comment))))
+        .pipe(Effect.map(author === undefined ? identity : NodeHttp.request.setUrlParam("author", String(author))))
+        .pipe(Effect.map(pause === undefined ? identity : NodeHttp.request.setUrlParam("pause", String(pause))))
+        .pipe(Effect.map(changes === undefined ? identity : NodeHttp.request.setUrlParam("changes", String(changes))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -5989,15 +6084,16 @@ export const imageCommit = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
         );
+
 /**
  * Create an image by either pulling it from a registry or importing it.
  * @summary Create an image
@@ -6012,7 +6108,7 @@ export const imageCommit = (
  * @param {string} [platform] Platform in the format os[/arch[/variant]].  When used in combination with the &#x60;fromImage&#x60; option, the daemon checks if the given image is present in the local image cache with the given OS and Architecture, and otherwise attempts to pull the image. If the option is not set, the host&#39;s native OS and Architecture are used. If the given image does not exist in the local image cache, the daemon attempts to pull the image with the host&#39;s native OS and Architecture. If the given image does exists in the local image cache, but its OS or architecture does not match, a warning is produced.  When used with the &#x60;fromSrc&#x60; option to import an image from an archive, this option sets the platform information for the imported image. If the option is not set, the host&#39;s native OS and Architecture are used for the imported image.
  */
 export const imageCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: string,
     fromImage?: string,
     fromSrc?: string,
@@ -6024,36 +6120,43 @@ export const imageCreate = (
     platform?: string
 ): Effect.Effect<
     never,
-    imageCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    imageCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(fromImage === undefined ? identity : Http.request.setUrlParam("fromImage", String(fromImage))))
-        .pipe(Effect.map(fromSrc === undefined ? identity : Http.request.setUrlParam("fromSrc", String(fromSrc))))
-        .pipe(Effect.map(repo === undefined ? identity : Http.request.setUrlParam("repo", String(repo))))
-        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
-        .pipe(Effect.map(message === undefined ? identity : Http.request.setUrlParam("message", String(message))))
-        .pipe(Effect.map(Http.request.setUrlParam("changes", (changes || []).join(COLLECTION_FORMATS["csv"]))))
-        .pipe(Effect.map(platform === undefined ? identity : Http.request.setUrlParam("platform", String(platform))))
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "text/plain")))
+        .pipe(
+            Effect.map(
+                fromImage === undefined ? identity : NodeHttp.request.setUrlParam("fromImage", String(fromImage))
+            )
+        )
+        .pipe(Effect.map(fromSrc === undefined ? identity : NodeHttp.request.setUrlParam("fromSrc", String(fromSrc))))
+        .pipe(Effect.map(repo === undefined ? identity : NodeHttp.request.setUrlParam("repo", String(repo))))
+        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
+        .pipe(Effect.map(message === undefined ? identity : NodeHttp.request.setUrlParam("message", String(message))))
+        .pipe(Effect.map(NodeHttp.request.setUrlParam("changes", (changes || []).join(COLLECTION_FORMATS["csv"]))))
+        .pipe(
+            Effect.map(platform === undefined ? identity : NodeHttp.request.setUrlParam("platform", String(platform)))
+        )
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "text/plain")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
                     ("string" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Remove an image, along with any untagged parent images that were referenced by that image.  Images can't be removed if they have descendant images, are being used by a running container or are being used by a build.
  * @summary Remove an image
@@ -6062,13 +6165,13 @@ export const imageCreate = (
  * @param {boolean} [noprune] Do not delete untagged parent images
  */
 export const imageDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean,
     noprune?: boolean
 ): Effect.Effect<
     never,
-    imageDeleteError | Http.error.HttpClientError | ParseResult.ParseError,
+    imageDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ImageDeleteResponseItem>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6077,24 +6180,25 @@ export const imageDelete = (
         }
 
         const endpoint: string = `${BASE_PATH}/images/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
-        .pipe(Effect.map(noprune === undefined ? identity : Http.request.setUrlParam("noprune", String(noprune))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(noprune === undefined ? identity : NodeHttp.request.setUrlParam("noprune", String(noprune))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ImageDeleteResponseItemSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageDeleteResponseItemSchema)))
         );
+
 /**
  * Get a tarball containing all images and metadata for a repository.  If `name` is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and its parents) are returned. If `name` is an image ID, similarly only that image (and its parents) are returned, but with the exclusion of the `repositories` file in the tarball, as there were no image names referenced.  ### Image tarball format  An image tarball contains one directory per image layer (named using its long ID), each containing these files:  - `VERSION`: currently `1.0` - the file format version - `json`: detailed layer information, similar to `docker inspect layer_id` - `layer.tar`: A tarfile containing the filesystem changes in this layer  The `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and directories for storing attribute changes and deletions.  If the tarball defines a repository, the tarball should also include a `repositories` file at the root that contains a list of repository and tag names mapped to layer IDs.  ```json {   \"hello-world\": {     \"latest\": \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\"   } } ```
  * @summary Export an image
  * @param {string} name Image name or ID
  */
 export const imageGet = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<never, imageGetError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, imageGetError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageGetError({ message: "Required parameter name was null or undefined" }));
@@ -6104,44 +6208,46 @@ export const imageGet = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
         Effect.flatMap((clientResponse) => clientResponse.text),
         Effect.map((responseText) => new Blob([responseText]))
     );
+
 /**
  * Get a tarball containing all images and metadata for several image repositories.  For each value of the `names` parameter: if it is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and its parents) are returned; if it is an image ID, similarly only that image (and its parents) are returned and there would be no names referenced in the 'repositories' file for this image ID.  For details on the format, see the [export image endpoint](#operation/ImageGet).
  * @summary Export several images
  * @param {Array<string>} [names] Image names to filter by
  */
 export const imageGetAll = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     names?: Array<string>
-): Effect.Effect<never, imageGetAllError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, imageGetAllError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/get`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setUrlParam("names", (names || []).join(COLLECTION_FORMATS["csv"]))))
+        .pipe(Effect.map(NodeHttp.request.setUrlParam("names", (names || []).join(COLLECTION_FORMATS["csv"]))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
+
 /**
  * Return parent layers of an image.
  * @summary Get the history of an image
  * @param {string} name Image name or ID
  */
 export const imageHistory = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
 ): Effect.Effect<
     never,
-    imageHistoryError | Http.error.HttpClientError | ParseResult.ParseError,
+    imageHistoryError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<HistoryResponseItem>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6153,23 +6259,24 @@ export const imageHistory = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(arraySchema(HistoryResponseItemSchema)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(HistoryResponseItemSchema)))
     );
+
 /**
  * Return low-level information about an image.
  * @summary Inspect an image
  * @param {string} name Image name or id
  */
 export const imageInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
 ): Effect.Effect<
     never,
-    imageInspectError | Http.error.HttpClientError | ParseResult.ParseError,
+    imageInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ImageInspect>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6181,12 +6288,13 @@ export const imageInspect = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(ImageInspectSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(ImageInspectSchema))
     );
+
 /**
  * Returns a list of images on the server. Note that it uses a different, smaller representation of an image than inspecting a single image.
  * @summary List Images
@@ -6196,33 +6304,34 @@ export const imageInspect = (
  * @param {boolean} [digests] Show digest information as a &#x60;RepoDigests&#x60; field on each image.
  */
 export const imageList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     all?: boolean,
     filters?: string,
     shared_size?: boolean,
     digests?: boolean
 ): Effect.Effect<
     never,
-    imageListError | Http.error.HttpClientError | ParseResult.ParseError,
+    imageListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ImageSummary>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/json`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(all === undefined ? identity : Http.request.setUrlParam("all", String(all))))
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(all === undefined ? identity : NodeHttp.request.setUrlParam("all", String(all))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
             Effect.map(
-                shared_size === undefined ? identity : Http.request.setUrlParam("shared-size", String(shared_size))
+                shared_size === undefined ? identity : NodeHttp.request.setUrlParam("shared-size", String(shared_size))
             )
         )
-        .pipe(Effect.map(digests === undefined ? identity : Http.request.setUrlParam("digests", String(digests))))
+        .pipe(Effect.map(digests === undefined ? identity : NodeHttp.request.setUrlParam("digests", String(digests))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ImageSummarySchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageSummarySchema)))
         );
+
 /**
  * Load a set of images and tags into a repository.  For details on the format, see the [export image endpoint](#operation/ImageGet).
  * @summary Import images
@@ -6230,57 +6339,59 @@ export const imageList = (
  * @param {boolean} [quiet] Suppress progress details during load.
  */
 export const imageLoad = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: unknown,
     quiet?: boolean
 ): Effect.Effect<
     never,
-    imageLoadError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    imageLoadError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/load`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(quiet === undefined ? identity : Http.request.setUrlParam("quiet", String(quiet))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/x-tar")))
+        .pipe(Effect.map(quiet === undefined ? identity : NodeHttp.request.setUrlParam("quiet", String(quiet))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/x-tar")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
                     ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Delete unused images
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;). Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), prune only    unused *and* untagged images. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), all unused images are pruned. - &#x60;until&#x3D;&lt;string&gt;&#x60; Prune images created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune images with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const imagePrune = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    imagePruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    imagePruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<ImagePruneResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/prune`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ImagePruneResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ImagePruneResponseSchema))
         );
+
 /**
  * Push an image to a registry.  If you wish to push an image on to a private registry, that image must already have a tag which references the registry. For example, `registry.example.com/myimage:latest`.  The push is cancelled if the HTTP connection is closed.
  * @summary Push an image
@@ -6289,11 +6400,11 @@ export const imagePrune = (
  * @param {string} [tag] The tag to associate with the image on the registry.
  */
 export const imagePush = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     X_Registry_Auth: string,
     tag?: string
-): Effect.Effect<never, imagePushError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, imagePushError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imagePushError({ message: "Required parameter name was null or undefined" }));
@@ -6307,14 +6418,15 @@ export const imagePush = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
+        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Search for an image on Docker Hub.
  * @summary Search images
@@ -6323,13 +6435,13 @@ export const imagePush = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the images list. Available filters:  - &#x60;is-automated&#x3D;(true|false)&#x60; - &#x60;is-official&#x3D;(true|false)&#x60; - &#x60;stars&#x3D;&lt;number&gt;&#x60; Matches images that has at least &#39;number&#39; stars.
  */
 export const imageSearch = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     term: string,
     limit?: number,
     filters?: string
 ): Effect.Effect<
     never,
-    imageSearchError | Http.error.HttpClientError | ParseResult.ParseError,
+    imageSearchError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<ImageSearchResponseItem>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6338,16 +6450,17 @@ export const imageSearch = (
         }
 
         const endpoint: string = `${BASE_PATH}/images/search`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(term === undefined ? identity : Http.request.setUrlParam("term", String(term))))
-        .pipe(Effect.map(limit === undefined ? identity : Http.request.setUrlParam("limit", String(limit))))
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(term === undefined ? identity : NodeHttp.request.setUrlParam("term", String(term))))
+        .pipe(Effect.map(limit === undefined ? identity : NodeHttp.request.setUrlParam("limit", String(limit))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ImageSearchResponseItemSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageSearchResponseItemSchema)))
         );
+
 /**
  * Tag an image so that it becomes part of a repository.
  * @summary Tag an image
@@ -6356,11 +6469,11 @@ export const imageSearch = (
  * @param {string} [tag] The name of the new tag.
  */
 export const imageTag = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     repo?: string,
     tag?: string
-): Effect.Effect<never, imageTagError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, imageTagError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageTagError({ message: "Required parameter name was null or undefined" }));
@@ -6370,13 +6483,13 @@ export const imageTag = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(repo === undefined ? identity : Http.request.setUrlParam("repo", String(repo))))
-        .pipe(Effect.map(tag === undefined ? identity : Http.request.setUrlParam("tag", String(tag))))
+        .pipe(Effect.map(repo === undefined ? identity : NodeHttp.request.setUrlParam("repo", String(repo))))
+        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -6386,12 +6499,12 @@ export const imageTag = (
  * @param {string} id Network ID or name
  */
 export const networkConnect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: NetworkConnectRequest,
     id: string
 ): Effect.Effect<
     never,
-    networkConnectError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    networkConnectError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6407,9 +6520,9 @@ export const networkConnect = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -6417,25 +6530,26 @@ export const networkConnect = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Create a network
  * @param {NetworkCreateRequest} body Network configuration
  */
 export const networkCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: NetworkCreateRequest
 ): Effect.Effect<
     never,
-    networkCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    networkCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<NetworkCreateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6444,9 +6558,9 @@ export const networkCreate = (
         }
 
         const endpoint: string = `${BASE_PATH}/networks/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -6454,35 +6568,37 @@ export const networkCreate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(NetworkCreateResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkCreateResponseSchema))
         );
+
 /**
  *
  * @summary Remove a network
  * @param {string} id Network ID or name
  */
 export const networkDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, networkDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, networkDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  *
  * @summary Disconnect a container from a network
@@ -6490,12 +6606,12 @@ export const networkDelete = (
  * @param {string} id Network ID or name
  */
 export const networkDisconnect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: NetworkDisconnectRequest,
     id: string
 ): Effect.Effect<
     never,
-    networkDisconnectError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    networkDisconnectError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6511,9 +6627,9 @@ export const networkDisconnect = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -6521,14 +6637,15 @@ export const networkDisconnect = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Inspect a network
@@ -6537,71 +6654,77 @@ export const networkDisconnect = (
  * @param {string} [scope] Filter the network by scope (swarm, global, or local)
  */
 export const networkInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     verbose?: boolean,
     scope?: string
-): Effect.Effect<never, networkInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Network>> =>
+): Effect.Effect<
+    never,
+    networkInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Network>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(verbose === undefined ? identity : Http.request.setUrlParam("verbose", String(verbose))))
-        .pipe(Effect.map(scope === undefined ? identity : Http.request.setUrlParam("scope", String(scope))))
+        .pipe(Effect.map(verbose === undefined ? identity : NodeHttp.request.setUrlParam("verbose", String(verbose))))
+        .pipe(Effect.map(scope === undefined ? identity : NodeHttp.request.setUrlParam("scope", String(scope))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(NetworkSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkSchema))
         );
+
 /**
  * Returns a list of networks. For details on the format, see the [network inspect endpoint](#operation/NetworkInspect).  Note that it uses a different, smaller representation of a network than inspecting a single network. For example, the list of containers attached to the network is not propagated in API versions 1.28 and up.
  * @summary List networks
  * @param {string} [filters] JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the networks list.  Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), returns all    networks that are not in use by a container. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), only networks that are in use by one or more    containers are returned. - &#x60;driver&#x3D;&lt;driver-name&gt;&#x60; Matches a network&#39;s driver. - &#x60;id&#x3D;&lt;network-id&gt;&#x60; Matches all or part of a network ID. - &#x60;label&#x3D;&lt;key&gt;&#x60; or &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60; of a network label. - &#x60;name&#x3D;&lt;network-name&gt;&#x60; Matches all or part of a network name. - &#x60;scope&#x3D;[\&quot;swarm\&quot;|\&quot;global\&quot;|\&quot;local\&quot;]&#x60; Filters networks by scope (&#x60;swarm&#x60;, &#x60;global&#x60;, or &#x60;local&#x60;). - &#x60;type&#x3D;[\&quot;custom\&quot;|\&quot;builtin\&quot;]&#x60; Filters networks by type. The &#x60;custom&#x60; keyword returns all user-defined networks.
  */
 export const networkList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    networkListError | Http.error.HttpClientError | ParseResult.ParseError,
+    networkListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<Network>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(NetworkSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(NetworkSchema)))
         );
+
 /**
  *
  * @summary Delete unused networks
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; Prune networks created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune networks with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const networkPrune = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    networkPruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    networkPruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<NetworkPruneResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks/prune`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(NetworkPruneResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkPruneResponseSchema))
         );
 
 /**
@@ -6611,63 +6734,70 @@ export const networkPrune = (
  * @param {boolean} [force] Force remove a node from the swarm
  */
 export const nodeDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     force?: boolean
-): Effect.Effect<never, nodeDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, nodeDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Inspect a node
  * @param {string} id The ID or name of the node
  */
 export const nodeInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, nodeInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Node>> =>
+): Effect.Effect<never, nodeInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Node>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(NodeSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(NodeSchema))
     );
+
 /**
  *
  * @summary List nodes
  * @param {string} [filters] Filters to process on the nodes list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;id&#x3D;&lt;node id&gt;&#x60; - &#x60;label&#x3D;&lt;engine label&gt;&#x60; - &#x60;membership&#x3D;&#x60;(&#x60;accepted&#x60;|&#x60;pending&#x60;)&#x60; - &#x60;name&#x3D;&lt;node name&gt;&#x60; - &#x60;node.label&#x3D;&lt;node label&gt;&#x60; - &#x60;role&#x3D;&#x60;(&#x60;manager&#x60;|&#x60;worker&#x60;)&#x60;
  */
 export const nodeList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<never, nodeListError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Array<Node>>> =>
+): Effect.Effect<
+    never,
+    nodeListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Node>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/nodes`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(NodeSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(NodeSchema)))
         );
+
 /**
  *
  * @summary Update a node
@@ -6676,13 +6806,13 @@ export const nodeList = (
  * @param {NodeSpec} [body]
  */
 export const nodeUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     version: number,
     body?: NodeSpec
 ): Effect.Effect<
     never,
-    nodeUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    nodeUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6695,10 +6825,10 @@ export const nodeUpdate = (
         }
 
         const endpoint: string = `${BASE_PATH}/nodes/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -6706,13 +6836,13 @@ export const nodeUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -6721,11 +6851,11 @@ export const nodeUpdate = (
  * @param {string} remote The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const getPluginPrivileges = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     remote: string
 ): Effect.Effect<
     never,
-    getPluginPrivilegesError | Http.error.HttpClientError | ParseResult.ParseError,
+    getPluginPrivilegesError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<PluginPrivilege>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6734,14 +6864,15 @@ export const getPluginPrivileges = (
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/privileges`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
+        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(PluginPrivilegeSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(PluginPrivilegeSchema)))
         );
+
 /**
  *
  * @summary Create a plugin
@@ -6749,12 +6880,12 @@ export const getPluginPrivileges = (
  * @param {Object} [body] Path to tar containing plugin rootfs and manifest
  */
 export const pluginCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     body?: unknown
 ): Effect.Effect<
     never,
-    pluginCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    pluginCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6763,24 +6894,25 @@ export const pluginCreate = (
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/x-tar")))
+        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/x-tar")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
                     ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Remove a plugin
@@ -6788,24 +6920,29 @@ export const pluginCreate = (
  * @param {boolean} [force] Disable the plugin before removing. This may result in issues if the plugin is in use by a container.
  */
 export const pluginDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, pluginDeleteError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Plugin>> =>
+): Effect.Effect<
+    never,
+    pluginDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Plugin>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDeleteError({ message: "Required parameter name was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(PluginSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema))
         );
+
 /**
  *
  * @summary Disable a plugin
@@ -6813,10 +6950,10 @@ export const pluginDelete = (
  * @param {boolean} [force] Force disable a plugin even if still in use.
  */
 export const pluginDisable = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, pluginDisableError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, pluginDisableError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDisableError({ message: "Required parameter name was null or undefined" }));
@@ -6826,13 +6963,14 @@ export const pluginDisable = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Enable a plugin
@@ -6840,10 +6978,10 @@ export const pluginDisable = (
  * @param {number} [timeout] Set the HTTP client timeout (in seconds)
  */
 export const pluginEnable = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     timeout?: number
-): Effect.Effect<never, pluginEnableError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, pluginEnableError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginEnableError({ message: "Required parameter name was null or undefined" }));
@@ -6853,22 +6991,27 @@ export const pluginEnable = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(timeout === undefined ? identity : Http.request.setUrlParam("timeout", String(timeout))))
+        .pipe(Effect.map(timeout === undefined ? identity : NodeHttp.request.setUrlParam("timeout", String(timeout))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Inspect a plugin
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const pluginInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<never, pluginInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Plugin>> =>
+): Effect.Effect<
+    never,
+    pluginInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Plugin>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginInspectError({ message: "Required parameter name was null or undefined" }));
@@ -6878,35 +7021,37 @@ export const pluginInspect = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(PluginSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema))
     );
+
 /**
  * Returns information about installed plugins.
  * @summary List plugins
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the plugin list.  Available filters:  - &#x60;capability&#x3D;&lt;capability name&gt;&#x60; - &#x60;enable&#x3D;&lt;true&gt;|&lt;false&gt;&#x60;
  */
 export const pluginList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    pluginListError | Http.error.HttpClientError | ParseResult.ParseError,
+    pluginListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<Plugin>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/plugins`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(PluginSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(PluginSchema)))
         );
+
 /**
  * Pulls and installs a plugin. After the plugin is installed, it can be enabled using the [`POST /plugins/{name}/enable` endpoint](#operation/PostPluginsEnable).
  * @summary Install a plugin
@@ -6916,14 +7061,14 @@ export const pluginList = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration to use when pulling a plugin from a registry.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const pluginPull = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     remote: string,
     body?: Array<PluginPrivilege>,
     name?: string,
     X_Registry_Auth?: string
 ): Effect.Effect<
     never,
-    pluginPullError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    pluginPullError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -6932,12 +7077,12 @@ export const pluginPull = (
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/pull`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
-        .pipe(Effect.map(name === undefined ? identity : Http.request.setUrlParam("name", String(name))))
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
+        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -6945,23 +7090,24 @@ export const pluginPull = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  * Push a plugin to the registry.
  * @summary Push a plugin
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const pluginPush = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<never, pluginPushError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, pluginPushError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginPushError({ message: "Required parameter name was null or undefined" }));
@@ -6971,11 +7117,12 @@ export const pluginPush = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  *
  * @summary Configure a plugin
@@ -6983,12 +7130,12 @@ export const pluginPush = (
  * @param {Array<string>} [body]
  */
 export const pluginSet = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     body?: Array<string>
 ): Effect.Effect<
     never,
-    pluginSetError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    pluginSetError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7000,9 +7147,9 @@ export const pluginSet = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7010,14 +7157,15 @@ export const pluginSet = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Upgrade a plugin
@@ -7027,14 +7175,14 @@ export const pluginSet = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration to use when pulling a plugin from a registry.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const pluginUpgrade = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     remote: string,
     body?: Array<PluginPrivilege>,
     X_Registry_Auth?: string
 ): Effect.Effect<
     never,
-    pluginUpgradeError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    pluginUpgradeError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7050,11 +7198,11 @@ export const pluginUpgrade = (
             `{${"name"}}`,
             encodeURIComponent(String(name))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(remote === undefined ? identity : Http.request.setUrlParam("remote", String(remote))))
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7062,13 +7210,13 @@ export const pluginUpgrade = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -7077,18 +7225,18 @@ export const pluginUpgrade = (
  * @param {SecretsCreateBody} [body]
  */
 export const secretCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: SecretsCreateBody
 ): Effect.Effect<
     never,
-    secretCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    secretCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<IdResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7096,79 +7244,87 @@ export const secretCreate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(IdResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
         );
+
 /**
  *
  * @summary Delete a secret
  * @param {string} id ID of the secret
  */
 export const secretDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, secretDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, secretDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  *
  * @summary Inspect a secret
  * @param {string} id ID of the secret
  */
 export const secretInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, secretInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Secret>> =>
+): Effect.Effect<
+    never,
+    secretInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Secret>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(SecretSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(SecretSchema))
     );
+
 /**
  *
  * @summary List secrets
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the secrets list.  Available filters:  - &#x60;id&#x3D;&lt;secret id&gt;&#x60; - &#x60;label&#x3D;&lt;key&gt; or label&#x3D;&lt;key&gt;&#x3D;value&#x60; - &#x60;name&#x3D;&lt;secret name&gt;&#x60; - &#x60;names&#x3D;&lt;secret name&gt;&#x60;
  */
 export const secretList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    secretListError | Http.error.HttpClientError | ParseResult.ParseError,
+    secretListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<Secret>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(SecretSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(SecretSchema)))
         );
+
 /**
 *
 * @summary Update a Secret
@@ -7180,13 +7336,13 @@ can be updated. All other fields must remain unchanged from the
 
 */
 export const secretUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     version: number,
     body?: SecretSpec
 ): Effect.Effect<
     never,
-    secretUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    secretUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7202,10 +7358,10 @@ export const secretUpdate = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7213,13 +7369,13 @@ export const secretUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -7229,12 +7385,12 @@ export const secretUpdate = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration for pulling from private registries.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const serviceCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: ServicesCreateBody,
     X_Registry_Auth?: string
 ): Effect.Effect<
     never,
-    serviceCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    serviceCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<ServiceCreateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7243,10 +7399,10 @@ export const serviceCreate = (
         }
 
         const endpoint: string = `${BASE_PATH}/services/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7254,35 +7410,37 @@ export const serviceCreate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ServiceCreateResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceCreateResponseSchema))
         );
+
 /**
  *
  * @summary Delete a service
  * @param {string} id ID or name of service.
  */
 export const serviceDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, serviceDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, serviceDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
+
 /**
  *
  * @summary Inspect a service
@@ -7290,30 +7448,35 @@ export const serviceDelete = (
  * @param {boolean} [insertDefaults] Fill empty fields with default values.
  */
 export const serviceInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     insertDefaults?: boolean
-): Effect.Effect<never, serviceInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Service>> =>
+): Effect.Effect<
+    never,
+    serviceInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Service>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
         .pipe(
             Effect.map(
                 insertDefaults === undefined
                     ? identity
-                    : Http.request.setUrlParam("insertDefaults", String(insertDefaults))
+                    : NodeHttp.request.setUrlParam("insertDefaults", String(insertDefaults))
             )
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ServiceSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceSchema))
         );
+
 /**
  *
  * @summary List services
@@ -7321,25 +7484,26 @@ export const serviceInspect = (
  * @param {boolean} [status] Include service status, with count of running and desired tasks.
  */
 export const serviceList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string,
     status?: boolean
 ): Effect.Effect<
     never,
-    serviceListError | Http.error.HttpClientError | ParseResult.ParseError,
+    serviceListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<Array<Service>>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/services`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
-        .pipe(Effect.map(status === undefined ? identity : Http.request.setUrlParam("status", String(status))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(status === undefined ? identity : NodeHttp.request.setUrlParam("status", String(status))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(ServiceSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ServiceSchema)))
         );
+
 /**
  * Get `stdout` and `stderr` logs from a service. See also [`/containers/{id}/logs`](#operation/ContainerLogs).  **Note**: This endpoint works only for services with the `local`, `json-file` or `journald` logging drivers.
  * @summary Get service logs
@@ -7353,7 +7517,7 @@ export const serviceList = (
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const serviceLogs = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -7362,30 +7526,33 @@ export const serviceLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, serviceLogsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, serviceLogsError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceLogsError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/services/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(details === undefined ? identity : Http.request.setUrlParam("details", String(details))))
-        .pipe(Effect.map(follow === undefined ? identity : Http.request.setUrlParam("follow", String(follow))))
-        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
-        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
+        .pipe(Effect.map(details === undefined ? identity : NodeHttp.request.setUrlParam("details", String(details))))
+        .pipe(Effect.map(follow === undefined ? identity : NodeHttp.request.setUrlParam("follow", String(follow))))
+        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
         .pipe(
-            Effect.map(timestamps === undefined ? identity : Http.request.setUrlParam("timestamps", String(timestamps)))
+            Effect.map(
+                timestamps === undefined ? identity : NodeHttp.request.setUrlParam("timestamps", String(timestamps))
+            )
         )
-        .pipe(Effect.map(tail === undefined ? identity : Http.request.setUrlParam("tail", String(tail))))
+        .pipe(Effect.map(tail === undefined ? identity : NodeHttp.request.setUrlParam("tail", String(tail))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
+
 /**
  *
  * @summary Update a service
@@ -7397,7 +7564,7 @@ export const serviceLogs = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration for pulling from private registries.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const serviceUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: IdUpdateBody1,
     id: string,
     version: number,
@@ -7406,7 +7573,7 @@ export const serviceUpdate = (
     X_Registry_Auth?: string
 ): Effect.Effect<
     never,
-    serviceUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    serviceUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<ServiceUpdateResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7426,19 +7593,21 @@ export const serviceUpdate = (
             `{${"id"}}`,
             encodeURIComponent(String(id))
         );
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
+        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
         .pipe(
             Effect.map(
                 registryAuthFrom === undefined
                     ? identity
-                    : Http.request.setUrlParam("registryAuthFrom", String(registryAuthFrom))
+                    : NodeHttp.request.setUrlParam("registryAuthFrom", String(registryAuthFrom))
             )
         )
-        .pipe(Effect.map(rollback === undefined ? identity : Http.request.setUrlParam("rollback", String(rollback))))
-        .pipe(Effect.map(Http.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(
+            Effect.map(rollback === undefined ? identity : NodeHttp.request.setUrlParam("rollback", String(rollback)))
+        )
+        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7446,14 +7615,14 @@ export const serviceUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(ServiceUpdateResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceUpdateResponseSchema))
         );
 
 /**
@@ -7461,14 +7630,14 @@ export const serviceUpdate = (
  * @summary Initialize interactive session
  */
 export const session = (
-    dockerConnectionOptions: DockerConnectionOptions
-): Effect.Effect<never, sessionError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+    mobyConnectionOptions: MobyConnectionOptions
+): Effect.Effect<never, sessionError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/session`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
     );
 
 /**
@@ -7477,11 +7646,11 @@ export const session = (
  * @param {SwarmInitRequest} body
  */
 export const swarmInit = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmInitRequest
 ): Effect.Effect<
     never,
-    swarmInitError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    swarmInitError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<string>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7490,9 +7659,9 @@ export const swarmInit = (
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/init`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7500,41 +7669,43 @@ export const swarmInit = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(stringSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema))
         );
+
 /**
  *
  * @summary Inspect swarm
  */
 export const swarmInspect = (
-    dockerConnectionOptions: DockerConnectionOptions
-): Effect.Effect<never, swarmInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Swarm>> =>
+    mobyConnectionOptions: MobyConnectionOptions
+): Effect.Effect<never, swarmInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Swarm>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(SwarmSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(SwarmSchema))
     );
+
 /**
  *
  * @summary Join an existing swarm
  * @param {SwarmJoinRequest} body
  */
 export const swarmJoin = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmJoinRequest
 ): Effect.Effect<
     never,
-    swarmJoinError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    swarmJoinError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7543,9 +7714,9 @@ export const swarmJoin = (
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/join`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7553,43 +7724,45 @@ export const swarmJoin = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Leave a swarm
  * @param {boolean} [force] Force leave swarm, even if this is the last manager or that it will break the cluster.
  */
 export const swarmLeave = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     force?: boolean
-): Effect.Effect<never, swarmLeaveError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, swarmLeaveError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/leave`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Unlock a locked manager
  * @param {SwarmUnlockRequest} body
  */
 export const swarmUnlock = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmUnlockRequest
 ): Effect.Effect<
     never,
-    swarmUnlockError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    swarmUnlockError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7598,9 +7771,9 @@ export const swarmUnlock = (
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/unlock`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7608,33 +7781,35 @@ export const swarmUnlock = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Get the unlock key
  */
 export const swarmUnlockkey = (
-    dockerConnectionOptions: DockerConnectionOptions
+    mobyConnectionOptions: MobyConnectionOptions
 ): Effect.Effect<
     never,
-    swarmUnlockkeyError | Http.error.HttpClientError | ParseResult.ParseError,
+    swarmUnlockkeyError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<UnlockKeyResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/unlockkey`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(UnlockKeyResponseSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(UnlockKeyResponseSchema))
     );
+
 /**
  *
  * @summary Update a swarm
@@ -7645,7 +7820,7 @@ export const swarmUnlockkey = (
  * @param {boolean} [rotateManagerUnlockKey] Rotate the manager unlock key.
  */
 export const swarmUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmSpec,
     version: number,
     rotateWorkerToken?: boolean,
@@ -7653,7 +7828,7 @@ export const swarmUpdate = (
     rotateManagerUnlockKey?: boolean
 ): Effect.Effect<
     never,
-    swarmUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    swarmUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7666,31 +7841,31 @@ export const swarmUpdate = (
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/update`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
+        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
         .pipe(
             Effect.map(
                 rotateWorkerToken === undefined
                     ? identity
-                    : Http.request.setUrlParam("rotateWorkerToken", String(rotateWorkerToken))
+                    : NodeHttp.request.setUrlParam("rotateWorkerToken", String(rotateWorkerToken))
             )
         )
         .pipe(
             Effect.map(
                 rotateManagerToken === undefined
                     ? identity
-                    : Http.request.setUrlParam("rotateManagerToken", String(rotateManagerToken))
+                    : NodeHttp.request.setUrlParam("rotateManagerToken", String(rotateManagerToken))
             )
         )
         .pipe(
             Effect.map(
                 rotateManagerUnlockKey === undefined
                     ? identity
-                    : Http.request.setUrlParam("rotateManagerUnlockKey", String(rotateManagerUnlockKey))
+                    : NodeHttp.request.setUrlParam("rotateManagerUnlockKey", String(rotateManagerUnlockKey))
             )
         )
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7698,13 +7873,13 @@ export const swarmUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
 /**
@@ -7713,18 +7888,18 @@ export const swarmUpdate = (
  * @param {AuthConfig} [body] Authentication to check
  */
 export const systemAuth = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body?: AuthConfig
 ): Effect.Effect<
     never,
-    systemAuthError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    systemAuthError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<SystemAuthResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/auth`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7732,38 +7907,40 @@ export const systemAuth = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(SystemAuthResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemAuthResponseSchema))
         );
+
 /**
  *
  * @summary Get data usage information
  * @param {Array<string>} [type] Object types, for which to compute and return data.
  */
 export const systemDataUsage = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     type?: Array<string>
 ): Effect.Effect<
     never,
-    systemDataUsageError | Http.error.HttpClientError | ParseResult.ParseError,
+    systemDataUsageError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<SystemDataUsageResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/system/df`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setUrlParam("type", String(type))))
+        .pipe(Effect.map(NodeHttp.request.setUrlParam("type", String(type))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(SystemDataUsageResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemDataUsageResponseSchema))
         );
+
 /**
  * Stream real-time events from the server.  Various objects within Docker report events when something happens to them.  Containers report these events: `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`, `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`, `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`, `start`, `stop`, `top`, `unpause`, `update`, and `prune`  Images report these events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`, `untag`, and `prune`  Volumes report these events: `create`, `mount`, `unmount`, `destroy`, and `prune`  Networks report these events: `create`, `connect`, `disconnect`, `destroy`, `update`, `remove`, and `prune`  The Docker daemon reports these events: `reload`  Services report these events: `create`, `update`, and `remove`  Nodes report these events: `create`, `update`, and `remove`  Secrets report these events: `create`, `update`, and `remove`  Configs report these events: `create`, `update`, and `remove`  The Builder reports `prune` events
  * @summary Monitor events
@@ -7772,90 +7949,102 @@ export const systemDataUsage = (
  * @param {string} [filters] A JSON encoded value of filters (a &#x60;map[string][]string&#x60;) to process on the event list. Available filters:  - &#x60;config&#x3D;&lt;string&gt;&#x60; config name or ID - &#x60;container&#x3D;&lt;string&gt;&#x60; container name or ID - &#x60;daemon&#x3D;&lt;string&gt;&#x60; daemon name or ID - &#x60;event&#x3D;&lt;string&gt;&#x60; event type - &#x60;image&#x3D;&lt;string&gt;&#x60; image name or ID - &#x60;label&#x3D;&lt;string&gt;&#x60; image or container label - &#x60;network&#x3D;&lt;string&gt;&#x60; network name or ID - &#x60;node&#x3D;&lt;string&gt;&#x60; node ID - &#x60;plugin&#x60;&#x3D;&lt;string&gt; plugin name or ID - &#x60;scope&#x60;&#x3D;&lt;string&gt; local or swarm - &#x60;secret&#x3D;&lt;string&gt;&#x60; secret name or ID - &#x60;service&#x3D;&lt;string&gt;&#x60; service name or ID - &#x60;type&#x3D;&lt;string&gt;&#x60; object to filter by, one of &#x60;container&#x60;, &#x60;image&#x60;, &#x60;volume&#x60;, &#x60;network&#x60;, &#x60;daemon&#x60;, &#x60;plugin&#x60;, &#x60;node&#x60;, &#x60;service&#x60;, &#x60;secret&#x60; or &#x60;config&#x60; - &#x60;volume&#x3D;&lt;string&gt;&#x60; volume name
  */
 export const systemEvents = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     since?: string,
     until?: string,
     filters?: string
 ): Effect.Effect<
     never,
-    systemEventsError | Http.error.HttpClientError | ParseResult.ParseError,
+    systemEventsError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<EventMessage>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/events`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
-        .pipe(Effect.map(until === undefined ? identity : Http.request.setUrlParam("until", String(until))))
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
+        .pipe(Effect.map(until === undefined ? identity : NodeHttp.request.setUrlParam("until", String(until))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(EventMessageSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(EventMessageSchema))
         );
+
 /**
  *
  * @summary Get system information
  */
 export const systemInfo = (
-    dockerConnectionOptions: DockerConnectionOptions
-): Effect.Effect<never, systemInfoError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<SystemInfo>> =>
+    mobyConnectionOptions: MobyConnectionOptions
+): Effect.Effect<
+    never,
+    systemInfoError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<SystemInfo>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/info`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(SystemInfoSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemInfoSchema))
     );
+
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
 export const systemPing = (
-    dockerConnectionOptions: DockerConnectionOptions
-): Effect.Effect<never, systemPingError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<string>> =>
+    mobyConnectionOptions: MobyConnectionOptions
+): Effect.Effect<never, systemPingError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(stringSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema))
     );
+
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
 export const systemPingHead = (
-    dockerConnectionOptions: DockerConnectionOptions
-): Effect.Effect<never, systemPingHeadError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<string>> =>
+    mobyConnectionOptions: MobyConnectionOptions
+): Effect.Effect<
+    never,
+    systemPingHeadError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<string>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
-        return Http.request.make("HEAD")(endpoint);
+        return NodeHttp.request.make("HEAD")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(stringSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema))
     );
+
 /**
  * Returns the version of Docker that is running and various information about the system that Docker is running on.
  * @summary Get version
  */
 export const systemVersion = (
-    dockerConnectionOptions: DockerConnectionOptions
+    mobyConnectionOptions: MobyConnectionOptions
 ): Effect.Effect<
     never,
-    systemVersionError | Http.error.HttpClientError | ParseResult.ParseError,
+    systemVersionError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<SystemVersion>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/version`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(SystemVersionSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemVersionSchema))
     );
 
 /**
@@ -7864,40 +8053,46 @@ export const systemVersion = (
  * @param {string} id ID of the task
  */
 export const taskInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, taskInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Task>> =>
+): Effect.Effect<never, taskInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Task>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/tasks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(TaskSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(TaskSchema))
     );
+
 /**
  *
  * @summary List tasks
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the tasks list.  Available filters:  - &#x60;desired-state&#x3D;(running | shutdown | accepted)&#x60; - &#x60;id&#x3D;&lt;task id&gt;&#x60; - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; - &#x60;name&#x3D;&lt;task name&gt;&#x60; - &#x60;node&#x3D;&lt;node id or name&gt;&#x60; - &#x60;service&#x3D;&lt;service name&gt;&#x60;
  */
 export const taskList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<never, taskListError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Array<Task>>> =>
+): Effect.Effect<
+    never,
+    taskListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Array<Task>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/tasks`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(arraySchema(TaskSchema)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(TaskSchema)))
         );
+
 /**
  * Get `stdout` and `stderr` logs from a task. See also [`/containers/{id}/logs`](#operation/ContainerLogs).  **Note**: This endpoint works only for services with the `local`, `json-file` or `journald` logging drivers.
  * @summary Get task logs
@@ -7911,7 +8106,7 @@ export const taskList = (
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const taskLogs = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -7920,27 +8115,29 @@ export const taskLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, taskLogsError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<never, taskLogsError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskLogsError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/tasks/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(details === undefined ? identity : Http.request.setUrlParam("details", String(details))))
-        .pipe(Effect.map(follow === undefined ? identity : Http.request.setUrlParam("follow", String(follow))))
-        .pipe(Effect.map(stdout === undefined ? identity : Http.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : Http.request.setUrlParam("stderr", String(stderr))))
-        .pipe(Effect.map(since === undefined ? identity : Http.request.setUrlParam("since", String(since))))
+        .pipe(Effect.map(details === undefined ? identity : NodeHttp.request.setUrlParam("details", String(details))))
+        .pipe(Effect.map(follow === undefined ? identity : NodeHttp.request.setUrlParam("follow", String(follow))))
+        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
+        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
+        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
         .pipe(
-            Effect.map(timestamps === undefined ? identity : Http.request.setUrlParam("timestamps", String(timestamps)))
+            Effect.map(
+                timestamps === undefined ? identity : NodeHttp.request.setUrlParam("timestamps", String(timestamps))
+            )
         )
-        .pipe(Effect.map(tail === undefined ? identity : Http.request.setUrlParam("tail", String(tail))))
+        .pipe(Effect.map(tail === undefined ? identity : NodeHttp.request.setUrlParam("tail", String(tail))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
             Effect.flatMap((clientResponse) => clientResponse.text),
             Effect.map((responseText) => new Blob([responseText]))
         );
@@ -7951,11 +8148,11 @@ export const taskLogs = (
  * @param {VolumeCreateOptions} body Volume configuration
  */
 export const volumeCreate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     body: VolumeCreateOptions
 ): Effect.Effect<
     never,
-    volumeCreateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    volumeCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     Readonly<Volume>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7964,9 +8161,9 @@ export const volumeCreate = (
         }
 
         const endpoint: string = `${BASE_PATH}/volumes/create`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -7974,15 +8171,16 @@ export const volumeCreate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(VolumeSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema))
         );
+
 /**
  * Instruct the driver to remove the volume.
  * @summary Remove a volume
@@ -7990,90 +8188,98 @@ export const volumeCreate = (
  * @param {boolean} [force] Force the removal of the volume
  */
 export const volumeDelete = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, volumeDeleteError | Http.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<never, volumeDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeDeleteError({ message: "Required parameter name was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return Http.request.make("DELETE")(endpoint);
+        return NodeHttp.request.make("DELETE")(endpoint);
     })
-        .pipe(Effect.map(force === undefined ? identity : Http.request.setUrlParam("force", String(force))))
+        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
+
 /**
  *
  * @summary Inspect a volume
  * @param {string} name Volume name or ID
  */
 export const volumeInspect = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<never, volumeInspectError | Http.error.HttpClientError | ParseResult.ParseError, Readonly<Volume>> =>
+): Effect.Effect<
+    never,
+    volumeInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+    Readonly<Volume>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeInspectError({ message: "Required parameter name was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     }).pipe(
-        Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-        Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-        Effect.flatMap(Http.response.schemaBodyJson(VolumeSchema))
+        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+        Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema))
     );
+
 /**
  *
  * @summary List volumes
  * @param {string} [filters] JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the volumes list. Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), returns all    volumes that are not in use by a container. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), only volumes that are in use by one or more    containers are returned. - &#x60;driver&#x3D;&lt;volume-driver-name&gt;&#x60; Matches volumes based on their driver. - &#x60;label&#x3D;&lt;key&gt;&#x60; or &#x60;label&#x3D;&lt;key&gt;:&lt;value&gt;&#x60; Matches volumes based on    the presence of a &#x60;label&#x60; alone or a &#x60;label&#x60; and a value. - &#x60;name&#x3D;&lt;volume-name&gt;&#x60; Matches all or part of a volume name.
  */
 export const volumeList = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    volumeListError | Http.error.HttpClientError | ParseResult.ParseError,
+    volumeListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<VolumeListResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes`;
-        return Http.request.make("GET")(endpoint);
+        return NodeHttp.request.make("GET")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(VolumeListResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeListResponseSchema))
         );
+
 /**
  *
  * @summary Delete unused volumes
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune volumes with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels. - &#x60;all&#x60; (&#x60;all&#x3D;true&#x60;) - Consider all (local) volumes for pruning and not just anonymous volumes.
  */
 export const volumePrune = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
 ): Effect.Effect<
     never,
-    volumePruneError | Http.error.HttpClientError | ParseResult.ParseError,
+    volumePruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
     Readonly<VolumePruneResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes/prune`;
-        return Http.request.make("POST")(endpoint);
+        return NodeHttp.request.make("POST")(endpoint);
     })
-        .pipe(Effect.map(filters === undefined ? identity : Http.request.setUrlParam("filters", String(filters))))
+        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions))),
-            Effect.flatMap(Http.response.schemaBodyJson(VolumePruneResponseSchema))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumePruneResponseSchema))
         );
+
 /**
 *
 * @summary \"Update a volume. Valid only for Swarm cluster volumes\"
@@ -8084,13 +8290,13 @@ change. All other fields must remain unchanged.
 
 */
 export const volumeUpdate = (
-    dockerConnectionOptions: DockerConnectionOptions,
+    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     version: number,
     body?: VolumesNameBody
 ): Effect.Effect<
     never,
-    volumeUpdateError | Http.error.HttpClientError | Http.body.BodyError | ParseResult.ParseError,
+    volumeUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
     void
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -8103,10 +8309,10 @@ export const volumeUpdate = (
         }
 
         const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return Http.request.make("PUT")(endpoint);
+        return NodeHttp.request.make("PUT")(endpoint);
     })
-        .pipe(Effect.map(version === undefined ? identity : Http.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
+        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
         .pipe(
             Effect.flatMap((clientRequest) => {
                 const needsSerialization =
@@ -8114,686 +8320,685 @@ export const volumeUpdate = (
                     clientRequest.headers["Content-Type"] === "application/json";
 
                 return needsSerialization
-                    ? Http.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(Http.request.textBody(clientRequest, (body as unknown as string) || ""));
+                    ? NodeHttp.request.jsonBody(clientRequest, body)
+                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
             })
         )
         .pipe(
-            Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-            Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
+            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
         );
 
-export interface IDockerService {
+export interface IMobyService {
     readonly configCreate: (
-        ...args: Parameters<typeof configCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof configCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof configCreate>;
     readonly configDelete: (
-        ...args: Parameters<typeof configDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof configDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof configDelete>;
     readonly configInspect: (
-        ...args: Parameters<typeof configInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof configInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof configInspect>;
     readonly configList: (
-        ...args: Parameters<typeof configList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof configList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof configList>;
     readonly configUpdate: (
-        ...args: Parameters<typeof configUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof configUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof configUpdate>;
     readonly containerArchive: (
-        ...args: Parameters<typeof containerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerArchive>;
     readonly containerArchiveInfo: (
-        ...args: Parameters<typeof containerArchiveInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerArchiveInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerArchiveInfo>;
     readonly containerAttach: (
-        ...args: Parameters<typeof containerAttach> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerAttach> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerAttach>;
     readonly containerAttachWebsocket: (
-        ...args: Parameters<typeof containerAttachWebsocket> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerAttachWebsocket> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerAttachWebsocket>;
     readonly containerChanges: (
-        ...args: Parameters<typeof containerChanges> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerChanges> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerChanges>;
     readonly containerCreate: (
-        ...args: Parameters<typeof containerCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerCreate>;
     readonly containerDelete: (
-        ...args: Parameters<typeof containerDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerDelete>;
     readonly containerExport: (
-        ...args: Parameters<typeof containerExport> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerExport> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerExport>;
     readonly containerInspect: (
-        ...args: Parameters<typeof containerInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerInspect>;
     readonly containerKill: (
-        ...args: Parameters<typeof containerKill> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerKill> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerKill>;
     readonly containerList: (
-        ...args: Parameters<typeof containerList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerList>;
     readonly containerLogs: (
-        ...args: Parameters<typeof containerLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerLogs>;
     readonly containerPause: (
-        ...args: Parameters<typeof containerPause> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerPause> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerPause>;
     readonly containerPrune: (
-        ...args: Parameters<typeof containerPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerPrune>;
     readonly containerRename: (
-        ...args: Parameters<typeof containerRename> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerRename> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerRename>;
     readonly containerResize: (
-        ...args: Parameters<typeof containerResize> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerResize> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerResize>;
     readonly containerRestart: (
-        ...args: Parameters<typeof containerRestart> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerRestart> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerRestart>;
     readonly containerStart: (
-        ...args: Parameters<typeof containerStart> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerStart> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerStart>;
     readonly containerStats: (
-        ...args: Parameters<typeof containerStats> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerStats> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerStats>;
     readonly containerStop: (
-        ...args: Parameters<typeof containerStop> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerStop> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerStop>;
     readonly containerTop: (
-        ...args: Parameters<typeof containerTop> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerTop> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerTop>;
     readonly containerUnpause: (
-        ...args: Parameters<typeof containerUnpause> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerUnpause> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerUnpause>;
     readonly containerUpdate: (
-        ...args: Parameters<typeof containerUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerUpdate>;
     readonly containerWait: (
-        ...args: Parameters<typeof containerWait> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerWait> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerWait>;
     readonly putContainerArchive: (
-        ...args: Parameters<typeof putContainerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof putContainerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof putContainerArchive>;
     readonly distributionInspect: (
-        ...args: Parameters<typeof distributionInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof distributionInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof distributionInspect>;
     readonly containerExec: (
-        ...args: Parameters<typeof containerExec> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof containerExec> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof containerExec>;
     readonly execInspect: (
-        ...args: Parameters<typeof execInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof execInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof execInspect>;
     readonly execResize: (
-        ...args: Parameters<typeof execResize> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof execResize> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof execResize>;
     readonly execStart: (
-        ...args: Parameters<typeof execStart> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof execStart> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof execStart>;
     readonly buildPrune: (
-        ...args: Parameters<typeof buildPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof buildPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof buildPrune>;
     readonly imageBuild: (
-        ...args: Parameters<typeof imageBuild> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageBuild> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageBuild>;
     readonly imageCommit: (
-        ...args: Parameters<typeof imageCommit> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageCommit> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageCommit>;
     readonly imageCreate: (
-        ...args: Parameters<typeof imageCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageCreate>;
     readonly imageDelete: (
-        ...args: Parameters<typeof imageDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageDelete>;
     readonly imageGet: (
-        ...args: Parameters<typeof imageGet> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageGet> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageGet>;
     readonly imageGetAll: (
-        ...args: Parameters<typeof imageGetAll> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageGetAll> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageGetAll>;
     readonly imageHistory: (
-        ...args: Parameters<typeof imageHistory> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageHistory> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageHistory>;
     readonly imageInspect: (
-        ...args: Parameters<typeof imageInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageInspect>;
     readonly imageList: (
-        ...args: Parameters<typeof imageList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageList>;
     readonly imageLoad: (
-        ...args: Parameters<typeof imageLoad> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageLoad> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageLoad>;
     readonly imagePrune: (
-        ...args: Parameters<typeof imagePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imagePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imagePrune>;
     readonly imagePush: (
-        ...args: Parameters<typeof imagePush> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imagePush> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imagePush>;
     readonly imageSearch: (
-        ...args: Parameters<typeof imageSearch> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageSearch> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageSearch>;
     readonly imageTag: (
-        ...args: Parameters<typeof imageTag> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof imageTag> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof imageTag>;
     readonly networkConnect: (
-        ...args: Parameters<typeof networkConnect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkConnect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkConnect>;
     readonly networkCreate: (
-        ...args: Parameters<typeof networkCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkCreate>;
     readonly networkDelete: (
-        ...args: Parameters<typeof networkDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkDelete>;
     readonly networkDisconnect: (
-        ...args: Parameters<typeof networkDisconnect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkDisconnect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkDisconnect>;
     readonly networkInspect: (
-        ...args: Parameters<typeof networkInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkInspect>;
     readonly networkList: (
-        ...args: Parameters<typeof networkList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkList>;
     readonly networkPrune: (
-        ...args: Parameters<typeof networkPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof networkPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof networkPrune>;
     readonly nodeDelete: (
-        ...args: Parameters<typeof nodeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof nodeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof nodeDelete>;
     readonly nodeInspect: (
-        ...args: Parameters<typeof nodeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof nodeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof nodeInspect>;
     readonly nodeList: (
-        ...args: Parameters<typeof nodeList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof nodeList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof nodeList>;
     readonly nodeUpdate: (
-        ...args: Parameters<typeof nodeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof nodeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof nodeUpdate>;
     readonly getPluginPrivileges: (
-        ...args: Parameters<typeof getPluginPrivileges> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof getPluginPrivileges> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof getPluginPrivileges>;
     readonly pluginCreate: (
-        ...args: Parameters<typeof pluginCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginCreate>;
     readonly pluginDelete: (
-        ...args: Parameters<typeof pluginDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginDelete>;
     readonly pluginDisable: (
-        ...args: Parameters<typeof pluginDisable> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginDisable> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginDisable>;
     readonly pluginEnable: (
-        ...args: Parameters<typeof pluginEnable> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginEnable> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginEnable>;
     readonly pluginInspect: (
-        ...args: Parameters<typeof pluginInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginInspect>;
     readonly pluginList: (
-        ...args: Parameters<typeof pluginList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginList>;
     readonly pluginPull: (
-        ...args: Parameters<typeof pluginPull> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginPull> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginPull>;
     readonly pluginPush: (
-        ...args: Parameters<typeof pluginPush> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginPush> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginPush>;
     readonly pluginSet: (
-        ...args: Parameters<typeof pluginSet> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginSet> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginSet>;
     readonly pluginUpgrade: (
-        ...args: Parameters<typeof pluginUpgrade> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof pluginUpgrade> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof pluginUpgrade>;
     readonly secretCreate: (
-        ...args: Parameters<typeof secretCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof secretCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof secretCreate>;
     readonly secretDelete: (
-        ...args: Parameters<typeof secretDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof secretDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof secretDelete>;
     readonly secretInspect: (
-        ...args: Parameters<typeof secretInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof secretInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof secretInspect>;
     readonly secretList: (
-        ...args: Parameters<typeof secretList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof secretList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof secretList>;
     readonly secretUpdate: (
-        ...args: Parameters<typeof secretUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof secretUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof secretUpdate>;
     readonly serviceCreate: (
-        ...args: Parameters<typeof serviceCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof serviceCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof serviceCreate>;
     readonly serviceDelete: (
-        ...args: Parameters<typeof serviceDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof serviceDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof serviceDelete>;
     readonly serviceInspect: (
-        ...args: Parameters<typeof serviceInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof serviceInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof serviceInspect>;
     readonly serviceList: (
-        ...args: Parameters<typeof serviceList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof serviceList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof serviceList>;
     readonly serviceLogs: (
-        ...args: Parameters<typeof serviceLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof serviceLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof serviceLogs>;
     readonly serviceUpdate: (
-        ...args: Parameters<typeof serviceUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof serviceUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof serviceUpdate>;
     readonly session: (
-        ...args: Parameters<typeof session> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof session> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof session>;
     readonly swarmInit: (
-        ...args: Parameters<typeof swarmInit> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmInit> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmInit>;
     readonly swarmInspect: (
-        ...args: Parameters<typeof swarmInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmInspect>;
     readonly swarmJoin: (
-        ...args: Parameters<typeof swarmJoin> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmJoin> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmJoin>;
     readonly swarmLeave: (
-        ...args: Parameters<typeof swarmLeave> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmLeave> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmLeave>;
     readonly swarmUnlock: (
-        ...args: Parameters<typeof swarmUnlock> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmUnlock> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmUnlock>;
     readonly swarmUnlockkey: (
-        ...args: Parameters<typeof swarmUnlockkey> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmUnlockkey> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmUnlockkey>;
     readonly swarmUpdate: (
-        ...args: Parameters<typeof swarmUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof swarmUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof swarmUpdate>;
     readonly systemAuth: (
-        ...args: Parameters<typeof systemAuth> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemAuth> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemAuth>;
     readonly systemDataUsage: (
-        ...args: Parameters<typeof systemDataUsage> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemDataUsage> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemDataUsage>;
     readonly systemEvents: (
-        ...args: Parameters<typeof systemEvents> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemEvents> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemEvents>;
     readonly systemInfo: (
-        ...args: Parameters<typeof systemInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemInfo>;
     readonly systemPing: (
-        ...args: Parameters<typeof systemPing> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemPing> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemPing>;
     readonly systemPingHead: (
-        ...args: Parameters<typeof systemPingHead> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemPingHead> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemPingHead>;
     readonly systemVersion: (
-        ...args: Parameters<typeof systemVersion> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof systemVersion> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof systemVersion>;
     readonly taskInspect: (
-        ...args: Parameters<typeof taskInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof taskInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof taskInspect>;
     readonly taskList: (
-        ...args: Parameters<typeof taskList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof taskList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof taskList>;
     readonly taskLogs: (
-        ...args: Parameters<typeof taskLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof taskLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof taskLogs>;
     readonly volumeCreate: (
-        ...args: Parameters<typeof volumeCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof volumeCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof volumeCreate>;
     readonly volumeDelete: (
-        ...args: Parameters<typeof volumeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof volumeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof volumeDelete>;
     readonly volumeInspect: (
-        ...args: Parameters<typeof volumeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof volumeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof volumeInspect>;
     readonly volumeList: (
-        ...args: Parameters<typeof volumeList> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof volumeList> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof volumeList>;
     readonly volumePrune: (
-        ...args: Parameters<typeof volumePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof volumePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof volumePrune>;
     readonly volumeUpdate: (
-        ...args: Parameters<typeof volumeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
+        ...args: Parameters<typeof volumeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
     ) => ReturnType<typeof volumeUpdate>;
 }
 
-export const DefaultDockerService: Context.Tag<IDockerService, IDockerService> =
-    Context.Tag<IDockerService>("defaultDockerService");
+export const DefaultMobyClient: Context.Tag<IMobyService, IMobyService> = Context.Tag<IMobyService>(
+    Symbol.for("@the-moby-effect/DefaultMobyClient")
+);
 
-export const makeDockerService = (
-    dockerConnectionOptions?: DockerConnectionOptions | undefined,
-    contextTag: Context.Tag<IDockerService, IDockerService> = DefaultDockerService
-): Layer.Layer<never, never, IDockerService> => {
-    const localDockerConnectionOptions =
-        dockerConnectionOptions ||
+const instanciatedClientTags = new Set<Context.Tag<IMobyService, IMobyService>>();
+export class clientAlreadyInstaniated extends Data.TaggedError("MobyClientAlreadyInstaniated")<{ message: string }> {}
+
+export const makeMobyService = (
+    mobyConnectionOptions?: MobyConnectionOptions | undefined,
+    contextTag: Context.Tag<IMobyService, IMobyService> = DefaultMobyClient
+): Layer.Layer<never, clientAlreadyInstaniated, IMobyService> => {
+    const localmobyConnectionOptions =
+        mobyConnectionOptions ||
         ({
             protocol: "unix",
             socketPath: "/var/run/docker.sock",
-        } as DockerConnectionOptions);
+        } as MobyConnectionOptions);
+
+    if (instanciatedClientTags.has(contextTag)) {
+        return Layer.fail(
+            new clientAlreadyInstaniated({
+                message: `A client has already been instanciated for tag ${contextTag.identifier}`,
+            })
+        );
+    }
 
     return Layer.succeed(
         contextTag,
         contextTag.of({
             configCreate: (
-                ...args: Parameters<typeof configCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof configCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => configCreate(localmobyConnectionOptions, ...args),
             configDelete: (
-                ...args: Parameters<typeof configDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof configDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => configDelete(localmobyConnectionOptions, ...args),
             configInspect: (
-                ...args: Parameters<typeof configInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof configInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => configInspect(localmobyConnectionOptions, ...args),
             configList: (
-                ...args: Parameters<typeof configList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof configList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => configList(localmobyConnectionOptions, ...args),
             configUpdate: (
-                ...args: Parameters<typeof configUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => configUpdate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof configUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => configUpdate(localmobyConnectionOptions, ...args),
             containerArchive: (
-                ...args: Parameters<typeof containerArchive> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerArchive(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerArchive(localmobyConnectionOptions, ...args),
             containerArchiveInfo: (
-                ...args: Parameters<typeof containerArchiveInfo> extends [DockerConnectionOptions, ...infer U]
-                    ? U
-                    : never
-            ) => containerArchiveInfo(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerArchiveInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerArchiveInfo(localmobyConnectionOptions, ...args),
             containerAttach: (
-                ...args: Parameters<typeof containerAttach> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerAttach(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerAttach> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerAttach(localmobyConnectionOptions, ...args),
             containerAttachWebsocket: (
-                ...args: Parameters<typeof containerAttachWebsocket> extends [DockerConnectionOptions, ...infer U]
+                ...args: Parameters<typeof containerAttachWebsocket> extends [MobyConnectionOptions, ...infer U]
                     ? U
                     : never
-            ) => containerAttachWebsocket(localDockerConnectionOptions, ...args),
+            ) => containerAttachWebsocket(localmobyConnectionOptions, ...args),
             containerChanges: (
-                ...args: Parameters<typeof containerChanges> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerChanges(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerChanges> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerChanges(localmobyConnectionOptions, ...args),
             containerCreate: (
-                ...args: Parameters<typeof containerCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerCreate(localmobyConnectionOptions, ...args),
             containerDelete: (
-                ...args: Parameters<typeof containerDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerDelete(localmobyConnectionOptions, ...args),
             containerExport: (
-                ...args: Parameters<typeof containerExport> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerExport(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerExport> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerExport(localmobyConnectionOptions, ...args),
             containerInspect: (
-                ...args: Parameters<typeof containerInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerInspect(localmobyConnectionOptions, ...args),
             containerKill: (
-                ...args: Parameters<typeof containerKill> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerKill(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerKill> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerKill(localmobyConnectionOptions, ...args),
             containerList: (
-                ...args: Parameters<typeof containerList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerList(localmobyConnectionOptions, ...args),
             containerLogs: (
-                ...args: Parameters<typeof containerLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerLogs(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerLogs(localmobyConnectionOptions, ...args),
             containerPause: (
-                ...args: Parameters<typeof containerPause> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerPause(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerPause> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerPause(localmobyConnectionOptions, ...args),
             containerPrune: (
-                ...args: Parameters<typeof containerPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerPrune(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerPrune(localmobyConnectionOptions, ...args),
             containerRename: (
-                ...args: Parameters<typeof containerRename> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerRename(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerRename> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerRename(localmobyConnectionOptions, ...args),
             containerResize: (
-                ...args: Parameters<typeof containerResize> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerResize(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerResize> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerResize(localmobyConnectionOptions, ...args),
             containerRestart: (
-                ...args: Parameters<typeof containerRestart> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerRestart(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerRestart> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerRestart(localmobyConnectionOptions, ...args),
             containerStart: (
-                ...args: Parameters<typeof containerStart> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerStart(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerStart> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerStart(localmobyConnectionOptions, ...args),
             containerStats: (
-                ...args: Parameters<typeof containerStats> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerStats(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerStats> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerStats(localmobyConnectionOptions, ...args),
             containerStop: (
-                ...args: Parameters<typeof containerStop> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerStop(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerStop> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerStop(localmobyConnectionOptions, ...args),
             containerTop: (
-                ...args: Parameters<typeof containerTop> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerTop(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerTop> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerTop(localmobyConnectionOptions, ...args),
             containerUnpause: (
-                ...args: Parameters<typeof containerUnpause> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerUnpause(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerUnpause> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerUnpause(localmobyConnectionOptions, ...args),
             containerUpdate: (
-                ...args: Parameters<typeof containerUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerUpdate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerUpdate(localmobyConnectionOptions, ...args),
             containerWait: (
-                ...args: Parameters<typeof containerWait> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerWait(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerWait> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerWait(localmobyConnectionOptions, ...args),
             putContainerArchive: (
-                ...args: Parameters<typeof putContainerArchive> extends [DockerConnectionOptions, ...infer U]
-                    ? U
-                    : never
-            ) => putContainerArchive(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof putContainerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => putContainerArchive(localmobyConnectionOptions, ...args),
             distributionInspect: (
-                ...args: Parameters<typeof distributionInspect> extends [DockerConnectionOptions, ...infer U]
-                    ? U
-                    : never
-            ) => distributionInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof distributionInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => distributionInspect(localmobyConnectionOptions, ...args),
             containerExec: (
-                ...args: Parameters<typeof containerExec> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => containerExec(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof containerExec> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => containerExec(localmobyConnectionOptions, ...args),
             execInspect: (
-                ...args: Parameters<typeof execInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => execInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof execInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => execInspect(localmobyConnectionOptions, ...args),
             execResize: (
-                ...args: Parameters<typeof execResize> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => execResize(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof execResize> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => execResize(localmobyConnectionOptions, ...args),
             execStart: (
-                ...args: Parameters<typeof execStart> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => execStart(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof execStart> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => execStart(localmobyConnectionOptions, ...args),
             buildPrune: (
-                ...args: Parameters<typeof buildPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => buildPrune(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof buildPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => buildPrune(localmobyConnectionOptions, ...args),
             imageBuild: (
-                ...args: Parameters<typeof imageBuild> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageBuild(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageBuild> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageBuild(localmobyConnectionOptions, ...args),
             imageCommit: (
-                ...args: Parameters<typeof imageCommit> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageCommit(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageCommit> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageCommit(localmobyConnectionOptions, ...args),
             imageCreate: (
-                ...args: Parameters<typeof imageCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageCreate(localmobyConnectionOptions, ...args),
             imageDelete: (
-                ...args: Parameters<typeof imageDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageDelete(localDockerConnectionOptions, ...args),
-            imageGet: (
-                ...args: Parameters<typeof imageGet> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageGet(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageDelete(localmobyConnectionOptions, ...args),
+            imageGet: (...args: Parameters<typeof imageGet> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
+                imageGet(localmobyConnectionOptions, ...args),
             imageGetAll: (
-                ...args: Parameters<typeof imageGetAll> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageGetAll(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageGetAll> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageGetAll(localmobyConnectionOptions, ...args),
             imageHistory: (
-                ...args: Parameters<typeof imageHistory> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageHistory(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageHistory> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageHistory(localmobyConnectionOptions, ...args),
             imageInspect: (
-                ...args: Parameters<typeof imageInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageInspect(localmobyConnectionOptions, ...args),
             imageList: (
-                ...args: Parameters<typeof imageList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageList(localmobyConnectionOptions, ...args),
             imageLoad: (
-                ...args: Parameters<typeof imageLoad> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageLoad(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageLoad> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageLoad(localmobyConnectionOptions, ...args),
             imagePrune: (
-                ...args: Parameters<typeof imagePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imagePrune(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imagePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imagePrune(localmobyConnectionOptions, ...args),
             imagePush: (
-                ...args: Parameters<typeof imagePush> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imagePush(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imagePush> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imagePush(localmobyConnectionOptions, ...args),
             imageSearch: (
-                ...args: Parameters<typeof imageSearch> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageSearch(localDockerConnectionOptions, ...args),
-            imageTag: (
-                ...args: Parameters<typeof imageTag> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => imageTag(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof imageSearch> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => imageSearch(localmobyConnectionOptions, ...args),
+            imageTag: (...args: Parameters<typeof imageTag> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
+                imageTag(localmobyConnectionOptions, ...args),
             networkConnect: (
-                ...args: Parameters<typeof networkConnect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkConnect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkConnect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkConnect(localmobyConnectionOptions, ...args),
             networkCreate: (
-                ...args: Parameters<typeof networkCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkCreate(localmobyConnectionOptions, ...args),
             networkDelete: (
-                ...args: Parameters<typeof networkDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkDelete(localmobyConnectionOptions, ...args),
             networkDisconnect: (
-                ...args: Parameters<typeof networkDisconnect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkDisconnect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkDisconnect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkDisconnect(localmobyConnectionOptions, ...args),
             networkInspect: (
-                ...args: Parameters<typeof networkInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkInspect(localmobyConnectionOptions, ...args),
             networkList: (
-                ...args: Parameters<typeof networkList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkList(localmobyConnectionOptions, ...args),
             networkPrune: (
-                ...args: Parameters<typeof networkPrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => networkPrune(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof networkPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => networkPrune(localmobyConnectionOptions, ...args),
             nodeDelete: (
-                ...args: Parameters<typeof nodeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof nodeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => nodeDelete(localmobyConnectionOptions, ...args),
             nodeInspect: (
-                ...args: Parameters<typeof nodeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeInspect(localDockerConnectionOptions, ...args),
-            nodeList: (
-                ...args: Parameters<typeof nodeList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof nodeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => nodeInspect(localmobyConnectionOptions, ...args),
+            nodeList: (...args: Parameters<typeof nodeList> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
+                nodeList(localmobyConnectionOptions, ...args),
             nodeUpdate: (
-                ...args: Parameters<typeof nodeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => nodeUpdate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof nodeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => nodeUpdate(localmobyConnectionOptions, ...args),
             getPluginPrivileges: (
-                ...args: Parameters<typeof getPluginPrivileges> extends [DockerConnectionOptions, ...infer U]
-                    ? U
-                    : never
-            ) => getPluginPrivileges(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof getPluginPrivileges> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => getPluginPrivileges(localmobyConnectionOptions, ...args),
             pluginCreate: (
-                ...args: Parameters<typeof pluginCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginCreate(localmobyConnectionOptions, ...args),
             pluginDelete: (
-                ...args: Parameters<typeof pluginDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginDelete(localmobyConnectionOptions, ...args),
             pluginDisable: (
-                ...args: Parameters<typeof pluginDisable> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginDisable(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginDisable> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginDisable(localmobyConnectionOptions, ...args),
             pluginEnable: (
-                ...args: Parameters<typeof pluginEnable> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginEnable(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginEnable> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginEnable(localmobyConnectionOptions, ...args),
             pluginInspect: (
-                ...args: Parameters<typeof pluginInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginInspect(localmobyConnectionOptions, ...args),
             pluginList: (
-                ...args: Parameters<typeof pluginList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginList(localmobyConnectionOptions, ...args),
             pluginPull: (
-                ...args: Parameters<typeof pluginPull> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginPull(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginPull> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginPull(localmobyConnectionOptions, ...args),
             pluginPush: (
-                ...args: Parameters<typeof pluginPush> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginPush(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginPush> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginPush(localmobyConnectionOptions, ...args),
             pluginSet: (
-                ...args: Parameters<typeof pluginSet> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginSet(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginSet> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginSet(localmobyConnectionOptions, ...args),
             pluginUpgrade: (
-                ...args: Parameters<typeof pluginUpgrade> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => pluginUpgrade(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof pluginUpgrade> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => pluginUpgrade(localmobyConnectionOptions, ...args),
             secretCreate: (
-                ...args: Parameters<typeof secretCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof secretCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => secretCreate(localmobyConnectionOptions, ...args),
             secretDelete: (
-                ...args: Parameters<typeof secretDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof secretDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => secretDelete(localmobyConnectionOptions, ...args),
             secretInspect: (
-                ...args: Parameters<typeof secretInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof secretInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => secretInspect(localmobyConnectionOptions, ...args),
             secretList: (
-                ...args: Parameters<typeof secretList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof secretList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => secretList(localmobyConnectionOptions, ...args),
             secretUpdate: (
-                ...args: Parameters<typeof secretUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => secretUpdate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof secretUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => secretUpdate(localmobyConnectionOptions, ...args),
             serviceCreate: (
-                ...args: Parameters<typeof serviceCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof serviceCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => serviceCreate(localmobyConnectionOptions, ...args),
             serviceDelete: (
-                ...args: Parameters<typeof serviceDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof serviceDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => serviceDelete(localmobyConnectionOptions, ...args),
             serviceInspect: (
-                ...args: Parameters<typeof serviceInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof serviceInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => serviceInspect(localmobyConnectionOptions, ...args),
             serviceList: (
-                ...args: Parameters<typeof serviceList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof serviceList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => serviceList(localmobyConnectionOptions, ...args),
             serviceLogs: (
-                ...args: Parameters<typeof serviceLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceLogs(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof serviceLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => serviceLogs(localmobyConnectionOptions, ...args),
             serviceUpdate: (
-                ...args: Parameters<typeof serviceUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => serviceUpdate(localDockerConnectionOptions, ...args),
-            session: (...args: Parameters<typeof session> extends [DockerConnectionOptions, ...infer U] ? U : never) =>
-                session(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof serviceUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => serviceUpdate(localmobyConnectionOptions, ...args),
+            session: (...args: Parameters<typeof session> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
+                session(localmobyConnectionOptions, ...args),
             swarmInit: (
-                ...args: Parameters<typeof swarmInit> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmInit(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmInit> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmInit(localmobyConnectionOptions, ...args),
             swarmInspect: (
-                ...args: Parameters<typeof swarmInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmInspect(localmobyConnectionOptions, ...args),
             swarmJoin: (
-                ...args: Parameters<typeof swarmJoin> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmJoin(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmJoin> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmJoin(localmobyConnectionOptions, ...args),
             swarmLeave: (
-                ...args: Parameters<typeof swarmLeave> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmLeave(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmLeave> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmLeave(localmobyConnectionOptions, ...args),
             swarmUnlock: (
-                ...args: Parameters<typeof swarmUnlock> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmUnlock(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmUnlock> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmUnlock(localmobyConnectionOptions, ...args),
             swarmUnlockkey: (
-                ...args: Parameters<typeof swarmUnlockkey> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmUnlockkey(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmUnlockkey> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmUnlockkey(localmobyConnectionOptions, ...args),
             swarmUpdate: (
-                ...args: Parameters<typeof swarmUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => swarmUpdate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof swarmUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => swarmUpdate(localmobyConnectionOptions, ...args),
             systemAuth: (
-                ...args: Parameters<typeof systemAuth> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemAuth(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemAuth> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemAuth(localmobyConnectionOptions, ...args),
             systemDataUsage: (
-                ...args: Parameters<typeof systemDataUsage> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemDataUsage(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemDataUsage> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemDataUsage(localmobyConnectionOptions, ...args),
             systemEvents: (
-                ...args: Parameters<typeof systemEvents> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemEvents(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemEvents> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemEvents(localmobyConnectionOptions, ...args),
             systemInfo: (
-                ...args: Parameters<typeof systemInfo> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemInfo(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemInfo(localmobyConnectionOptions, ...args),
             systemPing: (
-                ...args: Parameters<typeof systemPing> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemPing(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemPing> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemPing(localmobyConnectionOptions, ...args),
             systemPingHead: (
-                ...args: Parameters<typeof systemPingHead> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemPingHead(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemPingHead> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemPingHead(localmobyConnectionOptions, ...args),
             systemVersion: (
-                ...args: Parameters<typeof systemVersion> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => systemVersion(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof systemVersion> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => systemVersion(localmobyConnectionOptions, ...args),
             taskInspect: (
-                ...args: Parameters<typeof taskInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => taskInspect(localDockerConnectionOptions, ...args),
-            taskList: (
-                ...args: Parameters<typeof taskList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => taskList(localDockerConnectionOptions, ...args),
-            taskLogs: (
-                ...args: Parameters<typeof taskLogs> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => taskLogs(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof taskInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => taskInspect(localmobyConnectionOptions, ...args),
+            taskList: (...args: Parameters<typeof taskList> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
+                taskList(localmobyConnectionOptions, ...args),
+            taskLogs: (...args: Parameters<typeof taskLogs> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
+                taskLogs(localmobyConnectionOptions, ...args),
             volumeCreate: (
-                ...args: Parameters<typeof volumeCreate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeCreate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof volumeCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => volumeCreate(localmobyConnectionOptions, ...args),
             volumeDelete: (
-                ...args: Parameters<typeof volumeDelete> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeDelete(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof volumeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => volumeDelete(localmobyConnectionOptions, ...args),
             volumeInspect: (
-                ...args: Parameters<typeof volumeInspect> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeInspect(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof volumeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => volumeInspect(localmobyConnectionOptions, ...args),
             volumeList: (
-                ...args: Parameters<typeof volumeList> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeList(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof volumeList> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => volumeList(localmobyConnectionOptions, ...args),
             volumePrune: (
-                ...args: Parameters<typeof volumePrune> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumePrune(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof volumePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => volumePrune(localmobyConnectionOptions, ...args),
             volumeUpdate: (
-                ...args: Parameters<typeof volumeUpdate> extends [DockerConnectionOptions, ...infer U] ? U : never
-            ) => volumeUpdate(localDockerConnectionOptions, ...args),
+                ...args: Parameters<typeof volumeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
+            ) => volumeUpdate(localmobyConnectionOptions, ...args),
         })
     );
 };

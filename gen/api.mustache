@@ -1,10 +1,10 @@
 // spell-checker: disable
 
-import "./fetch.js";
 import { Schema, ParseResult } from "@effect/schema";
-import * as Http from "@effect/platform/HttpClient";
 import { Effect, Context, Data, Layer, identity } from "effect";
-import { DockerConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
+import * as NodeHttp from "@effect/platform-node/HttpClient";
+
+import { MobyConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
 
 import {
     any as anySchema,
@@ -44,7 +44,7 @@ export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ m
 * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
 {{/allParams}}
 */
-export const {{nickname}} = (dockerConnectionOptions: DockerConnectionOptions{{#allParams}}, {{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{/allParams}}): Effect.Effect<never, {{nickname}}Error | Http.error.HttpClientError {{#bodyParam}}| Http.body.BodyError {{/bodyParam}}| ParseResult.ParseError, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+export const {{nickname}} = (mobyConnectionOptions: MobyConnectionOptions{{#allParams}}, {{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{/allParams}}): Effect.Effect<never, {{nickname}}Error | NodeHttp.error.HttpClientError {{#bodyParam}}| NodeHttp.body.BodyError {{/bodyParam}}| ParseResult.ParseError, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
 {{#allParams}}
 {{#required}}
     if ({{paramName}} === null || {{paramName}} === undefined) {
@@ -54,30 +54,30 @@ export const {{nickname}} = (dockerConnectionOptions: DockerConnectionOptions{{#
 {{/required}}
 {{/allParams}}
     const endpoint: string = `${BASE_PATH}{{{path}}}`{{#pathParams}}.replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
-    return Http.request.make("{{httpMethod}}")(endpoint);
+    return NodeHttp.request.make("{{httpMethod}}")(endpoint);
 })
 {{#queryParams}}
 {{#isListContainer}}
 {{#isCollectionFormatMulti}}
-.pipe(Effect.map(Http.request.setUrlParam("{{baseName}}", String({{paramName}}))))
+.pipe(Effect.map(NodeHttp.request.setUrlParam("{{baseName}}", String({{paramName}}))))
 {{/isCollectionFormatMulti}}
 {{^isCollectionFormatMulti}}
-.pipe(Effect.map(Http.request.setUrlParam("{{baseName}}", ({{paramName}} || []).join(COLLECTION_FORMATS["{{collectionFormat}}"]))))
+.pipe(Effect.map(NodeHttp.request.setUrlParam("{{baseName}}", ({{paramName}} || []).join(COLLECTION_FORMATS["{{collectionFormat}}"]))))
 {{/isCollectionFormatMulti}}
 {{/isListContainer}}
 {{^isListContainer}}
-.pipe(Effect.map({{paramName}} === undefined ? identity : Http.request.setUrlParam("{{baseName}}", String({{paramName}}))))
+.pipe(Effect.map({{paramName}} === undefined ? identity : NodeHttp.request.setUrlParam("{{baseName}}", String({{paramName}}))))
 {{/isListContainer}}
 {{/queryParams}}
 {{#headerParams}}
-.pipe(Effect.map(Http.request.setHeader("{{baseName}}", String({{paramName}}))))
+.pipe(Effect.map(NodeHttp.request.setHeader("{{baseName}}", String({{paramName}}))))
 {{/headerParams}}
 {{#bodyParam}}
 {{^consumes}}
-.pipe(Effect.map(Http.request.setHeader("Content-Type", "application/json")))
+.pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
 {{/consumes}}
 {{#consumes.0}}
-.pipe(Effect.map(Http.request.setHeader("Content-Type", "{{{mediaType}}}")))
+.pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "{{{mediaType}}}")))
 {{/consumes.0}}
 .pipe(
     Effect.flatMap((clientRequest) => {
@@ -86,41 +86,53 @@ export const {{nickname}} = (dockerConnectionOptions: DockerConnectionOptions{{#
             clientRequest.headers["Content-Type"] === "application/json";
 
         return needsSerialization
-            ? Http.request.jsonBody(clientRequest, {{paramName}})
-            : Effect.succeed(Http.request.textBody(clientRequest, ({{paramName}} as unknown as string) || ""));
+            ? NodeHttp.request.jsonBody(clientRequest, {{paramName}})
+            : Effect.succeed(NodeHttp.request.textBody(clientRequest, ({{paramName}} as unknown as string) || ""));
     })
 )
 {{/bodyParam}}
 .pipe(
-    Effect.map(Http.request.prependUrl(makeUrl(dockerConnectionOptions))),
-    Effect.flatMap(Http.client.fetchOk(makeDispatcher(dockerConnectionOptions)))
-    {{#returnType}},Effect.flatMap(Http.response.schemaBodyJson({{{returnType}}}Schema)){{/returnType}}
+    Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
+    Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
+    {{#returnType}},Effect.flatMap(NodeHttp.response.schemaBodyJson({{{returnType}}}Schema)){{/returnType}}
 )
+
 {{/operation}}
 {{/operations}}{{/apis}}{{/apiInfo}}
 
-export interface IDockerService {
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [DockerConnectionOptions, ...infer U] ? U : never) => ReturnType<typeof {{nickname}}>;
+export interface IMobyService {
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [MobyConnectionOptions, ...infer U] ? U : never) => ReturnType<typeof {{nickname}}>;
 {{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
 }
 
-export const DefaultDockerService: Context.Tag<IDockerService, IDockerService> = Context.Tag<IDockerService>("defaultDockerService");
+export const DefaultMobyClient: Context.Tag<IMobyService, IMobyService> = Context.Tag<IMobyService>(Symbol.for("@the-moby-effect/DefaultMobyClient"));
 
-export const makeDockerService = (
-    dockerConnectionOptions?: DockerConnectionOptions | undefined,
-    contextTag: Context.Tag<IDockerService, IDockerService> = DefaultDockerService
-): Layer.Layer<never, never, IDockerService> => {
-    const localDockerConnectionOptions =
-        dockerConnectionOptions ||
+const instanciatedClientTags = new Set<Context.Tag<IMobyService, IMobyService>>();
+export class clientAlreadyInstaniated extends Data.TaggedError("MobyClientAlreadyInstaniated")<{ message: string }> {}
+
+export const makeMobyService = (
+    mobyConnectionOptions?: MobyConnectionOptions | undefined,
+    contextTag: Context.Tag<IMobyService, IMobyService> = DefaultMobyClient
+): Layer.Layer<never, clientAlreadyInstaniated, IMobyService> => {
+    const localmobyConnectionOptions =
+        mobyConnectionOptions ||
         ({
             protocol: "unix",
             socketPath: "/var/run/docker.sock",
-        } as DockerConnectionOptions);
+        } as MobyConnectionOptions);
+
+    if (instanciatedClientTags.has(contextTag)) {
+        return Layer.fail(
+            new clientAlreadyInstaniated({
+                message: `A client has already been instanciated for tag ${contextTag.identifier}`,
+            })
+        );
+    }
 
     return Layer.succeed(
         contextTag,
         contextTag.of({
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [DockerConnectionOptions, ...infer U] ? U : never) => {{nickname}}(localDockerConnectionOptions, ...args),
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [MobyConnectionOptions, ...infer U] ? U : never) => {{nickname}}(localmobyConnectionOptions, ...args),
 {{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
         })
     );

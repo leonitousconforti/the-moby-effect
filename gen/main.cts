@@ -49,7 +49,7 @@ module.exports.runAsync = async () => {
             ": Schema.enums($1).pipe("
         )
         .replaceAll(
-            /Effect.flatMap\(Http.response.schemaBodyJson\(BlobSchema\)\)/gm,
+            /Effect.flatMap\(NodeHttp.response.schemaBodyJson\(BlobSchema\)\)/gm,
             "Effect.flatMap((clientResponse) => clientResponse.text),Effect.map((responseText) => new Blob([responseText]))"
         );
 
