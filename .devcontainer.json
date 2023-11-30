@@ -55,12 +55,12 @@
                     "packagejson",
                     "rushstack",
                     "tsdoc",
-                    "typeclass",
-                    "undici"
+                    "typeclass"
                 ]
             }
         }
-    },
+    }
 
-    "postCreateCommand": "npm install && npm run gen && npm run test"
+    // TODO: waiting for https://github.com/devcontainers/features/pull/770
+    // "postCreateCommand": "pnpm install && pnpm run gen && pnpm run test"
 }

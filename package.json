@@ -28,8 +28,7 @@
         "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean"
     },
     "dependencies": {
-        "ssh2": "^1.14.0",
-        "undici": "^5.28.1"
+        "ssh2": "^1.14.0"
     },
     "devDependencies": {
         "@effect/platform-node": "0.31.1",
@@ -49,6 +48,7 @@
         "eslint-plugin-prettier": "5.0.1",
         "eslint-plugin-unicorn": "49.0.0",
         "execa": "8.0.1",
+        "fast-check": "3.14.0",
         "prettier": "3.1.0",
         "prettier-plugin-jsdoc": "1.1.1",
         "prettier-plugin-packagejson": "2.4.6",
@@ -59,7 +59,8 @@
     "peerDependencies": {
         "@effect/platform-node": "~0.31.1",
         "@effect/schema": "~0.48.4",
-        "effect": "~2.0.0-next.55"
+        "effect": "~2.0.0-next.55",
+        "fast-check": "~3.14.0"
     },
     "engines": {
         "node": ">=18"
