@@ -1,10 +1,9 @@
 // spell-checker: disable
 
-import { Schema, ParseResult } from "@effect/schema";
-import { Effect, Context, Data, Layer, identity } from "effect";
+import * as ssh2 from "ssh2";
+import * as Schema from "@effect/schema/Schema";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-
-import { MobyConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
+import { Effect, Context, Data, Layer, identity } from "effect";
 
 import {
     any as anySchema,
@@ -17,7 +16,13 @@ import {
     unknown as unknownSchema,
 } from "@effect/schema/Schema";
 
-const BASE_PATH = "{{{basePath}}}"
+export type MobyConnectionOptions =
+    | { protocol: "http"; host: string; port: number }
+    | { protocol: "https"; host: string; port: number }
+    | ({ protocol: "ssh" } & ssh2.ConnectConfig)
+    | { protocol: "unix"; socketPath: string };
+
+const BASE_PATH = "/v1.43";
 
 const COLLECTION_FORMATS = {
     csv: ",",
@@ -25,6 +30,30 @@ const COLLECTION_FORMATS = {
     tsv: "\t",
     pipes: "|",
 };
+
+const addHeader = NodeHttp.request.setHeader;
+
+const addQueryParameter = (
+    key: string | undefined,
+    value: string
+): ((self: NodeHttp.request.ClientRequest) => NodeHttp.request.ClientRequest) =>
+    key === undefined ? identity : NodeHttp.request.setUrlParam(key, value);
+
+const setBody =
+    (
+        body: unknown,
+        datatype: string
+    ): ((
+        clientRequest: NodeHttp.request.ClientRequest
+    ) => Effect.Effect<never, NodeHttp.body.BodyError, NodeHttp.request.ClientRequest>) =>
+    (clientRequest) => {
+        const needsSerialization: boolean =
+            datatype !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+
+        return needsSerialization
+            ? NodeHttp.request.jsonBody(clientRequest, body)
+            : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
+    };
 
 {{#models}}
 {{#model}}{{#isEnum}}{{>modelEnum}}{{/isEnum}}{{^isEnum}}{{>modelGeneric}}{{/isEnum}}{{/model}}
@@ -44,7 +73,7 @@ export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ m
 * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
 {{/allParams}}
 */
-export const {{nickname}} = (mobyConnectionOptions: MobyConnectionOptions{{#allParams}}, {{paramName}}{{^required}}?{{/required}}: {{{dataType}}}{{/allParams}}): Effect.Effect<never, {{nickname}}Error | NodeHttp.error.HttpClientError {{#bodyParam}}| NodeHttp.body.BodyError {{/bodyParam}}| ParseResult.ParseError, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<NodeHttp.nodeClient.HttpAgent, {{nickname}}Error, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
 {{#allParams}}
 {{#required}}
     if ({{paramName}} === null || {{paramName}} === undefined) {
@@ -53,56 +82,53 @@ export const {{nickname}} = (mobyConnectionOptions: MobyConnectionOptions{{#allP
 
 {{/required}}
 {{/allParams}}
-    const endpoint: string = `${BASE_PATH}{{{path}}}`{{#pathParams}}.replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
-    return NodeHttp.request.make("{{httpMethod}}")(endpoint);
-})
-{{#queryParams}}
-{{#isListContainer}}
-{{#isCollectionFormatMulti}}
-.pipe(Effect.map(NodeHttp.request.setUrlParam("{{baseName}}", String({{paramName}}))))
-{{/isCollectionFormatMulti}}
-{{^isCollectionFormatMulti}}
-.pipe(Effect.map(NodeHttp.request.setUrlParam("{{baseName}}", ({{paramName}} || []).join(COLLECTION_FORMATS["{{collectionFormat}}"]))))
-{{/isCollectionFormatMulti}}
-{{/isListContainer}}
-{{^isListContainer}}
-.pipe(Effect.map({{paramName}} === undefined ? identity : NodeHttp.request.setUrlParam("{{baseName}}", String({{paramName}}))))
-{{/isListContainer}}
-{{/queryParams}}
-{{#headerParams}}
-.pipe(Effect.map(NodeHttp.request.setHeader("{{baseName}}", String({{paramName}}))))
-{{/headerParams}}
-{{#bodyParam}}
-{{^consumes}}
-.pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-{{/consumes}}
-{{#consumes.0}}
-.pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "{{{mediaType}}}")))
-{{/consumes.0}}
-.pipe(
-    Effect.flatMap((clientRequest) => {
-        const needsSerialization =
-            ("{{dataType}}" as unknown) !== "string" ||
-            clientRequest.headers["Content-Type"] === "application/json";
+    const endpoint: string = `${BASE_PATH}{{{path}}}`;
+    const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "{{httpMethod}}";
+    const sanitizedEndpoint: string = endpoint{{#pathParams}}.replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
+    const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-        return needsSerialization
-            ? NodeHttp.request.jsonBody(clientRequest, {{paramName}})
-            : Effect.succeed(NodeHttp.request.textBody(clientRequest, ({{paramName}} as unknown as string) || ""));
-    })
-)
-{{/bodyParam}}
-.pipe(
-    Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-    Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    {{#returnType}},Effect.flatMap(NodeHttp.response.schemaBodyJson({{{returnType}}}Schema)){{/returnType}}
-)
+    return NodeHttp.request
+        .make(method)(sanitizedEndpoint)
+        {{#headerParams}}
+        .pipe(addHeader("{{baseName}}", String({{paramName}})))
+        {{/headerParams}}
+        {{#queryParams}}
+        {{#isListContainer}}
+        {{#isCollectionFormatMulti}}
+        .pipe(addQueryParameter("{{baseName}}", String({{paramName}})))
+        {{/isCollectionFormatMulti}}
+        {{^isCollectionFormatMulti}}
+        .pipe(addQueryParameter("{{baseName}}", ({{paramName}} || []).join(COLLECTION_FORMATS["{{collectionFormat}}"])))
+        {{/isCollectionFormatMulti}}
+        {{/isListContainer}}
+        {{^isListContainer}}
+        .pipe(addQueryParameter("{{baseName}}", String({{paramName}})))
+        {{/isListContainer}}
+        {{/queryParams}}
+        {{#bodyParam}}
+        {{^consumes}}
+        .pipe(addHeader("Content-Type", "application/json"))
+        {{/consumes}}
+        {{#consumes.0}}
+        .pipe(addHeader("Content-Type", "{{{mediaType}}}"))
+        {{/consumes.0}}
+        .pipe(setBody({{paramName}}, "{{dataType}}"))
+        .pipe(Effect.flatMap(client))
+        {{/bodyParam}}
+        {{^bodyParam}}
+        .pipe(client)
+        {{/bodyParam}}
+        {{#returnType}}
+        .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson({{{returnType}}}Schema)))
+        {{/returnType}}
+        .pipe(Effect.orElseFail(() => new {{nickname}}Error({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 {{/operation}}
 {{/operations}}{{/apis}}{{/apiInfo}}
 
 export interface IMobyService {
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [MobyConnectionOptions, ...infer U] ? U : never) => ReturnType<typeof {{nickname}}>;
-{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: typeof {{nickname}};{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
 }
 
 export const DefaultMobyClient: Context.Tag<IMobyService, IMobyService> = Context.Tag<IMobyService>(Symbol.for("@the-moby-effect/DefaultMobyClient"));
@@ -132,8 +158,7 @@ export const makeMobyService = (
     return Layer.succeed(
         contextTag,
         contextTag.of({
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...args: Parameters<typeof {{nickname}}> extends [MobyConnectionOptions, ...infer U] ? U : never) => {{nickname}}(localmobyConnectionOptions, ...args),
-{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}},{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
         })
     );
 }

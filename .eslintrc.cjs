@@ -29,7 +29,6 @@ module.exports = {
                 "max-lines": "off",
                 "tsdoc/syntax": "off",
                 "dot-notation": "off",
-                "require-yield": "off",
                 "@typescript-eslint/typedef": "off",
                 "unicorn/prevent-abbreviations": "off",
                 "unicorn/no-array-callback-reference": "off",

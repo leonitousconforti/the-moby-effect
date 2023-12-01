@@ -1,10 +1,9 @@
 // spell-checker: disable
 
-import { Schema, ParseResult } from "@effect/schema";
-import { Effect, Context, Data, Layer, identity } from "effect";
+import * as ssh2 from "ssh2";
+import * as Schema from "@effect/schema/Schema";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-
-import { MobyConnectionOptions, makeDispatcher, makeUrl } from "./fetch.js";
+import { Effect, Context, Data, Layer, identity } from "effect";
 
 import {
     any as anySchema,
@@ -17,6 +16,12 @@ import {
     unknown as unknownSchema,
 } from "@effect/schema/Schema";
 
+export type MobyConnectionOptions =
+    | { protocol: "http"; host: string; port: number }
+    | { protocol: "https"; host: string; port: number }
+    | ({ protocol: "ssh" } & ssh2.ConnectConfig)
+    | { protocol: "unix"; socketPath: string };
+
 const BASE_PATH = "/v1.43";
 
 const COLLECTION_FORMATS = {
@@ -25,6 +30,30 @@ const COLLECTION_FORMATS = {
     tsv: "\t",
     pipes: "|",
 };
+
+const addHeader = NodeHttp.request.setHeader;
+
+const addQueryParameter = (
+    key: string | undefined,
+    value: string
+): ((self: NodeHttp.request.ClientRequest) => NodeHttp.request.ClientRequest) =>
+    key === undefined ? identity : NodeHttp.request.setUrlParam(key, value);
+
+const setBody =
+    (
+        body: unknown,
+        datatype: string
+    ): ((
+        clientRequest: NodeHttp.request.ClientRequest
+    ) => Effect.Effect<never, NodeHttp.body.BodyError, NodeHttp.request.ClientRequest>) =>
+    (clientRequest) => {
+        const needsSerialization: boolean =
+            datatype !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+
+        return needsSerialization
+            ? NodeHttp.request.jsonBody(clientRequest, body)
+            : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
+    };
 
 /**
  * Address represents an IPv4 or IPv6 IP address.
@@ -4631,55 +4660,44 @@ export class volumeUpdateError extends Data.TaggedError("volumeUpdateError")<{ m
  * @param {ConfigsCreateBody} [body]
  */
 export const configCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: ConfigsCreateBody
-): Effect.Effect<
-    never,
-    configCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<IdResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, configCreateError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ConfigsCreateBody" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ConfigsCreateBody"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
+            .pipe(Effect.orElseFail(() => new configCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Delete a config
  * @param {string} id ID of the config
  */
-export const configDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    id: string
-): Effect.Effect<never, configDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const configDelete = (id: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, configDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/configs/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new configDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -4687,25 +4705,24 @@ export const configDelete = (
  * @param {string} id ID of the config
  */
 export const configInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<
-    never,
-    configInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Config>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, configInspectError, Readonly<Config>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/configs/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(ConfigSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/configs/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ConfigSchema)))
+            .pipe(Effect.orElseFail(() => new configInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -4713,23 +4730,21 @@ export const configInspect = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the configs list.  Available filters:  - &#x60;id&#x3D;&lt;config id&gt;&#x60; - &#x60;label&#x3D;&lt;key&gt; or label&#x3D;&lt;key&gt;&#x3D;value&#x60; - &#x60;name&#x3D;&lt;config name&gt;&#x60; - &#x60;names&#x3D;&lt;config name&gt;&#x60;
  */
 export const configList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    configListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Config>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, configListError, Readonly<Array<Config>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ConfigSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ConfigSchema))))
+            .pipe(Effect.orElseFail(() => new configListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
 *
@@ -4742,15 +4757,10 @@ can be updated. All other fields must remain unchanged from the
 
 */
 export const configUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     version: number,
     body?: ConfigSpec
-): Effect.Effect<
-    never,
-    configUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, configUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -4760,29 +4770,19 @@ export const configUpdate = (
             yield* _(new configUpdateError({ message: "Required parameter version was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/configs/{id}/update`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ConfigSpec" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/configs/{id}/update`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("version", String(version)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ConfigSpec"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new configUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Get a tar archive of a resource in the filesystem of container id.
@@ -4791,10 +4791,9 @@ export const configUpdate = (
  * @param {string} path Resource in the container’s filesystem to archive.
  */
 export const containerArchive = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     path: string
-): Effect.Effect<never, containerArchiveError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerArchiveError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveError({ message: "Required parameter id was null or undefined" }));
@@ -4804,17 +4803,17 @@ export const containerArchive = (
             yield* _(new containerArchiveError({ message: "Required parameter path was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/archive`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(path === undefined ? identity : NodeHttp.request.setUrlParam("path", String(path))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/archive`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("path", String(path)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerArchiveError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * A response header `X-Docker-Container-Path-Stat` is returned, containing a base64 - encoded JSON object with some filesystem header information about the path.
@@ -4823,10 +4822,9 @@ export const containerArchive = (
  * @param {string} path Resource in the container’s filesystem to archive.
  */
 export const containerArchiveInfo = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     path: string
-): Effect.Effect<never, containerArchiveInfoError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerArchiveInfoError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveInfoError({ message: "Required parameter id was null or undefined" }));
@@ -4836,17 +4834,17 @@ export const containerArchiveInfo = (
             yield* _(new containerArchiveInfoError({ message: "Required parameter path was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/archive`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("HEAD")(endpoint);
-    })
-        .pipe(Effect.map(path === undefined ? identity : NodeHttp.request.setUrlParam("path", String(path))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/archive`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "HEAD";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("path", String(path)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerArchiveInfoError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Attach to a container to read its output or send it input. You can attach to the same container multiple times and you can reattach to containers that have been detached.  Either the `stream` or `logs` parameter must be `true` for this endpoint to do anything.  See the [documentation for the `docker attach` command](https://docs.docker.com/engine/reference/commandline/attach/) for more details.  ### Hijacking  This endpoint hijacks the HTTP connection to transport `stdin`, `stdout`, and `stderr` on the same socket.  This is the response from the daemon for an attach request:  ``` HTTP/1.1 200 OK Content-Type: application/vnd.docker.raw-stream  [STREAM] ```  After the headers and two new lines, the TCP connection can now be used for raw, bidirectional communication between the client and server.  To hint potential proxies about connection hijacking, the Docker client can also optionally send connection upgrade headers.  For example, the client sends this request to upgrade the connection:  ``` POST /containers/16253994b7c4/attach?stream=1&stdout=1 HTTP/1.1 Upgrade: tcp Connection: Upgrade ```  The Docker daemon will respond with a `101 UPGRADED` response, and will similarly follow with the raw stream:  ``` HTTP/1.1 101 UPGRADED Content-Type: application/vnd.docker.raw-stream Connection: Upgrade Upgrade: tcp  [STREAM] ```  ### Stream format  When the TTY setting is disabled in [`POST /containers/create`](#operation/ContainerCreate), the HTTP Content-Type header is set to application/vnd.docker.multiplexed-stream and the stream over the hijacked connected is multiplexed to separate out `stdout` and `stderr`. The stream consists of a series of frames, each containing a header and a payload.  The header contains the information which the stream writes (`stdout` or `stderr`). It also contains the size of the associated frame encoded in the last four bytes (`uint32`).  It is encoded on the first eight bytes like this:  ```go header := [8]byte{STREAM_TYPE, 0, 0, 0, SIZE1, SIZE2, SIZE3, SIZE4} ```  `STREAM_TYPE` can be:  - 0: `stdin` (is written on `stdout`) - 1: `stdout` - 2: `stderr`  `SIZE1, SIZE2, SIZE3, SIZE4` are the four bytes of the `uint32` size encoded as big endian.  Following the header is the payload, which is the specified number of bytes of `STREAM_TYPE`.  The simplest way to implement this protocol is the following:  1. Read 8 bytes. 2. Choose `stdout` or `stderr` depending on the first byte. 3. Extract the frame size from the last four bytes. 4. Read the extracted size and output it on the correct output. 5. Goto 1.  ### Stream format when using a TTY  When the TTY setting is enabled in [`POST /containers/create`](#operation/ContainerCreate), the stream is not multiplexed. The data exchanged over the hijacked connection is simply the raw data from the process PTY and client's `stdin`.
@@ -4860,7 +4858,6 @@ export const containerArchiveInfo = (
  * @param {boolean} [stderr] Attach to &#x60;stderr&#x60;
  */
 export const containerAttach = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4868,32 +4865,28 @@ export const containerAttach = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<never, containerAttachError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerAttachError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/attach`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                detachKeys === undefined ? identity : NodeHttp.request.setUrlParam("detachKeys", String(detachKeys))
-            )
-        )
-        .pipe(Effect.map(logs === undefined ? identity : NodeHttp.request.setUrlParam("logs", String(logs))))
-        .pipe(Effect.map(stream === undefined ? identity : NodeHttp.request.setUrlParam("stream", String(stream))))
-        .pipe(Effect.map(stdin === undefined ? identity : NodeHttp.request.setUrlParam("stdin", String(stdin))))
-        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/attach`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("detachKeys", String(detachKeys)))
+            .pipe(addQueryParameter("logs", String(logs)))
+            .pipe(addQueryParameter("stream", String(stream)))
+            .pipe(addQueryParameter("stdin", String(stdin)))
+            .pipe(addQueryParameter("stdout", String(stdout)))
+            .pipe(addQueryParameter("stderr", String(stderr)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerAttachError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -4907,7 +4900,6 @@ export const containerAttach = (
  * @param {boolean} [stderr] Attach to &#x60;stderr&#x60;
  */
 export const containerAttachWebsocket = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     detachKeys?: string,
     logs?: boolean,
@@ -4915,36 +4907,28 @@ export const containerAttachWebsocket = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<
-    never,
-    containerAttachWebsocketError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerAttachWebsocketError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachWebsocketError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/attach/ws`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                detachKeys === undefined ? identity : NodeHttp.request.setUrlParam("detachKeys", String(detachKeys))
-            )
-        )
-        .pipe(Effect.map(logs === undefined ? identity : NodeHttp.request.setUrlParam("logs", String(logs))))
-        .pipe(Effect.map(stream === undefined ? identity : NodeHttp.request.setUrlParam("stream", String(stream))))
-        .pipe(Effect.map(stdin === undefined ? identity : NodeHttp.request.setUrlParam("stdin", String(stdin))))
-        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/attach/ws`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("detachKeys", String(detachKeys)))
+            .pipe(addQueryParameter("logs", String(logs)))
+            .pipe(addQueryParameter("stream", String(stream)))
+            .pipe(addQueryParameter("stdin", String(stdin)))
+            .pipe(addQueryParameter("stdout", String(stdout)))
+            .pipe(addQueryParameter("stderr", String(stderr)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerAttachWebsocketError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Returns which files in a container's filesystem have been added, deleted, or modified. The `Kind` of modification can be one of:  - `0`: Modified (\"C\") - `1`: Added (\"A\") - `2`: Deleted (\"D\")
@@ -4952,28 +4936,24 @@ export const containerAttachWebsocket = (
  * @param {string} id ID or name of the container
  */
 export const containerChanges = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<
-    never,
-    containerChangesError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<FilesystemChange>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerChangesError, Readonly<Array<FilesystemChange>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerChangesError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/changes`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(FilesystemChangeSchema)))
-    );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/changes`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(FilesystemChangeSchema))))
+            .pipe(Effect.orElseFail(() => new containerChangesError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -4983,44 +4963,30 @@ export const containerChanges = (
  * @param {string} [platform] Platform in the format &#x60;os[/arch[/variant]]&#x60; used for image lookup.  When specified, the daemon checks if the requested image is present in the local image cache with the given OS and Architecture, and otherwise returns a &#x60;404&#x60; status.  If the option is not set, the host&#39;s native OS and Architecture are used to look up the image in the image cache. However, if no platform is passed and the given image does exist in the local image cache, but its OS or architecture does not match, the container is created with the available image, and a warning is added to the &#x60;Warnings&#x60; field in the response, for example;      WARNING: The requested image&#39;s platform (linux/arm64/v8) does not              match the detected host platform (linux/amd64) and no              specific platform was requested
  */
 export const containerCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: ContainersCreateBody,
     name?: string,
     platform?: string
-): Effect.Effect<
-    never,
-    containerCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<ContainerCreateResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerCreateError, Readonly<ContainerCreateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new containerCreateError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/containers/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
-        .pipe(
-            Effect.map(platform === undefined ? identity : NodeHttp.request.setUrlParam("platform", String(platform)))
-        )
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ContainersCreateBody1" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerCreateResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("name", String(name)))
+            .pipe(addQueryParameter("platform", String(platform)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ContainersCreateBody1"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerCreateResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5031,51 +4997,51 @@ export const containerCreate = (
  * @param {boolean} [link] Remove the specified link associated with the container.
  */
 export const containerDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     v?: boolean,
     force?: boolean,
     link?: boolean
-): Effect.Effect<never, containerDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    })
-        .pipe(Effect.map(v === undefined ? identity : NodeHttp.request.setUrlParam("v", String(v))))
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(Effect.map(link === undefined ? identity : NodeHttp.request.setUrlParam("link", String(link))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("v", String(v)))
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(addQueryParameter("link", String(link)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Export the contents of a container as a tarball.
  * @summary Export a container
  * @param {string} id ID or name of the container
  */
-export const containerExport = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    id: string
-): Effect.Effect<never, containerExportError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const containerExport = (id: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerExportError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerExportError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/export`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/export`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerExportError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Return low-level information about a container.
@@ -5084,31 +5050,26 @@ export const containerExport = (
  * @param {boolean} [size] Return the size of container as fields &#x60;SizeRw&#x60; and &#x60;SizeRootFs&#x60;
  */
 export const containerInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     size?: boolean
-): Effect.Effect<
-    never,
-    containerInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ContainerInspectResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerInspectError, Readonly<ContainerInspectResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/json`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(size === undefined ? identity : NodeHttp.request.setUrlParam("size", String(size))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerInspectResponseSchema))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/json`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("size", String(size)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerInspectResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Send a POSIX signal to a container, defaulting to killing to the container.
@@ -5117,26 +5078,25 @@ export const containerInspect = (
  * @param {string} [signal] Signal to send to the container as an integer or string (e.g. &#x60;SIGINT&#x60;).
  */
 export const containerKill = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     signal?: string
-): Effect.Effect<never, containerKillError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerKillError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerKillError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/kill`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(signal === undefined ? identity : NodeHttp.request.setUrlParam("signal", String(signal))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/kill`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("signal", String(signal)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerKillError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Returns a list of containers. For details on the format, see the [inspect endpoint](#operation/ContainerInspect).  Note that it uses a different, smaller representation of a container than inspecting a single container. For example, the list of linked containers is not propagated .
@@ -5147,29 +5107,27 @@ export const containerKill = (
  * @param {string} [filters] Filters to process on the container list, encoded as JSON (a &#x60;map[string][]string&#x60;). For example, &#x60;{\&quot;status\&quot;: [\&quot;paused\&quot;]}&#x60; will only return paused containers.  Available filters:  - &#x60;ancestor&#x60;&#x3D;(&#x60;&lt;image-name&gt;[:&lt;tag&gt;]&#x60;, &#x60;&lt;image id&gt;&#x60;, or &#x60;&lt;image@digest&gt;&#x60;) - &#x60;before&#x60;&#x3D;(&#x60;&lt;container id&gt;&#x60; or &#x60;&lt;container name&gt;&#x60;) - &#x60;expose&#x60;&#x3D;(&#x60;&lt;port&gt;[/&lt;proto&gt;]&#x60;|&#x60;&lt;startport-endport&gt;/[&lt;proto&gt;]&#x60;) - &#x60;exited&#x3D;&lt;int&gt;&#x60; containers with exit code of &#x60;&lt;int&gt;&#x60; - &#x60;health&#x60;&#x3D;(&#x60;starting&#x60;|&#x60;healthy&#x60;|&#x60;unhealthy&#x60;|&#x60;none&#x60;) - &#x60;id&#x3D;&lt;ID&gt;&#x60; a container&#39;s ID - &#x60;isolation&#x3D;&#x60;(&#x60;default&#x60;|&#x60;process&#x60;|&#x60;hyperv&#x60;) (Windows daemon only) - &#x60;is-task&#x3D;&#x60;(&#x60;true&#x60;|&#x60;false&#x60;) - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; of a container label - &#x60;name&#x3D;&lt;name&gt;&#x60; a container&#39;s name - &#x60;network&#x60;&#x3D;(&#x60;&lt;network id&gt;&#x60; or &#x60;&lt;network name&gt;&#x60;) - &#x60;publish&#x60;&#x3D;(&#x60;&lt;port&gt;[/&lt;proto&gt;]&#x60;|&#x60;&lt;startport-endport&gt;/[&lt;proto&gt;]&#x60;) - &#x60;since&#x60;&#x3D;(&#x60;&lt;container id&gt;&#x60; or &#x60;&lt;container name&gt;&#x60;) - &#x60;status&#x3D;&#x60;(&#x60;created&#x60;|&#x60;restarting&#x60;|&#x60;running&#x60;|&#x60;removing&#x60;|&#x60;paused&#x60;|&#x60;exited&#x60;|&#x60;dead&#x60;) - &#x60;volume&#x60;&#x3D;(&#x60;&lt;volume name&gt;&#x60; or &#x60;&lt;mount point destination&gt;&#x60;)
  */
 export const containerList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     all?: boolean,
     limit?: number,
     size?: boolean,
     filters?: string
-): Effect.Effect<
-    never,
-    containerListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<ContainerSummary>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerListError, Readonly<Array<ContainerSummary>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/json`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(all === undefined ? identity : NodeHttp.request.setUrlParam("all", String(all))))
-        .pipe(Effect.map(limit === undefined ? identity : NodeHttp.request.setUrlParam("limit", String(limit))))
-        .pipe(Effect.map(size === undefined ? identity : NodeHttp.request.setUrlParam("size", String(size))))
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ContainerSummarySchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("all", String(all)))
+            .pipe(addQueryParameter("limit", String(limit)))
+            .pipe(addQueryParameter("size", String(size)))
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ContainerSummarySchema))))
+            .pipe(Effect.orElseFail(() => new containerListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Get `stdout` and `stderr` logs from a container.  Note: This endpoint works only for containers with the `json-file` or `journald` logging driver.
@@ -5184,7 +5142,6 @@ export const containerList = (
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const containerLogs = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     follow?: boolean,
     stdout?: boolean,
@@ -5193,59 +5150,55 @@ export const containerLogs = (
     until?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, containerLogsError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerLogsError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerLogsError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/logs`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(follow === undefined ? identity : NodeHttp.request.setUrlParam("follow", String(follow))))
-        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
-        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
-        .pipe(Effect.map(until === undefined ? identity : NodeHttp.request.setUrlParam("until", String(until))))
-        .pipe(
-            Effect.map(
-                timestamps === undefined ? identity : NodeHttp.request.setUrlParam("timestamps", String(timestamps))
+        const endpoint: string = `${BASE_PATH}/containers/{id}/logs`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("follow", String(follow)))
+            .pipe(addQueryParameter("stdout", String(stdout)))
+            .pipe(addQueryParameter("stderr", String(stderr)))
+            .pipe(addQueryParameter("since", String(since)))
+            .pipe(addQueryParameter("until", String(until)))
+            .pipe(addQueryParameter("timestamps", String(timestamps)))
+            .pipe(addQueryParameter("tail", String(tail)))
+            .pipe(client)
+            .pipe(
+                Effect.flatMap((clientResponse) => clientResponse.text),
+                Effect.map((responseText) => new Blob([responseText]))
             )
-        )
-        .pipe(Effect.map(tail === undefined ? identity : NodeHttp.request.setUrlParam("tail", String(tail))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap((clientResponse) => clientResponse.text),
-            Effect.map((responseText) => new Blob([responseText]))
-        );
+            .pipe(Effect.orElseFail(() => new containerLogsError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Use the freezer cgroup to suspend all processes in a container.  Traditionally, when suspending a process the `SIGSTOP` signal is used, which is observable by the process being suspended. With the freezer cgroup the process is unaware, and unable to capture, that it is being suspended, and subsequently resumed.
  * @summary Pause a container
  * @param {string} id ID or name of the container
  */
-export const containerPause = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    id: string
-): Effect.Effect<never, containerPauseError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const containerPause = (id: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerPauseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerPauseError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/pause`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/pause`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerPauseError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5253,23 +5206,21 @@ export const containerPause = (
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; Prune containers created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune containers with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const containerPrune = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    containerPruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ContainerPruneResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerPruneError, Readonly<ContainerPruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/prune`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerPruneResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerPruneResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerPruneError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5278,10 +5229,9 @@ export const containerPrune = (
  * @param {string} name New name for the container
  */
 export const containerRename = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     name: string
-): Effect.Effect<never, containerRenameError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerRenameError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRenameError({ message: "Required parameter id was null or undefined" }));
@@ -5291,17 +5241,17 @@ export const containerRename = (
             yield* _(new containerRenameError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/rename`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/rename`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("name", String(name)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerRenameError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Resize the TTY for a container.
@@ -5311,28 +5261,27 @@ export const containerRename = (
  * @param {number} [w] Width of the TTY session in characters
  */
 export const containerResize = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<never, containerResizeError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerResizeError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerResizeError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/resize`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(h === undefined ? identity : NodeHttp.request.setUrlParam("h", String(h))))
-        .pipe(Effect.map(w === undefined ? identity : NodeHttp.request.setUrlParam("w", String(w))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/resize`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("h", String(h)))
+            .pipe(addQueryParameter("w", String(w)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerResizeError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5342,28 +5291,27 @@ export const containerResize = (
  * @param {number} [t] Number of seconds to wait before killing the container
  */
 export const containerRestart = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<never, containerRestartError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerRestartError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRestartError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/restart`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(signal === undefined ? identity : NodeHttp.request.setUrlParam("signal", String(signal))))
-        .pipe(Effect.map(t === undefined ? identity : NodeHttp.request.setUrlParam("t", String(t))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/restart`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("signal", String(signal)))
+            .pipe(addQueryParameter("t", String(t)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerRestartError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5372,30 +5320,25 @@ export const containerRestart = (
  * @param {string} [detachKeys] Override the key sequence for detaching a container. Format is a single character &#x60;[a-Z]&#x60; or &#x60;ctrl-&lt;value&gt;&#x60; where &#x60;&lt;value&gt;&#x60; is one of: &#x60;a-z&#x60;, &#x60;@&#x60;, &#x60;^&#x60;, &#x60;[&#x60;, &#x60;,&#x60; or &#x60;_&#x60;.
  */
 export const containerStart = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     detachKeys?: string
-): Effect.Effect<never, containerStartError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerStartError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStartError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/start`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                detachKeys === undefined ? identity : NodeHttp.request.setUrlParam("detachKeys", String(detachKeys))
-            )
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/start`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("detachKeys", String(detachKeys)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerStartError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * This endpoint returns a live stream of a container’s resource usage statistics.  The `precpu_stats` is the CPU statistic of the *previous* read, and is used to calculate the CPU usage percentage. It is not an exact copy of the `cpu_stats` field.  If either `precpu_stats.online_cpus` or `cpu_stats.online_cpus` is nil then for compatibility with older daemons the length of the corresponding `cpu_usage.percpu_usage` array should be used.  On a cgroup v2 host, the following fields are not set * `blkio_stats`: all fields other than `io_service_bytes_recursive` * `cpu_stats`: `cpu_usage.percpu_usage` * `memory_stats`: `max_usage` and `failcnt` Also, `memory_stats.stats` fields are incompatible with cgroup v1.  To calculate the values shown by the `stats` command of the docker cli tool the following formulas can be used: * used_memory = `memory_stats.usage - memory_stats.stats.cache` * available_memory = `memory_stats.limit` * Memory usage % = `(used_memory / available_memory) * 100.0` * cpu_delta = `cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage` * system_cpu_delta = `cpu_stats.system_cpu_usage - precpu_stats.system_cpu_usage` * number_cpus = `lenght(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU usage % = `(cpu_delta / system_cpu_delta) * number_cpus * 100.0`
@@ -5405,35 +5348,28 @@ export const containerStart = (
  * @param {boolean} [one_shot] Only get a single stat instead of waiting for 2 cycles. Must be used with &#x60;stream&#x3D;false&#x60;.
  */
 export const containerStats = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     stream?: boolean,
     one_shot?: boolean
-): Effect.Effect<
-    never,
-    containerStatsError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<unknown>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerStatsError, Readonly<unknown>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStatsError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/stats`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(stream === undefined ? identity : NodeHttp.request.setUrlParam("stream", String(stream))))
-        .pipe(
-            Effect.map(one_shot === undefined ? identity : NodeHttp.request.setUrlParam("one-shot", String(one_shot)))
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(anySchema))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/stats`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("stream", String(stream)))
+            .pipe(addQueryParameter("one-shot", String(one_shot)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(anySchema)))
+            .pipe(Effect.orElseFail(() => new containerStatsError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5443,28 +5379,27 @@ export const containerStats = (
  * @param {number} [t] Number of seconds to wait before killing the container
  */
 export const containerStop = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<never, containerStopError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerStopError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStopError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/stop`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(signal === undefined ? identity : NodeHttp.request.setUrlParam("signal", String(signal))))
-        .pipe(Effect.map(t === undefined ? identity : NodeHttp.request.setUrlParam("t", String(t))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/stop`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("signal", String(signal)))
+            .pipe(addQueryParameter("t", String(t)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerStopError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * On Unix systems, this is done by running the `ps` command. This endpoint is not supported on Windows.
@@ -5473,31 +5408,26 @@ export const containerStop = (
  * @param {string} [ps_args] The arguments to pass to &#x60;ps&#x60;. For example, &#x60;aux&#x60;
  */
 export const containerTop = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     ps_args?: string
-): Effect.Effect<
-    never,
-    containerTopError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ContainerTopResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerTopError, Readonly<ContainerTopResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerTopError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/top`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(ps_args === undefined ? identity : NodeHttp.request.setUrlParam("ps_args", String(ps_args))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerTopResponseSchema))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/top`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("ps_args", String(ps_args)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerTopResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerTopError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Resume a container which has been paused.
@@ -5505,23 +5435,23 @@ export const containerTop = (
  * @param {string} id ID or name of the container
  */
 export const containerUnpause = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, containerUnpauseError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerUnpauseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerUnpauseError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/unpause`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/unpause`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new containerUnpauseError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Change various configuration options of a container without having to recreate it.
@@ -5530,14 +5460,9 @@ export const containerUnpause = (
  * @param {string} id ID or name of the container
  */
 export const containerUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: IdUpdateBody,
     id: string
-): Effect.Effect<
-    never,
-    containerUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<ContainerUpdateResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerUpdateError, Readonly<ContainerUpdateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new containerUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -5547,29 +5472,19 @@ export const containerUpdate = (
             yield* _(new containerUpdateError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/update`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("IdUpdateBody" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/containers/{id}/update`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerUpdateResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "IdUpdateBody"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerUpdateResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Block until a container stops, then returns the exit code.
@@ -5578,35 +5493,26 @@ export const containerUpdate = (
  * @param {string} [condition] Wait until a container state reaches the given condition.  Defaults to &#x60;not-running&#x60; if omitted or empty.
  */
 export const containerWait = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     condition?: string
-): Effect.Effect<
-    never,
-    containerWaitError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ContainerWaitResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerWaitError, Readonly<ContainerWaitResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerWaitError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/wait`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                condition === undefined ? identity : NodeHttp.request.setUrlParam("condition", String(condition))
-            )
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerWaitResponseSchema))
-        );
+        const endpoint: string = `${BASE_PATH}/containers/{id}/wait`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("condition", String(condition)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerWaitResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerWaitError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
 * Upload a tar archive to be extracted to a path in the filesystem of container id. `path` parameter is asserted to be a directory. If it exists as a file, 400 error will be returned with message \"not a directory\".
@@ -5621,17 +5527,12 @@ or &#x60;xz&#x60;.
 * @param {string} [copyUIDGID] If &#x60;1&#x60;, &#x60;true&#x60;, then it will copy UID/GID maps to the dest file or dir
 */
 export const putContainerArchive = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: unknown,
     id: string,
     path: string,
     noOverwriteDirNonDir?: string,
     copyUIDGID?: string
-): Effect.Effect<
-    never,
-    putContainerArchiveError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, putContainerArchiveError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new putContainerArchiveError({ message: "Required parameter body was null or undefined" }));
@@ -5645,40 +5546,21 @@ export const putContainerArchive = (
             yield* _(new putContainerArchiveError({ message: "Required parameter path was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/archive`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("PUT")(endpoint);
-    })
-        .pipe(Effect.map(path === undefined ? identity : NodeHttp.request.setUrlParam("path", String(path))))
-        .pipe(
-            Effect.map(
-                noOverwriteDirNonDir === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("noOverwriteDirNonDir", String(noOverwriteDirNonDir))
-            )
-        )
-        .pipe(
-            Effect.map(
-                copyUIDGID === undefined ? identity : NodeHttp.request.setUrlParam("copyUIDGID", String(copyUIDGID))
-            )
-        )
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/x-tar")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/containers/{id}/archive`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "PUT";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("path", String(path)))
+            .pipe(addQueryParameter("noOverwriteDirNonDir", String(noOverwriteDirNonDir)))
+            .pipe(addQueryParameter("copyUIDGID", String(copyUIDGID)))
+            .pipe(addHeader("Content-Type", "application/x-tar"))
+            .pipe(setBody(body, "Object"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new putContainerArchiveError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Return image digest and platform information by contacting the registry.
@@ -5686,28 +5568,24 @@ export const putContainerArchive = (
  * @param {string} name Image name or id
  */
 export const distributionInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<
-    never,
-    distributionInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<DistributionInspect>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, distributionInspectError, Readonly<DistributionInspect>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new distributionInspectError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/distribution/{name}/json`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(DistributionInspectSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/distribution/{name}/json`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(DistributionInspectSchema)))
+            .pipe(Effect.orElseFail(() => new distributionInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Run a command inside a running container.
@@ -5716,14 +5594,9 @@ export const distributionInspect = (
  * @param {string} id ID or name of container
  */
 export const containerExec = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: ExecConfig,
     id: string
-): Effect.Effect<
-    never,
-    containerExecError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<IdResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, containerExecError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new containerExecError({ message: "Required parameter body was null or undefined" }));
@@ -5733,29 +5606,19 @@ export const containerExec = (
             yield* _(new containerExecError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/containers/{id}/exec`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ExecConfig" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/containers/{id}/exec`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ExecConfig"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
+            .pipe(Effect.orElseFail(() => new containerExecError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Return low-level information about an exec instance.
@@ -5763,25 +5626,24 @@ export const containerExec = (
  * @param {string} id Exec instance ID
  */
 export const execInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<
-    never,
-    execInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ExecInspectResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, execInspectError, Readonly<ExecInspectResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/exec/{id}/json`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(ExecInspectResponseSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/exec/{id}/json`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ExecInspectResponseSchema)))
+            .pipe(Effect.orElseFail(() => new execInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Resize the TTY session used by an exec instance. This endpoint only works if `tty` was specified as part of creating and starting the exec instance.
@@ -5791,25 +5653,27 @@ export const execInspect = (
  * @param {number} [w] Width of the TTY session in characters
  */
 export const execResize = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<never, execResizeError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, execResizeError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execResizeError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/exec/{id}/resize`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(h === undefined ? identity : NodeHttp.request.setUrlParam("h", String(h))))
-        .pipe(Effect.map(w === undefined ? identity : NodeHttp.request.setUrlParam("w", String(w))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/exec/{id}/resize`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("h", String(h)))
+            .pipe(addQueryParameter("w", String(w)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new execResizeError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Starts a previously set up exec instance. If detach is true, this endpoint returns immediately after starting the command. Otherwise, it sets up an interactive session with the command.
@@ -5818,38 +5682,26 @@ export const execResize = (
  * @param {ExecStartConfig} [body]
  */
 export const execStart = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     body?: ExecStartConfig
-): Effect.Effect<
-    never,
-    execStartError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, execStartError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execStartError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/exec/{id}/start`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ExecStartConfig" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/exec/{id}/start`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ExecStartConfig"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new execStartError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -5859,33 +5711,25 @@ export const execStart = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the list of build cache objects.  Available filters:  - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; remove cache older than &#x60;&lt;timestamp&gt;&#x60;. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon&#39;s local time. - &#x60;id&#x3D;&lt;id&gt;&#x60; - &#x60;parent&#x3D;&lt;id&gt;&#x60; - &#x60;type&#x3D;&lt;string&gt;&#x60; - &#x60;description&#x3D;&lt;string&gt;&#x60; - &#x60;inuse&#x60; - &#x60;shared&#x60; - &#x60;private&#x60;
  */
 export const buildPrune = (
-    mobyConnectionOptions: MobyConnectionOptions,
     keep_storage?: number,
     all?: boolean,
     filters?: string
-): Effect.Effect<
-    never,
-    buildPruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<BuildPruneResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, buildPruneError, Readonly<BuildPruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build/prune`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                keep_storage === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("keep-storage", String(keep_storage))
-            )
-        )
-        .pipe(Effect.map(all === undefined ? identity : NodeHttp.request.setUrlParam("all", String(all))))
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(BuildPruneResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("keep-storage", String(keep_storage)))
+            .pipe(addQueryParameter("all", String(all)))
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(BuildPruneResponseSchema)))
+            .pipe(Effect.orElseFail(() => new buildPruneError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Build an image from a tar archive with a `Dockerfile` in it.  The `Dockerfile` specifies how the image is built from the tar archive. It is typically in the archive's root, but can be at a different path or have a different name by specifying the `dockerfile` parameter. [See the `Dockerfile` reference for more information](https://docs.docker.com/engine/reference/builder/).  The Docker daemon performs a preliminary validation of the `Dockerfile` before starting the build, and returns an error if the syntax is incorrect. After that, each instruction is run one-by-one until the ID of the new image is output.  The build is canceled if the client drops the connection by quitting or being killed.
@@ -5919,7 +5763,6 @@ export const buildPrune = (
  * @param {string} [outputs] BuildKit output configuration
  */
 export const imageBuild = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: unknown,
     dockerfile?: string,
     t?: string,
@@ -5947,92 +5790,46 @@ export const imageBuild = (
     platform?: string,
     target?: string,
     outputs?: string
-): Effect.Effect<
-    never,
-    imageBuildError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageBuildError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                dockerfile === undefined ? identity : NodeHttp.request.setUrlParam("dockerfile", String(dockerfile))
-            )
-        )
-        .pipe(Effect.map(t === undefined ? identity : NodeHttp.request.setUrlParam("t", String(t))))
-        .pipe(
-            Effect.map(
-                extrahosts === undefined ? identity : NodeHttp.request.setUrlParam("extrahosts", String(extrahosts))
-            )
-        )
-        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
-        .pipe(Effect.map(q === undefined ? identity : NodeHttp.request.setUrlParam("q", String(q))))
-        .pipe(Effect.map(nocache === undefined ? identity : NodeHttp.request.setUrlParam("nocache", String(nocache))))
-        .pipe(
-            Effect.map(
-                cachefrom === undefined ? identity : NodeHttp.request.setUrlParam("cachefrom", String(cachefrom))
-            )
-        )
-        .pipe(Effect.map(pull === undefined ? identity : NodeHttp.request.setUrlParam("pull", String(pull))))
-        .pipe(Effect.map(rm === undefined ? identity : NodeHttp.request.setUrlParam("rm", String(rm))))
-        .pipe(Effect.map(forcerm === undefined ? identity : NodeHttp.request.setUrlParam("forcerm", String(forcerm))))
-        .pipe(Effect.map(memory === undefined ? identity : NodeHttp.request.setUrlParam("memory", String(memory))))
-        .pipe(Effect.map(memswap === undefined ? identity : NodeHttp.request.setUrlParam("memswap", String(memswap))))
-        .pipe(
-            Effect.map(
-                cpushares === undefined ? identity : NodeHttp.request.setUrlParam("cpushares", String(cpushares))
-            )
-        )
-        .pipe(
-            Effect.map(
-                cpusetcpus === undefined ? identity : NodeHttp.request.setUrlParam("cpusetcpus", String(cpusetcpus))
-            )
-        )
-        .pipe(
-            Effect.map(
-                cpuperiod === undefined ? identity : NodeHttp.request.setUrlParam("cpuperiod", String(cpuperiod))
-            )
-        )
-        .pipe(
-            Effect.map(cpuquota === undefined ? identity : NodeHttp.request.setUrlParam("cpuquota", String(cpuquota)))
-        )
-        .pipe(
-            Effect.map(
-                buildargs === undefined ? identity : NodeHttp.request.setUrlParam("buildargs", String(buildargs))
-            )
-        )
-        .pipe(Effect.map(shmsize === undefined ? identity : NodeHttp.request.setUrlParam("shmsize", String(shmsize))))
-        .pipe(Effect.map(squash === undefined ? identity : NodeHttp.request.setUrlParam("squash", String(squash))))
-        .pipe(Effect.map(labels === undefined ? identity : NodeHttp.request.setUrlParam("labels", String(labels))))
-        .pipe(
-            Effect.map(
-                networkmode === undefined ? identity : NodeHttp.request.setUrlParam("networkmode", String(networkmode))
-            )
-        )
-        .pipe(
-            Effect.map(platform === undefined ? identity : NodeHttp.request.setUrlParam("platform", String(platform)))
-        )
-        .pipe(Effect.map(target === undefined ? identity : NodeHttp.request.setUrlParam("target", String(target))))
-        .pipe(Effect.map(outputs === undefined ? identity : NodeHttp.request.setUrlParam("outputs", String(outputs))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-type", String(Content_type))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Config", String(X_Registry_Config))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/octet-stream")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-type", String(Content_type)))
+            .pipe(addHeader("X-Registry-Config", String(X_Registry_Config)))
+            .pipe(addQueryParameter("dockerfile", String(dockerfile)))
+            .pipe(addQueryParameter("t", String(t)))
+            .pipe(addQueryParameter("extrahosts", String(extrahosts)))
+            .pipe(addQueryParameter("remote", String(remote)))
+            .pipe(addQueryParameter("q", String(q)))
+            .pipe(addQueryParameter("nocache", String(nocache)))
+            .pipe(addQueryParameter("cachefrom", String(cachefrom)))
+            .pipe(addQueryParameter("pull", String(pull)))
+            .pipe(addQueryParameter("rm", String(rm)))
+            .pipe(addQueryParameter("forcerm", String(forcerm)))
+            .pipe(addQueryParameter("memory", String(memory)))
+            .pipe(addQueryParameter("memswap", String(memswap)))
+            .pipe(addQueryParameter("cpushares", String(cpushares)))
+            .pipe(addQueryParameter("cpusetcpus", String(cpusetcpus)))
+            .pipe(addQueryParameter("cpuperiod", String(cpuperiod)))
+            .pipe(addQueryParameter("cpuquota", String(cpuquota)))
+            .pipe(addQueryParameter("buildargs", String(buildargs)))
+            .pipe(addQueryParameter("shmsize", String(shmsize)))
+            .pipe(addQueryParameter("squash", String(squash)))
+            .pipe(addQueryParameter("labels", String(labels)))
+            .pipe(addQueryParameter("networkmode", String(networkmode)))
+            .pipe(addQueryParameter("platform", String(platform)))
+            .pipe(addQueryParameter("target", String(target)))
+            .pipe(addQueryParameter("outputs", String(outputs)))
+            .pipe(addHeader("Content-Type", "application/octet-stream"))
+            .pipe(setBody(body, "Object"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new imageBuildError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6047,7 +5844,6 @@ export const imageBuild = (
  * @param {string} [changes] &#x60;Dockerfile&#x60; instructions to apply while committing
  */
 export const imageCommit = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: ContainerConfig,
     container?: string,
     repo?: string,
@@ -6056,43 +5852,28 @@ export const imageCommit = (
     author?: string,
     pause?: boolean,
     changes?: string
-): Effect.Effect<
-    never,
-    imageCommitError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<IdResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageCommitError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/commit`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                container === undefined ? identity : NodeHttp.request.setUrlParam("container", String(container))
-            )
-        )
-        .pipe(Effect.map(repo === undefined ? identity : NodeHttp.request.setUrlParam("repo", String(repo))))
-        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
-        .pipe(Effect.map(comment === undefined ? identity : NodeHttp.request.setUrlParam("comment", String(comment))))
-        .pipe(Effect.map(author === undefined ? identity : NodeHttp.request.setUrlParam("author", String(author))))
-        .pipe(Effect.map(pause === undefined ? identity : NodeHttp.request.setUrlParam("pause", String(pause))))
-        .pipe(Effect.map(changes === undefined ? identity : NodeHttp.request.setUrlParam("changes", String(changes))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ContainerConfig" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("container", String(container)))
+            .pipe(addQueryParameter("repo", String(repo)))
+            .pipe(addQueryParameter("tag", String(tag)))
+            .pipe(addQueryParameter("comment", String(comment)))
+            .pipe(addQueryParameter("author", String(author)))
+            .pipe(addQueryParameter("pause", String(pause)))
+            .pipe(addQueryParameter("changes", String(changes)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ContainerConfig"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
+            .pipe(Effect.orElseFail(() => new imageCommitError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Create an image by either pulling it from a registry or importing it.
@@ -6108,7 +5889,6 @@ export const imageCommit = (
  * @param {string} [platform] Platform in the format os[/arch[/variant]].  When used in combination with the &#x60;fromImage&#x60; option, the daemon checks if the given image is present in the local image cache with the given OS and Architecture, and otherwise attempts to pull the image. If the option is not set, the host&#39;s native OS and Architecture are used. If the given image does not exist in the local image cache, the daemon attempts to pull the image with the host&#39;s native OS and Architecture. If the given image does exists in the local image cache, but its OS or architecture does not match, a warning is produced.  When used with the &#x60;fromSrc&#x60; option to import an image from an archive, this option sets the platform information for the imported image. If the option is not set, the host&#39;s native OS and Architecture are used for the imported image.
  */
 export const imageCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: string,
     fromImage?: string,
     fromSrc?: string,
@@ -6118,44 +5898,28 @@ export const imageCreate = (
     X_Registry_Auth?: string,
     changes?: Array<string>,
     platform?: string
-): Effect.Effect<
-    never,
-    imageCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageCreateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                fromImage === undefined ? identity : NodeHttp.request.setUrlParam("fromImage", String(fromImage))
-            )
-        )
-        .pipe(Effect.map(fromSrc === undefined ? identity : NodeHttp.request.setUrlParam("fromSrc", String(fromSrc))))
-        .pipe(Effect.map(repo === undefined ? identity : NodeHttp.request.setUrlParam("repo", String(repo))))
-        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
-        .pipe(Effect.map(message === undefined ? identity : NodeHttp.request.setUrlParam("message", String(message))))
-        .pipe(Effect.map(NodeHttp.request.setUrlParam("changes", (changes || []).join(COLLECTION_FORMATS["csv"]))))
-        .pipe(
-            Effect.map(platform === undefined ? identity : NodeHttp.request.setUrlParam("platform", String(platform)))
-        )
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "text/plain")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("string" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
+            .pipe(addQueryParameter("fromImage", String(fromImage)))
+            .pipe(addQueryParameter("fromSrc", String(fromSrc)))
+            .pipe(addQueryParameter("repo", String(repo)))
+            .pipe(addQueryParameter("tag", String(tag)))
+            .pipe(addQueryParameter("message", String(message)))
+            .pipe(addQueryParameter("changes", (changes || []).join(COLLECTION_FORMATS["csv"])))
+            .pipe(addQueryParameter("platform", String(platform)))
+            .pipe(addHeader("Content-Type", "text/plain"))
+            .pipe(setBody(body, "string"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new imageCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Remove an image, along with any untagged parent images that were referenced by that image.  Images can't be removed if they have descendant images, are being used by a running container or are being used by a build.
@@ -6165,56 +5929,54 @@ export const imageCreate = (
  * @param {boolean} [noprune] Do not delete untagged parent images
  */
 export const imageDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean,
     noprune?: boolean
-): Effect.Effect<
-    never,
-    imageDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<ImageDeleteResponseItem>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageDeleteError, Readonly<Array<ImageDeleteResponseItem>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageDeleteError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/images/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    })
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(Effect.map(noprune === undefined ? identity : NodeHttp.request.setUrlParam("noprune", String(noprune))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageDeleteResponseItemSchema)))
-        );
+        const endpoint: string = `${BASE_PATH}/images/{name}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(addQueryParameter("noprune", String(noprune)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageDeleteResponseItemSchema))))
+            .pipe(Effect.orElseFail(() => new imageDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Get a tarball containing all images and metadata for a repository.  If `name` is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and its parents) are returned. If `name` is an image ID, similarly only that image (and its parents) are returned, but with the exclusion of the `repositories` file in the tarball, as there were no image names referenced.  ### Image tarball format  An image tarball contains one directory per image layer (named using its long ID), each containing these files:  - `VERSION`: currently `1.0` - the file format version - `json`: detailed layer information, similar to `docker inspect layer_id` - `layer.tar`: A tarfile containing the filesystem changes in this layer  The `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and directories for storing attribute changes and deletions.  If the tarball defines a repository, the tarball should also include a `repositories` file at the root that contains a list of repository and tag names mapped to layer IDs.  ```json {   \"hello-world\": {     \"latest\": \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\"   } } ```
  * @summary Export an image
  * @param {string} name Image name or ID
  */
-export const imageGet = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    name: string
-): Effect.Effect<never, imageGetError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+export const imageGet = (name: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageGetError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageGetError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/images/{name}/get`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap((clientResponse) => clientResponse.text),
-        Effect.map((responseText) => new Blob([responseText]))
-    );
+        const endpoint: string = `${BASE_PATH}/images/{name}/get`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(
+                Effect.flatMap((clientResponse) => clientResponse.text),
+                Effect.map((responseText) => new Blob([responseText]))
+            )
+            .pipe(Effect.orElseFail(() => new imageGetError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Get a tarball containing all images and metadata for several image repositories.  For each value of the `names` parameter: if it is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and its parents) are returned; if it is an image ID, similarly only that image (and its parents) are returned and there would be no names referenced in the 'repositories' file for this image ID.  For details on the format, see the [export image endpoint](#operation/ImageGet).
@@ -6222,20 +5984,24 @@ export const imageGet = (
  * @param {Array<string>} [names] Image names to filter by
  */
 export const imageGetAll = (
-    mobyConnectionOptions: MobyConnectionOptions,
     names?: Array<string>
-): Effect.Effect<never, imageGetAllError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageGetAllError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/get`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setUrlParam("names", (names || []).join(COLLECTION_FORMATS["csv"]))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap((clientResponse) => clientResponse.text),
-            Effect.map((responseText) => new Blob([responseText]))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("names", (names || []).join(COLLECTION_FORMATS["csv"])))
+            .pipe(client)
+            .pipe(
+                Effect.flatMap((clientResponse) => clientResponse.text),
+                Effect.map((responseText) => new Blob([responseText]))
+            )
+            .pipe(Effect.orElseFail(() => new imageGetAllError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Return parent layers of an image.
@@ -6243,28 +6009,24 @@ export const imageGetAll = (
  * @param {string} name Image name or ID
  */
 export const imageHistory = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<
-    never,
-    imageHistoryError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<HistoryResponseItem>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageHistoryError, Readonly<Array<HistoryResponseItem>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageHistoryError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/images/{name}/history`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(HistoryResponseItemSchema)))
-    );
+        const endpoint: string = `${BASE_PATH}/images/{name}/history`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(HistoryResponseItemSchema))))
+            .pipe(Effect.orElseFail(() => new imageHistoryError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Return low-level information about an image.
@@ -6272,28 +6034,24 @@ export const imageHistory = (
  * @param {string} name Image name or id
  */
 export const imageInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<
-    never,
-    imageInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ImageInspect>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageInspectError, Readonly<ImageInspect>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageInspectError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/images/{name}/json`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(ImageInspectSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/images/{name}/json`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ImageInspectSchema)))
+            .pipe(Effect.orElseFail(() => new imageInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Returns a list of images on the server. Note that it uses a different, smaller representation of an image than inspecting a single image.
@@ -6304,33 +6062,27 @@ export const imageInspect = (
  * @param {boolean} [digests] Show digest information as a &#x60;RepoDigests&#x60; field on each image.
  */
 export const imageList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     all?: boolean,
     filters?: string,
     shared_size?: boolean,
     digests?: boolean
-): Effect.Effect<
-    never,
-    imageListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<ImageSummary>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageListError, Readonly<Array<ImageSummary>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/json`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(all === undefined ? identity : NodeHttp.request.setUrlParam("all", String(all))))
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(
-                shared_size === undefined ? identity : NodeHttp.request.setUrlParam("shared-size", String(shared_size))
-            )
-        )
-        .pipe(Effect.map(digests === undefined ? identity : NodeHttp.request.setUrlParam("digests", String(digests))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageSummarySchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("all", String(all)))
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(addQueryParameter("shared-size", String(shared_size)))
+            .pipe(addQueryParameter("digests", String(digests)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageSummarySchema))))
+            .pipe(Effect.orElseFail(() => new imageListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Load a set of images and tags into a repository.  For details on the format, see the [export image endpoint](#operation/ImageGet).
@@ -6339,34 +6091,23 @@ export const imageList = (
  * @param {boolean} [quiet] Suppress progress details during load.
  */
 export const imageLoad = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: unknown,
     quiet?: boolean
-): Effect.Effect<
-    never,
-    imageLoadError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageLoadError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/load`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(quiet === undefined ? identity : NodeHttp.request.setUrlParam("quiet", String(quiet))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/x-tar")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("quiet", String(quiet)))
+            .pipe(addHeader("Content-Type", "application/x-tar"))
+            .pipe(setBody(body, "Object"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new imageLoadError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6374,23 +6115,21 @@ export const imageLoad = (
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;). Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), prune only    unused *and* untagged images. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), all unused images are pruned. - &#x60;until&#x3D;&lt;string&gt;&#x60; Prune images created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune images with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const imagePrune = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    imagePruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<ImagePruneResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imagePruneError, Readonly<ImagePruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/prune`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ImagePruneResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ImagePruneResponseSchema)))
+            .pipe(Effect.orElseFail(() => new imagePruneError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Push an image to a registry.  If you wish to push an image on to a private registry, that image must already have a tag which references the registry. For example, `registry.example.com/myimage:latest`.  The push is cancelled if the HTTP connection is closed.
@@ -6400,11 +6139,10 @@ export const imagePrune = (
  * @param {string} [tag] The tag to associate with the image on the registry.
  */
 export const imagePush = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     X_Registry_Auth: string,
     tag?: string
-): Effect.Effect<never, imagePushError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imagePushError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imagePushError({ message: "Required parameter name was null or undefined" }));
@@ -6414,18 +6152,18 @@ export const imagePush = (
             yield* _(new imagePushError({ message: "Required parameter X_Registry_Auth was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/images/{name}/push`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/images/{name}/push`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
+            .pipe(addQueryParameter("tag", String(tag)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new imagePushError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Search for an image on Docker Hub.
@@ -6435,31 +6173,29 @@ export const imagePush = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the images list. Available filters:  - &#x60;is-automated&#x3D;(true|false)&#x60; - &#x60;is-official&#x3D;(true|false)&#x60; - &#x60;stars&#x3D;&lt;number&gt;&#x60; Matches images that has at least &#39;number&#39; stars.
  */
 export const imageSearch = (
-    mobyConnectionOptions: MobyConnectionOptions,
     term: string,
     limit?: number,
     filters?: string
-): Effect.Effect<
-    never,
-    imageSearchError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<ImageSearchResponseItem>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageSearchError, Readonly<Array<ImageSearchResponseItem>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (term === null || term === undefined) {
             yield* _(new imageSearchError({ message: "Required parameter term was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/images/search`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(term === undefined ? identity : NodeHttp.request.setUrlParam("term", String(term))))
-        .pipe(Effect.map(limit === undefined ? identity : NodeHttp.request.setUrlParam("limit", String(limit))))
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageSearchResponseItemSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("term", String(term)))
+            .pipe(addQueryParameter("limit", String(limit)))
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ImageSearchResponseItemSchema))))
+            .pipe(Effect.orElseFail(() => new imageSearchError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Tag an image so that it becomes part of a repository.
@@ -6469,28 +6205,27 @@ export const imageSearch = (
  * @param {string} [tag] The name of the new tag.
  */
 export const imageTag = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     repo?: string,
     tag?: string
-): Effect.Effect<never, imageTagError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, imageTagError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageTagError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/images/{name}/tag`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(repo === undefined ? identity : NodeHttp.request.setUrlParam("repo", String(repo))))
-        .pipe(Effect.map(tag === undefined ? identity : NodeHttp.request.setUrlParam("tag", String(tag))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/images/{name}/tag`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("repo", String(repo)))
+            .pipe(addQueryParameter("tag", String(tag)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new imageTagError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6499,14 +6234,9 @@ export const imageTag = (
  * @param {string} id Network ID or name
  */
 export const networkConnect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: NetworkConnectRequest,
     id: string
-): Effect.Effect<
-    never,
-    networkConnectError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkConnectError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkConnectError({ message: "Required parameter body was null or undefined" }));
@@ -6516,28 +6246,18 @@ export const networkConnect = (
             yield* _(new networkConnectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/networks/{id}/connect`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("NetworkConnectRequest" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/networks/{id}/connect`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "NetworkConnectRequest"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new networkConnectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6545,59 +6265,48 @@ export const networkConnect = (
  * @param {NetworkCreateRequest} body Network configuration
  */
 export const networkCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: NetworkCreateRequest
-): Effect.Effect<
-    never,
-    networkCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<NetworkCreateResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkCreateError, Readonly<NetworkCreateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkCreateError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/networks/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("NetworkCreateRequest" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkCreateResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "NetworkCreateRequest"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkCreateResponseSchema)))
+            .pipe(Effect.orElseFail(() => new networkCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Remove a network
  * @param {string} id Network ID or name
  */
-export const networkDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    id: string
-): Effect.Effect<never, networkDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const networkDelete = (id: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/networks/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new networkDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6606,14 +6315,9 @@ export const networkDelete = (
  * @param {string} id Network ID or name
  */
 export const networkDisconnect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: NetworkDisconnectRequest,
     id: string
-): Effect.Effect<
-    never,
-    networkDisconnectError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkDisconnectError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkDisconnectError({ message: "Required parameter body was null or undefined" }));
@@ -6623,28 +6327,18 @@ export const networkDisconnect = (
             yield* _(new networkDisconnectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/networks/{id}/disconnect`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("NetworkDisconnectRequest" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/networks/{id}/disconnect`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "NetworkDisconnectRequest"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new networkDisconnectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6654,30 +6348,28 @@ export const networkDisconnect = (
  * @param {string} [scope] Filter the network by scope (swarm, global, or local)
  */
 export const networkInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     verbose?: boolean,
     scope?: string
-): Effect.Effect<
-    never,
-    networkInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Network>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkInspectError, Readonly<Network>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/networks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(verbose === undefined ? identity : NodeHttp.request.setUrlParam("verbose", String(verbose))))
-        .pipe(Effect.map(scope === undefined ? identity : NodeHttp.request.setUrlParam("scope", String(scope))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkSchema))
-        );
+        const endpoint: string = `${BASE_PATH}/networks/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("verbose", String(verbose)))
+            .pipe(addQueryParameter("scope", String(scope)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkSchema)))
+            .pipe(Effect.orElseFail(() => new networkInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Returns a list of networks. For details on the format, see the [network inspect endpoint](#operation/NetworkInspect).  Note that it uses a different, smaller representation of a network than inspecting a single network. For example, the list of containers attached to the network is not propagated in API versions 1.28 and up.
@@ -6685,23 +6377,21 @@ export const networkInspect = (
  * @param {string} [filters] JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the networks list.  Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), returns all    networks that are not in use by a container. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), only networks that are in use by one or more    containers are returned. - &#x60;driver&#x3D;&lt;driver-name&gt;&#x60; Matches a network&#39;s driver. - &#x60;id&#x3D;&lt;network-id&gt;&#x60; Matches all or part of a network ID. - &#x60;label&#x3D;&lt;key&gt;&#x60; or &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60; of a network label. - &#x60;name&#x3D;&lt;network-name&gt;&#x60; Matches all or part of a network name. - &#x60;scope&#x3D;[\&quot;swarm\&quot;|\&quot;global\&quot;|\&quot;local\&quot;]&#x60; Filters networks by scope (&#x60;swarm&#x60;, &#x60;global&#x60;, or &#x60;local&#x60;). - &#x60;type&#x3D;[\&quot;custom\&quot;|\&quot;builtin\&quot;]&#x60; Filters networks by type. The &#x60;custom&#x60; keyword returns all user-defined networks.
  */
 export const networkList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    networkListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Network>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkListError, Readonly<Array<Network>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(NetworkSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(NetworkSchema))))
+            .pipe(Effect.orElseFail(() => new networkListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6709,23 +6399,21 @@ export const networkList = (
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;until&#x3D;&lt;timestamp&gt;&#x60; Prune networks created before this timestamp. The &#x60;&lt;timestamp&gt;&#x60; can be Unix timestamps, date formatted timestamps, or Go duration strings (e.g. &#x60;10m&#x60;, &#x60;1h30m&#x60;) computed relative to the daemon machine’s time. - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune networks with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels.
  */
 export const networkPrune = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    networkPruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<NetworkPruneResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, networkPruneError, Readonly<NetworkPruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks/prune`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkPruneResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkPruneResponseSchema)))
+            .pipe(Effect.orElseFail(() => new networkPruneError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6734,23 +6422,25 @@ export const networkPrune = (
  * @param {boolean} [force] Force remove a node from the swarm
  */
 export const nodeDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     force?: boolean
-): Effect.Effect<never, nodeDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, nodeDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    })
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/nodes/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new nodeDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6758,21 +6448,24 @@ export const nodeDelete = (
  * @param {string} id The ID or name of the node
  */
 export const nodeInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, nodeInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Node>> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, nodeInspectError, Readonly<Node>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/nodes/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(NodeSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/nodes/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NodeSchema)))
+            .pipe(Effect.orElseFail(() => new nodeInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6780,23 +6473,21 @@ export const nodeInspect = (
  * @param {string} [filters] Filters to process on the nodes list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;id&#x3D;&lt;node id&gt;&#x60; - &#x60;label&#x3D;&lt;engine label&gt;&#x60; - &#x60;membership&#x3D;&#x60;(&#x60;accepted&#x60;|&#x60;pending&#x60;)&#x60; - &#x60;name&#x3D;&lt;node name&gt;&#x60; - &#x60;node.label&#x3D;&lt;node label&gt;&#x60; - &#x60;role&#x3D;&#x60;(&#x60;manager&#x60;|&#x60;worker&#x60;)&#x60;
  */
 export const nodeList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    nodeListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Node>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, nodeListError, Readonly<Array<Node>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/nodes`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(NodeSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(NodeSchema))))
+            .pipe(Effect.orElseFail(() => new nodeListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6806,15 +6497,10 @@ export const nodeList = (
  * @param {NodeSpec} [body]
  */
 export const nodeUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     version: number,
     body?: NodeSpec
-): Effect.Effect<
-    never,
-    nodeUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, nodeUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -6824,26 +6510,19 @@ export const nodeUpdate = (
             yield* _(new nodeUpdateError({ message: "Required parameter version was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/nodes/{id}/update`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("NodeSpec" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/nodes/{id}/update`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("version", String(version)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "NodeSpec"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new nodeUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6851,27 +6530,25 @@ export const nodeUpdate = (
  * @param {string} remote The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const getPluginPrivileges = (
-    mobyConnectionOptions: MobyConnectionOptions,
     remote: string
-): Effect.Effect<
-    never,
-    getPluginPrivilegesError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<PluginPrivilege>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, getPluginPrivilegesError, Readonly<Array<PluginPrivilege>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (remote === null || remote === undefined) {
             yield* _(new getPluginPrivilegesError({ message: "Required parameter remote was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/privileges`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(PluginPrivilegeSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("remote", String(remote)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(PluginPrivilegeSchema))))
+            .pipe(Effect.orElseFail(() => new getPluginPrivilegesError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6880,38 +6557,27 @@ export const getPluginPrivileges = (
  * @param {Object} [body] Path to tar containing plugin rootfs and manifest
  */
 export const pluginCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     body?: unknown
-): Effect.Effect<
-    never,
-    pluginCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginCreateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginCreateError({ message: "Required parameter name was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/x-tar")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Object" as unknown) !== "string" || clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("name", String(name)))
+            .pipe(addHeader("Content-Type", "application/x-tar"))
+            .pipe(setBody(body, "Object"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new pluginCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6920,28 +6586,26 @@ export const pluginCreate = (
  * @param {boolean} [force] Disable the plugin before removing. This may result in issues if the plugin is in use by a container.
  */
 export const pluginDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<
-    never,
-    pluginDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Plugin>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginDeleteError, Readonly<Plugin>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDeleteError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    })
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema))
-        );
+        const endpoint: string = `${BASE_PATH}/plugins/{name}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema)))
+            .pipe(Effect.orElseFail(() => new pluginDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6950,26 +6614,25 @@ export const pluginDelete = (
  * @param {boolean} [force] Force disable a plugin even if still in use.
  */
 export const pluginDisable = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, pluginDisableError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginDisableError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDisableError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}/disable`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/plugins/{name}/disable`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new pluginDisableError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -6978,26 +6641,25 @@ export const pluginDisable = (
  * @param {number} [timeout] Set the HTTP client timeout (in seconds)
  */
 export const pluginEnable = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     timeout?: number
-): Effect.Effect<never, pluginEnableError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginEnableError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginEnableError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}/enable`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(timeout === undefined ? identity : NodeHttp.request.setUrlParam("timeout", String(timeout))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/plugins/{name}/enable`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("timeout", String(timeout)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new pluginEnableError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7005,28 +6667,24 @@ export const pluginEnable = (
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
 export const pluginInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<
-    never,
-    pluginInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Plugin>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginInspectError, Readonly<Plugin>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginInspectError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}/json`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/plugins/{name}/json`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema)))
+            .pipe(Effect.orElseFail(() => new pluginInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Returns information about installed plugins.
@@ -7034,23 +6692,21 @@ export const pluginInspect = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the plugin list.  Available filters:  - &#x60;capability&#x3D;&lt;capability name&gt;&#x60; - &#x60;enable&#x3D;&lt;true&gt;|&lt;false&gt;&#x60;
  */
 export const pluginList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    pluginListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Plugin>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginListError, Readonly<Array<Plugin>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/plugins`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(PluginSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(PluginSchema))))
+            .pipe(Effect.orElseFail(() => new pluginListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Pulls and installs a plugin. After the plugin is installed, it can be enabled using the [`POST /plugins/{name}/enable` endpoint](#operation/PostPluginsEnable).
@@ -7061,67 +6717,53 @@ export const pluginList = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration to use when pulling a plugin from a registry.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const pluginPull = (
-    mobyConnectionOptions: MobyConnectionOptions,
     remote: string,
     body?: Array<PluginPrivilege>,
     name?: string,
     X_Registry_Auth?: string
-): Effect.Effect<
-    never,
-    pluginPullError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginPullError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (remote === null || remote === undefined) {
             yield* _(new pluginPullError({ message: "Required parameter remote was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/plugins/pull`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
-        .pipe(Effect.map(name === undefined ? identity : NodeHttp.request.setUrlParam("name", String(name))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Array&lt;PluginPrivilege&gt;" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
+            .pipe(addQueryParameter("remote", String(remote)))
+            .pipe(addQueryParameter("name", String(name)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "Array&lt;PluginPrivilege&gt;"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new pluginPullError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Push a plugin to the registry.
  * @summary Push a plugin
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
-export const pluginPush = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    name: string
-): Effect.Effect<never, pluginPushError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const pluginPush = (name: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginPushError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginPushError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}/push`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/plugins/{name}/push`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new pluginPushError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7130,41 +6772,26 @@ export const pluginPush = (
  * @param {Array<string>} [body]
  */
 export const pluginSet = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     body?: Array<string>
-): Effect.Effect<
-    never,
-    pluginSetError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginSetError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginSetError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}/set`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Array&lt;string&gt;" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/plugins/{name}/set`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "Array&lt;string&gt;"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new pluginSetError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7175,16 +6802,11 @@ export const pluginSet = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration to use when pulling a plugin from a registry.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const pluginUpgrade = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     remote: string,
     body?: Array<PluginPrivilege>,
     X_Registry_Auth?: string
-): Effect.Effect<
-    never,
-    pluginUpgradeError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, pluginUpgradeError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginUpgradeError({ message: "Required parameter name was null or undefined" }));
@@ -7194,30 +6816,20 @@ export const pluginUpgrade = (
             yield* _(new pluginUpgradeError({ message: "Required parameter remote was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/plugins/{name}/upgrade`.replace(
-            `{${"name"}}`,
-            encodeURIComponent(String(name))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(remote === undefined ? identity : NodeHttp.request.setUrlParam("remote", String(remote))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("Array&lt;PluginPrivilege&gt;" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/plugins/{name}/upgrade`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
+            .pipe(addQueryParameter("remote", String(remote)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "Array&lt;PluginPrivilege&gt;"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new pluginUpgradeError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7225,55 +6837,44 @@ export const pluginUpgrade = (
  * @param {SecretsCreateBody} [body]
  */
 export const secretCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: SecretsCreateBody
-): Effect.Effect<
-    never,
-    secretCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<IdResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, secretCreateError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("SecretsCreateBody" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "SecretsCreateBody"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
+            .pipe(Effect.orElseFail(() => new secretCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Delete a secret
  * @param {string} id ID of the secret
  */
-export const secretDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    id: string
-): Effect.Effect<never, secretDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const secretDelete = (id: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, secretDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/secrets/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new secretDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7281,25 +6882,24 @@ export const secretDelete = (
  * @param {string} id ID of the secret
  */
 export const secretInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<
-    never,
-    secretInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Secret>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, secretInspectError, Readonly<Secret>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/secrets/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(SecretSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/secrets/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SecretSchema)))
+            .pipe(Effect.orElseFail(() => new secretInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7307,23 +6907,21 @@ export const secretInspect = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the secrets list.  Available filters:  - &#x60;id&#x3D;&lt;secret id&gt;&#x60; - &#x60;label&#x3D;&lt;key&gt; or label&#x3D;&lt;key&gt;&#x3D;value&#x60; - &#x60;name&#x3D;&lt;secret name&gt;&#x60; - &#x60;names&#x3D;&lt;secret name&gt;&#x60;
  */
 export const secretList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    secretListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Secret>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, secretListError, Readonly<Array<Secret>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(SecretSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(SecretSchema))))
+            .pipe(Effect.orElseFail(() => new secretListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
 *
@@ -7336,15 +6934,10 @@ can be updated. All other fields must remain unchanged from the
 
 */
 export const secretUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     version: number,
     body?: SecretSpec
-): Effect.Effect<
-    never,
-    secretUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, secretUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -7354,29 +6947,19 @@ export const secretUpdate = (
             yield* _(new secretUpdateError({ message: "Required parameter version was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/secrets/{id}/update`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("SecretSpec" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/secrets/{id}/update`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("version", String(version)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "SecretSpec"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new secretUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7385,61 +6968,50 @@ export const secretUpdate = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration for pulling from private registries.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const serviceCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: ServicesCreateBody,
     X_Registry_Auth?: string
-): Effect.Effect<
-    never,
-    serviceCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<ServiceCreateResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, serviceCreateError, Readonly<ServiceCreateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new serviceCreateError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/services/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("ServicesCreateBody" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceCreateResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "ServicesCreateBody"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceCreateResponseSchema)))
+            .pipe(Effect.orElseFail(() => new serviceCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Delete a service
  * @param {string} id ID or name of service.
  */
-export const serviceDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    id: string
-): Effect.Effect<never, serviceDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const serviceDelete = (id: string): Effect.Effect<NodeHttp.nodeClient.HttpAgent, serviceDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const endpoint: string = `${BASE_PATH}/services/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new serviceDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7448,34 +7020,26 @@ export const serviceDelete = (
  * @param {boolean} [insertDefaults] Fill empty fields with default values.
  */
 export const serviceInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     insertDefaults?: boolean
-): Effect.Effect<
-    never,
-    serviceInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Service>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, serviceInspectError, Readonly<Service>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/services/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(
-            Effect.map(
-                insertDefaults === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("insertDefaults", String(insertDefaults))
-            )
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceSchema))
-        );
+        const endpoint: string = `${BASE_PATH}/services/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("insertDefaults", String(insertDefaults)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceSchema)))
+            .pipe(Effect.orElseFail(() => new serviceInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7484,25 +7048,23 @@ export const serviceInspect = (
  * @param {boolean} [status] Include service status, with count of running and desired tasks.
  */
 export const serviceList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string,
     status?: boolean
-): Effect.Effect<
-    never,
-    serviceListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Service>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, serviceListError, Readonly<Array<Service>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/services`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(Effect.map(status === undefined ? identity : NodeHttp.request.setUrlParam("status", String(status))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ServiceSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(addQueryParameter("status", String(status)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(ServiceSchema))))
+            .pipe(Effect.orElseFail(() => new serviceListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Get `stdout` and `stderr` logs from a service. See also [`/containers/{id}/logs`](#operation/ContainerLogs).  **Note**: This endpoint works only for services with the `local`, `json-file` or `journald` logging drivers.
@@ -7517,7 +7079,6 @@ export const serviceList = (
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const serviceLogs = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -7526,32 +7087,33 @@ export const serviceLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, serviceLogsError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, serviceLogsError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceLogsError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/services/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(details === undefined ? identity : NodeHttp.request.setUrlParam("details", String(details))))
-        .pipe(Effect.map(follow === undefined ? identity : NodeHttp.request.setUrlParam("follow", String(follow))))
-        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
-        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
-        .pipe(
-            Effect.map(
-                timestamps === undefined ? identity : NodeHttp.request.setUrlParam("timestamps", String(timestamps))
+        const endpoint: string = `${BASE_PATH}/services/{id}/logs`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("details", String(details)))
+            .pipe(addQueryParameter("follow", String(follow)))
+            .pipe(addQueryParameter("stdout", String(stdout)))
+            .pipe(addQueryParameter("stderr", String(stderr)))
+            .pipe(addQueryParameter("since", String(since)))
+            .pipe(addQueryParameter("timestamps", String(timestamps)))
+            .pipe(addQueryParameter("tail", String(tail)))
+            .pipe(client)
+            .pipe(
+                Effect.flatMap((clientResponse) => clientResponse.text),
+                Effect.map((responseText) => new Blob([responseText]))
             )
-        )
-        .pipe(Effect.map(tail === undefined ? identity : NodeHttp.request.setUrlParam("tail", String(tail))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap((clientResponse) => clientResponse.text),
-            Effect.map((responseText) => new Blob([responseText]))
-        );
+            .pipe(Effect.orElseFail(() => new serviceLogsError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7564,18 +7126,13 @@ export const serviceLogs = (
  * @param {string} [X_Registry_Auth] A base64url-encoded auth configuration for pulling from private registries.  Refer to the [authentication section](#section/Authentication) for details.
  */
 export const serviceUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: IdUpdateBody1,
     id: string,
     version: number,
     registryAuthFrom?: string,
     rollback?: string,
     X_Registry_Auth?: string
-): Effect.Effect<
-    never,
-    serviceUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<ServiceUpdateResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, serviceUpdateError, Readonly<ServiceUpdateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new serviceUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -7589,56 +7146,40 @@ export const serviceUpdate = (
             yield* _(new serviceUpdateError({ message: "Required parameter version was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/services/{id}/update`.replace(
-            `{${"id"}}`,
-            encodeURIComponent(String(id))
-        );
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
-        .pipe(
-            Effect.map(
-                registryAuthFrom === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("registryAuthFrom", String(registryAuthFrom))
-            )
-        )
-        .pipe(
-            Effect.map(rollback === undefined ? identity : NodeHttp.request.setUrlParam("rollback", String(rollback)))
-        )
-        .pipe(Effect.map(NodeHttp.request.setHeader("X-Registry-Auth", String(X_Registry_Auth))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("IdUpdateBody1" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/services/{id}/update`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceUpdateResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
+            .pipe(addQueryParameter("version", String(version)))
+            .pipe(addQueryParameter("registryAuthFrom", String(registryAuthFrom)))
+            .pipe(addQueryParameter("rollback", String(rollback)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "IdUpdateBody1"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceUpdateResponseSchema)))
+            .pipe(Effect.orElseFail(() => new serviceUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Start a new interactive session with a server. Session allows server to call back to the client for advanced capabilities.  ### Hijacking  This endpoint hijacks the HTTP connection to HTTP2 transport that allows the client to expose gPRC services on that connection.  For example, the client sends this request to upgrade the connection:  ``` POST /session HTTP/1.1 Upgrade: h2c Connection: Upgrade ```  The Docker daemon responds with a `101 UPGRADED` response follow with the raw stream:  ``` HTTP/1.1 101 UPGRADED Connection: Upgrade Upgrade: h2c ```
  * @summary Initialize interactive session
  */
-export const session = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<never, sessionError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const session = (): Effect.Effect<NodeHttp.nodeClient.HttpAgent, sessionError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/session`;
-        return NodeHttp.request.make("POST")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new sessionError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7646,111 +7187,87 @@ export const session = (
  * @param {SwarmInitRequest} body
  */
 export const swarmInit = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmInitRequest
-): Effect.Effect<
-    never,
-    swarmInitError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<string>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, swarmInitError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmInitError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/init`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("SwarmInitRequest1" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "SwarmInitRequest1"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema)))
+            .pipe(Effect.orElseFail(() => new swarmInitError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Inspect swarm
  */
-export const swarmInspect = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<never, swarmInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Swarm>> =>
+export const swarmInspect = (): Effect.Effect<NodeHttp.nodeClient.HttpAgent, swarmInspectError, Readonly<Swarm>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm`;
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(SwarmSchema))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SwarmSchema)))
+            .pipe(Effect.orElseFail(() => new swarmInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Join an existing swarm
  * @param {SwarmJoinRequest} body
  */
-export const swarmJoin = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    body: SwarmJoinRequest
-): Effect.Effect<
-    never,
-    swarmJoinError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+export const swarmJoin = (body: SwarmJoinRequest): Effect.Effect<NodeHttp.nodeClient.HttpAgent, swarmJoinError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmJoinError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/join`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("SwarmJoinRequest1" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "SwarmJoinRequest1"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new swarmJoinError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Leave a swarm
  * @param {boolean} [force] Force leave swarm, even if this is the last manager or that it will break the cluster.
  */
-export const swarmLeave = (
-    mobyConnectionOptions: MobyConnectionOptions,
-    force?: boolean
-): Effect.Effect<never, swarmLeaveError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+export const swarmLeave = (force?: boolean): Effect.Effect<NodeHttp.nodeClient.HttpAgent, swarmLeaveError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/leave`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new swarmLeaveError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7758,57 +7275,47 @@ export const swarmLeave = (
  * @param {SwarmUnlockRequest} body
  */
 export const swarmUnlock = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmUnlockRequest
-): Effect.Effect<
-    never,
-    swarmUnlockError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, swarmUnlockError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmUnlockError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/unlock`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("SwarmUnlockRequest" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "SwarmUnlockRequest"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new swarmUnlockError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Get the unlock key
  */
-export const swarmUnlockkey = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<
-    never,
-    swarmUnlockkeyError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+export const swarmUnlockkey = (): Effect.Effect<
+    NodeHttp.nodeClient.HttpAgent,
+    swarmUnlockkeyError,
     Readonly<UnlockKeyResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/unlockkey`;
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(UnlockKeyResponseSchema))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(UnlockKeyResponseSchema)))
+            .pipe(Effect.orElseFail(() => new swarmUnlockkeyError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7820,17 +7327,12 @@ export const swarmUnlockkey = (
  * @param {boolean} [rotateManagerUnlockKey] Rotate the manager unlock key.
  */
 export const swarmUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: SwarmSpec,
     version: number,
     rotateWorkerToken?: boolean,
     rotateManagerToken?: boolean,
     rotateManagerUnlockKey?: boolean
-): Effect.Effect<
-    never,
-    swarmUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, swarmUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -7841,46 +7343,21 @@ export const swarmUpdate = (
         }
 
         const endpoint: string = `${BASE_PATH}/swarm/update`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
-        .pipe(
-            Effect.map(
-                rotateWorkerToken === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("rotateWorkerToken", String(rotateWorkerToken))
-            )
-        )
-        .pipe(
-            Effect.map(
-                rotateManagerToken === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("rotateManagerToken", String(rotateManagerToken))
-            )
-        )
-        .pipe(
-            Effect.map(
-                rotateManagerUnlockKey === undefined
-                    ? identity
-                    : NodeHttp.request.setUrlParam("rotateManagerUnlockKey", String(rotateManagerUnlockKey))
-            )
-        )
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("SwarmSpec" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("version", String(version)))
+            .pipe(addQueryParameter("rotateWorkerToken", String(rotateWorkerToken)))
+            .pipe(addQueryParameter("rotateManagerToken", String(rotateManagerToken)))
+            .pipe(addQueryParameter("rotateManagerUnlockKey", String(rotateManagerUnlockKey)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "SwarmSpec"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new swarmUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Validate credentials for a registry and, if available, get an identity token for accessing the registry without password.
@@ -7888,34 +7365,22 @@ export const swarmUpdate = (
  * @param {AuthConfig} [body] Authentication to check
  */
 export const systemAuth = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body?: AuthConfig
-): Effect.Effect<
-    never,
-    systemAuthError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<SystemAuthResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, systemAuthError, Readonly<SystemAuthResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/auth`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("AuthConfig" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemAuthResponseSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "AuthConfig"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemAuthResponseSchema)))
+            .pipe(Effect.orElseFail(() => new systemAuthError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -7923,23 +7388,21 @@ export const systemAuth = (
  * @param {Array<string>} [type] Object types, for which to compute and return data.
  */
 export const systemDataUsage = (
-    mobyConnectionOptions: MobyConnectionOptions,
     type?: Array<string>
-): Effect.Effect<
-    never,
-    systemDataUsageError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<SystemDataUsageResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, systemDataUsageError, Readonly<SystemDataUsageResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/system/df`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setUrlParam("type", String(type))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemDataUsageResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("type", String(type)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemDataUsageResponseSchema)))
+            .pipe(Effect.orElseFail(() => new systemDataUsageError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Stream real-time events from the server.  Various objects within Docker report events when something happens to them.  Containers report these events: `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`, `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`, `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`, `start`, `stop`, `top`, `unpause`, `update`, and `prune`  Images report these events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`, `untag`, and `prune`  Volumes report these events: `create`, `mount`, `unmount`, `destroy`, and `prune`  Networks report these events: `create`, `connect`, `disconnect`, `destroy`, `update`, `remove`, and `prune`  The Docker daemon reports these events: `reload`  Services report these events: `create`, `update`, and `remove`  Nodes report these events: `create`, `update`, and `remove`  Secrets report these events: `create`, `update`, and `remove`  Configs report these events: `create`, `update`, and `remove`  The Builder reports `prune` events
@@ -7949,103 +7412,101 @@ export const systemDataUsage = (
  * @param {string} [filters] A JSON encoded value of filters (a &#x60;map[string][]string&#x60;) to process on the event list. Available filters:  - &#x60;config&#x3D;&lt;string&gt;&#x60; config name or ID - &#x60;container&#x3D;&lt;string&gt;&#x60; container name or ID - &#x60;daemon&#x3D;&lt;string&gt;&#x60; daemon name or ID - &#x60;event&#x3D;&lt;string&gt;&#x60; event type - &#x60;image&#x3D;&lt;string&gt;&#x60; image name or ID - &#x60;label&#x3D;&lt;string&gt;&#x60; image or container label - &#x60;network&#x3D;&lt;string&gt;&#x60; network name or ID - &#x60;node&#x3D;&lt;string&gt;&#x60; node ID - &#x60;plugin&#x60;&#x3D;&lt;string&gt; plugin name or ID - &#x60;scope&#x60;&#x3D;&lt;string&gt; local or swarm - &#x60;secret&#x3D;&lt;string&gt;&#x60; secret name or ID - &#x60;service&#x3D;&lt;string&gt;&#x60; service name or ID - &#x60;type&#x3D;&lt;string&gt;&#x60; object to filter by, one of &#x60;container&#x60;, &#x60;image&#x60;, &#x60;volume&#x60;, &#x60;network&#x60;, &#x60;daemon&#x60;, &#x60;plugin&#x60;, &#x60;node&#x60;, &#x60;service&#x60;, &#x60;secret&#x60; or &#x60;config&#x60; - &#x60;volume&#x3D;&lt;string&gt;&#x60; volume name
  */
 export const systemEvents = (
-    mobyConnectionOptions: MobyConnectionOptions,
     since?: string,
     until?: string,
     filters?: string
-): Effect.Effect<
-    never,
-    systemEventsError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<EventMessage>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, systemEventsError, Readonly<EventMessage>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/events`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
-        .pipe(Effect.map(until === undefined ? identity : NodeHttp.request.setUrlParam("until", String(until))))
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(EventMessageSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("since", String(since)))
+            .pipe(addQueryParameter("until", String(until)))
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(EventMessageSchema)))
+            .pipe(Effect.orElseFail(() => new systemEventsError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
  * @summary Get system information
  */
-export const systemInfo = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<
-    never,
-    systemInfoError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<SystemInfo>
-> =>
+export const systemInfo = (): Effect.Effect<NodeHttp.nodeClient.HttpAgent, systemInfoError, Readonly<SystemInfo>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/info`;
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemInfoSchema))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemInfoSchema)))
+            .pipe(Effect.orElseFail(() => new systemInfoError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
-export const systemPing = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<never, systemPingError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<string>> =>
+export const systemPing = (): Effect.Effect<NodeHttp.nodeClient.HttpAgent, systemPingError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema)))
+            .pipe(Effect.orElseFail(() => new systemPingError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
-export const systemPingHead = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<
-    never,
-    systemPingHeadError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<string>
-> =>
+export const systemPingHead = (): Effect.Effect<NodeHttp.nodeClient.HttpAgent, systemPingHeadError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
-        return NodeHttp.request.make("HEAD")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "HEAD";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema)))
+            .pipe(Effect.orElseFail(() => new systemPingHeadError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Returns the version of Docker that is running and various information about the system that Docker is running on.
  * @summary Get version
  */
-export const systemVersion = (
-    mobyConnectionOptions: MobyConnectionOptions
-): Effect.Effect<
-    never,
-    systemVersionError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
+export const systemVersion = (): Effect.Effect<
+    NodeHttp.nodeClient.HttpAgent,
+    systemVersionError,
     Readonly<SystemVersion>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/version`;
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemVersionSchema))
-    );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemVersionSchema)))
+            .pipe(Effect.orElseFail(() => new systemVersionError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -8053,21 +7514,24 @@ export const systemVersion = (
  * @param {string} id ID of the task
  */
 export const taskInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string
-): Effect.Effect<never, taskInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Task>> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, taskInspectError, Readonly<Task>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/tasks/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(TaskSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/tasks/{id}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(TaskSchema)))
+            .pipe(Effect.orElseFail(() => new taskInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -8075,23 +7539,21 @@ export const taskInspect = (
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the tasks list.  Available filters:  - &#x60;desired-state&#x3D;(running | shutdown | accepted)&#x60; - &#x60;id&#x3D;&lt;task id&gt;&#x60; - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; - &#x60;name&#x3D;&lt;task name&gt;&#x60; - &#x60;node&#x3D;&lt;node id or name&gt;&#x60; - &#x60;service&#x3D;&lt;service name&gt;&#x60;
  */
 export const taskList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    taskListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Array<Task>>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, taskListError, Readonly<Array<Task>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/tasks`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(TaskSchema)))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(arraySchema(TaskSchema))))
+            .pipe(Effect.orElseFail(() => new taskListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Get `stdout` and `stderr` logs from a task. See also [`/containers/{id}/logs`](#operation/ContainerLogs).  **Note**: This endpoint works only for services with the `local`, `json-file` or `journald` logging drivers.
@@ -8106,7 +7568,6 @@ export const taskList = (
  * @param {string} [tail] Only return this number of log lines from the end of the logs. Specify as an integer or &#x60;all&#x60; to output all log lines.
  */
 export const taskLogs = (
-    mobyConnectionOptions: MobyConnectionOptions,
     id: string,
     details?: boolean,
     follow?: boolean,
@@ -8115,32 +7576,33 @@ export const taskLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<never, taskLogsError | NodeHttp.error.HttpClientError | ParseResult.ParseError, Readonly<Blob>> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, taskLogsError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskLogsError({ message: "Required parameter id was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/tasks/{id}/logs`.replace(`{${"id"}}`, encodeURIComponent(String(id)));
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(details === undefined ? identity : NodeHttp.request.setUrlParam("details", String(details))))
-        .pipe(Effect.map(follow === undefined ? identity : NodeHttp.request.setUrlParam("follow", String(follow))))
-        .pipe(Effect.map(stdout === undefined ? identity : NodeHttp.request.setUrlParam("stdout", String(stdout))))
-        .pipe(Effect.map(stderr === undefined ? identity : NodeHttp.request.setUrlParam("stderr", String(stderr))))
-        .pipe(Effect.map(since === undefined ? identity : NodeHttp.request.setUrlParam("since", String(since))))
-        .pipe(
-            Effect.map(
-                timestamps === undefined ? identity : NodeHttp.request.setUrlParam("timestamps", String(timestamps))
+        const endpoint: string = `${BASE_PATH}/tasks/{id}/logs`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(id)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("details", String(details)))
+            .pipe(addQueryParameter("follow", String(follow)))
+            .pipe(addQueryParameter("stdout", String(stdout)))
+            .pipe(addQueryParameter("stderr", String(stderr)))
+            .pipe(addQueryParameter("since", String(since)))
+            .pipe(addQueryParameter("timestamps", String(timestamps)))
+            .pipe(addQueryParameter("tail", String(tail)))
+            .pipe(client)
+            .pipe(
+                Effect.flatMap((clientResponse) => clientResponse.text),
+                Effect.map((responseText) => new Blob([responseText]))
             )
-        )
-        .pipe(Effect.map(tail === undefined ? identity : NodeHttp.request.setUrlParam("tail", String(tail))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap((clientResponse) => clientResponse.text),
-            Effect.map((responseText) => new Blob([responseText]))
-        );
+            .pipe(Effect.orElseFail(() => new taskLogsError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -8148,38 +7610,26 @@ export const taskLogs = (
  * @param {VolumeCreateOptions} body Volume configuration
  */
 export const volumeCreate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     body: VolumeCreateOptions
-): Effect.Effect<
-    never,
-    volumeCreateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    Readonly<Volume>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, volumeCreateError, Readonly<Volume>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new volumeCreateError({ message: "Required parameter body was null or undefined" }));
         }
 
         const endpoint: string = `${BASE_PATH}/volumes/create`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("VolumeCreateOptions" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "VolumeCreateOptions"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema)))
+            .pipe(Effect.orElseFail(() => new volumeCreateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  * Instruct the driver to remove the volume.
@@ -8188,23 +7638,25 @@ export const volumeCreate = (
  * @param {boolean} [force] Force the removal of the volume
  */
 export const volumeDelete = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     force?: boolean
-): Effect.Effect<never, volumeDeleteError | NodeHttp.error.HttpClientError | ParseResult.ParseError, void> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, volumeDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeDeleteError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return NodeHttp.request.make("DELETE")(endpoint);
-    })
-        .pipe(Effect.map(force === undefined ? identity : NodeHttp.request.setUrlParam("force", String(force))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        const endpoint: string = `${BASE_PATH}/volumes/{name}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("force", String(force)))
+            .pipe(client)
+            .pipe(Effect.orElseFail(() => new volumeDeleteError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -8212,25 +7664,24 @@ export const volumeDelete = (
  * @param {string} name Volume name or ID
  */
 export const volumeInspect = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string
-): Effect.Effect<
-    never,
-    volumeInspectError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<Volume>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, volumeInspectError, Readonly<Volume>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeInspectError({ message: "Required parameter name was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return NodeHttp.request.make("GET")(endpoint);
-    }).pipe(
-        Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-        Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema))
-    );
+        const endpoint: string = `${BASE_PATH}/volumes/{name}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema)))
+            .pipe(Effect.orElseFail(() => new volumeInspectError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -8238,23 +7689,21 @@ export const volumeInspect = (
  * @param {string} [filters] JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the volumes list. Available filters:  - &#x60;dangling&#x3D;&lt;boolean&gt;&#x60; When set to &#x60;true&#x60; (or &#x60;1&#x60;), returns all    volumes that are not in use by a container. When set to &#x60;false&#x60;    (or &#x60;0&#x60;), only volumes that are in use by one or more    containers are returned. - &#x60;driver&#x3D;&lt;volume-driver-name&gt;&#x60; Matches volumes based on their driver. - &#x60;label&#x3D;&lt;key&gt;&#x60; or &#x60;label&#x3D;&lt;key&gt;:&lt;value&gt;&#x60; Matches volumes based on    the presence of a &#x60;label&#x60; alone or a &#x60;label&#x60; and a value. - &#x60;name&#x3D;&lt;volume-name&gt;&#x60; Matches all or part of a volume name.
  */
 export const volumeList = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    volumeListError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<VolumeListResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, volumeListError, Readonly<VolumeListResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes`;
-        return NodeHttp.request.make("GET")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeListResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeListResponseSchema)))
+            .pipe(Effect.orElseFail(() => new volumeListError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
  *
@@ -8262,23 +7711,21 @@ export const volumeList = (
  * @param {string} [filters] Filters to process on the prune list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;label&#x60; (&#x60;label&#x3D;&lt;key&gt;&#x60;, &#x60;label&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;, &#x60;label!&#x3D;&lt;key&gt;&#x60;, or &#x60;label!&#x3D;&lt;key&gt;&#x3D;&lt;value&gt;&#x60;) Prune volumes with (or without, in case &#x60;label!&#x3D;...&#x60; is used) the specified labels. - &#x60;all&#x60; (&#x60;all&#x3D;true&#x60;) - Consider all (local) volumes for pruning and not just anonymous volumes.
  */
 export const volumePrune = (
-    mobyConnectionOptions: MobyConnectionOptions,
     filters?: string
-): Effect.Effect<
-    never,
-    volumePruneError | NodeHttp.error.HttpClientError | ParseResult.ParseError,
-    Readonly<VolumePruneResponse>
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, volumePruneError, Readonly<VolumePruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes/prune`;
-        return NodeHttp.request.make("POST")(endpoint);
-    })
-        .pipe(Effect.map(filters === undefined ? identity : NodeHttp.request.setUrlParam("filters", String(filters))))
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumePruneResponseSchema))
-        );
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
+        const sanitizedEndpoint: string = endpoint;
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("filters", String(filters)))
+            .pipe(client)
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumePruneResponseSchema)))
+            .pipe(Effect.orElseFail(() => new volumePruneError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 /**
 *
@@ -8290,15 +7737,10 @@ change. All other fields must remain unchanged.
 
 */
 export const volumeUpdate = (
-    mobyConnectionOptions: MobyConnectionOptions,
     name: string,
     version: number,
     body?: VolumesNameBody
-): Effect.Effect<
-    never,
-    volumeUpdateError | NodeHttp.error.HttpClientError | NodeHttp.body.BodyError | ParseResult.ParseError,
-    void
-> =>
+): Effect.Effect<NodeHttp.nodeClient.HttpAgent, volumeUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeUpdateError({ message: "Required parameter name was null or undefined" }));
@@ -8308,349 +7750,128 @@ export const volumeUpdate = (
             yield* _(new volumeUpdateError({ message: "Required parameter version was null or undefined" }));
         }
 
-        const endpoint: string = `${BASE_PATH}/volumes/{name}`.replace(`{${"name"}}`, encodeURIComponent(String(name)));
-        return NodeHttp.request.make("PUT")(endpoint);
-    })
-        .pipe(Effect.map(version === undefined ? identity : NodeHttp.request.setUrlParam("version", String(version))))
-        .pipe(Effect.map(NodeHttp.request.setHeader("Content-Type", "application/json")))
-        .pipe(
-            Effect.flatMap((clientRequest) => {
-                const needsSerialization =
-                    ("VolumesNameBody" as unknown) !== "string" ||
-                    clientRequest.headers["Content-Type"] === "application/json";
+        const endpoint: string = `${BASE_PATH}/volumes/{name}`;
+        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "PUT";
+        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(name)));
+        const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
 
-                return needsSerialization
-                    ? NodeHttp.request.jsonBody(clientRequest, body)
-                    : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
-            })
-        )
-        .pipe(
-            Effect.map(NodeHttp.request.prependUrl(makeUrl(mobyConnectionOptions))),
-            Effect.flatMap(NodeHttp.client.fetchOk(makeDispatcher(mobyConnectionOptions)))
-        );
+        return NodeHttp.request
+            .make(method)(sanitizedEndpoint)
+            .pipe(addQueryParameter("version", String(version)))
+            .pipe(addHeader("Content-Type", "application/json"))
+            .pipe(setBody(body, "VolumesNameBody"))
+            .pipe(Effect.flatMap(client))
+            .pipe(Effect.orElseFail(() => new volumeUpdateError({ message: "Http request failed" })));
+    }).pipe(Effect.flatten);
 
 export interface IMobyService {
-    readonly configCreate: (
-        ...args: Parameters<typeof configCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof configCreate>;
-    readonly configDelete: (
-        ...args: Parameters<typeof configDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof configDelete>;
-    readonly configInspect: (
-        ...args: Parameters<typeof configInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof configInspect>;
-    readonly configList: (
-        ...args: Parameters<typeof configList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof configList>;
-    readonly configUpdate: (
-        ...args: Parameters<typeof configUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof configUpdate>;
-    readonly containerArchive: (
-        ...args: Parameters<typeof containerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerArchive>;
-    readonly containerArchiveInfo: (
-        ...args: Parameters<typeof containerArchiveInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerArchiveInfo>;
-    readonly containerAttach: (
-        ...args: Parameters<typeof containerAttach> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerAttach>;
-    readonly containerAttachWebsocket: (
-        ...args: Parameters<typeof containerAttachWebsocket> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerAttachWebsocket>;
-    readonly containerChanges: (
-        ...args: Parameters<typeof containerChanges> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerChanges>;
-    readonly containerCreate: (
-        ...args: Parameters<typeof containerCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerCreate>;
-    readonly containerDelete: (
-        ...args: Parameters<typeof containerDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerDelete>;
-    readonly containerExport: (
-        ...args: Parameters<typeof containerExport> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerExport>;
-    readonly containerInspect: (
-        ...args: Parameters<typeof containerInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerInspect>;
-    readonly containerKill: (
-        ...args: Parameters<typeof containerKill> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerKill>;
-    readonly containerList: (
-        ...args: Parameters<typeof containerList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerList>;
-    readonly containerLogs: (
-        ...args: Parameters<typeof containerLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerLogs>;
-    readonly containerPause: (
-        ...args: Parameters<typeof containerPause> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerPause>;
-    readonly containerPrune: (
-        ...args: Parameters<typeof containerPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerPrune>;
-    readonly containerRename: (
-        ...args: Parameters<typeof containerRename> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerRename>;
-    readonly containerResize: (
-        ...args: Parameters<typeof containerResize> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerResize>;
-    readonly containerRestart: (
-        ...args: Parameters<typeof containerRestart> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerRestart>;
-    readonly containerStart: (
-        ...args: Parameters<typeof containerStart> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerStart>;
-    readonly containerStats: (
-        ...args: Parameters<typeof containerStats> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerStats>;
-    readonly containerStop: (
-        ...args: Parameters<typeof containerStop> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerStop>;
-    readonly containerTop: (
-        ...args: Parameters<typeof containerTop> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerTop>;
-    readonly containerUnpause: (
-        ...args: Parameters<typeof containerUnpause> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerUnpause>;
-    readonly containerUpdate: (
-        ...args: Parameters<typeof containerUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerUpdate>;
-    readonly containerWait: (
-        ...args: Parameters<typeof containerWait> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerWait>;
-    readonly putContainerArchive: (
-        ...args: Parameters<typeof putContainerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof putContainerArchive>;
-    readonly distributionInspect: (
-        ...args: Parameters<typeof distributionInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof distributionInspect>;
-    readonly containerExec: (
-        ...args: Parameters<typeof containerExec> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof containerExec>;
-    readonly execInspect: (
-        ...args: Parameters<typeof execInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof execInspect>;
-    readonly execResize: (
-        ...args: Parameters<typeof execResize> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof execResize>;
-    readonly execStart: (
-        ...args: Parameters<typeof execStart> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof execStart>;
-    readonly buildPrune: (
-        ...args: Parameters<typeof buildPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof buildPrune>;
-    readonly imageBuild: (
-        ...args: Parameters<typeof imageBuild> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageBuild>;
-    readonly imageCommit: (
-        ...args: Parameters<typeof imageCommit> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageCommit>;
-    readonly imageCreate: (
-        ...args: Parameters<typeof imageCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageCreate>;
-    readonly imageDelete: (
-        ...args: Parameters<typeof imageDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageDelete>;
-    readonly imageGet: (
-        ...args: Parameters<typeof imageGet> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageGet>;
-    readonly imageGetAll: (
-        ...args: Parameters<typeof imageGetAll> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageGetAll>;
-    readonly imageHistory: (
-        ...args: Parameters<typeof imageHistory> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageHistory>;
-    readonly imageInspect: (
-        ...args: Parameters<typeof imageInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageInspect>;
-    readonly imageList: (
-        ...args: Parameters<typeof imageList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageList>;
-    readonly imageLoad: (
-        ...args: Parameters<typeof imageLoad> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageLoad>;
-    readonly imagePrune: (
-        ...args: Parameters<typeof imagePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imagePrune>;
-    readonly imagePush: (
-        ...args: Parameters<typeof imagePush> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imagePush>;
-    readonly imageSearch: (
-        ...args: Parameters<typeof imageSearch> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageSearch>;
-    readonly imageTag: (
-        ...args: Parameters<typeof imageTag> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof imageTag>;
-    readonly networkConnect: (
-        ...args: Parameters<typeof networkConnect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkConnect>;
-    readonly networkCreate: (
-        ...args: Parameters<typeof networkCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkCreate>;
-    readonly networkDelete: (
-        ...args: Parameters<typeof networkDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkDelete>;
-    readonly networkDisconnect: (
-        ...args: Parameters<typeof networkDisconnect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkDisconnect>;
-    readonly networkInspect: (
-        ...args: Parameters<typeof networkInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkInspect>;
-    readonly networkList: (
-        ...args: Parameters<typeof networkList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkList>;
-    readonly networkPrune: (
-        ...args: Parameters<typeof networkPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof networkPrune>;
-    readonly nodeDelete: (
-        ...args: Parameters<typeof nodeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof nodeDelete>;
-    readonly nodeInspect: (
-        ...args: Parameters<typeof nodeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof nodeInspect>;
-    readonly nodeList: (
-        ...args: Parameters<typeof nodeList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof nodeList>;
-    readonly nodeUpdate: (
-        ...args: Parameters<typeof nodeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof nodeUpdate>;
-    readonly getPluginPrivileges: (
-        ...args: Parameters<typeof getPluginPrivileges> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof getPluginPrivileges>;
-    readonly pluginCreate: (
-        ...args: Parameters<typeof pluginCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginCreate>;
-    readonly pluginDelete: (
-        ...args: Parameters<typeof pluginDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginDelete>;
-    readonly pluginDisable: (
-        ...args: Parameters<typeof pluginDisable> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginDisable>;
-    readonly pluginEnable: (
-        ...args: Parameters<typeof pluginEnable> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginEnable>;
-    readonly pluginInspect: (
-        ...args: Parameters<typeof pluginInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginInspect>;
-    readonly pluginList: (
-        ...args: Parameters<typeof pluginList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginList>;
-    readonly pluginPull: (
-        ...args: Parameters<typeof pluginPull> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginPull>;
-    readonly pluginPush: (
-        ...args: Parameters<typeof pluginPush> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginPush>;
-    readonly pluginSet: (
-        ...args: Parameters<typeof pluginSet> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginSet>;
-    readonly pluginUpgrade: (
-        ...args: Parameters<typeof pluginUpgrade> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof pluginUpgrade>;
-    readonly secretCreate: (
-        ...args: Parameters<typeof secretCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof secretCreate>;
-    readonly secretDelete: (
-        ...args: Parameters<typeof secretDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof secretDelete>;
-    readonly secretInspect: (
-        ...args: Parameters<typeof secretInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof secretInspect>;
-    readonly secretList: (
-        ...args: Parameters<typeof secretList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof secretList>;
-    readonly secretUpdate: (
-        ...args: Parameters<typeof secretUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof secretUpdate>;
-    readonly serviceCreate: (
-        ...args: Parameters<typeof serviceCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof serviceCreate>;
-    readonly serviceDelete: (
-        ...args: Parameters<typeof serviceDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof serviceDelete>;
-    readonly serviceInspect: (
-        ...args: Parameters<typeof serviceInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof serviceInspect>;
-    readonly serviceList: (
-        ...args: Parameters<typeof serviceList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof serviceList>;
-    readonly serviceLogs: (
-        ...args: Parameters<typeof serviceLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof serviceLogs>;
-    readonly serviceUpdate: (
-        ...args: Parameters<typeof serviceUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof serviceUpdate>;
-    readonly session: (
-        ...args: Parameters<typeof session> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof session>;
-    readonly swarmInit: (
-        ...args: Parameters<typeof swarmInit> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmInit>;
-    readonly swarmInspect: (
-        ...args: Parameters<typeof swarmInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmInspect>;
-    readonly swarmJoin: (
-        ...args: Parameters<typeof swarmJoin> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmJoin>;
-    readonly swarmLeave: (
-        ...args: Parameters<typeof swarmLeave> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmLeave>;
-    readonly swarmUnlock: (
-        ...args: Parameters<typeof swarmUnlock> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmUnlock>;
-    readonly swarmUnlockkey: (
-        ...args: Parameters<typeof swarmUnlockkey> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmUnlockkey>;
-    readonly swarmUpdate: (
-        ...args: Parameters<typeof swarmUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof swarmUpdate>;
-    readonly systemAuth: (
-        ...args: Parameters<typeof systemAuth> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemAuth>;
-    readonly systemDataUsage: (
-        ...args: Parameters<typeof systemDataUsage> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemDataUsage>;
-    readonly systemEvents: (
-        ...args: Parameters<typeof systemEvents> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemEvents>;
-    readonly systemInfo: (
-        ...args: Parameters<typeof systemInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemInfo>;
-    readonly systemPing: (
-        ...args: Parameters<typeof systemPing> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemPing>;
-    readonly systemPingHead: (
-        ...args: Parameters<typeof systemPingHead> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemPingHead>;
-    readonly systemVersion: (
-        ...args: Parameters<typeof systemVersion> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof systemVersion>;
-    readonly taskInspect: (
-        ...args: Parameters<typeof taskInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof taskInspect>;
-    readonly taskList: (
-        ...args: Parameters<typeof taskList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof taskList>;
-    readonly taskLogs: (
-        ...args: Parameters<typeof taskLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof taskLogs>;
-    readonly volumeCreate: (
-        ...args: Parameters<typeof volumeCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof volumeCreate>;
-    readonly volumeDelete: (
-        ...args: Parameters<typeof volumeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof volumeDelete>;
-    readonly volumeInspect: (
-        ...args: Parameters<typeof volumeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof volumeInspect>;
-    readonly volumeList: (
-        ...args: Parameters<typeof volumeList> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof volumeList>;
-    readonly volumePrune: (
-        ...args: Parameters<typeof volumePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof volumePrune>;
-    readonly volumeUpdate: (
-        ...args: Parameters<typeof volumeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-    ) => ReturnType<typeof volumeUpdate>;
+    readonly configCreate: typeof configCreate;
+    readonly configDelete: typeof configDelete;
+    readonly configInspect: typeof configInspect;
+    readonly configList: typeof configList;
+    readonly configUpdate: typeof configUpdate;
+    readonly containerArchive: typeof containerArchive;
+    readonly containerArchiveInfo: typeof containerArchiveInfo;
+    readonly containerAttach: typeof containerAttach;
+    readonly containerAttachWebsocket: typeof containerAttachWebsocket;
+    readonly containerChanges: typeof containerChanges;
+    readonly containerCreate: typeof containerCreate;
+    readonly containerDelete: typeof containerDelete;
+    readonly containerExport: typeof containerExport;
+    readonly containerInspect: typeof containerInspect;
+    readonly containerKill: typeof containerKill;
+    readonly containerList: typeof containerList;
+    readonly containerLogs: typeof containerLogs;
+    readonly containerPause: typeof containerPause;
+    readonly containerPrune: typeof containerPrune;
+    readonly containerRename: typeof containerRename;
+    readonly containerResize: typeof containerResize;
+    readonly containerRestart: typeof containerRestart;
+    readonly containerStart: typeof containerStart;
+    readonly containerStats: typeof containerStats;
+    readonly containerStop: typeof containerStop;
+    readonly containerTop: typeof containerTop;
+    readonly containerUnpause: typeof containerUnpause;
+    readonly containerUpdate: typeof containerUpdate;
+    readonly containerWait: typeof containerWait;
+    readonly putContainerArchive: typeof putContainerArchive;
+    readonly distributionInspect: typeof distributionInspect;
+    readonly containerExec: typeof containerExec;
+    readonly execInspect: typeof execInspect;
+    readonly execResize: typeof execResize;
+    readonly execStart: typeof execStart;
+    readonly buildPrune: typeof buildPrune;
+    readonly imageBuild: typeof imageBuild;
+    readonly imageCommit: typeof imageCommit;
+    readonly imageCreate: typeof imageCreate;
+    readonly imageDelete: typeof imageDelete;
+    readonly imageGet: typeof imageGet;
+    readonly imageGetAll: typeof imageGetAll;
+    readonly imageHistory: typeof imageHistory;
+    readonly imageInspect: typeof imageInspect;
+    readonly imageList: typeof imageList;
+    readonly imageLoad: typeof imageLoad;
+    readonly imagePrune: typeof imagePrune;
+    readonly imagePush: typeof imagePush;
+    readonly imageSearch: typeof imageSearch;
+    readonly imageTag: typeof imageTag;
+    readonly networkConnect: typeof networkConnect;
+    readonly networkCreate: typeof networkCreate;
+    readonly networkDelete: typeof networkDelete;
+    readonly networkDisconnect: typeof networkDisconnect;
+    readonly networkInspect: typeof networkInspect;
+    readonly networkList: typeof networkList;
+    readonly networkPrune: typeof networkPrune;
+    readonly nodeDelete: typeof nodeDelete;
+    readonly nodeInspect: typeof nodeInspect;
+    readonly nodeList: typeof nodeList;
+    readonly nodeUpdate: typeof nodeUpdate;
+    readonly getPluginPrivileges: typeof getPluginPrivileges;
+    readonly pluginCreate: typeof pluginCreate;
+    readonly pluginDelete: typeof pluginDelete;
+    readonly pluginDisable: typeof pluginDisable;
+    readonly pluginEnable: typeof pluginEnable;
+    readonly pluginInspect: typeof pluginInspect;
+    readonly pluginList: typeof pluginList;
+    readonly pluginPull: typeof pluginPull;
+    readonly pluginPush: typeof pluginPush;
+    readonly pluginSet: typeof pluginSet;
+    readonly pluginUpgrade: typeof pluginUpgrade;
+    readonly secretCreate: typeof secretCreate;
+    readonly secretDelete: typeof secretDelete;
+    readonly secretInspect: typeof secretInspect;
+    readonly secretList: typeof secretList;
+    readonly secretUpdate: typeof secretUpdate;
+    readonly serviceCreate: typeof serviceCreate;
+    readonly serviceDelete: typeof serviceDelete;
+    readonly serviceInspect: typeof serviceInspect;
+    readonly serviceList: typeof serviceList;
+    readonly serviceLogs: typeof serviceLogs;
+    readonly serviceUpdate: typeof serviceUpdate;
+    readonly session: typeof session;
+    readonly swarmInit: typeof swarmInit;
+    readonly swarmInspect: typeof swarmInspect;
+    readonly swarmJoin: typeof swarmJoin;
+    readonly swarmLeave: typeof swarmLeave;
+    readonly swarmUnlock: typeof swarmUnlock;
+    readonly swarmUnlockkey: typeof swarmUnlockkey;
+    readonly swarmUpdate: typeof swarmUpdate;
+    readonly systemAuth: typeof systemAuth;
+    readonly systemDataUsage: typeof systemDataUsage;
+    readonly systemEvents: typeof systemEvents;
+    readonly systemInfo: typeof systemInfo;
+    readonly systemPing: typeof systemPing;
+    readonly systemPingHead: typeof systemPingHead;
+    readonly systemVersion: typeof systemVersion;
+    readonly taskInspect: typeof taskInspect;
+    readonly taskList: typeof taskList;
+    readonly taskLogs: typeof taskLogs;
+    readonly volumeCreate: typeof volumeCreate;
+    readonly volumeDelete: typeof volumeDelete;
+    readonly volumeInspect: typeof volumeInspect;
+    readonly volumeList: typeof volumeList;
+    readonly volumePrune: typeof volumePrune;
+    readonly volumeUpdate: typeof volumeUpdate;
 }
 
 export const DefaultMobyClient: Context.Tag<IMobyService, IMobyService> = Context.Tag<IMobyService>(
@@ -8679,326 +7900,120 @@ export const makeMobyService = (
         );
     }
 
-    return Layer.succeed(
+    const agentLayer = NodeHttp.nodeClient.makeAgentLayer({});
+
+    const mobyLayer = Layer.succeed(
         contextTag,
         contextTag.of({
-            configCreate: (
-                ...args: Parameters<typeof configCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => configCreate(localmobyConnectionOptions, ...args),
-            configDelete: (
-                ...args: Parameters<typeof configDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => configDelete(localmobyConnectionOptions, ...args),
-            configInspect: (
-                ...args: Parameters<typeof configInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => configInspect(localmobyConnectionOptions, ...args),
-            configList: (
-                ...args: Parameters<typeof configList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => configList(localmobyConnectionOptions, ...args),
-            configUpdate: (
-                ...args: Parameters<typeof configUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => configUpdate(localmobyConnectionOptions, ...args),
-            containerArchive: (
-                ...args: Parameters<typeof containerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerArchive(localmobyConnectionOptions, ...args),
-            containerArchiveInfo: (
-                ...args: Parameters<typeof containerArchiveInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerArchiveInfo(localmobyConnectionOptions, ...args),
-            containerAttach: (
-                ...args: Parameters<typeof containerAttach> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerAttach(localmobyConnectionOptions, ...args),
-            containerAttachWebsocket: (
-                ...args: Parameters<typeof containerAttachWebsocket> extends [MobyConnectionOptions, ...infer U]
-                    ? U
-                    : never
-            ) => containerAttachWebsocket(localmobyConnectionOptions, ...args),
-            containerChanges: (
-                ...args: Parameters<typeof containerChanges> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerChanges(localmobyConnectionOptions, ...args),
-            containerCreate: (
-                ...args: Parameters<typeof containerCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerCreate(localmobyConnectionOptions, ...args),
-            containerDelete: (
-                ...args: Parameters<typeof containerDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerDelete(localmobyConnectionOptions, ...args),
-            containerExport: (
-                ...args: Parameters<typeof containerExport> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerExport(localmobyConnectionOptions, ...args),
-            containerInspect: (
-                ...args: Parameters<typeof containerInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerInspect(localmobyConnectionOptions, ...args),
-            containerKill: (
-                ...args: Parameters<typeof containerKill> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerKill(localmobyConnectionOptions, ...args),
-            containerList: (
-                ...args: Parameters<typeof containerList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerList(localmobyConnectionOptions, ...args),
-            containerLogs: (
-                ...args: Parameters<typeof containerLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerLogs(localmobyConnectionOptions, ...args),
-            containerPause: (
-                ...args: Parameters<typeof containerPause> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerPause(localmobyConnectionOptions, ...args),
-            containerPrune: (
-                ...args: Parameters<typeof containerPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerPrune(localmobyConnectionOptions, ...args),
-            containerRename: (
-                ...args: Parameters<typeof containerRename> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerRename(localmobyConnectionOptions, ...args),
-            containerResize: (
-                ...args: Parameters<typeof containerResize> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerResize(localmobyConnectionOptions, ...args),
-            containerRestart: (
-                ...args: Parameters<typeof containerRestart> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerRestart(localmobyConnectionOptions, ...args),
-            containerStart: (
-                ...args: Parameters<typeof containerStart> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerStart(localmobyConnectionOptions, ...args),
-            containerStats: (
-                ...args: Parameters<typeof containerStats> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerStats(localmobyConnectionOptions, ...args),
-            containerStop: (
-                ...args: Parameters<typeof containerStop> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerStop(localmobyConnectionOptions, ...args),
-            containerTop: (
-                ...args: Parameters<typeof containerTop> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerTop(localmobyConnectionOptions, ...args),
-            containerUnpause: (
-                ...args: Parameters<typeof containerUnpause> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerUnpause(localmobyConnectionOptions, ...args),
-            containerUpdate: (
-                ...args: Parameters<typeof containerUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerUpdate(localmobyConnectionOptions, ...args),
-            containerWait: (
-                ...args: Parameters<typeof containerWait> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerWait(localmobyConnectionOptions, ...args),
-            putContainerArchive: (
-                ...args: Parameters<typeof putContainerArchive> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => putContainerArchive(localmobyConnectionOptions, ...args),
-            distributionInspect: (
-                ...args: Parameters<typeof distributionInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => distributionInspect(localmobyConnectionOptions, ...args),
-            containerExec: (
-                ...args: Parameters<typeof containerExec> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => containerExec(localmobyConnectionOptions, ...args),
-            execInspect: (
-                ...args: Parameters<typeof execInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => execInspect(localmobyConnectionOptions, ...args),
-            execResize: (
-                ...args: Parameters<typeof execResize> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => execResize(localmobyConnectionOptions, ...args),
-            execStart: (
-                ...args: Parameters<typeof execStart> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => execStart(localmobyConnectionOptions, ...args),
-            buildPrune: (
-                ...args: Parameters<typeof buildPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => buildPrune(localmobyConnectionOptions, ...args),
-            imageBuild: (
-                ...args: Parameters<typeof imageBuild> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageBuild(localmobyConnectionOptions, ...args),
-            imageCommit: (
-                ...args: Parameters<typeof imageCommit> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageCommit(localmobyConnectionOptions, ...args),
-            imageCreate: (
-                ...args: Parameters<typeof imageCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageCreate(localmobyConnectionOptions, ...args),
-            imageDelete: (
-                ...args: Parameters<typeof imageDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageDelete(localmobyConnectionOptions, ...args),
-            imageGet: (...args: Parameters<typeof imageGet> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
-                imageGet(localmobyConnectionOptions, ...args),
-            imageGetAll: (
-                ...args: Parameters<typeof imageGetAll> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageGetAll(localmobyConnectionOptions, ...args),
-            imageHistory: (
-                ...args: Parameters<typeof imageHistory> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageHistory(localmobyConnectionOptions, ...args),
-            imageInspect: (
-                ...args: Parameters<typeof imageInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageInspect(localmobyConnectionOptions, ...args),
-            imageList: (
-                ...args: Parameters<typeof imageList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageList(localmobyConnectionOptions, ...args),
-            imageLoad: (
-                ...args: Parameters<typeof imageLoad> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageLoad(localmobyConnectionOptions, ...args),
-            imagePrune: (
-                ...args: Parameters<typeof imagePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imagePrune(localmobyConnectionOptions, ...args),
-            imagePush: (
-                ...args: Parameters<typeof imagePush> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imagePush(localmobyConnectionOptions, ...args),
-            imageSearch: (
-                ...args: Parameters<typeof imageSearch> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => imageSearch(localmobyConnectionOptions, ...args),
-            imageTag: (...args: Parameters<typeof imageTag> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
-                imageTag(localmobyConnectionOptions, ...args),
-            networkConnect: (
-                ...args: Parameters<typeof networkConnect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkConnect(localmobyConnectionOptions, ...args),
-            networkCreate: (
-                ...args: Parameters<typeof networkCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkCreate(localmobyConnectionOptions, ...args),
-            networkDelete: (
-                ...args: Parameters<typeof networkDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkDelete(localmobyConnectionOptions, ...args),
-            networkDisconnect: (
-                ...args: Parameters<typeof networkDisconnect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkDisconnect(localmobyConnectionOptions, ...args),
-            networkInspect: (
-                ...args: Parameters<typeof networkInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkInspect(localmobyConnectionOptions, ...args),
-            networkList: (
-                ...args: Parameters<typeof networkList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkList(localmobyConnectionOptions, ...args),
-            networkPrune: (
-                ...args: Parameters<typeof networkPrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => networkPrune(localmobyConnectionOptions, ...args),
-            nodeDelete: (
-                ...args: Parameters<typeof nodeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => nodeDelete(localmobyConnectionOptions, ...args),
-            nodeInspect: (
-                ...args: Parameters<typeof nodeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => nodeInspect(localmobyConnectionOptions, ...args),
-            nodeList: (...args: Parameters<typeof nodeList> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
-                nodeList(localmobyConnectionOptions, ...args),
-            nodeUpdate: (
-                ...args: Parameters<typeof nodeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => nodeUpdate(localmobyConnectionOptions, ...args),
-            getPluginPrivileges: (
-                ...args: Parameters<typeof getPluginPrivileges> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => getPluginPrivileges(localmobyConnectionOptions, ...args),
-            pluginCreate: (
-                ...args: Parameters<typeof pluginCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginCreate(localmobyConnectionOptions, ...args),
-            pluginDelete: (
-                ...args: Parameters<typeof pluginDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginDelete(localmobyConnectionOptions, ...args),
-            pluginDisable: (
-                ...args: Parameters<typeof pluginDisable> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginDisable(localmobyConnectionOptions, ...args),
-            pluginEnable: (
-                ...args: Parameters<typeof pluginEnable> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginEnable(localmobyConnectionOptions, ...args),
-            pluginInspect: (
-                ...args: Parameters<typeof pluginInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginInspect(localmobyConnectionOptions, ...args),
-            pluginList: (
-                ...args: Parameters<typeof pluginList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginList(localmobyConnectionOptions, ...args),
-            pluginPull: (
-                ...args: Parameters<typeof pluginPull> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginPull(localmobyConnectionOptions, ...args),
-            pluginPush: (
-                ...args: Parameters<typeof pluginPush> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginPush(localmobyConnectionOptions, ...args),
-            pluginSet: (
-                ...args: Parameters<typeof pluginSet> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginSet(localmobyConnectionOptions, ...args),
-            pluginUpgrade: (
-                ...args: Parameters<typeof pluginUpgrade> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => pluginUpgrade(localmobyConnectionOptions, ...args),
-            secretCreate: (
-                ...args: Parameters<typeof secretCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => secretCreate(localmobyConnectionOptions, ...args),
-            secretDelete: (
-                ...args: Parameters<typeof secretDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => secretDelete(localmobyConnectionOptions, ...args),
-            secretInspect: (
-                ...args: Parameters<typeof secretInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => secretInspect(localmobyConnectionOptions, ...args),
-            secretList: (
-                ...args: Parameters<typeof secretList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => secretList(localmobyConnectionOptions, ...args),
-            secretUpdate: (
-                ...args: Parameters<typeof secretUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => secretUpdate(localmobyConnectionOptions, ...args),
-            serviceCreate: (
-                ...args: Parameters<typeof serviceCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => serviceCreate(localmobyConnectionOptions, ...args),
-            serviceDelete: (
-                ...args: Parameters<typeof serviceDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => serviceDelete(localmobyConnectionOptions, ...args),
-            serviceInspect: (
-                ...args: Parameters<typeof serviceInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => serviceInspect(localmobyConnectionOptions, ...args),
-            serviceList: (
-                ...args: Parameters<typeof serviceList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => serviceList(localmobyConnectionOptions, ...args),
-            serviceLogs: (
-                ...args: Parameters<typeof serviceLogs> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => serviceLogs(localmobyConnectionOptions, ...args),
-            serviceUpdate: (
-                ...args: Parameters<typeof serviceUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => serviceUpdate(localmobyConnectionOptions, ...args),
-            session: (...args: Parameters<typeof session> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
-                session(localmobyConnectionOptions, ...args),
-            swarmInit: (
-                ...args: Parameters<typeof swarmInit> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmInit(localmobyConnectionOptions, ...args),
-            swarmInspect: (
-                ...args: Parameters<typeof swarmInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmInspect(localmobyConnectionOptions, ...args),
-            swarmJoin: (
-                ...args: Parameters<typeof swarmJoin> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmJoin(localmobyConnectionOptions, ...args),
-            swarmLeave: (
-                ...args: Parameters<typeof swarmLeave> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmLeave(localmobyConnectionOptions, ...args),
-            swarmUnlock: (
-                ...args: Parameters<typeof swarmUnlock> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmUnlock(localmobyConnectionOptions, ...args),
-            swarmUnlockkey: (
-                ...args: Parameters<typeof swarmUnlockkey> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmUnlockkey(localmobyConnectionOptions, ...args),
-            swarmUpdate: (
-                ...args: Parameters<typeof swarmUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => swarmUpdate(localmobyConnectionOptions, ...args),
-            systemAuth: (
-                ...args: Parameters<typeof systemAuth> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemAuth(localmobyConnectionOptions, ...args),
-            systemDataUsage: (
-                ...args: Parameters<typeof systemDataUsage> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemDataUsage(localmobyConnectionOptions, ...args),
-            systemEvents: (
-                ...args: Parameters<typeof systemEvents> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemEvents(localmobyConnectionOptions, ...args),
-            systemInfo: (
-                ...args: Parameters<typeof systemInfo> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemInfo(localmobyConnectionOptions, ...args),
-            systemPing: (
-                ...args: Parameters<typeof systemPing> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemPing(localmobyConnectionOptions, ...args),
-            systemPingHead: (
-                ...args: Parameters<typeof systemPingHead> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemPingHead(localmobyConnectionOptions, ...args),
-            systemVersion: (
-                ...args: Parameters<typeof systemVersion> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => systemVersion(localmobyConnectionOptions, ...args),
-            taskInspect: (
-                ...args: Parameters<typeof taskInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => taskInspect(localmobyConnectionOptions, ...args),
-            taskList: (...args: Parameters<typeof taskList> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
-                taskList(localmobyConnectionOptions, ...args),
-            taskLogs: (...args: Parameters<typeof taskLogs> extends [MobyConnectionOptions, ...infer U] ? U : never) =>
-                taskLogs(localmobyConnectionOptions, ...args),
-            volumeCreate: (
-                ...args: Parameters<typeof volumeCreate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => volumeCreate(localmobyConnectionOptions, ...args),
-            volumeDelete: (
-                ...args: Parameters<typeof volumeDelete> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => volumeDelete(localmobyConnectionOptions, ...args),
-            volumeInspect: (
-                ...args: Parameters<typeof volumeInspect> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => volumeInspect(localmobyConnectionOptions, ...args),
-            volumeList: (
-                ...args: Parameters<typeof volumeList> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => volumeList(localmobyConnectionOptions, ...args),
-            volumePrune: (
-                ...args: Parameters<typeof volumePrune> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => volumePrune(localmobyConnectionOptions, ...args),
-            volumeUpdate: (
-                ...args: Parameters<typeof volumeUpdate> extends [MobyConnectionOptions, ...infer U] ? U : never
-            ) => volumeUpdate(localmobyConnectionOptions, ...args),
+            configCreate,
+            configDelete,
+            configInspect,
+            configList,
+            configUpdate,
+            containerArchive,
+            containerArchiveInfo,
+            containerAttach,
+            containerAttachWebsocket,
+            containerChanges,
+            containerCreate,
+            containerDelete,
+            containerExport,
+            containerInspect,
+            containerKill,
+            containerList,
+            containerLogs,
+            containerPause,
+            containerPrune,
+            containerRename,
+            containerResize,
+            containerRestart,
+            containerStart,
+            containerStats,
+            containerStop,
+            containerTop,
+            containerUnpause,
+            containerUpdate,
+            containerWait,
+            putContainerArchive,
+            distributionInspect,
+            containerExec,
+            execInspect,
+            execResize,
+            execStart,
+            buildPrune,
+            imageBuild,
+            imageCommit,
+            imageCreate,
+            imageDelete,
+            imageGet,
+            imageGetAll,
+            imageHistory,
+            imageInspect,
+            imageList,
+            imageLoad,
+            imagePrune,
+            imagePush,
+            imageSearch,
+            imageTag,
+            networkConnect,
+            networkCreate,
+            networkDelete,
+            networkDisconnect,
+            networkInspect,
+            networkList,
+            networkPrune,
+            nodeDelete,
+            nodeInspect,
+            nodeList,
+            nodeUpdate,
+            getPluginPrivileges,
+            pluginCreate,
+            pluginDelete,
+            pluginDisable,
+            pluginEnable,
+            pluginInspect,
+            pluginList,
+            pluginPull,
+            pluginPush,
+            pluginSet,
+            pluginUpgrade,
+            secretCreate,
+            secretDelete,
+            secretInspect,
+            secretList,
+            secretUpdate,
+            serviceCreate,
+            serviceDelete,
+            serviceInspect,
+            serviceList,
+            serviceLogs,
+            serviceUpdate,
+            session,
+            swarmInit,
+            swarmInspect,
+            swarmJoin,
+            swarmLeave,
+            swarmUnlock,
+            swarmUnlockkey,
+            swarmUpdate,
+            systemAuth,
+            systemDataUsage,
+            systemEvents,
+            systemInfo,
+            systemPing,
+            systemPingHead,
+            systemVersion,
+            taskInspect,
+            taskList,
+            taskLogs,
+            volumeCreate,
+            volumeDelete,
+            volumeInspect,
+            volumeList,
+            volumePrune,
+            volumeUpdate,
         })
     );
+
+    return Layer.merge(mobyLayer, agentLayer);
 };
