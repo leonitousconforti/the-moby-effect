@@ -3,9 +3,9 @@
 Docker API client automatically generated from the moby repository using swagger-codegen and effect-ts
 
 ## Features:
-[x] - unix socket connections (tested with docker desktop)
-[x] - local http connections (tested with docker desktop)
-[ ] - ssh connections (very soon)
+- [x] - unix socket connections (tested with docker desktop)
+- [x] - local http connections (tested with docker desktop)
+- [ ] - ssh connections (very soon)
 
 ## Example usage:
 ```ts
