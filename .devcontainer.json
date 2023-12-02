@@ -24,8 +24,7 @@
                 "editorconfig.editorconfig",
                 "streetsidesoftware.code-spell-checker",
                 "eamodio.gitlens",
-                "mutantdino.resourcemonitor",
-                "dawhite.mustache"
+                "mutantdino.resourcemonitor"
             ],
             "settings": {
                 "cSpell.enabled": true,
@@ -50,6 +49,7 @@
                 "cSpell.words": [
                     "codegen",
                     "Conforti",
+                    "dhawan",
                     "execa",
                     "moby",
                     "packagejson",

@@ -1,9 +1,12 @@
 // spell-checker: disable
 
+import http from "node:http";
+import https from "node:https";
+
 import * as ssh2 from "ssh2";
 import * as Schema from "@effect/schema/Schema";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Effect, Context, Data, Layer, identity } from "effect";
+import { Context, Data, Effect, Layer, Match, Scope, identity, pipe } from "effect";
 
 import {
     any as anySchema,
@@ -34,10 +37,12 @@ const COLLECTION_FORMATS = {
 const addHeader = NodeHttp.request.setHeader;
 
 const addQueryParameter = (
-    key: string | undefined,
-    value: string
+    key: string,
+    value: unknown | unknown[] | undefined
 ): ((self: NodeHttp.request.ClientRequest) => NodeHttp.request.ClientRequest) =>
-    key === undefined ? identity : NodeHttp.request.setUrlParam(key, value);
+    value === undefined || (Array.isArray(value) && value.length === 0)
+        ? identity
+        : NodeHttp.request.setUrlParam(key, String(value));
 
 const setBody =
     (
@@ -62,6 +67,11 @@ const setBody =
 {{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}
 export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ message: string }> {}{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
 
+const MobyConnectionAgent = Context.Tag<IMobyConnectionAgent>(Symbol.for("@the-moby-effect/MobyConnectionAgent"));
+export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
+    readonly _: unknown;
+}
+
 {{#apiInfo}}{{#apis}}{{#operations}}
 {{#operation}}
 /**
@@ -73,7 +83,7 @@ export class {{nickname}}Error extends Data.TaggedError("{{nickname}}Error")<{ m
 * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
 {{/allParams}}
 */
-export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<NodeHttp.nodeClient.HttpAgent, {{nickname}}Error, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<IMobyConnectionAgent, {{nickname}}Error, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
 {{#allParams}}
 {{#required}}
     if ({{paramName}} === null || {{paramName}} === undefined) {
@@ -85,24 +95,29 @@ export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/require
     const endpoint: string = `${BASE_PATH}{{{path}}}`;
     const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "{{httpMethod}}";
     const sanitizedEndpoint: string = endpoint{{#pathParams}}.replace(`{${"{{baseName}}"}}`, encodeURIComponent(String({{paramName}}))){{/pathParams}};
-    const client: NodeHttp.client.Client.Default = yield* _(NodeHttp.nodeClient.make);
+
+    const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+    const client: NodeHttp.client.Client.Default = yield* _(
+        NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
+    );
 
     return NodeHttp.request
         .make(method)(sanitizedEndpoint)
+        .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
         {{#headerParams}}
         .pipe(addHeader("{{baseName}}", String({{paramName}})))
         {{/headerParams}}
         {{#queryParams}}
         {{#isListContainer}}
         {{#isCollectionFormatMulti}}
-        .pipe(addQueryParameter("{{baseName}}", String({{paramName}})))
+        .pipe(addQueryParameter("{{baseName}}", {{paramName}}))
         {{/isCollectionFormatMulti}}
         {{^isCollectionFormatMulti}}
         .pipe(addQueryParameter("{{baseName}}", ({{paramName}} || []).join(COLLECTION_FORMATS["{{collectionFormat}}"])))
         {{/isCollectionFormatMulti}}
         {{/isListContainer}}
         {{^isListContainer}}
-        .pipe(addQueryParameter("{{baseName}}", String({{paramName}})))
+        .pipe(addQueryParameter("{{baseName}}", {{paramName}}))
         {{/isListContainer}}
         {{/queryParams}}
         {{#bodyParam}}
@@ -122,43 +137,81 @@ export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/require
         .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson({{{returnType}}}Schema)))
         {{/returnType}}
         .pipe(Effect.orElseFail(() => new {{nickname}}Error({ message: "Http request failed" })));
-    }).pipe(Effect.flatten);
+    }).pipe(Effect.flatten).pipe(Effect.scoped);
 
 {{/operation}}
 {{/operations}}{{/apis}}{{/apiInfo}}
 
+type WithConnectionAgentProvided<Function_> = Function_ extends (
+    ...arguments_: infer U
+) => Effect.Effect<infer R, infer E, infer A>
+    ? (...arguments_: U) => Effect.Effect<Exclude<R, IMobyConnectionAgent>, E, A>
+    : never;
+
 export interface IMobyService {
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: typeof {{nickname}};{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}readonly {{nickname}}: WithConnectionAgentProvided<typeof {{nickname}}>;{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+    readonly getAgent: () => Effect.Effect<Scope.Scope, never, NodeHttp.nodeClient.HttpAgent>;
 }
 
-export const DefaultMobyClient: Context.Tag<IMobyService, IMobyService> = Context.Tag<IMobyService>(Symbol.for("@the-moby-effect/DefaultMobyClient"));
+const instanciatedClientTags = new Set<`${string}MobyClient`>();
+export class MobyClientAlreadyInstantiated extends Data.TaggedError("MobyClientAlreadyInstantiated")<{
+    message: string;
+}> {}
 
-const instanciatedClientTags = new Set<Context.Tag<IMobyService, IMobyService>>();
-export class clientAlreadyInstaniated extends Data.TaggedError("MobyClientAlreadyInstaniated")<{ message: string }> {}
+export const makeMobyLayer = <ContextIdentifier extends `${string}MobyClient`>(
+    contextIdentifier: ContextIdentifier,
+    mobyConnectionOptions?: MobyConnectionOptions | undefined
+): [
+    contextTag: Context.Tag<ContextIdentifier, IMobyService>,
+    layer: Layer.Layer<never, MobyClientAlreadyInstantiated, ContextIdentifier>,
+] => {
+    if (instanciatedClientTags.has(contextIdentifier)) {
+        return [
+            Context.Tag(),
+            Layer.fail(new MobyClientAlreadyInstantiated({ message: "Client already instantiated" })),
+        ];
+    }
 
-export const makeMobyService = (
-    mobyConnectionOptions?: MobyConnectionOptions | undefined,
-    contextTag: Context.Tag<IMobyService, IMobyService> = DefaultMobyClient
-): Layer.Layer<never, clientAlreadyInstaniated, IMobyService> => {
-    const localmobyConnectionOptions =
+    const localMobyConnectionOptions: MobyConnectionOptions =
         mobyConnectionOptions ||
         ({
             protocol: "unix",
             socketPath: "/var/run/docker.sock",
         } as MobyConnectionOptions);
 
-    if (instanciatedClientTags.has(contextTag)) {
-        return Layer.fail(
-            new clientAlreadyInstaniated({
-                message: `A client has already been instanciated for tag ${contextTag.identifier}`,
-            })
-        );
-    }
+    const agentOptions: http.AgentOptions | https.AgentOptions = pipe(
+        Match.value<MobyConnectionOptions>(localMobyConnectionOptions),
+        Match.when({ protocol: "unix" }, (options) => ({ socketPath: options.socketPath })),
+        Match.orElse((options) => ({ host: options.host, port: options.port }))
+    ) as http.AgentOptions | https.AgentOptions;
 
-    return Layer.succeed(
+    const getAgent = (): Effect.Effect<Scope.Scope, never, NodeHttp.nodeClient.HttpAgent> =>
+        NodeHttp.nodeClient.makeAgent(agentOptions);
+
+    const agentLayerContextTag: Context.Tag<NodeHttp.nodeClient.HttpAgent, NodeHttp.nodeClient.HttpAgent> =
+        Context.Tag<NodeHttp.nodeClient.HttpAgent>();
+
+    const agentLayer: Layer.Layer<never, never, NodeHttp.nodeClient.HttpAgent> = Layer.scoped(
+        agentLayerContextTag,
+        getAgent()
+    );
+
+    const projectedLayer: Layer.Layer<never, never, IMobyConnectionAgent> = Layer.project(
+        agentLayer,
+        agentLayerContextTag,
+        MobyConnectionAgent,
+        (_) => ({ ..._, _: 69 })
+    );
+
+    const contextTag: Context.Tag<ContextIdentifier, IMobyService> = Context.Tag<ContextIdentifier, IMobyService>();
+
+    const layer = Layer.succeed(
         contextTag,
         contextTag.of({
-{{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}},{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+            {{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}{{nickname}}: (...arguments_) => {{nickname}}(...arguments_).pipe(Effect.provide(projectedLayer)),{{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
+            getAgent,
         })
     );
-}
+
+    return [contextTag, layer];
+};

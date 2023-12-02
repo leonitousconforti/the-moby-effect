@@ -35,18 +35,25 @@ module.exports = {
             },
         },
         {
-            files: ["./gen/main.cts"],
-            rules: {
-                "unicorn/prefer-module": "off",
-            },
-        },
-        {
-            files: ["./src/api.ts", "./test/api.test.ts"],
+            files: ["./src/api.ts", "./test/api.test.ts", "./examples/**/*.ts"],
             rules: {
                 "@typescript-eslint/naming-convention": [
                     "error",
                     { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
                 ],
+            },
+        },
+        {
+            files: ["./examples/**/*.ts"],
+            rules: {
+                "no-console": "off",
+                "@typescript-eslint/typedef": "off",
+            },
+        },
+        {
+            files: ["./gen/main.cts"],
+            rules: {
+                "unicorn/prefer-module": "off",
             },
         },
     ],
