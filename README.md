@@ -2,12 +2,17 @@
 
 Docker API client automatically generated from the moby repository using swagger-codegen and effect-ts
 
-## Features:
+## Features
+
 - [x] - unix socket connections (tested with docker desktop)
 - [x] - local http connections (tested with docker desktop)
 - [ ] - ssh connections (very soon)
 
-## Example usage:
+## Versioning
+
+This package does not follow semantic versioning, instead the major and minor part represents the version the of docker api from the moby repository, can also be found [here](https://docs.docker.com/engine/api/version-history/). All bugfixes in the codegen, breaking or otherwise, will be released under an incremented patch version.
+
+## Example usage
 ```ts
 import { Effect } from "effect";
 
