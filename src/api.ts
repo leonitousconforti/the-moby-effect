@@ -5,6 +5,7 @@ import https from "node:https";
 
 import * as ssh2 from "ssh2";
 import * as Schema from "@effect/schema/Schema";
+import * as ParseResult from "@effect/schema/ParseResult";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import { Context, Data, Effect, Layer, Match, Scope, identity, pipe } from "effect";
 
@@ -21,7 +22,7 @@ import {
 
 export type MobyConnectionOptions =
     | { protocol: "http"; host: string; port: number }
-    | { protocol: "https"; host: string; port: number }
+    | { protocol: "https"; host: string; port: number; cert: string; ca: string; key: string }
     | ({ protocol: "ssh" } & ssh2.ConnectConfig)
     | { protocol: "unix"; socketPath: string };
 
@@ -4671,7 +4672,15 @@ export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
  */
 export const configCreate = (
     body?: ConfigsCreateBody
-): Effect.Effect<IMobyConnectionAgent, configCreateError, Readonly<IdResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | configCreateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<IdResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs/create`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -4687,7 +4696,7 @@ export const configCreate = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ConfigsCreateBody"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
             .pipe(Effect.orElseFail(() => new configCreateError({ message: "Http request failed" })));
     })
@@ -4699,7 +4708,13 @@ export const configCreate = (
  * @summary Delete a config
  * @param {string} id ID of the config
  */
-export const configDelete = (id: string): Effect.Effect<IMobyConnectionAgent, configDeleteError, void> =>
+export const configDelete = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    configDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -4728,7 +4743,13 @@ export const configDelete = (id: string): Effect.Effect<IMobyConnectionAgent, co
  * @summary Inspect a config
  * @param {string} id ID of the config
  */
-export const configInspect = (id: string): Effect.Effect<IMobyConnectionAgent, configInspectError, Readonly<Config>> =>
+export const configInspect = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    configInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Config>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configInspectError({ message: "Required parameter id was null or undefined" }));
@@ -4760,7 +4781,11 @@ export const configInspect = (id: string): Effect.Effect<IMobyConnectionAgent, c
  */
 export const configList = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, configListError, Readonly<Array<Config>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    configListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Config>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/configs`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -4796,7 +4821,11 @@ export const configUpdate = (
     id: string,
     version: number,
     body?: ConfigSpec
-): Effect.Effect<IMobyConnectionAgent, configUpdateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    configUpdateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new configUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -4821,7 +4850,7 @@ export const configUpdate = (
             .pipe(addQueryParameter("version", version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ConfigSpec"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new configUpdateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -4836,7 +4865,11 @@ export const configUpdate = (
 export const containerArchive = (
     id: string,
     path: string
-): Effect.Effect<IMobyConnectionAgent, containerArchiveError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerArchiveError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveError({ message: "Required parameter id was null or undefined" }));
@@ -4874,7 +4907,11 @@ export const containerArchive = (
 export const containerArchiveInfo = (
     id: string,
     path: string
-): Effect.Effect<IMobyConnectionAgent, containerArchiveInfoError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerArchiveInfoError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerArchiveInfoError({ message: "Required parameter id was null or undefined" }));
@@ -4922,7 +4959,11 @@ export const containerAttach = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<IMobyConnectionAgent, containerAttachError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerAttachError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachError({ message: "Required parameter id was null or undefined" }));
@@ -4971,7 +5012,11 @@ export const containerAttachWebsocket = (
     stdin?: boolean,
     stdout?: boolean,
     stderr?: boolean
-): Effect.Effect<IMobyConnectionAgent, containerAttachWebsocketError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerAttachWebsocketError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerAttachWebsocketError({ message: "Required parameter id was null or undefined" }));
@@ -5008,7 +5053,11 @@ export const containerAttachWebsocket = (
  */
 export const containerChanges = (
     id: string
-): Effect.Effect<IMobyConnectionAgent, containerChangesError, Readonly<Array<FilesystemChange>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerChangesError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<FilesystemChange>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerChangesError({ message: "Required parameter id was null or undefined" }));
@@ -5044,7 +5093,15 @@ export const containerCreate = (
     body: ContainersCreateBody,
     name?: string,
     platform?: string
-): Effect.Effect<IMobyConnectionAgent, containerCreateError, Readonly<ContainerCreateResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | containerCreateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<ContainerCreateResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new containerCreateError({ message: "Required parameter body was null or undefined" }));
@@ -5066,7 +5123,7 @@ export const containerCreate = (
             .pipe(addQueryParameter("platform", platform))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ContainersCreateBody1"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerCreateResponseSchema)))
             .pipe(Effect.orElseFail(() => new containerCreateError({ message: "Http request failed" })));
     })
@@ -5086,7 +5143,11 @@ export const containerDelete = (
     v?: boolean,
     force?: boolean,
     link?: boolean
-): Effect.Effect<IMobyConnectionAgent, containerDeleteError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -5118,7 +5179,13 @@ export const containerDelete = (
  * @summary Export a container
  * @param {string} id ID or name of the container
  */
-export const containerExport = (id: string): Effect.Effect<IMobyConnectionAgent, containerExportError, void> =>
+export const containerExport = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerExportError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerExportError({ message: "Required parameter id was null or undefined" }));
@@ -5151,7 +5218,11 @@ export const containerExport = (id: string): Effect.Effect<IMobyConnectionAgent,
 export const containerInspect = (
     id: string,
     size?: boolean
-): Effect.Effect<IMobyConnectionAgent, containerInspectError, Readonly<ContainerInspectResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ContainerInspectResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerInspectError({ message: "Required parameter id was null or undefined" }));
@@ -5186,7 +5257,11 @@ export const containerInspect = (
 export const containerKill = (
     id: string,
     signal?: string
-): Effect.Effect<IMobyConnectionAgent, containerKillError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerKillError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerKillError({ message: "Required parameter id was null or undefined" }));
@@ -5224,7 +5299,11 @@ export const containerList = (
     limit?: number,
     size?: boolean,
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, containerListError, Readonly<Array<ContainerSummary>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<ContainerSummary>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/json`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -5270,7 +5349,11 @@ export const containerLogs = (
     until?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<IMobyConnectionAgent, containerLogsError, Readonly<Blob>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerLogsError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Blob>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerLogsError({ message: "Required parameter id was null or undefined" }));
@@ -5310,7 +5393,13 @@ export const containerLogs = (
  * @summary Pause a container
  * @param {string} id ID or name of the container
  */
-export const containerPause = (id: string): Effect.Effect<IMobyConnectionAgent, containerPauseError, void> =>
+export const containerPause = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerPauseError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerPauseError({ message: "Required parameter id was null or undefined" }));
@@ -5341,7 +5430,11 @@ export const containerPause = (id: string): Effect.Effect<IMobyConnectionAgent, 
  */
 export const containerPrune = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, containerPruneError, Readonly<ContainerPruneResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerPruneError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ContainerPruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/containers/prune`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -5372,7 +5465,11 @@ export const containerPrune = (
 export const containerRename = (
     id: string,
     name: string
-): Effect.Effect<IMobyConnectionAgent, containerRenameError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerRenameError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRenameError({ message: "Required parameter id was null or undefined" }));
@@ -5412,7 +5509,11 @@ export const containerResize = (
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<IMobyConnectionAgent, containerResizeError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerResizeError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerResizeError({ message: "Required parameter id was null or undefined" }));
@@ -5449,7 +5550,11 @@ export const containerRestart = (
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<IMobyConnectionAgent, containerRestartError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerRestartError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerRestartError({ message: "Required parameter id was null or undefined" }));
@@ -5484,7 +5589,11 @@ export const containerRestart = (
 export const containerStart = (
     id: string,
     detachKeys?: string
-): Effect.Effect<IMobyConnectionAgent, containerStartError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerStartError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStartError({ message: "Required parameter id was null or undefined" }));
@@ -5520,7 +5629,11 @@ export const containerStats = (
     id: string,
     stream?: boolean,
     one_shot?: boolean
-): Effect.Effect<IMobyConnectionAgent, containerStatsError, Readonly<unknown>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerStatsError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<unknown>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStatsError({ message: "Required parameter id was null or undefined" }));
@@ -5558,7 +5671,11 @@ export const containerStop = (
     id: string,
     signal?: string,
     t?: number
-): Effect.Effect<IMobyConnectionAgent, containerStopError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerStopError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerStopError({ message: "Required parameter id was null or undefined" }));
@@ -5593,7 +5710,11 @@ export const containerStop = (
 export const containerTop = (
     id: string,
     ps_args?: string
-): Effect.Effect<IMobyConnectionAgent, containerTopError, Readonly<ContainerTopResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerTopError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ContainerTopResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerTopError({ message: "Required parameter id was null or undefined" }));
@@ -5624,7 +5745,13 @@ export const containerTop = (
  * @summary Unpause a container
  * @param {string} id ID or name of the container
  */
-export const containerUnpause = (id: string): Effect.Effect<IMobyConnectionAgent, containerUnpauseError, void> =>
+export const containerUnpause = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerUnpauseError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerUnpauseError({ message: "Required parameter id was null or undefined" }));
@@ -5657,7 +5784,15 @@ export const containerUnpause = (id: string): Effect.Effect<IMobyConnectionAgent
 export const containerUpdate = (
     body: IdUpdateBody,
     id: string
-): Effect.Effect<IMobyConnectionAgent, containerUpdateError, Readonly<ContainerUpdateResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | containerUpdateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<ContainerUpdateResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new containerUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -5681,7 +5816,7 @@ export const containerUpdate = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "IdUpdateBody"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerUpdateResponseSchema)))
             .pipe(Effect.orElseFail(() => new containerUpdateError({ message: "Http request failed" })));
     })
@@ -5697,7 +5832,11 @@ export const containerUpdate = (
 export const containerWait = (
     id: string,
     condition?: string
-): Effect.Effect<IMobyConnectionAgent, containerWaitError, Readonly<ContainerWaitResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    containerWaitError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ContainerWaitResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new containerWaitError({ message: "Required parameter id was null or undefined" }));
@@ -5741,7 +5880,11 @@ export const putContainerArchive = (
     path: string,
     noOverwriteDirNonDir?: string,
     copyUIDGID?: string
-): Effect.Effect<IMobyConnectionAgent, putContainerArchiveError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    putContainerArchiveError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new putContainerArchiveError({ message: "Required parameter body was null or undefined" }));
@@ -5772,7 +5915,7 @@ export const putContainerArchive = (
             .pipe(addQueryParameter("copyUIDGID", copyUIDGID))
             .pipe(addHeader("Content-Type", "application/x-tar"))
             .pipe(setBody(body, "Object"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new putContainerArchiveError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -5785,7 +5928,11 @@ export const putContainerArchive = (
  */
 export const distributionInspect = (
     name: string
-): Effect.Effect<IMobyConnectionAgent, distributionInspectError, Readonly<DistributionInspect>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    distributionInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<DistributionInspect>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new distributionInspectError({ message: "Required parameter name was null or undefined" }));
@@ -5819,7 +5966,15 @@ export const distributionInspect = (
 export const containerExec = (
     body: ExecConfig,
     id: string
-): Effect.Effect<IMobyConnectionAgent, containerExecError, Readonly<IdResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | containerExecError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<IdResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new containerExecError({ message: "Required parameter body was null or undefined" }));
@@ -5843,7 +5998,7 @@ export const containerExec = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ExecConfig"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
             .pipe(Effect.orElseFail(() => new containerExecError({ message: "Http request failed" })));
     })
@@ -5857,7 +6012,11 @@ export const containerExec = (
  */
 export const execInspect = (
     id: string
-): Effect.Effect<IMobyConnectionAgent, execInspectError, Readonly<ExecInspectResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    execInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ExecInspectResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execInspectError({ message: "Required parameter id was null or undefined" }));
@@ -5893,7 +6052,11 @@ export const execResize = (
     id: string,
     h?: number,
     w?: number
-): Effect.Effect<IMobyConnectionAgent, execResizeError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    execResizeError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execResizeError({ message: "Required parameter id was null or undefined" }));
@@ -5928,7 +6091,11 @@ export const execResize = (
 export const execStart = (
     id: string,
     body?: ExecStartConfig
-): Effect.Effect<IMobyConnectionAgent, execStartError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    execStartError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new execStartError({ message: "Required parameter id was null or undefined" }));
@@ -5948,7 +6115,7 @@ export const execStart = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ExecStartConfig"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new execStartError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -5965,7 +6132,11 @@ export const buildPrune = (
     keep_storage?: number,
     all?: boolean,
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, buildPruneError, Readonly<BuildPruneResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    buildPruneError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<BuildPruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build/prune`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6048,7 +6219,11 @@ export const imageBuild = (
     platform?: string,
     target?: string,
     outputs?: string
-): Effect.Effect<IMobyConnectionAgent, imageBuildError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageBuildError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/build`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6090,7 +6265,7 @@ export const imageBuild = (
             .pipe(addQueryParameter("outputs", outputs))
             .pipe(addHeader("Content-Type", "application/octet-stream"))
             .pipe(setBody(body, "Object"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new imageBuildError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -6117,7 +6292,15 @@ export const imageCommit = (
     author?: string,
     pause?: boolean,
     changes?: string
-): Effect.Effect<IMobyConnectionAgent, imageCommitError, Readonly<IdResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | imageCommitError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<IdResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/commit`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6140,7 +6323,7 @@ export const imageCommit = (
             .pipe(addQueryParameter("changes", changes))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ContainerConfig"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
             .pipe(Effect.orElseFail(() => new imageCommitError({ message: "Http request failed" })));
     })
@@ -6170,7 +6353,11 @@ export const imageCreate = (
     X_Registry_Auth?: string,
     changes?: Array<string>,
     platform?: string
-): Effect.Effect<IMobyConnectionAgent, imageCreateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageCreateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/create`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6194,7 +6381,7 @@ export const imageCreate = (
             .pipe(addQueryParameter("platform", platform))
             .pipe(addHeader("Content-Type", "text/plain"))
             .pipe(setBody(body, "string"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new imageCreateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -6211,7 +6398,11 @@ export const imageDelete = (
     name: string,
     force?: boolean,
     noprune?: boolean
-): Effect.Effect<IMobyConnectionAgent, imageDeleteError, Readonly<Array<ImageDeleteResponseItem>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<ImageDeleteResponseItem>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageDeleteError({ message: "Required parameter name was null or undefined" }));
@@ -6243,7 +6434,13 @@ export const imageDelete = (
  * @summary Export an image
  * @param {string} name Image name or ID
  */
-export const imageGet = (name: string): Effect.Effect<IMobyConnectionAgent, imageGetError, Readonly<Blob>> =>
+export const imageGet = (
+    name: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageGetError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Blob>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageGetError({ message: "Required parameter name was null or undefined" }));
@@ -6278,7 +6475,11 @@ export const imageGet = (name: string): Effect.Effect<IMobyConnectionAgent, imag
  */
 export const imageGetAll = (
     names?: Array<string>
-): Effect.Effect<IMobyConnectionAgent, imageGetAllError, Readonly<Blob>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageGetAllError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Blob>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/get`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -6310,7 +6511,11 @@ export const imageGetAll = (
  */
 export const imageHistory = (
     name: string
-): Effect.Effect<IMobyConnectionAgent, imageHistoryError, Readonly<Array<HistoryResponseItem>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageHistoryError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<HistoryResponseItem>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageHistoryError({ message: "Required parameter name was null or undefined" }));
@@ -6342,7 +6547,11 @@ export const imageHistory = (
  */
 export const imageInspect = (
     name: string
-): Effect.Effect<IMobyConnectionAgent, imageInspectError, Readonly<ImageInspect>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ImageInspect>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageInspectError({ message: "Required parameter name was null or undefined" }));
@@ -6380,7 +6589,11 @@ export const imageList = (
     filters?: string,
     shared_size?: boolean,
     digests?: boolean
-): Effect.Effect<IMobyConnectionAgent, imageListError, Readonly<Array<ImageSummary>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<ImageSummary>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/json`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -6411,7 +6624,14 @@ export const imageList = (
  * @param {Object} [body] Tar archive containing images
  * @param {boolean} [quiet] Suppress progress details during load.
  */
-export const imageLoad = (body?: unknown, quiet?: boolean): Effect.Effect<IMobyConnectionAgent, imageLoadError, void> =>
+export const imageLoad = (
+    body?: unknown,
+    quiet?: boolean
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageLoadError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/load`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6428,7 +6648,7 @@ export const imageLoad = (body?: unknown, quiet?: boolean): Effect.Effect<IMobyC
             .pipe(addQueryParameter("quiet", quiet))
             .pipe(addHeader("Content-Type", "application/x-tar"))
             .pipe(setBody(body, "Object"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new imageLoadError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -6441,7 +6661,11 @@ export const imageLoad = (body?: unknown, quiet?: boolean): Effect.Effect<IMobyC
  */
 export const imagePrune = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, imagePruneError, Readonly<ImagePruneResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imagePruneError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<ImagePruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/images/prune`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6474,7 +6698,11 @@ export const imagePush = (
     name: string,
     X_Registry_Auth: string,
     tag?: string
-): Effect.Effect<IMobyConnectionAgent, imagePushError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imagePushError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imagePushError({ message: "Required parameter name was null or undefined" }));
@@ -6515,7 +6743,11 @@ export const imageSearch = (
     term: string,
     limit?: number,
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, imageSearchError, Readonly<Array<ImageSearchResponseItem>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageSearchError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<ImageSearchResponseItem>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (term === null || term === undefined) {
             yield* _(new imageSearchError({ message: "Required parameter term was null or undefined" }));
@@ -6554,7 +6786,11 @@ export const imageTag = (
     name: string,
     repo?: string,
     tag?: string
-): Effect.Effect<IMobyConnectionAgent, imageTagError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    imageTagError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new imageTagError({ message: "Required parameter name was null or undefined" }));
@@ -6589,7 +6825,11 @@ export const imageTag = (
 export const networkConnect = (
     body: NetworkConnectRequest,
     id: string
-): Effect.Effect<IMobyConnectionAgent, networkConnectError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    networkConnectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkConnectError({ message: "Required parameter body was null or undefined" }));
@@ -6613,7 +6853,7 @@ export const networkConnect = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "NetworkConnectRequest"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new networkConnectError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -6626,7 +6866,15 @@ export const networkConnect = (
  */
 export const networkCreate = (
     body: NetworkCreateRequest
-): Effect.Effect<IMobyConnectionAgent, networkCreateError, Readonly<NetworkCreateResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | networkCreateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<NetworkCreateResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkCreateError({ message: "Required parameter body was null or undefined" }));
@@ -6646,7 +6894,7 @@ export const networkCreate = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "NetworkCreateRequest"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkCreateResponseSchema)))
             .pipe(Effect.orElseFail(() => new networkCreateError({ message: "Http request failed" })));
     })
@@ -6658,7 +6906,13 @@ export const networkCreate = (
  * @summary Remove a network
  * @param {string} id Network ID or name
  */
-export const networkDelete = (id: string): Effect.Effect<IMobyConnectionAgent, networkDeleteError, void> =>
+export const networkDelete = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    networkDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -6691,7 +6945,11 @@ export const networkDelete = (id: string): Effect.Effect<IMobyConnectionAgent, n
 export const networkDisconnect = (
     body: NetworkDisconnectRequest,
     id: string
-): Effect.Effect<IMobyConnectionAgent, networkDisconnectError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    networkDisconnectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new networkDisconnectError({ message: "Required parameter body was null or undefined" }));
@@ -6715,7 +6973,7 @@ export const networkDisconnect = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "NetworkDisconnectRequest"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new networkDisconnectError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -6732,7 +6990,11 @@ export const networkInspect = (
     id: string,
     verbose?: boolean,
     scope?: string
-): Effect.Effect<IMobyConnectionAgent, networkInspectError, Readonly<Network>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    networkInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Network>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new networkInspectError({ message: "Required parameter id was null or undefined" }));
@@ -6766,7 +7028,11 @@ export const networkInspect = (
  */
 export const networkList = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, networkListError, Readonly<Array<Network>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    networkListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Network>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -6795,7 +7061,11 @@ export const networkList = (
  */
 export const networkPrune = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, networkPruneError, Readonly<NetworkPruneResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    networkPruneError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<NetworkPruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/networks/prune`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -6823,7 +7093,14 @@ export const networkPrune = (
  * @param {string} id The ID or name of the node
  * @param {boolean} [force] Force remove a node from the swarm
  */
-export const nodeDelete = (id: string, force?: boolean): Effect.Effect<IMobyConnectionAgent, nodeDeleteError, void> =>
+export const nodeDelete = (
+    id: string,
+    force?: boolean
+): Effect.Effect<
+    IMobyConnectionAgent,
+    nodeDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -6853,7 +7130,13 @@ export const nodeDelete = (id: string, force?: boolean): Effect.Effect<IMobyConn
  * @summary Inspect a node
  * @param {string} id The ID or name of the node
  */
-export const nodeInspect = (id: string): Effect.Effect<IMobyConnectionAgent, nodeInspectError, Readonly<Node>> =>
+export const nodeInspect = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    nodeInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Node>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeInspectError({ message: "Required parameter id was null or undefined" }));
@@ -6883,7 +7166,13 @@ export const nodeInspect = (id: string): Effect.Effect<IMobyConnectionAgent, nod
  * @summary List nodes
  * @param {string} [filters] Filters to process on the nodes list, encoded as JSON (a &#x60;map[string][]string&#x60;).  Available filters: - &#x60;id&#x3D;&lt;node id&gt;&#x60; - &#x60;label&#x3D;&lt;engine label&gt;&#x60; - &#x60;membership&#x3D;&#x60;(&#x60;accepted&#x60;|&#x60;pending&#x60;)&#x60; - &#x60;name&#x3D;&lt;node name&gt;&#x60; - &#x60;node.label&#x3D;&lt;node label&gt;&#x60; - &#x60;role&#x3D;&#x60;(&#x60;manager&#x60;|&#x60;worker&#x60;)&#x60;
  */
-export const nodeList = (filters?: string): Effect.Effect<IMobyConnectionAgent, nodeListError, Readonly<Array<Node>>> =>
+export const nodeList = (
+    filters?: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    nodeListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Node>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/nodes`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -6916,7 +7205,11 @@ export const nodeUpdate = (
     id: string,
     version: number,
     body?: NodeSpec
-): Effect.Effect<IMobyConnectionAgent, nodeUpdateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    nodeUpdateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new nodeUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -6941,7 +7234,7 @@ export const nodeUpdate = (
             .pipe(addQueryParameter("version", version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "NodeSpec"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new nodeUpdateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -6954,7 +7247,11 @@ export const nodeUpdate = (
  */
 export const getPluginPrivileges = (
     remote: string
-): Effect.Effect<IMobyConnectionAgent, getPluginPrivilegesError, Readonly<Array<PluginPrivilege>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    getPluginPrivilegesError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<PluginPrivilege>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (remote === null || remote === undefined) {
             yield* _(new getPluginPrivilegesError({ message: "Required parameter remote was null or undefined" }));
@@ -6989,7 +7286,11 @@ export const getPluginPrivileges = (
 export const pluginCreate = (
     name: string,
     body?: unknown
-): Effect.Effect<IMobyConnectionAgent, pluginCreateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginCreateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginCreateError({ message: "Required parameter name was null or undefined" }));
@@ -7010,7 +7311,7 @@ export const pluginCreate = (
             .pipe(addQueryParameter("name", name))
             .pipe(addHeader("Content-Type", "application/x-tar"))
             .pipe(setBody(body, "Object"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new pluginCreateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7025,7 +7326,11 @@ export const pluginCreate = (
 export const pluginDelete = (
     name: string,
     force?: boolean
-): Effect.Effect<IMobyConnectionAgent, pluginDeleteError, Readonly<Plugin>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Plugin>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDeleteError({ message: "Required parameter name was null or undefined" }));
@@ -7060,7 +7365,11 @@ export const pluginDelete = (
 export const pluginDisable = (
     name: string,
     force?: boolean
-): Effect.Effect<IMobyConnectionAgent, pluginDisableError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginDisableError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginDisableError({ message: "Required parameter name was null or undefined" }));
@@ -7094,7 +7403,11 @@ export const pluginDisable = (
 export const pluginEnable = (
     name: string,
     timeout?: number
-): Effect.Effect<IMobyConnectionAgent, pluginEnableError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginEnableError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginEnableError({ message: "Required parameter name was null or undefined" }));
@@ -7126,7 +7439,11 @@ export const pluginEnable = (
  */
 export const pluginInspect = (
     name: string
-): Effect.Effect<IMobyConnectionAgent, pluginInspectError, Readonly<Plugin>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Plugin>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginInspectError({ message: "Required parameter name was null or undefined" }));
@@ -7158,7 +7475,11 @@ export const pluginInspect = (
  */
 export const pluginList = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, pluginListError, Readonly<Array<Plugin>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Plugin>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/plugins`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -7193,7 +7514,11 @@ export const pluginPull = (
     body?: Array<PluginPrivilege>,
     name?: string,
     X_Registry_Auth?: string
-): Effect.Effect<IMobyConnectionAgent, pluginPullError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginPullError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (remote === null || remote === undefined) {
             yield* _(new pluginPullError({ message: "Required parameter remote was null or undefined" }));
@@ -7216,7 +7541,7 @@ export const pluginPull = (
             .pipe(addQueryParameter("name", name))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "Array&lt;PluginPrivilege&gt;"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new pluginPullError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7227,7 +7552,13 @@ export const pluginPull = (
  * @summary Push a plugin
  * @param {string} name The name of the plugin. The &#x60;:latest&#x60; tag is optional, and is the default if omitted.
  */
-export const pluginPush = (name: string): Effect.Effect<IMobyConnectionAgent, pluginPushError, void> =>
+export const pluginPush = (
+    name: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginPushError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginPushError({ message: "Required parameter name was null or undefined" }));
@@ -7260,7 +7591,11 @@ export const pluginPush = (name: string): Effect.Effect<IMobyConnectionAgent, pl
 export const pluginSet = (
     name: string,
     body?: Array<string>
-): Effect.Effect<IMobyConnectionAgent, pluginSetError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginSetError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginSetError({ message: "Required parameter name was null or undefined" }));
@@ -7280,7 +7615,7 @@ export const pluginSet = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "Array&lt;string&gt;"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new pluginSetError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7299,7 +7634,11 @@ export const pluginUpgrade = (
     remote: string,
     body?: Array<PluginPrivilege>,
     X_Registry_Auth?: string
-): Effect.Effect<IMobyConnectionAgent, pluginUpgradeError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    pluginUpgradeError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new pluginUpgradeError({ message: "Required parameter name was null or undefined" }));
@@ -7325,7 +7664,7 @@ export const pluginUpgrade = (
             .pipe(addQueryParameter("remote", remote))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "Array&lt;PluginPrivilege&gt;"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new pluginUpgradeError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7338,7 +7677,15 @@ export const pluginUpgrade = (
  */
 export const secretCreate = (
     body?: SecretsCreateBody
-): Effect.Effect<IMobyConnectionAgent, secretCreateError, Readonly<IdResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | secretCreateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<IdResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets/create`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -7354,7 +7701,7 @@ export const secretCreate = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "SecretsCreateBody"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
             .pipe(Effect.orElseFail(() => new secretCreateError({ message: "Http request failed" })));
     })
@@ -7366,7 +7713,13 @@ export const secretCreate = (
  * @summary Delete a secret
  * @param {string} id ID of the secret
  */
-export const secretDelete = (id: string): Effect.Effect<IMobyConnectionAgent, secretDeleteError, void> =>
+export const secretDelete = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    secretDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -7395,7 +7748,13 @@ export const secretDelete = (id: string): Effect.Effect<IMobyConnectionAgent, se
  * @summary Inspect a secret
  * @param {string} id ID of the secret
  */
-export const secretInspect = (id: string): Effect.Effect<IMobyConnectionAgent, secretInspectError, Readonly<Secret>> =>
+export const secretInspect = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    secretInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Secret>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretInspectError({ message: "Required parameter id was null or undefined" }));
@@ -7427,7 +7786,11 @@ export const secretInspect = (id: string): Effect.Effect<IMobyConnectionAgent, s
  */
 export const secretList = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, secretListError, Readonly<Array<Secret>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    secretListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Secret>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/secrets`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -7463,7 +7826,11 @@ export const secretUpdate = (
     id: string,
     version: number,
     body?: SecretSpec
-): Effect.Effect<IMobyConnectionAgent, secretUpdateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    secretUpdateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new secretUpdateError({ message: "Required parameter id was null or undefined" }));
@@ -7488,7 +7855,7 @@ export const secretUpdate = (
             .pipe(addQueryParameter("version", version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "SecretSpec"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new secretUpdateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7503,7 +7870,15 @@ export const secretUpdate = (
 export const serviceCreate = (
     body: ServicesCreateBody,
     X_Registry_Auth?: string
-): Effect.Effect<IMobyConnectionAgent, serviceCreateError, Readonly<ServiceCreateResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | serviceCreateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<ServiceCreateResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new serviceCreateError({ message: "Required parameter body was null or undefined" }));
@@ -7524,7 +7899,7 @@ export const serviceCreate = (
             .pipe(addHeader("X-Registry-Auth", String(X_Registry_Auth)))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "ServicesCreateBody"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceCreateResponseSchema)))
             .pipe(Effect.orElseFail(() => new serviceCreateError({ message: "Http request failed" })));
     })
@@ -7536,7 +7911,13 @@ export const serviceCreate = (
  * @summary Delete a service
  * @param {string} id ID or name of service.
  */
-export const serviceDelete = (id: string): Effect.Effect<IMobyConnectionAgent, serviceDeleteError, void> =>
+export const serviceDelete = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    serviceDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceDeleteError({ message: "Required parameter id was null or undefined" }));
@@ -7569,7 +7950,11 @@ export const serviceDelete = (id: string): Effect.Effect<IMobyConnectionAgent, s
 export const serviceInspect = (
     id: string,
     insertDefaults?: boolean
-): Effect.Effect<IMobyConnectionAgent, serviceInspectError, Readonly<Service>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    serviceInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Service>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceInspectError({ message: "Required parameter id was null or undefined" }));
@@ -7604,7 +7989,11 @@ export const serviceInspect = (
 export const serviceList = (
     filters?: string,
     status?: boolean
-): Effect.Effect<IMobyConnectionAgent, serviceListError, Readonly<Array<Service>>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    serviceListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Service>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/services`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -7648,7 +8037,11 @@ export const serviceLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<IMobyConnectionAgent, serviceLogsError, Readonly<Blob>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    serviceLogsError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Blob>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new serviceLogsError({ message: "Required parameter id was null or undefined" }));
@@ -7700,7 +8093,15 @@ export const serviceUpdate = (
     registryAuthFrom?: string,
     rollback?: string,
     X_Registry_Auth?: string
-): Effect.Effect<IMobyConnectionAgent, serviceUpdateError, Readonly<ServiceUpdateResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | serviceUpdateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<ServiceUpdateResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new serviceUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -7732,7 +8133,7 @@ export const serviceUpdate = (
             .pipe(addQueryParameter("rollback", rollback))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "IdUpdateBody1"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceUpdateResponseSchema)))
             .pipe(Effect.orElseFail(() => new serviceUpdateError({ message: "Http request failed" })));
     })
@@ -7743,7 +8144,11 @@ export const serviceUpdate = (
  * Start a new interactive session with a server. Session allows server to call back to the client for advanced capabilities.  ### Hijacking  This endpoint hijacks the HTTP connection to HTTP2 transport that allows the client to expose gPRC services on that connection.  For example, the client sends this request to upgrade the connection:  ``` POST /session HTTP/1.1 Upgrade: h2c Connection: Upgrade ```  The Docker daemon responds with a `101 UPGRADED` response follow with the raw stream:  ``` HTTP/1.1 101 UPGRADED Connection: Upgrade Upgrade: h2c ```
  * @summary Initialize interactive session
  */
-export const session = (): Effect.Effect<IMobyConnectionAgent, sessionError, void> =>
+export const session = (): Effect.Effect<
+    IMobyConnectionAgent,
+    sessionError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/session`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -7770,7 +8175,15 @@ export const session = (): Effect.Effect<IMobyConnectionAgent, sessionError, voi
  */
 export const swarmInit = (
     body: SwarmInitRequest
-): Effect.Effect<IMobyConnectionAgent, swarmInitError, Readonly<string>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | swarmInitError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<string>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmInitError({ message: "Required parameter body was null or undefined" }));
@@ -7790,7 +8203,7 @@ export const swarmInit = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "SwarmInitRequest1"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(stringSchema)))
             .pipe(Effect.orElseFail(() => new swarmInitError({ message: "Http request failed" })));
     })
@@ -7801,7 +8214,11 @@ export const swarmInit = (
  *
  * @summary Inspect swarm
  */
-export const swarmInspect = (): Effect.Effect<IMobyConnectionAgent, swarmInspectError, Readonly<Swarm>> =>
+export const swarmInspect = (): Effect.Effect<
+    IMobyConnectionAgent,
+    swarmInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Swarm>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -7827,7 +8244,13 @@ export const swarmInspect = (): Effect.Effect<IMobyConnectionAgent, swarmInspect
  * @summary Join an existing swarm
  * @param {SwarmJoinRequest} body
  */
-export const swarmJoin = (body: SwarmJoinRequest): Effect.Effect<IMobyConnectionAgent, swarmJoinError, void> =>
+export const swarmJoin = (
+    body: SwarmJoinRequest
+): Effect.Effect<
+    IMobyConnectionAgent,
+    swarmJoinError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmJoinError({ message: "Required parameter body was null or undefined" }));
@@ -7847,7 +8270,7 @@ export const swarmJoin = (body: SwarmJoinRequest): Effect.Effect<IMobyConnection
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "SwarmJoinRequest1"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new swarmJoinError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7858,7 +8281,13 @@ export const swarmJoin = (body: SwarmJoinRequest): Effect.Effect<IMobyConnection
  * @summary Leave a swarm
  * @param {boolean} [force] Force leave swarm, even if this is the last manager or that it will break the cluster.
  */
-export const swarmLeave = (force?: boolean): Effect.Effect<IMobyConnectionAgent, swarmLeaveError, void> =>
+export const swarmLeave = (
+    force?: boolean
+): Effect.Effect<
+    IMobyConnectionAgent,
+    swarmLeaveError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/swarm/leave`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -7884,7 +8313,13 @@ export const swarmLeave = (force?: boolean): Effect.Effect<IMobyConnectionAgent,
  * @summary Unlock a locked manager
  * @param {SwarmUnlockRequest} body
  */
-export const swarmUnlock = (body: SwarmUnlockRequest): Effect.Effect<IMobyConnectionAgent, swarmUnlockError, void> =>
+export const swarmUnlock = (
+    body: SwarmUnlockRequest
+): Effect.Effect<
+    IMobyConnectionAgent,
+    swarmUnlockError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmUnlockError({ message: "Required parameter body was null or undefined" }));
@@ -7904,7 +8339,7 @@ export const swarmUnlock = (body: SwarmUnlockRequest): Effect.Effect<IMobyConnec
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "SwarmUnlockRequest"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new swarmUnlockError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7916,7 +8351,7 @@ export const swarmUnlock = (body: SwarmUnlockRequest): Effect.Effect<IMobyConnec
  */
 export const swarmUnlockkey = (): Effect.Effect<
     IMobyConnectionAgent,
-    swarmUnlockkeyError,
+    swarmUnlockkeyError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
     Readonly<UnlockKeyResponse>
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -7954,7 +8389,11 @@ export const swarmUpdate = (
     rotateWorkerToken?: boolean,
     rotateManagerToken?: boolean,
     rotateManagerUnlockKey?: boolean
-): Effect.Effect<IMobyConnectionAgent, swarmUpdateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    swarmUpdateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new swarmUpdateError({ message: "Required parameter body was null or undefined" }));
@@ -7982,7 +8421,7 @@ export const swarmUpdate = (
             .pipe(addQueryParameter("rotateManagerUnlockKey", rotateManagerUnlockKey))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "SwarmSpec"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new swarmUpdateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)
@@ -7995,7 +8434,15 @@ export const swarmUpdate = (
  */
 export const systemAuth = (
     body?: AuthConfig
-): Effect.Effect<IMobyConnectionAgent, systemAuthError, Readonly<SystemAuthResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | systemAuthError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<SystemAuthResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/auth`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -8011,7 +8458,7 @@ export const systemAuth = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "AuthConfig"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemAuthResponseSchema)))
             .pipe(Effect.orElseFail(() => new systemAuthError({ message: "Http request failed" })));
     })
@@ -8025,7 +8472,11 @@ export const systemAuth = (
  */
 export const systemDataUsage = (
     type?: Array<string>
-): Effect.Effect<IMobyConnectionAgent, systemDataUsageError, Readonly<SystemDataUsageResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    systemDataUsageError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<SystemDataUsageResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/system/df`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8058,7 +8509,11 @@ export const systemEvents = (
     since?: string,
     until?: string,
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, systemEventsError, Readonly<EventMessage>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    systemEventsError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<EventMessage>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/events`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8086,7 +8541,11 @@ export const systemEvents = (
  *
  * @summary Get system information
  */
-export const systemInfo = (): Effect.Effect<IMobyConnectionAgent, systemInfoError, Readonly<SystemInfo>> =>
+export const systemInfo = (): Effect.Effect<
+    IMobyConnectionAgent,
+    systemInfoError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<SystemInfo>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/info`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8111,7 +8570,11 @@ export const systemInfo = (): Effect.Effect<IMobyConnectionAgent, systemInfoErro
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
-export const systemPing = (): Effect.Effect<IMobyConnectionAgent, systemPingError, Readonly<string>> =>
+export const systemPing = (): Effect.Effect<
+    IMobyConnectionAgent,
+    systemPingError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<string>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8136,7 +8599,11 @@ export const systemPing = (): Effect.Effect<IMobyConnectionAgent, systemPingErro
  * This is a dummy endpoint you can use to test if the server is accessible.
  * @summary Ping
  */
-export const systemPingHead = (): Effect.Effect<IMobyConnectionAgent, systemPingHeadError, Readonly<string>> =>
+export const systemPingHead = (): Effect.Effect<
+    IMobyConnectionAgent,
+    systemPingHeadError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<string>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/_ping`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "HEAD";
@@ -8161,7 +8628,11 @@ export const systemPingHead = (): Effect.Effect<IMobyConnectionAgent, systemPing
  * Returns the version of Docker that is running and various information about the system that Docker is running on.
  * @summary Get version
  */
-export const systemVersion = (): Effect.Effect<IMobyConnectionAgent, systemVersionError, Readonly<SystemVersion>> =>
+export const systemVersion = (): Effect.Effect<
+    IMobyConnectionAgent,
+    systemVersionError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<SystemVersion>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/version`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8187,7 +8658,13 @@ export const systemVersion = (): Effect.Effect<IMobyConnectionAgent, systemVersi
  * @summary Inspect a task
  * @param {string} id ID of the task
  */
-export const taskInspect = (id: string): Effect.Effect<IMobyConnectionAgent, taskInspectError, Readonly<Task>> =>
+export const taskInspect = (
+    id: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    taskInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Task>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskInspectError({ message: "Required parameter id was null or undefined" }));
@@ -8217,7 +8694,13 @@ export const taskInspect = (id: string): Effect.Effect<IMobyConnectionAgent, tas
  * @summary List tasks
  * @param {string} [filters] A JSON encoded value of the filters (a &#x60;map[string][]string&#x60;) to process on the tasks list.  Available filters:  - &#x60;desired-state&#x3D;(running | shutdown | accepted)&#x60; - &#x60;id&#x3D;&lt;task id&gt;&#x60; - &#x60;label&#x3D;key&#x60; or &#x60;label&#x3D;\&quot;key&#x3D;value\&quot;&#x60; - &#x60;name&#x3D;&lt;task name&gt;&#x60; - &#x60;node&#x3D;&lt;node id or name&gt;&#x60; - &#x60;service&#x3D;&lt;service name&gt;&#x60;
  */
-export const taskList = (filters?: string): Effect.Effect<IMobyConnectionAgent, taskListError, Readonly<Array<Task>>> =>
+export const taskList = (
+    filters?: string
+): Effect.Effect<
+    IMobyConnectionAgent,
+    taskListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Array<Task>>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/tasks`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8260,7 +8743,11 @@ export const taskLogs = (
     since?: number,
     timestamps?: boolean,
     tail?: string
-): Effect.Effect<IMobyConnectionAgent, taskLogsError, Readonly<Blob>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    taskLogsError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Blob>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (id === null || id === undefined) {
             yield* _(new taskLogsError({ message: "Required parameter id was null or undefined" }));
@@ -8302,7 +8789,15 @@ export const taskLogs = (
  */
 export const volumeCreate = (
     body: VolumeCreateOptions
-): Effect.Effect<IMobyConnectionAgent, volumeCreateError, Readonly<Volume>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    | volumeCreateError
+    | NodeHttp.error.RequestError
+    | NodeHttp.error.ResponseError
+    | NodeHttp.body.BodyError
+    | ParseResult.ParseError,
+    Readonly<Volume>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (body === null || body === undefined) {
             yield* _(new volumeCreateError({ message: "Required parameter body was null or undefined" }));
@@ -8322,7 +8817,7 @@ export const volumeCreate = (
             .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "VolumeCreateOptions"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema)))
             .pipe(Effect.orElseFail(() => new volumeCreateError({ message: "Http request failed" })));
     })
@@ -8338,7 +8833,11 @@ export const volumeCreate = (
 export const volumeDelete = (
     name: string,
     force?: boolean
-): Effect.Effect<IMobyConnectionAgent, volumeDeleteError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    volumeDeleteError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeDeleteError({ message: "Required parameter name was null or undefined" }));
@@ -8370,7 +8869,11 @@ export const volumeDelete = (
  */
 export const volumeInspect = (
     name: string
-): Effect.Effect<IMobyConnectionAgent, volumeInspectError, Readonly<Volume>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    volumeInspectError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<Volume>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeInspectError({ message: "Required parameter name was null or undefined" }));
@@ -8402,7 +8905,11 @@ export const volumeInspect = (
  */
 export const volumeList = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, volumeListError, Readonly<VolumeListResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    volumeListError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<VolumeListResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
@@ -8431,7 +8938,11 @@ export const volumeList = (
  */
 export const volumePrune = (
     filters?: string
-): Effect.Effect<IMobyConnectionAgent, volumePruneError, Readonly<VolumePruneResponse>> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    volumePruneError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+    Readonly<VolumePruneResponse>
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = `${BASE_PATH}/volumes/prune`;
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -8466,7 +8977,11 @@ export const volumeUpdate = (
     name: string,
     version: number,
     body?: VolumesNameBody
-): Effect.Effect<IMobyConnectionAgent, volumeUpdateError, void> =>
+): Effect.Effect<
+    IMobyConnectionAgent,
+    volumeUpdateError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | NodeHttp.body.BodyError,
+    void
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (name === null || name === undefined) {
             yield* _(new volumeUpdateError({ message: "Required parameter name was null or undefined" }));
@@ -8491,7 +9006,7 @@ export const volumeUpdate = (
             .pipe(addQueryParameter("version", version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(body, "VolumesNameBody"))
-            .pipe(Effect.flatMap(client))
+            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.orElseFail(() => new volumeUpdateError({ message: "Http request failed" })));
     })
         .pipe(Effect.flatten)

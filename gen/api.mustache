@@ -5,6 +5,7 @@ import https from "node:https";
 
 import * as ssh2 from "ssh2";
 import * as Schema from "@effect/schema/Schema";
+import * as ParseResult from "@effect/schema/ParseResult";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import { Context, Data, Effect, Layer, Match, Scope, identity, pipe } from "effect";
 
@@ -21,7 +22,7 @@ import {
 
 export type MobyConnectionOptions =
     | { protocol: "http"; host: string; port: number }
-    | { protocol: "https"; host: string; port: number }
+    | { protocol: "https"; host: string; port: number; cert: string; ca: string; key: string }
     | ({ protocol: "ssh" } & ssh2.ConnectConfig)
     | { protocol: "unix"; socketPath: string };
 
@@ -83,7 +84,7 @@ export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
 * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
 {{/allParams}}
 */
-export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<IMobyConnectionAgent, {{nickname}}Error, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<IMobyConnectionAgent, {{nickname}}Error | NodeHttp.error.RequestError | NodeHttp.error.ResponseError {{#bodyParam}} | NodeHttp.body.BodyError{{/bodyParam}} {{#returnType}} | ParseResult.ParseError{{/returnType}}, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
 {{#allParams}}
 {{#required}}
     if ({{paramName}} === null || {{paramName}} === undefined) {
@@ -128,7 +129,7 @@ export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/require
         .pipe(addHeader("Content-Type", "{{{mediaType}}}"))
         {{/consumes.0}}
         .pipe(setBody({{paramName}}, "{{dataType}}"))
-        .pipe(Effect.flatMap(client))
+        .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
         {{/bodyParam}}
         {{^bodyParam}}
         .pipe(client)

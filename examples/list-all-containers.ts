@@ -1,6 +1,7 @@
+/* eslint-disable unicorn/no-array-callback-reference */
 // TS_NODE_PROJECT=./examples/tsconfig.examples.json node --no-warnings=ExperimentalWarning --loader ts-node/esm ./examples/list-all-containers.ts
 
-import { Effect } from "effect";
+import { Effect, ReadonlyArray } from "effect";
 
 import {
     IMobyService,
@@ -35,7 +36,7 @@ const [MyRemoteMobyClient, MobyServiceRemote] = makeMobyLayer("remoteMobyClient"
 const main: Effect.Effect<
     never,
     containerListError | MobyClientAlreadyInstantiated,
-    Readonly<[localContainers: readonly ContainerSummary[], remoteContainers: readonly ContainerSummary[]]>
+    Readonly<ContainerSummary[]>
 > = Effect.gen(function* (_: Effect.Adapter) {
     const localDocker: IMobyService = yield* _(MyLocalMobyClient);
     const remoteDocker: IMobyService = yield* _(MyRemoteMobyClient);
@@ -44,6 +45,8 @@ const main: Effect.Effect<
     return [data1, data2] as const;
 })
     .pipe(Effect.provide(MobyServiceLocal))
-    .pipe(Effect.provide(MobyServiceRemote));
+    .pipe(Effect.provide(MobyServiceRemote))
+    .pipe(Effect.map(ReadonlyArray.flatten));
 
-console.log(await Effect.runPromise(main));
+const allContainers = await Effect.runPromise(main);
+console.log(allContainers);

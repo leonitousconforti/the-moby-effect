@@ -1,23 +1,23 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const { version } = require("../package.json");
+
+const outputDirectory = path.join(__dirname, "..", "src");
+const templateDirectory = path.join(__dirname, "..", "gen");
+const configFile = path.join(__dirname, "..", "gen", "swagger.json");
+const swaggerJar = path.join(__dirname, "..", "temp", "swagger-codegen-cli.jar");
+const swaggerFile = `https://docs.docker.com/reference/engine/v${version.split(".").slice(0, 2).join(".")}.yaml`;
+const swaggerCodegenJar =
+    "https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.51/swagger-codegen-cli-3.0.51.jar";
 
 // This file has to be in commonJS format so that it can be ran by Heft (build system)
 module.exports.runAsync = async () => {
-    const fs = await import("node:fs");
-    const path = await import("node:path");
-
     const { $ } = await import("execa");
     const { rimraf } = await import("rimraf");
     const prettier = await import("prettier");
 
-    // Setup our environment
-    const outputDirectory = path.join(__dirname, "..", "src");
-    const templateDirectory = path.join(__dirname, "..", "gen");
-    const configFile = path.join(__dirname, "..", "gen", "swagger.json");
-    const swaggerJar = path.join(__dirname, "..", "temp", "swagger-codegen-cli.jar");
-    const swaggerFile = `https://docs.docker.com/reference/engine/v${version.split(".").slice(0, 2).join(".")}.yaml`;
-
     // Run swagger codegen and delete any unwanted files after
-    await $`wget https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.51/swagger-codegen-cli-3.0.51.jar -O temp/swagger-codegen-cli.jar`;
+    await $`wget ${swaggerCodegenJar} -O temp/swagger-codegen-cli.jar`;
     await $`java -jar ${swaggerJar} generate --lang typescript-fetch --template-engine mustache --input-spec ${swaggerFile} --output ${outputDirectory} --template-dir ${templateDirectory} --config ${configFile}`;
     await rimraf([`${outputDirectory}/!(api.ts|*.json)`, `${outputDirectory}/.*`], { glob: true });
 
@@ -25,13 +25,11 @@ module.exports.runAsync = async () => {
     const source: string = fs
         .readFileSync(`${outputDirectory}/api.ts`, "utf8")
 
-        // Massage body amd array types a little
+        // Turn all Object types into void and any into unknown
         .replaceAll(/body: Object/gm, "body: unknown")
         .replaceAll(/body\?: Object/gm, "body?: unknown")
         .replaceAll(/Array<Array<(\w+)>>Schema/gm, "arraySchema(arraySchema($1Schema))")
         .replaceAll(/Array<(\w+)>Schema/gm, "arraySchema($1Schema)")
-
-        // Turn all Object types into void and any into unknown
         .replaceAll(/: any/gm, ": unknown")
         .replaceAll(/Readonly<any>/gm, "Readonly<unknown>")
         .replaceAll(/Promise<{}>/gm, "Promise<void>")
@@ -89,7 +87,6 @@ module.exports.runAsync = async () => {
         throw new Error("Could not find header or implementation or schema sections");
 
     // Recursive helper to put the sections in the right order
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     type t = { sectionName: string; source: string; dependencies: Set<string> };
     const orderSections = (sectionsToProcess: t[]): t[] => {
         if (sectionsToProcess.length === 0) return [];
