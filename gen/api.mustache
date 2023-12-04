@@ -61,6 +61,39 @@ const setBody =
             : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
     };
 
+const errorHandler = <Tag extends string>(
+    toError: new (args: { message: string }) => Data.YieldableError & { readonly _tag: Tag }
+): (<R, A>(
+    self: Effect.Effect<
+        R,
+        NodeHttp.body.BodyError | NodeHttp.error.RequestError | NodeHttp.error.ResponseError | ParseResult.ParseError,
+        A
+    >
+) => Effect.Effect<R, Data.YieldableError & { readonly _tag: Tag }, A>) =>
+    Effect.catchTags({
+        BodyError: (bodyError) =>
+            new toError({ message: `body error ${bodyError.reason._tag}, ${String(bodyError.reason.error)}` }),
+        RequestError: (requestError) =>
+            new toError({ message: `request error ${requestError.reason}, ${String(requestError.error)}` }),
+        ResponseError: (responseError) =>
+            responseError.response.text
+                .pipe(
+                    Effect.catchTag(
+                        "ResponseError",
+                        () => new toError({ message: `response error ${responseError.reason}` })
+                    )
+                )
+                .pipe(
+                    Effect.flatMap(
+                        (text) =>
+                            new toError({
+                                message: `response error ${responseError.reason}, statusCode=${responseError.response.status} message=${text}`,
+                            })
+                    )
+                ),
+        ParseError: (parseError) => new toError({ message: `parsing errors ${parseError.errors.toString()}` }),
+    });
+
 {{#models}}
 {{#model}}{{#isEnum}}{{>modelEnum}}{{/isEnum}}{{^isEnum}}{{>modelGeneric}}{{/isEnum}}{{/model}}
 {{/models}}
@@ -84,7 +117,7 @@ export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
 * @param {{=<% %>=}}{<%&dataType%>}<%={{ }}=%> {{^required}}[{{/required}}{{paramName}}{{^required}}]{{/required}} {{description}}
 {{/allParams}}
 */
-export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<IMobyConnectionAgent, {{nickname}}Error | NodeHttp.error.RequestError | NodeHttp.error.ResponseError {{#bodyParam}} | NodeHttp.body.BodyError{{/bodyParam}} {{#returnType}} | ParseResult.ParseError{{/returnType}}, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
+export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/required}}: {{{dataType}}}, {{/allParams}}): Effect.Effect<IMobyConnectionAgent, {{nickname}}Error, {{#returnType}}Readonly<{{{returnType}}}>{{/returnType}}{{^returnType}}void{{/returnType}}> => Effect.gen(function* (_: Effect.Adapter) {
 {{#allParams}}
 {{#required}}
     if ({{paramName}} === null || {{paramName}} === undefined) {
@@ -137,7 +170,7 @@ export const {{nickname}} = ({{#allParams}}{{paramName}}{{^required}}?{{/require
         {{#returnType}}
         .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson({{{returnType}}}Schema)))
         {{/returnType}}
-        .pipe(Effect.orElseFail(() => new {{nickname}}Error({ message: "Http request failed" })));
+        .pipe(errorHandler({{nickname}}Error));
     }).pipe(Effect.flatten).pipe(Effect.scoped);
 
 {{/operation}}
