@@ -26,8 +26,6 @@
         "ssh2": "^1.14.0"
     },
     "devDependencies": {
-        "@babel/core": "^7.23.5",
-        "@effect/babel-plugin": "^0.2.0",
         "@effect/platform-node": "0.34.0",
         "@effect/schema": "0.52.0",
         "@rushstack/eslint-config": "3.5.0",
