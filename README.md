@@ -4,10 +4,10 @@ Moby/Docker API client built using [effect](effect.website). Docker uses the nam
 
 ## Features
 
-- [x] - unix socket connections (tested with docker desktop)
-- [x] - local http connections (tested with docker desktop)
+- [x] - local unix socket connections
+- [x] - http and https connections
 - [ ] - ssh connections (very soon)
-- [ ] - streaming (just like [dockerode](https://github.com/apocas/dockerode), streams are passed through directly to the caller)
+- [ ] - streaming (just like [dockerode](https://github.com/apocas/dockerode), streams are passed to you)
 - [ ] - tests
 
 ## Versioning
@@ -100,5 +100,5 @@ Connection agents are scoped, but they are not scoped to the methods you would c
 
 Contributions are welcome! To test your changes run:
 
-1. `pnpm install`
-2. `pnpm build`
+1. `npm install` or `pnpm install`
+2. `npm run build` or `pnpm build`
