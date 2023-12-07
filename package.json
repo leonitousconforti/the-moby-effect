@@ -14,52 +14,47 @@
     "license": "MIT",
     "author": "Leo Conforti <leo@leoconforti.us> (https://leoconforti.us)",
     "type": "module",
-    "main": "dist/api.js",
+    "main": "dist/src/main.js",
     "files": [
-        "dist/api.d.ts",
-        "dist/api.d.ts.map",
-        "dist/api.js",
-        "dist/api.js.map"
+        "dist/src"
     ],
     "scripts": {
-        "build": "heft run --only build -- --clean",
-        "gen": "heft run --only gen -- --clean",
-        "playground": "TS_NODE_PROJECT=./examples/tsconfig.examples.json node --no-warnings=ExperimentalWarning --loader ts-node/esm ./examples/playground.ts",
-        "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean"
+        "build": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean",
+        "playground": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./examples/playground.ts"
     },
     "dependencies": {
         "ssh2": "^1.14.0"
     },
     "devDependencies": {
-        "@effect/platform-node": "0.31.1",
-        "@effect/schema": "0.48.4",
+        "@babel/core": "^7.23.5",
+        "@effect/babel-plugin": "^0.2.0",
+        "@effect/platform-node": "0.34.0",
+        "@effect/schema": "0.52.0",
         "@rushstack/eslint-config": "3.5.0",
-        "@rushstack/heft": "0.63.2",
-        "@rushstack/heft-jest-plugin": "0.10.4",
-        "@rushstack/heft-lint-plugin": "0.2.12",
-        "@rushstack/heft-typescript-plugin": "0.2.12",
+        "@rushstack/heft": "0.63.3",
+        "@rushstack/heft-jest-plugin": "0.10.5",
+        "@rushstack/heft-lint-plugin": "0.2.13",
+        "@rushstack/heft-typescript-plugin": "0.2.13",
         "@types/heft-jest": "1.0.6",
-        "@types/node": "20.10.0",
+        "@types/node": "20.10.3",
         "@types/ssh2": "1.11.18",
-        "@typescript-eslint/parser": "6.13.1",
-        "effect": "2.0.0-next.55",
-        "eslint": "8.54.0",
-        "eslint-config-prettier": "9.0.0",
+        "@typescript-eslint/parser": "6.13.2",
+        "effect": "2.0.0-next.59",
+        "eslint": "8.55.0",
+        "eslint-config-prettier": "9.1.0",
         "eslint-plugin-prettier": "5.0.1",
         "eslint-plugin-unicorn": "49.0.0",
-        "execa": "8.0.1",
         "fast-check": "3.14.0",
         "prettier": "3.1.0",
         "prettier-plugin-jsdoc": "1.1.1",
-        "prettier-plugin-packagejson": "2.4.6",
-        "rimraf": "5.0.5",
+        "prettier-plugin-packagejson": "2.4.7",
         "ts-node": "10.9.1",
-        "typescript": "5.3.2"
+        "typescript": "5.3.3"
     },
     "peerDependencies": {
-        "@effect/platform-node": "~0.31.1",
-        "@effect/schema": "~0.48.4",
-        "effect": "~2.0.0-next.55",
+        "@effect/platform-node": "~0.34.0",
+        "@effect/schema": "~0.52.0",
+        "effect": "~2.0.0-next.59",
         "fast-check": "~3.14.0"
     },
     "engines": {

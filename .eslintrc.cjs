@@ -13,29 +13,15 @@ module.exports = {
     plugins: ["unicorn", "prettier"],
     env: { node: true, es2022: true },
     parser: "@typescript-eslint/parser",
-    parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: "module",
-        tsconfigRootDir: __dirname,
-        project: ["./tsconfig.json", "./tsconfig.base.json"],
-    },
+    parserOptions: { ecmaVersion: 2022, sourceType: "module" },
     rules: {
         "no-console": "warn",
+        "tsdoc/syntax": "off",
+        "unicorn/no-array-callback-reference": "off",
     },
     overrides: [
         {
-            files: ["./src/api.ts"],
-            rules: {
-                "max-lines": "off",
-                "tsdoc/syntax": "off",
-                "dot-notation": "off",
-                "@typescript-eslint/typedef": "off",
-                "unicorn/prevent-abbreviations": "off",
-                "unicorn/no-array-callback-reference": "off",
-            },
-        },
-        {
-            files: ["./src/api.ts", "./test/api.test.ts", "./examples/**/*.ts"],
+            files: ["./src/**/*.ts", "./test/**/*.ts", "./examples/**/*.ts"],
             rules: {
                 "@typescript-eslint/naming-convention": [
                     "error",
@@ -44,16 +30,18 @@ module.exports = {
             },
         },
         {
+            files: ["./src/schemas.ts"],
+            rules: {
+                "max-lines": "off",
+                "@typescript-eslint/typedef": "off",
+                "unicorn/prevent-abbreviations": "off",
+            },
+        },
+        {
             files: ["./examples/**/*.ts"],
             rules: {
                 "no-console": "off",
                 "@typescript-eslint/typedef": "off",
-            },
-        },
-        {
-            files: ["./gen/main.cts"],
-            rules: {
-                "unicorn/prefer-module": "off",
             },
         },
     ],
