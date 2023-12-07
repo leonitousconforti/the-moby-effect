@@ -3532,7 +3532,17 @@ export const HostConfigSchema = Schema.extend(
         /** Runtime to use with this container. */
         Runtime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
         /** Isolation technology of the container. (Windows only) */
-        Isolation: Schema.enums(HostConfig_IsolationEnum).pipe(Schema.nullable).pipe(Schema.optional),
+        Isolation: Schema.string
+            .pipe(
+                Schema.transform(
+                    Schema.enums(HostConfig_IsolationEnum).pipe(Schema.nullable),
+                    (a: string) =>
+                        // eslint-disable-next-line unicorn/no-null
+                        a === "" ? null : HostConfig_IsolationEnum[a as keyof typeof HostConfig_IsolationEnum],
+                    String
+                )
+            )
+            .pipe(Schema.optional),
         /**
          * The list of paths to be masked inside the container (this overrides
          * the default set of paths).
