@@ -1098,7 +1098,7 @@ export const containerStart = (
  * `cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage` *
  * system_cpu_delta = `cpu_stats.system_cpu_usage -
  * precpu_stats.system_cpu_usage` * number_cpus =
- * `lenght(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU
+ * `length(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU
  * usage % = `(cpu_delta / system_cpu_delta) * number_cpus * 100.0`
  *
  * @param id - ID or name of the container
@@ -1109,7 +1109,7 @@ export const containerStart = (
  */
 export const containerStats = (
     options: containerStatsOptions
-): Effect.Effect<IMobyConnectionAgent, containerStatsError, Readonly<any>> =>
+): Effect.Effect<IMobyConnectionAgent, containerStatsError, Readonly<unknown>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.id === null || options.id === undefined) {
             yield* _(new containerStatsError({ message: "Required parameter id was null or undefined" }));
@@ -1640,7 +1640,7 @@ export type containerStartWithConnectionAgentProvided = WithConnectionAgentProvi
  * `cpu_stats.cpu_usage.total_usage - precpu_stats.cpu_usage.total_usage` *
  * system_cpu_delta = `cpu_stats.system_cpu_usage -
  * precpu_stats.system_cpu_usage` * number_cpus =
- * `lenght(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU
+ * `length(cpu_stats.cpu_usage.percpu_usage)` or `cpu_stats.online_cpus` * CPU
  * usage % = `(cpu_delta / system_cpu_delta) * number_cpus * 100.0`
  *
  * @param id - ID or name of the container
