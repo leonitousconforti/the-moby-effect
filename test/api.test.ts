@@ -1,5 +1,5 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Effect, Stream } from "effect";
+import { Effect, Match, Stream, pipe } from "effect";
 
 import * as MobyApi from "../src/main.js";
 
@@ -38,26 +38,25 @@ beforeAll(async () => {
 
         yield* _(localService.containerStart({ id: containerCreateResponse.Id }));
 
-        // const isContainerHealthy = pipe(
-        //     localService.containerInspect({ id: containerCreateResponse.Id }),
-        //     Effect.map(({ State }) => State?.Health?.Status),
-        //     Effect.tap((status) => Effect.log(`Waiting for container to report healthy status=${status}`)),
-        //     Effect.flatMap((status) =>
-        //         pipe(
-        //             Match.value(status),
-        //             Match.when(MobyApi.Health_StatusEnum.Healthy, (_s) => Effect.unit),
-        //             Match.orElse((s) => Effect.fail(s))
-        //         )
-        //     )
-        // );
+        const isContainerHealthy = pipe(
+            localService.containerInspect({ id: containerCreateResponse.Id }),
+            Effect.tap(({ State }) => Effect.log(`Waiting for container to report healthy status=${State?.Status}`)),
+            Effect.flatMap(({ State }) =>
+                pipe(
+                    Match.value(State?.Status),
+                    Match.when(MobyApi.ContainerState_StatusEnum.Running, (_s) => Effect.unit),
+                    Match.orElse((s) => Effect.fail(s))
+                )
+            )
+        );
 
-        // yield* _(Effect.retryWhile(isContainerHealthy, (error) => error === MobyApi.Health_StatusEnum.Starting));
+        yield* _(Effect.retryWhile(isContainerHealthy, (error) => error === MobyApi.ContainerState_StatusEnum.Created));
         return containerCreateResponse.Id;
     })
         .pipe(Effect.scoped)
         .pipe(Effect.provide(MobyServiceLocal))
         .pipe(Effect.runPromise);
-}, 120_000);
+}, 30_000);
 
 /** Cleans up the container that will be created in the setup helper. */
 afterAll(
@@ -68,7 +67,7 @@ afterAll(
             .pipe(Effect.scoped)
             .pipe(Effect.provide(MobyServiceLocal))
             .pipe(Effect.runPromise),
-    120_000
+    30_000
 );
 
 /** Moby/Docker api tests. */
