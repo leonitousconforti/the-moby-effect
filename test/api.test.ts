@@ -9,7 +9,7 @@ const [HostsLocalMobyClient, MobyServiceLocal] = MobyApi.makeMobyLayer("hostsLoc
     socketPath: "/var/run/docker.sock",
 });
 
-/** A docker container we can test against on the host */
+/** A docker container we can test against on the host. */
 let testDindContainer: string | undefined;
 
 /**
