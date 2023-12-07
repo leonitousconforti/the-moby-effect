@@ -70,6 +70,7 @@
                     "cpusetcpus",
                     "cpushares",
                     "Datacenter",
+                    "dind",
                     "Dnsrr",
                     "Domainname",
                     "emptystring",
