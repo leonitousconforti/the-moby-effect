@@ -7,7 +7,6 @@ import {
     number as numberSchema,
     record as recordSchema,
     string as stringSchema,
-    unknown as unknownSchema,
 } from "@effect/schema/Schema";
 
 /** Address represents an IPv4 or IPv6 IP address. */
@@ -1098,7 +1097,7 @@ export interface PortBinding extends Schema.Schema.To<typeof PortBindingSchema> 
  * `<port>/<protocol>`, for example, `80/udp`. If a container's port is mapped
  * for multiple protocols, separate entries are added to the mapping table.
  */
-export const PortMapSchema = Schema.extend(recordSchema(stringSchema, arraySchema(unknownSchema)), Schema.struct({}));
+export const PortMapSchema = recordSchema(stringSchema, arraySchema(stringSchema).pipe(Schema.nullable));
 
 export interface PortMap extends Schema.Schema.To<typeof PortMapSchema> {}
 
@@ -1802,7 +1801,7 @@ export interface ThrottleDevice extends Schema.Schema.To<typeof ThrottleDeviceSc
  * A map of topological domains to topological segments. For in depth details,
  * see documentation for the Topology object in the CSI specification.
  */
-export const TopologySchema = Schema.extend(recordSchema(stringSchema, stringSchema), Schema.struct({}));
+export const TopologySchema = recordSchema(stringSchema, stringSchema);
 
 export interface Topology extends Schema.Schema.To<typeof TopologySchema> {}
 
