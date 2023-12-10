@@ -2,7 +2,7 @@ import { Chunk, Effect, Stream } from "effect";
 
 import { IMobyService, ImageCreateError, makeMobyLayer } from "../src/main.js";
 
-// Remember passing in no connection options means it will connect to the local docker server
+// Remember passing in no connection options means it will connect to the local docker socket
 const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
 
 // {"status":"Pulling from library/hello-world","id":"latest"}
@@ -19,12 +19,12 @@ const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
 await Effect.gen(function* (_: Effect.Adapter) {
     const localDocker: IMobyService = yield* _(MyLocalMobyClient);
 
-    const buildStream: Stream.Stream<never, ImageCreateError, string> = yield* _(
+    const pullStream: Stream.Stream<never, ImageCreateError, string> = yield* _(
         localDocker.imageCreate({ fromImage: "docker.io/library/hello-world:latest" })
     );
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.join(""))));
+    return yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
 })
     .pipe(Effect.scoped)
     .pipe(Effect.provide(MobyServiceLocal))

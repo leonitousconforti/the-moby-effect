@@ -496,7 +496,7 @@ export const buildPrune = (
  */
 export const imageBuild = (
     options: imageBuildOptions
-): Effect.Effect<IMobyConnectionAgent, ImageBuildError, Stream.Stream<never, ImageCreateError, string>> =>
+): Effect.Effect<IMobyConnectionAgent, ImageBuildError, Stream.Stream<never, ImageBuildError, string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/build";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
@@ -542,7 +542,7 @@ export const imageBuild = (
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.map((response) => response.stream))
             .pipe(Effect.map(Stream.decodeText("utf8")))
-            .pipe(Effect.map(Stream.catchTag("ResponseError", (re) => new ImageCreateError({ message: re.reason }))))
+            .pipe(Effect.map(Stream.catchTag("ResponseError", (re) => new ImageBuildError({ message: re.reason }))))
             .pipe(errorHandler(ImageBuildError));
     }).pipe(Effect.flatten);
 

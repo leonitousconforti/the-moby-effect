@@ -33,7 +33,7 @@ export const run = <ContextIdentifier extends `${string}MobyClient`>({
         const service: IMobyService = yield* _(mobyClient);
 
         // Start pulling or building the image
-        const buildStream: Stream.Stream<never, Image.ImageCreateError, string> =
+        const buildStream: Stream.Stream<never, Image.ImageCreateError | Image.ImageBuildError, string> =
             imageOptions.kind === "pull"
                 ? yield* _(service.imageCreate(imageOptions))
                 : yield* _(service.imageBuild(imageOptions));
