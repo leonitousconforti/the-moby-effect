@@ -1,6 +1,6 @@
 # the-moby-effect
 
-Moby/Docker API client built using [effect](effect.website). Docker uses the naming convention NounVerb for their endpoints and I am sticking with that here. If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly, then I do have some of those [here](./examples/).
+Moby/Docker API client built using [effect-ts](effect.website). Docker uses the naming convention NounVerb for their endpoints and I am sticking with that here. If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly, then I do have some of those [here](./examples/).
 
 ## Features
 
@@ -12,7 +12,7 @@ Moby/Docker API client built using [effect](effect.website). Docker uses the nam
 
 ## Versioning
 
-This package does not follow semantic versioning, instead the major and minor part represents the version the of docker api from the moby repository, can also be found [here](https://docs.docker.com/engine/api/version-history/). All bugfixes, breaking or otherwise, will be released under an incremented patch version.
+This package does not follow semantic versioning, instead the major and minor part represents the version the of docker api from the moby repository that this was based on, can also be found [here](https://docs.docker.com/engine/api/version-history/). All bugfixes, breaking or otherwise, will be released under an incremented patch version.
 
 ## Example usage
 ```ts
@@ -94,11 +94,11 @@ console.log(allContainers);
 
 ## Effect Notes
 
-Connection agents are scoped, but they are not scoped to the methods you would call from the service. This is because some endpoints return streams and if the connection agent is release on the closing of the service function scope, then the stream is broken when it gets to your effect.
+Connection agents are scoped, but they are not scoped to the methods you would call from the service layer. This is because some endpoints return streams and if the connection agent gets released on the closing of the service layer function scope, then the stream is broken by the time it gets to your effect.
 
 ## Contributing
 
-Contributions are welcome! To test your changes run:
+Contributions and suggestions are welcome! To test your changes run:
 
-1. `npm install` or `pnpm install`
-2. `npm run build` or `pnpm build`
+1. `pnpm install`
+2. `pnpm build`
