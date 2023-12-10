@@ -2,15 +2,8 @@ import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
-import {
-    IMobyConnectionAgent,
-    MobyConnectionAgent,
-    WithConnectionAgentProvided,
-    addHeader,
-    addQueryParameter,
-    errorHandler,
-    setBody,
-} from "./request-helpers.js";
+import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
+import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
 
 import {
     AuthConfig,
@@ -26,13 +19,13 @@ import {
     SystemVersionSchema,
 } from "./schemas.js";
 
-export class systemAuthError extends Data.TaggedError("systemAuthError")<{ message: string }> {}
-export class systemDataUsageError extends Data.TaggedError("systemDataUsageError")<{ message: string }> {}
-export class systemEventsError extends Data.TaggedError("systemEventsError")<{ message: string }> {}
-export class systemInfoError extends Data.TaggedError("systemInfoError")<{ message: string }> {}
-export class systemPingError extends Data.TaggedError("systemPingError")<{ message: string }> {}
-export class systemPingHeadError extends Data.TaggedError("systemPingHeadError")<{ message: string }> {}
-export class systemVersionError extends Data.TaggedError("systemVersionError")<{ message: string }> {}
+export class SystemAuthError extends Data.TaggedError("SystemAuthError")<{ message: string }> {}
+export class SystemDataUsageError extends Data.TaggedError("SystemDataUsageError")<{ message: string }> {}
+export class SystemEventsError extends Data.TaggedError("SystemEventsError")<{ message: string }> {}
+export class SystemInfoError extends Data.TaggedError("SystemInfoError")<{ message: string }> {}
+export class SystemPingError extends Data.TaggedError("SystemPingError")<{ message: string }> {}
+export class SystemPingHeadError extends Data.TaggedError("SystemPingHeadError")<{ message: string }> {}
+export class SystemVersionError extends Data.TaggedError("SystemVersionError")<{ message: string }> {}
 
 export interface systemAuthOptions {
     /** Authentication to check */
@@ -81,25 +74,26 @@ export interface systemEventsOptions {
  */
 export const systemAuth = (
     options: systemAuthOptions
-): Effect.Effect<IMobyConnectionAgent, systemAuthError, Readonly<SystemAuthResponse>> =>
+): Effect.Effect<IMobyConnectionAgent, SystemAuthError, Readonly<SystemAuthResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/auth";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "AuthConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemAuthResponseSchema)))
-            .pipe(errorHandler(systemAuthError));
+            .pipe(errorHandler(SystemAuthError));
     }).pipe(Effect.flatten);
 
 /**
@@ -109,24 +103,25 @@ export const systemAuth = (
  */
 export const systemDataUsage = (
     options: systemDataUsageOptions
-): Effect.Effect<IMobyConnectionAgent, systemDataUsageError, Readonly<SystemDataUsageResponse>> =>
+): Effect.Effect<IMobyConnectionAgent, SystemDataUsageError, Readonly<SystemDataUsageResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/system/df";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(addQueryParameter("type", options.type))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemDataUsageResponseSchema)))
-            .pipe(errorHandler(systemDataUsageError));
+            .pipe(errorHandler(SystemDataUsageError));
     }).pipe(Effect.flatten);
 
 /**
@@ -170,178 +165,188 @@ export const systemDataUsage = (
  */
 export const systemEvents = (
     options: systemEventsOptions
-): Effect.Effect<IMobyConnectionAgent, systemEventsError, Readonly<EventMessage>> =>
+): Effect.Effect<IMobyConnectionAgent, SystemEventsError, Readonly<EventMessage>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/events";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(addQueryParameter("since", options.since))
             .pipe(addQueryParameter("until", options.until))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(EventMessageSchema)))
-            .pipe(errorHandler(systemEventsError));
+            .pipe(errorHandler(SystemEventsError));
     }).pipe(Effect.flatten);
 
 /** Get system information */
-export const systemInfo = (): Effect.Effect<IMobyConnectionAgent, systemInfoError, Readonly<SystemInfo>> =>
+export const systemInfo = (): Effect.Effect<IMobyConnectionAgent, SystemInfoError, Readonly<SystemInfo>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/info";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemInfoSchema)))
-            .pipe(errorHandler(systemInfoError));
+            .pipe(errorHandler(SystemInfoError));
     }).pipe(Effect.flatten);
 
 /** This is a dummy endpoint you can use to test if the server is accessible. */
-export const systemPing = (): Effect.Effect<IMobyConnectionAgent, systemPingError, Readonly<string>> =>
+export const systemPing = (): Effect.Effect<IMobyConnectionAgent, SystemPingError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/_ping";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.string)))
-            .pipe(errorHandler(systemPingError));
+            .pipe(Effect.flatMap((response) => response.text))
+            .pipe(errorHandler(SystemPingError));
     }).pipe(Effect.flatten);
 
 /** This is a dummy endpoint you can use to test if the server is accessible. */
-export const systemPingHead = (): Effect.Effect<IMobyConnectionAgent, systemPingHeadError, Readonly<string>> =>
+export const systemPingHead = (): Effect.Effect<IMobyConnectionAgent, SystemPingHeadError, Readonly<string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/_ping";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "HEAD";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.string)))
-            .pipe(errorHandler(systemPingHeadError));
+            .pipe(errorHandler(SystemPingHeadError));
     }).pipe(Effect.flatten);
 
 /**
  * Returns the version of Docker that is running and various information about
  * the system that Docker is running on.
  */
-export const systemVersion = (): Effect.Effect<IMobyConnectionAgent, systemVersionError, Readonly<SystemVersion>> =>
+export const systemVersion = (): Effect.Effect<IMobyConnectionAgent, SystemVersionError, Readonly<SystemVersion>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/version";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemVersionSchema)))
-            .pipe(errorHandler(systemVersionError));
+            .pipe(errorHandler(SystemVersionError));
     }).pipe(Effect.flatten);
 
-/**
- * Validate credentials for a registry and, if available, get an identity token
- * for accessing the registry without password.
- *
- * @param body - Authentication to check
- */
-export type systemAuthWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemAuth>;
+export interface ISystemService {
+    /**
+     * Validate credentials for a registry and, if available, get an identity
+     * token for accessing the registry without password.
+     *
+     * @param body - Authentication to check
+     */
+    systemAuth: WithConnectionAgentProvided<typeof systemAuth>;
 
-/**
- * Get data usage information
- *
- * @param type - Object types, for which to compute and return data.
- */
-export type systemDataUsageWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemDataUsage>;
+    /**
+     * Get data usage information
+     *
+     * @param type - Object types, for which to compute and return data.
+     */
+    systemDataUsage: WithConnectionAgentProvided<typeof systemDataUsage>;
 
-/**
- * Stream real-time events from the server. Various objects within Docker report
- * events when something happens to them. Containers report these events:
- * `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`,
- * `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`,
- * `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`,
- * `start`, `stop`, `top`, `unpause`, `update`, and `prune` Images report these
- * events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`, `untag`,
- * and `prune` Volumes report these events: `create`, `mount`, `unmount`,
- * `destroy`, and `prune` Networks report these events: `create`, `connect`,
- * `disconnect`, `destroy`, `update`, `remove`, and `prune` The Docker daemon
- * reports these events: `reload` Services report these events: `create`,
- * `update`, and `remove` Nodes report these events: `create`, `update`, and
- * `remove` Secrets report these events: `create`, `update`, and `remove`
- * Configs report these events: `create`, `update`, and `remove` The Builder
- * reports `prune` events
- *
- * @param since - Show events created since this timestamp then stream new
- *   events.
- * @param until - Show events created until this timestamp then stop streaming.
- * @param filters - A JSON encoded value of filters (a `map[string][]string`) to
- *   process on the event list. Available filters:
- *
- *   - `config=<string>` config name or ID
- *   - `container=<string>` container name or ID
- *   - `daemon=<string>` daemon name or ID
- *   - `event=<string>` event type
- *   - `image=<string>` image name or ID
- *   - `label=<string>` image or container label
- *   - `network=<string>` network name or ID
- *   - `node=<string>` node ID
- *   - `plugin`=<string> plugin name or ID
- *   - `scope`=<string> local or swarm
- *   - `secret=<string>` secret name or ID
- *   - `service=<string>` service name or ID
- *   - `type=<string>` object to filter by, one of `container`, `image`, `volume`,
- *       `network`, `daemon`, `plugin`, `node`, `service`, `secret` or `config`
- *   - `volume=<string>` volume name
- */
-export type systemEventsWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemEvents>;
+    /**
+     * Stream real-time events from the server. Various objects within Docker
+     * report events when something happens to them. Containers report these
+     * events: `attach`, `commit`, `copy`, `create`, `destroy`, `detach`, `die`,
+     * `exec_create`, `exec_detach`, `exec_start`, `exec_die`, `export`,
+     * `health_status`, `kill`, `oom`, `pause`, `rename`, `resize`, `restart`,
+     * `start`, `stop`, `top`, `unpause`, `update`, and `prune` Images report
+     * these events: `delete`, `import`, `load`, `pull`, `push`, `save`, `tag`,
+     * `untag`, and `prune` Volumes report these events: `create`, `mount`,
+     * `unmount`, `destroy`, and `prune` Networks report these events: `create`,
+     * `connect`, `disconnect`, `destroy`, `update`, `remove`, and `prune` The
+     * Docker daemon reports these events: `reload` Services report these
+     * events: `create`, `update`, and `remove` Nodes report these events:
+     * `create`, `update`, and `remove` Secrets report these events: `create`,
+     * `update`, and `remove` Configs report these events: `create`, `update`,
+     * and `remove` The Builder reports `prune` events
+     *
+     * @param since - Show events created since this timestamp then stream new
+     *   events.
+     * @param until - Show events created until this timestamp then stop
+     *   streaming.
+     * @param filters - A JSON encoded value of filters (a
+     *   `map[string][]string`) to process on the event list. Available
+     *   filters:
+     *
+     *   - `config=<string>` config name or ID
+     *   - `container=<string>` container name or ID
+     *   - `daemon=<string>` daemon name or ID
+     *   - `event=<string>` event type
+     *   - `image=<string>` image name or ID
+     *   - `label=<string>` image or container label
+     *   - `network=<string>` network name or ID
+     *   - `node=<string>` node ID
+     *   - `plugin`=<string> plugin name or ID
+     *   - `scope`=<string> local or swarm
+     *   - `secret=<string>` secret name or ID
+     *   - `service=<string>` service name or ID
+     *   - `type=<string>` object to filter by, one of `container`, `image`,
+     *       `volume`, `network`, `daemon`, `plugin`, `node`, `service`,
+     *       `secret` or `config`
+     *   - `volume=<string>` volume name
+     */
+    systemEvents: WithConnectionAgentProvided<typeof systemEvents>;
 
-/** Get system information */
-export type systemInfoWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemInfo>;
+    /** Get system information */
+    systemInfo: WithConnectionAgentProvided<typeof systemInfo>;
 
-/** This is a dummy endpoint you can use to test if the server is accessible. */
-export type systemPingWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemPing>;
+    /** This is a dummy endpoint you can use to test if the server is accessible. */
+    systemPing: WithConnectionAgentProvided<typeof systemPing>;
 
-/** This is a dummy endpoint you can use to test if the server is accessible. */
-export type systemPingHeadWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemPingHead>;
+    /** This is a dummy endpoint you can use to test if the server is accessible. */
+    systemPingHead: WithConnectionAgentProvided<typeof systemPingHead>;
 
-/**
- * Returns the version of Docker that is running and various information about
- * the system that Docker is running on.
- */
-export type systemVersionWithConnectionAgentProvided = WithConnectionAgentProvided<typeof systemVersion>;
+    /**
+     * Returns the version of Docker that is running and various information
+     * about the system that Docker is running on.
+     */
+    systemVersion: WithConnectionAgentProvided<typeof systemVersion>;
+}

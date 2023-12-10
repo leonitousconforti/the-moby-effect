@@ -1,11 +1,8 @@
-import http from "node:http";
-import https from "node:https";
+import { Context, Data, Effect, Layer, Scope } from "effect";
+import ssh2 from "ssh2";
 
-import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Context, Data, Effect, Layer, Match, Scope, pipe } from "effect";
-import * as ssh2 from "ssh2";
-
-import { IMobyConnectionAgent, MobyConnectionAgent } from "./request-helpers.js";
+import { getAgent, IMobyConnectionAgent, MobyConnectionAgent } from "./agent-helpers.js";
+import { run } from "./custom-helpers.js";
 
 import * as Config from "./configs.js";
 import * as Container from "./containers.js";
@@ -40,123 +37,39 @@ export * from "./system.js";
 export * from "./tasks.js";
 export * from "./volumes.js";
 
+/** How to connect to your moby/docker instance. */
 export type MobyConnectionOptions =
+    | { protocol: "unix"; socketPath: string }
     | { protocol: "http"; host: string; port: number }
-    | { protocol: "https"; host: string; port: number; cert: string; ca: string; key: string }
-    | ({ protocol: "ssh" } & ssh2.ConnectConfig)
-    | { protocol: "unix"; socketPath: string };
+    | ({ protocol: "ssh"; socketPath: string } & ssh2.ConnectConfig)
+    | { protocol: "https"; host: string; port: number; cert: string; ca: string; key: string };
 
-export interface IMobyService {
-    readonly configCreate: Config.configCreateWithConnectionAgentProvided;
-    readonly configDelete: Config.configDeleteWithConnectionAgentProvided;
-    readonly configInspect: Config.configInspectWithConnectionAgentProvided;
-    readonly configList: Config.configListWithConnectionAgentProvided;
-    readonly configUpdate: Config.configUpdateWithConnectionAgentProvided;
-    readonly containerArchive: Container.containerArchiveWithConnectionAgentProvided;
-    readonly containerArchiveInfo: Container.containerArchiveInfoWithConnectionAgentProvided;
-    readonly containerAttach: Container.containerAttachWithConnectionAgentProvided;
-    readonly containerAttachWebsocket: Container.containerAttachWebsocketWithConnectionAgentProvided;
-    readonly containerChanges: Container.containerChangesWithConnectionAgentProvided;
-    readonly containerCreate: Container.containerCreateWithConnectionAgentProvided;
-    readonly containerDelete: Container.containerDeleteWithConnectionAgentProvided;
-    readonly containerExport: Container.containerExportWithConnectionAgentProvided;
-    readonly containerInspect: Container.containerInspectWithConnectionAgentProvided;
-    readonly containerKill: Container.containerKillWithConnectionAgentProvided;
-    readonly containerList: Container.containerListWithConnectionAgentProvided;
-    readonly containerLogs: Container.containerLogsWithConnectionAgentProvided;
-    readonly containerPause: Container.containerPauseWithConnectionAgentProvided;
-    readonly containerPrune: Container.containerPruneWithConnectionAgentProvided;
-    readonly containerRename: Container.containerRenameWithConnectionAgentProvided;
-    readonly containerResize: Container.containerResizeWithConnectionAgentProvided;
-    readonly containerRestart: Container.containerRestartWithConnectionAgentProvided;
-    readonly containerStart: Container.containerStartWithConnectionAgentProvided;
-    readonly containerStats: Container.containerStatsWithConnectionAgentProvided;
-    readonly containerStop: Container.containerStopWithConnectionAgentProvided;
-    readonly containerTop: Container.containerTopWithConnectionAgentProvided;
-    readonly containerUnpause: Container.containerUnpauseWithConnectionAgentProvided;
-    readonly containerUpdate: Container.containerUpdateWithConnectionAgentProvided;
-    readonly containerWait: Container.containerWaitWithConnectionAgentProvided;
-    readonly putContainerArchive: Container.putContainerArchiveWithConnectionAgentProvided;
-    readonly distributionInspect: Distribution.distributionInspectWithConnectionAgentProvided;
-    readonly containerExec: Exec.containerExecWithConnectionAgentProvided;
-    readonly execInspect: Exec.execInspectWithConnectionAgentProvided;
-    readonly execResize: Exec.execResizeWithConnectionAgentProvided;
-    readonly execStart: Exec.execStartWithConnectionAgentProvided;
-    readonly buildPrune: Image.buildPruneWithConnectionAgentProvided;
-    readonly imageBuild: Image.imageBuildWithConnectionAgentProvided;
-    readonly imageCommit: Image.imageCommitWithConnectionAgentProvided;
-    readonly imageCreate: Image.imageCreateWithConnectionAgentProvided;
-    readonly imageDelete: Image.imageDeleteWithConnectionAgentProvided;
-    readonly imageGet: Image.imageGetWithConnectionAgentProvided;
-    readonly imageGetAll: Image.imageGetAllWithConnectionAgentProvided;
-    readonly imageHistory: Image.imageHistoryWithConnectionAgentProvided;
-    readonly imageInspect: Image.imageInspectWithConnectionAgentProvided;
-    readonly imageList: Image.imageListWithConnectionAgentProvided;
-    readonly imageLoad: Image.imageLoadWithConnectionAgentProvided;
-    readonly imagePrune: Image.imagePruneWithConnectionAgentProvided;
-    readonly imagePush: Image.imagePushWithConnectionAgentProvided;
-    readonly imageSearch: Image.imageSearchWithConnectionAgentProvided;
-    readonly imageTag: Image.imageTagWithConnectionAgentProvided;
-    readonly networkConnect: Network.networkConnectWithConnectionAgentProvided;
-    readonly networkCreate: Network.networkCreateWithConnectionAgentProvided;
-    readonly networkDelete: Network.networkDeleteWithConnectionAgentProvided;
-    readonly networkDisconnect: Network.networkDisconnectWithConnectionAgentProvided;
-    readonly networkInspect: Network.networkInspectWithConnectionAgentProvided;
-    readonly networkList: Network.networkListWithConnectionAgentProvided;
-    readonly networkPrune: Network.networkPruneWithConnectionAgentProvided;
-    readonly nodeDelete: Node.nodeDeleteWithConnectionAgentProvided;
-    readonly nodeInspect: Node.nodeInspectWithConnectionAgentProvided;
-    readonly nodeList: Node.nodeListWithConnectionAgentProvided;
-    readonly nodeUpdate: Node.nodeUpdateWithConnectionAgentProvided;
-    readonly getPluginPrivileges: Plugin.getPluginPrivilegesWithConnectionAgentProvided;
-    readonly pluginCreate: Plugin.pluginCreateWithConnectionAgentProvided;
-    readonly pluginDelete: Plugin.pluginDeleteWithConnectionAgentProvided;
-    readonly pluginDisable: Plugin.pluginDisableWithConnectionAgentProvided;
-    readonly pluginEnable: Plugin.pluginEnableWithConnectionAgentProvided;
-    readonly pluginInspect: Plugin.pluginInspectWithConnectionAgentProvided;
-    readonly pluginList: Plugin.pluginListWithConnectionAgentProvided;
-    readonly pluginPull: Plugin.pluginPullWithConnectionAgentProvided;
-    readonly pluginPush: Plugin.pluginPushWithConnectionAgentProvided;
-    readonly pluginSet: Plugin.pluginSetWithConnectionAgentProvided;
-    readonly pluginUpgrade: Plugin.pluginUpgradeWithConnectionAgentProvided;
-    readonly secretCreate: Secret.secretCreateWithConnectionAgentProvided;
-    readonly secretDelete: Secret.secretDeleteWithConnectionAgentProvided;
-    readonly secretInspect: Secret.secretInspectWithConnectionAgentProvided;
-    readonly secretList: Secret.secretListWithConnectionAgentProvided;
-    readonly secretUpdate: Secret.secretUpdateWithConnectionAgentProvided;
-    readonly serviceCreate: Service.serviceCreateWithConnectionAgentProvided;
-    readonly serviceDelete: Service.serviceDeleteWithConnectionAgentProvided;
-    readonly serviceInspect: Service.serviceInspectWithConnectionAgentProvided;
-    readonly serviceList: Service.serviceListWithConnectionAgentProvided;
-    readonly serviceLogs: Service.serviceLogsWithConnectionAgentProvided;
-    readonly serviceUpdate: Service.serviceUpdateWithConnectionAgentProvided;
-    readonly session: Session.sessionWithConnectionAgentProvided;
-    readonly swarmInit: Swarm.swarmInitWithConnectionAgentProvided;
-    readonly swarmInspect: Swarm.swarmInspectWithConnectionAgentProvided;
-    readonly swarmJoin: Swarm.swarmJoinWithConnectionAgentProvided;
-    readonly swarmLeave: Swarm.swarmLeaveWithConnectionAgentProvided;
-    readonly swarmUnlock: Swarm.swarmUnlockWithConnectionAgentProvided;
-    readonly swarmUnlockkey: Swarm.swarmUnlockkeyWithConnectionAgentProvided;
-    readonly swarmUpdate: Swarm.swarmUpdateWithConnectionAgentProvided;
-    readonly systemAuth: System.systemAuthWithConnectionAgentProvided;
-    readonly systemDataUsage: System.systemDataUsageWithConnectionAgentProvided;
-    readonly systemEvents: System.systemEventsWithConnectionAgentProvided;
-    readonly systemInfo: System.systemInfoWithConnectionAgentProvided;
-    readonly systemPing: System.systemPingWithConnectionAgentProvided;
-    readonly systemPingHead: System.systemPingHeadWithConnectionAgentProvided;
-    readonly systemVersion: System.systemVersionWithConnectionAgentProvided;
-    readonly taskInspect: Task.taskInspectWithConnectionAgentProvided;
-    readonly taskList: Task.taskListWithConnectionAgentProvided;
-    readonly taskLogs: Task.taskLogsWithConnectionAgentProvided;
-    readonly volumeCreate: Volume.volumeCreateWithConnectionAgentProvided;
-    readonly volumeDelete: Volume.volumeDeleteWithConnectionAgentProvided;
-    readonly volumeInspect: Volume.volumeInspectWithConnectionAgentProvided;
-    readonly volumeList: Volume.volumeListWithConnectionAgentProvided;
-    readonly volumePrune: Volume.volumePruneWithConnectionAgentProvided;
-    readonly volumeUpdate: Volume.volumeUpdateWithConnectionAgentProvided;
-    readonly getAgent: Effect.Effect<Scope.Scope, never, NodeHttp.nodeClient.HttpAgent>;
+/** Interface for the effect layer that we will construct later. */
+export interface IMobyService
+    extends Config.IConfigService,
+        Container.IContainerService,
+        Distribution.IDistributionService,
+        Exec.IExecService,
+        Image.IImageService,
+        Network.INetworkService,
+        Node.INodeService,
+        Plugin.IPluginService,
+        Secret.ISecretService,
+        Service.IServicesService,
+        Session.ISessionService,
+        Swarm.ISwarmService,
+        System.ISystemService,
+        Task.ITaskService,
+        Plugin.IPluginService,
+        Volume.IVolumeService {
+    readonly run: typeof run;
+    readonly connectionAgent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>;
 }
 
+/**
+ * Keeps track of what client tags have already been instantiated to prevent
+ * duplicate instantiation.
+ */
 const instantiatedClientTags: Set<`${string}MobyClient`> = new Set<`${string}MobyClient`>();
 export class MobyClientAlreadyInstantiated extends Data.TaggedError("MobyClientAlreadyInstantiated")<{
     message: string;
@@ -169,6 +82,7 @@ export const makeMobyLayer = <ContextIdentifier extends `${string}MobyClient`>(
     contextTag: Context.Tag<ContextIdentifier, IMobyService>,
     layer: Layer.Layer<never, MobyClientAlreadyInstantiated, ContextIdentifier>,
 ] => {
+    // Check to see if this client tag has already been instantiated
     if (instantiatedClientTags.has(contextIdentifier)) {
         return [
             Context.Tag(),
@@ -176,287 +90,134 @@ export const makeMobyLayer = <ContextIdentifier extends `${string}MobyClient`>(
         ];
     }
 
+    // Set the default options to connect to the docker server on this host
     const localMobyConnectionOptions: MobyConnectionOptions =
-        mobyConnectionOptions ||
-        ({
-            protocol: "unix",
-            socketPath: "/var/run/docker.sock",
-        } as MobyConnectionOptions);
+        mobyConnectionOptions || ({ protocol: "unix", socketPath: "/var/run/docker.sock" } as const);
 
-    const agentOptions: http.AgentOptions | https.AgentOptions = pipe(
-        Match.value<MobyConnectionOptions>(localMobyConnectionOptions),
-        Match.when({ protocol: "unix" }, (options) => ({ socketPath: options.socketPath })),
-        Match.orElse((options) => ({ host: options.host, port: options.port }))
-    ) as http.AgentOptions | https.AgentOptions;
+    // Helper to provide the connection agent to all the endpoints that will need it below
+    const provideAgent = (): (<R, E, A>(
+        self: Effect.Effect<R, E, A>
+    ) => Effect.Effect<Scope.Scope | Exclude<R, IMobyConnectionAgent>, E, A>) =>
+        Effect.provideServiceEffect(MobyConnectionAgent, getAgent(localMobyConnectionOptions));
 
-    const getAgent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent> = NodeHttp.nodeClient
-        .makeAgent(agentOptions)
-        .pipe(Effect.map((_) => ({ ..._, _: 69 })));
-
+    // The context tag for this client
     const contextTag: Context.Tag<ContextIdentifier, IMobyService> = Context.Tag<ContextIdentifier, IMobyService>();
 
+    // Now we can construct the layer!
     const layer: Layer.Layer<never, never, ContextIdentifier> = Layer.succeed(
         contextTag,
         contextTag.of({
-            configCreate: (...arguments_) =>
-                Config.configCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            configDelete: (...arguments_) =>
-                Config.configDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            configInspect: (...arguments_) =>
-                Config.configInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            configList: (...arguments_) =>
-                Config.configList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            configUpdate: (...arguments_) =>
-                Config.configUpdate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            containerArchive: (...arguments_) =>
-                Container.containerArchive(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerArchiveInfo: (...arguments_) =>
-                Container.containerArchiveInfo(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerAttach: (...arguments_) =>
-                Container.containerAttach(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
+            run,
+            connectionAgent: getAgent(localMobyConnectionOptions),
+            configCreate: (...arguments_) => Config.configCreate(...arguments_).pipe(provideAgent()),
+            configDelete: (...arguments_) => Config.configDelete(...arguments_).pipe(provideAgent()),
+            configInspect: (...arguments_) => Config.configInspect(...arguments_).pipe(provideAgent()),
+            configList: (...arguments_) => Config.configList(...arguments_).pipe(provideAgent()),
+            configUpdate: (...arguments_) => Config.configUpdate(...arguments_).pipe(provideAgent()),
+            containerArchive: (...arguments_) => Container.containerArchive(...arguments_).pipe(provideAgent()),
+            containerArchiveInfo: (...arguments_) => Container.containerArchiveInfo(...arguments_).pipe(provideAgent()),
+            containerAttach: (...arguments_) => Container.containerAttach(...arguments_).pipe(provideAgent()),
             containerAttachWebsocket: (...arguments_) =>
-                Container.containerAttachWebsocket(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerChanges: (...arguments_) =>
-                Container.containerChanges(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerCreate: (...arguments_) =>
-                Container.containerCreate(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerDelete: (...arguments_) =>
-                Container.containerDelete(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerExport: (...arguments_) =>
-                Container.containerExport(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerInspect: (...arguments_) =>
-                Container.containerInspect(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerKill: (...arguments_) =>
-                Container.containerKill(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            containerList: (...arguments_) =>
-                Container.containerList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            containerLogs: (...arguments_) =>
-                Container.containerLogs(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            containerPause: (...arguments_) =>
-                Container.containerPause(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerPrune: (...arguments_) =>
-                Container.containerPrune(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerRename: (...arguments_) =>
-                Container.containerRename(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerResize: (...arguments_) =>
-                Container.containerResize(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerRestart: (...arguments_) =>
-                Container.containerRestart(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerStart: (...arguments_) =>
-                Container.containerStart(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerStats: (...arguments_) =>
-                Container.containerStats(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerStop: (...arguments_) =>
-                Container.containerStop(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            containerTop: (...arguments_) =>
-                Container.containerTop(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            containerUnpause: (...arguments_) =>
-                Container.containerUnpause(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerUpdate: (...arguments_) =>
-                Container.containerUpdate(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerWait: (...arguments_) =>
-                Container.containerWait(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            putContainerArchive: (...arguments_) =>
-                Container.putContainerArchive(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
+                Container.containerAttachWebsocket(...arguments_).pipe(provideAgent()),
+            containerChanges: (...arguments_) => Container.containerChanges(...arguments_).pipe(provideAgent()),
+            containerCreate: (...arguments_) => Container.containerCreate(...arguments_).pipe(provideAgent()),
+            containerDelete: (...arguments_) => Container.containerDelete(...arguments_).pipe(provideAgent()),
+            containerExport: (...arguments_) => Container.containerExport(...arguments_).pipe(provideAgent()),
+            containerInspect: (...arguments_) => Container.containerInspect(...arguments_).pipe(provideAgent()),
+            containerKill: (...arguments_) => Container.containerKill(...arguments_).pipe(provideAgent()),
+            containerList: (...arguments_) => Container.containerList(...arguments_).pipe(provideAgent()),
+            containerLogs: (...arguments_) => Container.containerLogs(...arguments_).pipe(provideAgent()),
+            containerPause: (...arguments_) => Container.containerPause(...arguments_).pipe(provideAgent()),
+            containerPrune: (...arguments_) => Container.containerPrune(...arguments_).pipe(provideAgent()),
+            containerRename: (...arguments_) => Container.containerRename(...arguments_).pipe(provideAgent()),
+            containerResize: (...arguments_) => Container.containerResize(...arguments_).pipe(provideAgent()),
+            containerRestart: (...arguments_) => Container.containerRestart(...arguments_).pipe(provideAgent()),
+            containerStart: (...arguments_) => Container.containerStart(...arguments_).pipe(provideAgent()),
+            containerStats: (...arguments_) => Container.containerStats(...arguments_).pipe(provideAgent()),
+            containerStop: (...arguments_) => Container.containerStop(...arguments_).pipe(provideAgent()),
+            containerTop: (...arguments_) => Container.containerTop(...arguments_).pipe(provideAgent()),
+            containerUnpause: (...arguments_) => Container.containerUnpause(...arguments_).pipe(provideAgent()),
+            containerUpdate: (...arguments_) => Container.containerUpdate(...arguments_).pipe(provideAgent()),
+            containerWait: (...arguments_) => Container.containerWait(...arguments_).pipe(provideAgent()),
+            putContainerArchive: (...arguments_) => Container.putContainerArchive(...arguments_).pipe(provideAgent()),
             distributionInspect: (...arguments_) =>
-                Distribution.distributionInspect(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            containerExec: (...arguments_) =>
-                Exec.containerExec(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            execInspect: (...arguments_) =>
-                Exec.execInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            execResize: (...arguments_) =>
-                Exec.execResize(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            execStart: (...arguments_) =>
-                Exec.execStart(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            buildPrune: (...arguments_) =>
-                Image.buildPrune(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageBuild: (...arguments_) =>
-                Image.imageBuild(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageCommit: (...arguments_) =>
-                Image.imageCommit(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageCreate: (...arguments_) =>
-                Image.imageCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageDelete: (...arguments_) =>
-                Image.imageDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageGet: (...arguments_) =>
-                Image.imageGet(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageGetAll: (...arguments_) =>
-                Image.imageGetAll(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageHistory: (...arguments_) =>
-                Image.imageHistory(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageInspect: (...arguments_) =>
-                Image.imageInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageList: (...arguments_) =>
-                Image.imageList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageLoad: (...arguments_) =>
-                Image.imageLoad(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imagePrune: (...arguments_) =>
-                Image.imagePrune(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imagePush: (...arguments_) =>
-                Image.imagePush(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageSearch: (...arguments_) =>
-                Image.imageSearch(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            imageTag: (...arguments_) =>
-                Image.imageTag(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            networkConnect: (...arguments_) =>
-                Network.networkConnect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            networkCreate: (...arguments_) =>
-                Network.networkCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            networkDelete: (...arguments_) =>
-                Network.networkDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            networkDisconnect: (...arguments_) =>
-                Network.networkDisconnect(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            networkInspect: (...arguments_) =>
-                Network.networkInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            networkList: (...arguments_) =>
-                Network.networkList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            networkPrune: (...arguments_) =>
-                Network.networkPrune(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            nodeDelete: (...arguments_) =>
-                Node.nodeDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            nodeInspect: (...arguments_) =>
-                Node.nodeInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            nodeList: (...arguments_) =>
-                Node.nodeList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            nodeUpdate: (...arguments_) =>
-                Node.nodeUpdate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            getPluginPrivileges: (...arguments_) =>
-                Plugin.getPluginPrivileges(...arguments_).pipe(
-                    Effect.provideServiceEffect(MobyConnectionAgent, getAgent)
-                ),
-            pluginCreate: (...arguments_) =>
-                Plugin.pluginCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginDelete: (...arguments_) =>
-                Plugin.pluginDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginDisable: (...arguments_) =>
-                Plugin.pluginDisable(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginEnable: (...arguments_) =>
-                Plugin.pluginEnable(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginInspect: (...arguments_) =>
-                Plugin.pluginInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginList: (...arguments_) =>
-                Plugin.pluginList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginPull: (...arguments_) =>
-                Plugin.pluginPull(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginPush: (...arguments_) =>
-                Plugin.pluginPush(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginSet: (...arguments_) =>
-                Plugin.pluginSet(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            pluginUpgrade: (...arguments_) =>
-                Plugin.pluginUpgrade(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            secretCreate: (...arguments_) =>
-                Secret.secretCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            secretDelete: (...arguments_) =>
-                Secret.secretDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            secretInspect: (...arguments_) =>
-                Secret.secretInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            secretList: (...arguments_) =>
-                Secret.secretList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            secretUpdate: (...arguments_) =>
-                Secret.secretUpdate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            serviceCreate: (...arguments_) =>
-                Service.serviceCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            serviceDelete: (...arguments_) =>
-                Service.serviceDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            serviceInspect: (...arguments_) =>
-                Service.serviceInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            serviceList: (...arguments_) =>
-                Service.serviceList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            serviceLogs: (...arguments_) =>
-                Service.serviceLogs(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            serviceUpdate: (...arguments_) =>
-                Service.serviceUpdate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            session: (...arguments_) =>
-                Session.session(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmInit: (...arguments_) =>
-                Swarm.swarmInit(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmInspect: (...arguments_) =>
-                Swarm.swarmInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmJoin: (...arguments_) =>
-                Swarm.swarmJoin(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmLeave: (...arguments_) =>
-                Swarm.swarmLeave(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmUnlock: (...arguments_) =>
-                Swarm.swarmUnlock(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmUnlockkey: (...arguments_) =>
-                Swarm.swarmUnlockkey(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            swarmUpdate: (...arguments_) =>
-                Swarm.swarmUpdate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemAuth: (...arguments_) =>
-                System.systemAuth(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemDataUsage: (...arguments_) =>
-                System.systemDataUsage(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemEvents: (...arguments_) =>
-                System.systemEvents(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemInfo: (...arguments_) =>
-                System.systemInfo(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemPing: (...arguments_) =>
-                System.systemPing(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemPingHead: (...arguments_) =>
-                System.systemPingHead(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            systemVersion: (...arguments_) =>
-                System.systemVersion(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            taskInspect: (...arguments_) =>
-                Task.taskInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            taskList: (...arguments_) =>
-                Task.taskList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            taskLogs: (...arguments_) =>
-                Task.taskLogs(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            volumeCreate: (...arguments_) =>
-                Volume.volumeCreate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            volumeDelete: (...arguments_) =>
-                Volume.volumeDelete(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            volumeInspect: (...arguments_) =>
-                Volume.volumeInspect(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            volumeList: (...arguments_) =>
-                Volume.volumeList(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            volumePrune: (...arguments_) =>
-                Volume.volumePrune(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            volumeUpdate: (...arguments_) =>
-                Volume.volumeUpdate(...arguments_).pipe(Effect.provideServiceEffect(MobyConnectionAgent, getAgent)),
-            getAgent,
+                Distribution.distributionInspect(...arguments_).pipe(provideAgent()),
+            containerExec: (...arguments_) => Exec.containerExec(...arguments_).pipe(provideAgent()),
+            execInspect: (...arguments_) => Exec.execInspect(...arguments_).pipe(provideAgent()),
+            execResize: (...arguments_) => Exec.execResize(...arguments_).pipe(provideAgent()),
+            execStart: (...arguments_) => Exec.execStart(...arguments_).pipe(provideAgent()),
+            buildPrune: (...arguments_) => Image.buildPrune(...arguments_).pipe(provideAgent()),
+            imageBuild: (...arguments_) => Image.imageBuild(...arguments_).pipe(provideAgent()),
+            imageCommit: (...arguments_) => Image.imageCommit(...arguments_).pipe(provideAgent()),
+            imageCreate: (...arguments_) => Image.imageCreate(...arguments_).pipe(provideAgent()),
+            imageDelete: (...arguments_) => Image.imageDelete(...arguments_).pipe(provideAgent()),
+            imageGet: (...arguments_) => Image.imageGet(...arguments_).pipe(provideAgent()),
+            imageGetAll: (...arguments_) => Image.imageGetAll(...arguments_).pipe(provideAgent()),
+            imageHistory: (...arguments_) => Image.imageHistory(...arguments_).pipe(provideAgent()),
+            imageInspect: (...arguments_) => Image.imageInspect(...arguments_).pipe(provideAgent()),
+            imageList: (...arguments_) => Image.imageList(...arguments_).pipe(provideAgent()),
+            imageLoad: (...arguments_) => Image.imageLoad(...arguments_).pipe(provideAgent()),
+            imagePrune: (...arguments_) => Image.imagePrune(...arguments_).pipe(provideAgent()),
+            imagePush: (...arguments_) => Image.imagePush(...arguments_).pipe(provideAgent()),
+            imageSearch: (...arguments_) => Image.imageSearch(...arguments_).pipe(provideAgent()),
+            imageTag: (...arguments_) => Image.imageTag(...arguments_).pipe(provideAgent()),
+            networkConnect: (...arguments_) => Network.networkConnect(...arguments_).pipe(provideAgent()),
+            networkCreate: (...arguments_) => Network.networkCreate(...arguments_).pipe(provideAgent()),
+            networkDelete: (...arguments_) => Network.networkDelete(...arguments_).pipe(provideAgent()),
+            networkDisconnect: (...arguments_) => Network.networkDisconnect(...arguments_).pipe(provideAgent()),
+            networkInspect: (...arguments_) => Network.networkInspect(...arguments_).pipe(provideAgent()),
+            networkList: (...arguments_) => Network.networkList(...arguments_).pipe(provideAgent()),
+            networkPrune: (...arguments_) => Network.networkPrune(...arguments_).pipe(provideAgent()),
+            nodeDelete: (...arguments_) => Node.nodeDelete(...arguments_).pipe(provideAgent()),
+            nodeInspect: (...arguments_) => Node.nodeInspect(...arguments_).pipe(provideAgent()),
+            nodeList: (...arguments_) => Node.nodeList(...arguments_).pipe(provideAgent()),
+            nodeUpdate: (...arguments_) => Node.nodeUpdate(...arguments_).pipe(provideAgent()),
+            getPluginPrivileges: (...arguments_) => Plugin.getPluginPrivileges(...arguments_).pipe(provideAgent()),
+            pluginCreate: (...arguments_) => Plugin.pluginCreate(...arguments_).pipe(provideAgent()),
+            pluginDelete: (...arguments_) => Plugin.pluginDelete(...arguments_).pipe(provideAgent()),
+            pluginDisable: (...arguments_) => Plugin.pluginDisable(...arguments_).pipe(provideAgent()),
+            pluginEnable: (...arguments_) => Plugin.pluginEnable(...arguments_).pipe(provideAgent()),
+            pluginInspect: (...arguments_) => Plugin.pluginInspect(...arguments_).pipe(provideAgent()),
+            pluginList: (...arguments_) => Plugin.pluginList(...arguments_).pipe(provideAgent()),
+            pluginPull: (...arguments_) => Plugin.pluginPull(...arguments_).pipe(provideAgent()),
+            pluginPush: (...arguments_) => Plugin.pluginPush(...arguments_).pipe(provideAgent()),
+            pluginSet: (...arguments_) => Plugin.pluginSet(...arguments_).pipe(provideAgent()),
+            pluginUpgrade: (...arguments_) => Plugin.pluginUpgrade(...arguments_).pipe(provideAgent()),
+            secretCreate: (...arguments_) => Secret.secretCreate(...arguments_).pipe(provideAgent()),
+            secretDelete: (...arguments_) => Secret.secretDelete(...arguments_).pipe(provideAgent()),
+            secretInspect: (...arguments_) => Secret.secretInspect(...arguments_).pipe(provideAgent()),
+            secretList: (...arguments_) => Secret.secretList(...arguments_).pipe(provideAgent()),
+            secretUpdate: (...arguments_) => Secret.secretUpdate(...arguments_).pipe(provideAgent()),
+            serviceCreate: (...arguments_) => Service.serviceCreate(...arguments_).pipe(provideAgent()),
+            serviceDelete: (...arguments_) => Service.serviceDelete(...arguments_).pipe(provideAgent()),
+            serviceInspect: (...arguments_) => Service.serviceInspect(...arguments_).pipe(provideAgent()),
+            serviceList: (...arguments_) => Service.serviceList(...arguments_).pipe(provideAgent()),
+            serviceLogs: (...arguments_) => Service.serviceLogs(...arguments_).pipe(provideAgent()),
+            serviceUpdate: (...arguments_) => Service.serviceUpdate(...arguments_).pipe(provideAgent()),
+            session: (...arguments_) => Session.session(...arguments_).pipe(provideAgent()),
+            swarmInit: (...arguments_) => Swarm.swarmInit(...arguments_).pipe(provideAgent()),
+            swarmInspect: (...arguments_) => Swarm.swarmInspect(...arguments_).pipe(provideAgent()),
+            swarmJoin: (...arguments_) => Swarm.swarmJoin(...arguments_).pipe(provideAgent()),
+            swarmLeave: (...arguments_) => Swarm.swarmLeave(...arguments_).pipe(provideAgent()),
+            swarmUnlock: (...arguments_) => Swarm.swarmUnlock(...arguments_).pipe(provideAgent()),
+            swarmUnlockkey: (...arguments_) => Swarm.swarmUnlockkey(...arguments_).pipe(provideAgent()),
+            swarmUpdate: (...arguments_) => Swarm.swarmUpdate(...arguments_).pipe(provideAgent()),
+            systemAuth: (...arguments_) => System.systemAuth(...arguments_).pipe(provideAgent()),
+            systemDataUsage: (...arguments_) => System.systemDataUsage(...arguments_).pipe(provideAgent()),
+            systemEvents: (...arguments_) => System.systemEvents(...arguments_).pipe(provideAgent()),
+            systemInfo: (...arguments_) => System.systemInfo(...arguments_).pipe(provideAgent()),
+            systemPing: (...arguments_) => System.systemPing(...arguments_).pipe(provideAgent()),
+            systemPingHead: (...arguments_) => System.systemPingHead(...arguments_).pipe(provideAgent()),
+            systemVersion: (...arguments_) => System.systemVersion(...arguments_).pipe(provideAgent()),
+            taskInspect: (...arguments_) => Task.taskInspect(...arguments_).pipe(provideAgent()),
+            taskList: (...arguments_) => Task.taskList(...arguments_).pipe(provideAgent()),
+            taskLogs: (...arguments_) => Task.taskLogs(...arguments_).pipe(provideAgent()),
+            volumeCreate: (...arguments_) => Volume.volumeCreate(...arguments_).pipe(provideAgent()),
+            volumeDelete: (...arguments_) => Volume.volumeDelete(...arguments_).pipe(provideAgent()),
+            volumeInspect: (...arguments_) => Volume.volumeInspect(...arguments_).pipe(provideAgent()),
+            volumeList: (...arguments_) => Volume.volumeList(...arguments_).pipe(provideAgent()),
+            volumePrune: (...arguments_) => Volume.volumePrune(...arguments_).pipe(provideAgent()),
+            volumeUpdate: (...arguments_) => Volume.volumeUpdate(...arguments_).pipe(provideAgent()),
         })
     );
 

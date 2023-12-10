@@ -1,6 +1,6 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as ParseResult from "@effect/schema/ParseResult";
-import { Cause, Context, Effect, Scope, identity } from "effect";
+import { Cause, Effect, identity } from "effect";
 
 // eslint-disable-next-line @typescript-eslint/typedef
 export const addHeader = NodeHttp.request.setHeader;
@@ -65,16 +65,3 @@ export const errorHandler = <Tag extends string>(
                     )
                 ),
     });
-
-export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnectionAgent> =
-    Context.Tag<IMobyConnectionAgent>(Symbol.for("@the-moby-effect/MobyConnectionAgent"));
-
-export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
-    readonly _: unknown;
-}
-
-export type WithConnectionAgentProvided<Function_> = Function_ extends (
-    ...arguments_: infer U
-) => Effect.Effect<infer R, infer E, infer A>
-    ? (...arguments_: U) => Effect.Effect<Scope.Scope | Exclude<R, IMobyConnectionAgent>, E, A>
-    : never;

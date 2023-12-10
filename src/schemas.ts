@@ -1097,7 +1097,7 @@ export interface PortBinding extends Schema.Schema.To<typeof PortBindingSchema> 
  * `<port>/<protocol>`, for example, `80/udp`. If a container's port is mapped
  * for multiple protocols, separate entries are added to the mapping table.
  */
-export const PortMapSchema = recordSchema(stringSchema, arraySchema(stringSchema).pipe(Schema.nullable));
+export const PortMapSchema = recordSchema(stringSchema, arraySchema(PortBindingSchema).pipe(Schema.nullable));
 
 export interface PortMap extends Schema.Schema.To<typeof PortMapSchema> {}
 

@@ -1,10 +1,10 @@
 import { Effect, ReadonlyArray } from "effect";
 
 import {
+    ContainerListError,
     ContainerSummary,
     IMobyService,
     MobyClientAlreadyInstantiated,
-    containerListError,
     makeMobyLayer,
 } from "../src/main.js";
 
@@ -17,6 +17,7 @@ const remoteConnectionOptions = {
     protocol: "ssh",
     host: "remote-machine.local",
     port: 22,
+    socketPath: "/var/run/docker.sock",
 } as const;
 
 // Connects to the local docker host via the unix socket
@@ -38,7 +39,7 @@ console.log(`Connected to remote docker daemon @ ${remoteConnectionOptions.host}
 // Then you can use the tag to get the client you want.
 const main: Effect.Effect<
     never,
-    containerListError | MobyClientAlreadyInstantiated,
+    ContainerListError | MobyClientAlreadyInstantiated,
     Readonly<ContainerSummary[]>
 > = Effect.gen(function* (_: Effect.Adapter) {
     const localDocker: IMobyService = yield* _(MyLocalMobyClient);

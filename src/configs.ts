@@ -2,23 +2,15 @@ import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
-import {
-    IMobyConnectionAgent,
-    MobyConnectionAgent,
-    WithConnectionAgentProvided,
-    addHeader,
-    addQueryParameter,
-    errorHandler,
-    setBody,
-} from "./request-helpers.js";
-
+import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
+import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
 import { Config, ConfigSchema, ConfigSpec, ConfigsCreateBody, IdResponse, IdResponseSchema } from "./schemas.js";
 
-export class configCreateError extends Data.TaggedError("configCreateError")<{ message: string }> {}
-export class configDeleteError extends Data.TaggedError("configDeleteError")<{ message: string }> {}
-export class configInspectError extends Data.TaggedError("configInspectError")<{ message: string }> {}
-export class configListError extends Data.TaggedError("configListError")<{ message: string }> {}
-export class configUpdateError extends Data.TaggedError("configUpdateError")<{ message: string }> {}
+export class ConfigCreateError extends Data.TaggedError("ConfigCreateError")<{ message: string }> {}
+export class ConfigDeleteError extends Data.TaggedError("ConfigDeleteError")<{ message: string }> {}
+export class ConfigInspectError extends Data.TaggedError("ConfigInspectError")<{ message: string }> {}
+export class ConfigListError extends Data.TaggedError("ConfigListError")<{ message: string }> {}
+export class ConfigUpdateError extends Data.TaggedError("ConfigUpdateError")<{ message: string }> {}
 
 export interface configCreateOptions {
     body?: ConfigsCreateBody;
@@ -70,25 +62,26 @@ export interface configUpdateOptions {
  */
 export const configCreate = (
     options: configCreateOptions
-): Effect.Effect<IMobyConnectionAgent, configCreateError, Readonly<IdResponse>> =>
+): Effect.Effect<IMobyConnectionAgent, ConfigCreateError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/configs/create";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ConfigsCreateBody"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
-            .pipe(errorHandler(configCreateError));
+            .pipe(errorHandler(ConfigCreateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -98,10 +91,10 @@ export const configCreate = (
  */
 export const configDelete = (
     options: configDeleteOptions
-): Effect.Effect<IMobyConnectionAgent, configDeleteError, void> =>
+): Effect.Effect<IMobyConnectionAgent, ConfigDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.id === null || options.id === undefined) {
-            yield* _(new configDeleteError({ message: "Required parameter id was null or undefined" }));
+            yield* _(new ConfigDeleteError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = "/configs/{id}";
@@ -109,15 +102,16 @@ export const configDelete = (
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(configDeleteError));
+            .pipe(errorHandler(ConfigDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -127,10 +121,10 @@ export const configDelete = (
  */
 export const configInspect = (
     options: configInspectOptions
-): Effect.Effect<IMobyConnectionAgent, configInspectError, Readonly<Config>> =>
+): Effect.Effect<IMobyConnectionAgent, ConfigInspectError, Readonly<Config>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.id === null || options.id === undefined) {
-            yield* _(new configInspectError({ message: "Required parameter id was null or undefined" }));
+            yield* _(new ConfigInspectError({ message: "Required parameter id was null or undefined" }));
         }
 
         const endpoint: string = "/configs/{id}";
@@ -138,16 +132,17 @@ export const configInspect = (
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ConfigSchema)))
-            .pipe(errorHandler(configInspectError));
+            .pipe(errorHandler(ConfigInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -163,24 +158,25 @@ export const configInspect = (
  */
 export const configList = (
     options: configListOptions
-): Effect.Effect<IMobyConnectionAgent, configListError, Readonly<Array<Config>>> =>
+): Effect.Effect<IMobyConnectionAgent, ConfigListError, Readonly<Array<Config>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/configs";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ConfigSchema))))
-            .pipe(errorHandler(configListError));
+            .pipe(errorHandler(ConfigListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -195,14 +191,14 @@ export const configList = (
  */
 export const configUpdate = (
     options: configUpdateOptions
-): Effect.Effect<IMobyConnectionAgent, configUpdateError, void> =>
+): Effect.Effect<IMobyConnectionAgent, ConfigUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.id === null || options.id === undefined) {
-            yield* _(new configUpdateError({ message: "Required parameter id was null or undefined" }));
+            yield* _(new ConfigUpdateError({ message: "Required parameter id was null or undefined" }));
         }
 
         if (options.version === null || options.version === undefined) {
-            yield* _(new configUpdateError({ message: "Required parameter version was null or undefined" }));
+            yield* _(new ConfigUpdateError({ message: "Required parameter version was null or undefined" }));
         }
 
         const endpoint: string = "/configs/{id}/update";
@@ -210,62 +206,67 @@ export const configUpdate = (
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
+        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl("http://0.0.0.0"))
+            .pipe(NodeHttp.request.prependUrl(url))
             .pipe(addQueryParameter("version", options.version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ConfigSpec"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(configUpdateError));
+            .pipe(errorHandler(ConfigUpdateError));
     }).pipe(Effect.flatten);
 
-/**
- * Create a config
- *
- * @param body -
- */
-export type configCreateWithConnectionAgentProvided = WithConnectionAgentProvided<typeof configCreate>;
+export interface IConfigService {
+    /**
+     * Create a config
+     *
+     * @param body -
+     */
+    configCreate: WithConnectionAgentProvided<typeof configCreate>;
 
-/**
- * Delete a config
- *
- * @param id - ID of the config
- */
-export type configDeleteWithConnectionAgentProvided = WithConnectionAgentProvided<typeof configDelete>;
+    /**
+     * Delete a config
+     *
+     * @param id - ID of the config
+     */
+    configDelete: WithConnectionAgentProvided<typeof configDelete>;
 
-/**
- * Inspect a config
- *
- * @param id - ID of the config
- */
-export type configInspectWithConnectionAgentProvided = WithConnectionAgentProvided<typeof configInspect>;
+    /**
+     * Inspect a config
+     *
+     * @param id - ID of the config
+     */
+    configInspect: WithConnectionAgentProvided<typeof configInspect>;
 
-/**
- * List configs
- *
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the configs list. Available filters:
- *
- *   - `id=<config id>`
- *   - `label=<key> or label=<key>=value`
- *   - `name=<config name>`
- *   - `names=<config name>`
- */
-export type configListWithConnectionAgentProvided = WithConnectionAgentProvided<typeof configList>;
+    /**
+     * List configs
+     *
+     * @param filters - A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the configs list. Available
+     *   filters:
+     *
+     *   - `id=<config id>`
+     *   - `label=<key> or label=<key>=value`
+     *   - `name=<config name>`
+     *   - `names=<config name>`
+     */
+    configList: WithConnectionAgentProvided<typeof configList>;
 
-/**
- * Update a Config
- *
- * @param id - The ID or name of the config
- * @param version - The version number of the config object being updated. This
- *   is required to avoid conflicting writes.
- * @param body - The spec of the config to update. Currently, only the Labels
- *   field can be updated. All other fields must remain unchanged from the
- *   [ConfigInspect endpoint](#operation/ConfigInspect) response values.
- */
-export type configUpdateWithConnectionAgentProvided = WithConnectionAgentProvided<typeof configUpdate>;
+    /**
+     * Update a Config
+     *
+     * @param id - The ID or name of the config
+     * @param version - The version number of the config object being updated.
+     *   This is required to avoid conflicting writes.
+     * @param body - The spec of the config to update. Currently, only the
+     *   Labels field can be updated. All other fields must remain unchanged
+     *   from the [ConfigInspect endpoint](#operation/ConfigInspect) response
+     *   values.
+     */
+    configUpdate: WithConnectionAgentProvided<typeof configUpdate>;
+}
