@@ -70,7 +70,7 @@ export interface imageBuildOptions {
      * A tar archive compressed with one of the following algorithms: identity
      * (no compression), gzip, bzip2, xz.
      */
-    body?: unknown;
+    body?: Stream.Stream<never, ImageBuildError, Uint8Array>;
     /**
      * Path within the build context to the `Dockerfile`. This is ignored if
      * `remote` is specified and points to an external `Dockerfile`.
@@ -538,7 +538,7 @@ export const imageBuild = (
             .pipe(addQueryParameter("target", options.target))
             .pipe(addQueryParameter("outputs", options.outputs))
             .pipe(addHeader("Content-Type", "application/octet-stream"))
-            .pipe(setBody(options.body, "string"))
+            .pipe(setBody(options.body, "stream"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.map((response) => response.stream))
             .pipe(Effect.map(Stream.decodeText("utf8")))

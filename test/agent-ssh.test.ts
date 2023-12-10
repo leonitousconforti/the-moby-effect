@@ -1,4 +1,4 @@
-import { Effect, Schedule } from "effect";
+import { Effect, Schedule, Stream } from "effect";
 import url from "node:url";
 import tar from "tar-fs";
 
@@ -16,18 +16,6 @@ const testDindContainerName: string = "ssh-dind:latest";
 /** Connects to the local docker daemon on this host. */
 const [HostsLocalMobyClient, MobyServiceLocal] = MobyApi.makeMobyLayer("hostsLocalMobyClient");
 
-function streamToString(stream: tar.Pack) {
-    const chunks: any[] = [];
-    return new Promise((resolve, reject) => {
-        stream.on("data", (chunk: string) => chunks.push(Buffer.from(chunk)));
-        stream.on("error", (error: Error) => reject(error));
-        stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
-    });
-}
-
-const a = tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), { entries: ["agent-ssh.dockerfile"] });
-const b = await streamToString(a);
-
 /**
  * This bootstraps the tests by using the generated api to start a
  * docker-in-docker container on the host so that we have something to test the
@@ -44,7 +32,12 @@ beforeAll(
                     imageOptions: {
                         kind: "build",
                         t: testDindContainerName,
-                        body: b,
+                        body: Stream.fromAsyncIterable(
+                            tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), {
+                                entries: ["agent-ssh.dockerfile"],
+                            }),
+                            () => new MobyApi.ImageBuildError({ message: "error packing the build context" })
+                        ),
                         dockerfile: "agent-ssh.dockerfile",
                     },
                     containerOptions: {

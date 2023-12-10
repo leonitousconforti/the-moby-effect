@@ -1,6 +1,6 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as ParseResult from "@effect/schema/ParseResult";
-import { Cause, Effect, identity } from "effect";
+import { Cause, Effect, Stream, identity } from "effect";
 
 // eslint-disable-next-line @typescript-eslint/typedef
 export const addHeader = NodeHttp.request.setHeader;
@@ -23,6 +23,12 @@ export const setBody =
     (clientRequest) => {
         if (!body) {
             return Effect.succeed(clientRequest);
+        }
+
+        if (datatype === "stream") {
+            return Effect.succeed(
+                NodeHttp.request.streamBody(clientRequest, body as Stream.Stream<never, never, Uint8Array>)
+            );
         }
 
         const needsSerialization: boolean =
