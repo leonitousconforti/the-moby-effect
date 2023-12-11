@@ -26,8 +26,8 @@
         "ssh2": "^1.14.0"
     },
     "devDependencies": {
-        "@effect/platform-node": "0.34.3",
-        "@effect/schema": "0.52.0",
+        "@effect/platform-node": "0.35.0",
+        "@effect/schema": "0.53.0",
         "@rushstack/eslint-config": "3.5.0",
         "@rushstack/heft": "0.63.4",
         "@rushstack/heft-jest-plugin": "0.10.6",
@@ -38,13 +38,13 @@
         "@types/ssh2": "1.11.18",
         "@types/tar-fs": "^2.0.4",
         "@typescript-eslint/parser": "6.13.2",
-        "effect": "2.0.0-next.59",
+        "effect": "2.0.0-next.60",
         "eslint": "8.55.0",
         "eslint-config-prettier": "9.1.0",
         "eslint-plugin-prettier": "5.0.1",
         "eslint-plugin-unicorn": "49.0.0",
         "fast-check": "3.14.0",
-        "prettier": "3.1.0",
+        "prettier": "3.1.1",
         "prettier-plugin-jsdoc": "1.1.1",
         "prettier-plugin-packagejson": "2.4.7",
         "tar-fs": "^3.0.4",
@@ -52,9 +52,9 @@
         "typescript": "5.3.3"
     },
     "peerDependencies": {
-        "@effect/platform-node": "~0.34.3",
-        "@effect/schema": "~0.52.0",
-        "effect": "~2.0.0-next.59",
+        "@effect/platform-node": "~0.35.0",
+        "@effect/schema": "~0.53.0",
+        "effect": "~2.0.0-next.60",
         "fast-check": "~3.14.0"
     },
     "engines": {
