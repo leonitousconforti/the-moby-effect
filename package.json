@@ -1,6 +1,6 @@
 {
     "name": "the-moby-effect",
-    "version": "1.43.0",
+    "version": "1.43.1",
     "description": "Docker API client automatically generated from the moby repository using swagger-codegen and effect-ts",
     "keywords": [
         "moby",
