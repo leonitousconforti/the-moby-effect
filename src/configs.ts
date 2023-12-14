@@ -3,7 +3,7 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import { Context, Data, Effect, Layer, pipe } from "effect";
-import { MobyConnectionAgent } from "./agent-helpers.js";
+import { MobyConnectionAgent, MobyHttpClientLive } from "./agent-helpers.js";
 import { addHeader, addQueryParameter, responseErrorHandler2 } from "./request-helpers.js";
 import { Config, ConfigSpec, IDResponse } from "./schemas.js";
 
@@ -168,4 +168,4 @@ export interface Configs {
 
 export const Configs = Context.Tag<Configs>("moby/Configs");
 
-export const layer = Layer.effect(Configs, make).pipe(Layer.provide(NodeHttp.nodeClient.layer));
+export const layer = Layer.effect(Configs, make).pipe(Layer.provide(MobyHttpClientLive));

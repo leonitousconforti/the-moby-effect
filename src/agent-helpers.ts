@@ -3,8 +3,9 @@ import https from "node:https";
 import net from "node:net";
 import ssh2 from "ssh2";
 
-import { HttpAgent, HttpAgentTypeId } from "@effect/platform-node/Http/NodeClient";
-import { Context, Effect, Match, Scope, pipe } from "effect";
+import { HttpAgent, HttpAgentTypeId, makeAgentLayer } from "@effect/platform-node/Http/NodeClient";
+import { Context, Effect, Layer, Match, Scope, pipe } from "effect";
+import * as NodeHttp from "@effect/platform-node/HttpClient";
 
 import type { MobyConnectionOptions, MobyError } from "./main.js";
 
@@ -23,6 +24,9 @@ export interface IMobyConnectionAgent extends HttpAgent {
 /** Context identifier for our moby connection agent. */
 export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnectionAgent> =
     Context.Tag<IMobyConnectionAgent>(Symbol.for("@the-moby-effect/MobyConnectionAgent"));
+
+export const MobyHttpClientLive: Layer.Layer<IMobyConnectionAgent, never, NodeHttp.client.Client.Default> =
+    NodeHttp.nodeClient.layerWithoutAgent.pipe(Layer.provide(Layer.effect(HttpAgent, MobyConnectionAgent)));
 
 /**
  * Takes in a moby endpoint that depends on a connection agent being provided
