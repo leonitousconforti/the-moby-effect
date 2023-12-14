@@ -6,7 +6,7 @@ import ssh2 from "ssh2";
 import { HttpAgent, HttpAgentTypeId } from "@effect/platform-node/Http/NodeClient";
 import { Context, Effect, Match, Scope, pipe } from "effect";
 
-import type { MobyConnectionOptions } from "./main.js";
+import type { MobyConnectionOptions, MobyError } from "./main.js";
 
 /**
  * Our moby connection needs to be an extension of the effect platform-node
@@ -14,7 +14,10 @@ import type { MobyConnectionOptions } from "./main.js";
  * platform-node http methods.
  */
 export interface IMobyConnectionAgent extends HttpAgent {
-    readonly connectionOptions: MobyConnectionOptions;
+    ssh: http.Agent;
+    unix: http.Agent;
+    nodeRequestUrl: string;
+    connectionOptions: MobyConnectionOptions;
 }
 
 /** Context identifier for our moby connection agent. */
@@ -23,12 +26,12 @@ export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnect
 
 /**
  * Takes in a moby endpoint that depends on a connection agent being provided
- * and returns a type with the connection agent dependency removed.
+ * and returns a scoped effect with the connection agent dependency removed.
  */
 export type WithConnectionAgentProvided<Function_> = Function_ extends (
     ...arguments_: infer U
 ) => Effect.Effect<infer R, infer E, infer A>
-    ? (...arguments_: U) => Effect.Effect<Scope.Scope | Exclude<R, IMobyConnectionAgent>, E, A>
+    ? (...arguments_: U) => Effect.Effect<Scope.Scope | Exclude<R, IMobyConnectionAgent>, MobyError | Exclude<E, E>, A>
     : never;
 
 /**
@@ -127,9 +130,14 @@ export const getAgent = (
             Effect.sync(() =>
                 pipe(
                     Match.value<MobyConnectionOptions>(connectionOptions),
+                    Match.when({ protocol: "ssh" }, (options) => new SSHAgent(options)),
                     Match.when(
                         { protocol: "unix" },
                         (options) => new http.Agent({ socketPath: options.socketPath } as http.AgentOptions)
+                    ),
+                    Match.when(
+                        { protocol: "http" },
+                        (options) => new http.Agent({ host: options.host, port: options.port })
                     ),
                     Match.when(
                         { protocol: "https" },
@@ -142,20 +150,18 @@ export const getAgent = (
                                 port: options.port,
                             })
                     ),
-                    Match.when({ protocol: "ssh" }, (options) => new SSHAgent(options)),
-                    Match.when(
-                        { protocol: "http" },
-                        (options) => new http.Agent({ host: options.host, port: options.port })
-                    ),
                     Match.exhaustive
                 )
             ),
             (agent) => Effect.sync(() => agent.destroy())
         ),
         (agent: http.Agent | https.Agent | SSHAgent) => ({
-            connectionOptions,
+            ssh: agent as SSHAgent,
+            unix: agent as http.Agent,
             http: agent as http.Agent,
             https: agent as https.Agent,
+            connectionOptions: connectionOptions,
+            nodeRequestUrl: connectionOptions.protocol === "https" ? "https://0.0.0.0" : "http://0.0.0.0",
             [HttpAgentTypeId]: HttpAgentTypeId,
         })
     );

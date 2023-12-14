@@ -479,7 +479,7 @@ export const HistoryResponseItemSchema = Schema.struct({
     Id: stringSchema,
     Created: numberSchema,
     CreatedBy: stringSchema,
-    Tags: arraySchema(stringSchema),
+    Tags: arraySchema(stringSchema).pipe(Schema.nullable),
     Size: numberSchema,
     Comment: stringSchema,
 });
@@ -522,6 +522,13 @@ export const IdResponseSchema = Schema.struct({
 });
 
 export interface IdResponse extends Schema.Schema.To<typeof IdResponseSchema> {}
+
+export const IDResponseSchema = Schema.struct({
+    /** The ID of the newly created object. */
+    ID: stringSchema,
+});
+
+export interface IDResponse extends Schema.Schema.To<typeof IDResponseSchema> {}
 
 export const ImageDeleteResponseItemSchema = Schema.struct({
     /** The image ID of an image that was untagged */
@@ -940,7 +947,7 @@ export interface OCIPlatform extends Schema.Schema.To<typeof OCIPlatformSchema> 
  * at the same time will not unintentionally overwrite each other.
  */
 export const ObjectVersionSchema = Schema.struct({
-    Index: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Index: numberSchema,
 });
 
 export interface ObjectVersion extends Schema.Schema.To<typeof ObjectVersionSchema> {}
@@ -2754,8 +2761,8 @@ export const ClusterVolumeSpecAccessModeSchema = Schema.struct({
 export interface ClusterVolumeSpecAccessMode extends Schema.Schema.To<typeof ClusterVolumeSpecAccessModeSchema> {}
 
 export const ConfigSchema = Schema.struct({
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema,
+    Version: ObjectVersionSchema,
     CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
     UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
     Spec: ConfigSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
@@ -3166,10 +3173,10 @@ export const ResourceObjectSchema = Schema.struct({
 export interface ResourceObject extends Schema.Schema.To<typeof ResourceObjectSchema> {}
 
 export const SecretSchema = Schema.struct({
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema,
+    Version: ObjectVersionSchema,
+    CreatedAt: stringSchema,
+    UpdatedAt: stringSchema,
     Spec: SecretSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
 });
 
@@ -3843,7 +3850,7 @@ export interface ClusterVolume extends Schema.Schema.To<typeof ClusterVolumeSche
 
 export const ContainerInspectResponseSchema = Schema.struct({
     /** The ID of the container */
-    Id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Id: stringSchema,
     /** The time the container was created */
     Created: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
     /** The path to the command being run */
@@ -4251,7 +4258,18 @@ export const SystemInfoSchema = Schema.struct({
      * and on Windows server, the default is `process`. This option is currently
      * not used on other platforms.
      */
-    Isolation: Schema.enums(SystemInfo_IsolationEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    // Isolation: Schema.enums(SystemInfo_IsolationEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Isolation: Schema.string
+        .pipe(
+            Schema.transform(
+                Schema.enums(HostConfig_IsolationEnum).pipe(Schema.nullable),
+                (a: string) =>
+                    // eslint-disable-next-line unicorn/no-null
+                    a === "" ? null : HostConfig_IsolationEnum[a as keyof typeof HostConfig_IsolationEnum],
+                String
+            )
+        )
+        .pipe(Schema.optional),
     /**
      * Name and, optional, path of the `docker-init` binary. If the path is
      * omitted, the daemon searches the host's `$PATH` for the binary and uses
@@ -4339,7 +4357,7 @@ export const VolumeSchema = Schema.struct({
      */
     Status: recordSchema(stringSchema, anySchema).pipe(Schema.nullable).pipe(Schema.optional),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
     /**
      * The level at which the volume exists. Either `global` for cluster-wide,
      * or `local` for machine level.
@@ -4347,7 +4365,7 @@ export const VolumeSchema = Schema.struct({
     Scope: Schema.enums(Volume_ScopeEnum),
     ClusterVolume: ClusterVolumeSchema.pipe(Schema.nullable).pipe(Schema.optional),
     /** The driver specific options used when creating the volume. */
-    Options: recordSchema(stringSchema, stringSchema),
+    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
     UsageData: VolumeUsageDataSchema.pipe(Schema.nullable).pipe(Schema.optional),
 });
 

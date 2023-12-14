@@ -1,0 +1,14 @@
+diff --git a/dist/esm/internal/http/nodeClient.js b/dist/esm/internal/http/nodeClient.js
+index 5e6fc0b2e8e0fda5f0266f6343e24aac41635b59..87b1835b863173766e0e8d7f7dd3d2233478a099 100644
+--- a/dist/esm/internal/http/nodeClient.js
++++ b/dist/esm/internal/http/nodeClient.js
+@@ -101,6 +101,9 @@ const waitForResponse = (nodeRequest, request) => Effect.async(resume => {
+   nodeRequest.on("response", response => {
+     resume(Effect.succeed(response));
+   });
++  nodeRequest.on("upgrade", (response, socket, head) => {
++    resume(Effect.succeed(response));
++  });
+   return Effect.sync(() => {
+     nodeRequest.removeAllListeners("error");
+     nodeRequest.removeAllListeners("response");

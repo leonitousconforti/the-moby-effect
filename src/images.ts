@@ -1,9 +1,12 @@
+import type { MobyError } from "./main.js";
+
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import { Data, Effect, Stream } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+
+import { addHeader, addQueryParameter, responseErrorHandler, setBody, streamErrorHandler } from "./request-helpers.js";
 
 import {
     BuildPruneResponse,
@@ -41,7 +44,7 @@ export class ImagePushError extends Data.TaggedError("ImagePushError")<{ message
 export class ImageSearchError extends Data.TaggedError("ImageSearchError")<{ message: string }> {}
 export class ImageTagError extends Data.TaggedError("ImageTagError")<{ message: string }> {}
 
-export interface buildPruneOptions {
+export interface BuildPruneOptions {
     /** Amount of disk space in bytes to keep for cache */
     keep_storage?: number;
     /** Remove all types of build cache */
@@ -65,7 +68,7 @@ export interface buildPruneOptions {
     filters?: string;
 }
 
-export interface imageBuildOptions {
+export interface ImageBuildOptions {
     /**
      * A tar archive compressed with one of the following algorithms: identity
      * (no compression), gzip, bzip2, xz.
@@ -175,7 +178,7 @@ export interface imageBuildOptions {
     outputs?: string;
 }
 
-export interface imageCommitOptions {
+export interface ImageCommitOptions {
     /** The container configuration */
     body?: ContainerConfig;
     /** The ID or name of the container to commit */
@@ -194,7 +197,7 @@ export interface imageCommitOptions {
     changes?: string;
 }
 
-export interface imageCreateOptions {
+export interface ImageCreateOptions {
     /**
      * Image content if the value `-` has been specified in fromSrc query
      * parameter
@@ -253,7 +256,7 @@ export interface imageCreateOptions {
     platform?: string;
 }
 
-export interface imageDeleteOptions {
+export interface ImageDeleteOptions {
     /** Image name or ID */
     name: string;
     /**
@@ -265,27 +268,27 @@ export interface imageDeleteOptions {
     noprune?: boolean;
 }
 
-export interface imageGetOptions {
+export interface ImageGetOptions {
     /** Image name or ID */
     name: string;
 }
 
-export interface imageGetAllOptions {
+export interface ImageGetAllOptions {
     /** Image names to filter by */
     names?: Array<string>;
 }
 
-export interface imageHistoryOptions {
+export interface ImageHistoryOptions {
     /** Image name or ID */
     name: string;
 }
 
-export interface imageInspectOptions {
+export interface ImageInspectOptions {
     /** Image name or id */
     name: string;
 }
 
-export interface imageListOptions {
+export interface ImageListOptions {
     /**
      * Show all images. Only images from a final layer (no children) are shown
      * by default.
@@ -308,14 +311,14 @@ export interface imageListOptions {
     digests?: boolean;
 }
 
-export interface imageLoadOptions {
+export interface ImageLoadOptions {
     /** Tar archive containing images */
     body?: unknown;
     /** Suppress progress details during load. */
     quiet?: boolean;
 }
 
-export interface imagePruneOptions {
+export interface ImagePruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
      * `map[string][]string`). Available filters:
@@ -334,7 +337,7 @@ export interface imagePruneOptions {
     filters?: string;
 }
 
-export interface imagePushOptions {
+export interface ImagePushOptions {
     /** Image name or ID. */
     name: string;
     /**
@@ -346,7 +349,7 @@ export interface imagePushOptions {
     tag?: string;
 }
 
-export interface imageSearchOptions {
+export interface ImageSearchOptions {
     /** Term to search */
     term: string;
     /** Maximum number of results to return */
@@ -362,7 +365,7 @@ export interface imageSearchOptions {
     filters?: string;
 }
 
-export interface imageTagOptions {
+export interface ImageTagOptions {
     /** Image name or ID to tag. */
     name: string;
     /** The repository to tag in. For example, `someuser/someimage`. */
@@ -393,7 +396,7 @@ export interface imageTagOptions {
  *   - `private`
  */
 export const buildPrune = (
-    options: buildPruneOptions
+    options: BuildPruneOptions
 ): Effect.Effect<IMobyConnectionAgent, BuildPruneError, Readonly<BuildPruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/build/prune";
@@ -401,20 +404,19 @@ export const buildPrune = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("keep-storage", options.keep_storage))
             .pipe(addQueryParameter("all", options.all))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(BuildPruneResponseSchema)))
-            .pipe(errorHandler(BuildPruneError));
+            .pipe(responseErrorHandler(BuildPruneError));
     }).pipe(Effect.flatten);
 
 /**
@@ -495,22 +497,21 @@ export const buildPrune = (
  * @param outputs - BuildKit output configuration
  */
 export const imageBuild = (
-    options: imageBuildOptions
-): Effect.Effect<IMobyConnectionAgent, ImageBuildError, Stream.Stream<never, ImageBuildError, string>> =>
+    options: ImageBuildOptions
+): Effect.Effect<IMobyConnectionAgent, ImageBuildError, Stream.Stream<never, MobyError, string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/build";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-type", String(options.Content_type)))
             .pipe(addHeader("X-Registry-Config", String(options.X_Registry_Config)))
             .pipe(addQueryParameter("dockerfile", options.dockerfile))
@@ -542,8 +543,8 @@ export const imageBuild = (
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.map((response) => response.stream))
             .pipe(Effect.map(Stream.decodeText("utf8")))
-            .pipe(Effect.map(Stream.catchTag("ResponseError", (re) => new ImageBuildError({ message: re.reason }))))
-            .pipe(errorHandler(ImageBuildError));
+            .pipe(Effect.map(streamErrorHandler(ImageBuildError)))
+            .pipe(responseErrorHandler(ImageBuildError));
     }).pipe(Effect.flatten);
 
 /**
@@ -560,7 +561,7 @@ export const imageBuild = (
  * @param changes - `Dockerfile` instructions to apply while committing
  */
 export const imageCommit = (
-    options: imageCommitOptions
+    options: ImageCommitOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageCommitError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/commit";
@@ -568,14 +569,13 @@ export const imageCommit = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("container", options.container))
             .pipe(addQueryParameter("repo", options.repo))
             .pipe(addQueryParameter("tag", options.tag))
@@ -587,7 +587,7 @@ export const imageCommit = (
             .pipe(setBody(options.body, "ContainerConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
-            .pipe(errorHandler(ImageCommitError));
+            .pipe(responseErrorHandler(ImageCommitError));
     }).pipe(Effect.flatten);
 
 /**
@@ -627,22 +627,21 @@ export const imageCommit = (
  *   Architecture are used for the imported image.
  */
 export const imageCreate = (
-    options: imageCreateOptions
-): Effect.Effect<IMobyConnectionAgent, ImageCreateError, Stream.Stream<never, ImageCreateError, string>> =>
+    options: ImageCreateOptions
+): Effect.Effect<IMobyConnectionAgent, ImageCreateError, Stream.Stream<never, MobyError, string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/images/create";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
             .pipe(addQueryParameter("fromImage", options.fromImage))
             .pipe(addQueryParameter("fromSrc", options.fromSrc))
@@ -656,8 +655,8 @@ export const imageCreate = (
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.map((response) => response.stream))
             .pipe(Effect.map(Stream.decodeText("utf8")))
-            .pipe(Effect.map(Stream.catchTag("ResponseError", (re) => new ImageCreateError({ message: re.reason }))))
-            .pipe(errorHandler(ImageCreateError));
+            .pipe(Effect.map(streamErrorHandler(ImageCreateError)))
+            .pipe(responseErrorHandler(ImageCreateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -671,31 +670,26 @@ export const imageCreate = (
  * @param noprune - Do not delete untagged parent images
  */
 export const imageDelete = (
-    options: imageDeleteOptions
+    options: ImageDeleteOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageDeleteError, Readonly<Array<ImageDeleteResponseItem>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ImageDeleteError({ message: "Required parameter name was null or undefined" }));
-        }
-
         const endpoint: string = "/images/{name}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("force", options.force))
             .pipe(addQueryParameter("noprune", options.noprune))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ImageDeleteResponseItemSchema))))
-            .pipe(errorHandler(ImageDeleteError));
+            .pipe(responseErrorHandler(ImageDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -723,7 +717,7 @@ export const imageDelete = (
  * @param name - Image name or ID
  */
 export const imageGet = (
-    options: imageGetOptions
+    options: ImageGetOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageGetError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.name === null || options.name === undefined) {
@@ -735,18 +729,17 @@ export const imageGet = (
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
             .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(errorHandler(ImageGetError));
+            .pipe(responseErrorHandler(ImageGetError));
     }).pipe(Effect.flatten);
 
 /**
@@ -761,7 +754,7 @@ export const imageGet = (
  * @param names - Image names to filter by
  */
 export const imageGetAll = (
-    options: imageGetAllOptions
+    options: ImageGetAllOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageGetAllError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/images/get";
@@ -769,19 +762,18 @@ export const imageGetAll = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("names", options.names?.join(",")))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
             .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(errorHandler(ImageGetAllError));
+            .pipe(responseErrorHandler(ImageGetAllError));
     }).pipe(Effect.flatten);
 
 /**
@@ -790,7 +782,7 @@ export const imageGetAll = (
  * @param name - Image name or ID
  */
 export const imageHistory = (
-    options: imageHistoryOptions
+    options: ImageHistoryOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageHistoryError, Readonly<Array<HistoryResponseItem>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.name === null || options.name === undefined) {
@@ -802,17 +794,16 @@ export const imageHistory = (
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(HistoryResponseItemSchema))))
-            .pipe(errorHandler(ImageHistoryError));
+            .pipe(responseErrorHandler(ImageHistoryError));
     }).pipe(Effect.flatten);
 
 /**
@@ -821,7 +812,7 @@ export const imageHistory = (
  * @param name - Image name or id
  */
 export const imageInspect = (
-    options: imageInspectOptions
+    options: ImageInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageInspectError, Readonly<ImageInspect>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.name === null || options.name === undefined) {
@@ -833,17 +824,16 @@ export const imageInspect = (
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ImageInspectSchema)))
-            .pipe(errorHandler(ImageInspectError));
+            .pipe(responseErrorHandler(ImageInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -867,7 +857,7 @@ export const imageInspect = (
  *   image.
  */
 export const imageList = (
-    options: imageListOptions
+    options?: ImageListOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, ImageListError, Readonly<Array<ImageSummary>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/images/json";
@@ -875,21 +865,20 @@ export const imageList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("all", options.all))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(addQueryParameter("shared-size", options.shared_size))
-            .pipe(addQueryParameter("digests", options.digests))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("all", options?.all))
+            .pipe(addQueryParameter("filters", options?.filters))
+            .pipe(addQueryParameter("shared-size", options?.shared_size))
+            .pipe(addQueryParameter("digests", options?.digests))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ImageSummarySchema))))
-            .pipe(errorHandler(ImageListError));
+            .pipe(responseErrorHandler(ImageListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -899,26 +888,25 @@ export const imageList = (
  * @param body - Tar archive containing images
  * @param quiet - Suppress progress details during load.
  */
-export const imageLoad = (options: imageLoadOptions): Effect.Effect<IMobyConnectionAgent, ImageLoadError, void> =>
+export const imageLoad = (options: ImageLoadOptions): Effect.Effect<IMobyConnectionAgent, ImageLoadError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/images/load";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("quiet", options.quiet))
             .pipe(addHeader("Content-Type", "application/x-tar"))
             .pipe(setBody(options.body, "unknown"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(ImageLoadError));
+            .pipe(responseErrorHandler(ImageLoadError));
     }).pipe(Effect.flatten);
 
 /**
@@ -939,7 +927,7 @@ export const imageLoad = (options: imageLoadOptions): Effect.Effect<IMobyConnect
  *       `label!=...` is used) the specified labels.
  */
 export const imagePrune = (
-    options: imagePruneOptions
+    options: ImagePruneOptions
 ): Effect.Effect<IMobyConnectionAgent, ImagePruneError, Readonly<ImagePruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/images/prune";
@@ -947,18 +935,17 @@ export const imagePrune = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ImagePruneResponseSchema)))
-            .pipe(errorHandler(ImagePruneError));
+            .pipe(responseErrorHandler(ImagePruneError));
     }).pipe(Effect.flatten);
 
 /**
@@ -972,7 +959,7 @@ export const imagePrune = (
  *   [authentication section](#section/Authentication) for details.
  * @param tag - The tag to associate with the image on the registry.
  */
-export const imagePush = (options: imagePushOptions): Effect.Effect<IMobyConnectionAgent, ImagePushError, void> =>
+export const imagePush = (options: ImagePushOptions): Effect.Effect<IMobyConnectionAgent, ImagePushError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.name === null || options.name === undefined) {
             yield* _(new ImagePushError({ message: "Required parameter name was null or undefined" }));
@@ -987,18 +974,17 @@ export const imagePush = (options: imagePushOptions): Effect.Effect<IMobyConnect
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
             .pipe(addQueryParameter("tag", options.tag))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ImagePushError));
+            .pipe(responseErrorHandler(ImagePushError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1014,7 +1000,7 @@ export const imagePush = (options: imagePushOptions): Effect.Effect<IMobyConnect
  *   - `stars=<number>` Matches images that has at least 'number' stars.
  */
 export const imageSearch = (
-    options: imageSearchOptions
+    options: ImageSearchOptions
 ): Effect.Effect<IMobyConnectionAgent, ImageSearchError, Readonly<Array<ImageSearchResponseItem>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.term === null || options.term === undefined) {
@@ -1026,20 +1012,19 @@ export const imageSearch = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("term", options.term))
             .pipe(addQueryParameter("limit", options.limit))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ImageSearchResponseItemSchema))))
-            .pipe(errorHandler(ImageSearchError));
+            .pipe(responseErrorHandler(ImageSearchError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1049,7 +1034,7 @@ export const imageSearch = (
  * @param repo - The repository to tag in. For example, `someuser/someimage`.
  * @param tag - The name of the new tag.
  */
-export const imageTag = (options: imageTagOptions): Effect.Effect<IMobyConnectionAgent, ImageTagError, void> =>
+export const imageTag = (options: ImageTagOptions): Effect.Effect<IMobyConnectionAgent, ImageTagError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         if (options.name === null || options.name === undefined) {
             yield* _(new ImageTagError({ message: "Required parameter name was null or undefined" }));
@@ -1060,21 +1045,37 @@ export const imageTag = (options: imageTagOptions): Effect.Effect<IMobyConnectio
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("repo", options.repo))
             .pipe(addQueryParameter("tag", options.tag))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ImageTagError));
+            .pipe(responseErrorHandler(ImageTagError));
     }).pipe(Effect.flatten);
 
 export interface IImageService {
+    Errors:
+        | BuildPruneError
+        | ImageBuildError
+        | ImageCommitError
+        | ImageCreateError
+        | ImageDeleteError
+        | ImageGetError
+        | ImageGetAllError
+        | ImageHistoryError
+        | ImageInspectError
+        | ImageListError
+        | ImageLoadError
+        | ImagePruneError
+        | ImagePushError
+        | ImageSearchError
+        | ImageTagError;
+
     /**
      * Delete builder cache
      *

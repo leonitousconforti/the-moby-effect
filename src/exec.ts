@@ -2,7 +2,7 @@ import * as NodeHttp from "@effect/platform-node/HttpClient";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 
 import {
     ExecConfig,
@@ -18,19 +18,19 @@ export class ExecInspectError extends Data.TaggedError("ExecInspectError")<{ mes
 export class ExecResizeError extends Data.TaggedError("ExecResizeError")<{ message: string }> {}
 export class ExecStartError extends Data.TaggedError("ExecStartError")<{ message: string }> {}
 
-export interface containerExecOptions {
+export interface ContainerExecOptions {
     /** Exec configuration */
     body: ExecConfig;
     /** ID or name of container */
     id: string;
 }
 
-export interface execInspectOptions {
+export interface ExecInspectOptions {
     /** Exec instance ID */
     id: string;
 }
 
-export interface execResizeOptions {
+export interface ExecResizeOptions {
     /** Exec instance ID */
     id: string;
     /** Height of the TTY session in characters */
@@ -39,7 +39,7 @@ export interface execResizeOptions {
     w?: number;
 }
 
-export interface execStartOptions {
+export interface ExecStartOptions {
     /** Exec instance ID */
     id: string;
     body?: ExecStartConfig;
@@ -52,35 +52,26 @@ export interface execStartOptions {
  * @param id - ID or name of container
  */
 export const containerExec = (
-    options: containerExecOptions
+    options: ContainerExecOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerExecError, Readonly<IdResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new ContainerExecError({ message: "Required parameter body was null or undefined" }));
-        }
-
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerExecError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/exec";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ExecConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
-            .pipe(errorHandler(ContainerExecError));
+            .pipe(responseErrorHandler(ContainerExecError));
     }).pipe(Effect.flatten);
 
 /**
@@ -89,29 +80,24 @@ export const containerExec = (
  * @param id - Exec instance ID
  */
 export const execInspect = (
-    options: execInspectOptions
+    options: ExecInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, ExecInspectError, Readonly<ExecInspectResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ExecInspectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/exec/{id}/json";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ExecInspectResponseSchema)))
-            .pipe(errorHandler(ExecInspectError));
+            .pipe(responseErrorHandler(ExecInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -122,29 +108,24 @@ export const execInspect = (
  * @param h - Height of the TTY session in characters
  * @param w - Width of the TTY session in characters
  */
-export const execResize = (options: execResizeOptions): Effect.Effect<IMobyConnectionAgent, ExecResizeError, void> =>
+export const execResize = (options: ExecResizeOptions): Effect.Effect<IMobyConnectionAgent, ExecResizeError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ExecResizeError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/exec/{id}/resize";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("h", options.h))
             .pipe(addQueryParameter("w", options.w))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ExecResizeError));
+            .pipe(responseErrorHandler(ExecResizeError));
     }).pipe(Effect.flatten);
 
 /**
@@ -155,32 +136,29 @@ export const execResize = (options: execResizeOptions): Effect.Effect<IMobyConne
  * @param id - Exec instance ID
  * @param body -
  */
-export const execStart = (options: execStartOptions): Effect.Effect<IMobyConnectionAgent, ExecStartError, void> =>
+export const execStart = (options: ExecStartOptions): Effect.Effect<IMobyConnectionAgent, ExecStartError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ExecStartError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/exec/{id}/start";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ExecStartConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(ExecStartError));
+            .pipe(responseErrorHandler(ExecStartError));
     }).pipe(Effect.flatten);
 
 export interface IExecService {
+    Errors: ContainerExecError | ExecInspectError | ExecResizeError | ExecStartError;
+
     /**
      * Run a command inside a running container.
      *

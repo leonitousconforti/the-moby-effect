@@ -1,9 +1,9 @@
 import { Effect } from "effect";
 
-import { ContainerInspectResponse, IMobyService, makeMobyLayer } from "../src/main.js";
+import { ContainerInspectResponse, IMobyService, makeMobyClient } from "../src/main.js";
 
-// Remember passing in no connection options means it will connect to the local docker socket
-const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
+// Passing in no connection options means it will connect to the local docker socket
+const localDocker: IMobyService = makeMobyClient();
 
 // {
 //   Titles: [
@@ -25,23 +25,16 @@ const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
 //     ]
 //   ]
 // }
-await Effect.gen(function* (_: Effect.Adapter) {
-    const localService: IMobyService = yield* _(MyLocalMobyClient);
-
+const main = Effect.gen(function* (_: Effect.Adapter) {
     const containerInspectResponse: ContainerInspectResponse = yield* _(
-        localService.run({
-            mobyClient: MyLocalMobyClient,
+        localDocker.run({
             imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
             containerOptions: { body: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] } },
         })
     );
 
-    const data = yield* _(localService.containerTop({ id: containerInspectResponse.Id!, ps_args: "aux" }));
-    yield* _(localService.containerKill({ id: containerInspectResponse.Id! }));
-    yield* _(localService.containerDelete({ id: containerInspectResponse.Id! }));
+    const data = yield* _(localDocker.containerTop({ id: containerInspectResponse.Id!, ps_args: "aux" }));
+    yield* _(localDocker.containerKill({ id: containerInspectResponse.Id! }));
+    yield* _(localDocker.containerDelete({ id: containerInspectResponse.Id! }));
     return data;
-})
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(MobyServiceLocal))
-    .pipe(Effect.tap(console.log))
-    .pipe(Effect.runPromise);
+});

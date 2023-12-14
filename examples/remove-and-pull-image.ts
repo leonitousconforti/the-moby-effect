@@ -1,9 +1,9 @@
-import { Chunk, Effect, Stream } from "effect";
+import { Chunk, Console, Effect, Scope, Stream } from "effect";
 
-import { IMobyService, ImageCreateError, makeMobyLayer } from "../src/main.js";
+import { IMobyService, MobyError, makeMobyClient } from "../src/main.js";
 
-// Remember passing in no connection options means it will connect to the local docker socket
-const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
+// Passing in no connection options means it will connect to the local docker socket
+const localDocker: IMobyService = makeMobyClient();
 
 // {"status":"Pulling from library/hello-world","id":"latest"}
 // {"status":"Pulling fs layer","progressDetail":{},"id":"719385e32844"}
@@ -16,17 +16,16 @@ const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
 // {"status":"Pull complete","progressDetail":{},"id":"719385e32844"}
 // {"status":"Digest: sha256:c79d06dfdfd3d3eb04cafd0dc2bacab0992ebc243e083cabe208bac4dd7759e0"}
 // {"status":"Status: Downloaded newer image for hello-world:latest"}
-await Effect.gen(function* (_: Effect.Adapter) {
-    const localDocker: IMobyService = yield* _(MyLocalMobyClient);
+const main: Effect.Effect<Scope.Scope, MobyError, void> = Effect.gen(function* (_: Effect.Adapter) {
+    yield* _(localDocker.imageDelete({ name: "hello-world" }));
 
-    const pullStream: Stream.Stream<never, ImageCreateError, string> = yield* _(
+    const pullStream: Stream.Stream<never, MobyError, string> = yield* _(
         localDocker.imageCreate({ fromImage: "docker.io/library/hello-world:latest" })
     );
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
-})
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(MobyServiceLocal))
-    .pipe(Effect.tap(console.log))
-    .pipe(Effect.runPromise);
+    const data: string = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
+    yield* _(Console.log(data));
+});
+
+await Effect.scoped(main).pipe(Effect.runPromise);

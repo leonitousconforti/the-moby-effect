@@ -14,21 +14,18 @@ let testDindContainerSshPort: string | undefined;
 const testDindContainerName: string = "ssh-dind:latest";
 
 /** Connects to the local docker daemon on this host. */
-const [HostsLocalMobyClient, MobyServiceLocal] = MobyApi.makeMobyLayer("hostsLocalMobyClient");
+const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
 
 /**
- * This bootstraps the tests by using the generated api to start a
- * docker-in-docker container on the host so that we have something to test the
- * generated api against without needing to modify the host docker install.
+ * This bootstraps the tests by using the api to start a docker-in-docker
+ * container on the host so that we have something to test the api against
+ * without needing to modify the host docker install.
  */
 beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
-            const localService: MobyApi.IMobyService = yield* _(HostsLocalMobyClient);
-
             const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localService.run({
-                    mobyClient: HostsLocalMobyClient,
+                localDocker.run({
                     imageOptions: {
                         kind: "build",
                         t: testDindContainerName,
@@ -59,7 +56,7 @@ beforeAll(
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerSshPort = containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort!;
         })
-            .pipe(Effect.provide(MobyServiceLocal))
+            .pipe(Effect.scoped)
             .pipe(Effect.runPromise),
     WARMUP_TIMEOUT
 );
@@ -67,19 +64,16 @@ beforeAll(
 /** Cleans up the container that will be created in the setup helper. */
 afterAll(
     async () =>
-        await Effect.gen(function* (_: Effect.Adapter) {
-            const localService: MobyApi.IMobyService = yield* _(HostsLocalMobyClient);
-            yield* _(localService.containerDelete({ id: testDindContainerId!, force: true }));
-        })
+        await localDocker
+            .containerDelete({ id: testDindContainerId!, force: true })
             .pipe(Effect.scoped)
-            .pipe(Effect.provide(MobyServiceLocal))
             .pipe(Effect.runPromise),
     COOLDOWN_TIMEOUT
 );
 
 describe("MobyApi ssh agent tests", () => {
     it("ssh agent should connect but see no containers", async () => {
-        const [DindSshMobyClient, MobyServiceSshDind] = MobyApi.makeMobyLayer("dindSshMobyClient", {
+        const dindSshMobyClient = MobyApi.makeMobyClient({
             protocol: "ssh",
             host: "localhost",
             port: Number.parseInt(testDindContainerSshPort!),
@@ -90,18 +84,15 @@ describe("MobyApi ssh agent tests", () => {
 
         await Effect.runPromise(
             Effect.retry(
-                DindSshMobyClient.pipe(Effect.flatMap((service) => service.systemPing()))
-                    .pipe(Effect.scoped)
-                    .pipe(Effect.provide(MobyServiceSshDind)),
+                dindSshMobyClient.systemPing().pipe(Effect.scoped),
                 Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
             )
         );
 
-        const testData: readonly MobyApi.ContainerSummary[] = await Effect.runPromise(
-            DindSshMobyClient.pipe(Effect.flatMap((service) => service.containerList({ all: true })))
-                .pipe(Effect.scoped)
-                .pipe(Effect.provide(MobyServiceSshDind))
-        );
+        const testData: readonly MobyApi.ContainerSummary[] = await dindSshMobyClient
+            .containerList({ all: true })
+            .pipe(Effect.scoped)
+            .pipe(Effect.runPromise);
 
         expect(testData).toBeInstanceOf(Array);
         expect(testData.length).toBe(0);

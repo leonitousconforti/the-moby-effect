@@ -1,9 +1,20 @@
+import type { MobyError } from "./main.js";
+
+import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Data, Effect } from "effect";
+import { Data, Effect, Stream } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+
+import {
+    IExposeSourceOnEffectClientResponse,
+    addHeader,
+    addQueryParameter,
+    responseErrorHandler,
+    setBody,
+    streamErrorHandler,
+} from "./request-helpers.js";
 
 import {
     ContainerCreateResponse,
@@ -29,9 +40,6 @@ import {
 export class ContainerArchiveError extends Data.TaggedError("ContainerArchiveError")<{ message: string }> {}
 export class ContainerArchiveInfoError extends Data.TaggedError("ContainerArchiveInfoError")<{ message: string }> {}
 export class ContainerAttachError extends Data.TaggedError("ContainerAttachError")<{ message: string }> {}
-export class ContainerAttachWebsocketError extends Data.TaggedError("ContainerAttachWebsocketError")<{
-    message: string;
-}> {}
 export class ContainerChangesError extends Data.TaggedError("ContainerChangesError")<{ message: string }> {}
 export class ContainerCreateError extends Data.TaggedError("ContainerCreateError")<{ message: string }> {}
 export class ContainerDeleteError extends Data.TaggedError("ContainerDeleteError")<{ message: string }> {}
@@ -52,23 +60,23 @@ export class ContainerTopError extends Data.TaggedError("ContainerTopError")<{ m
 export class ContainerUnpauseError extends Data.TaggedError("ContainerUnpauseError")<{ message: string }> {}
 export class ContainerUpdateError extends Data.TaggedError("ContainerUpdateError")<{ message: string }> {}
 export class ContainerWaitError extends Data.TaggedError("ContainerWaitError")<{ message: string }> {}
-export class putContainerArchiveError extends Data.TaggedError("putContainerArchiveError")<{ message: string }> {}
+export class PutContainerArchiveError extends Data.TaggedError("putContainerArchiveError")<{ message: string }> {}
 
-export interface containerArchiveOptions {
+export interface ContainerArchiveOptions {
     /** ID or name of the container */
     id: string;
     /** Resource in the container’s filesystem to archive. */
     path: string;
 }
 
-export interface containerArchiveInfoOptions {
+export interface ContainerArchiveInfoOptions {
     /** ID or name of the container */
     id: string;
     /** Resource in the container’s filesystem to archive. */
     path: string;
 }
 
-export interface containerAttachOptions {
+export interface ContainerAttachOptions {
     /** ID or name of the container */
     id: string;
     /**
@@ -95,33 +103,12 @@ export interface containerAttachOptions {
     stderr?: boolean;
 }
 
-export interface containerAttachWebsocketOptions {
-    /** ID or name of the container */
-    id: string;
-    /**
-     * Override the key sequence for detaching a container.Format is a single
-     * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
-     * `@`, `^`, `[`, `,`, or `_`.
-     */
-    detachKeys?: string;
-    /** Return logs */
-    logs?: boolean;
-    /** Return stream */
-    stream?: boolean;
-    /** Attach to `stdin` */
-    stdin?: boolean;
-    /** Attach to `stdout` */
-    stdout?: boolean;
-    /** Attach to `stderr` */
-    stderr?: boolean;
-}
-
-export interface containerChangesOptions {
+export interface ContainerChangesOptions {
     /** ID or name of the container */
     id: string;
 }
 
-export interface containerCreateOptions {
+export interface ContainerCreateOptions {
     /** Container to create */
     body: ContainersCreateBody;
     /**
@@ -145,7 +132,7 @@ export interface containerCreateOptions {
     platform?: string;
 }
 
-export interface containerDeleteOptions {
+export interface ContainerDeleteOptions {
     /** ID or name of the container */
     id: string;
     /** Remove anonymous volumes associated with the container. */
@@ -156,26 +143,26 @@ export interface containerDeleteOptions {
     link?: boolean;
 }
 
-export interface containerExportOptions {
+export interface ContainerExportOptions {
     /** ID or name of the container */
     id: string;
 }
 
-export interface containerInspectOptions {
+export interface ContainerInspectOptions {
     /** ID or name of the container */
     id: string;
     /** Return the size of container as fields `SizeRw` and `SizeRootFs` */
     size?: boolean;
 }
 
-export interface containerKillOptions {
+export interface ContainerKillOptions {
     /** ID or name of the container */
     id: string;
     /** Signal to send to the container as an integer or string (e.g. `SIGINT`). */
     signal?: string;
 }
 
-export interface containerListOptions {
+export interface ContainerListOptions {
     /** Return all containers. By default, only running containers are shown. */
     all?: boolean;
     /**
@@ -207,7 +194,7 @@ export interface containerListOptions {
     filters?: string;
 }
 
-export interface containerLogsOptions {
+export interface ContainerLogsOptions {
     /** ID or name of the container */
     id: string;
     /** Keep connection after returning logs. */
@@ -229,12 +216,12 @@ export interface containerLogsOptions {
     tail?: string;
 }
 
-export interface containerPauseOptions {
+export interface ContainerPauseOptions {
     /** ID or name of the container */
     id: string;
 }
 
-export interface containerPruneOptions {
+export interface ContainerPruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
      * `map[string][]string`). Available filters: - `until=<timestamp>` Prune
@@ -248,14 +235,14 @@ export interface containerPruneOptions {
     filters?: string;
 }
 
-export interface containerRenameOptions {
+export interface ContainerRenameOptions {
     /** ID or name of the container */
     id: string;
     /** New name for the container */
     name: string;
 }
 
-export interface containerResizeOptions {
+export interface ContainerResizeOptions {
     /** ID or name of the container */
     id: string;
     /** Height of the TTY session in characters */
@@ -264,7 +251,7 @@ export interface containerResizeOptions {
     w?: number;
 }
 
-export interface containerRestartOptions {
+export interface ContainerRestartOptions {
     /** ID or name of the container */
     id: string;
     /** Signal to send to the container as an integer or string (e.g. `SIGINT`). */
@@ -273,7 +260,7 @@ export interface containerRestartOptions {
     t?: number;
 }
 
-export interface containerStartOptions {
+export interface ContainerStartOptions {
     /** ID or name of the container */
     id: string;
     /**
@@ -284,7 +271,7 @@ export interface containerStartOptions {
     detachKeys?: string;
 }
 
-export interface containerStatsOptions {
+export interface ContainerStatsOptions {
     /** ID or name of the container */
     id: string;
     /**
@@ -299,7 +286,7 @@ export interface containerStatsOptions {
     one_shot?: boolean;
 }
 
-export interface containerStopOptions {
+export interface ContainerStopOptions {
     /** ID or name of the container */
     id: string;
     /** Signal to send to the container as an integer or string (e.g. `SIGINT`). */
@@ -308,25 +295,25 @@ export interface containerStopOptions {
     t?: number;
 }
 
-export interface containerTopOptions {
+export interface ContainerTopOptions {
     /** ID or name of the container */
     id: string;
     /** The arguments to pass to `ps`. For example, `aux` */
     ps_args?: string;
 }
 
-export interface containerUnpauseOptions {
+export interface ContainerUnpauseOptions {
     /** ID or name of the container */
     id: string;
 }
 
-export interface containerUpdateOptions {
-    body: IdUpdateBody;
+export interface ContainerUpdateOptions {
+    spec: IdUpdateBody;
     /** ID or name of the container */
     id: string;
 }
 
-export interface containerWaitOptions {
+export interface ContainerWaitOptions {
     /** ID or name of the container */
     id: string;
     /**
@@ -342,7 +329,7 @@ export interface putContainerArchiveOptions {
      * following algorithms: `identity` (no compression), `gzip`, `bzip2`, or
      * `xz`.
      */
-    body: unknown;
+    stream: Stream.Stream<never, MobyError, Uint8Array>;
     /** ID or name of the container */
     id: string;
     /**
@@ -367,33 +354,26 @@ export interface putContainerArchiveOptions {
  * @param path - Resource in the container’s filesystem to archive.
  */
 export const containerArchive = (
-    options: containerArchiveOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerArchiveError, void> =>
+    options: ContainerArchiveOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerArchiveError, Stream.Stream<never, MobyError, Uint8Array>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerArchiveError({ message: "Required parameter id was null or undefined" }));
-        }
-
-        if (options.path === null || options.path === undefined) {
-            yield* _(new ContainerArchiveError({ message: "Required parameter path was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/archive";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("path", options.path))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerArchiveError));
+            .pipe(Effect.map((response) => response.stream))
+            .pipe(Effect.map(streamErrorHandler(ContainerArchiveError)))
+            .pipe(responseErrorHandler(ContainerArchiveError));
     }).pipe(Effect.flatten);
 
 /**
@@ -405,33 +385,25 @@ export const containerArchive = (
  * @param path - Resource in the container’s filesystem to archive.
  */
 export const containerArchiveInfo = (
-    options: containerArchiveInfoOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerArchiveInfoError, void> =>
+    options: ContainerArchiveInfoOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerArchiveInfoError, string> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerArchiveInfoError({ message: "Required parameter id was null or undefined" }));
-        }
-
-        if (options.path === null || options.path === undefined) {
-            yield* _(new ContainerArchiveInfoError({ message: "Required parameter path was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/archive";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "HEAD";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("path", options.path))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerArchiveInfoError));
+            .pipe(Effect.map((response) => response.headers["x-docker-container-path-stat"]!))
+            .pipe(responseErrorHandler(ContainerArchiveInfoError));
     }).pipe(Effect.flatten);
 
 /**
@@ -491,78 +463,33 @@ export const containerArchiveInfo = (
  * @param stderr - Attach to `stderr`
  */
 export const containerAttach = (
-    options: containerAttachOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerAttachError, void> =>
+    options: ContainerAttachOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerAttachError, NodeSocket.Socket> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerAttachError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/attach";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("detachKeys", options.detachKeys))
             .pipe(addQueryParameter("logs", options.logs))
             .pipe(addQueryParameter("stream", options.stream))
             .pipe(addQueryParameter("stdin", options.stdin))
             .pipe(addQueryParameter("stdout", options.stdout))
             .pipe(addQueryParameter("stderr", options.stderr))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerAttachError));
-    }).pipe(Effect.flatten);
-
-/**
- * Attach to a container via a websocket
- *
- * @param id - ID or name of the container
- * @param detachKeys - Override the key sequence for detaching a
- *   container.Format is a single character `[a-Z]` or `ctrl-<value>` where
- *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,`, or `_`.
- * @param logs - Return logs
- * @param stream - Return stream
- * @param stdin - Attach to `stdin`
- * @param stdout - Attach to `stdout`
- * @param stderr - Attach to `stderr`
- */
-export const containerAttachWebsocket = (
-    options: containerAttachWebsocketOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerAttachWebsocketError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerAttachWebsocketError({ message: "Required parameter id was null or undefined" }));
-        }
-
-        const endpoint: string = "/containers/{id}/attach/ws";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("detachKeys", options.detachKeys))
-            .pipe(addQueryParameter("logs", options.logs))
-            .pipe(addQueryParameter("stream", options.stream))
-            .pipe(addQueryParameter("stdin", options.stdin))
-            .pipe(addQueryParameter("stdout", options.stdout))
-            .pipe(addQueryParameter("stderr", options.stderr))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerAttachWebsocketError));
+            .pipe(addHeader("Connection", "Upgrade"))
+            .pipe(addHeader("Upgrade", "tcp"))
+            .pipe(client.pipe(NodeHttp.client.filterStatus((status) => status === 101 || status === 200)))
+            .pipe(Effect.map((response) => (response as IExposeSourceOnEffectClientResponse).source.socket))
+            .pipe(Effect.flatMap((socket) => NodeSocket.fromNetSocket(Effect.sync(() => socket))))
+            .pipe(responseErrorHandler(ContainerAttachError));
     }).pipe(Effect.flatten);
 
 /**
@@ -573,29 +500,29 @@ export const containerAttachWebsocket = (
  * @param id - ID or name of the container
  */
 export const containerChanges = (
-    options: containerChangesOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerChangesError, Readonly<Array<FilesystemChange>>> =>
+    options: ContainerChangesOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerChangesError, Readonly<Array<FilesystemChange>> | undefined> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerChangesError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/changes";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(FilesystemChangeSchema))))
-            .pipe(errorHandler(ContainerChangesError));
+            .pipe(
+                Effect.flatMap(
+                    NodeHttp.response.schemaBodyJson(Schema.array(FilesystemChangeSchema).pipe(Schema.nullable))
+                )
+            )
+            .pipe(Effect.map((x) => x ?? undefined))
+            .pipe(responseErrorHandler(ContainerChangesError));
     }).pipe(Effect.flatten);
 
 /**
@@ -617,33 +544,28 @@ export const containerChanges = (
  *   and no specific platform was requested
  */
 export const containerCreate = (
-    options: containerCreateOptions
+    options: ContainerCreateOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerCreateError, Readonly<ContainerCreateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new ContainerCreateError({ message: "Required parameter body was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/create";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("name", options.name))
             .pipe(addQueryParameter("platform", options.platform))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ContainersCreateBody1"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerCreateResponseSchema)))
-            .pipe(errorHandler(ContainerCreateError));
+            .pipe(responseErrorHandler(ContainerCreateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -655,31 +577,26 @@ export const containerCreate = (
  * @param link - Remove the specified link associated with the container.
  */
 export const containerDelete = (
-    options: containerDeleteOptions
+    options: ContainerDeleteOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerDeleteError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("v", options.v))
             .pipe(addQueryParameter("force", options.force))
             .pipe(addQueryParameter("link", options.link))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerDeleteError));
+            .pipe(responseErrorHandler(ContainerDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -688,28 +605,25 @@ export const containerDelete = (
  * @param id - ID or name of the container
  */
 export const containerExport = (
-    options: containerExportOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerExportError, void> =>
+    options: ContainerExportOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerExportError, Stream.Stream<never, MobyError, Uint8Array>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerExportError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/export";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerExportError));
+            .pipe(Effect.map((response) => response.stream))
+            .pipe(Effect.map(streamErrorHandler(ContainerExportError)))
+            .pipe(responseErrorHandler(ContainerExportError));
     }).pipe(Effect.flatten);
 
 /**
@@ -720,30 +634,25 @@ export const containerExport = (
  *   `SizeRootFs`
  */
 export const containerInspect = (
-    options: containerInspectOptions
+    options: ContainerInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerInspectError, Readonly<ContainerInspectResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerInspectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/json";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("size", options.size))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerInspectResponseSchema)))
-            .pipe(errorHandler(ContainerInspectError));
+            .pipe(responseErrorHandler(ContainerInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -754,29 +663,24 @@ export const containerInspect = (
  *   `SIGINT`).
  */
 export const containerKill = (
-    options: containerKillOptions
+    options: ContainerKillOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerKillError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerKillError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/kill";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("signal", options.signal))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerKillError));
+            .pipe(responseErrorHandler(ContainerKillError));
     }).pipe(Effect.flatten);
 
 /**
@@ -810,7 +714,7 @@ export const containerKill = (
  *   - `volume`=(`<volume name>` or `<mount point destination>`)
  */
 export const containerList = (
-    options: containerListOptions
+    options?: ContainerListOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, ContainerListError, Readonly<Array<ContainerSummary>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/containers/json";
@@ -818,21 +722,20 @@ export const containerList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("all", options.all))
-            .pipe(addQueryParameter("limit", options.limit))
-            .pipe(addQueryParameter("size", options.size))
-            .pipe(addQueryParameter("filters", options.filters))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("all", options?.all))
+            .pipe(addQueryParameter("limit", options?.limit))
+            .pipe(addQueryParameter("size", options?.size))
+            .pipe(addQueryParameter("filters", options?.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ContainerSummarySchema))))
-            .pipe(errorHandler(ContainerListError));
+            .pipe(responseErrorHandler(ContainerListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -850,26 +753,21 @@ export const containerList = (
  *   Specify as an integer or `all` to output all log lines.
  */
 export const containerLogs = (
-    options: containerLogsOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerLogsError, Readonly<Blob>> =>
+    options: ContainerLogsOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerLogsError, Stream.Stream<never, MobyError, string>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerLogsError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/logs";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("follow", options.follow))
             .pipe(addQueryParameter("stdout", options.stdout))
             .pipe(addQueryParameter("stderr", options.stderr))
@@ -878,9 +776,10 @@ export const containerLogs = (
             .pipe(addQueryParameter("timestamps", options.timestamps))
             .pipe(addQueryParameter("tail", options.tail))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
-            .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(errorHandler(ContainerLogsError));
+            .pipe(Effect.map((response) => response.stream))
+            .pipe(Effect.map(Stream.decodeText("utf8")))
+            .pipe(Effect.map(streamErrorHandler(ContainerLogsError)))
+            .pipe(responseErrorHandler(ContainerLogsError));
     }).pipe(Effect.flatten);
 
 /**
@@ -893,28 +792,23 @@ export const containerLogs = (
  * @param id - ID or name of the container
  */
 export const containerPause = (
-    options: containerPauseOptions
+    options: ContainerPauseOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerPauseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerPauseError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/pause";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerPauseError));
+            .pipe(responseErrorHandler(ContainerPauseError));
     }).pipe(Effect.flatten);
 
 /**
@@ -930,7 +824,7 @@ export const containerPause = (
  *   `label!=...` is used) the specified labels.
  */
 export const containerPrune = (
-    options: containerPruneOptions
+    options?: ContainerPruneOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, ContainerPruneError, Readonly<ContainerPruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/containers/prune";
@@ -938,18 +832,17 @@ export const containerPrune = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("filters", options.filters))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("filters", options?.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerPruneResponseSchema)))
-            .pipe(errorHandler(ContainerPruneError));
+            .pipe(responseErrorHandler(ContainerPruneError));
     }).pipe(Effect.flatten);
 
 /**
@@ -959,33 +852,24 @@ export const containerPrune = (
  * @param name - New name for the container
  */
 export const containerRename = (
-    options: containerRenameOptions
+    options: ContainerRenameOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerRenameError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerRenameError({ message: "Required parameter id was null or undefined" }));
-        }
-
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ContainerRenameError({ message: "Required parameter name was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/rename";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("name", options.name))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerRenameError));
+            .pipe(responseErrorHandler(ContainerRenameError));
     }).pipe(Effect.flatten);
 
 /**
@@ -996,30 +880,25 @@ export const containerRename = (
  * @param w - Width of the TTY session in characters
  */
 export const containerResize = (
-    options: containerResizeOptions
+    options: ContainerResizeOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerResizeError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerResizeError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/resize";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("h", options.h))
             .pipe(addQueryParameter("w", options.w))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerResizeError));
+            .pipe(responseErrorHandler(ContainerResizeError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1031,30 +910,25 @@ export const containerResize = (
  * @param t - Number of seconds to wait before killing the container
  */
 export const containerRestart = (
-    options: containerRestartOptions
+    options: ContainerRestartOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerRestartError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerRestartError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/restart";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("signal", options.signal))
             .pipe(addQueryParameter("t", options.t))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerRestartError));
+            .pipe(responseErrorHandler(ContainerRestartError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1066,29 +940,24 @@ export const containerRestart = (
  *   one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
  */
 export const containerStart = (
-    options: containerStartOptions
+    options: ContainerStartOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerStartError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerStartError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/start";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("detachKeys", options.detachKeys))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerStartError));
+            .pipe(responseErrorHandler(ContainerStartError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1119,31 +988,28 @@ export const containerStart = (
  *   Must be used with `stream=false`.
  */
 export const containerStats = (
-    options: containerStatsOptions
-): Effect.Effect<IMobyConnectionAgent, ContainerStatsError, Readonly<unknown>> =>
+    options: ContainerStatsOptions
+): Effect.Effect<IMobyConnectionAgent, ContainerStatsError, Stream.Stream<never, MobyError, unknown>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerStatsError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/stats";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("stream", options.stream))
             .pipe(addQueryParameter("one-shot", options.one_shot))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.any)))
-            .pipe(errorHandler(ContainerStatsError));
+            .pipe(Effect.map((response) => response.stream))
+            .pipe(Effect.map(Stream.decodeText("utf8")))
+            .pipe(Effect.map(streamErrorHandler(ContainerStatsError)))
+            .pipe(responseErrorHandler(ContainerStatsError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1155,30 +1021,25 @@ export const containerStats = (
  * @param t - Number of seconds to wait before killing the container
  */
 export const containerStop = (
-    options: containerStopOptions
+    options: ContainerStopOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerStopError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerStopError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/stop";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("signal", options.signal))
             .pipe(addQueryParameter("t", options.t))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerStopError));
+            .pipe(responseErrorHandler(ContainerStopError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1189,30 +1050,25 @@ export const containerStop = (
  * @param ps_args - The arguments to pass to `ps`. For example, `aux`
  */
 export const containerTop = (
-    options: containerTopOptions
+    options: ContainerTopOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerTopError, Readonly<ContainerTopResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerTopError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/top";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("ps_args", options.ps_args))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerTopResponseSchema)))
-            .pipe(errorHandler(ContainerTopError));
+            .pipe(responseErrorHandler(ContainerTopError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1221,67 +1077,53 @@ export const containerTop = (
  * @param id - ID or name of the container
  */
 export const containerUnpause = (
-    options: containerUnpauseOptions
+    options: ContainerUnpauseOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerUnpauseError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerUnpauseError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/unpause";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ContainerUnpauseError));
+            .pipe(responseErrorHandler(ContainerUnpauseError));
     }).pipe(Effect.flatten);
 
 /**
  * Change various configuration options of a container without having to
  * recreate it.
  *
- * @param body -
+ * @param spec -
  * @param id - ID or name of the container
  */
 export const containerUpdate = (
-    options: containerUpdateOptions
+    options: ContainerUpdateOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerUpdateError, Readonly<ContainerUpdateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new ContainerUpdateError({ message: "Required parameter body was null or undefined" }));
-        }
-
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerUpdateError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/update";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "IdUpdateBody"))
+            .pipe(setBody(options.spec, "IdUpdateBody"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerUpdateResponseSchema)))
-            .pipe(errorHandler(ContainerUpdateError));
+            .pipe(responseErrorHandler(ContainerUpdateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1292,30 +1134,25 @@ export const containerUpdate = (
  *   Defaults to `not-running` if omitted or empty.
  */
 export const containerWait = (
-    options: containerWaitOptions
+    options: ContainerWaitOptions
 ): Effect.Effect<IMobyConnectionAgent, ContainerWaitError, Readonly<ContainerWaitResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ContainerWaitError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/wait";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("condition", options.condition))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ContainerWaitResponseSchema)))
-            .pipe(errorHandler(ContainerWaitError));
+            .pipe(responseErrorHandler(ContainerWaitError));
     }).pipe(Effect.flatten);
 
 /**
@@ -1323,7 +1160,7 @@ export const containerWait = (
  * id. `path` parameter is asserted to be a directory. If it exists as a file,
  * 400 error will be returned with message "not a directory".
  *
- * @param body - The input stream must be a tar archive compressed with one of
+ * @param stream - The input stream must be a tar archive compressed with one of
  *   the following algorithms: `identity` (no compression), `gzip`, `bzip2`, or
  *   `xz`.
  * @param id - ID or name of the container
@@ -1337,43 +1174,56 @@ export const containerWait = (
  */
 export const putContainerArchive = (
     options: putContainerArchiveOptions
-): Effect.Effect<IMobyConnectionAgent, putContainerArchiveError, void> =>
+): Effect.Effect<IMobyConnectionAgent, PutContainerArchiveError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new putContainerArchiveError({ message: "Required parameter body was null or undefined" }));
-        }
-
-        if (options.id === null || options.id === undefined) {
-            yield* _(new putContainerArchiveError({ message: "Required parameter id was null or undefined" }));
-        }
-
-        if (options.path === null || options.path === undefined) {
-            yield* _(new putContainerArchiveError({ message: "Required parameter path was null or undefined" }));
-        }
-
         const endpoint: string = "/containers/{id}/archive";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "PUT";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("path", options.path))
             .pipe(addQueryParameter("noOverwriteDirNonDir", options.noOverwriteDirNonDir))
             .pipe(addQueryParameter("copyUIDGID", options.copyUIDGID))
             .pipe(addHeader("Content-Type", "application/x-tar"))
-            .pipe(setBody(options.body, "unknown"))
+            .pipe(setBody(options.stream, "stream"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(putContainerArchiveError));
+            .pipe(responseErrorHandler(PutContainerArchiveError));
     }).pipe(Effect.flatten);
 
 export interface IContainerService {
+    Errors:
+        | ContainerArchiveError
+        | ContainerArchiveInfoError
+        | ContainerAttachError
+        | ContainerChangesError
+        | ContainerCreateError
+        | ContainerDeleteError
+        | ContainerExportError
+        | ContainerInspectError
+        | ContainerKillError
+        | ContainerListError
+        | ContainerLogsError
+        | ContainerPauseError
+        | ContainerPruneError
+        | ContainerRenameError
+        | ContainerResizeError
+        | ContainerRestartError
+        | ContainerStartError
+        | ContainerStatsError
+        | ContainerStopError
+        | ContainerTopError
+        | ContainerUnpauseError
+        | ContainerUpdateError
+        | ContainerWaitError
+        | PutContainerArchiveError;
+
     /**
      * Get a tar archive of a resource in the filesystem of container id.
      *
@@ -1453,21 +1303,6 @@ export interface IContainerService {
      * @param stderr - Attach to `stderr`
      */
     containerAttach: WithConnectionAgentProvided<typeof containerAttach>;
-
-    /**
-     * Attach to a container via a websocket
-     *
-     * @param id - ID or name of the container
-     * @param detachKeys - Override the key sequence for detaching a
-     *   container.Format is a single character `[a-Z]` or `ctrl-<value>` where
-     *   `<value>` is one of: `a-z`, `@`, `^`, `[`, `,`, or `_`.
-     * @param logs - Return logs
-     * @param stream - Return stream
-     * @param stdin - Attach to `stdin`
-     * @param stdout - Attach to `stdout`
-     * @param stderr - Attach to `stderr`
-     */
-    containerAttachWebsocket: WithConnectionAgentProvided<typeof containerAttachWebsocket>;
 
     /**
      * Returns which files in a container's filesystem have been added, deleted,
@@ -1708,7 +1543,7 @@ export interface IContainerService {
      * Change various configuration options of a container without having to
      * recreate it.
      *
-     * @param body -
+     * @param spec -
      * @param id - ID or name of the container
      */
     containerUpdate: WithConnectionAgentProvided<typeof containerUpdate>;

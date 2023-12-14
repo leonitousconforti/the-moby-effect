@@ -17,23 +17,21 @@ let testDindContainerHttpsPort: string | undefined;
 let testDindContainerHttpsCertDirectory: string | undefined;
 
 /** Connects to the local docker daemon on this host. */
-const [HostsLocalMobyClient, MobyServiceLocal] = MobyApi.makeMobyLayer("hostsLocalMobyClient");
+const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
 
 /**
- * This bootstraps the tests by using the generated api to start a
- * docker-in-docker container on the host so that we have something to test the
- * generated api against without needing to modify the host docker install.
+ * This bootstraps the tests by using the api to start a docker-in-docker
+ * container on the host so that we have something to test the api against
+ * without needing to modify the host docker install.
  */
 beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
             const fsService: NodeFs.FileSystem = yield* _(NodeFs.FileSystem);
-            const localService: MobyApi.IMobyService = yield* _(HostsLocalMobyClient);
 
             testDindContainerHttpsCertDirectory = yield* _(fsService.makeTempDirectory());
             const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localService.run({
-                    mobyClient: HostsLocalMobyClient,
+                localDocker.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
                     containerOptions: {
                         body: {
@@ -52,8 +50,8 @@ beforeAll(
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerHttpsPort = containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort!;
         })
+            .pipe(Effect.scoped)
             .pipe(Effect.provide(NodeFs.layer))
-            .pipe(Effect.provide(MobyServiceLocal))
             .pipe(Effect.runPromise),
     WARMUP_TIMEOUT
 );
@@ -63,14 +61,11 @@ afterAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
             const fsService: NodeFs.FileSystem = yield* _(NodeFs.FileSystem);
-            const localService: MobyApi.IMobyService = yield* _(HostsLocalMobyClient);
-
-            yield* _(localService.containerDelete({ id: testDindContainerId!, force: true }));
+            yield* _(localDocker.containerDelete({ id: testDindContainerId!, force: true }));
             yield* _(fsService.remove(testDindContainerHttpsCertDirectory!, { recursive: true }));
         })
             .pipe(Effect.scoped)
             .pipe(Effect.provide(NodeFs.layer))
-            .pipe(Effect.provide(MobyServiceLocal))
             .pipe(Effect.runPromise),
     COOLDOWN_TIMEOUT
 );
@@ -92,7 +87,7 @@ describe("MobyApi https agent tests", () => {
             )
         );
 
-        const [DindHttpsMobyClient, MobyServiceHttpsDind] = MobyApi.makeMobyLayer("dindHttpsMobyClient", {
+        const dindHttpsMobyClient = MobyApi.makeMobyClient({
             ca,
             key,
             cert,
@@ -103,18 +98,15 @@ describe("MobyApi https agent tests", () => {
 
         await Effect.runPromise(
             Effect.retry(
-                DindHttpsMobyClient.pipe(Effect.flatMap((service) => service.systemPing()))
-                    .pipe(Effect.scoped)
-                    .pipe(Effect.provide(MobyServiceHttpsDind)),
+                dindHttpsMobyClient.systemPing().pipe(Effect.scoped),
                 Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
             )
         );
 
-        const testData: readonly MobyApi.ContainerSummary[] = await Effect.runPromise(
-            DindHttpsMobyClient.pipe(Effect.flatMap((service) => service.containerList({ all: true })))
-                .pipe(Effect.scoped)
-                .pipe(Effect.provide(MobyServiceHttpsDind))
-        );
+        const testData: readonly MobyApi.ContainerSummary[] = await dindHttpsMobyClient
+            .containerList({ all: true })
+            .pipe(Effect.scoped)
+            .pipe(Effect.runPromise);
 
         expect(testData).toBeInstanceOf(Array);
         expect(testData.length).toBe(0);

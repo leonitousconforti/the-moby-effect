@@ -18,17 +18,12 @@ module.exports = {
         "no-console": "warn",
         "tsdoc/syntax": "off",
         "unicorn/no-array-callback-reference": "off",
+        "@typescript-eslint/naming-convention": [
+            "error",
+            { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
+        ],
     },
     overrides: [
-        {
-            files: ["./src/**/*.ts", "./test/**/*.ts", "./examples/**/*.ts"],
-            rules: {
-                "@typescript-eslint/naming-convention": [
-                    "error",
-                    { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
-                ],
-            },
-        },
         {
             files: ["./src/schemas.ts"],
             rules: {
@@ -41,7 +36,6 @@ module.exports = {
             files: ["./examples/**/*.ts"],
             rules: {
                 "no-console": "off",
-                "@typescript-eslint/typedef": "off",
             },
         },
     ],

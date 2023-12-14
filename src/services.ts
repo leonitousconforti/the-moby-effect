@@ -3,7 +3,7 @@ import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 
 import {
     IdUpdateBody1,
@@ -23,7 +23,7 @@ export class ServiceListError extends Data.TaggedError("ServiceListError")<{ mes
 export class ServiceLogsError extends Data.TaggedError("ServiceLogsError")<{ message: string }> {}
 export class ServiceUpdateError extends Data.TaggedError("ServiceUpdateError")<{ message: string }> {}
 
-export interface serviceCreateOptions {
+export interface ServiceCreateOptions {
     body: ServicesCreateBody;
     /**
      * A base64url-encoded auth configuration for pulling from private
@@ -33,19 +33,19 @@ export interface serviceCreateOptions {
     X_Registry_Auth?: string;
 }
 
-export interface serviceDeleteOptions {
+export interface ServiceDeleteOptions {
     /** ID or name of service. */
     id: string;
 }
 
-export interface serviceInspectOptions {
+export interface ServiceInspectOptions {
     /** ID or name of service. */
     id: string;
     /** Fill empty fields with default values. */
     insertDefaults?: boolean;
 }
 
-export interface serviceListOptions {
+export interface ServiceListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
      * on the services list. Available filters:
@@ -60,7 +60,7 @@ export interface serviceListOptions {
     status?: boolean;
 }
 
-export interface serviceLogsOptions {
+export interface ServiceLogsOptions {
     /** ID or name of the service */
     id: string;
     /** Show service context and extra details provided to logs. */
@@ -82,7 +82,7 @@ export interface serviceLogsOptions {
     tail?: string;
 }
 
-export interface serviceUpdateOptions {
+export interface ServiceUpdateOptions {
     body: IdUpdateBody1;
     /** ID or name of service. */
     id: string;
@@ -121,32 +121,27 @@ export interface serviceUpdateOptions {
  *   section](#section/Authentication) for details.
  */
 export const serviceCreate = (
-    options: serviceCreateOptions
+    options: ServiceCreateOptions
 ): Effect.Effect<IMobyConnectionAgent, ServiceCreateError, Readonly<ServiceCreateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new ServiceCreateError({ message: "Required parameter body was null or undefined" }));
-        }
-
         const endpoint: string = "/services/create";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ServicesCreateBody"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceCreateResponseSchema)))
-            .pipe(errorHandler(ServiceCreateError));
+            .pipe(responseErrorHandler(ServiceCreateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -155,28 +150,23 @@ export const serviceCreate = (
  * @param id - ID or name of service.
  */
 export const serviceDelete = (
-    options: serviceDeleteOptions
+    options: ServiceDeleteOptions
 ): Effect.Effect<IMobyConnectionAgent, ServiceDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ServiceDeleteError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/services/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(ServiceDeleteError));
+            .pipe(responseErrorHandler(ServiceDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -186,30 +176,25 @@ export const serviceDelete = (
  * @param insertDefaults - Fill empty fields with default values.
  */
 export const serviceInspect = (
-    options: serviceInspectOptions
+    options: ServiceInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, ServiceInspectError, Readonly<Service>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ServiceInspectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/services/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("insertDefaults", options.insertDefaults))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceSchema)))
-            .pipe(errorHandler(ServiceInspectError));
+            .pipe(responseErrorHandler(ServiceInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -227,7 +212,7 @@ export const serviceInspect = (
  *   tasks.
  */
 export const serviceList = (
-    options: serviceListOptions
+    options?: ServiceListOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, ServiceListError, Readonly<Array<Service>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/services";
@@ -235,19 +220,18 @@ export const serviceList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(addQueryParameter("status", options.status))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("filters", options?.filters))
+            .pipe(addQueryParameter("status", options?.status))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ServiceSchema))))
-            .pipe(errorHandler(ServiceListError));
+            .pipe(responseErrorHandler(ServiceListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -267,26 +251,21 @@ export const serviceList = (
  *   Specify as an integer or `all` to output all log lines.
  */
 export const serviceLogs = (
-    options: serviceLogsOptions
+    options: ServiceLogsOptions
 ): Effect.Effect<IMobyConnectionAgent, ServiceLogsError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ServiceLogsError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/services/{id}/logs";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("details", options.details))
             .pipe(addQueryParameter("follow", options.follow))
             .pipe(addQueryParameter("stdout", options.stdout))
@@ -297,7 +276,7 @@ export const serviceLogs = (
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
             .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(errorHandler(ServiceLogsError));
+            .pipe(responseErrorHandler(ServiceLogsError));
     }).pipe(Effect.flatten);
 
 /**
@@ -319,34 +298,21 @@ export const serviceLogs = (
  *   section](#section/Authentication) for details.
  */
 export const serviceUpdate = (
-    options: serviceUpdateOptions
+    options: ServiceUpdateOptions
 ): Effect.Effect<IMobyConnectionAgent, ServiceUpdateError, Readonly<ServiceUpdateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new ServiceUpdateError({ message: "Required parameter body was null or undefined" }));
-        }
-
-        if (options.id === null || options.id === undefined) {
-            yield* _(new ServiceUpdateError({ message: "Required parameter id was null or undefined" }));
-        }
-
-        if (options.version === null || options.version === undefined) {
-            yield* _(new ServiceUpdateError({ message: "Required parameter version was null or undefined" }));
-        }
-
         const endpoint: string = "/services/{id}/update";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
             .pipe(addQueryParameter("version", options.version))
             .pipe(addQueryParameter("registryAuthFrom", options.registryAuthFrom))
@@ -355,10 +321,18 @@ export const serviceUpdate = (
             .pipe(setBody(options.body, "IdUpdateBody1"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceUpdateResponseSchema)))
-            .pipe(errorHandler(ServiceUpdateError));
+            .pipe(responseErrorHandler(ServiceUpdateError));
     }).pipe(Effect.flatten);
 
 export interface IServicesService {
+    Errors:
+        | ServiceCreateError
+        | ServiceDeleteError
+        | ServiceInspectError
+        | ServiceListError
+        | ServiceLogsError
+        | ServiceUpdateError;
+
     /**
      * Create a service
      *

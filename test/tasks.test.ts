@@ -6,12 +6,14 @@ import * as MobyApi from "../src/main.js";
 const WARMUP_TIMEOUT = 30_000;
 const COOLDOWN_TIMEOUT = 30_000;
 
+/** Connects to the local docker daemon on this host. */
+const localDockerClient: MobyApi.IMobyService = MobyApi.makeMobyClient();
+
+/** The client we are going to use to test. */
+let testDockerClient: MobyApi.IMobyService = undefined!;
+
 /** The ID of the dind docker container we can test against on the host. */
 let testDindContainerId: string | undefined;
-let testDindContainerHttpPort: string | undefined;
-
-/** Connects to the local docker daemon on this host. */
-const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
@@ -22,7 +24,7 @@ beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
             const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localDocker.run({
+                localDockerClient.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
                     containerOptions: {
                         body: {
@@ -39,7 +41,24 @@ beforeAll(
             );
 
             testDindContainerId = containerInspectResponse.Id!;
-            testDindContainerHttpPort = containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!;
+            const testDindContainerHttpPort = Number.parseInt(
+                containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!
+            );
+
+            testDockerClient = MobyApi.makeMobyClient({
+                protocol: "http",
+                host: "localhost",
+                port: testDindContainerHttpPort,
+            });
+
+            yield* _(
+                Effect.retry(
+                    testDockerClient.systemPing().pipe(Effect.scoped),
+                    Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+                )
+            );
+
+            yield* _(testDockerClient.swarmInit({ ListenAddr: "eth0" }));
         })
             .pipe(Effect.scoped)
             .pipe(Effect.runPromise),
@@ -49,34 +68,21 @@ beforeAll(
 /** Cleans up the container that will be created in the setup helper. */
 afterAll(
     async () =>
-        await localDocker
+        await localDockerClient
             .containerDelete({ id: testDindContainerId!, force: true })
             .pipe(Effect.scoped)
             .pipe(Effect.runPromise),
     COOLDOWN_TIMEOUT
 );
 
-describe("MobyApi http agent tests", () => {
-    it("http agent should connect but see no containers", async () => {
-        const dindHttpMobyClient: MobyApi.IMobyService = MobyApi.makeMobyClient({
-            protocol: "http",
-            host: "localhost",
-            port: Number.parseInt(testDindContainerHttpPort!),
-        });
-
-        await Effect.runPromise(
-            Effect.retry(
-                dindHttpMobyClient.systemPing().pipe(Effect.scoped),
-                Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
-            )
-        );
-
-        const testData: readonly MobyApi.ContainerSummary[] = await dindHttpMobyClient
-            .containerList({ all: true })
+describe("MobyApi Tasks tests", () => {
+    it("Should see no tasks", async () => {
+        const tasks: Readonly<MobyApi.Task[]> = await testDockerClient
+            .taskList()
             .pipe(Effect.scoped)
             .pipe(Effect.runPromise);
 
-        expect(testData).toBeInstanceOf(Array);
-        expect(testData.length).toBe(0);
+        expect(tasks).toBeInstanceOf(Array);
+        expect(tasks).toHaveLength(0);
     });
 });

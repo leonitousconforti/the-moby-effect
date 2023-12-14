@@ -1,8 +1,18 @@
+import net from "node:net";
+
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as ParseResult from "@effect/schema/ParseResult";
 import { Cause, Effect, Stream, identity } from "effect";
 
-// eslint-disable-next-line @typescript-eslint/typedef
+import { MobyError } from "./main.js";
+
+/** Helper interface to expose the underlying socket from the response. */
+export interface IExposeSourceOnEffectClientResponse extends NodeHttp.response.ClientResponse {
+    source: {
+        socket: net.Socket;
+    };
+}
+
 export const addHeader = NodeHttp.request.setHeader;
 
 export const addQueryParameter = (
@@ -39,7 +49,7 @@ export const setBody =
             : Effect.succeed(NodeHttp.request.textBody(clientRequest, (body as unknown as string) || ""));
     };
 
-export const errorHandler = <Tag extends string>(
+export const responseErrorHandler = <Tag extends string>(
     toError: new (arguments_: { message: string }) => Cause.YieldableError & { readonly _tag: Tag }
 ): (<R, A>(
     self: Effect.Effect<
@@ -69,5 +79,31 @@ export const errorHandler = <Tag extends string>(
                                 message: `response error ${responseError.reason}, statusCode=${responseError.response.status} message=${text}`,
                             })
                     )
+                ),
+    });
+
+export const streamErrorHandler = (
+    toError: new ({ message }: { message: string }) => MobyError["cause"]
+): (<R, A>(self: Stream.Stream<R, NodeHttp.error.ResponseError, A>) => Stream.Stream<R, MobyError, A>) =>
+    Stream.catchTags({
+        ResponseError: (responseError) =>
+            responseError.response.text
+                .pipe(
+                    Effect.catchTag("ResponseError", () => {
+                        const originalError: MobyError["cause"] = new toError({
+                            message: `response error ${responseError.reason}`,
+                        });
+
+                        return new MobyError({ cause: originalError, message: originalError.message });
+                    })
+                )
+                .pipe(
+                    Effect.flatMap((text) => {
+                        const originalError: MobyError["cause"] = new toError({
+                            message: `response error ${responseError.reason}, statusCode=${responseError.response.status} message=${text}`,
+                        });
+
+                        return new MobyError({ cause: originalError, message: originalError.message });
+                    })
                 ),
     });

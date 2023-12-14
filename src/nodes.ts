@@ -3,7 +3,7 @@ import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 import { Node, NodeSchema, NodeSpec } from "./schemas.js";
 
 export class NodeDeleteError extends Data.TaggedError("NodeDeleteError")<{ message: string }> {}
@@ -11,19 +11,19 @@ export class NodeInspectError extends Data.TaggedError("NodeInspectError")<{ mes
 export class NodeListError extends Data.TaggedError("NodeListError")<{ message: string }> {}
 export class NodeUpdateError extends Data.TaggedError("NodeUpdateError")<{ message: string }> {}
 
-export interface nodeDeleteOptions {
+export interface NodeDeleteOptions {
     /** The ID or name of the node */
     id: string;
     /** Force remove a node from the swarm */
     force?: boolean;
 }
 
-export interface nodeInspectOptions {
+export interface NodeInspectOptions {
     /** The ID or name of the node */
     id: string;
 }
 
-export interface nodeListOptions {
+export interface NodeListOptions {
     /**
      * Filters to process on the nodes list, encoded as JSON (a
      * `map[string][]string`). Available filters:
@@ -38,7 +38,7 @@ export interface nodeListOptions {
     filters?: string;
 }
 
-export interface nodeUpdateOptions {
+export interface NodeUpdateOptions {
     /** The ID of the node */
     id: string;
     /**
@@ -55,28 +55,23 @@ export interface nodeUpdateOptions {
  * @param id - The ID or name of the node
  * @param force - Force remove a node from the swarm
  */
-export const nodeDelete = (options: nodeDeleteOptions): Effect.Effect<IMobyConnectionAgent, NodeDeleteError, void> =>
+export const nodeDelete = (options: NodeDeleteOptions): Effect.Effect<IMobyConnectionAgent, NodeDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NodeDeleteError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/nodes/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("force", options.force))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(NodeDeleteError));
+            .pipe(responseErrorHandler(NodeDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -85,29 +80,24 @@ export const nodeDelete = (options: nodeDeleteOptions): Effect.Effect<IMobyConne
  * @param id - The ID or name of the node
  */
 export const nodeInspect = (
-    options: nodeInspectOptions
+    options: NodeInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, NodeInspectError, Readonly<Node>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NodeInspectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/nodes/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NodeSchema)))
-            .pipe(errorHandler(NodeInspectError));
+            .pipe(responseErrorHandler(NodeInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -124,7 +114,7 @@ export const nodeInspect = (
  *   - `role=`(`manager`|`worker`)`
  */
 export const nodeList = (
-    options: nodeListOptions
+    options?: NodeListOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, NodeListError, Readonly<Array<Node>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/nodes";
@@ -132,18 +122,17 @@ export const nodeList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("filters", options.filters))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("filters", options?.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(NodeSchema))))
-            .pipe(errorHandler(NodeListError));
+            .pipe(responseErrorHandler(NodeListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -154,12 +143,8 @@ export const nodeList = (
  *   required to avoid conflicting writes.
  * @param body -
  */
-export const nodeUpdate = (options: nodeUpdateOptions): Effect.Effect<IMobyConnectionAgent, NodeUpdateError, void> =>
+export const nodeUpdate = (options: NodeUpdateOptions): Effect.Effect<IMobyConnectionAgent, NodeUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NodeUpdateError({ message: "Required parameter id was null or undefined" }));
-        }
-
         if (options.version === null || options.version === undefined) {
             yield* _(new NodeUpdateError({ message: "Required parameter version was null or undefined" }));
         }
@@ -169,22 +154,23 @@ export const nodeUpdate = (options: nodeUpdateOptions): Effect.Effect<IMobyConne
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("version", options.version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "NodeSpec"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(NodeUpdateError));
+            .pipe(responseErrorHandler(NodeUpdateError));
     }).pipe(Effect.flatten);
 
 export interface INodeService {
+    Errors: NodeDeleteError | NodeInspectError | NodeListError | NodeUpdateError;
+
     /**
      * Delete a node
      *

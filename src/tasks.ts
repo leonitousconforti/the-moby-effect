@@ -3,19 +3,19 @@ import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addQueryParameter, errorHandler } from "./request-helpers.js";
+import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
 import { Task, TaskSchema } from "./schemas.js";
 
 export class TaskInspectError extends Data.TaggedError("TaskInspectError")<{ message: string }> {}
 export class TaskListError extends Data.TaggedError("TaskListError")<{ message: string }> {}
 export class TaskLogsError extends Data.TaggedError("TaskLogsError")<{ message: string }> {}
 
-export interface taskInspectOptions {
+export interface TaskInspectOptions {
     /** ID of the task */
     id: string;
 }
 
-export interface taskListOptions {
+export interface TaskListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
      * on the tasks list. Available filters:
@@ -30,7 +30,7 @@ export interface taskListOptions {
     filters?: string;
 }
 
-export interface taskLogsOptions {
+export interface TaskLogsOptions {
     /** ID of the task */
     id: string;
     /** Show task context and extra details provided to logs. */
@@ -58,29 +58,24 @@ export interface taskLogsOptions {
  * @param id - ID of the task
  */
 export const taskInspect = (
-    options: taskInspectOptions
+    options: TaskInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, TaskInspectError, Readonly<Task>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new TaskInspectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/tasks/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(TaskSchema)))
-            .pipe(errorHandler(TaskInspectError));
+            .pipe(responseErrorHandler(TaskInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -97,7 +92,7 @@ export const taskInspect = (
  *   - `service=<service name>`
  */
 export const taskList = (
-    options: taskListOptions
+    options?: TaskListOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, TaskListError, Readonly<Array<Task>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/tasks";
@@ -105,18 +100,17 @@ export const taskList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("filters", options.filters))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("filters", options?.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(TaskSchema))))
-            .pipe(errorHandler(TaskListError));
+            .pipe(responseErrorHandler(TaskListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -136,26 +130,21 @@ export const taskList = (
  *   Specify as an integer or `all` to output all log lines.
  */
 export const taskLogs = (
-    options: taskLogsOptions
+    options: TaskLogsOptions
 ): Effect.Effect<IMobyConnectionAgent, TaskLogsError, Readonly<Blob>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new TaskLogsError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/tasks/{id}/logs";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("details", options.details))
             .pipe(addQueryParameter("follow", options.follow))
             .pipe(addQueryParameter("stdout", options.stdout))
@@ -166,10 +155,12 @@ export const taskLogs = (
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
             .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(errorHandler(TaskLogsError));
+            .pipe(responseErrorHandler(TaskLogsError));
     }).pipe(Effect.flatten);
 
 export interface ITaskService {
+    Errors: TaskInspectError | TaskListError | TaskLogsError;
+
     /**
      * Inspect a task
      *

@@ -1,9 +1,8 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 
 import {
     AuthConfig,
@@ -27,17 +26,17 @@ export class SystemPingError extends Data.TaggedError("SystemPingError")<{ messa
 export class SystemPingHeadError extends Data.TaggedError("SystemPingHeadError")<{ message: string }> {}
 export class SystemVersionError extends Data.TaggedError("SystemVersionError")<{ message: string }> {}
 
-export interface systemAuthOptions {
+export interface SystemAuthOptions {
     /** Authentication to check */
     body?: AuthConfig;
 }
 
-export interface systemDataUsageOptions {
+export interface SystemDataUsageOptions {
     /** Object types, for which to compute and return data. */
     type?: Array<string>;
 }
 
-export interface systemEventsOptions {
+export interface SystemEventsOptions {
     /** Show events created since this timestamp then stream new events. */
     since?: string;
     /** Show events created until this timestamp then stop streaming. */
@@ -73,7 +72,7 @@ export interface systemEventsOptions {
  * @param body - Authentication to check
  */
 export const systemAuth = (
-    options: systemAuthOptions
+    options: SystemAuthOptions
 ): Effect.Effect<IMobyConnectionAgent, SystemAuthError, Readonly<SystemAuthResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/auth";
@@ -81,19 +80,18 @@ export const systemAuth = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "AuthConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemAuthResponseSchema)))
-            .pipe(errorHandler(SystemAuthError));
+            .pipe(responseErrorHandler(SystemAuthError));
     }).pipe(Effect.flatten);
 
 /**
@@ -102,7 +100,7 @@ export const systemAuth = (
  * @param type - Object types, for which to compute and return data.
  */
 export const systemDataUsage = (
-    options: systemDataUsageOptions
+    options?: SystemDataUsageOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, SystemDataUsageError, Readonly<SystemDataUsageResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/system/df";
@@ -110,18 +108,17 @@ export const systemDataUsage = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("type", options.type))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("type", options?.type))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemDataUsageResponseSchema)))
-            .pipe(errorHandler(SystemDataUsageError));
+            .pipe(responseErrorHandler(SystemDataUsageError));
     }).pipe(Effect.flatten);
 
 /**
@@ -164,7 +161,7 @@ export const systemDataUsage = (
  *   - `volume=<string>` volume name
  */
 export const systemEvents = (
-    options: systemEventsOptions
+    options: SystemEventsOptions
 ): Effect.Effect<IMobyConnectionAgent, SystemEventsError, Readonly<EventMessage>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/events";
@@ -172,20 +169,19 @@ export const systemEvents = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("since", options.since))
             .pipe(addQueryParameter("until", options.until))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(EventMessageSchema)))
-            .pipe(errorHandler(SystemEventsError));
+            .pipe(responseErrorHandler(SystemEventsError));
     }).pipe(Effect.flatten);
 
 /** Get system information */
@@ -196,17 +192,16 @@ export const systemInfo = (): Effect.Effect<IMobyConnectionAgent, SystemInfoErro
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemInfoSchema)))
-            .pipe(errorHandler(SystemInfoError));
+            .pipe(responseErrorHandler(SystemInfoError));
     }).pipe(Effect.flatten);
 
 /** This is a dummy endpoint you can use to test if the server is accessible. */
@@ -217,38 +212,35 @@ export const systemPing = (): Effect.Effect<IMobyConnectionAgent, SystemPingErro
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap((response) => response.text))
-            .pipe(errorHandler(SystemPingError));
+            .pipe(responseErrorHandler(SystemPingError));
     }).pipe(Effect.flatten);
 
 /** This is a dummy endpoint you can use to test if the server is accessible. */
-export const systemPingHead = (): Effect.Effect<IMobyConnectionAgent, SystemPingHeadError, Readonly<string>> =>
+export const systemPingHead = (): Effect.Effect<IMobyConnectionAgent, SystemPingHeadError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/_ping";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "HEAD";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.string)))
-            .pipe(errorHandler(SystemPingHeadError));
+            .pipe(responseErrorHandler(SystemPingHeadError));
     }).pipe(Effect.flatten);
 
 /**
@@ -262,20 +254,28 @@ export const systemVersion = (): Effect.Effect<IMobyConnectionAgent, SystemVersi
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SystemVersionSchema)))
-            .pipe(errorHandler(SystemVersionError));
+            .pipe(responseErrorHandler(SystemVersionError));
     }).pipe(Effect.flatten);
 
 export interface ISystemService {
+    Errors:
+        | SystemAuthError
+        | SystemDataUsageError
+        | SystemEventsError
+        | SystemInfoError
+        | SystemPingError
+        | SystemPingHeadError
+        | SystemVersionError;
+
     /**
      * Validate credentials for a registry and, if available, get an identity
      * token for accessing the registry without password.

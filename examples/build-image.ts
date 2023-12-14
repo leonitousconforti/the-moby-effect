@@ -3,10 +3,10 @@ import tar from "tar-fs";
 
 import { Chunk, Effect, Stream } from "effect";
 
-import { IMobyService, ImageBuildError, makeMobyLayer } from "../src/main.js";
+import { IMobyService, ImageBuildError, MobyError, makeMobyClient } from "../src/main.js";
 
-// Remember passing in no connection options means it will connect to the local docker socket
-const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
+// Passing in no connection options means it will connect to the local docker socket
+const localDocker: IMobyService = makeMobyClient();
 
 // {"stream":"Step 1/1 : FROM ubuntu:latest"}
 // {"stream":"\n"}
@@ -39,9 +39,7 @@ const [MyLocalMobyClient, MobyServiceLocal] = makeMobyLayer("localMobyClient");
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
 await Effect.gen(function* (_: Effect.Adapter) {
-    const localDocker: IMobyService = yield* _(MyLocalMobyClient);
-
-    const buildStream: Stream.Stream<never, ImageBuildError, string> = yield* _(
+    const buildStream: Stream.Stream<never, MobyError, string> = yield* _(
         localDocker.imageBuild({
             t: "mydockerimage:latest",
             body: Stream.fromAsyncIterable(
@@ -58,6 +56,5 @@ await Effect.gen(function* (_: Effect.Adapter) {
     return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.join(""))));
 })
     .pipe(Effect.scoped)
-    .pipe(Effect.provide(MobyServiceLocal))
     .pipe(Effect.tap(console.log))
     .pipe(Effect.runPromise);

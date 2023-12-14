@@ -3,7 +3,7 @@ import * as Schema from "@effect/schema/Schema";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 
 import {
     Network,
@@ -25,29 +25,29 @@ export class NetworkInspectError extends Data.TaggedError("NetworkInspectError")
 export class NetworkListError extends Data.TaggedError("NetworkListError")<{ message: string }> {}
 export class NetworkPruneError extends Data.TaggedError("NetworkPruneError")<{ message: string }> {}
 
-export interface networkConnectOptions {
+export interface NetworkConnectOptions {
     body: NetworkConnectRequest;
     /** Network ID or name */
     id: string;
 }
 
-export interface networkCreateOptions {
+export interface NetworkCreateOptions {
     /** Network configuration */
     body: NetworkCreateRequest;
 }
 
-export interface networkDeleteOptions {
+export interface NetworkDeleteOptions {
     /** Network ID or name */
     id: string;
 }
 
-export interface networkDisconnectOptions {
+export interface NetworkDisconnectOptions {
     body: NetworkDisconnectRequest;
     /** Network ID or name */
     id: string;
 }
 
-export interface networkInspectOptions {
+export interface NetworkInspectOptions {
     /** Network ID or name */
     id: string;
     /** Detailed inspect output for troubleshooting */
@@ -56,7 +56,7 @@ export interface networkInspectOptions {
     scope?: string;
 }
 
-export interface networkListOptions {
+export interface NetworkListOptions {
     /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
      * the networks list. Available filters:
@@ -76,7 +76,7 @@ export interface networkListOptions {
     filters?: string;
 }
 
-export interface networkPruneOptions {
+export interface NetworkPruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
      * `map[string][]string`). Available filters:
@@ -99,34 +99,25 @@ export interface networkPruneOptions {
  * @param id - Network ID or name
  */
 export const networkConnect = (
-    options: networkConnectOptions
+    options: NetworkConnectOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkConnectError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new NetworkConnectError({ message: "Required parameter body was null or undefined" }));
-        }
-
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NetworkConnectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/networks/{id}/connect";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "NetworkConnectRequest"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(NetworkConnectError));
+            .pipe(responseErrorHandler(NetworkConnectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -135,31 +126,26 @@ export const networkConnect = (
  * @param body - Network configuration
  */
 export const networkCreate = (
-    options: networkCreateOptions
+    options: NetworkCreateOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkCreateError, Readonly<NetworkCreateResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new NetworkCreateError({ message: "Required parameter body was null or undefined" }));
-        }
-
         const endpoint: string = "/networks/create";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "NetworkCreateRequest"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkCreateResponseSchema)))
-            .pipe(errorHandler(NetworkCreateError));
+            .pipe(responseErrorHandler(NetworkCreateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -168,28 +154,23 @@ export const networkCreate = (
  * @param id - Network ID or name
  */
 export const networkDelete = (
-    options: networkDeleteOptions
+    options: NetworkDeleteOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NetworkDeleteError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/networks/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(NetworkDeleteError));
+            .pipe(responseErrorHandler(NetworkDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -199,34 +180,25 @@ export const networkDelete = (
  * @param id - Network ID or name
  */
 export const networkDisconnect = (
-    options: networkDisconnectOptions
+    options: NetworkDisconnectOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkDisconnectError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new NetworkDisconnectError({ message: "Required parameter body was null or undefined" }));
-        }
-
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NetworkDisconnectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/networks/{id}/disconnect";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "NetworkDisconnectRequest"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(NetworkDisconnectError));
+            .pipe(responseErrorHandler(NetworkDisconnectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -237,31 +209,26 @@ export const networkDisconnect = (
  * @param scope - Filter the network by scope (swarm, global, or local)
  */
 export const networkInspect = (
-    options: networkInspectOptions
+    options: NetworkInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkInspectError, Readonly<Network>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.id === null || options.id === undefined) {
-            yield* _(new NetworkInspectError({ message: "Required parameter id was null or undefined" }));
-        }
-
         const endpoint: string = "/networks/{id}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("verbose", options.verbose))
             .pipe(addQueryParameter("scope", options.scope))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkSchema)))
-            .pipe(errorHandler(NetworkInspectError));
+            .pipe(responseErrorHandler(NetworkInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -287,7 +254,7 @@ export const networkInspect = (
  *       keyword returns all user-defined networks.
  */
 export const networkList = (
-    options: networkListOptions
+    options: NetworkListOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkListError, Readonly<Array<Network>>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/networks";
@@ -295,18 +262,17 @@ export const networkList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(NetworkSchema))))
-            .pipe(errorHandler(NetworkListError));
+            .pipe(responseErrorHandler(NetworkListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -324,7 +290,7 @@ export const networkList = (
  *       `label!=...` is used) the specified labels.
  */
 export const networkPrune = (
-    options: networkPruneOptions
+    options: NetworkPruneOptions
 ): Effect.Effect<IMobyConnectionAgent, NetworkPruneError, Readonly<NetworkPruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/networks/prune";
@@ -332,21 +298,29 @@ export const networkPrune = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("filters", options.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkPruneResponseSchema)))
-            .pipe(errorHandler(NetworkPruneError));
+            .pipe(responseErrorHandler(NetworkPruneError));
     }).pipe(Effect.flatten);
 
 export interface INetworkService {
+    Errors:
+        | NetworkConnectError
+        | NetworkCreateError
+        | NetworkDeleteError
+        | NetworkDisconnectError
+        | NetworkInspectError
+        | NetworkListError
+        | NetworkPruneError;
+
     /**
      * Connect a container to a network
      *

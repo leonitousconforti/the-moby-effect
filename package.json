@@ -26,6 +26,7 @@
         "ssh2": "^1.14.0"
     },
     "devDependencies": {
+        "@effect/experimental": "0.3.1",
         "@effect/platform-node": "0.35.0",
         "@effect/schema": "0.53.0",
         "@rushstack/eslint-config": "3.5.0",
@@ -36,7 +37,7 @@
         "@types/heft-jest": "1.0.6",
         "@types/node": "20.10.4",
         "@types/ssh2": "1.11.18",
-        "@types/tar-fs": "^2.0.4",
+        "@types/tar-fs": "2.0.4",
         "@typescript-eslint/parser": "6.13.2",
         "effect": "2.0.0-next.60",
         "eslint": "8.55.0",
@@ -47,17 +48,25 @@
         "prettier": "3.1.1",
         "prettier-plugin-jsdoc": "1.1.1",
         "prettier-plugin-packagejson": "2.4.7",
-        "tar-fs": "^3.0.4",
+        "tar-fs": "3.0.4",
         "ts-node": "10.9.2",
-        "typescript": "5.3.3"
+        "typescript": "5.3.3",
+        "ws": "8.15.1"
     },
     "peerDependencies": {
+        "@effect/experimental": "0.3.1",
         "@effect/platform-node": "~0.35.0",
         "@effect/schema": "~0.53.0",
         "effect": "~2.0.0-next.60",
-        "fast-check": "~3.14.0"
+        "fast-check": "~3.14.0",
+        "ws": "~8.15.1"
     },
     "engines": {
         "node": ">=16"
+    },
+    "pnpm": {
+        "patchedDependencies": {
+            "@effect/platform-node@0.35.0": "patches/@effect__platform-node@0.35.0.patch"
+        }
     }
 }

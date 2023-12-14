@@ -2,7 +2,7 @@ import * as NodeHttp from "@effect/platform-node/HttpClient";
 import { Data, Effect } from "effect";
 
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, errorHandler, setBody } from "./request-helpers.js";
+import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 
 import {
     Volume,
@@ -22,24 +22,19 @@ export class VolumeListError extends Data.TaggedError("VolumeListError")<{ messa
 export class VolumePruneError extends Data.TaggedError("VolumePruneError")<{ message: string }> {}
 export class VolumeUpdateError extends Data.TaggedError("VolumeUpdateError")<{ message: string }> {}
 
-export interface volumeCreateOptions {
-    /** Volume configuration */
-    body: VolumeCreateOptions;
-}
-
-export interface volumeDeleteOptions {
+export interface VolumeDeleteOptions {
     /** Volume name or ID */
     name: string;
     /** Force the removal of the volume */
     force?: boolean;
 }
 
-export interface volumeInspectOptions {
+export interface VolumeInspectOptions {
     /** Volume name or ID */
     name: string;
 }
 
-export interface volumeListOptions {
+export interface VolumeListOptions {
     /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
      * the volumes list. Available filters:
@@ -55,7 +50,7 @@ export interface volumeListOptions {
     filters?: string;
 }
 
-export interface volumePruneOptions {
+export interface VolumePruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
      * `map[string][]string`). Available filters:
@@ -69,7 +64,7 @@ export interface volumePruneOptions {
     filters?: string;
 }
 
-export interface volumeUpdateOptions {
+export interface VolumeUpdateOptions {
     /** The name or ID of the volume */
     name: string;
     /**
@@ -87,34 +82,29 @@ export interface volumeUpdateOptions {
 /**
  * Create a volume
  *
- * @param body - Volume configuration
+ * @param options - Volume configuration
  */
 export const volumeCreate = (
-    options: volumeCreateOptions
+    options: VolumeCreateOptions
 ): Effect.Effect<IMobyConnectionAgent, VolumeCreateError, Readonly<Volume>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.body === null || options.body === undefined) {
-            yield* _(new VolumeCreateError({ message: "Required parameter body was null or undefined" }));
-        }
-
         const endpoint: string = "/volumes/create";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "VolumeCreateOptions"))
+            .pipe(setBody(options, "VolumeCreateOptions"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema)))
-            .pipe(errorHandler(VolumeCreateError));
+            .pipe(responseErrorHandler(VolumeCreateError));
     }).pipe(Effect.flatten);
 
 /**
@@ -124,29 +114,24 @@ export const volumeCreate = (
  * @param force - Force the removal of the volume
  */
 export const volumeDelete = (
-    options: volumeDeleteOptions
+    options: VolumeDeleteOptions
 ): Effect.Effect<IMobyConnectionAgent, VolumeDeleteError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new VolumeDeleteError({ message: "Required parameter name was null or undefined" }));
-        }
-
         const endpoint: string = "/volumes/{name}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("force", options.force))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(errorHandler(VolumeDeleteError));
+            .pipe(responseErrorHandler(VolumeDeleteError));
     }).pipe(Effect.flatten);
 
 /**
@@ -155,29 +140,24 @@ export const volumeDelete = (
  * @param name - Volume name or ID
  */
 export const volumeInspect = (
-    options: volumeInspectOptions
+    options: VolumeInspectOptions
 ): Effect.Effect<IMobyConnectionAgent, VolumeInspectError, Readonly<Volume>> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new VolumeInspectError({ message: "Required parameter name was null or undefined" }));
-        }
-
         const endpoint: string = "/volumes/{name}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeSchema)))
-            .pipe(errorHandler(VolumeInspectError));
+            .pipe(responseErrorHandler(VolumeInspectError));
     }).pipe(Effect.flatten);
 
 /**
@@ -195,7 +175,7 @@ export const volumeInspect = (
  *   - `name=<volume-name>` Matches all or part of a volume name.
  */
 export const volumeList = (
-    options: volumeListOptions
+    options?: VolumeListOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, VolumeListError, Readonly<VolumeListResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/volumes";
@@ -203,18 +183,17 @@ export const volumeList = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("filters", options.filters))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("filters", options?.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumeListResponseSchema)))
-            .pipe(errorHandler(VolumeListError));
+            .pipe(responseErrorHandler(VolumeListError));
     }).pipe(Effect.flatten);
 
 /**
@@ -230,7 +209,7 @@ export const volumeList = (
  *       anonymous volumes.
  */
 export const volumePrune = (
-    options: volumePruneOptions
+    options?: VolumePruneOptions | undefined
 ): Effect.Effect<IMobyConnectionAgent, VolumePruneError, Readonly<VolumePruneResponse>> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const endpoint: string = "/volumes/prune";
@@ -238,22 +217,21 @@ export const volumePrune = (
         const sanitizedEndpoint: string = endpoint;
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
-            .pipe(addQueryParameter("filters", options.filters))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
+            .pipe(addQueryParameter("filters", options?.filters))
             .pipe(client.pipe(NodeHttp.client.filterStatusOk))
             .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(VolumePruneResponseSchema)))
-            .pipe(errorHandler(VolumePruneError));
+            .pipe(responseErrorHandler(VolumePruneError));
     }).pipe(Effect.flatten);
 
 /**
- * "Update a volume. Valid only for Swarm cluster volumes"
+ * Update a volume. Valid only for Swarm cluster volumes
  *
  * @param name - The name or ID of the volume
  * @param version - The version number of the volume being updated. This is
@@ -263,42 +241,41 @@ export const volumePrune = (
  *   may change. All other fields must remain unchanged.
  */
 export const volumeUpdate = (
-    options: volumeUpdateOptions
+    options: VolumeUpdateOptions
 ): Effect.Effect<IMobyConnectionAgent, VolumeUpdateError, void> =>
     Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new VolumeUpdateError({ message: "Required parameter name was null or undefined" }));
-        }
-
-        if (options.version === null || options.version === undefined) {
-            yield* _(new VolumeUpdateError({ message: "Required parameter version was null or undefined" }));
-        }
-
         const endpoint: string = "/volumes/{name}";
         const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "PUT";
         const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
 
         const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const url: string = `${agent.connectionOptions.protocol === "https" ? "https" : "http"}://0.0.0.0`;
         const client: NodeHttp.client.Client.Default = yield* _(
             NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
         );
 
         return NodeHttp.request
             .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(url))
+            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
             .pipe(addQueryParameter("version", options.version))
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "VolumesNameBody"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(errorHandler(VolumeUpdateError));
+            .pipe(responseErrorHandler(VolumeUpdateError));
     }).pipe(Effect.flatten);
 
 export interface IVolumeService {
+    Errors:
+        | VolumeCreateError
+        | VolumeDeleteError
+        | VolumeInspectError
+        | VolumeListError
+        | VolumePruneError
+        | VolumeUpdateError;
+
     /**
      * Create a volume
      *
-     * @param body - Volume configuration
+     * @param options - Volume configuration
      */
     volumeCreate: WithConnectionAgentProvided<typeof volumeCreate>;
 
@@ -350,7 +327,7 @@ export interface IVolumeService {
     volumePrune: WithConnectionAgentProvided<typeof volumePrune>;
 
     /**
-     * "Update a volume. Valid only for Swarm cluster volumes"
+     * Update a volume. Valid only for Swarm cluster volumes
      *
      * @param name - The name or ID of the volume
      * @param version - The version number of the volume being updated. This is
