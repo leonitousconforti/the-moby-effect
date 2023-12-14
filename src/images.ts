@@ -15,7 +15,6 @@ import {
     HistoryResponseItem,
     HistoryResponseItemSchema,
     IdResponse,
-    IdResponseSchema,
     ImageDeleteResponseItem,
     ImageDeleteResponseItemSchema,
     ImageInspect,
@@ -586,7 +585,7 @@ export const imageCommit = (
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ContainerConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponse)))
             .pipe(responseErrorHandler(ImageCommitError));
     }).pipe(Effect.flatten);
 

@@ -4,14 +4,7 @@ import { Data, Effect } from "effect";
 import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
 import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
 
-import {
-    ExecConfig,
-    ExecInspectResponse,
-    ExecInspectResponseSchema,
-    ExecStartConfig,
-    IdResponse,
-    IdResponseSchema,
-} from "./schemas.js";
+import { ExecConfig, ExecInspectResponse, ExecInspectResponseSchema, ExecStartConfig, IdResponse } from "./schemas.js";
 
 export class ContainerExecError extends Data.TaggedError("ContainerExecError")<{ message: string }> {}
 export class ExecInspectError extends Data.TaggedError("ExecInspectError")<{ message: string }> {}
@@ -70,7 +63,7 @@ export const containerExec = (
             .pipe(addHeader("Content-Type", "application/json"))
             .pipe(setBody(options.body, "ExecConfig"))
             .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponseSchema)))
+            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponse)))
             .pipe(responseErrorHandler(ContainerExecError));
     }).pipe(Effect.flatten);
 
