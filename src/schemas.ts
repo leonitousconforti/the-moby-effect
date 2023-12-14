@@ -9,21 +9,26 @@ import {
     string as stringSchema,
 } from "@effect/schema/Schema";
 
+const optionalNullable = <I, A>(
+    schema: Schema.Schema<I, A>
+    // eslint-disable-next-line @rushstack/no-new-null
+): Schema.OptionalPropertySignature<I | null, true, A | null, true> => Schema.optional(Schema.nullable(schema));
+
 /** Address represents an IPv4 or IPv6 IP address. */
 export const AddressSchema = Schema.struct({
     /** IP address. */
-    Addr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Addr: stringSchema.pipe(optionalNullable),
     /** Mask length of the IP address. */
-    PrefixLen: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PrefixLen: numberSchema.pipe(optionalNullable),
 });
 
 export interface Address extends Schema.Schema.To<typeof AddressSchema> {}
 
 export const AuthConfigSchema = Schema.struct({
-    username: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    password: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    email: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    serveraddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    username: stringSchema.pipe(optionalNullable),
+    password: stringSchema.pipe(optionalNullable),
+    email: stringSchema.pipe(optionalNullable),
+    serveraddress: stringSchema.pipe(optionalNullable),
 });
 
 export interface AuthConfig extends Schema.Schema.To<typeof AuthConfigSchema> {}
@@ -40,43 +45,43 @@ export enum BuildCache_TypeEnum {
 /** BuildCache contains information about a build cache record. */
 export const BuildCacheSchema = Schema.struct({
     /** Unique ID of the build cache record. */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
     /**
      * ID of the parent build cache record. **Deprecated**: This field is
      * deprecated, and omitted if empty.
      */
-    Parent: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Parent: stringSchema.pipe(optionalNullable),
     /** List of parent build cache record IDs. */
-    Parents: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Parents: arraySchema(stringSchema).pipe(optionalNullable),
     /** Cache record type. */
-    Type: Schema.enums(BuildCache_TypeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Type: Schema.enums(BuildCache_TypeEnum).pipe(optionalNullable),
     /** Description of the build-step that produced the build cache. */
-    Description: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Description: stringSchema.pipe(optionalNullable),
     /** Indicates if the build cache is in use. */
-    InUse: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    InUse: booleanSchema.pipe(optionalNullable),
     /** Indicates if the build cache is shared. */
-    Shared: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Shared: booleanSchema.pipe(optionalNullable),
     /** Amount of disk space used by the build cache (in bytes). */
-    Size: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Size: numberSchema.pipe(optionalNullable),
     /**
      * Date and time at which the build cache was created in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CreatedAt: stringSchema.pipe(optionalNullable),
     /**
      * Date and time at which the build cache was last used in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    LastUsedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UsageCount: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LastUsedAt: stringSchema.pipe(optionalNullable),
+    UsageCount: numberSchema.pipe(optionalNullable),
 });
 
 export interface BuildCache extends Schema.Schema.To<typeof BuildCacheSchema> {}
 
 export const BuildPruneResponseSchema = Schema.struct({
-    CachesDeleted: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    CachesDeleted: arraySchema(stringSchema).pipe(optionalNullable),
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SpaceReclaimed: numberSchema.pipe(optionalNullable),
 });
 
 export interface BuildPruneResponse extends Schema.Schema.To<typeof BuildPruneResponseSchema> {}
@@ -103,7 +108,7 @@ export enum ClusterVolumePublishStatus_StateEnum {
 
 export const ClusterVolumePublishStatusSchema = Schema.struct({
     /** The ID of the Swarm node the volume is published on. */
-    NodeID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NodeID: stringSchema.pipe(optionalNullable),
     /**
      * The published state of the volume. * `pending-publish` The volume should
      * be published to this node, but the call to the controller plugin to do so
@@ -115,12 +120,12 @@ export const ClusterVolumePublishStatusSchema = Schema.struct({
      * from the node, but has not yet been successfully unpublished on the
      * controller.
      */
-    State: Schema.enums(ClusterVolumePublishStatus_StateEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    State: Schema.enums(ClusterVolumePublishStatus_StateEnum).pipe(optionalNullable),
     /**
      * A map of strings to strings returned by the CSI controller plugin when a
      * volume is published.
      */
-    PublishContext: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    PublishContext: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface ClusterVolumePublishStatus extends Schema.Schema.To<typeof ClusterVolumePublishStatusSchema> {}
@@ -134,12 +139,12 @@ export const ClusterVolumeSpecAccessModeCapacityRangeSchema = Schema.struct({
      * The volume must be at least this big. The value of 0 indicates an
      * unspecified minimum
      */
-    RequiredBytes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    RequiredBytes: numberSchema.pipe(optionalNullable),
     /**
      * The volume must not be bigger than this. The value of 0 indicates an
      * unspecified maximum.
      */
-    LimitBytes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LimitBytes: numberSchema.pipe(optionalNullable),
 });
 
 export interface ClusterVolumeSpecAccessModeCapacityRange
@@ -151,13 +156,13 @@ export interface ClusterVolumeSpecAccessModeCapacityRange
  */
 export const ClusterVolumeSpecAccessModeSecretsSchema = Schema.struct({
     /** Key is the name of the key of the key-value pair passed to the plugin. */
-    Key: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Key: stringSchema.pipe(optionalNullable),
     /**
      * Secret is the swarm Secret object from which to read data. This can be a
      * Secret name or ID. The Secret data is retrieved by swarm and used as the
      * value of the key-value pair passed to the plugin.
      */
-    Secret: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Secret: stringSchema.pipe(optionalNullable),
 });
 
 export interface ClusterVolumeSpecAccessModeSecrets
@@ -169,9 +174,9 @@ export interface ClusterVolumeSpecAccessModeSecrets
  */
 export const CommitSchema = Schema.struct({
     /** Actual commit ID of external tool. */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
     /** Commit ID of external tool expected by dockerd as set at build time. */
-    Expected: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Expected: stringSchema.pipe(optionalNullable),
 });
 
 export interface Commit extends Schema.Schema.To<typeof CommitSchema> {}
@@ -188,15 +193,15 @@ export interface ContainerCreateResponse extends Schema.Schema.To<typeof Contain
 
 export const ContainerPruneResponseSchema = Schema.struct({
     /** Container IDs that were deleted */
-    ContainersDeleted: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    ContainersDeleted: arraySchema(stringSchema).pipe(optionalNullable),
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SpaceReclaimed: numberSchema.pipe(optionalNullable),
 });
 
 export interface ContainerPruneResponse extends Schema.Schema.To<typeof ContainerPruneResponseSchema> {}
 
 export const ContainerSummaryHostConfigSchema = Schema.struct({
-    NetworkMode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NetworkMode: stringSchema.pipe(optionalNullable),
 });
 
 export interface ContainerSummaryHostConfig extends Schema.Schema.To<typeof ContainerSummaryHostConfigSchema> {}
@@ -204,19 +209,19 @@ export interface ContainerSummaryHostConfig extends Schema.Schema.To<typeof Cont
 /** OK response to ContainerTop operation */
 export const ContainerTopResponseSchema = Schema.struct({
     /** The ps column titles */
-    Titles: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Titles: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * Each process running in the container, where each is process is an array
      * of values corresponding to the titles.
      */
-    Processes: arraySchema(arraySchema(stringSchema)).pipe(Schema.nullable).pipe(Schema.optional),
+    Processes: arraySchema(arraySchema(stringSchema)).pipe(optionalNullable),
 });
 
 export interface ContainerTopResponse extends Schema.Schema.To<typeof ContainerTopResponseSchema> {}
 
 /** OK response to ContainerUpdate operation */
 export const ContainerUpdateResponseSchema = Schema.struct({
-    Warnings: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Warnings: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface ContainerUpdateResponse extends Schema.Schema.To<typeof ContainerUpdateResponseSchema> {}
@@ -224,32 +229,32 @@ export interface ContainerUpdateResponse extends Schema.Schema.To<typeof Contain
 /** Container waiting error, if any */
 export const ContainerWaitExitErrorSchema = Schema.struct({
     /** Details of an error */
-    Message: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Message: stringSchema.pipe(optionalNullable),
 });
 
 export interface ContainerWaitExitError extends Schema.Schema.To<typeof ContainerWaitExitErrorSchema> {}
 
 /** A device mapping between the host and container */
 export const DeviceMappingSchema = Schema.struct({
-    PathOnHost: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    PathInContainer: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CgroupPermissions: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PathOnHost: stringSchema.pipe(optionalNullable),
+    PathInContainer: stringSchema.pipe(optionalNullable),
+    CgroupPermissions: stringSchema.pipe(optionalNullable),
 });
 
 export interface DeviceMapping extends Schema.Schema.To<typeof DeviceMappingSchema> {}
 
 /** A request for devices to be sent to device drivers */
 export const DeviceRequestSchema = Schema.struct({
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Count: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    DeviceIDs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Driver: stringSchema.pipe(optionalNullable),
+    Count: numberSchema.pipe(optionalNullable),
+    DeviceIDs: arraySchema(stringSchema).pipe(optionalNullable),
     /** A list of capabilities; an OR list of AND lists of capabilities. */
-    Capabilities: arraySchema(arraySchema(stringSchema)).pipe(Schema.nullable).pipe(Schema.optional),
+    Capabilities: arraySchema(arraySchema(stringSchema)).pipe(optionalNullable),
     /**
      * Driver-specific options, specified as a key/value pairs. These options
      * are passed directly to the driver.
      */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface DeviceRequest extends Schema.Schema.To<typeof DeviceRequestSchema> {}
@@ -259,16 +264,16 @@ export const DriverSchema = Schema.struct({
     /** Name of the driver. */
     Name: stringSchema,
     /** Key/value map of driver-specific options. */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface Driver extends Schema.Schema.To<typeof DriverSchema> {}
 
 /** EndpointIPAMConfig represents an endpoint's IPAM configuration. */
 export const EndpointIPAMConfigSchema = Schema.struct({
-    IPv4Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    IPv6Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    LinkLocalIPs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    IPv4Address: stringSchema.pipe(optionalNullable),
+    IPv6Address: stringSchema.pipe(optionalNullable),
+    LinkLocalIPs: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface EndpointIPAMConfig extends Schema.Schema.To<typeof EndpointIPAMConfigSchema> {}
@@ -285,12 +290,12 @@ export enum EndpointPortConfig_PublishModeEnum {
 }
 
 export const EndpointPortConfigSchema = Schema.struct({
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Protocol: Schema.enums(EndpointPortConfig_ProtocolEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
+    Protocol: Schema.enums(EndpointPortConfig_ProtocolEnum).pipe(optionalNullable),
     /** The port inside the container. */
-    TargetPort: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    TargetPort: numberSchema.pipe(optionalNullable),
     /** The port on the swarm hosts. */
-    PublishedPort: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PublishedPort: numberSchema.pipe(optionalNullable),
     /**
      * The mode in which port is published.
      *
@@ -299,21 +304,21 @@ export const EndpointPortConfigSchema = Schema.struct({
      * - "host" bypasses the routing mesh and publish the port directly on the
      *   swarm node where that service is running.
      */
-    PublishMode: Schema.enums(EndpointPortConfig_PublishModeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    PublishMode: Schema.enums(EndpointPortConfig_PublishModeEnum).pipe(optionalNullable),
 });
 
 export interface EndpointPortConfig extends Schema.Schema.To<typeof EndpointPortConfigSchema> {}
 
 export const EngineDescriptionPluginsSchema = Schema.struct({
-    Type: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Type: stringSchema.pipe(optionalNullable),
+    Name: stringSchema.pipe(optionalNullable),
 });
 
 export interface EngineDescriptionPlugins extends Schema.Schema.To<typeof EngineDescriptionPluginsSchema> {}
 
 export const ErrorDetailSchema = Schema.struct({
-    code: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    message: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    code: numberSchema.pipe(optionalNullable),
+    message: stringSchema.pipe(optionalNullable),
 });
 
 export interface ErrorDetail extends Schema.Schema.To<typeof ErrorDetailSchema> {}
@@ -332,61 +337,61 @@ export interface ErrorResponse extends Schema.Schema.To<typeof ErrorResponseSche
  */
 export const EventActorSchema = Schema.struct({
     /** The ID of the object emitting the event */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
     /** Various key/value attributes of the object, depending on its type. */
-    Attributes: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Attributes: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface EventActor extends Schema.Schema.To<typeof EventActorSchema> {}
 
 export const ExecConfigSchema = Schema.struct({
     /** Attach to `stdin` of the exec command. */
-    AttachStdin: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AttachStdin: booleanSchema.pipe(optionalNullable),
     /** Attach to `stdout` of the exec command. */
-    AttachStdout: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AttachStdout: booleanSchema.pipe(optionalNullable),
     /** Attach to `stderr` of the exec command. */
-    AttachStderr: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AttachStderr: booleanSchema.pipe(optionalNullable),
     /** Initial console size, as an `[height, width]` array. */
-    ConsoleSize: arraySchema(numberSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    ConsoleSize: arraySchema(numberSchema).pipe(optionalNullable),
     /**
      * Override the key sequence for detaching a container. Format is a single
      * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
      * `@`, `^`, `[`, `,` or `_`.
      */
-    DetachKeys: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DetachKeys: stringSchema.pipe(optionalNullable),
     /** Allocate a pseudo-TTY. */
-    Tty: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Tty: booleanSchema.pipe(optionalNullable),
     /** A list of environment variables in the form `[\"VAR=value\", ...]`. */
-    Env: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Env: arraySchema(stringSchema).pipe(optionalNullable),
     /** Command to run, as a string or array of strings. */
-    Cmd: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Cmd: arraySchema(stringSchema).pipe(optionalNullable),
     /** Runs the exec process with extended privileges. */
-    Privileged: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Privileged: booleanSchema.pipe(optionalNullable),
     /**
      * The user, and optionally, group to run the exec process inside the
      * container. Format is one of: `user`, `user:group`, `uid`, or `uid:gid`.
      */
-    User: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    User: stringSchema.pipe(optionalNullable),
     /** The working directory for the exec process inside the container. */
-    WorkingDir: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    WorkingDir: stringSchema.pipe(optionalNullable),
 });
 
 export interface ExecConfig extends Schema.Schema.To<typeof ExecConfigSchema> {}
 
 export const ExecStartConfigSchema = Schema.struct({
     /** Detach from the command. */
-    Detach: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Detach: booleanSchema.pipe(optionalNullable),
     /** Allocate a pseudo-TTY. */
-    Tty: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Tty: booleanSchema.pipe(optionalNullable),
     /** Initial console size, as an `[height, width]` array. */
-    ConsoleSize: arraySchema(numberSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    ConsoleSize: arraySchema(numberSchema).pipe(optionalNullable),
 });
 
 export interface ExecStartConfig extends Schema.Schema.To<typeof ExecStartConfigSchema> {}
 
 export const GenericResourcesInnerSchema = Schema.struct({
-    NamedResourceSpec: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
-    DiscreteResourceSpec: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NamedResourceSpec: anySchema.pipe(optionalNullable),
+    DiscreteResourceSpec: anySchema.pipe(optionalNullable),
 });
 
 export interface GenericResourcesInner extends Schema.Schema.To<typeof GenericResourcesInnerSchema> {}
@@ -418,28 +423,28 @@ export const HealthConfigSchema = Schema.struct({
      * - `[\"CMD\", args...]` exec arguments directly
      * - `[\"CMD-SHELL\", command]` run command with system's default shell
      */
-    Test: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Test: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * The time to wait between checks in nanoseconds. It should be 0 or at
      * least 1000000 (1 ms). 0 means inherit.
      */
-    Interval: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Interval: numberSchema.pipe(optionalNullable),
     /**
      * The time to wait before considering the check to have hung. It should be
      * 0 or at least 1000000 (1 ms). 0 means inherit.
      */
-    Timeout: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Timeout: numberSchema.pipe(optionalNullable),
     /**
      * The number of consecutive failures needed to consider a container as
      * unhealthy. 0 means inherit.
      */
-    Retries: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Retries: numberSchema.pipe(optionalNullable),
     /**
      * Start period for the container to initialize before starting
      * health-retries countdown in nanoseconds. It should be 0 or at least
      * 1000000 (1 ms). 0 means inherit.
      */
-    StartPeriod: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StartPeriod: numberSchema.pipe(optionalNullable),
 });
 
 export interface HealthConfig extends Schema.Schema.To<typeof HealthConfigSchema> {}
@@ -453,12 +458,12 @@ export const HealthcheckResultSchema = Schema.struct({
      * Date and time at which this check started in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    Start: DateSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Start: DateSchema.pipe(optionalNullable),
     /**
      * Date and time at which this check ended in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    End: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    End: stringSchema.pipe(optionalNullable),
     /**
      * ExitCode meanings:
      *
@@ -467,9 +472,9 @@ export const HealthcheckResultSchema = Schema.struct({
      * - `2` reserved (considered unhealthy)
      * - Other values: error running probe
      */
-    ExitCode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ExitCode: numberSchema.pipe(optionalNullable),
     /** Output from last check */
-    Output: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Output: stringSchema.pipe(optionalNullable),
 });
 
 export interface HealthcheckResult extends Schema.Schema.To<typeof HealthcheckResultSchema> {}
@@ -500,48 +505,44 @@ export enum HostConfigLogConfig_TypeEnum {
 
 /** The logging configuration for this container */
 export const HostConfigLogConfigSchema = Schema.struct({
-    Type: Schema.enums(HostConfigLogConfig_TypeEnum).pipe(Schema.nullable).pipe(Schema.optional),
-    Config: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Type: Schema.enums(HostConfigLogConfig_TypeEnum).pipe(optionalNullable),
+    Config: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface HostConfigLogConfig extends Schema.Schema.To<typeof HostConfigLogConfigSchema> {}
 
 export const IPAMConfigSchema = Schema.struct({
-    Subnet: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    IPRange: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Gateway: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    AuxiliaryAddresses: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Subnet: stringSchema.pipe(optionalNullable),
+    IPRange: stringSchema.pipe(optionalNullable),
+    Gateway: stringSchema.pipe(optionalNullable),
+    AuxiliaryAddresses: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface IPAMConfig extends Schema.Schema.To<typeof IPAMConfigSchema> {}
 
 /** Response to an API call that returns just an Id */
-export const IdResponseSchema = Schema.struct({
+export class IdResponse extends Schema.Class<IdResponse>()({
     /** The id of the newly created object. */
     Id: stringSchema,
-});
+}) {}
 
-export interface IdResponse extends Schema.Schema.To<typeof IdResponseSchema> {}
-
-export const IDResponseSchema = Schema.struct({
+export class IDResponse extends Schema.Class<IDResponse>()({
     /** The ID of the newly created object. */
     ID: stringSchema,
-});
-
-export interface IDResponse extends Schema.Schema.To<typeof IDResponseSchema> {}
+}) {}
 
 export const ImageDeleteResponseItemSchema = Schema.struct({
     /** The image ID of an image that was untagged */
-    Untagged: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Untagged: stringSchema.pipe(optionalNullable),
     /** The image ID of an image that was deleted */
-    Deleted: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Deleted: stringSchema.pipe(optionalNullable),
 });
 
 export interface ImageDeleteResponseItem extends Schema.Schema.To<typeof ImageDeleteResponseItemSchema> {}
 
 /** Image ID or Digest */
 export const ImageIDSchema = Schema.struct({
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
 });
 
 export interface ImageID extends Schema.Schema.To<typeof ImageIDSchema> {}
@@ -557,7 +558,7 @@ export const ImageInspectMetadataSchema = Schema.struct({
      * This information is only available if the image was tagged locally, and
      * omitted otherwise.
      */
-    LastTagTime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LastTagTime: stringSchema.pipe(optionalNullable),
 });
 
 export interface ImageInspectMetadata extends Schema.Schema.To<typeof ImageInspectMetadataSchema> {}
@@ -565,17 +566,17 @@ export interface ImageInspectMetadata extends Schema.Schema.To<typeof ImageInspe
 /** Information about the image's RootFS, including the layer IDs. */
 export const ImageInspectRootFSSchema = Schema.struct({
     Type: stringSchema,
-    Layers: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Layers: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface ImageInspectRootFS extends Schema.Schema.To<typeof ImageInspectRootFSSchema> {}
 
 export const ImageSearchResponseItemSchema = Schema.struct({
-    description: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    is_official: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    is_automated: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    star_count: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    description: stringSchema.pipe(optionalNullable),
+    is_official: booleanSchema.pipe(optionalNullable),
+    is_automated: booleanSchema.pipe(optionalNullable),
+    name: stringSchema.pipe(optionalNullable),
+    star_count: numberSchema.pipe(optionalNullable),
 });
 
 export interface ImageSearchResponseItem extends Schema.Schema.To<typeof ImageSearchResponseItemSchema> {}
@@ -632,7 +633,7 @@ export const ImageSummarySchema = Schema.struct({
      * equivalent of the Size field. Deprecated: this field is kept for backward
      * compatibility, and will be removed in API v1.44.
      */
-    VirtualSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    VirtualSize: numberSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
     Labels: recordSchema(stringSchema, stringSchema),
     /**
@@ -649,9 +650,9 @@ export interface ImageSummary extends Schema.Schema.To<typeof ImageSummarySchema
 /** IndexInfo contains information about a registry. */
 export const IndexInfoSchema = Schema.struct({
     /** Name of the registry, such as "docker.io". */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** List of mirrors, expressed as URIs. */
-    Mirrors: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Mirrors: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * Indicates if the registry is part of the list of insecure registries. If
      * `false`, the registry is insecure. Insecure registries accept
@@ -662,12 +663,12 @@ export const IndexInfoSchema = Schema.struct({
      * For increased security, users should add their CA to their system's list
      * of trusted CAs instead of enabling this option.
      */
-    Secure: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Secure: booleanSchema.pipe(optionalNullable),
     /**
      * Indicates whether this is an official registry (i.e., Docker Hub /
      * docker.io)
      */
-    Official: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Official: booleanSchema.pipe(optionalNullable),
 });
 
 export interface IndexInfo extends Schema.Schema.To<typeof IndexInfoSchema> {}
@@ -675,22 +676,22 @@ export interface IndexInfo extends Schema.Schema.To<typeof IndexInfoSchema> {}
 /** JoinTokens contains the tokens workers and managers need to join the swarm. */
 export const JoinTokensSchema = Schema.struct({
     /** The token workers can use to join the swarm. */
-    Worker: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Worker: stringSchema.pipe(optionalNullable),
     /** The token managers can use to join the swarm. */
-    Manager: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Manager: stringSchema.pipe(optionalNullable),
 });
 
 export interface JoinTokens extends Schema.Schema.To<typeof JoinTokensSchema> {}
 
 /** An object describing a limit on resources which can be requested by a task. */
 export const LimitSchema = Schema.struct({
-    NanoCPUs: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    MemoryBytes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NanoCPUs: numberSchema.pipe(optionalNullable),
+    MemoryBytes: numberSchema.pipe(optionalNullable),
     /**
      * Limits the maximum number of PIDs in the container. Set `0` for
      * unlimited.
      */
-    Pids: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Pids: numberSchema.pipe(optionalNullable),
 });
 
 export interface Limit extends Schema.Schema.To<typeof LimitSchema> {}
@@ -720,11 +721,11 @@ export const MountBindOptionsSchema = Schema.struct({
      * A propagation mode with the value `[r]private`, `[r]shared`, or
      * `[r]slave`.
      */
-    Propagation: Schema.enums(MountBindOptions_PropagationEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Propagation: Schema.enums(MountBindOptions_PropagationEnum).pipe(optionalNullable),
     /** Disable recursive bind mount. */
-    NonRecursive: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NonRecursive: booleanSchema.pipe(optionalNullable),
     /** Create mount point on host if missing */
-    CreateMountpoint: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CreateMountpoint: booleanSchema.pipe(optionalNullable),
 });
 
 export interface MountBindOptions extends Schema.Schema.To<typeof MountBindOptionsSchema> {}
@@ -751,44 +752,44 @@ export const MountPointSchema = Schema.struct({
      * - `npipe` a named pipe from the host into the container.
      * - `cluster` a Swarm cluster volume
      */
-    Type: Schema.enums(MountPoint_TypeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Type: Schema.enums(MountPoint_TypeEnum).pipe(optionalNullable),
     /**
      * Name is the name reference to the underlying data defined by `Source`
      * e.g., the volume name.
      */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /**
      * Source location of the mount. For volumes, this contains the storage
      * location of the volume (within `/var/lib/docker/volumes/`). For
      * bind-mounts, and `npipe`, this contains the source (host) part of the
      * bind-mount. For `tmpfs` mount points, this field is empty.
      */
-    Source: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Source: stringSchema.pipe(optionalNullable),
     /**
      * Destination is the path relative to the container root (`/`) where the
      * `Source` is mounted inside the container.
      */
-    Destination: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Destination: stringSchema.pipe(optionalNullable),
     /**
      * Driver is the volume driver used to create the volume (if it is a
      * volume).
      */
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Driver: stringSchema.pipe(optionalNullable),
     /**
      * Mode is a comma separated list of options supplied by the user when
      * creating the bind/volume mount. The default is platform-specific (`\"z\"`
      * on Linux, empty on Windows).
      */
-    Mode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Mode: stringSchema.pipe(optionalNullable),
     /** Whether the mount is mounted writable (read-write). */
-    RW: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    RW: booleanSchema.pipe(optionalNullable),
     /**
      * Propagation describes how mounts are propagated from the host into the
      * mount point, and vice-versa. Refer to the [Linux kernel
      * documentation](https://www.kernel.org/doc/Documentation/filesystems/sharedsubtree.txt)
      * for details. This field is not used on Windows.
      */
-    Propagation: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Propagation: stringSchema.pipe(optionalNullable),
 });
 
 export interface MountPoint extends Schema.Schema.To<typeof MountPointSchema> {}
@@ -796,9 +797,9 @@ export interface MountPoint extends Schema.Schema.To<typeof MountPointSchema> {}
 /** Optional configuration for the `tmpfs` type. */
 export const MountTmpfsOptionsSchema = Schema.struct({
     /** The size for the tmpfs mount in bytes. */
-    SizeBytes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SizeBytes: numberSchema.pipe(optionalNullable),
     /** The permission mode for the tmpfs mount in an integer. */
-    Mode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Mode: numberSchema.pipe(optionalNullable),
 });
 
 export interface MountTmpfsOptions extends Schema.Schema.To<typeof MountTmpfsOptionsSchema> {}
@@ -806,9 +807,9 @@ export interface MountTmpfsOptions extends Schema.Schema.To<typeof MountTmpfsOpt
 /** Map of driver specific options */
 export const MountVolumeOptionsDriverConfigSchema = Schema.struct({
     /** Name of the driver to use to create the volume. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** Key/value map of driver specific options. */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface MountVolumeOptionsDriverConfig extends Schema.Schema.To<typeof MountVolumeOptionsDriverConfigSchema> {}
@@ -816,45 +817,45 @@ export interface MountVolumeOptionsDriverConfig extends Schema.Schema.To<typeof 
 /** Specifies how a service should be attached to a particular network. */
 export const NetworkAttachmentConfigSchema = Schema.struct({
     /** The target network for attachment. Must be a network name or ID. */
-    Target: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Target: stringSchema.pipe(optionalNullable),
     /** Discoverable alternate names for the service on this network. */
-    Aliases: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Aliases: arraySchema(stringSchema).pipe(optionalNullable),
     /** Driver attachment options for the network target. */
-    DriverOpts: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DriverOpts: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface NetworkAttachmentConfig extends Schema.Schema.To<typeof NetworkAttachmentConfigSchema> {}
 
 export const NetworkContainerSchema = Schema.struct({
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    EndpointID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    MacAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    IPv4Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    IPv6Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
+    EndpointID: stringSchema.pipe(optionalNullable),
+    MacAddress: stringSchema.pipe(optionalNullable),
+    IPv4Address: stringSchema.pipe(optionalNullable),
+    IPv6Address: stringSchema.pipe(optionalNullable),
 });
 
 export interface NetworkContainer extends Schema.Schema.To<typeof NetworkContainerSchema> {}
 
 export const NetworkCreateResponseSchema = Schema.struct({
     /** The ID of the created network. */
-    Id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Warning: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Id: stringSchema.pipe(optionalNullable),
+    Warning: stringSchema.pipe(optionalNullable),
 });
 
 export interface NetworkCreateResponse extends Schema.Schema.To<typeof NetworkCreateResponseSchema> {}
 
 export const NetworkDisconnectRequestSchema = Schema.struct({
     /** The ID or name of the container to disconnect from the network. */
-    Container: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Container: stringSchema.pipe(optionalNullable),
     /** Force the container to disconnect from the network. */
-    Force: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Force: booleanSchema.pipe(optionalNullable),
 });
 
 export interface NetworkDisconnectRequest extends Schema.Schema.To<typeof NetworkDisconnectRequestSchema> {}
 
 export const NetworkPruneResponseSchema = Schema.struct({
     /** Networks that were deleted */
-    NetworksDeleted: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    NetworksDeleted: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface NetworkPruneResponse extends Schema.Schema.To<typeof NetworkPruneResponseSchema> {}
@@ -872,13 +873,13 @@ export enum NodeSpec_AvailabilityEnum {
 
 export const NodeSpecSchema = Schema.struct({
     /** Name for the node. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /** Role of the node. */
-    Role: Schema.enums(NodeSpec_RoleEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Role: Schema.enums(NodeSpec_RoleEnum).pipe(optionalNullable),
     /** Availability of the node. */
-    Availability: Schema.enums(NodeSpec_AvailabilityEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Availability: Schema.enums(NodeSpec_AvailabilityEnum).pipe(optionalNullable),
 });
 
 export interface NodeSpec extends Schema.Schema.To<typeof NodeSpecSchema> {}
@@ -898,11 +899,11 @@ export enum NodeState {
  */
 export const OCIDescriptorSchema = Schema.struct({
     /** The media type of the object this schema refers to. */
-    mediaType: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    mediaType: stringSchema.pipe(optionalNullable),
     /** The digest of the targeted content. */
-    digest: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    digest: stringSchema.pipe(optionalNullable),
     /** The size in bytes of the blob. */
-    size: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    size: numberSchema.pipe(optionalNullable),
 });
 
 export interface OCIDescriptor extends Schema.Schema.To<typeof OCIDescriptorSchema> {}
@@ -914,24 +915,24 @@ export interface OCIDescriptor extends Schema.Schema.To<typeof OCIDescriptorSche
  */
 export const OCIPlatformSchema = Schema.struct({
     /** The CPU architecture, for example `amd64` or `ppc64`. */
-    architecture: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    architecture: stringSchema.pipe(optionalNullable),
     /** The operating system, for example `linux` or `windows`. */
-    os: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    os: stringSchema.pipe(optionalNullable),
     /**
      * Optional field specifying the operating system version, for example on
      * Windows `10.0.19041.1165`.
      */
-    os_version: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    os_version: stringSchema.pipe(optionalNullable),
     /**
      * Optional field specifying an array of strings, each listing a required OS
      * feature (for example on Windows `win32k`).
      */
-    os_features: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    os_features: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * Optional field specifying a variant of the CPU, for example `v7` to
      * specify ARMv7 when architecture is `arm`.
      */
-    variant: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    variant: stringSchema.pipe(optionalNullable),
 });
 
 export interface OCIPlatform extends Schema.Schema.To<typeof OCIPlatformSchema> {}
@@ -955,9 +956,9 @@ export interface ObjectVersion extends Schema.Schema.To<typeof ObjectVersionSche
 /** Represents a peer-node in the swarm */
 export const PeerNodeSchema = Schema.struct({
     /** Unique identifier of for this node in the swarm. */
-    NodeID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NodeID: stringSchema.pipe(optionalNullable),
     /** IP address and ports at which this node can be reached. */
-    Addr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Addr: stringSchema.pipe(optionalNullable),
 });
 
 export interface PeerNode extends Schema.Schema.To<typeof PeerNodeSchema> {}
@@ -968,9 +969,9 @@ export const PlatformSchema = Schema.struct({
      * Architecture represents the hardware architecture (for example,
      * `x86_64`).
      */
-    Architecture: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Architecture: stringSchema.pipe(optionalNullable),
     /** OS represents the Operating System (for example, `linux` or `windows`). */
-    OS: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OS: stringSchema.pipe(optionalNullable),
 });
 
 export interface Platform extends Schema.Schema.To<typeof PlatformSchema> {}
@@ -991,15 +992,15 @@ export const PluginConfigNetworkSchema = Schema.struct({
 export interface PluginConfigNetwork extends Schema.Schema.To<typeof PluginConfigNetworkSchema> {}
 
 export const PluginConfigRootfsSchema = Schema.struct({
-    type: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    diff_ids: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    type: stringSchema.pipe(optionalNullable),
+    diff_ids: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface PluginConfigRootfs extends Schema.Schema.To<typeof PluginConfigRootfsSchema> {}
 
 export const PluginConfigUserSchema = Schema.struct({
-    UID: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    GID: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UID: numberSchema.pipe(optionalNullable),
+    GID: numberSchema.pipe(optionalNullable),
 });
 
 export interface PluginConfigUser extends Schema.Schema.To<typeof PluginConfigUserSchema> {}
@@ -1044,9 +1045,9 @@ export interface PluginMount extends Schema.Schema.To<typeof PluginMountSchema> 
 
 /** Describes a permission the user has to accept upon installing the plugin. */
 export const PluginPrivilegeSchema = Schema.struct({
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Description: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Value: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
+    Description: stringSchema.pipe(optionalNullable),
+    Value: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface PluginPrivilege extends Schema.Schema.To<typeof PluginPrivilegeSchema> {}
@@ -1058,13 +1059,13 @@ export interface PluginPrivilege extends Schema.Schema.To<typeof PluginPrivilege
  */
 export const PluginsInfoSchema = Schema.struct({
     /** Names of available volume-drivers, and network-driver plugins. */
-    Volume: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Volume: arraySchema(stringSchema).pipe(optionalNullable),
     /** Names of available network-drivers, and network-driver plugins. */
-    Network: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Network: arraySchema(stringSchema).pipe(optionalNullable),
     /** Names of available authorization plugins. */
-    Authorization: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Authorization: arraySchema(stringSchema).pipe(optionalNullable),
     /** Names of available logging-drivers, and logging-driver plugins. */
-    Log: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Log: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface PluginsInfo extends Schema.Schema.To<typeof PluginsInfoSchema> {}
@@ -1078,11 +1079,11 @@ export enum Port_TypeEnum {
 /** An open port on a container */
 export const PortSchema = Schema.struct({
     /** Host IP address that the container's port is mapped to */
-    IP: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IP: stringSchema.pipe(optionalNullable),
     /** Port on the container */
     PrivatePort: numberSchema,
     /** Port exposed on the host */
-    PublicPort: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PublicPort: numberSchema.pipe(optionalNullable),
     Type: Schema.enums(Port_TypeEnum),
 });
 
@@ -1091,9 +1092,9 @@ export interface Port extends Schema.Schema.To<typeof PortSchema> {}
 /** PortBinding represents a binding between a host IP address and a host port. */
 export const PortBindingSchema = Schema.struct({
     /** Host IP address that the container's port is mapped to. */
-    HostIp: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HostIp: stringSchema.pipe(optionalNullable),
     /** Host port number that the container's port is mapped to. */
-    HostPort: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HostPort: stringSchema.pipe(optionalNullable),
 });
 
 export interface PortBinding extends Schema.Schema.To<typeof PortBindingSchema> {}
@@ -1109,18 +1110,18 @@ export const PortMapSchema = recordSchema(stringSchema, arraySchema(PortBindingS
 export interface PortMap extends Schema.Schema.To<typeof PortMapSchema> {}
 
 export const ProcessConfigSchema = Schema.struct({
-    privileged: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    user: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    tty: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    entrypoint: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    arguments: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    privileged: booleanSchema.pipe(optionalNullable),
+    user: stringSchema.pipe(optionalNullable),
+    tty: booleanSchema.pipe(optionalNullable),
+    entrypoint: stringSchema.pipe(optionalNullable),
+    arguments: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface ProcessConfig extends Schema.Schema.To<typeof ProcessConfigSchema> {}
 
 export const ProgressDetailSchema = Schema.struct({
-    current: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    total: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    current: numberSchema.pipe(optionalNullable),
+    total: numberSchema.pipe(optionalNullable),
 });
 
 export interface ProgressDetail extends Schema.Schema.To<typeof ProgressDetailSchema> {}
@@ -1133,19 +1134,19 @@ export enum Reachability {
 }
 
 export const ResourcesBlkioWeightDeviceSchema = Schema.struct({
-    Path: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Weight: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Path: stringSchema.pipe(optionalNullable),
+    Weight: numberSchema.pipe(optionalNullable),
 });
 
 export interface ResourcesBlkioWeightDevice extends Schema.Schema.To<typeof ResourcesBlkioWeightDeviceSchema> {}
 
 export const ResourcesUlimitsSchema = Schema.struct({
     /** Name of ulimit */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** Soft limit */
-    Soft: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Soft: numberSchema.pipe(optionalNullable),
     /** Hard limit */
-    Hard: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Hard: numberSchema.pipe(optionalNullable),
 });
 
 export interface ResourcesUlimits extends Schema.Schema.To<typeof ResourcesUlimitsSchema> {}
@@ -1172,9 +1173,9 @@ export const RestartPolicySchema = Schema.struct({
      *   the container
      * - `on-failure` Restart only when the container exit code is non-zero
      */
-    Name: Schema.enums(RestartPolicy_NameEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Name: Schema.enums(RestartPolicy_NameEnum).pipe(optionalNullable),
     /** If `on-failure` is used, the number of times to retry before giving up. */
-    MaximumRetryCount: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MaximumRetryCount: numberSchema.pipe(optionalNullable),
 });
 
 export interface RestartPolicy extends Schema.Schema.To<typeof RestartPolicySchema> {}
@@ -1191,25 +1192,25 @@ export const RuntimeSchema = Schema.struct({
      * omitted, the daemon searches the host's `$PATH` for the binary and uses
      * the first result.
      */
-    path: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    path: stringSchema.pipe(optionalNullable),
     /** List of command-line arguments to pass to the runtime when invoked. */
-    runtimeArgs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    runtimeArgs: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface Runtime extends Schema.Schema.To<typeof RuntimeSchema> {}
 
 export const ServiceCreateResponseSchema = Schema.struct({
     /** The ID of the created service. */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
     /** Optional warning message */
-    Warning: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Warning: stringSchema.pipe(optionalNullable),
 });
 
 export interface ServiceCreateResponse extends Schema.Schema.To<typeof ServiceCreateResponseSchema> {}
 
 export const ServiceEndpointVirtualIPsSchema = Schema.struct({
-    NetworkID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Addr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NetworkID: stringSchema.pipe(optionalNullable),
+    Addr: stringSchema.pipe(optionalNullable),
 });
 
 export interface ServiceEndpointVirtualIPs extends Schema.Schema.To<typeof ServiceEndpointVirtualIPsSchema> {}
@@ -1220,27 +1221,27 @@ export interface ServiceEndpointVirtualIPs extends Schema.Schema.To<typeof Servi
  */
 export const ServiceServiceStatusSchema = Schema.struct({
     /** The number of tasks for the service currently in the Running state. */
-    RunningTasks: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    RunningTasks: numberSchema.pipe(optionalNullable),
     /**
      * The number of tasks for the service desired to be running. For replicated
      * services, this is the replica count from the service spec. For global
      * services, this is computed by taking count of all tasks for the service
      * with a Desired State other than Shutdown.
      */
-    DesiredTasks: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DesiredTasks: numberSchema.pipe(optionalNullable),
     /**
      * The number of tasks for a job that are in the Completed state. This field
      * must be cross-referenced with the service type, as the value of 0 may
      * mean the service is not in a job mode, or it may mean the job-mode
      * service has no tasks yet Completed.
      */
-    CompletedTasks: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CompletedTasks: numberSchema.pipe(optionalNullable),
 });
 
 export interface ServiceServiceStatus extends Schema.Schema.To<typeof ServiceServiceStatusSchema> {}
 
 export const ServiceSpecModeReplicatedSchema = Schema.struct({
-    Replicas: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Replicas: numberSchema.pipe(optionalNullable),
 });
 
 export interface ServiceSpecModeReplicated extends Schema.Schema.To<typeof ServiceSpecModeReplicatedSchema> {}
@@ -1251,12 +1252,12 @@ export interface ServiceSpecModeReplicated extends Schema.Schema.To<typeof Servi
  */
 export const ServiceSpecModeReplicatedJobSchema = Schema.struct({
     /** The maximum number of replicas to run simultaneously. */
-    MaxConcurrent: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MaxConcurrent: numberSchema.pipe(optionalNullable),
     /**
      * The total number of replicas desired to reach the Completed state. If
      * unset, will default to the value of `MaxConcurrent`
      */
-    TotalCompletions: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    TotalCompletions: numberSchema.pipe(optionalNullable),
 });
 
 export interface ServiceSpecModeReplicatedJob extends Schema.Schema.To<typeof ServiceSpecModeReplicatedJobSchema> {}
@@ -1277,9 +1278,9 @@ export const ServiceSpecRollbackConfigSchema = Schema.struct({
      * Maximum number of tasks to be rolled back in one iteration (0 means
      * unlimited parallelism).
      */
-    Parallelism: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Parallelism: numberSchema.pipe(optionalNullable),
     /** Amount of time between rollback iterations, in nanoseconds. */
-    Delay: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Delay: numberSchema.pipe(optionalNullable),
     /**
      * Action to take if an rolled back task fails to run, or stops running
      * during the rollback.
@@ -1291,18 +1292,18 @@ export const ServiceSpecRollbackConfigSchema = Schema.struct({
      * Amount of time to monitor each rolled back task for failures, in
      * nanoseconds.
      */
-    Monitor: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Monitor: numberSchema.pipe(optionalNullable),
     /**
      * The fraction of tasks that may fail during a rollback before the failure
      * action is invoked, specified as a floating point number between 0 and 1.
      */
-    MaxFailureRatio: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MaxFailureRatio: numberSchema.pipe(optionalNullable),
     /**
      * The order of operations when rolling back a task. Either the old task is
      * shut down before the new task is started, or the new task is started
      * before the old task is shut down.
      */
-    Order: Schema.enums(ServiceSpecRollbackConfig_OrderEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Order: Schema.enums(ServiceSpecRollbackConfig_OrderEnum).pipe(optionalNullable),
 });
 
 export interface ServiceSpecRollbackConfig extends Schema.Schema.To<typeof ServiceSpecRollbackConfigSchema> {}
@@ -1324,34 +1325,34 @@ export const ServiceSpecUpdateConfigSchema = Schema.struct({
      * Maximum number of tasks to be updated in one iteration (0 means unlimited
      * parallelism).
      */
-    Parallelism: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Parallelism: numberSchema.pipe(optionalNullable),
     /** Amount of time between updates, in nanoseconds. */
-    Delay: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Delay: numberSchema.pipe(optionalNullable),
     /**
      * Action to take if an updated task fails to run, or stops running during
      * the update.
      */
-    FailureAction: Schema.enums(ServiceSpecUpdateConfig_FailureActionEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    FailureAction: Schema.enums(ServiceSpecUpdateConfig_FailureActionEnum).pipe(optionalNullable),
     /** Amount of time to monitor each updated task for failures, in nanoseconds. */
-    Monitor: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Monitor: numberSchema.pipe(optionalNullable),
     /**
      * The fraction of tasks that may fail during an update before the failure
      * action is invoked, specified as a floating point number between 0 and 1.
      */
-    MaxFailureRatio: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MaxFailureRatio: numberSchema.pipe(optionalNullable),
     /**
      * The order of operations when rolling out an updated task. Either the old
      * task is shut down before the new task is started, or the new task is
      * started before the old task is shut down.
      */
-    Order: Schema.enums(ServiceSpecUpdateConfig_OrderEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Order: Schema.enums(ServiceSpecUpdateConfig_OrderEnum).pipe(optionalNullable),
 });
 
 export interface ServiceSpecUpdateConfig extends Schema.Schema.To<typeof ServiceSpecUpdateConfigSchema> {}
 
 export const ServiceUpdateResponseSchema = Schema.struct({
     /** Optional warning messages */
-    Warnings: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Warnings: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface ServiceUpdateResponse extends Schema.Schema.To<typeof ServiceUpdateResponseSchema> {}
@@ -1364,10 +1365,10 @@ export enum ServiceUpdateStatus_StateEnum {
 
 /** The status of a service update. */
 export const ServiceUpdateStatusSchema = Schema.struct({
-    State: Schema.enums(ServiceUpdateStatus_StateEnum).pipe(Schema.nullable).pipe(Schema.optional),
-    StartedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CompletedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Message: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    State: Schema.enums(ServiceUpdateStatus_StateEnum).pipe(optionalNullable),
+    StartedAt: stringSchema.pipe(optionalNullable),
+    CompletedAt: stringSchema.pipe(optionalNullable),
+    Message: stringSchema.pipe(optionalNullable),
 });
 
 export interface ServiceUpdateStatus extends Schema.Schema.To<typeof ServiceUpdateStatusSchema> {}
@@ -1378,7 +1379,7 @@ export const SwarmJoinRequestSchema = Schema.struct({
      * promoted to manager, as well as determining the networking interface used
      * for the VXLAN Tunnel Endpoint (VTEP).
      */
-    ListenAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ListenAddr: stringSchema.pipe(optionalNullable),
     /**
      * Externally reachable address advertised to other nodes. This can either
      * be an address/port combination in the form `192.168.1.1:4567`, or an
@@ -1387,7 +1388,7 @@ export const SwarmJoinRequestSchema = Schema.struct({
      * `AdvertiseAddr` is not specified, it will be automatically detected when
      * possible.
      */
-    AdvertiseAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AdvertiseAddr: stringSchema.pipe(optionalNullable),
     /**
      * Address or interface to use for data path traffic (format:
      * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
@@ -1398,11 +1399,11 @@ export const SwarmJoinRequestSchema = Schema.struct({
      * possible to separate the container data traffic from the management
      * traffic of the cluster.
      */
-    DataPathAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathAddr: stringSchema.pipe(optionalNullable),
     /** Addresses of manager nodes already participating in the swarm. */
-    RemoteAddrs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    RemoteAddrs: arraySchema(stringSchema).pipe(optionalNullable),
     /** Secret token for joining this swarm. */
-    JoinToken: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    JoinToken: stringSchema.pipe(optionalNullable),
 });
 
 export interface SwarmJoinRequest extends Schema.Schema.To<typeof SwarmJoinRequestSchema> {}
@@ -1413,7 +1414,7 @@ export const SwarmJoinRequest1Schema = Schema.struct({
      * promoted to manager, as well as determining the networking interface used
      * for the VXLAN Tunnel Endpoint (VTEP).
      */
-    ListenAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ListenAddr: stringSchema.pipe(optionalNullable),
     /**
      * Externally reachable address advertised to other nodes. This can either
      * be an address/port combination in the form `192.168.1.1:4567`, or an
@@ -1422,7 +1423,7 @@ export const SwarmJoinRequest1Schema = Schema.struct({
      * `AdvertiseAddr` is not specified, it will be automatically detected when
      * possible.
      */
-    AdvertiseAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AdvertiseAddr: stringSchema.pipe(optionalNullable),
     /**
      * Address or interface to use for data path traffic (format:
      * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
@@ -1433,11 +1434,11 @@ export const SwarmJoinRequest1Schema = Schema.struct({
      * possible to separate the container data traffic from the management
      * traffic of the cluster.
      */
-    DataPathAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathAddr: stringSchema.pipe(optionalNullable),
     /** Addresses of manager nodes already participating in the swarm. */
-    RemoteAddrs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    RemoteAddrs: arraySchema(stringSchema).pipe(optionalNullable),
     /** Secret token for joining this swarm. */
-    JoinToken: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    JoinToken: stringSchema.pipe(optionalNullable),
 });
 
 export interface SwarmJoinRequest1 extends Schema.Schema.To<typeof SwarmJoinRequest1Schema> {}
@@ -1451,20 +1452,20 @@ export const SwarmSpecCAConfigExternalCAsSchema = Schema.struct({
      * Protocol for communication with the external CA (currently only `cfssl`
      * is supported).
      */
-    Protocol: Schema.enums(SwarmSpecCAConfigExternalCAs_ProtocolEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Protocol: Schema.enums(SwarmSpecCAConfigExternalCAs_ProtocolEnum).pipe(optionalNullable),
     /** URL where certificate signing requests should be sent. */
-    URL: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    URL: stringSchema.pipe(optionalNullable),
     /**
      * An object with key/value pairs that are interpreted as protocol-specific
      * options for the external CA driver.
      */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /**
      * The root CA certificate (in PEM format) this external CA uses to issue
      * TLS certificates (assumed to be to the current swarm root CA certificate
      * if not provided).
      */
-    CACert: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CACert: stringSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecCAConfigExternalCAs extends Schema.Schema.To<typeof SwarmSpecCAConfigExternalCAsSchema> {}
@@ -1472,7 +1473,7 @@ export interface SwarmSpecCAConfigExternalCAs extends Schema.Schema.To<typeof Sw
 /** Dispatcher configuration. */
 export const SwarmSpecDispatcherSchema = Schema.struct({
     /** The delay for an agent to send a heartbeat to the dispatcher. */
-    HeartbeatPeriod: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HeartbeatPeriod: numberSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecDispatcher extends Schema.Schema.To<typeof SwarmSpecDispatcherSchema> {}
@@ -1480,7 +1481,7 @@ export interface SwarmSpecDispatcher extends Schema.Schema.To<typeof SwarmSpecDi
 /** Parameters related to encryption-at-rest. */
 export const SwarmSpecEncryptionConfigSchema = Schema.struct({
     /** If set, generate a key and use it to lock data stored on the managers. */
-    AutoLockManagers: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AutoLockManagers: booleanSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecEncryptionConfig extends Schema.Schema.To<typeof SwarmSpecEncryptionConfigSchema> {}
@@ -1491,7 +1492,7 @@ export const SwarmSpecOrchestrationSchema = Schema.struct({
      * The number of historic tasks to keep per instance or node. If negative,
      * never remove completed or failed tasks.
      */
-    TaskHistoryRetentionLimit: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    TaskHistoryRetentionLimit: numberSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecOrchestration extends Schema.Schema.To<typeof SwarmSpecOrchestrationSchema> {}
@@ -1499,14 +1500,14 @@ export interface SwarmSpecOrchestration extends Schema.Schema.To<typeof SwarmSpe
 /** Raft configuration. */
 export const SwarmSpecRaftSchema = Schema.struct({
     /** The number of log entries between snapshots. */
-    SnapshotInterval: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SnapshotInterval: numberSchema.pipe(optionalNullable),
     /** The number of snapshots to keep beyond the current snapshot. */
-    KeepOldSnapshots: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    KeepOldSnapshots: numberSchema.pipe(optionalNullable),
     /**
      * The number of log entries to keep around to sync up slow followers after
      * a snapshot is created.
      */
-    LogEntriesForSlowFollowers: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LogEntriesForSlowFollowers: numberSchema.pipe(optionalNullable),
     /**
      * The number of ticks that a follower will wait for a message from the
      * leader before becoming a candidate and starting an election.
@@ -1514,14 +1515,14 @@ export const SwarmSpecRaftSchema = Schema.struct({
      * defaults to one second, so these translate directly to seconds currently,
      * but this is NOT guaranteed.
      */
-    ElectionTick: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ElectionTick: numberSchema.pipe(optionalNullable),
     /**
      * The number of ticks between heartbeats. Every HeartbeatTick ticks, the
      * leader will send a heartbeat to the followers. A tick currently defaults
      * to one second, so these translate directly to seconds currently, but this
      * is NOT guaranteed.
      */
-    HeartbeatTick: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HeartbeatTick: numberSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecRaft extends Schema.Schema.To<typeof SwarmSpecRaftSchema> {}
@@ -1533,19 +1534,19 @@ export interface SwarmSpecRaft extends Schema.Schema.To<typeof SwarmSpecRaftSche
  */
 export const SwarmSpecTaskDefaultsLogDriverSchema = Schema.struct({
     /** The log driver to use as a default for new tasks. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /**
      * Driver-specific options for the selected log driver, specified as
      * key/value pairs.
      */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface SwarmSpecTaskDefaultsLogDriver extends Schema.Schema.To<typeof SwarmSpecTaskDefaultsLogDriverSchema> {}
 
 export const SwarmUnlockRequestSchema = Schema.struct({
     /** The swarm's unlock key. */
-    UnlockKey: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UnlockKey: stringSchema.pipe(optionalNullable),
 });
 
 export interface SwarmUnlockRequest extends Schema.Schema.To<typeof SwarmUnlockRequestSchema> {}
@@ -1554,16 +1555,16 @@ export const SystemAuthResponseSchema = Schema.struct({
     /** The status of the authentication */
     Status: stringSchema,
     /** An opaque token used to authenticate a user after a successful login */
-    IdentityToken: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IdentityToken: stringSchema.pipe(optionalNullable),
 });
 
 export interface SystemAuthResponse extends Schema.Schema.To<typeof SystemAuthResponseSchema> {}
 
 export const SystemInfoDefaultAddressPoolsSchema = Schema.struct({
     /** The network address in CIDR format */
-    Base: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Base: stringSchema.pipe(optionalNullable),
     /** The network pool size */
-    Size: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Size: numberSchema.pipe(optionalNullable),
 });
 
 export interface SystemInfoDefaultAddressPools extends Schema.Schema.To<typeof SystemInfoDefaultAddressPoolsSchema> {}
@@ -1579,7 +1580,7 @@ export const SystemVersionComponentsSchema = Schema.struct({
      * their content is not defined, and not part of the API specification.
      * These messages can be printed by the client as information to the user.
      */
-    Details: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Details: anySchema.pipe(optionalNullable),
 });
 
 export interface SystemVersionComponents extends Schema.Schema.To<typeof SystemVersionComponentsSchema> {}
@@ -1599,11 +1600,11 @@ export const TLSInfoSchema = Schema.struct({
      * The root CA certificate(s) that are used to validate leaf TLS
      * certificates.
      */
-    TrustRoot: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    TrustRoot: stringSchema.pipe(optionalNullable),
     /** The base64-url-safe-encoded raw subject bytes of the issuer. */
-    CertIssuerSubject: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CertIssuerSubject: stringSchema.pipe(optionalNullable),
     /** The base64-url-safe-encoded raw public key bytes of the issuer. */
-    CertIssuerPublicKey: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CertIssuerPublicKey: stringSchema.pipe(optionalNullable),
 });
 
 export interface TLSInfo extends Schema.Schema.To<typeof TLSInfoSchema> {}
@@ -1614,14 +1615,14 @@ export interface TLSInfo extends Schema.Schema.To<typeof TLSInfoSchema> {}
  */
 export const TaskSpecContainerSpecDNSConfigSchema = Schema.struct({
     /** The IP addresses of the name servers. */
-    Nameservers: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Nameservers: arraySchema(stringSchema).pipe(optionalNullable),
     /** A search list for host-name lookup. */
-    Search: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Search: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * A list of internal resolver variables to be modified (e.g., `debug`,
      * `ndots:3`, etc.).
      */
-    Options: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecDNSConfig extends Schema.Schema.To<typeof TaskSpecContainerSpecDNSConfigSchema> {}
@@ -1629,13 +1630,13 @@ export interface TaskSpecContainerSpecDNSConfig extends Schema.Schema.To<typeof 
 /** File represents a specific target that is backed by a file. */
 export const TaskSpecContainerSpecFileSchema = Schema.struct({
     /** Name represents the final filename in the filesystem. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** UID represents the file UID. */
-    UID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UID: stringSchema.pipe(optionalNullable),
     /** GID represents the file GID. */
-    GID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GID: stringSchema.pipe(optionalNullable),
     /** Mode represents the FileMode of the file. */
-    Mode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Mode: numberSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecFile extends Schema.Schema.To<typeof TaskSpecContainerSpecFileSchema> {}
@@ -1646,13 +1647,13 @@ export interface TaskSpecContainerSpecFile extends Schema.Schema.To<typeof TaskS
  */
 export const TaskSpecContainerSpecFile1Schema = Schema.struct({
     /** Name represents the final filename in the filesystem. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** UID represents the file UID. */
-    UID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UID: stringSchema.pipe(optionalNullable),
     /** GID represents the file GID. */
-    GID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GID: stringSchema.pipe(optionalNullable),
     /** Mode represents the FileMode of the file. */
-    Mode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Mode: numberSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecFile1 extends Schema.Schema.To<typeof TaskSpecContainerSpecFile1Schema> {}
@@ -1665,7 +1666,7 @@ export const TaskSpecContainerSpecPrivilegesCredentialSpecSchema = Schema.struct
      * property set. **Note**: `CredentialSpec.File`, `CredentialSpec.Registry`,
      * and `CredentialSpec.Config` are mutually exclusive.
      */
-    Config: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Config: stringSchema.pipe(optionalNullable),
     /**
      * Load credential spec from this file. The file is read by the daemon, and
      * must be present in the `CredentialSpecs` subdirectory in the docker data
@@ -1675,7 +1676,7 @@ export const TaskSpecContainerSpecPrivilegesCredentialSpecSchema = Schema.struct
      * `CredentialSpec.File`, `CredentialSpec.Registry`, and
      * `CredentialSpec.Config` are mutually exclusive.
      */
-    File: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    File: stringSchema.pipe(optionalNullable),
     /**
      * Load credential spec from this value in the Windows registry. The
      * specified registry value must be located in:
@@ -1684,7 +1685,7 @@ export const TaskSpecContainerSpecPrivilegesCredentialSpecSchema = Schema.struct
      * **Note**: `CredentialSpec.File`, `CredentialSpec.Registry`, and
      * `CredentialSpec.Config` are mutually exclusive.
      */
-    Registry: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Registry: stringSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecPrivilegesCredentialSpec
@@ -1693,15 +1694,15 @@ export interface TaskSpecContainerSpecPrivilegesCredentialSpec
 /** SELinux labels of the container */
 export const TaskSpecContainerSpecPrivilegesSELinuxContextSchema = Schema.struct({
     /** Disable SELinux */
-    Disable: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Disable: booleanSchema.pipe(optionalNullable),
     /** SELinux user label */
-    User: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    User: stringSchema.pipe(optionalNullable),
     /** SELinux role label */
-    Role: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Role: stringSchema.pipe(optionalNullable),
     /** SELinux type label */
-    Type: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Type: stringSchema.pipe(optionalNullable),
     /** SELinux level label */
-    Level: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Level: stringSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecPrivilegesSELinuxContext
@@ -1713,8 +1714,8 @@ export interface TaskSpecContainerSpecPrivilegesSELinuxContext
  * the engine default if not specified.
  */
 export const TaskSpecLogDriverSchema = Schema.struct({
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface TaskSpecLogDriver extends Schema.Schema.To<typeof TaskSpecLogDriverSchema> {}
@@ -1728,14 +1729,14 @@ export interface TaskSpecLogDriver extends Schema.Schema.To<typeof TaskSpecLogDr
  */
 export const TaskSpecNetworkAttachmentSpecSchema = Schema.struct({
     /** ID of the container represented by this task */
-    ContainerID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ContainerID: stringSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecNetworkAttachmentSpec extends Schema.Schema.To<typeof TaskSpecNetworkAttachmentSpecSchema> {}
 
 export const TaskSpecPlacementSpreadSchema = Schema.struct({
     /** Label descriptor, such as `engine.labels.az`. */
-    SpreadDescriptor: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SpreadDescriptor: stringSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecPlacementSpread extends Schema.Schema.To<typeof TaskSpecPlacementSpreadSchema> {}
@@ -1752,19 +1753,19 @@ export enum TaskSpecRestartPolicy_ConditionEnum {
  */
 export const TaskSpecRestartPolicySchema = Schema.struct({
     /** Condition for restart. */
-    Condition: Schema.enums(TaskSpecRestartPolicy_ConditionEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Condition: Schema.enums(TaskSpecRestartPolicy_ConditionEnum).pipe(optionalNullable),
     /** Delay between restart attempts. */
-    Delay: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Delay: numberSchema.pipe(optionalNullable),
     /**
      * Maximum attempts to restart a given container before giving up (default
      * value is 0, which is ignored).
      */
-    MaxAttempts: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MaxAttempts: numberSchema.pipe(optionalNullable),
     /**
      * Windows is the time window used to evaluate the restart policy (default
      * value is 0, which is unbounded).
      */
-    Window: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Window: numberSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecRestartPolicy extends Schema.Schema.To<typeof TaskSpecRestartPolicySchema> {}
@@ -1788,18 +1789,18 @@ export enum TaskState {
 }
 
 export const TaskStatusContainerStatusSchema = Schema.struct({
-    ContainerID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    PID: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ExitCode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ContainerID: stringSchema.pipe(optionalNullable),
+    PID: numberSchema.pipe(optionalNullable),
+    ExitCode: numberSchema.pipe(optionalNullable),
 });
 
 export interface TaskStatusContainerStatus extends Schema.Schema.To<typeof TaskStatusContainerStatusSchema> {}
 
 export const ThrottleDeviceSchema = Schema.struct({
     /** Device path */
-    Path: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Path: stringSchema.pipe(optionalNullable),
     /** Rate */
-    Rate: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Rate: numberSchema.pipe(optionalNullable),
 });
 
 export interface ThrottleDevice extends Schema.Schema.To<typeof ThrottleDeviceSchema> {}
@@ -1814,16 +1815,16 @@ export interface Topology extends Schema.Schema.To<typeof TopologySchema> {}
 
 export const UnlockKeyResponseSchema = Schema.struct({
     /** The swarm's unlock key. */
-    UnlockKey: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UnlockKey: stringSchema.pipe(optionalNullable),
 });
 
 export interface UnlockKeyResponse extends Schema.Schema.To<typeof UnlockKeyResponseSchema> {}
 
 export const VolumePruneResponseSchema = Schema.struct({
     /** Volumes that were deleted */
-    VolumesDeleted: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    VolumesDeleted: arraySchema(stringSchema).pipe(optionalNullable),
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SpaceReclaimed: numberSchema.pipe(optionalNullable),
 });
 
 export interface VolumePruneResponse extends Schema.Schema.To<typeof VolumePruneResponseSchema> {}
@@ -1850,14 +1851,14 @@ export const VolumeUsageDataSchema = Schema.struct({
 export interface VolumeUsageData extends Schema.Schema.To<typeof VolumeUsageDataSchema> {}
 
 export const BuildInfoSchema = Schema.struct({
-    id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    stream: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    error: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    errorDetail: ErrorDetailSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    status: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    progress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    progressDetail: ProgressDetailSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    aux: ImageIDSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    id: stringSchema.pipe(optionalNullable),
+    stream: stringSchema.pipe(optionalNullable),
+    error: stringSchema.pipe(optionalNullable),
+    errorDetail: ErrorDetailSchema.pipe(optionalNullable),
+    status: stringSchema.pipe(optionalNullable),
+    progress: stringSchema.pipe(optionalNullable),
+    progressDetail: ProgressDetailSchema.pipe(optionalNullable),
+    aux: ImageIDSchema.pipe(optionalNullable),
 });
 
 export interface BuildInfo extends Schema.Schema.To<typeof BuildInfoSchema> {}
@@ -1868,12 +1869,12 @@ export const ClusterVolumeInfoSchema = Schema.struct({
      * The capacity of the volume in bytes. A value of 0 indicates that the
      * capacity is unknown.
      */
-    CapacityBytes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CapacityBytes: numberSchema.pipe(optionalNullable),
     /**
      * A map of strings to strings returned from the storage plugin when the
      * volume is created.
      */
-    VolumeContext: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    VolumeContext: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /**
      * The ID of the volume as returned by the CSI storage plugin. This is
      * distinct from the volume's ID as provided by Docker. This ID is never
@@ -1881,9 +1882,9 @@ export const ClusterVolumeInfoSchema = Schema.struct({
      * If the ID is blank, then the Volume has not been successfully created in
      * the plugin yet.
      */
-    VolumeID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    VolumeID: stringSchema.pipe(optionalNullable),
     /** The topology this volume is actually accessible from. */
-    AccessibleTopology: arraySchema(TopologySchema).pipe(Schema.nullable).pipe(Schema.optional),
+    AccessibleTopology: arraySchema(TopologySchema).pipe(optionalNullable),
 });
 
 export interface ClusterVolumeInfo extends Schema.Schema.To<typeof ClusterVolumeInfoSchema> {}
@@ -1898,28 +1899,26 @@ export const ClusterVolumeSpecAccessModeAccessibilityRequirementsSchema = Schema
      * A list of required topologies, at least one of which the volume must be
      * accessible from.
      */
-    Requisite: arraySchema(TopologySchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Requisite: arraySchema(TopologySchema).pipe(optionalNullable),
     /** A list of topologies that the volume should attempt to be provisioned in. */
-    Preferred: arraySchema(TopologySchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Preferred: arraySchema(TopologySchema).pipe(optionalNullable),
 });
 
 export interface ClusterVolumeSpecAccessModeAccessibilityRequirements
     extends Schema.Schema.To<typeof ClusterVolumeSpecAccessModeAccessibilityRequirementsSchema> {}
 
-export const ConfigSpecSchema = Schema.struct({
+export class ConfigSpec extends Schema.Class<ConfigSpec>()({
     /** User-defined name of the config. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /**
      * Base64-url-safe-encoded ([RFC
      * 4648](https://tools.ietf.org/html/rfc4648#section-5)) config data.
      */
-    Data: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Templating: DriverSchema.pipe(Schema.nullable).pipe(Schema.optional),
-});
-
-export interface ConfigSpec extends Schema.Schema.To<typeof ConfigSpecSchema> {}
+    Data: stringSchema.pipe(optionalNullable),
+    Templating: DriverSchema.pipe(optionalNullable),
+}) {}
 
 /**
  * Configuration for a container that is portable between hosts. When used as
@@ -1930,72 +1929,72 @@ export interface ConfigSpec extends Schema.Schema.To<typeof ConfigSpecSchema> {}
  */
 export const ContainerConfigSchema = Schema.struct({
     /** The hostname to use for the container, as a valid RFC 1123 hostname. */
-    Hostname: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Hostname: stringSchema.pipe(optionalNullable),
     /** The domain name to use for the container. */
-    Domainname: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Domainname: stringSchema.pipe(optionalNullable),
     /** The user that commands are run as inside the container. */
-    User: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    User: stringSchema.pipe(optionalNullable),
     /** Whether to attach to `stdin`. */
-    AttachStdin: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AttachStdin: booleanSchema.pipe(optionalNullable),
     /** Whether to attach to `stdout`. */
-    AttachStdout: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AttachStdout: booleanSchema.pipe(optionalNullable),
     /** Whether to attach to `stderr`. */
-    AttachStderr: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AttachStderr: booleanSchema.pipe(optionalNullable),
     /**
      * An object mapping ports to an empty object in the form:
      * `{\"<port>/<tcp|udp|sctp>\": {}}`
      */
-    ExposedPorts: recordSchema(stringSchema, anySchema).pipe(Schema.nullable).pipe(Schema.optional),
+    ExposedPorts: recordSchema(stringSchema, anySchema).pipe(optionalNullable),
     /** Attach standard streams to a TTY, including `stdin` if it is not closed. */
-    Tty: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Tty: booleanSchema.pipe(optionalNullable),
     /** Open `stdin` */
-    OpenStdin: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OpenStdin: booleanSchema.pipe(optionalNullable),
     /** Close `stdin` after one attached client disconnects */
-    StdinOnce: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StdinOnce: booleanSchema.pipe(optionalNullable),
     /**
      * A list of environment variables to set inside the container in the form
      * `[\"VAR=value\", ...]`. A variable without `=` is removed from the
      * environment, rather than to have an empty value.
      */
-    Env: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Env: arraySchema(stringSchema).pipe(optionalNullable),
     /** Command to run specified as a string or an array of strings. */
-    Cmd: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Healthcheck: HealthConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Cmd: arraySchema(stringSchema).pipe(optionalNullable),
+    Healthcheck: HealthConfigSchema.pipe(optionalNullable),
     /** Command is already escaped (Windows only) */
-    ArgsEscaped: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ArgsEscaped: booleanSchema.pipe(optionalNullable),
     /**
      * The name (or reference) of the image to use when creating the container,
      * or which was used when the container was created.
      */
-    Image: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Image: stringSchema.pipe(optionalNullable),
     /**
      * An object mapping mount point paths inside the container to empty
      * objects.
      */
-    Volumes: recordSchema(stringSchema, anySchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Volumes: recordSchema(stringSchema, anySchema).pipe(optionalNullable),
     /** The working directory for commands to run in. */
-    WorkingDir: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    WorkingDir: stringSchema.pipe(optionalNullable),
     /**
      * The entry point for the container as a string or an array of strings. If
      * the array consists of exactly one empty string (`[\"\"]`) then the entry
      * point is reset to system default (i.e., the entry point used by docker
      * when there is no `ENTRYPOINT` instruction in the `Dockerfile`).
      */
-    Entrypoint: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Entrypoint: arraySchema(stringSchema).pipe(optionalNullable),
     /** Disable networking for the container. */
-    NetworkDisabled: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NetworkDisabled: booleanSchema.pipe(optionalNullable),
     /** MAC address of the container. */
-    MacAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MacAddress: stringSchema.pipe(optionalNullable),
     /** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
-    OnBuild: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    OnBuild: arraySchema(stringSchema).pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /** Signal to stop a container as a string or unsigned integer. */
-    StopSignal: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StopSignal: stringSchema.pipe(optionalNullable),
     /** Timeout to stop a container in seconds. */
-    StopTimeout: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StopTimeout: numberSchema.pipe(optionalNullable),
     /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
-    Shell: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Shell: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface ContainerConfig extends Schema.Schema.To<typeof ContainerConfigSchema> {}
@@ -2004,18 +2003,18 @@ export interface ContainerConfig extends Schema.Schema.To<typeof ContainerConfig
 export const ContainerWaitResponseSchema = Schema.struct({
     /** Exit code of the container */
     StatusCode: numberSchema,
-    Error: ContainerWaitExitErrorSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Error: ContainerWaitExitErrorSchema.pipe(optionalNullable),
 });
 
 export interface ContainerWaitResponse extends Schema.Schema.To<typeof ContainerWaitResponseSchema> {}
 
 export const CreateImageInfoSchema = Schema.struct({
-    id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    error: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    errorDetail: ErrorDetailSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    status: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    progress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    progressDetail: ProgressDetailSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    id: stringSchema.pipe(optionalNullable),
+    error: stringSchema.pipe(optionalNullable),
+    errorDetail: ErrorDetailSchema.pipe(optionalNullable),
+    status: stringSchema.pipe(optionalNullable),
+    progress: stringSchema.pipe(optionalNullable),
+    progressDetail: ProgressDetailSchema.pipe(optionalNullable),
 });
 
 export interface CreateImageInfo extends Schema.Schema.To<typeof CreateImageInfoSchema> {}
@@ -2034,32 +2033,32 @@ export interface DistributionInspect extends Schema.Schema.To<typeof Distributio
 
 /** Configuration for a network endpoint. */
 export const EndpointSettingsSchema = Schema.struct({
-    IPAMConfig: EndpointIPAMConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Links: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Aliases: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    IPAMConfig: EndpointIPAMConfigSchema.pipe(optionalNullable),
+    Links: arraySchema(stringSchema).pipe(optionalNullable),
+    Aliases: arraySchema(stringSchema).pipe(optionalNullable),
     /** Unique ID of the network. */
-    NetworkID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NetworkID: stringSchema.pipe(optionalNullable),
     /** Unique ID for the service endpoint in a Sandbox. */
-    EndpointID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    EndpointID: stringSchema.pipe(optionalNullable),
     /** Gateway address for this network. */
-    Gateway: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Gateway: stringSchema.pipe(optionalNullable),
     /** IPv4 address. */
-    IPAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPAddress: stringSchema.pipe(optionalNullable),
     /** Mask length of the IPv4 address. */
-    IPPrefixLen: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPPrefixLen: numberSchema.pipe(optionalNullable),
     /** IPv6 gateway address. */
-    IPv6Gateway: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPv6Gateway: stringSchema.pipe(optionalNullable),
     /** Global IPv6 address. */
-    GlobalIPv6Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GlobalIPv6Address: stringSchema.pipe(optionalNullable),
     /** Mask length of the global IPv6 address. */
-    GlobalIPv6PrefixLen: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GlobalIPv6PrefixLen: numberSchema.pipe(optionalNullable),
     /** MAC address for the endpoint on this network. */
-    MacAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MacAddress: stringSchema.pipe(optionalNullable),
     /**
      * DriverOpts is a mapping of driver options and values. These options are
      * passed directly to the driver and are driver specific.
      */
-    DriverOpts: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DriverOpts: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface EndpointSettings extends Schema.Schema.To<typeof EndpointSettingsSchema> {}
@@ -2072,21 +2071,21 @@ export enum EndpointSpec_ModeEnum {
 /** Properties that can be configured to access and load balance a service. */
 export const EndpointSpecSchema = Schema.struct({
     /** The mode of resolution to use for internal load balancing between tasks. */
-    Mode: Schema.enums(EndpointSpec_ModeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Mode: Schema.enums(EndpointSpec_ModeEnum).pipe(optionalNullable),
     /**
      * List of exposed ports that this service is accessible on from the
      * outside. Ports can only be provided if `vip` resolution mode is used.
      */
-    Ports: arraySchema(EndpointPortConfigSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Ports: arraySchema(EndpointPortConfigSchema).pipe(optionalNullable),
 });
 
 export interface EndpointSpec extends Schema.Schema.To<typeof EndpointSpecSchema> {}
 
 /** EngineDescription provides information about an engine. */
 export const EngineDescriptionSchema = Schema.struct({
-    EngineVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Plugins: arraySchema(EngineDescriptionPluginsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    EngineVersion: stringSchema.pipe(optionalNullable),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    Plugins: arraySchema(EngineDescriptionPluginsSchema).pipe(optionalNullable),
 });
 
 export interface EngineDescription extends Schema.Schema.To<typeof EngineDescriptionSchema> {}
@@ -2113,36 +2112,36 @@ export enum EventMessage_ScopeEnum {
 /** EventMessage represents the information an event contains. */
 export const EventMessageSchema = Schema.struct({
     /** The type of object emitting the event */
-    Type: Schema.enums(EventMessage_TypeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Type: Schema.enums(EventMessage_TypeEnum).pipe(optionalNullable),
     /** The type of event */
-    Action: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Actor: EventActorSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Action: stringSchema.pipe(optionalNullable),
+    Actor: EventActorSchema.pipe(optionalNullable),
     /**
      * Scope of the event. Engine events are `local` scope. Cluster (Swarm)
      * events are `swarm` scope.
      */
-    scope: Schema.enums(EventMessage_ScopeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    scope: Schema.enums(EventMessage_ScopeEnum).pipe(optionalNullable),
     /** Timestamp of event */
-    time: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    time: numberSchema.pipe(optionalNullable),
     /** Timestamp of event, with nanosecond accuracy */
-    timeNano: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    timeNano: numberSchema.pipe(optionalNullable),
 });
 
 export interface EventMessage extends Schema.Schema.To<typeof EventMessageSchema> {}
 
 export const ExecInspectResponseSchema = Schema.struct({
-    CanRemove: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    DetachKeys: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Running: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ExitCode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ProcessConfig: ProcessConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    OpenStdin: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    OpenStderr: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    OpenStdout: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ContainerID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CanRemove: booleanSchema.pipe(optionalNullable),
+    DetachKeys: stringSchema.pipe(optionalNullable),
+    ID: stringSchema.pipe(optionalNullable),
+    Running: booleanSchema.pipe(optionalNullable),
+    ExitCode: numberSchema.pipe(optionalNullable),
+    ProcessConfig: ProcessConfigSchema.pipe(optionalNullable),
+    OpenStdin: booleanSchema.pipe(optionalNullable),
+    OpenStderr: booleanSchema.pipe(optionalNullable),
+    OpenStdout: booleanSchema.pipe(optionalNullable),
+    ContainerID: stringSchema.pipe(optionalNullable),
     /** The system process ID for the exec process. */
-    Pid: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Pid: numberSchema.pipe(optionalNullable),
 });
 
 export interface ExecInspectResponse extends Schema.Schema.To<typeof ExecInspectResponseSchema> {}
@@ -2181,35 +2180,35 @@ export const HealthSchema = Schema.struct({
      * - "healthy" Healthy indicates that the container is running correctly
      * - "unhealthy" Unhealthy indicates that the container has a problem
      */
-    Status: Schema.enums(Health_StatusEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Status: Schema.enums(Health_StatusEnum).pipe(optionalNullable),
     /** FailingStreak is the number of consecutive failures */
-    FailingStreak: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    FailingStreak: numberSchema.pipe(optionalNullable),
     /** Log contains the last few results (oldest first) */
-    Log: arraySchema(HealthcheckResultSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Log: arraySchema(HealthcheckResultSchema).pipe(optionalNullable),
 });
 
 export interface Health extends Schema.Schema.To<typeof HealthSchema> {}
 
 export const IPAMSchema = Schema.struct({
     /** Name of the IPAM driver to use. */
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Driver: stringSchema.pipe(optionalNullable),
     /**
      * List of IPAM configuration options, specified as a map: `{\"Subnet\":
      * <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\":
      * <device_name:IP address>}`
      */
-    Config: arraySchema(IPAMConfigSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Config: arraySchema(IPAMConfigSchema).pipe(optionalNullable),
     /** Driver-specific options, specified as a map. */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface IPAM extends Schema.Schema.To<typeof IPAMSchema> {}
 
 export const ImagePruneResponseSchema = Schema.struct({
     /** Images that were deleted */
-    ImagesDeleted: arraySchema(ImageDeleteResponseItemSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    ImagesDeleted: arraySchema(ImageDeleteResponseItemSchema).pipe(optionalNullable),
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SpaceReclaimed: numberSchema.pipe(optionalNullable),
 });
 
 export interface ImagePruneResponse extends Schema.Schema.To<typeof ImagePruneResponseSchema> {}
@@ -2219,10 +2218,10 @@ export interface ImagePruneResponse extends Schema.Schema.To<typeof ImagePruneRe
  * status of a node's manager component, if the node is a manager.
  */
 export const ManagerStatusSchema = Schema.struct({
-    Leader: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Reachability: Schema.enums(Reachability).pipe(Schema.nullable).pipe(Schema.optional),
+    Leader: booleanSchema.pipe(optionalNullable),
+    Reachability: Schema.enums(Reachability).pipe(optionalNullable),
     /** The IP address and port at which the manager is reachable. */
-    Addr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Addr: stringSchema.pipe(optionalNullable),
 });
 
 export interface ManagerStatus extends Schema.Schema.To<typeof ManagerStatusSchema> {}
@@ -2230,10 +2229,10 @@ export interface ManagerStatus extends Schema.Schema.To<typeof ManagerStatusSche
 /** Optional configuration for the `volume` type. */
 export const MountVolumeOptionsSchema = Schema.struct({
     /** Populate volume with data from the target. */
-    NoCopy: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NoCopy: booleanSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    DriverConfig: MountVolumeOptionsDriverConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    DriverConfig: MountVolumeOptionsDriverConfigSchema.pipe(optionalNullable),
 });
 
 export interface MountVolumeOptions extends Schema.Schema.To<typeof MountVolumeOptionsSchema> {}
@@ -2243,10 +2242,10 @@ export interface MountVolumeOptions extends Schema.Schema.To<typeof MountVolumeO
  * the node, as seen by the manager.
  */
 export const NodeStatusSchema = Schema.struct({
-    State: Schema.enums(NodeState).pipe(Schema.nullable).pipe(Schema.optional),
-    Message: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    State: Schema.enums(NodeState).pipe(optionalNullable),
+    Message: stringSchema.pipe(optionalNullable),
     /** IP address of the node. */
-    Addr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Addr: stringSchema.pipe(optionalNullable),
 });
 
 export interface NodeStatus extends Schema.Schema.To<typeof NodeStatusSchema> {}
@@ -2261,7 +2260,7 @@ export const PluginConfigInterfaceSchema = Schema.struct({
     Types: arraySchema(PluginInterfaceTypeSchema),
     Socket: stringSchema,
     /** Protocol to use for clients connecting to the plugin. */
-    ProtocolScheme: Schema.enums(PluginConfigInterface_ProtocolSchemeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    ProtocolScheme: Schema.enums(PluginConfigInterface_ProtocolSchemeEnum).pipe(optionalNullable),
 });
 
 export interface PluginConfigInterface extends Schema.Schema.To<typeof PluginConfigInterfaceSchema> {}
@@ -2285,10 +2284,10 @@ export const PluginSettingsSchema = Schema.struct({
 export interface PluginSettings extends Schema.Schema.To<typeof PluginSettingsSchema> {}
 
 export const PushImageInfoSchema = Schema.struct({
-    error: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    status: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    progress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    progressDetail: ProgressDetailSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    error: stringSchema.pipe(optionalNullable),
+    status: stringSchema.pipe(optionalNullable),
+    progress: stringSchema.pipe(optionalNullable),
+    progressDetail: ProgressDetailSchema.pipe(optionalNullable),
 });
 
 export interface PushImageInfo extends Schema.Schema.To<typeof PushImageInfoSchema> {}
@@ -2312,7 +2311,7 @@ export const RegistryServiceConfigSchema = Schema.struct({
      * ensure that you are in compliance with any terms that cover
      * redistributing nondistributable artifacts.
      */
-    AllowNondistributableArtifactsCIDRs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    AllowNondistributableArtifactsCIDRs: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * List of registry hostnames to which nondistributable artifacts can be
      * pushed, using the format `<hostname>[:<port>]` or `<IP
@@ -2328,7 +2327,7 @@ export const RegistryServiceConfigSchema = Schema.struct({
      * artifacts to private registries and ensure that you are in compliance
      * with any terms that cover redistributing nondistributable artifacts.
      */
-    AllowNondistributableArtifactsHostnames: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    AllowNondistributableArtifactsHostnames: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * List of IP ranges of insecure registries, using the CIDR syntax ([RFC
      * 4632](https://tools.ietf.org/html/4632)). Insecure registries accept
@@ -2347,7 +2346,7 @@ export const RegistryServiceConfigSchema = Schema.struct({
      * users should add their CA to their system's list of trusted CAs instead
      * of enabling this option.
      */
-    InsecureRegistryCIDRs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    InsecureRegistryCIDRs: arraySchema(stringSchema).pipe(optionalNullable),
     IndexConfigs: recordSchema(stringSchema, IndexInfoSchema.pipe(Schema.nullable))
         .pipe(Schema.nullable)
         .pipe(Schema.optional),
@@ -2355,7 +2354,7 @@ export const RegistryServiceConfigSchema = Schema.struct({
      * List of registry URLs that act as a mirror for the official (`docker.io`)
      * registry.
      */
-    Mirrors: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Mirrors: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface RegistryServiceConfig extends Schema.Schema.To<typeof RegistryServiceConfigSchema> {}
@@ -2366,143 +2365,143 @@ export const ResourcesSchema = Schema.struct({
      * An integer value representing this container's relative CPU weight versus
      * other containers.
      */
-    CpuShares: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuShares: numberSchema.pipe(optionalNullable),
     /** Memory limit in bytes. */
-    Memory: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Memory: numberSchema.pipe(optionalNullable),
     /**
      * Path to `cgroups` under which the container's `cgroup` is created. If the
      * path is not absolute, the path is considered to be relative to the
      * `cgroups` path of the init process. Cgroups are created if they do not
      * already exist.
      */
-    CgroupParent: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CgroupParent: stringSchema.pipe(optionalNullable),
     /** Block IO weight (relative weight). */
-    BlkioWeight: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    BlkioWeight: numberSchema.pipe(optionalNullable),
     /**
      * Block IO weight (relative device weight) in the form: `[{\"Path\":
      * \"device_path\", \"Weight\": weight}]`
      */
-    BlkioWeightDevice: arraySchema(ResourcesBlkioWeightDeviceSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    BlkioWeightDevice: arraySchema(ResourcesBlkioWeightDeviceSchema).pipe(optionalNullable),
     /**
      * Limit read rate (bytes per second) from a device, in the form:
      * `[{\"Path\": \"device_path\", \"Rate\": rate}]`
      */
-    BlkioDeviceReadBps: arraySchema(ThrottleDeviceSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    BlkioDeviceReadBps: arraySchema(ThrottleDeviceSchema).pipe(optionalNullable),
     /**
      * Limit write rate (bytes per second) to a device, in the form:
      * `[{\"Path\": \"device_path\", \"Rate\": rate}]`
      */
-    BlkioDeviceWriteBps: arraySchema(ThrottleDeviceSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    BlkioDeviceWriteBps: arraySchema(ThrottleDeviceSchema).pipe(optionalNullable),
     /**
      * Limit read rate (IO per second) from a device, in the form: `[{\"Path\":
      * \"device_path\", \"Rate\": rate}]`
      */
-    BlkioDeviceReadIOps: arraySchema(ThrottleDeviceSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    BlkioDeviceReadIOps: arraySchema(ThrottleDeviceSchema).pipe(optionalNullable),
     /**
      * Limit write rate (IO per second) to a device, in the form: `[{\"Path\":
      * \"device_path\", \"Rate\": rate}]`
      */
-    BlkioDeviceWriteIOps: arraySchema(ThrottleDeviceSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    BlkioDeviceWriteIOps: arraySchema(ThrottleDeviceSchema).pipe(optionalNullable),
     /** The length of a CPU period in microseconds. */
-    CpuPeriod: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuPeriod: numberSchema.pipe(optionalNullable),
     /** Microseconds of CPU time that the container can get in a CPU period. */
-    CpuQuota: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuQuota: numberSchema.pipe(optionalNullable),
     /**
      * The length of a CPU real-time period in microseconds. Set to 0 to
      * allocate no time allocated to real-time tasks.
      */
-    CpuRealtimePeriod: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuRealtimePeriod: numberSchema.pipe(optionalNullable),
     /**
      * The length of a CPU real-time runtime in microseconds. Set to 0 to
      * allocate no time allocated to real-time tasks.
      */
-    CpuRealtimeRuntime: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuRealtimeRuntime: numberSchema.pipe(optionalNullable),
     /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
-    CpusetCpus: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpusetCpus: stringSchema.pipe(optionalNullable),
     /**
      * Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
      * effective on NUMA systems.
      */
-    CpusetMems: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpusetMems: stringSchema.pipe(optionalNullable),
     /** A list of devices to add to the container. */
-    Devices: arraySchema(DeviceMappingSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Devices: arraySchema(DeviceMappingSchema).pipe(optionalNullable),
     /** A list of cgroup rules to apply to the container */
-    DeviceCgroupRules: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DeviceCgroupRules: arraySchema(stringSchema).pipe(optionalNullable),
     /** A list of requests for devices to be sent to device drivers. */
-    DeviceRequests: arraySchema(DeviceRequestSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DeviceRequests: arraySchema(DeviceRequestSchema).pipe(optionalNullable),
     /**
      * Hard limit for kernel TCP buffer memory (in bytes). Depending on the OCI
      * runtime in use, this option may be ignored. It is no longer supported by
      * the default (runc) runtime. This field is omitted when empty.
      */
-    KernelMemoryTCP: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    KernelMemoryTCP: numberSchema.pipe(optionalNullable),
     /** Memory soft limit in bytes. */
-    MemoryReservation: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MemoryReservation: numberSchema.pipe(optionalNullable),
     /** Total memory limit (memory + swap). Set as `-1` to enable unlimited swap. */
-    MemorySwap: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MemorySwap: numberSchema.pipe(optionalNullable),
     /**
      * Tune a container's memory swappiness behavior. Accepts an integer between
      * 0 and 100.
      */
-    MemorySwappiness: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MemorySwappiness: numberSchema.pipe(optionalNullable),
     /** CPU quota in units of 10<sup>-9</sup> CPUs. */
-    NanoCpus: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NanoCpus: numberSchema.pipe(optionalNullable),
     /** Disable OOM Killer for the container. */
-    OomKillDisable: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OomKillDisable: booleanSchema.pipe(optionalNullable),
     /**
      * Run an init inside the container that forwards signals and reaps
      * processes. This field is omitted if empty, and the default (as configured
      * on the daemon) is used.
      */
-    Init: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Init: booleanSchema.pipe(optionalNullable),
     /**
      * Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
      * to not change.
      */
-    PidsLimit: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PidsLimit: numberSchema.pipe(optionalNullable),
     /**
      * A list of resource limits to set in the container. For example:
      * `{\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048}`
      */
-    Ulimits: arraySchema(ResourcesUlimitsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Ulimits: arraySchema(ResourcesUlimitsSchema).pipe(optionalNullable),
     /**
      * The number of usable CPUs (Windows only). On Windows Server containers,
      * the processor resource controls are mutually exclusive. The order of
      * precedence is `CPUCount` first, then `CPUShares`, and `CPUPercent` last.
      */
-    CpuCount: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuCount: numberSchema.pipe(optionalNullable),
     /**
      * The usable percentage of the available CPUs (Windows only). On Windows
      * Server containers, the processor resource controls are mutually
      * exclusive. The order of precedence is `CPUCount` first, then `CPUShares`,
      * and `CPUPercent` last.
      */
-    CpuPercent: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuPercent: numberSchema.pipe(optionalNullable),
     /** Maximum IOps for the container system drive (Windows only) */
-    IOMaximumIOps: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IOMaximumIOps: numberSchema.pipe(optionalNullable),
     /**
      * Maximum IO in bytes per second for the container system drive (Windows
      * only).
      */
-    IOMaximumBandwidth: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IOMaximumBandwidth: numberSchema.pipe(optionalNullable),
 });
 
 export interface Resources extends Schema.Schema.To<typeof ResourcesSchema> {}
 
 export const SecretSpecSchema = Schema.struct({
     /** User-defined name of the secret. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /**
      * Base64-url-safe-encoded ([RFC
      * 4648](https://tools.ietf.org/html/rfc4648#section-5)) data to store as
      * secret. This field is only used to _create_ a secret, and is not returned
      * by other endpoints.
      */
-    Data: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Driver: DriverSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Templating: DriverSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Data: stringSchema.pipe(optionalNullable),
+    Driver: DriverSchema.pipe(optionalNullable),
+    Templating: DriverSchema.pipe(optionalNullable),
 });
 
 export interface SecretSpec extends Schema.Schema.To<typeof SecretSpecSchema> {}
@@ -2514,23 +2513,23 @@ export interface SecretSpec extends Schema.Schema.To<typeof SecretSpecSchema> {}
  * with an update request.
  */
 export const ServiceJobStatusSchema = Schema.struct({
-    JobIteration: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    JobIteration: ObjectVersionSchema.pipe(optionalNullable),
     /** The last time, as observed by the server, that this job was started. */
-    LastExecution: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LastExecution: stringSchema.pipe(optionalNullable),
 });
 
 export interface ServiceJobStatus extends Schema.Schema.To<typeof ServiceJobStatusSchema> {}
 
 /** Scheduling mode for the service. */
 export const ServiceSpecModeSchema = Schema.struct({
-    Replicated: ServiceSpecModeReplicatedSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Global: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ReplicatedJob: ServiceSpecModeReplicatedJobSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Replicated: ServiceSpecModeReplicatedSchema.pipe(optionalNullable),
+    Global: anySchema.pipe(optionalNullable),
+    ReplicatedJob: ServiceSpecModeReplicatedJobSchema.pipe(optionalNullable),
     /**
      * The mode used for services which run a task to the completed state on
      * each valid node.
      */
-    GlobalJob: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GlobalJob: anySchema.pipe(optionalNullable),
 });
 
 export interface ServiceSpecMode extends Schema.Schema.To<typeof ServiceSpecModeSchema> {}
@@ -2538,122 +2537,122 @@ export interface ServiceSpecMode extends Schema.Schema.To<typeof ServiceSpecMode
 /** CA configuration. */
 export const SwarmSpecCAConfigSchema = Schema.struct({
     /** The duration node certificates are issued for. */
-    NodeCertExpiry: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NodeCertExpiry: numberSchema.pipe(optionalNullable),
     /**
      * Configuration for forwarding signing requests to an external certificate
      * authority.
      */
-    ExternalCAs: arraySchema(SwarmSpecCAConfigExternalCAsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    ExternalCAs: arraySchema(SwarmSpecCAConfigExternalCAsSchema).pipe(optionalNullable),
     /**
      * The desired signing CA certificate for all swarm node TLS leaf
      * certificates, in PEM format.
      */
-    SigningCACert: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SigningCACert: stringSchema.pipe(optionalNullable),
     /**
      * The desired signing CA key for all swarm node TLS leaf certificates, in
      * PEM format.
      */
-    SigningCAKey: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SigningCAKey: stringSchema.pipe(optionalNullable),
     /**
      * An integer whose purpose is to force swarm to generate a new signing CA
      * certificate and key, if none have been specified in `SigningCACert` and
      * `SigningCAKey`
      */
-    ForceRotate: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ForceRotate: numberSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecCAConfig extends Schema.Schema.To<typeof SwarmSpecCAConfigSchema> {}
 
 /** Defaults for creating tasks in this cluster. */
 export const SwarmSpecTaskDefaultsSchema = Schema.struct({
-    LogDriver: SwarmSpecTaskDefaultsLogDriverSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LogDriver: SwarmSpecTaskDefaultsLogDriverSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpecTaskDefaults extends Schema.Schema.To<typeof SwarmSpecTaskDefaultsSchema> {}
 
 /** Response of Engine API: GET "/version" */
 export const SystemVersionSchema = Schema.struct({
-    Platform: SystemVersionPlatformSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Platform: SystemVersionPlatformSchema.pipe(optionalNullable),
     /** Information about system components */
-    Components: arraySchema(SystemVersionComponentsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Components: arraySchema(SystemVersionComponentsSchema).pipe(optionalNullable),
     /** The version of the daemon */
-    Version: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Version: stringSchema.pipe(optionalNullable),
     /** The default (and highest) API version that is supported by the daemon */
-    ApiVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ApiVersion: stringSchema.pipe(optionalNullable),
     /** The minimum API version that is supported by the daemon */
-    MinAPIVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MinAPIVersion: stringSchema.pipe(optionalNullable),
     /** The Git commit of the source code that was used to build the daemon */
-    GitCommit: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GitCommit: stringSchema.pipe(optionalNullable),
     /**
      * The version Go used to compile the daemon, and the version of the Go
      * runtime in use.
      */
-    GoVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GoVersion: stringSchema.pipe(optionalNullable),
     /** The operating system that the daemon is running on ("linux" or "windows") */
-    Os: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Os: stringSchema.pipe(optionalNullable),
     /** The architecture that the daemon is running on */
-    Arch: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Arch: stringSchema.pipe(optionalNullable),
     /**
      * The kernel version (`uname -r`) that the daemon is running on. This field
      * is omitted when empty.
      */
-    KernelVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    KernelVersion: stringSchema.pipe(optionalNullable),
     /**
      * Indicates if the daemon is started with experimental features enabled.
      * This field is omitted when empty / false.
      */
-    Experimental: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Experimental: booleanSchema.pipe(optionalNullable),
     /** The date and time that the daemon was compiled. */
-    BuildTime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    BuildTime: stringSchema.pipe(optionalNullable),
 });
 
 export interface SystemVersion extends Schema.Schema.To<typeof SystemVersionSchema> {}
 
 export const TaskSpecContainerSpecConfigsSchema = Schema.struct({
-    File: TaskSpecContainerSpecFile1Schema.pipe(Schema.nullable).pipe(Schema.optional),
+    File: TaskSpecContainerSpecFile1Schema.pipe(optionalNullable),
     /**
      * Runtime represents a target that is not mounted into the container but is
      * used by the task **Note**: `Configs.File` and `Configs.Runtime` are
      * mutually exclusive
      */
-    Runtime: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Runtime: anySchema.pipe(optionalNullable),
     /** ConfigID represents the ID of the specific config that we're referencing. */
-    ConfigID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ConfigID: stringSchema.pipe(optionalNullable),
     /**
      * ConfigName is the name of the config that this references, but this is
      * just provided for lookup/display purposes. The config in the reference
      * will be identified by its ID.
      */
-    ConfigName: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ConfigName: stringSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecConfigs extends Schema.Schema.To<typeof TaskSpecContainerSpecConfigsSchema> {}
 
 /** Security options for the container */
 export const TaskSpecContainerSpecPrivilegesSchema = Schema.struct({
-    CredentialSpec: TaskSpecContainerSpecPrivilegesCredentialSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    SELinuxContext: TaskSpecContainerSpecPrivilegesSELinuxContextSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CredentialSpec: TaskSpecContainerSpecPrivilegesCredentialSpecSchema.pipe(optionalNullable),
+    SELinuxContext: TaskSpecContainerSpecPrivilegesSELinuxContextSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecPrivileges
     extends Schema.Schema.To<typeof TaskSpecContainerSpecPrivilegesSchema> {}
 
 export const TaskSpecContainerSpecSecretsSchema = Schema.struct({
-    File: TaskSpecContainerSpecFileSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    File: TaskSpecContainerSpecFileSchema.pipe(optionalNullable),
     /** SecretID represents the ID of the specific secret that we're referencing. */
-    SecretID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SecretID: stringSchema.pipe(optionalNullable),
     /**
      * SecretName is the name of the secret that this references, but this is
      * just provided for lookup/display purposes. The secret in the reference
      * will be identified by its ID.
      */
-    SecretName: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SecretName: stringSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpecSecrets extends Schema.Schema.To<typeof TaskSpecContainerSpecSecretsSchema> {}
 
 export const TaskSpecPlacementPreferencesSchema = Schema.struct({
-    Spread: TaskSpecPlacementSpreadSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Spread: TaskSpecPlacementSpreadSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecPlacementPreferences extends Schema.Schema.To<typeof TaskSpecPlacementPreferencesSchema> {}
@@ -2666,22 +2665,22 @@ export interface TaskSpecPlacementPreferences extends Schema.Schema.To<typeof Ta
  */
 export const TaskSpecPluginSpecSchema = Schema.struct({
     /** The name or 'alias' to use for the plugin. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** The plugin image reference to use. */
-    Remote: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Remote: stringSchema.pipe(optionalNullable),
     /** Disable the plugin once scheduled. */
-    Disabled: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    PluginPrivilege: arraySchema(PluginPrivilegeSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Disabled: booleanSchema.pipe(optionalNullable),
+    PluginPrivilege: arraySchema(PluginPrivilegeSchema).pipe(optionalNullable),
 });
 
 export interface TaskSpecPluginSpec extends Schema.Schema.To<typeof TaskSpecPluginSpecSchema> {}
 
 export const TaskStatusSchema = Schema.struct({
-    Timestamp: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    State: Schema.enums(TaskState).pipe(Schema.nullable).pipe(Schema.optional),
-    Message: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Err: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ContainerStatus: TaskStatusContainerStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Timestamp: stringSchema.pipe(optionalNullable),
+    State: Schema.enums(TaskState).pipe(optionalNullable),
+    Message: stringSchema.pipe(optionalNullable),
+    Err: stringSchema.pipe(optionalNullable),
+    ContainerStatus: TaskStatusContainerStatusSchema.pipe(optionalNullable),
 });
 
 export interface TaskStatus extends Schema.Schema.To<typeof TaskStatusSchema> {}
@@ -2713,7 +2712,7 @@ export const ClusterVolumeSpecAccessModeSchema = Schema.struct({
      * - `multi` the volume may be scheduled to any supported number of nodes at a
      *   time.
      */
-    Scope: Schema.enums(ClusterVolumeSpecAccessMode_ScopeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Scope: Schema.enums(ClusterVolumeSpecAccessMode_ScopeEnum).pipe(optionalNullable),
     /**
      * The number and way that different tasks can use this volume at one time.
      *
@@ -2724,7 +2723,7 @@ export const ClusterVolumeSpecAccessModeSchema = Schema.struct({
      *   may mount it as read/write.
      * - `all` The volume may have any number of readers and writers.
      */
-    Sharing: Schema.enums(ClusterVolumeSpecAccessMode_SharingEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Sharing: Schema.enums(ClusterVolumeSpecAccessMode_SharingEnum).pipe(optionalNullable),
     /**
      * Options for using this volume as a Mount-type volume. Either MountVolume
      * or BlockVolume, but not both, must be present. properties: FsType: type:
@@ -2734,16 +2733,16 @@ export const ClusterVolumeSpecAccessModeSchema = Schema.struct({
      * type: "object" description: | Options for using this volume as a
      * Block-type volume. Intentionally empty.
      */
-    MountVolume: anySchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MountVolume: anySchema.pipe(optionalNullable),
     /**
      * Swarm Secrets that are passed to the CSI storage plugin when operating on
      * this volume.
      */
-    Secrets: arraySchema(ClusterVolumeSpecAccessModeSecretsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Secrets: arraySchema(ClusterVolumeSpecAccessModeSecretsSchema).pipe(optionalNullable),
     AccessibilityRequirements: ClusterVolumeSpecAccessModeAccessibilityRequirementsSchema.pipe(Schema.nullable).pipe(
         Schema.optional
     ),
-    CapacityRange: ClusterVolumeSpecAccessModeCapacityRangeSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CapacityRange: ClusterVolumeSpecAccessModeCapacityRangeSchema.pipe(optionalNullable),
     /**
      * The availability of the volume for use in tasks.
      *
@@ -2760,19 +2759,15 @@ export const ClusterVolumeSpecAccessModeSchema = Schema.struct({
 
 export interface ClusterVolumeSpecAccessMode extends Schema.Schema.To<typeof ClusterVolumeSpecAccessModeSchema> {}
 
-export const ConfigSchema = Schema.struct({
+export class Config extends Schema.Class<Config>()({
     ID: stringSchema,
     Version: ObjectVersionSchema,
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: ConfigSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-});
+    CreatedAt: stringSchema.pipe(optionalNullable),
+    UpdatedAt: stringSchema.pipe(optionalNullable),
+    Spec: ConfigSpec.pipe(optionalNullable),
+}) {}
 
-export interface Config extends Schema.Schema.To<typeof ConfigSchema> {}
-
-export const ConfigsCreateBodySchema = ConfigSpecSchema;
-
-export interface ConfigsCreateBody extends Schema.Schema.To<typeof ConfigsCreateBodySchema> {}
+export class ConfigsCreateBody extends Config {}
 
 export enum ContainerState_StatusEnum {
     Created = "created",
@@ -2793,7 +2788,7 @@ export const ContainerStateSchema = Schema.struct({
      * String representation of the container state. Can be one of "created",
      * "running", "paused", "restarting", "removing", "exited", or "dead".
      */
-    Status: Schema.enums(ContainerState_StatusEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Status: Schema.enums(ContainerState_StatusEnum).pipe(optionalNullable),
     /**
      * Whether this container is running. Note that a running container can be
      * _paused_. The `Running` and `Paused` booleans are not mutually exclusive:
@@ -2803,34 +2798,34 @@ export const ContainerStateSchema = Schema.struct({
      * _and_ `Paused`. Use the `Status` field instead to determine if a
      * container's state is "running".
      */
-    Running: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Running: booleanSchema.pipe(optionalNullable),
     /** Whether this container is paused. */
-    Paused: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Paused: booleanSchema.pipe(optionalNullable),
     /** Whether this container is restarting. */
-    Restarting: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Restarting: booleanSchema.pipe(optionalNullable),
     /**
      * Whether a process within this container has been killed because it ran
      * out of memory since the container was last started.
      */
-    OOMKilled: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Dead: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OOMKilled: booleanSchema.pipe(optionalNullable),
+    Dead: booleanSchema.pipe(optionalNullable),
     /** The process ID of this container */
-    Pid: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Pid: numberSchema.pipe(optionalNullable),
     /** The last exit code of this container */
-    ExitCode: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Error: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ExitCode: numberSchema.pipe(optionalNullable),
+    Error: stringSchema.pipe(optionalNullable),
     /** The time when this container was last started. */
-    StartedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StartedAt: stringSchema.pipe(optionalNullable),
     /** The time when this container last exited. */
-    FinishedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Health: HealthSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    FinishedAt: stringSchema.pipe(optionalNullable),
+    Health: HealthSchema.pipe(optionalNullable),
 });
 
 export interface ContainerState extends Schema.Schema.To<typeof ContainerStateSchema> {}
 
 /** A summary of the container's network settings */
 export const ContainerSummaryNetworkSettingsSchema = Schema.struct({
-    Networks: recordSchema(stringSchema, EndpointSettingsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Networks: recordSchema(stringSchema, EndpointSettingsSchema).pipe(optionalNullable),
 });
 
 export interface ContainerSummaryNetworkSettings
@@ -2839,7 +2834,7 @@ export interface ContainerSummaryNetworkSettings
 export const IdUpdateBodySchema = Schema.extend(
     ResourcesSchema,
     Schema.struct({
-        RestartPolicy: RestartPolicySchema.pipe(Schema.nullable).pipe(Schema.optional),
+        RestartPolicy: RestartPolicySchema.pipe(optionalNullable),
     })
 );
 
@@ -2854,14 +2849,14 @@ export const ImageInspectSchema = Schema.struct({
      * digest differs from the `RepoDigests` below, which holds digests of image
      * manifests that reference the image.
      */
-    Id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Id: stringSchema.pipe(optionalNullable),
     /**
      * List of image names/tags in the local image cache that reference this
      * image. Multiple image tags can refer to the same image, and this list may
      * be empty if no tags reference the image, in which case the image is
      * "untagged", in which case it can still be referenced by its ID.
      */
-    RepoTags: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    RepoTags: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * List of content-addressable digests of locally available image manifests
      * that the image is referenced from. Multiple manifests can refer to the
@@ -2869,51 +2864,51 @@ export const ImageInspectSchema = Schema.struct({
      * either pulled from a registry, or if the image was pushed to a registry,
      * which is when the manifest is generated and its digest calculated.
      */
-    RepoDigests: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    RepoDigests: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * ID of the parent image. Depending on how the image was created, this
      * field may be empty and is only set for images that were built/created
      * locally. This field is empty if the image was pulled from an image
      * registry.
      */
-    Parent: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Parent: stringSchema.pipe(optionalNullable),
     /** Optional message that was set when committing or importing the image. */
-    Comment: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Comment: stringSchema.pipe(optionalNullable),
     /**
      * Date and time at which the image was created, formatted in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    Created: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Created: stringSchema.pipe(optionalNullable),
     /**
      * The ID of the container that was used to create the image. Depending on
      * how the image was created, this field may be empty.
      */
-    Container: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ContainerConfig: ContainerConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Container: stringSchema.pipe(optionalNullable),
+    ContainerConfig: ContainerConfigSchema.pipe(optionalNullable),
     /**
      * The version of Docker that was used to build the image. Depending on how
      * the image was created, this field may be empty.
      */
-    DockerVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DockerVersion: stringSchema.pipe(optionalNullable),
     /**
      * Name of the author that was specified when committing the image, or as
      * specified through MAINTAINER (deprecated) in the Dockerfile.
      */
-    Author: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Config: ContainerConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Author: stringSchema.pipe(optionalNullable),
+    Config: ContainerConfigSchema.pipe(optionalNullable),
     /** Hardware CPU architecture that the image runs on. */
-    Architecture: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Architecture: stringSchema.pipe(optionalNullable),
     /** CPU architecture variant (presently ARM-only). */
-    Variant: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Variant: stringSchema.pipe(optionalNullable),
     /** Operating System the image is built to run on. */
-    Os: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Os: stringSchema.pipe(optionalNullable),
     /**
      * Operating System version the image is built to run on (especially for
      * Windows).
      */
-    OsVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OsVersion: stringSchema.pipe(optionalNullable),
     /** Total size of the image including all layers it is composed of. */
-    Size: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Size: numberSchema.pipe(optionalNullable),
     /**
      * Total size of the image including all layers it is composed of. In
      * versions of Docker before v1.10, this field was calculated from the image
@@ -2922,10 +2917,10 @@ export const ImageInspectSchema = Schema.struct({
      * equivalent of the Size field. **Deprecated**: this field is kept for
      * backward compatibility, but will be removed in API v1.44.
      */
-    VirtualSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    GraphDriver: GraphDriverDataSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    RootFS: ImageInspectRootFSSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Metadata: ImageInspectMetadataSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    VirtualSize: numberSchema.pipe(optionalNullable),
+    GraphDriver: GraphDriverDataSchema.pipe(optionalNullable),
+    RootFS: ImageInspectRootFSSchema.pipe(optionalNullable),
+    Metadata: ImageInspectMetadataSchema.pipe(optionalNullable),
 });
 
 export interface ImageInspect extends Schema.Schema.To<typeof ImageInspectSchema> {}
@@ -2940,9 +2935,9 @@ export enum Mount_TypeEnum {
 
 export const MountSchema = Schema.struct({
     /** Container path. */
-    Target: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Target: stringSchema.pipe(optionalNullable),
     /** Mount source (e.g. a volume name, a host path). */
-    Source: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Source: stringSchema.pipe(optionalNullable),
     /**
      * The mount type. Available types:
      *
@@ -2957,43 +2952,43 @@ export const MountSchema = Schema.struct({
      *   prior to creating the container.
      * - `cluster` a Swarm cluster volume
      */
-    Type: Schema.enums(Mount_TypeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Type: Schema.enums(Mount_TypeEnum).pipe(optionalNullable),
     /** Whether the mount should be read-only. */
-    ReadOnly: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ReadOnly: booleanSchema.pipe(optionalNullable),
     /**
      * The consistency requirement for the mount: `default`, `consistent`,
      * `cached`, or `delegated`.
      */
-    Consistency: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    BindOptions: MountBindOptionsSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    VolumeOptions: MountVolumeOptionsSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    TmpfsOptions: MountTmpfsOptionsSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Consistency: stringSchema.pipe(optionalNullable),
+    BindOptions: MountBindOptionsSchema.pipe(optionalNullable),
+    VolumeOptions: MountVolumeOptionsSchema.pipe(optionalNullable),
+    TmpfsOptions: MountTmpfsOptionsSchema.pipe(optionalNullable),
 });
 
 export interface Mount extends Schema.Schema.To<typeof MountSchema> {}
 
 export const NetworkSchema = Schema.struct({
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Created: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Scope: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    EnableIPv6: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    IPAM: IPAMSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Internal: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Attachable: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Ingress: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Containers: recordSchema(stringSchema, NetworkContainerSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
+    Id: stringSchema.pipe(optionalNullable),
+    Created: stringSchema.pipe(optionalNullable),
+    Scope: stringSchema.pipe(optionalNullable),
+    Driver: stringSchema.pipe(optionalNullable),
+    EnableIPv6: booleanSchema.pipe(optionalNullable),
+    IPAM: IPAMSchema.pipe(optionalNullable),
+    Internal: booleanSchema.pipe(optionalNullable),
+    Attachable: booleanSchema.pipe(optionalNullable),
+    Ingress: booleanSchema.pipe(optionalNullable),
+    Containers: recordSchema(stringSchema, NetworkContainerSchema).pipe(optionalNullable),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface Network extends Schema.Schema.To<typeof NetworkSchema> {}
 
 export const NetworkConnectRequestSchema = Schema.struct({
     /** The ID or name of the container to connect to the network. */
-    Container: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    EndpointConfig: EndpointSettingsSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Container: stringSchema.pipe(optionalNullable),
+    EndpointConfig: EndpointSettingsSchema.pipe(optionalNullable),
 });
 
 export interface NetworkConnectRequest extends Schema.Schema.To<typeof NetworkConnectRequestSchema> {}
@@ -3009,28 +3004,28 @@ export const NetworkCreateRequestSchema = Schema.struct({
      * there to provide a best effort checking of any networks which has the
      * same name but it is not guaranteed to catch all name collisions.
      */
-    CheckDuplicate: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CheckDuplicate: booleanSchema.pipe(optionalNullable),
     /** Name of the network driver plugin to use. */
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Driver: stringSchema.pipe(optionalNullable),
     /** Restrict external access to the network. */
-    Internal: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Internal: booleanSchema.pipe(optionalNullable),
     /**
      * Globally scoped network is manually attachable by regular containers from
      * workers in swarm mode.
      */
-    Attachable: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Attachable: booleanSchema.pipe(optionalNullable),
     /**
      * Ingress network is the network which provides the routing-mesh in swarm
      * mode.
      */
-    Ingress: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    IPAM: IPAMSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Ingress: booleanSchema.pipe(optionalNullable),
+    IPAM: IPAMSchema.pipe(optionalNullable),
     /** Enable IPv6 on the network. */
-    EnableIPv6: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    EnableIPv6: booleanSchema.pipe(optionalNullable),
     /** Network specific options to be used by the drivers. */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
 });
 
 export interface NetworkCreateRequest extends Schema.Schema.To<typeof NetworkCreateRequestSchema> {}
@@ -3038,20 +3033,20 @@ export interface NetworkCreateRequest extends Schema.Schema.To<typeof NetworkCre
 /** NetworkSettings exposes the network settings in the API */
 export const NetworkSettingsSchema = Schema.struct({
     /** Name of the network's bridge (for example, `docker0`). */
-    Bridge: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Bridge: stringSchema.pipe(optionalNullable),
     /** SandboxID uniquely represents a container's network stack. */
-    SandboxID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SandboxID: stringSchema.pipe(optionalNullable),
     /** Indicates if hairpin NAT should be enabled on the virtual interface. */
-    HairpinMode: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HairpinMode: booleanSchema.pipe(optionalNullable),
     /** IPv6 unicast address using the link-local prefix. */
-    LinkLocalIPv6Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LinkLocalIPv6Address: stringSchema.pipe(optionalNullable),
     /** Prefix length of the IPv6 unicast address. */
-    LinkLocalIPv6PrefixLen: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Ports: PortMapSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LinkLocalIPv6PrefixLen: numberSchema.pipe(optionalNullable),
+    Ports: PortMapSchema.pipe(optionalNullable),
     /** SandboxKey identifies the sandbox */
-    SandboxKey: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    SecondaryIPAddresses: arraySchema(AddressSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    SecondaryIPv6Addresses: arraySchema(AddressSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    SandboxKey: stringSchema.pipe(optionalNullable),
+    SecondaryIPAddresses: arraySchema(AddressSchema).pipe(optionalNullable),
+    SecondaryIPv6Addresses: arraySchema(AddressSchema).pipe(optionalNullable),
     /**
      * EndpointID uniquely represents a service endpoint in a Sandbox.
      * **Deprecated**: This field is only propagated when attached to the >
@@ -3060,7 +3055,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * This field was deprecated in Docker 1.9 and is scheduled to be removed in
      * Docker 17.12.0
      */
-    EndpointID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    EndpointID: stringSchema.pipe(optionalNullable),
     /**
      * Gateway address for the default "bridge" network. **Deprecated**: This
      * field is only propagated when attached to the default "bridge" network.
@@ -3068,7 +3063,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * instead, which contains the same information. This field was deprecated
      * in Docker 1.9 and is scheduled to be removed in Docker 17.12.0
      */
-    Gateway: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Gateway: stringSchema.pipe(optionalNullable),
     /**
      * Global IPv6 address for the default "bridge" network. **Deprecated**:
      * This field is only propagated when attached to the default "bridge"
@@ -3077,7 +3072,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * was deprecated in Docker 1.9 and is scheduled to be removed in Docker
      * 17.12.0
      */
-    GlobalIPv6Address: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GlobalIPv6Address: stringSchema.pipe(optionalNullable),
     /**
      * Mask length of the global IPv6 address. **Deprecated**: This field is
      * only propagated when attached to the default "bridge" network. Use the
@@ -3085,7 +3080,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * which contains the same information. This field was deprecated in Docker
      * 1.9 and is scheduled to be removed in Docker 17.12.0
      */
-    GlobalIPv6PrefixLen: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    GlobalIPv6PrefixLen: numberSchema.pipe(optionalNullable),
     /**
      * IPv4 address for the default "bridge" network. **Deprecated**: This field
      * is only propagated when attached to the default "bridge" network. Use the
@@ -3093,7 +3088,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * which contains the same information. This field was deprecated in Docker
      * 1.9 and is scheduled to be removed in Docker 17.12.0
      */
-    IPAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPAddress: stringSchema.pipe(optionalNullable),
     /**
      * Mask length of the IPv4 address. **Deprecated**: This field is only
      * propagated when attached to the default "bridge" network. Use the
@@ -3101,7 +3096,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * which contains the same information. This field was deprecated in Docker
      * 1.9 and is scheduled to be removed in Docker 17.12.0
      */
-    IPPrefixLen: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPPrefixLen: numberSchema.pipe(optionalNullable),
     /**
      * IPv6 gateway address for this network. **Deprecated**: This field is only
      * propagated when attached to the default "bridge" network. Use the
@@ -3109,7 +3104,7 @@ export const NetworkSettingsSchema = Schema.struct({
      * which contains the same information. This field was deprecated in Docker
      * 1.9 and is scheduled to be removed in Docker 17.12.0
      */
-    IPv6Gateway: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPv6Gateway: stringSchema.pipe(optionalNullable),
     /**
      * MAC address for the container on the default "bridge" network.
      * **Deprecated**: This field is only propagated when attached to the >
@@ -3118,9 +3113,9 @@ export const NetworkSettingsSchema = Schema.struct({
      * This field was deprecated in Docker 1.9 and is scheduled to be removed in
      * Docker 17.12.0
      */
-    MacAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MacAddress: stringSchema.pipe(optionalNullable),
     /** Information about all networks that the container is connected to. */
-    Networks: recordSchema(stringSchema, EndpointSettingsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Networks: recordSchema(stringSchema, EndpointSettingsSchema).pipe(optionalNullable),
 });
 
 export interface NetworkSettings extends Schema.Schema.To<typeof NetworkSettingsSchema> {}
@@ -3132,7 +3127,7 @@ export interface NetworkSettings extends Schema.Schema.To<typeof NetworkSettings
  */
 export const NetworkingConfigSchema = Schema.struct({
     /** A mapping of network name to endpoint configuration for that network. */
-    EndpointsConfig: recordSchema(stringSchema, EndpointSettingsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    EndpointsConfig: recordSchema(stringSchema, EndpointSettingsSchema).pipe(optionalNullable),
 });
 
 export interface NetworkingConfig extends Schema.Schema.To<typeof NetworkingConfigSchema> {}
@@ -3140,13 +3135,13 @@ export interface NetworkingConfig extends Schema.Schema.To<typeof NetworkingConf
 /** The config of a plugin. */
 export const PluginConfigSchema = Schema.struct({
     /** Docker Version used to create the plugin */
-    DockerVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DockerVersion: stringSchema.pipe(optionalNullable),
     Description: stringSchema,
     Documentation: stringSchema,
     _Interface: PluginConfigInterfaceSchema,
     Entrypoint: arraySchema(stringSchema),
     WorkDir: stringSchema,
-    User: PluginConfigUserSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    User: PluginConfigUserSchema.pipe(optionalNullable),
     Network: PluginConfigNetworkSchema,
     Linux: PluginConfigLinuxSchema,
     PropagatedMount: stringSchema,
@@ -3155,7 +3150,7 @@ export const PluginConfigSchema = Schema.struct({
     Mounts: arraySchema(PluginMountSchema),
     Env: arraySchema(PluginEnvSchema),
     Args: PluginConfigArgsSchema,
-    rootfs: PluginConfigRootfsSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    rootfs: PluginConfigRootfsSchema.pipe(optionalNullable),
 });
 
 export interface PluginConfig extends Schema.Schema.To<typeof PluginConfigSchema> {}
@@ -3165,9 +3160,9 @@ export interface PluginConfig extends Schema.Schema.To<typeof PluginConfigSchema
  * requested by a task.
  */
 export const ResourceObjectSchema = Schema.struct({
-    NanoCPUs: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    MemoryBytes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    GenericResources: GenericResourcesSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NanoCPUs: numberSchema.pipe(optionalNullable),
+    MemoryBytes: numberSchema.pipe(optionalNullable),
+    GenericResources: GenericResourcesSchema.pipe(optionalNullable),
 });
 
 export interface ResourceObject extends Schema.Schema.To<typeof ResourceObjectSchema> {}
@@ -3177,7 +3172,7 @@ export const SecretSchema = Schema.struct({
     Version: ObjectVersionSchema,
     CreatedAt: stringSchema,
     UpdatedAt: stringSchema,
-    Spec: SecretSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Spec: SecretSpecSchema.pipe(optionalNullable),
 });
 
 export interface Secret extends Schema.Schema.To<typeof SecretSchema> {}
@@ -3187,9 +3182,9 @@ export const SecretsCreateBodySchema = SecretSpecSchema;
 export interface SecretsCreateBody extends Schema.Schema.To<typeof SecretsCreateBodySchema> {}
 
 export const ServiceEndpointSchema = Schema.struct({
-    Spec: EndpointSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Ports: arraySchema(EndpointPortConfigSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    VirtualIPs: arraySchema(ServiceEndpointVirtualIPsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Spec: EndpointSpecSchema.pipe(optionalNullable),
+    Ports: arraySchema(EndpointPortConfigSchema).pipe(optionalNullable),
+    VirtualIPs: arraySchema(ServiceEndpointVirtualIPsSchema).pipe(optionalNullable),
 });
 
 export interface ServiceEndpoint extends Schema.Schema.To<typeof ServiceEndpointSchema> {}
@@ -3197,15 +3192,15 @@ export interface ServiceEndpoint extends Schema.Schema.To<typeof ServiceEndpoint
 /** User modifiable swarm configuration. */
 export const SwarmSpecSchema = Schema.struct({
     /** Name of the swarm. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Orchestration: SwarmSpecOrchestrationSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Raft: SwarmSpecRaftSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Dispatcher: SwarmSpecDispatcherSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CAConfig: SwarmSpecCAConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    EncryptionConfig: SwarmSpecEncryptionConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    TaskDefaults: SwarmSpecTaskDefaultsSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    Orchestration: SwarmSpecOrchestrationSchema.pipe(optionalNullable),
+    Raft: SwarmSpecRaftSchema.pipe(optionalNullable),
+    Dispatcher: SwarmSpecDispatcherSchema.pipe(optionalNullable),
+    CAConfig: SwarmSpecCAConfigSchema.pipe(optionalNullable),
+    EncryptionConfig: SwarmSpecEncryptionConfigSchema.pipe(optionalNullable),
+    TaskDefaults: SwarmSpecTaskDefaultsSchema.pipe(optionalNullable),
 });
 
 export interface SwarmSpec extends Schema.Schema.To<typeof SwarmSpecSchema> {}
@@ -3229,24 +3224,24 @@ export const TaskSpecPlacementSchema = Schema.struct({
      * drivers, etc. Swarm administrators add `node.labels` for operational
      * purposes by using the [`node update endpoint`](#operation/NodeUpdate).
      */
-    Constraints: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Constraints: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * Preferences provide a way to make the scheduler aware of factors such as
      * topology. They are provided in order from highest to lowest precedence.
      */
-    Preferences: arraySchema(TaskSpecPlacementPreferencesSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Preferences: arraySchema(TaskSpecPlacementPreferencesSchema).pipe(optionalNullable),
     /**
      * Maximum number of replicas for per node (default value is 0, which is
      * unlimited)
      */
-    MaxReplicas: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MaxReplicas: numberSchema.pipe(optionalNullable),
     /**
      * Platforms stores all the platforms that the service's image can run on.
      * This field is used in the platform filter for scheduling. If empty, then
      * the platform filter is off, meaning there are no scheduling
      * restrictions.
      */
-    Platforms: arraySchema(PlatformSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Platforms: arraySchema(PlatformSchema).pipe(optionalNullable),
 });
 
 export interface TaskSpecPlacement extends Schema.Schema.To<typeof TaskSpecPlacementSchema> {}
@@ -3257,38 +3252,38 @@ export interface TaskSpecPlacement extends Schema.Schema.To<typeof TaskSpecPlace
  */
 export const ClusterInfoSchema = Schema.struct({
     /** The ID of the swarm. */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
+    Version: ObjectVersionSchema.pipe(optionalNullable),
     /**
      * Date and time at which the swarm was initialized in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CreatedAt: stringSchema.pipe(optionalNullable),
     /**
      * Date and time at which the swarm was last updated in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: SwarmSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    TLSInfo: TLSInfoSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UpdatedAt: stringSchema.pipe(optionalNullable),
+    Spec: SwarmSpecSchema.pipe(optionalNullable),
+    TLSInfo: TLSInfoSchema.pipe(optionalNullable),
     /** Whether there is currently a root CA rotation in progress for the swarm */
-    RootRotationInProgress: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    RootRotationInProgress: booleanSchema.pipe(optionalNullable),
     /**
      * DataPathPort specifies the data path port number for data traffic.
      * Acceptable port range is 1024 to 49151. If no port is set or is set to 0,
      * the default port (4789) is used.
      */
-    DataPathPort: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathPort: numberSchema.pipe(optionalNullable),
     /**
      * Default Address Pool specifies default subnet pools for global scope
      * networks.
      */
-    DefaultAddrPool: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DefaultAddrPool: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * SubnetSize specifies the subnet size of the networks created from the
      * default subnet pool.
      */
-    SubnetSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SubnetSize: numberSchema.pipe(optionalNullable),
 });
 
 export interface ClusterInfo extends Schema.Schema.To<typeof ClusterInfoSchema> {}
@@ -3303,40 +3298,40 @@ export const ClusterVolumeSpecSchema = Schema.struct({
      * empty string for a group technically all belong to the same, emptystring
      * group.
      */
-    Group: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    AccessMode: ClusterVolumeSpecAccessModeSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Group: stringSchema.pipe(optionalNullable),
+    AccessMode: ClusterVolumeSpecAccessModeSchema.pipe(optionalNullable),
 });
 
 export interface ClusterVolumeSpec extends Schema.Schema.To<typeof ClusterVolumeSpecSchema> {}
 
 export const ContainerSummarySchema = Schema.struct({
     /** The ID of this container */
-    Id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Id: stringSchema.pipe(optionalNullable),
     /** The names that this container has been given */
-    Names: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Names: arraySchema(stringSchema).pipe(optionalNullable),
     /** The name of the image used when creating this container */
-    Image: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Image: stringSchema.pipe(optionalNullable),
     /** The ID of the image that this container was created from */
-    ImageID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ImageID: stringSchema.pipe(optionalNullable),
     /** Command to run when starting the container */
-    Command: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Command: stringSchema.pipe(optionalNullable),
     /** When the container was created */
-    Created: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Created: numberSchema.pipe(optionalNullable),
     /** The ports exposed by this container */
-    Ports: arraySchema(PortSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Ports: arraySchema(PortSchema).pipe(optionalNullable),
     /** The size of files that have been created or changed by this container */
-    SizeRw: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SizeRw: numberSchema.pipe(optionalNullable),
     /** The total size of all the files in this container */
-    SizeRootFs: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SizeRootFs: numberSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /** The state of this container (e.g. `Exited`) */
-    State: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    State: stringSchema.pipe(optionalNullable),
     /** Additional human-readable status of this container (e.g. `Exit 0`) */
-    Status: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    HostConfig: ContainerSummaryHostConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    NetworkSettings: ContainerSummaryNetworkSettingsSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Mounts: arraySchema(MountPointSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Status: stringSchema.pipe(optionalNullable),
+    HostConfig: ContainerSummaryHostConfigSchema.pipe(optionalNullable),
+    NetworkSettings: ContainerSummaryNetworkSettingsSchema.pipe(optionalNullable),
+    Mounts: arraySchema(MountPointSchema).pipe(optionalNullable),
 });
 
 export interface ContainerSummary extends Schema.Schema.To<typeof ContainerSummarySchema> {}
@@ -3393,50 +3388,50 @@ export const HostConfigSchema = Schema.extend(
          *   slave volumes, the mount must be set to either `shared` or
          *   `slave`.
          */
-        Binds: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Binds: arraySchema(stringSchema).pipe(optionalNullable),
         /** Path to a file where the container ID is written */
-        ContainerIDFile: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-        LogConfig: HostConfigLogConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        ContainerIDFile: stringSchema.pipe(optionalNullable),
+        LogConfig: HostConfigLogConfigSchema.pipe(optionalNullable),
         /**
          * Network mode to use for this container. Supported standard values
          * are: `bridge`, `host`, `none`, and `container:<name|id>`. Any other
          * value is taken as a custom network's name to which this container
          * should connect to.
          */
-        NetworkMode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-        PortBindings: PortMapSchema.pipe(Schema.nullable).pipe(Schema.optional),
-        RestartPolicy: RestartPolicySchema.pipe(Schema.nullable).pipe(Schema.optional),
+        NetworkMode: stringSchema.pipe(optionalNullable),
+        PortBindings: PortMapSchema.pipe(optionalNullable),
+        RestartPolicy: RestartPolicySchema.pipe(optionalNullable),
         /**
          * Automatically remove the container when the container's process
          * exits. This has no effect if `RestartPolicy` is set.
          */
-        AutoRemove: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        AutoRemove: booleanSchema.pipe(optionalNullable),
         /** Driver that this container uses to mount volumes. */
-        VolumeDriver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        VolumeDriver: stringSchema.pipe(optionalNullable),
         /**
          * A list of volumes to inherit from another container, specified in the
          * form `<container name>[:<ro|rw>]`.
          */
-        VolumesFrom: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        VolumesFrom: arraySchema(stringSchema).pipe(optionalNullable),
         /** Specification for mounts to be added to the container. */
-        Mounts: arraySchema(MountSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Mounts: arraySchema(MountSchema).pipe(optionalNullable),
         /** Initial console size, as an `[height, width]` array. */
-        ConsoleSize: arraySchema(numberSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        ConsoleSize: arraySchema(numberSchema).pipe(optionalNullable),
         /**
          * Arbitrary non-identifying metadata attached to container and provided
          * to the runtime when the container is started.
          */
-        Annotations: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Annotations: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
         /**
          * A list of kernel capabilities to add to the container. Conflicts with
          * option 'Capabilities'.
          */
-        CapAdd: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        CapAdd: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * A list of kernel capabilities to drop from the container. Conflicts
          * with option 'Capabilities'.
          */
-        CapDrop: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        CapDrop: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * Cgroup namespace mode for the container. Possible values are: -
          * `\"private\"`: the container runs in its own private cgroup
@@ -3447,20 +3442,20 @@ export const HostConfigSchema = Schema.extend(
          *   `\"host\"`, depending on daemon version, kernel support and
          *   configuration.
          */
-        CgroupnsMode: Schema.enums(HostConfig_CgroupnsModeEnum).pipe(Schema.nullable).pipe(Schema.optional),
+        CgroupnsMode: Schema.enums(HostConfig_CgroupnsModeEnum).pipe(optionalNullable),
         /** A list of DNS servers for the container to use. */
-        Dns: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Dns: arraySchema(stringSchema).pipe(optionalNullable),
         /** A list of DNS options. */
-        DnsOptions: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        DnsOptions: arraySchema(stringSchema).pipe(optionalNullable),
         /** A list of DNS search domains. */
-        DnsSearch: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        DnsSearch: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * A list of hostnames/IP mappings to add to the container's
          * `/etc/hosts` file. Specified in the form `[\"hostname:IP\"]`.
          */
-        ExtraHosts: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        ExtraHosts: arraySchema(stringSchema).pipe(optionalNullable),
         /** A list of additional groups that the container process will run as. */
-        GroupAdd: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        GroupAdd: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * IPC sharing mode for the container. Possible values are: -
          * `\"none\"`: own private IPC namespace, with /dev/shm not mounted -
@@ -3474,16 +3469,16 @@ export const HostConfigSchema = Schema.extend(
          *   daemon default is used, which can either be `\"private\"` or
          *   `\"shareable\"`, depending on daemon version and configuration.
          */
-        IpcMode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        IpcMode: stringSchema.pipe(optionalNullable),
         /** Cgroup to use for the container. */
-        Cgroup: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        Cgroup: stringSchema.pipe(optionalNullable),
         /** A list of links for the container in the form `container_name:alias`. */
-        Links: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Links: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * An integer value containing the score given to the container in order
          * to tune OOM killer preferences.
          */
-        OomScoreAdj: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        OomScoreAdj: numberSchema.pipe(optionalNullable),
         /**
          * Set the PID (Process) Namespace mode for the container. It can be
          * either:
@@ -3491,9 +3486,9 @@ export const HostConfigSchema = Schema.extend(
          * - `\"container:<name|id>\"`: joins another container's PID namespace
          * - `\"host\"`: use the host's PID namespace inside the container
          */
-        PidMode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        PidMode: stringSchema.pipe(optionalNullable),
         /** Gives the container full access to the host. */
-        Privileged: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        Privileged: booleanSchema.pipe(optionalNullable),
         /**
          * Allocates an ephemeral host port for all of a container's exposed
          * ports. Ports are de-allocated when the container stops and allocated
@@ -3502,41 +3497,41 @@ export const HostConfigSchema = Schema.extend(
          * port range that depends on the kernel. For example, on Linux the
          * range is defined by `/proc/sys/net/ipv4/ip_local_port_range`.
          */
-        PublishAllPorts: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        PublishAllPorts: booleanSchema.pipe(optionalNullable),
         /** Mount the container's root filesystem as read only. */
-        ReadonlyRootfs: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        ReadonlyRootfs: booleanSchema.pipe(optionalNullable),
         /**
          * A list of string values to customize labels for MLS systems, such as
          * SELinux.
          */
-        SecurityOpt: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        SecurityOpt: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * Storage driver options for this container, in the form `{\"size\":
          * \"120G\"}`.
          */
-        StorageOpt: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        StorageOpt: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
         /**
          * A map of container directories which should be replaced by tmpfs
          * mounts, and their corresponding mount options. For example: `{
          * \"/run\": \"rw,noexec,nosuid,size=65536k\" }`
          */
-        Tmpfs: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Tmpfs: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
         /** UTS namespace to use for the container. */
-        UTSMode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        UTSMode: stringSchema.pipe(optionalNullable),
         /**
          * Sets the usernamespace mode for the container when usernamespace
          * remapping option is enabled.
          */
-        UsernsMode: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        UsernsMode: stringSchema.pipe(optionalNullable),
         /** Size of `/dev/shm` in bytes. If omitted, the system uses 64MB. */
-        ShmSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        ShmSize: numberSchema.pipe(optionalNullable),
         /**
          * A list of kernel parameters (sysctls) to set in the container. For
          * example: `{\"net.ipv4.ip_forward\": \"1\"}`
          */
-        Sysctls: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        Sysctls: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
         /** Runtime to use with this container. */
-        Runtime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        Runtime: stringSchema.pipe(optionalNullable),
         /** Isolation technology of the container. (Windows only) */
         Isolation: Schema.string
             .pipe(
@@ -3553,12 +3548,12 @@ export const HostConfigSchema = Schema.extend(
          * The list of paths to be masked inside the container (this overrides
          * the default set of paths).
          */
-        MaskedPaths: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        MaskedPaths: arraySchema(stringSchema).pipe(optionalNullable),
         /**
          * The list of paths to be set as read-only inside the container (this
          * overrides the default set of paths).
          */
-        ReadonlyPaths: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+        ReadonlyPaths: arraySchema(stringSchema).pipe(optionalNullable),
     })
 );
 
@@ -3569,18 +3564,18 @@ export interface HostConfig extends Schema.Schema.To<typeof HostConfigSchema> {}
  * agent.
  */
 export const NodeDescriptionSchema = Schema.struct({
-    Hostname: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Platform: PlatformSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Resources: ResourceObjectSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Engine: EngineDescriptionSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    TLSInfo: TLSInfoSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Hostname: stringSchema.pipe(optionalNullable),
+    Platform: PlatformSchema.pipe(optionalNullable),
+    Resources: ResourceObjectSchema.pipe(optionalNullable),
+    Engine: EngineDescriptionSchema.pipe(optionalNullable),
+    TLSInfo: TLSInfoSchema.pipe(optionalNullable),
 });
 
 export interface NodeDescription extends Schema.Schema.To<typeof NodeDescriptionSchema> {}
 
 /** A plugin for the Engine API */
 export const PluginSchema = Schema.struct({
-    Id: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Id: stringSchema.pipe(optionalNullable),
     Name: stringSchema,
     /**
      * True if the plugin is running. False if the plugin is not running, only
@@ -3589,7 +3584,7 @@ export const PluginSchema = Schema.struct({
     Enabled: booleanSchema,
     Settings: PluginSettingsSchema,
     /** Plugin remote reference used to push/pull the plugin */
-    PluginReference: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PluginReference: stringSchema.pipe(optionalNullable),
     Config: PluginConfigSchema,
 });
 
@@ -3604,7 +3599,7 @@ export const SwarmInitRequestSchema = Schema.struct({
      * `eth0:4567`. If the port number is omitted, the default swarm listening
      * port is used.
      */
-    ListenAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ListenAddr: stringSchema.pipe(optionalNullable),
     /**
      * Externally reachable address advertised to other nodes. This can either
      * be an address/port combination in the form `192.168.1.1:4567`, or an
@@ -3613,7 +3608,7 @@ export const SwarmInitRequestSchema = Schema.struct({
      * `AdvertiseAddr` is not specified, it will be automatically detected when
      * possible.
      */
-    AdvertiseAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AdvertiseAddr: stringSchema.pipe(optionalNullable),
     /**
      * Address or interface to use for data path traffic (format:
      * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
@@ -3624,26 +3619,26 @@ export const SwarmInitRequestSchema = Schema.struct({
      * possible to separate the container data traffic from the management
      * traffic of the cluster.
      */
-    DataPathAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathAddr: stringSchema.pipe(optionalNullable),
     /**
      * DataPathPort specifies the data path port number for data traffic.
      * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
      * default port 4789 will be used.
      */
-    DataPathPort: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathPort: numberSchema.pipe(optionalNullable),
     /**
      * Default Address Pool specifies default subnet pools for global scope
      * networks.
      */
-    DefaultAddrPool: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DefaultAddrPool: arraySchema(stringSchema).pipe(optionalNullable),
     /** Force creation of a new swarm. */
-    ForceNewCluster: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ForceNewCluster: booleanSchema.pipe(optionalNullable),
     /**
      * SubnetSize specifies the subnet size of the networks created from the
      * default subnet pool.
      */
-    SubnetSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: SwarmSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SubnetSize: numberSchema.pipe(optionalNullable),
+    Spec: SwarmSpecSchema.pipe(optionalNullable),
 });
 
 export interface SwarmInitRequest extends Schema.Schema.To<typeof SwarmInitRequestSchema> {}
@@ -3657,7 +3652,7 @@ export const SwarmInitRequest1Schema = Schema.struct({
      * `eth0:4567`. If the port number is omitted, the default swarm listening
      * port is used.
      */
-    ListenAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ListenAddr: stringSchema.pipe(optionalNullable),
     /**
      * Externally reachable address advertised to other nodes. This can either
      * be an address/port combination in the form `192.168.1.1:4567`, or an
@@ -3666,7 +3661,7 @@ export const SwarmInitRequest1Schema = Schema.struct({
      * `AdvertiseAddr` is not specified, it will be automatically detected when
      * possible.
      */
-    AdvertiseAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    AdvertiseAddr: stringSchema.pipe(optionalNullable),
     /**
      * Address or interface to use for data path traffic (format:
      * `<ip|interface>`), for example, `192.168.1.1`, or an interface, like
@@ -3677,26 +3672,26 @@ export const SwarmInitRequest1Schema = Schema.struct({
      * possible to separate the container data traffic from the management
      * traffic of the cluster.
      */
-    DataPathAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathAddr: stringSchema.pipe(optionalNullable),
     /**
      * DataPathPort specifies the data path port number for data traffic.
      * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
      * default port 4789 will be used.
      */
-    DataPathPort: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DataPathPort: numberSchema.pipe(optionalNullable),
     /**
      * Default Address Pool specifies default subnet pools for global scope
      * networks.
      */
-    DefaultAddrPool: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DefaultAddrPool: arraySchema(stringSchema).pipe(optionalNullable),
     /** Force creation of a new swarm. */
-    ForceNewCluster: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ForceNewCluster: booleanSchema.pipe(optionalNullable),
     /**
      * SubnetSize specifies the subnet size of the networks created from the
      * default subnet pool.
      */
-    SubnetSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: SwarmSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SubnetSize: numberSchema.pipe(optionalNullable),
+    Spec: SwarmSpecSchema.pipe(optionalNullable),
 });
 
 export interface SwarmInitRequest1 extends Schema.Schema.To<typeof SwarmInitRequest1Schema> {}
@@ -3715,75 +3710,75 @@ export enum TaskSpecContainerSpec_IsolationEnum {
  */
 export const TaskSpecContainerSpecSchema = Schema.struct({
     /** The image name to use for the container */
-    Image: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Image: stringSchema.pipe(optionalNullable),
     /** User-defined key/value data. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /** The command to be run in the image. */
-    Command: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Command: arraySchema(stringSchema).pipe(optionalNullable),
     /** Arguments to the command. */
-    Args: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Args: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * The hostname to use for the container, as a valid [RFC
      * 1123](https://tools.ietf.org/html/rfc1123) hostname.
      */
-    Hostname: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Hostname: stringSchema.pipe(optionalNullable),
     /** A list of environment variables in the form `VAR=value`. */
-    Env: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Env: arraySchema(stringSchema).pipe(optionalNullable),
     /** The working directory for commands to run in. */
-    Dir: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Dir: stringSchema.pipe(optionalNullable),
     /** The user inside the container. */
-    User: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    User: stringSchema.pipe(optionalNullable),
     /** A list of additional groups that the container process will run as. */
-    Groups: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Privileges: TaskSpecContainerSpecPrivilegesSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Groups: arraySchema(stringSchema).pipe(optionalNullable),
+    Privileges: TaskSpecContainerSpecPrivilegesSchema.pipe(optionalNullable),
     /** Whether a pseudo-TTY should be allocated. */
-    TTY: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    TTY: booleanSchema.pipe(optionalNullable),
     /** Open `stdin` */
-    OpenStdin: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OpenStdin: booleanSchema.pipe(optionalNullable),
     /** Mount the container's root filesystem as read only. */
-    ReadOnly: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ReadOnly: booleanSchema.pipe(optionalNullable),
     /**
      * Specification for mounts to be added to containers created as part of the
      * service.
      */
-    Mounts: arraySchema(MountSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Mounts: arraySchema(MountSchema).pipe(optionalNullable),
     /** Signal to stop the container. */
-    StopSignal: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StopSignal: stringSchema.pipe(optionalNullable),
     /**
      * Amount of time to wait for the container to terminate before forcefully
      * killing it.
      */
-    StopGracePeriod: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    HealthCheck: HealthConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    StopGracePeriod: numberSchema.pipe(optionalNullable),
+    HealthCheck: HealthConfigSchema.pipe(optionalNullable),
     /**
      * A list of hostname/IP mappings to add to the container's `hosts` file.
      * The format of extra hosts is specified in the
      * [hosts(5)](http://man7.org/linux/man-pages/man5/hosts.5.html) man page:
      * IP_address canonical_hostname [aliases...]
      */
-    Hosts: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    DNSConfig: TaskSpecContainerSpecDNSConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Hosts: arraySchema(stringSchema).pipe(optionalNullable),
+    DNSConfig: TaskSpecContainerSpecDNSConfigSchema.pipe(optionalNullable),
     /**
      * Secrets contains references to zero or more secrets that will be exposed
      * to the service.
      */
-    Secrets: arraySchema(TaskSpecContainerSpecSecretsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Secrets: arraySchema(TaskSpecContainerSpecSecretsSchema).pipe(optionalNullable),
     /**
      * Configs contains references to zero or more configs that will be exposed
      * to the service.
      */
-    Configs: arraySchema(TaskSpecContainerSpecConfigsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Configs: arraySchema(TaskSpecContainerSpecConfigsSchema).pipe(optionalNullable),
     /**
      * Isolation technology of the containers running the service. (Windows
      * only)
      */
-    Isolation: Schema.enums(TaskSpecContainerSpec_IsolationEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    Isolation: Schema.enums(TaskSpecContainerSpec_IsolationEnum).pipe(optionalNullable),
     /**
      * Run an init inside the container that forwards signals and reaps
      * processes. This field is omitted if empty, and the default (as configured
      * on the daemon) is used.
      */
-    Init: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Init: booleanSchema.pipe(optionalNullable),
     /**
      * Set kernel namedspaced parameters (sysctls) in the container. The Sysctls
      * option on services accepts the same sysctls as the are supported on
@@ -3792,22 +3787,22 @@ export const TaskSpecContainerSpecSchema = Schema.struct({
      * and it's up to the user to determine whether a given sysctl will work
      * properly in a Service.
      */
-    Sysctls: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Sysctls: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /**
      * A list of kernel capabilities to add to the default set for the
      * container.
      */
-    CapabilityAdd: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    CapabilityAdd: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * A list of kernel capabilities to drop from the default set for the
      * container.
      */
-    CapabilityDrop: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    CapabilityDrop: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * A list of resource limits to set in the container. For example:
      * `{\"Name\": \"nofile\", \"Soft\": 1024, \"Hard\": 2048}`"
      */
-    Ulimits: arraySchema(ResourcesUlimitsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Ulimits: arraySchema(ResourcesUlimitsSchema).pipe(optionalNullable),
 });
 
 export interface TaskSpecContainerSpec extends Schema.Schema.To<typeof TaskSpecContainerSpecSchema> {}
@@ -3817,8 +3812,8 @@ export interface TaskSpecContainerSpec extends Schema.Schema.To<typeof TaskSpecC
  * part of the service.
  */
 export const TaskSpecResourcesSchema = Schema.struct({
-    Limits: LimitSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Reservations: ResourceObjectSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Limits: LimitSchema.pipe(optionalNullable),
+    Reservations: ResourceObjectSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpecResources extends Schema.Schema.To<typeof TaskSpecResourcesSchema> {}
@@ -3833,17 +3828,17 @@ export const ClusterVolumeSchema = Schema.struct({
      * they have an ID, unlike non-cluster volumes. This ID can be used to refer
      * to the Volume instead of the name.
      */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: ClusterVolumeSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Info: ClusterVolumeInfoSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
+    Version: ObjectVersionSchema.pipe(optionalNullable),
+    CreatedAt: stringSchema.pipe(optionalNullable),
+    UpdatedAt: stringSchema.pipe(optionalNullable),
+    Spec: ClusterVolumeSpecSchema.pipe(optionalNullable),
+    Info: ClusterVolumeInfoSchema.pipe(optionalNullable),
     /**
      * The status of the volume as it pertains to its publishing and use on
      * specific nodes
      */
-    PublishStatus: arraySchema(ClusterVolumePublishStatusSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    PublishStatus: arraySchema(ClusterVolumePublishStatusSchema).pipe(optionalNullable),
 });
 
 export interface ClusterVolume extends Schema.Schema.To<typeof ClusterVolumeSchema> {}
@@ -3852,36 +3847,36 @@ export const ContainerInspectResponseSchema = Schema.struct({
     /** The ID of the container */
     Id: stringSchema,
     /** The time the container was created */
-    Created: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Created: stringSchema.pipe(optionalNullable),
     /** The path to the command being run */
-    Path: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Path: stringSchema.pipe(optionalNullable),
     /** The arguments to the command being run */
-    Args: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    State: ContainerStateSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Args: arraySchema(stringSchema).pipe(optionalNullable),
+    State: ContainerStateSchema.pipe(optionalNullable),
     /** The container's image ID */
-    Image: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ResolvConfPath: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    HostnamePath: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    HostsPath: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    LogPath: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    RestartCount: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Platform: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    MountLabel: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ProcessLabel: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    AppArmorProfile: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Image: stringSchema.pipe(optionalNullable),
+    ResolvConfPath: stringSchema.pipe(optionalNullable),
+    HostnamePath: stringSchema.pipe(optionalNullable),
+    HostsPath: stringSchema.pipe(optionalNullable),
+    LogPath: stringSchema.pipe(optionalNullable),
+    Name: stringSchema.pipe(optionalNullable),
+    RestartCount: numberSchema.pipe(optionalNullable),
+    Driver: stringSchema.pipe(optionalNullable),
+    Platform: stringSchema.pipe(optionalNullable),
+    MountLabel: stringSchema.pipe(optionalNullable),
+    ProcessLabel: stringSchema.pipe(optionalNullable),
+    AppArmorProfile: stringSchema.pipe(optionalNullable),
     /** IDs of exec instances that are running in the container. */
-    ExecIDs: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    HostConfig: HostConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    GraphDriver: GraphDriverDataSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ExecIDs: arraySchema(stringSchema).pipe(optionalNullable),
+    HostConfig: HostConfigSchema.pipe(optionalNullable),
+    GraphDriver: GraphDriverDataSchema.pipe(optionalNullable),
     /** The size of files that have been created or changed by this container. */
-    SizeRw: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SizeRw: numberSchema.pipe(optionalNullable),
     /** The total size of all the files in this container. */
-    SizeRootFs: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Mounts: arraySchema(MountPointSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Config: ContainerConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    NetworkSettings: NetworkSettingsSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SizeRootFs: numberSchema.pipe(optionalNullable),
+    Mounts: arraySchema(MountPointSchema).pipe(optionalNullable),
+    Config: ContainerConfigSchema.pipe(optionalNullable),
+    NetworkSettings: NetworkSettingsSchema.pipe(optionalNullable),
 });
 
 export interface ContainerInspectResponse extends Schema.Schema.To<typeof ContainerInspectResponseSchema> {}
@@ -3889,8 +3884,8 @@ export interface ContainerInspectResponse extends Schema.Schema.To<typeof Contai
 export const ContainersCreateBodySchema = Schema.extend(
     ContainerConfigSchema,
     Schema.struct({
-        HostConfig: HostConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-        NetworkingConfig: NetworkingConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        HostConfig: HostConfigSchema.pipe(optionalNullable),
+        NetworkingConfig: NetworkingConfigSchema.pipe(optionalNullable),
     })
 );
 
@@ -3899,30 +3894,30 @@ export interface ContainersCreateBody extends Schema.Schema.To<typeof Containers
 export const ContainersCreateBody1Schema = Schema.extend(
     ContainerConfigSchema,
     Schema.struct({
-        HostConfig: HostConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-        NetworkingConfig: NetworkingConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        HostConfig: HostConfigSchema.pipe(optionalNullable),
+        NetworkingConfig: NetworkingConfigSchema.pipe(optionalNullable),
     })
 );
 
 export interface ContainersCreateBody1 extends Schema.Schema.To<typeof ContainersCreateBody1Schema> {}
 
 export const NodeSchema = Schema.struct({
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
+    Version: ObjectVersionSchema.pipe(optionalNullable),
     /**
      * Date and time at which the node was added to the swarm in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CreatedAt: stringSchema.pipe(optionalNullable),
     /**
      * Date and time at which the node was last updated in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: NodeSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Description: NodeDescriptionSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Status: NodeStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ManagerStatus: ManagerStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    UpdatedAt: stringSchema.pipe(optionalNullable),
+    Spec: NodeSpecSchema.pipe(optionalNullable),
+    Description: NodeDescriptionSchema.pipe(optionalNullable),
+    Status: NodeStatusSchema.pipe(optionalNullable),
+    ManagerStatus: ManagerStatusSchema.pipe(optionalNullable),
 });
 
 export interface Node extends Schema.Schema.To<typeof NodeSchema> {}
@@ -3930,7 +3925,7 @@ export interface Node extends Schema.Schema.To<typeof NodeSchema> {}
 export const SwarmSchema = Schema.extend(
     ClusterInfoSchema,
     Schema.struct({
-        JoinTokens: JoinTokensSchema.pipe(Schema.nullable).pipe(Schema.optional),
+        JoinTokens: JoinTokensSchema.pipe(optionalNullable),
     })
 );
 
@@ -3939,41 +3934,41 @@ export interface Swarm extends Schema.Schema.To<typeof SwarmSchema> {}
 /** Represents generic information about swarm. */
 export const SwarmInfoSchema = Schema.struct({
     /** Unique identifier of for this node in the swarm. */
-    NodeID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NodeID: stringSchema.pipe(optionalNullable),
     /** IP address at which this node can be reached by other nodes in the swarm. */
-    NodeAddr: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    LocalNodeState: Schema.enums(LocalNodeState).pipe(Schema.nullable).pipe(Schema.optional),
-    ControlAvailable: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Error: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NodeAddr: stringSchema.pipe(optionalNullable),
+    LocalNodeState: Schema.enums(LocalNodeState).pipe(optionalNullable),
+    ControlAvailable: booleanSchema.pipe(optionalNullable),
+    Error: stringSchema.pipe(optionalNullable),
     /** List of ID's and addresses of other managers in the swarm. */
-    RemoteManagers: arraySchema(PeerNodeSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    RemoteManagers: arraySchema(PeerNodeSchema).pipe(optionalNullable),
     /** Total number of nodes in the swarm. */
-    Nodes: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Nodes: numberSchema.pipe(optionalNullable),
     /** Total number of managers in the swarm. */
-    Managers: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Cluster: ClusterInfoSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Managers: numberSchema.pipe(optionalNullable),
+    Cluster: ClusterInfoSchema.pipe(optionalNullable),
 });
 
 export interface SwarmInfo extends Schema.Schema.To<typeof SwarmInfoSchema> {}
 
 /** User modifiable task configuration. */
 export const TaskSpecSchema = Schema.struct({
-    PluginSpec: TaskSpecPluginSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ContainerSpec: TaskSpecContainerSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    NetworkAttachmentSpec: TaskSpecNetworkAttachmentSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Resources: TaskSpecResourcesSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    RestartPolicy: TaskSpecRestartPolicySchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Placement: TaskSpecPlacementSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PluginSpec: TaskSpecPluginSpecSchema.pipe(optionalNullable),
+    ContainerSpec: TaskSpecContainerSpecSchema.pipe(optionalNullable),
+    NetworkAttachmentSpec: TaskSpecNetworkAttachmentSpecSchema.pipe(optionalNullable),
+    Resources: TaskSpecResourcesSchema.pipe(optionalNullable),
+    RestartPolicy: TaskSpecRestartPolicySchema.pipe(optionalNullable),
+    Placement: TaskSpecPlacementSchema.pipe(optionalNullable),
     /**
      * A counter that triggers an update even if no relevant parameters have
      * been changed.
      */
-    ForceUpdate: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ForceUpdate: numberSchema.pipe(optionalNullable),
     /** Runtime is the type of runtime specified for the task executor. */
-    Runtime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Runtime: stringSchema.pipe(optionalNullable),
     /** Specifies which networks the service should attach to. */
-    Networks: arraySchema(NetworkAttachmentConfigSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    LogDriver: TaskSpecLogDriverSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Networks: arraySchema(NetworkAttachmentConfigSchema).pipe(optionalNullable),
+    LogDriver: TaskSpecLogDriverSchema.pipe(optionalNullable),
 });
 
 export interface TaskSpec extends Schema.Schema.To<typeof TaskSpecSchema> {}
@@ -3981,24 +3976,24 @@ export interface TaskSpec extends Schema.Schema.To<typeof TaskSpecSchema> {}
 /** Volume configuration */
 export const VolumeCreateOptionsSchema = Schema.struct({
     /** The new volume's name. If not specified, Docker generates a name. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** Name of the volume driver to use. */
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Driver: stringSchema.pipe(optionalNullable),
     /**
      * A mapping of driver options and values. These options are passed directly
      * to the driver and are driver specific.
      */
-    DriverOpts: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DriverOpts: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    ClusterVolumeSpec: ClusterVolumeSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    ClusterVolumeSpec: ClusterVolumeSpecSchema.pipe(optionalNullable),
 });
 
 export interface VolumeCreateOptions extends Schema.Schema.To<typeof VolumeCreateOptionsSchema> {}
 
 /** Volume configuration */
 export const VolumesNameBodySchema = Schema.struct({
-    Spec: ClusterVolumeSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Spec: ClusterVolumeSpecSchema.pipe(optionalNullable),
 });
 
 export interface VolumesNameBody extends Schema.Schema.To<typeof VolumesNameBodySchema> {}
@@ -4006,16 +4001,16 @@ export interface VolumesNameBody extends Schema.Schema.To<typeof VolumesNameBody
 /** User modifiable configuration for a service. */
 export const ServiceSpecSchema = Schema.struct({
     /** Name of the service. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    TaskTemplate: TaskSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Mode: ServiceSpecModeSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdateConfig: ServiceSpecUpdateConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    RollbackConfig: ServiceSpecRollbackConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    TaskTemplate: TaskSpecSchema.pipe(optionalNullable),
+    Mode: ServiceSpecModeSchema.pipe(optionalNullable),
+    UpdateConfig: ServiceSpecUpdateConfigSchema.pipe(optionalNullable),
+    RollbackConfig: ServiceSpecRollbackConfigSchema.pipe(optionalNullable),
     /** Specifies which networks the service should attach to. */
-    Networks: arraySchema(NetworkAttachmentConfigSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    EndpointSpec: EndpointSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Networks: arraySchema(NetworkAttachmentConfigSchema).pipe(optionalNullable),
+    EndpointSpec: EndpointSpecSchema.pipe(optionalNullable),
 });
 
 export interface ServiceSpec extends Schema.Schema.To<typeof ServiceSpecSchema> {}
@@ -4042,22 +4037,22 @@ export const SystemInfoSchema = Schema.struct({
      * Unique identifier of the daemon. **Note**: The format of the ID itself is
      * not part of the API, and should not be considered stable.
      */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
     /** Total number of containers on the host. */
-    Containers: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Containers: numberSchema.pipe(optionalNullable),
     /** Number of containers with status `\"running\"`. */
-    ContainersRunning: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ContainersRunning: numberSchema.pipe(optionalNullable),
     /** Number of containers with status `\"paused\"`. */
-    ContainersPaused: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ContainersPaused: numberSchema.pipe(optionalNullable),
     /** Number of containers with status `\"stopped\"`. */
-    ContainersStopped: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ContainersStopped: numberSchema.pipe(optionalNullable),
     /**
      * Total number of images on the host. Both _tagged_ and _untagged_
      * (dangling) images are counted.
      */
-    Images: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Images: numberSchema.pipe(optionalNullable),
     /** Name of the storage driver in use. */
-    Driver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Driver: stringSchema.pipe(optionalNullable),
     /**
      * Information specific to the storage driver, provided as "label" / "value"
      * pairs. This information is provided by the storage driver, and formatted
@@ -4066,80 +4061,80 @@ export const SystemInfoSchema = Schema.struct({
      * formatting of values and labels, should not be considered stable, and may
      * change without notice.
      */
-    DriverStatus: arraySchema(arraySchema(stringSchema)).pipe(Schema.nullable).pipe(Schema.optional),
+    DriverStatus: arraySchema(arraySchema(stringSchema)).pipe(optionalNullable),
     /**
      * Root directory of persistent Docker state. Defaults to `/var/lib/docker`
      * on Linux, and `C:\\ProgramData\\docker` on Windows.
      */
-    DockerRootDir: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Plugins: PluginsInfoSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DockerRootDir: stringSchema.pipe(optionalNullable),
+    Plugins: PluginsInfoSchema.pipe(optionalNullable),
     /** Indicates if the host has memory limit support enabled. */
-    MemoryLimit: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MemoryLimit: booleanSchema.pipe(optionalNullable),
     /** Indicates if the host has memory swap limit support enabled. */
-    SwapLimit: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SwapLimit: booleanSchema.pipe(optionalNullable),
     /**
      * Indicates if the host has kernel memory TCP limit support enabled. This
      * field is omitted if not supported. Kernel memory TCP limits are not
      * supported when using cgroups v2, which does not support the corresponding
      * `memory.kmem.tcp.limit_in_bytes` cgroup.
      */
-    KernelMemoryTCP: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    KernelMemoryTCP: booleanSchema.pipe(optionalNullable),
     /**
      * Indicates if CPU CFS(Completely Fair Scheduler) period is supported by
      * the host.
      */
-    CpuCfsPeriod: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuCfsPeriod: booleanSchema.pipe(optionalNullable),
     /**
      * Indicates if CPU CFS(Completely Fair Scheduler) quota is supported by the
      * host.
      */
-    CpuCfsQuota: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CpuCfsQuota: booleanSchema.pipe(optionalNullable),
     /** Indicates if CPU Shares limiting is supported by the host. */
-    CPUShares: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CPUShares: booleanSchema.pipe(optionalNullable),
     /**
      * Indicates if CPUsets (cpuset.cpus, cpuset.mems) are supported by the
      * host. See
      * [cpuset(7)](https://www.kernel.org/doc/Documentation/cgroup-v1/cpusets.txt)
      */
-    CPUSet: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CPUSet: booleanSchema.pipe(optionalNullable),
     /** Indicates if the host kernel has PID limit support enabled. */
-    PidsLimit: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    PidsLimit: booleanSchema.pipe(optionalNullable),
     /** Indicates if OOM killer disable is supported on the host. */
-    OomKillDisable: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OomKillDisable: booleanSchema.pipe(optionalNullable),
     /** Indicates IPv4 forwarding is enabled. */
-    IPv4Forwarding: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IPv4Forwarding: booleanSchema.pipe(optionalNullable),
     /** Indicates if `bridge-nf-call-iptables` is available on the host. */
-    BridgeNfIptables: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    BridgeNfIptables: booleanSchema.pipe(optionalNullable),
     /** Indicates if `bridge-nf-call-ip6tables` is available on the host. */
-    BridgeNfIp6tables: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    BridgeNfIp6tables: booleanSchema.pipe(optionalNullable),
     /**
      * Indicates if the daemon is running in debug-mode / with debug-level
      * logging enabled.
      */
-    Debug: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Debug: booleanSchema.pipe(optionalNullable),
     /**
      * The total number of file Descriptors in use by the daemon process. This
      * information is only returned if debug-mode is enabled.
      */
-    NFd: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NFd: numberSchema.pipe(optionalNullable),
     /**
      * The number of goroutines that currently exist. This information is only
      * returned if debug-mode is enabled.
      */
-    NGoroutines: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NGoroutines: numberSchema.pipe(optionalNullable),
     /**
      * Current system-time in [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt)
      * format with nano-seconds.
      */
-    SystemTime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    SystemTime: stringSchema.pipe(optionalNullable),
     /** The logging driver to use as a default for new containers. */
-    LoggingDriver: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LoggingDriver: stringSchema.pipe(optionalNullable),
     /** The driver to use for managing cgroups. */
-    CgroupDriver: Schema.enums(SystemInfo_CgroupDriverEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    CgroupDriver: Schema.enums(SystemInfo_CgroupDriverEnum).pipe(optionalNullable),
     /** The version of the cgroup. */
-    CgroupVersion: Schema.enums(SystemInfo_CgroupVersionEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    CgroupVersion: Schema.enums(SystemInfo_CgroupVersionEnum).pipe(optionalNullable),
     /** Number of event listeners subscribed. */
-    NEventsListener: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NEventsListener: numberSchema.pipe(optionalNullable),
     /**
      * Kernel version of the host. On Linux, this information obtained from
      * `uname`. On Windows this information is queried from the
@@ -4147,47 +4142,47 @@ export const SystemInfoSchema = Schema.struct({
      * value, for example _"10.0 14393
      * (14393.1198.amd64fre.rs1_release_sec.170427-1353)"_.
      */
-    KernelVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    KernelVersion: stringSchema.pipe(optionalNullable),
     /**
      * Name of the host's operating system, for example: "Ubuntu 16.04.2 LTS" or
      * "Windows Server 2016 Datacenter"
      */
-    OperatingSystem: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OperatingSystem: stringSchema.pipe(optionalNullable),
     /**
      * Version of the host's operating system **Note**: The information returned
      * in this field, including its very existence, and the formatting of
      * values, should not be considered stable, and may change without notice.
      */
-    OSVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OSVersion: stringSchema.pipe(optionalNullable),
     /**
      * Generic type of the operating system of the host, as returned by the Go
      * runtime (`GOOS`). Currently returned values are "linux" and "windows". A
      * full list of possible values can be found in the [Go
      * documentation](https://golang.org/doc/install/source#environment).
      */
-    OSType: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    OSType: stringSchema.pipe(optionalNullable),
     /**
      * Hardware architecture of the host, as returned by the Go runtime
      * (`GOARCH`). A full list of possible values can be found in the [Go
      * documentation](https://golang.org/doc/install/source#environment).
      */
-    Architecture: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Architecture: stringSchema.pipe(optionalNullable),
     /**
      * The number of logical CPUs usable by the daemon. The number of available
      * CPUs is checked by querying the operating system when the daemon starts.
      * Changes to operating system CPU allocation after the daemon is started
      * are not reflected.
      */
-    NCPU: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NCPU: numberSchema.pipe(optionalNullable),
     /** Total amount of physical memory available on the host, in bytes. */
-    MemTotal: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    MemTotal: numberSchema.pipe(optionalNullable),
     /**
      * Address / URL of the index server that is used for image search, and as a
      * default for user authentication for Docker Hub and Docker Cloud.
      */
-    IndexServerAddress: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    RegistryConfig: RegistryServiceConfigSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    GenericResources: GenericResourcesSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    IndexServerAddress: stringSchema.pipe(optionalNullable),
+    RegistryConfig: RegistryServiceConfigSchema.pipe(optionalNullable),
+    GenericResources: GenericResourcesSchema.pipe(optionalNullable),
     /**
      * HTTP-proxy configured for the daemon. This value is obtained from the
      * [`HTTP_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
@@ -4196,7 +4191,7 @@ export const SystemInfoSchema = Schema.struct({
      * proxy URL are masked in the API response. Containers do not automatically
      * inherit this configuration.
      */
-    HttpProxy: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HttpProxy: stringSchema.pipe(optionalNullable),
     /**
      * HTTPS-proxy configured for the daemon. This value is obtained from the
      * [`HTTPS_PROXY`](https://www.gnu.org/software/wget/manual/html_node/Proxies.html)
@@ -4205,7 +4200,7 @@ export const SystemInfoSchema = Schema.struct({
      * proxy URL are masked in the API response. Containers do not automatically
      * inherit this configuration.
      */
-    HttpsProxy: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    HttpsProxy: stringSchema.pipe(optionalNullable),
     /**
      * Comma-separated list of domain extensions for which no proxy should be
      * used. This value is obtained from the
@@ -4213,9 +4208,9 @@ export const SystemInfoSchema = Schema.struct({
      * environment variable. Containers do not automatically inherit this
      * configuration.
      */
-    NoProxy: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NoProxy: stringSchema.pipe(optionalNullable),
     /** Hostname of the host. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /**
      * User-defined labels (key/value metadata) as set on the daemon. **Note**:
      * When part of a Swarm, nodes can both have _daemon_ labels, set through
@@ -4224,11 +4219,11 @@ export const SystemInfoSchema = Schema.struct({
      * retrieved using the `/nodes/(id)` endpoint onA manager node in the
      * Swarm.
      */
-    Labels: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: arraySchema(stringSchema).pipe(optionalNullable),
     /** Indicates if experimental features are enabled on the daemon. */
-    ExperimentalBuild: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ExperimentalBuild: booleanSchema.pipe(optionalNullable),
     /** Version string of the daemon. */
-    ServerVersion: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ServerVersion: stringSchema.pipe(optionalNullable),
     /**
      * List of [OCI compliant](https://github.com/opencontainers/runtime-spec)
      * runtimes configured on the daemon. Keys hold the "name" used to reference
@@ -4238,19 +4233,19 @@ export const SystemInfoSchema = Schema.struct({
      * and automatically configured. Additional runtimes can be configured by
      * the user and will be listed here.
      */
-    Runtimes: recordSchema(stringSchema, RuntimeSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Runtimes: recordSchema(stringSchema, RuntimeSchema).pipe(optionalNullable),
     /**
      * Name of the default OCI runtime that is used when starting containers.
      * The default can be overridden per-container at create time.
      */
-    DefaultRuntime: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Swarm: SwarmInfoSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    DefaultRuntime: stringSchema.pipe(optionalNullable),
+    Swarm: SwarmInfoSchema.pipe(optionalNullable),
     /**
      * Indicates if live restore is enabled. If enabled, containers are kept
      * running when the daemon is shutdown or upon daemon start if running
      * containers are detected.
      */
-    LiveRestoreEnabled: booleanSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    LiveRestoreEnabled: booleanSchema.pipe(optionalNullable),
     /**
      * Represents the isolation technology to use as a default for containers.
      * The supported values are platform-specific. If no isolation value is
@@ -4258,7 +4253,7 @@ export const SystemInfoSchema = Schema.struct({
      * and on Windows server, the default is `process`. This option is currently
      * not used on other platforms.
      */
-    // Isolation: Schema.enums(SystemInfo_IsolationEnum).pipe(Schema.nullable).pipe(Schema.optional),
+    // Isolation: Schema.enums(SystemInfo_IsolationEnum).pipe(optionalNullable),
     Isolation: Schema.string
         .pipe(
             Schema.transform(
@@ -4275,10 +4270,10 @@ export const SystemInfoSchema = Schema.struct({
      * omitted, the daemon searches the host's `$PATH` for the binary and uses
      * the first result.
      */
-    InitBinary: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ContainerdCommit: CommitSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    RuncCommit: CommitSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    InitCommit: CommitSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    InitBinary: stringSchema.pipe(optionalNullable),
+    ContainerdCommit: CommitSchema.pipe(optionalNullable),
+    RuncCommit: CommitSchema.pipe(optionalNullable),
+    InitCommit: CommitSchema.pipe(optionalNullable),
     /**
      * List of security features that are enabled on the daemon, such as
      * apparmor, seccomp, SELinux, user-namespaces (userns), rootless and
@@ -4286,50 +4281,50 @@ export const SystemInfoSchema = Schema.struct({
      * feature may be present, and are included as a comma-separated list of
      * key/value pairs.
      */
-    SecurityOptions: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    SecurityOptions: arraySchema(stringSchema).pipe(optionalNullable),
     /**
      * Reports a summary of the product license on the daemon. If a commercial
      * license has been applied to the daemon, information such as number of
      * nodes, and expiration are included.
      */
-    ProductLicense: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ProductLicense: stringSchema.pipe(optionalNullable),
     /**
      * List of custom default address pools for local networks, which can be
      * specified in the daemon.json file or dockerd option. Example: a Base
      * "10.10.0.0/16" with Size 24 will define the set of 256 10.10.[0-255].0/24
      * address pools.
      */
-    DefaultAddressPools: arraySchema(SystemInfoDefaultAddressPoolsSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    DefaultAddressPools: arraySchema(SystemInfoDefaultAddressPoolsSchema).pipe(optionalNullable),
     /**
      * List of warnings / informational messages about missing features, or
      * issues related to the daemon configuration. These messages can be printed
      * by the client as information to the user.
      */
-    Warnings: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Warnings: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface SystemInfo extends Schema.Schema.To<typeof SystemInfoSchema> {}
 
 export const TaskSchema = Schema.struct({
     /** The ID of the task. */
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
+    Version: ObjectVersionSchema.pipe(optionalNullable),
+    CreatedAt: stringSchema.pipe(optionalNullable),
+    UpdatedAt: stringSchema.pipe(optionalNullable),
     /** Name of the task. */
-    Name: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Name: stringSchema.pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: TaskSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    Spec: TaskSpecSchema.pipe(optionalNullable),
     /** The ID of the service this task is part of. */
-    ServiceID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Slot: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ServiceID: stringSchema.pipe(optionalNullable),
+    Slot: numberSchema.pipe(optionalNullable),
     /** The ID of the node that this task is on. */
-    NodeID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    AssignedGenericResources: GenericResourcesSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Status: TaskStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    DesiredState: Schema.enums(TaskState).pipe(Schema.nullable).pipe(Schema.optional),
-    JobIteration: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    NodeID: stringSchema.pipe(optionalNullable),
+    AssignedGenericResources: GenericResourcesSchema.pipe(optionalNullable),
+    Status: TaskStatusSchema.pipe(optionalNullable),
+    DesiredState: Schema.enums(TaskState).pipe(optionalNullable),
+    JobIteration: ObjectVersionSchema.pipe(optionalNullable),
 });
 
 export interface Task extends Schema.Schema.To<typeof TaskSchema> {}
@@ -4347,7 +4342,7 @@ export const VolumeSchema = Schema.struct({
     /** Mount path of the volume on the host. */
     Mountpoint: stringSchema,
     /** Date/Time the volume was created. */
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    CreatedAt: stringSchema.pipe(optionalNullable),
     /**
      * Low-level details about the volume, provided by the volume driver.
      * Details are returned as a map with key/value pairs:
@@ -4355,18 +4350,18 @@ export const VolumeSchema = Schema.struct({
      * optional, and is omitted if the volume driver does not support this
      * feature.
      */
-    Status: recordSchema(stringSchema, anySchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Status: recordSchema(stringSchema, anySchema).pipe(optionalNullable),
     /** User-defined key/value metadata. */
-    Labels: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Labels: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
     /**
      * The level at which the volume exists. Either `global` for cluster-wide,
      * or `local` for machine level.
      */
     Scope: Schema.enums(Volume_ScopeEnum),
-    ClusterVolume: ClusterVolumeSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ClusterVolume: ClusterVolumeSchema.pipe(optionalNullable),
     /** The driver specific options used when creating the volume. */
-    Options: recordSchema(stringSchema, stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    UsageData: VolumeUsageDataSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    Options: recordSchema(stringSchema, stringSchema).pipe(optionalNullable),
+    UsageData: VolumeUsageDataSchema.pipe(optionalNullable),
 });
 
 export interface Volume extends Schema.Schema.To<typeof VolumeSchema> {}
@@ -4376,15 +4371,15 @@ export const IdUpdateBody1Schema = ServiceSpecSchema;
 export interface IdUpdateBody1 extends Schema.Schema.To<typeof IdUpdateBody1Schema> {}
 
 export const ServiceSchema = Schema.struct({
-    ID: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Version: ObjectVersionSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    CreatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdatedAt: stringSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Spec: ServiceSpecSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Endpoint: ServiceEndpointSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    UpdateStatus: ServiceUpdateStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    ServiceStatus: ServiceServiceStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    JobStatus: ServiceJobStatusSchema.pipe(Schema.nullable).pipe(Schema.optional),
+    ID: stringSchema.pipe(optionalNullable),
+    Version: ObjectVersionSchema.pipe(optionalNullable),
+    CreatedAt: stringSchema.pipe(optionalNullable),
+    UpdatedAt: stringSchema.pipe(optionalNullable),
+    Spec: ServiceSpecSchema.pipe(optionalNullable),
+    Endpoint: ServiceEndpointSchema.pipe(optionalNullable),
+    UpdateStatus: ServiceUpdateStatusSchema.pipe(optionalNullable),
+    ServiceStatus: ServiceServiceStatusSchema.pipe(optionalNullable),
+    JobStatus: ServiceJobStatusSchema.pipe(optionalNullable),
 });
 
 export interface Service extends Schema.Schema.To<typeof ServiceSchema> {}
@@ -4394,11 +4389,11 @@ export const ServicesCreateBodySchema = ServiceSpecSchema;
 export interface ServicesCreateBody extends Schema.Schema.To<typeof ServicesCreateBodySchema> {}
 
 export const SystemDataUsageResponseSchema = Schema.struct({
-    LayersSize: numberSchema.pipe(Schema.nullable).pipe(Schema.optional),
-    Images: arraySchema(ImageSummarySchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Containers: arraySchema(ContainerSummarySchema).pipe(Schema.nullable).pipe(Schema.optional),
-    Volumes: arraySchema(VolumeSchema).pipe(Schema.nullable).pipe(Schema.optional),
-    BuildCache: arraySchema(BuildCacheSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    LayersSize: numberSchema.pipe(optionalNullable),
+    Images: arraySchema(ImageSummarySchema).pipe(optionalNullable),
+    Containers: arraySchema(ContainerSummarySchema).pipe(optionalNullable),
+    Volumes: arraySchema(VolumeSchema).pipe(optionalNullable),
+    BuildCache: arraySchema(BuildCacheSchema).pipe(optionalNullable),
 });
 
 export interface SystemDataUsageResponse extends Schema.Schema.To<typeof SystemDataUsageResponseSchema> {}
@@ -4406,9 +4401,9 @@ export interface SystemDataUsageResponse extends Schema.Schema.To<typeof SystemD
 /** Volume list response */
 export const VolumeListResponseSchema = Schema.struct({
     /** List of volumes */
-    Volumes: arraySchema(VolumeSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Volumes: arraySchema(VolumeSchema).pipe(optionalNullable),
     /** Warnings that occurred when fetching the list of volumes. */
-    Warnings: arraySchema(stringSchema).pipe(Schema.nullable).pipe(Schema.optional),
+    Warnings: arraySchema(stringSchema).pipe(optionalNullable),
 });
 
 export interface VolumeListResponse extends Schema.Schema.To<typeof VolumeListResponseSchema> {}
