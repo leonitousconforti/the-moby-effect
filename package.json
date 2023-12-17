@@ -20,21 +20,24 @@
     ],
     "scripts": {
         "build": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean",
+        "gen": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./gen/main.ts",
         "playground": "node --no-warnings=ExperimentalWarning --loader ts-node/esm ./examples/playground.ts"
     },
     "dependencies": {
         "ssh2": "^1.14.0"
     },
     "devDependencies": {
+        "@apidevtools/swagger-parser": "10.1.0",
         "@effect/experimental": "0.3.2",
-        "@effect/platform": "^0.37.0",
+        "@effect/platform": "0.37.0",
         "@effect/platform-node": "0.37.0",
-        "@effect/schema": "0.53.2",
+        "@effect/schema": "0.53.3",
         "@rushstack/eslint-config": "3.5.0",
         "@rushstack/heft": "0.63.4",
         "@rushstack/heft-jest-plugin": "0.10.6",
         "@rushstack/heft-lint-plugin": "0.2.14",
         "@rushstack/heft-typescript-plugin": "0.2.14",
+        "@types/eslint": "8.44.9",
         "@types/heft-jest": "1.0.6",
         "@types/node": "20.10.4",
         "@types/ssh2": "1.11.18",
@@ -46,12 +49,12 @@
         "eslint-plugin-prettier": "5.0.1",
         "eslint-plugin-unicorn": "49.0.0",
         "fast-check": "3.14.0",
+        "openapi-types": "12.1.3",
         "prettier": "3.1.1",
         "prettier-plugin-jsdoc": "1.1.1",
         "prettier-plugin-packagejson": "2.4.7",
         "tar-fs": "3.0.4",
         "ts-node": "10.9.2",
-        "tsx": "^4.6.2",
         "typescript": "5.3.3",
         "ws": "8.15.1"
     },
