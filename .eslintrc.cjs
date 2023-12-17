@@ -13,11 +13,14 @@ module.exports = {
     plugins: ["unicorn", "prettier"],
     env: { node: true, es2022: true },
     parser: "@typescript-eslint/parser",
-    parserOptions: { ecmaVersion: 2022, sourceType: "module" },
+    parserOptions: { project: "tsconfig.json", ecmaVersion: 2022, sourceType: "module" },
     rules: {
         "no-console": "warn",
         "tsdoc/syntax": "off",
+        "@typescript-eslint/typedef": "off",
         "unicorn/no-array-callback-reference": "off",
+        "unicorn/consistent-function-scoping": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/naming-convention": [
             "error",
             { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
@@ -28,14 +31,13 @@ module.exports = {
             files: ["./src/schemas.ts"],
             rules: {
                 "max-lines": "off",
-                "@typescript-eslint/typedef": "off",
                 "unicorn/prevent-abbreviations": "off",
             },
         },
         {
-            files: ["./examples/**/*.ts"],
+            files: ["./gen/**/*.ts"],
             rules: {
-                "no-console": "off",
+                "unicorn/no-array-reduce": "off",
             },
         },
     ],
