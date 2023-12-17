@@ -1,0 +1,1 @@
+Generates an effect-ts based schema from the [swagger 2.0 specification](https://swagger.io/specification/v2/) and the [api document](https://github.com/moby/moby/blob/master/api/swagger.yaml) from the moby repository.
