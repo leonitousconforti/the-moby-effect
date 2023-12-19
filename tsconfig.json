@@ -32,5 +32,5 @@
         "isolatedModules": true,
         "forceConsistentCasingInFileNames": true
     },
-    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "./gen/**/*.ts", "./templates/**/*.ts"]
+    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"]
 }
