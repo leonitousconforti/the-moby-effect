@@ -12,8 +12,7 @@ module.exports = {
     ],
     plugins: ["unicorn", "prettier"],
     env: { node: true, es2022: true },
-    parser: "@typescript-eslint/parser",
-    parserOptions: { project: "tsconfig.json", ecmaVersion: 2022, sourceType: "module" },
+    parserOptions: { ecmaVersion: 2022, sourceType: "module" },
     rules: {
         "no-console": "warn",
         "tsdoc/syntax": "off",
@@ -32,12 +31,6 @@ module.exports = {
             rules: {
                 "max-lines": "off",
                 "unicorn/prevent-abbreviations": "off",
-            },
-        },
-        {
-            files: ["./gen/**/*.ts"],
-            rules: {
-                "unicorn/no-array-reduce": "off",
             },
         },
     ],
