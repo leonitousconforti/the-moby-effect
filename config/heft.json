@@ -4,17 +4,7 @@
         "build": {
             "cleanFiles": [{ "sourcePath": "dist" }],
             "tasksByName": {
-                "schema-gen": {
-                    "taskPlugin": {
-                        "pluginPackage": "@rushstack/heft",
-                        "pluginName": "run-script-plugin",
-                        "options": {
-                            "scriptPath": "./gen/heft-script.cjs"
-                        }
-                    }
-                },
                 "typescript": {
-                    "taskDependencies": ["schema-gen"],
                     "taskPlugin": {
                         "pluginPackage": "@rushstack/heft-typescript-plugin"
                     }
