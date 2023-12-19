@@ -5,6 +5,7 @@ import { ISchemaDefinition } from "./types.js";
  * hoist them to the top level to we can use them directly from TS.
  */
 export const genEnumType = (definition: ISchemaDefinition): [thisLevel: string, hoistedValues: string[]] => {
+    // Helper that converts a value to a valid enum value
     const getEnumValue = (value: string): string => {
         const words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
@@ -14,6 +15,7 @@ export const genEnumType = (definition: ISchemaDefinition): [thisLevel: string, 
             .replaceAll("-", "_");
     };
 
+    // Create a map of the enum values to the enum values
     const enumFields: Record<string, string> = Object.assign(
         {},
         ...definition.enum!.map((value) => getEnumValue(value)).map((value) => ({ [value]: value }))
@@ -34,7 +36,10 @@ export const genEnumType = (definition: ISchemaDefinition): [thisLevel: string, 
         ? `Schema.optional(Schema.enums(${enumName}${definition.name})).withDefault(() => ${enumName}${
               definition.name
           }.${getEnumValue(definition.default!)})`
-        : `Schema.enums(${enumName}${definition.name})`;
+        : (definition.required && !definition.required.includes(definition.name)) ||
+            (definition.parent?.required && definition.parent.required.includes(definition.name))
+          ? `Schema.optional(Schema.enums(${enumName}${definition.name}))`
+          : `Schema.enums(${enumName}${definition.name})`;
 
     const enumTs = `export enum ${enumName}${definition.name} { ${Object.entries(enumFields)
         .map(([key, value]) => `"${key}"="${value}"`)

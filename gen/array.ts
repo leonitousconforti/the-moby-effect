@@ -3,7 +3,10 @@ import type { ISchemaDefinition } from "./types.js";
 
 import { genSchemaType } from "./main.js";
 
-/** Arrays could be top level or nested, but we don't need to hoist them. */
+/**
+ * Arrays could be top level or nested, but we don't need to hoist them like we
+ * would with enums.
+ */
 export const genArrayType = (definition: ISchemaDefinition): [thisLevel: string, hoistedValues: string[]] => {
     const items = definition.items as OpenApi.OpenAPIV2.SchemaObject;
     const [itemsType, nestedHoistedValues] = genSchemaType({ ...items, name: definition.name, parent: definition });
@@ -17,10 +20,24 @@ export const genArrayType = (definition: ISchemaDefinition): [thisLevel: string,
     // Check for nullable modifier
     const withNullableModifier = definition["x-nullable"] ? `Schema.nullable(${baseOutput})` : baseOutput;
 
-    // hoist the optional modifier
+    // helper to export if there is no parent
+    const withExportModifier = (output: string): string =>
+        definition.parent ? output : `export const ${definition.name} = ${output}`;
+
+    // hoist the optional modifier if the inner type was optional
     if (itemsType.startsWith("Schema.optional(")) {
-        return [`Schema.optional(${withNullableModifier.replace("Schema.optional(", "")}`, nestedHoistedValues];
+        return [
+            withExportModifier(`Schema.optional(${withNullableModifier.replace("Schema.optional(", "")}`),
+            nestedHoistedValues,
+        ];
     }
 
-    return [withNullableModifier, nestedHoistedValues];
+    if (
+        (definition.required && !definition.required.includes(definition.name)) ||
+        (definition.parent?.required && definition.parent.required.includes(definition.name))
+    ) {
+        return [withExportModifier(`Schema.optional(${withNullableModifier})`), nestedHoistedValues];
+    }
+
+    return [withExportModifier(withNullableModifier), nestedHoistedValues];
 };
