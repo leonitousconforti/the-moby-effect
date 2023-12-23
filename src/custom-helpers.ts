@@ -1,10 +1,7 @@
-import type { IMobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import type { MobyError } from "./main.js";
+import { Effect, Match, Schedule, Stream, pipe } from "effect";
 
-import { Effect, Match, Schedule, Scope, Stream, pipe } from "effect";
-
-import * as Container from "./containers.js";
-import * as Image from "./images.js";
+import * as Containers from "./containers.js";
+import * as Images from "./images.js";
 import * as Schemas from "./schemas.js";
 
 /**
@@ -17,67 +14,55 @@ export const run = ({
     imageOptions,
     containerOptions,
 }: {
-    imageOptions: ({ kind: "pull" } & Image.ImageCreateOptions) | ({ kind: "build" } & Image.ImageBuildOptions);
-    containerOptions: Container.ContainerCreateOptions;
+    imageOptions: ({ kind: "pull" } & Images.ImageCreateOptions) | ({ kind: "build" } & Images.ImageBuildOptions);
+    containerOptions: Containers.ContainerCreateOptions;
 }): Effect.Effect<
-    IMobyConnectionAgent,
-    | MobyError
-    | Image.ImageCreateError
-    | Image.ImageBuildError
-    | Container.ContainerCreateError
-    | Container.ContainerStartError
-    | Container.ContainerInspectError,
+    Containers.Containers | Images.Images,
+    Containers.ContainersError | Images.ImagesError,
     Schemas.ContainerInspectResponse
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
+        const images: Images.Images = yield* _(Images.Images);
+        const containers: Containers.Containers = yield* _(Containers.Containers);
+
         // Start pulling or building the image
-        const buildStream: Stream.Stream<never, MobyError, string> =
-            imageOptions.kind === "pull"
-                ? yield* _(Image.imageCreate(imageOptions))
-                : yield* _(Image.imageBuild(imageOptions));
+        const buildStream: Stream.Stream<never, Images.ImagesError, string> =
+            imageOptions.kind === "pull" ? yield* _(images.create(imageOptions)) : yield* _(images.build(imageOptions));
 
         // Wait for image pull or build to complete
         yield* _(Stream.runCollect(buildStream));
 
         // Create the container
         const containerCreateResponse: Readonly<Schemas.ContainerCreateResponse> = yield* _(
-            Container.containerCreate(containerOptions)
+            containers.create(containerOptions)
         );
 
         // Start the container
-        yield* _(Container.containerStart({ id: containerCreateResponse.Id }));
+        yield* _(containers.start({ id: containerCreateResponse.Id }));
 
         // Helper to wait until a container is dead or running
-        const waitUntilContainerDeadOrRunning: Effect.Effect<
-            IMobyConnectionAgent | Scope.Scope,
-            Container.ContainerInspectError,
-            void
-        > = pipe(
-            Container.containerInspect({ id: containerCreateResponse.Id }),
+        const waitUntilContainerDeadOrRunning: Effect.Effect<never, Containers.ContainersError, void> = pipe(
+            containers.inspect({ id: containerCreateResponse.Id }),
             // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 pipe(
                     Match.value(State?.Status),
-                    Match.when(Schemas.ContainerState_StatusEnum.Running, (_s) => Effect.unit),
-                    Match.when(Schemas.ContainerState_StatusEnum.Created, (_s) => Effect.fail("Waiting")),
+                    Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.unit),
+                    Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
-                ).pipe(Effect.mapError((s) => new Container.ContainerInspectError({ message: s })))
+                ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
             )
         ).pipe(
             Effect.retry(
                 Schedule.spaced(500).pipe(
-                    Schedule.whileInput(({ message }: Container.ContainerInspectError) => message === "Waiting")
+                    Schedule.whileInput(({ message }: Containers.ContainersError) => message === "Waiting")
                 )
             )
         );
 
         // Helper for if the container has a healthcheck, wait for it to report healthy
-        const waitUntilContainerHealthy: Effect.Effect<
-            IMobyConnectionAgent | Scope.Scope,
-            Container.ContainerInspectError,
-            void
-        > = pipe(
-            Container.containerInspect({ id: containerCreateResponse.Id }),
+        const waitUntilContainerHealthy: Effect.Effect<never, Containers.ContainersError, void> = pipe(
+            containers.inspect({ id: containerCreateResponse.Id }),
             // Effect.tap(({ State }) =>
             //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
             // ),
@@ -85,28 +70,26 @@ export const run = ({
                 pipe(
                     Match.value(State?.Health?.Status),
                     Match.when(undefined, (_s) => Effect.unit),
-                    Match.when(Schemas.Health_StatusEnum.Healthy, (_s) => Effect.unit),
-                    Match.when(Schemas.Health_StatusEnum.Starting, (_s) => Effect.fail("Waiting")),
+                    Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.unit),
+                    Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
-                ).pipe(Effect.mapError((s) => new Container.ContainerInspectError({ message: s })))
+                ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
             )
         ).pipe(
             Effect.retry(
                 Schedule.spaced(500).pipe(
-                    Schedule.whileInput(({ message }: Container.ContainerInspectError) => message === "Waiting")
+                    Schedule.whileInput(({ message }: Containers.ContainersError) => message === "Waiting")
                 )
             )
         );
 
         yield* _(waitUntilContainerDeadOrRunning);
         yield* _(waitUntilContainerHealthy);
-        return yield* _(Container.containerInspect({ id: containerCreateResponse.Id }));
-    }).pipe(Effect.scoped);
+        return yield* _(containers.inspect({ id: containerCreateResponse.Id }));
+    });
 
 /**
- * Attempts to be similar to the `docker run` command. Note that, while this
- * helper will wait for the image build/image pull to complete, it will not
- * expose the build stream directly to you. If you need to do that, you should
- * use the `imageCreate` method directly.
+ * Scoped version of `run` where once the scope is closed the container is
+ * stopped and destroyed.
  */
-export type runWithConnectionAgentProvided = WithConnectionAgentProvided<typeof run>;
+export const runScoped = "a"; // Effect.acquireRelease(run, () => "");

@@ -1,354 +1,158 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Data, Effect } from "effect";
-
-import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
+import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
 
 import {
-    IdUpdateBody1,
-    Service,
-    ServiceCreateResponse,
-    ServiceCreateResponseSchema,
-    ServiceSchema,
-    ServiceUpdateResponse,
-    ServiceUpdateResponseSchema,
-    ServicesCreateBody,
-} from "./schemas.js";
+    IMobyConnectionAgent,
+    MobyConnectionAgent,
+    MobyConnectionOptions,
+    MobyHttpClientLive,
+    getAgent,
+} from "./agent-helpers.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
+import { Service, ServiceCreateResponse, ServiceSpec, ServiceUpdateResponse } from "./schemas.js";
 
-export class ServiceCreateError extends Data.TaggedError("ServiceCreateError")<{ message: string }> {}
-export class ServiceDeleteError extends Data.TaggedError("ServiceDeleteError")<{ message: string }> {}
-export class ServiceInspectError extends Data.TaggedError("ServiceInspectError")<{ message: string }> {}
-export class ServiceListError extends Data.TaggedError("ServiceListError")<{ message: string }> {}
-export class ServiceLogsError extends Data.TaggedError("ServiceLogsError")<{ message: string }> {}
-export class ServiceUpdateError extends Data.TaggedError("ServiceUpdateError")<{ message: string }> {}
-
-export interface ServiceCreateOptions {
-    body: ServicesCreateBody;
-    /**
-     * A base64url-encoded auth configuration for pulling from private
-     * registries. Refer to the [authentication
-     * section](#section/Authentication) for details.
-     */
-    X_Registry_Auth?: string;
-}
-
-export interface ServiceDeleteOptions {
-    /** ID or name of service. */
-    id: string;
-}
-
-export interface ServiceInspectOptions {
-    /** ID or name of service. */
-    id: string;
-    /** Fill empty fields with default values. */
-    insertDefaults?: boolean;
-}
+export class ServicesError extends Data.TaggedError("ServicesError")<{
+    method: string;
+    message: string;
+}> {}
 
 export interface ServiceListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the services list. Available filters:
+     * on the services list.
+     *
+     * Available filters:
      *
      * - `id=<service id>`
      * - `label=<service label>`
-     * - `mode=[\"replicated\"|\"global\"]`
+     * - `mode=["replicated"|"global"]`
      * - `name=<service name>`
      */
-    filters?: string;
+    readonly filters?: string;
     /** Include service status, with count of running and desired tasks. */
-    status?: boolean;
+    readonly status?: boolean;
 }
 
-export interface ServiceLogsOptions {
-    /** ID or name of the service */
-    id: string;
-    /** Show service context and extra details provided to logs. */
-    details?: boolean;
-    /** Keep connection after returning logs. */
-    follow?: boolean;
-    /** Return logs from `stdout` */
-    stdout?: boolean;
-    /** Return logs from `stderr` */
-    stderr?: boolean;
-    /** Only return logs since this time, as a UNIX timestamp */
-    since?: number;
-    /** Add timestamps to every log line */
-    timestamps?: boolean;
+export interface ServiceCreateOptions {
+    readonly body: ServiceSpec;
     /**
-     * Only return this number of log lines from the end of the logs. Specify as
-     * an integer or `all` to output all log lines.
+     * A base64url-encoded auth configuration for pulling from private
+     * registries.
+     *
+     * Refer to the [authentication section](#section/Authentication) for
+     * details.
      */
-    tail?: string;
+    readonly "X-Registry-Auth"?: string;
+}
+
+export interface ServiceDeleteOptions {
+    /** ID or name of service. */
+    readonly id: string;
+}
+
+export interface ServiceInspectOptions {
+    /** ID or name of service. */
+    readonly id: string;
+    /** Fill empty fields with default values. */
+    readonly insertDefaults?: boolean;
 }
 
 export interface ServiceUpdateOptions {
-    body: IdUpdateBody1;
     /** ID or name of service. */
-    id: string;
+    readonly id: string;
+    readonly body: ServiceSpec;
     /**
      * The version number of the service object being updated. This is required
      * to avoid conflicting writes. This version number should be the value as
      * currently set on the service _before_ the update. You can find the
      * current version by calling `GET /services/{id}`
      */
-    version: number;
+    readonly version: number;
     /**
      * If the `X-Registry-Auth` header is not specified, this parameter
      * indicates where to find registry authorization credentials.
      */
-    registryAuthFrom?: string;
+    readonly registryAuthFrom?: string;
     /**
      * Set to this parameter to `previous` to cause a server-side rollback to
      * the previous service spec. The supplied spec will be ignored in this
      * case.
      */
-    rollback?: string;
+    readonly rollback?: string;
     /**
      * A base64url-encoded auth configuration for pulling from private
-     * registries. Refer to the [authentication
-     * section](#section/Authentication) for details.
+     * registries.
+     *
+     * Refer to the [authentication section](#section/Authentication) for
+     * details.
      */
-    X_Registry_Auth?: string;
+    readonly "X-Registry-Auth"?: string;
 }
 
-/**
- * Create a service
- *
- * @param body -
- * @param X_Registry_Auth - A base64url-encoded auth configuration for pulling
- *   from private registries. Refer to the [authentication
- *   section](#section/Authentication) for details.
- */
-export const serviceCreate = (
-    options: ServiceCreateOptions
-): Effect.Effect<IMobyConnectionAgent, ServiceCreateError, Readonly<ServiceCreateResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/services/create";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
+export interface ServiceLogsOptions {
+    /** ID or name of the service */
+    readonly id: string;
+    /** Show service context and extra details provided to logs. */
+    readonly details?: boolean;
+    /** Keep connection after returning logs. */
+    readonly follow?: boolean;
+    /** Return logs from `stdout` */
+    readonly stdout?: boolean;
+    /** Return logs from `stderr` */
+    readonly stderr?: boolean;
+    /** Only return logs since this time, as a UNIX timestamp */
+    readonly since?: number;
+    /** Add timestamps to every log line */
+    readonly timestamps?: boolean;
+    /**
+     * Only return this number of log lines from the end of the logs. Specify as
+     * an integer or `all` to output all log lines.
+     */
+    readonly tail?: string;
+}
 
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "ServicesCreateBody"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceCreateResponseSchema)))
-            .pipe(responseErrorHandler(ServiceCreateError));
-    }).pipe(Effect.flatten);
-
-/**
- * Delete a service
- *
- * @param id - ID or name of service.
- */
-export const serviceDelete = (
-    options: ServiceDeleteOptions
-): Effect.Effect<IMobyConnectionAgent, ServiceDeleteError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/services/{id}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(ServiceDeleteError));
-    }).pipe(Effect.flatten);
-
-/**
- * Inspect a service
- *
- * @param id - ID or name of service.
- * @param insertDefaults - Fill empty fields with default values.
- */
-export const serviceInspect = (
-    options: ServiceInspectOptions
-): Effect.Effect<IMobyConnectionAgent, ServiceInspectError, Readonly<Service>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/services/{id}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("insertDefaults", options.insertDefaults))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceSchema)))
-            .pipe(responseErrorHandler(ServiceInspectError));
-    }).pipe(Effect.flatten);
-
-/**
- * List services
- *
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the services list. Available filters:
- *
- *   - `id=<service id>`
- *   - `label=<service label>`
- *   - `mode=[\"replicated\"|\"global\"]`
- *   - `name=<service name>`
- *
- * @param status - Include service status, with count of running and desired
- *   tasks.
- */
-export const serviceList = (
-    options?: ServiceListOptions | undefined
-): Effect.Effect<IMobyConnectionAgent, ServiceListError, Readonly<Array<Service>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/services";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("filters", options?.filters))
-            .pipe(addQueryParameter("status", options?.status))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ServiceSchema))))
-            .pipe(responseErrorHandler(ServiceListError));
-    }).pipe(Effect.flatten);
-
-/**
- * Get `stdout` and `stderr` logs from a service. See also
- * [`/containers/{id}/logs`](#operation/ContainerLogs). **Note**: This endpoint
- * works only for services with the `local`, `json-file` or `journald` logging
- * drivers.
- *
- * @param id - ID or name of the service
- * @param details - Show service context and extra details provided to logs.
- * @param follow - Keep connection after returning logs.
- * @param stdout - Return logs from `stdout`
- * @param stderr - Return logs from `stderr`
- * @param since - Only return logs since this time, as a UNIX timestamp
- * @param timestamps - Add timestamps to every log line
- * @param tail - Only return this number of log lines from the end of the logs.
- *   Specify as an integer or `all` to output all log lines.
- */
-export const serviceLogs = (
-    options: ServiceLogsOptions
-): Effect.Effect<IMobyConnectionAgent, ServiceLogsError, Readonly<Blob>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/services/{id}/logs";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("details", options.details))
-            .pipe(addQueryParameter("follow", options.follow))
-            .pipe(addQueryParameter("stdout", options.stdout))
-            .pipe(addQueryParameter("stderr", options.stderr))
-            .pipe(addQueryParameter("since", options.since))
-            .pipe(addQueryParameter("timestamps", options.timestamps))
-            .pipe(addQueryParameter("tail", options.tail))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
-            .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(responseErrorHandler(ServiceLogsError));
-    }).pipe(Effect.flatten);
-
-/**
- * Update a service
- *
- * @param body -
- * @param id - ID or name of service.
- * @param version - The version number of the service object being updated. This
- *   is required to avoid conflicting writes. This version number should be the
- *   value as currently set on the service _before_ the update. You can find the
- *   current version by calling `GET /services/{id}`
- * @param registryAuthFrom - If the `X-Registry-Auth` header is not specified,
- *   this parameter indicates where to find registry authorization credentials.
- * @param rollback - Set to this parameter to `previous` to cause a server-side
- *   rollback to the previous service spec. The supplied spec will be ignored in
- *   this case.
- * @param X_Registry_Auth - A base64url-encoded auth configuration for pulling
- *   from private registries. Refer to the [authentication
- *   section](#section/Authentication) for details.
- */
-export const serviceUpdate = (
-    options: ServiceUpdateOptions
-): Effect.Effect<IMobyConnectionAgent, ServiceUpdateError, Readonly<ServiceUpdateResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/services/{id}/update";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
-            .pipe(addQueryParameter("version", options.version))
-            .pipe(addQueryParameter("registryAuthFrom", options.registryAuthFrom))
-            .pipe(addQueryParameter("rollback", options.rollback))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "IdUpdateBody1"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ServiceUpdateResponseSchema)))
-            .pipe(responseErrorHandler(ServiceUpdateError));
-    }).pipe(Effect.flatten);
-
-export interface IServicesService {
-    Errors:
-        | ServiceCreateError
-        | ServiceDeleteError
-        | ServiceInspectError
-        | ServiceListError
-        | ServiceLogsError
-        | ServiceUpdateError;
+export interface Services {
+    /**
+     * List services
+     *
+     * @param filters - A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the services list.
+     *
+     *   Available filters:
+     *
+     *   - `id=<service id>`
+     *   - `label=<service label>`
+     *   - `mode=["replicated"|"global"]`
+     *   - `name=<service name>`
+     *
+     * @param status - Include service status, with count of running and desired
+     *   tasks.
+     */
+    readonly list: (
+        options?: ServiceListOptions | undefined
+    ) => Effect.Effect<never, ServicesError, Readonly<Array<Service>>>;
 
     /**
      * Create a service
      *
      * @param body -
-     * @param X_Registry_Auth - A base64url-encoded auth configuration for
-     *   pulling from private registries. Refer to the [authentication
-     *   section](#section/Authentication) for details.
+     * @param X-Registry-Auth - A base64url-encoded auth configuration for
+     *   pulling from private registries.
+     *
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
      */
-    serviceCreate: WithConnectionAgentProvided<typeof serviceCreate>;
+    readonly create: (
+        options: ServiceCreateOptions
+    ) => Effect.Effect<never, ServicesError, Readonly<ServiceCreateResponse>>;
 
     /**
      * Delete a service
      *
      * @param id - ID or name of service.
      */
-    serviceDelete: WithConnectionAgentProvided<typeof serviceDelete>;
+    readonly delete: (options: ServiceDeleteOptions) => Effect.Effect<never, ServicesError, void>;
 
     /**
      * Inspect a service
@@ -356,48 +160,13 @@ export interface IServicesService {
      * @param id - ID or name of service.
      * @param insertDefaults - Fill empty fields with default values.
      */
-    serviceInspect: WithConnectionAgentProvided<typeof serviceInspect>;
-
-    /**
-     * List services
-     *
-     * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the services list. Available
-     *   filters:
-     *
-     *   - `id=<service id>`
-     *   - `label=<service label>`
-     *   - `mode=[\"replicated\"|\"global\"]`
-     *   - `name=<service name>`
-     *
-     * @param status - Include service status, with count of running and desired
-     *   tasks.
-     */
-    serviceList: WithConnectionAgentProvided<typeof serviceList>;
-
-    /**
-     * Get `stdout` and `stderr` logs from a service. See also
-     * [`/containers/{id}/logs`](#operation/ContainerLogs). **Note**: This
-     * endpoint works only for services with the `local`, `json-file` or
-     * `journald` logging drivers.
-     *
-     * @param id - ID or name of the service
-     * @param details - Show service context and extra details provided to logs.
-     * @param follow - Keep connection after returning logs.
-     * @param stdout - Return logs from `stdout`
-     * @param stderr - Return logs from `stderr`
-     * @param since - Only return logs since this time, as a UNIX timestamp
-     * @param timestamps - Add timestamps to every log line
-     * @param tail - Only return this number of log lines from the end of the
-     *   logs. Specify as an integer or `all` to output all log lines.
-     */
-    serviceLogs: WithConnectionAgentProvided<typeof serviceLogs>;
+    readonly inspect: (options: ServiceInspectOptions) => Effect.Effect<never, ServicesError, Readonly<Service>>;
 
     /**
      * Update a service
      *
-     * @param body -
      * @param id - ID or name of service.
+     * @param body -
      * @param version - The version number of the service object being updated.
      *   This is required to avoid conflicting writes. This version number
      *   should be the value as currently set on the service _before_ the
@@ -409,9 +178,140 @@ export interface IServicesService {
      * @param rollback - Set to this parameter to `previous` to cause a
      *   server-side rollback to the previous service spec. The supplied spec
      *   will be ignored in this case.
-     * @param X_Registry_Auth - A base64url-encoded auth configuration for
-     *   pulling from private registries. Refer to the [authentication
-     *   section](#section/Authentication) for details.
+     * @param X-Registry-Auth - A base64url-encoded auth configuration for
+     *   pulling from private registries.
+     *
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
      */
-    serviceUpdate: WithConnectionAgentProvided<typeof serviceUpdate>;
+    readonly update: (
+        options: ServiceUpdateOptions
+    ) => Effect.Effect<never, ServicesError, Readonly<ServiceUpdateResponse>>;
+
+    /**
+     * Get service logs
+     *
+     * @param id - ID or name of the service
+     * @param details - Show service context and extra details provided to logs.
+     * @param follow - Keep connection after returning logs.
+     * @param stdout - Return logs from `stdout`
+     * @param stderr - Return logs from `stderr`
+     * @param since - Only return logs since this time, as a UNIX timestamp
+     * @param timestamps - Add timestamps to every log line
+     * @param tail - Only return this number of log lines from the end of the
+     *   logs. Specify as an integer or `all` to output all log lines.
+     */
+    readonly logs: (
+        options: ServiceLogsOptions
+    ) => Effect.Effect<never, ServicesError, Stream.Stream<never, ServicesError, string>>;
 }
+
+const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Services> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(NodeHttp.client.Client);
+
+        const client = defaultClient.pipe(
+            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/services`)),
+            NodeHttp.client.filterStatusOk
+        );
+
+        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
+        const ServicesClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Service)))
+        );
+        const ServiceCreateResponseClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ServiceCreateResponse))
+        );
+        const ServiceClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Service)));
+        const ServiceUpdateResponseClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ServiceUpdateResponse))
+        );
+
+        const streamHandler = (method: string) =>
+            streamErrorHandler((message) => new ServicesError({ method, message }));
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new ServicesError({ method, message }));
+
+        const list_ = (
+            options?: ServiceListOptions | undefined
+        ): Effect.Effect<never, ServicesError, Readonly<Array<Service>>> =>
+            pipe(
+                NodeHttp.request.get(""),
+                addQueryParameter("filters", options?.filters),
+                addQueryParameter("status", options?.status),
+                ServicesClient,
+                Effect.catchAll(responseHandler("list"))
+            );
+
+        const create_ = (
+            options: ServiceCreateOptions
+        ): Effect.Effect<never, ServicesError, Readonly<ServiceCreateResponse>> =>
+            pipe(
+                NodeHttp.request.post("/create"),
+                NodeHttp.request.setHeader("X-Registry-Auth", ""),
+                NodeHttp.request.schemaBody(ServiceSpec)(options.body),
+                Effect.flatMap(ServiceCreateResponseClient),
+                Effect.catchAll(responseHandler("create"))
+            );
+
+        const delete_ = (options: ServiceDeleteOptions): Effect.Effect<never, ServicesError, void> =>
+            pipe(
+                NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                voidClient,
+                Effect.catchAll(responseHandler("delete"))
+            );
+
+        const inspect_ = (options: ServiceInspectOptions): Effect.Effect<never, ServicesError, Readonly<Service>> =>
+            pipe(
+                NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("insertDefaults", options.insertDefaults),
+                ServiceClient,
+                Effect.catchAll(responseHandler("inspect"))
+            );
+
+        const update_ = (
+            options: ServiceUpdateOptions
+        ): Effect.Effect<never, ServicesError, Readonly<ServiceUpdateResponse>> =>
+            pipe(
+                NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+                NodeHttp.request.setHeader("X-Registry-Auth", ""),
+                addQueryParameter("version", options.version),
+                addQueryParameter("registryAuthFrom", options.registryAuthFrom),
+                addQueryParameter("rollback", options.rollback),
+                NodeHttp.request.schemaBody(ServiceSpec)(options.body),
+                Effect.flatMap(ServiceUpdateResponseClient),
+                Effect.catchAll(responseHandler("update"))
+            );
+
+        const logs_ = (
+            options: ServiceLogsOptions
+        ): Effect.Effect<never, ServicesError, Stream.Stream<never, ServicesError, string>> =>
+            pipe(
+                NodeHttp.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("details", options.details),
+                addQueryParameter("follow", options.follow),
+                addQueryParameter("stdout", options.stdout),
+                addQueryParameter("stderr", options.stderr),
+                addQueryParameter("since", options.since),
+                addQueryParameter("timestamps", options.timestamps),
+                addQueryParameter("tail", options.tail),
+                client,
+                Effect.map((response) => response.stream),
+                Effect.map(Stream.decodeText("utf8")),
+                Effect.map(Stream.catchAll(streamHandler("logs"))),
+                Effect.catchAll(responseHandler("logs"))
+            );
+
+        return { list: list_, create: create_, delete: delete_, inspect: inspect_, update: update_, logs: logs_ };
+    }
+);
+
+export const Services = Context.Tag<Services>("the-moby-effect/Services");
+export const layer = Layer.effect(Services, make).pipe(Layer.provide(MobyHttpClientLive));
+
+export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+
+export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
+    fromAgent(getAgent(connectionOptions));

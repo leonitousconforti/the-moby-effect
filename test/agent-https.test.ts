@@ -3,21 +3,21 @@ import path from "node:path";
 import * as NodeFs from "@effect/platform-node/FileSystem";
 import { Effect, Schedule } from "effect";
 
-import * as MobyApi from "../src/main.js";
-
-// How long jest has to run the before all and after all hooks.
-const WARMUP_TIMEOUT = 30_000;
-const COOLDOWN_TIMEOUT = 30_000;
+import * as MobyApi from "../src/index.js";
+import { COOLDOWN_TIMEOUT, WARMUP_TIMEOUT } from "./helpers.js";
 
 /** The ID of the dind docker container we can test against on the host. */
-let testDindContainerId: string | undefined;
-let testDindContainerHttpsPort: string | undefined;
+let testDindContainerId: string = undefined!;
+let testDindContainerHttpsPort: string = undefined!;
 
 /** Where the https certificates of the dind container will be mounted. */
-let testDindContainerHttpsCertDirectory: string | undefined;
+let testDindContainerHttpsCertDirectory: string = undefined!;
 
 /** Connects to the local docker daemon on this host. */
-const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
+const localConnectionOptions: MobyApi.MobyConnectionOptions = {
+    connection: "unix",
+    socketPath: "/var/run/docker.sock",
+};
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
@@ -28,13 +28,13 @@ beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
             const fsService: NodeFs.FileSystem = yield* _(NodeFs.FileSystem);
-
             testDindContainerHttpsCertDirectory = yield* _(fsService.makeTempDirectory());
-            const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localDocker.run({
+
+            const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
+                MobyApi.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
                     containerOptions: {
-                        body: {
+                        spec: {
                             Image: "docker:dind",
                             Env: ["DOCKER_TLS_CERTDIR=/certs"],
                             HostConfig: {
@@ -50,8 +50,9 @@ beforeAll(
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerHttpsPort = containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort!;
         })
-            .pipe(Effect.scoped)
             .pipe(Effect.provide(NodeFs.layer))
+            .pipe(Effect.provide(MobyApi.Images.fromConnectionOptions(localConnectionOptions)))
+            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
             .pipe(Effect.runPromise),
     WARMUP_TIMEOUT
 );
@@ -61,17 +62,18 @@ afterAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
             const fsService: NodeFs.FileSystem = yield* _(NodeFs.FileSystem);
-            yield* _(localDocker.containerDelete({ id: testDindContainerId!, force: true }));
+            const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
+            yield* _(containers.delete({ id: testDindContainerId!, force: true }));
             yield* _(fsService.remove(testDindContainerHttpsCertDirectory!, { recursive: true }));
         })
-            .pipe(Effect.scoped)
             .pipe(Effect.provide(NodeFs.layer))
+            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
             .pipe(Effect.runPromise),
     COOLDOWN_TIMEOUT
 );
 
 describe("MobyApi https agent tests", () => {
-    it("https agent should connect but see no containers", async () => {
+    it("http agent should be able to ping docker", async () => {
         const [ca, key, cert] = await Effect.runPromise(
             Effect.retry(
                 NodeFs.FileSystem.pipe(
@@ -87,28 +89,22 @@ describe("MobyApi https agent tests", () => {
             )
         );
 
-        const dindHttpsMobyClient = MobyApi.makeMobyClient({
-            ca,
-            key,
-            cert,
-            protocol: "https",
-            host: "localhost",
-            port: Number.parseInt(testDindContainerHttpsPort!),
-        });
-
-        await Effect.runPromise(
-            Effect.retry(
-                dindHttpsMobyClient.systemPing().pipe(Effect.scoped),
-                Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+        const message: string = await Effect.runPromise(
+            Effect.provide(
+                Effect.retry(
+                    Effect.flatMap(MobyApi.System.Systems, (systems) => systems.ping()),
+                    Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+                ),
+                MobyApi.System.fromConnectionOptions({
+                    ca,
+                    key,
+                    cert,
+                    connection: "https",
+                    host: "localhost",
+                    port: Number.parseInt(testDindContainerHttpsPort!),
+                })
             )
         );
-
-        const testData: readonly MobyApi.ContainerSummary[] = await dindHttpsMobyClient
-            .containerList({ all: true })
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise);
-
-        expect(testData).toBeInstanceOf(Array);
-        expect(testData.length).toBe(0);
+        expect(message).toBe("OK");
     }, 10_000);
 });

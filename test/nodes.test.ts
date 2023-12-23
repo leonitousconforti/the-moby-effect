@@ -1,93 +1,32 @@
-import { Effect, Schedule } from "effect";
+import { Effect, Layer } from "effect";
 
-import * as MobyApi from "../src/main.js";
+import * as MobyApi from "../src/index.js";
+import { cooldown, warmup } from "./helpers.js";
 
-// How long jest has to run the before all and after all hooks.
-const WARMUP_TIMEOUT = 30_000;
-const COOLDOWN_TIMEOUT = 30_000;
-
-/** Connects to the local docker daemon on this host. */
-const localDockerClient: MobyApi.IMobyService = MobyApi.makeMobyClient();
-
-/** The client we are going to use to test. */
-let testDockerClient: MobyApi.IMobyService = undefined!;
-
-/** The ID of the dind docker container we can test against on the host. */
-let testDindContainerId: string | undefined;
-
-/**
- * This bootstraps the tests by using the api to start a docker-in-docker
- * container on the host so that we have something to test the api against
- * without needing to modify the host docker install.
- */
-beforeAll(
-    async () =>
-        await Effect.gen(function* (_: Effect.Adapter) {
-            const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localDockerClient.run({
-                    imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
-                    containerOptions: {
-                        body: {
-                            Image: "docker:dind",
-                            Env: ["DOCKER_TLS_CERTDIR="],
-                            Cmd: ["--tls=false"],
-                            HostConfig: {
-                                Privileged: true,
-                                PortBindings: { "2375/tcp": [{ HostPort: "0" }], "2376/tcp": [{ HostPort: "0" }] },
-                            },
-                        },
-                    },
-                })
-            );
-
-            testDindContainerId = containerInspectResponse.Id!;
-            const testDindContainerHttpPort = Number.parseInt(
-                containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!
-            );
-
-            testDockerClient = MobyApi.makeMobyClient({
-                protocol: "http",
-                host: "localhost",
-                port: testDindContainerHttpPort,
-            });
-
-            yield* _(
-                Effect.retry(
-                    testDockerClient.systemPing().pipe(Effect.scoped),
-                    Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
-                )
-            );
-
-            yield* _(testDockerClient.swarmInit({ ListenAddr: "eth0" }));
-        })
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise),
-    WARMUP_TIMEOUT
-);
-
-/** Cleans up the container that will be created in the setup helper. */
-afterAll(
-    async () =>
-        await localDockerClient
-            .containerDelete({ id: testDindContainerId!, force: true })
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise),
-    COOLDOWN_TIMEOUT
-);
+let dindContainerId: string = undefined!;
+let testNodesService: Layer.Layer<never, never, MobyApi.Nodes.Nodes> = undefined!;
 
 describe("MobyApi Nodes tests", () => {
-    it("Should see and inspect one node", async () => {
-        const nodes: Readonly<MobyApi.Node[]> = await testDockerClient
-            .nodeList()
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise);
+    afterAll(async () => await cooldown(dindContainerId), 30_000);
+    beforeAll(async () => {
+        [dindContainerId, testNodesService] = await warmup(MobyApi.Nodes.fromConnectionOptions);
+    }, 30_000);
 
+    it("Should see and inspect one node", async () => {
+        const nodes: Readonly<MobyApi.Schemas.Node[]> = await Effect.runPromise(
+            Effect.provide(
+                Effect.flatMap(MobyApi.Nodes.Nodes, (nodes) => nodes.list()),
+                testNodesService
+            )
+        );
         expect(nodes).toBeInstanceOf(Array);
         expect(nodes).toHaveLength(1);
 
-        const node: Readonly<MobyApi.Node> = await testDockerClient
-            .nodeInspect({ id: nodes[0]!.ID! })
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise);
+        await Effect.runPromise(
+            Effect.provide(
+                Effect.flatMap(MobyApi.Nodes.Nodes, (_nodes) => _nodes.inspect({ id: nodes[0]!.ID! })),
+                testNodesService
+            )
+        );
     });
 });

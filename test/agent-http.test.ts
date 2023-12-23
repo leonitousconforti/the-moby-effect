@@ -1,17 +1,17 @@
 import { Effect, Schedule } from "effect";
 
-import * as MobyApi from "../src/main.js";
-
-// How long jest has to run the before all and after all hooks.
-const WARMUP_TIMEOUT = 30_000;
-const COOLDOWN_TIMEOUT = 30_000;
+import * as MobyApi from "../src/index.js";
+import { COOLDOWN_TIMEOUT, WARMUP_TIMEOUT } from "./helpers.js";
 
 /** The ID of the dind docker container we can test against on the host. */
-let testDindContainerId: string | undefined;
-let testDindContainerHttpPort: string | undefined;
+let testDindContainerId: string = undefined!;
+let testDindContainerHttpPort: string = undefined!;
 
 /** Connects to the local docker daemon on this host. */
-const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
+const localConnectionOptions: MobyApi.MobyConnectionOptions = {
+    connection: "unix",
+    socketPath: "/var/run/docker.sock",
+};
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
@@ -21,11 +21,11 @@ const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
 beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
-            const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localDocker.run({
+            const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
+                MobyApi.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
                     containerOptions: {
-                        body: {
+                        spec: {
                             Image: "docker:dind",
                             Env: ["DOCKER_TLS_CERTDIR="],
                             Cmd: ["--tls=false"],
@@ -41,7 +41,8 @@ beforeAll(
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerHttpPort = containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!;
         })
-            .pipe(Effect.scoped)
+            .pipe(Effect.provide(MobyApi.Images.fromConnectionOptions(localConnectionOptions)))
+            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
             .pipe(Effect.runPromise),
     WARMUP_TIMEOUT
 );
@@ -49,34 +50,29 @@ beforeAll(
 /** Cleans up the container that will be created in the setup helper. */
 afterAll(
     async () =>
-        await localDocker
-            .containerDelete({ id: testDindContainerId!, force: true })
-            .pipe(Effect.scoped)
+        MobyApi.Containers.Containers.pipe(
+            Effect.flatMap((containers) => containers.delete({ id: testDindContainerId, force: true }))
+        )
+            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
             .pipe(Effect.runPromise),
     COOLDOWN_TIMEOUT
 );
 
 describe("MobyApi http agent tests", () => {
-    it("http agent should connect but see no containers", async () => {
-        const dindHttpMobyClient: MobyApi.IMobyService = MobyApi.makeMobyClient({
-            protocol: "http",
-            host: "localhost",
-            port: Number.parseInt(testDindContainerHttpPort!),
-        });
-
-        await Effect.runPromise(
-            Effect.retry(
-                dindHttpMobyClient.systemPing().pipe(Effect.scoped),
-                Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+    it("http agent should be able to ping docker", async () => {
+        const message: string = await Effect.runPromise(
+            Effect.provide(
+                Effect.retry(
+                    Effect.flatMap(MobyApi.System.Systems, (systems) => systems.ping()),
+                    Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+                ),
+                MobyApi.System.fromConnectionOptions({
+                    connection: "http",
+                    host: "localhost",
+                    port: Number.parseInt(testDindContainerHttpPort),
+                })
             )
         );
-
-        const testData: readonly MobyApi.ContainerSummary[] = await dindHttpMobyClient
-            .containerList({ all: true })
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise);
-
-        expect(testData).toBeInstanceOf(Array);
-        expect(testData.length).toBe(0);
+        expect(message).toBe("OK");
     });
 });

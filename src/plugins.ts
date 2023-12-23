@@ -1,72 +1,65 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Data, Effect } from "effect";
+import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
 
-import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
-import { Plugin, PluginPrivilege, PluginPrivilegeSchema, PluginSchema } from "./schemas.js";
+import {
+    IMobyConnectionAgent,
+    MobyConnectionAgent,
+    MobyConnectionOptions,
+    MobyHttpClientLive,
+    getAgent,
+} from "./agent-helpers.js";
+import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
+import { Plugin, PluginPrivilege } from "./schemas.js";
 
-export class GetPluginPrivilegesError extends Data.TaggedError("GetPluginPrivilegesError")<{ message: string }> {}
-export class PluginCreateError extends Data.TaggedError("PluginCreateError")<{ message: string }> {}
-export class PluginDeleteError extends Data.TaggedError("PluginDeleteError")<{ message: string }> {}
-export class PluginDisableError extends Data.TaggedError("PluginDisableError")<{ message: string }> {}
-export class PluginEnableError extends Data.TaggedError("PluginEnableError")<{ message: string }> {}
-export class PluginInspectError extends Data.TaggedError("PluginInspectError")<{ message: string }> {}
-export class PluginListError extends Data.TaggedError("PluginListError")<{ message: string }> {}
-export class PluginPullError extends Data.TaggedError("PluginPullError")<{ message: string }> {}
-export class PluginPushError extends Data.TaggedError("PluginPushError")<{ message: string }> {}
-export class PluginSetError extends Data.TaggedError("PluginSetError")<{ message: string }> {}
-export class PluginUpgradeError extends Data.TaggedError("PluginUpgradeError")<{ message: string }> {}
+export class PluginsError extends Data.TaggedError("PluginsError")<{
+    method: string;
+    message: string;
+}> {}
+
+export interface PluginListOptions {
+    /**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the plugin list.
+     *
+     * Available filters:
+     *
+     * - `capability=<capability name>`
+     * - `enable=<true>|<false>`
+     */
+    readonly filters?: { compatibility?: [string]; enable?: ["true" | "false"] };
+}
 
 export interface GetPluginPrivilegesOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
      * if omitted.
      */
-    remote: string;
+    readonly remote: string;
 }
 
-export interface PluginCreateOptions {
+export interface PluginPullOptions {
     /**
-     * The name of the plugin. The `:latest` tag is optional, and is the default
-     * if omitted.
+     * Remote reference for plugin to install.
+     *
+     * The `:latest` tag is optional, and is used as the default if omitted.
      */
-    name: string;
-    /** Path to tar containing plugin rootfs and manifest */
-    body?: unknown;
-}
-
-export interface PluginDeleteOptions {
+    readonly remote: string;
     /**
-     * The name of the plugin. The `:latest` tag is optional, and is the default
-     * if omitted.
+     * Local name for the pulled plugin.
+     *
+     * The `:latest` tag is optional, and is used as the default if omitted.
      */
-    name: string;
+    readonly name?: string;
     /**
-     * Disable the plugin before removing. This may result in issues if the
-     * plugin is in use by a container.
+     * A base64url-encoded auth configuration to use when pulling a plugin from
+     * a registry.
+     *
+     * Refer to the [authentication section](#section/Authentication) for
+     * details.
      */
-    force?: boolean;
-}
-
-export interface PluginDisableOptions {
-    /**
-     * The name of the plugin. The `:latest` tag is optional, and is the default
-     * if omitted.
-     */
-    name: string;
-    /** Force disable a plugin even if still in use. */
-    force?: boolean;
-}
-
-export interface PluginEnableOptions {
-    /**
-     * The name of the plugin. The `:latest` tag is optional, and is the default
-     * if omitted.
-     */
-    name: string;
-    /** Set the HTTP client timeout (in seconds) */
-    timeout?: number;
+    readonly "X-Registry-Auth"?: string;
+    readonly body?: Array<PluginPrivilege>;
 }
 
 export interface PluginInspectOptions {
@@ -74,55 +67,40 @@ export interface PluginInspectOptions {
      * The name of the plugin. The `:latest` tag is optional, and is the default
      * if omitted.
      */
-    name: string;
+    readonly name: string;
 }
 
-export interface PluginListOptions {
-    /**
-     * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the plugin list. Available filters:
-     *
-     * - `capability=<capability name>`
-     * - `enable=<true>|<false>`
-     */
-    filters?: string;
-}
-
-export interface PluginPullOptions {
-    /**
-     * Remote reference for plugin to install. The `:latest` tag is optional,
-     * and is used as the default if omitted.
-     */
-    remote: string;
-    privileges?: Array<PluginPrivilege>;
-    /**
-     * Local name for the pulled plugin. The `:latest` tag is optional, and is
-     * used as the default if omitted.
-     */
-    name?: string;
-    /**
-     * A base64url-encoded auth configuration to use when pulling a plugin from
-     * a registry. Refer to the [authentication
-     * section](#section/Authentication) for details.
-     */
-    X_Registry_Auth?: string;
-}
-
-export interface PluginPushOptions {
+export interface PluginDeleteOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
      * if omitted.
      */
-    name: string;
+    readonly name: string;
+    /**
+     * Disable the plugin before removing. This may result in issues if the
+     * plugin is in use by a container.
+     */
+    readonly force?: boolean;
 }
 
-export interface PluginSetOptions {
+export interface PluginEnableOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
      * if omitted.
      */
-    name: string;
-    body?: Array<string>;
+    readonly name: string;
+    /** Set the HTTP client timeout (in seconds) */
+    readonly timeout?: number;
+}
+
+export interface PluginDisableOptions {
+    /**
+     * The name of the plugin. The `:latest` tag is optional, and is the default
+     * if omitted.
+     */
+    readonly name: string;
+    /** Force disable a plugin even if still in use. */
+    readonly force?: boolean;
 }
 
 export interface PluginUpgradeOptions {
@@ -130,360 +108,66 @@ export interface PluginUpgradeOptions {
      * The name of the plugin. The `:latest` tag is optional, and is the default
      * if omitted.
      */
-    name: string;
+    readonly name: string;
     /**
-     * Remote reference to upgrade to. The `:latest` tag is optional, and is
-     * used as the default if omitted.
+     * Remote reference to upgrade to.
+     *
+     * The `:latest` tag is optional, and is used as the default if omitted.
      */
-    remote: string;
-    body?: Array<PluginPrivilege>;
+    readonly remote: string;
     /**
      * A base64url-encoded auth configuration to use when pulling a plugin from
-     * a registry. Refer to the [authentication
-     * section](#section/Authentication) for details.
+     * a registry.
+     *
+     * Refer to the [authentication section](#section/Authentication) for
+     * details.
      */
-    X_Registry_Auth?: string;
+    readonly "X-Registry-Auth"?: string;
+    readonly body?: Array<PluginPrivilege>;
 }
 
-/**
- * Get plugin privileges
- *
- * @param remote - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- */
-export const getPluginPrivileges = (
-    options: GetPluginPrivilegesOptions
-): Effect.Effect<IMobyConnectionAgent, GetPluginPrivilegesError, Readonly<Array<PluginPrivilege>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/privileges";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
+export interface PluginCreateOptions {
+    /**
+     * The name of the plugin. The `:latest` tag is optional, and is the default
+     * if omitted.
+     */
+    readonly name: string;
+    /** Path to tar containing plugin rootfs and manifest */
+    readonly tarContext: Stream.Stream<never, never, Uint8Array>;
+}
 
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
+export interface PluginPushOptions {
+    /**
+     * The name of the plugin. The `:latest` tag is optional, and is the default
+     * if omitted.
+     */
+    readonly name: string;
+}
 
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("remote", options.remote))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(PluginPrivilegeSchema))))
-            .pipe(responseErrorHandler(GetPluginPrivilegesError));
-    }).pipe(Effect.flatten);
+export interface PluginSetOptions {
+    /**
+     * The name of the plugin. The `:latest` tag is optional, and is the default
+     * if omitted.
+     */
+    readonly name: string;
+    readonly body?: Array<string>;
+}
 
-/**
- * Create a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- * @param body - Path to tar containing plugin rootfs and manifest
- */
-export const pluginCreate = (
-    options: PluginCreateOptions
-): Effect.Effect<IMobyConnectionAgent, PluginCreateError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/create";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("name", options.name))
-            .pipe(addHeader("Content-Type", "application/x-tar"))
-            .pipe(setBody(options.body, "unknown"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(PluginCreateError));
-    }).pipe(Effect.flatten);
-
-/**
- * Remove a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- * @param force - Disable the plugin before removing. This may result in issues
- *   if the plugin is in use by a container.
- */
-export const pluginDelete = (
-    options: PluginDeleteOptions
-): Effect.Effect<IMobyConnectionAgent, PluginDeleteError, Readonly<Plugin>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("force", options.force))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema)))
-            .pipe(responseErrorHandler(PluginDeleteError));
-    }).pipe(Effect.flatten);
-
-/**
- * Disable a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- * @param force - Force disable a plugin even if still in use.
- */
-export const pluginDisable = (
-    options: PluginDisableOptions
-): Effect.Effect<IMobyConnectionAgent, PluginDisableError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}/disable";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("force", options.force))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(PluginDisableError));
-    }).pipe(Effect.flatten);
-
-/**
- * Enable a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- * @param timeout - Set the HTTP client timeout (in seconds)
- */
-export const pluginEnable = (
-    options: PluginEnableOptions
-): Effect.Effect<IMobyConnectionAgent, PluginEnableError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}/enable";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("timeout", options.timeout))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(PluginEnableError));
-    }).pipe(Effect.flatten);
-
-/**
- * Inspect a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- */
-export const pluginInspect = (
-    options: PluginInspectOptions
-): Effect.Effect<IMobyConnectionAgent, PluginInspectError, Readonly<Plugin>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}/json";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(PluginSchema)))
-            .pipe(responseErrorHandler(PluginInspectError));
-    }).pipe(Effect.flatten);
-
-/**
- * Returns information about installed plugins.
- *
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the plugin list. Available filters:
- *
- *   - `capability=<capability name>`
- *   - `enable=<true>|<false>`
- */
-export const pluginList = (
-    options?: PluginListOptions | undefined
-): Effect.Effect<IMobyConnectionAgent, PluginListError, Readonly<Array<Plugin>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("filters", options?.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(PluginSchema))))
-            .pipe(responseErrorHandler(PluginListError));
-    }).pipe(Effect.flatten);
-
-/**
- * Pulls and installs a plugin. After the plugin is installed, it can be enabled
- * using the [`POST /plugins/{name}/enable`
- * endpoint](#operation/PostPluginsEnable).
- *
- * @param remote - Remote reference for plugin to install. The `:latest` tag is
- *   optional, and is used as the default if omitted.
- * @param privileges -
- * @param name - Local name for the pulled plugin. The `:latest` tag is
- *   optional, and is used as the default if omitted.
- * @param X_Registry_Auth - A base64url-encoded auth configuration to use when
- *   pulling a plugin from a registry. Refer to the [authentication
- *   section](#section/Authentication) for details.
- */
-export const pluginPull = (options: PluginPullOptions): Effect.Effect<IMobyConnectionAgent, PluginPullError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/pull";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
-            .pipe(addQueryParameter("remote", options.remote))
-            .pipe(addQueryParameter("name", options.name))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.privileges, "Array&lt;PluginPrivilege&gt;"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(PluginPullError));
-    }).pipe(Effect.flatten);
-
-/**
- * Push a plugin to the registry.
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- */
-export const pluginPush = (options: PluginPushOptions): Effect.Effect<IMobyConnectionAgent, PluginPushError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}/push";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(PluginPushError));
-    }).pipe(Effect.flatten);
-
-/**
- * Configure a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- * @param body -
- */
-export const pluginSet = (options: PluginSetOptions): Effect.Effect<IMobyConnectionAgent, PluginSetError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}/set";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "Array&lt;string&gt;"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(PluginSetError));
-    }).pipe(Effect.flatten);
-
-/**
- * Upgrade a plugin
- *
- * @param name - The name of the plugin. The `:latest` tag is optional, and is
- *   the default if omitted.
- * @param remote - Remote reference to upgrade to. The `:latest` tag is
- *   optional, and is used as the default if omitted.
- * @param body -
- * @param X_Registry_Auth - A base64url-encoded auth configuration to use when
- *   pulling a plugin from a registry. Refer to the [authentication
- *   section](#section/Authentication) for details.
- */
-export const pluginUpgrade = (
-    options: PluginUpgradeOptions
-): Effect.Effect<IMobyConnectionAgent, PluginUpgradeError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/plugins/{name}/upgrade";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
-            .pipe(addQueryParameter("remote", options.remote))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "Array&lt;PluginPrivilege&gt;"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(PluginUpgradeError));
-    }).pipe(Effect.flatten);
-
-export interface IPluginService {
-    Errors:
-        | GetPluginPrivilegesError
-        | PluginCreateError
-        | PluginDeleteError
-        | PluginDisableError
-        | PluginEnableError
-        | PluginInspectError
-        | PluginListError
-        | PluginPullError
-        | PluginPushError
-        | PluginSetError
-        | PluginUpgradeError;
+export interface Plugins {
+    /**
+     * List plugins
+     *
+     * @param filters - A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the plugin list.
+     *
+     *   Available filters:
+     *
+     *   - `capability=<capability name>`
+     *   - `enable=<true>|<false>`
+     */
+    readonly list: (
+        options?: PluginListOptions | undefined
+    ) => Effect.Effect<never, PluginsError, Readonly<Array<Plugin>>>;
 
     /**
      * Get plugin privileges
@@ -491,16 +175,35 @@ export interface IPluginService {
      * @param remote - The name of the plugin. The `:latest` tag is optional,
      *   and is the default if omitted.
      */
-    getPluginPrivileges: WithConnectionAgentProvided<typeof getPluginPrivileges>;
+    readonly getPrivileges: (
+        options: GetPluginPrivilegesOptions
+    ) => Effect.Effect<never, PluginsError, Readonly<Array<PluginPrivilege>>>;
 
     /**
-     * Create a plugin
+     * Install a plugin
+     *
+     * @param remote - Remote reference for plugin to install.
+     *
+     *   The `:latest` tag is optional, and is used as the default if omitted.
+     * @param name - Local name for the pulled plugin.
+     *
+     *   The `:latest` tag is optional, and is used as the default if omitted.
+     * @param X-Registry-Auth - A base64url-encoded auth configuration to use
+     *   when pulling a plugin from a registry.
+     *
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
+     * @param body -
+     */
+    readonly pull: (options: PluginPullOptions) => Effect.Effect<never, PluginsError, void>;
+
+    /**
+     * Inspect a plugin
      *
      * @param name - The name of the plugin. The `:latest` tag is optional, and
      *   is the default if omitted.
-     * @param body - Path to tar containing plugin rootfs and manifest
      */
-    pluginCreate: WithConnectionAgentProvided<typeof pluginCreate>;
+    readonly inspect: (options: PluginInspectOptions) => Effect.Effect<never, PluginsError, Readonly<Plugin>>;
 
     /**
      * Remove a plugin
@@ -510,16 +213,7 @@ export interface IPluginService {
      * @param force - Disable the plugin before removing. This may result in
      *   issues if the plugin is in use by a container.
      */
-    pluginDelete: WithConnectionAgentProvided<typeof pluginDelete>;
-
-    /**
-     * Disable a plugin
-     *
-     * @param name - The name of the plugin. The `:latest` tag is optional, and
-     *   is the default if omitted.
-     * @param force - Force disable a plugin even if still in use.
-     */
-    pluginDisable: WithConnectionAgentProvided<typeof pluginDisable>;
+    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<never, PluginsError, Readonly<Plugin>>;
 
     /**
      * Enable a plugin
@@ -528,51 +222,50 @@ export interface IPluginService {
      *   is the default if omitted.
      * @param timeout - Set the HTTP client timeout (in seconds)
      */
-    pluginEnable: WithConnectionAgentProvided<typeof pluginEnable>;
+    readonly enable: (options: PluginEnableOptions) => Effect.Effect<never, PluginsError, void>;
 
     /**
-     * Inspect a plugin
+     * Disable a plugin
+     *
+     * @param name - The name of the plugin. The `:latest` tag is optional, and
+     *   is the default if omitted.
+     * @param force - Force disable a plugin even if still in use.
+     */
+    readonly disable: (options: PluginDisableOptions) => Effect.Effect<never, PluginsError, void>;
+
+    /**
+     * Upgrade a plugin
+     *
+     * @param name - The name of the plugin. The `:latest` tag is optional, and
+     *   is the default if omitted.
+     * @param remote - Remote reference to upgrade to.
+     *
+     *   The `:latest` tag is optional, and is used as the default if omitted.
+     * @param X-Registry-Auth - A base64url-encoded auth configuration to use
+     *   when pulling a plugin from a registry.
+     *
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
+     * @param body -
+     */
+    readonly upgrade: (options: PluginUpgradeOptions) => Effect.Effect<never, PluginsError, void>;
+
+    /**
+     * Create a plugin
+     *
+     * @param name - The name of the plugin. The `:latest` tag is optional, and
+     *   is the default if omitted.
+     * @param tarContext - Path to tar containing plugin rootfs and manifest
+     */
+    readonly create: (options: PluginCreateOptions) => Effect.Effect<never, PluginsError, void>;
+
+    /**
+     * Push a plugin
      *
      * @param name - The name of the plugin. The `:latest` tag is optional, and
      *   is the default if omitted.
      */
-    pluginInspect: WithConnectionAgentProvided<typeof pluginInspect>;
-
-    /**
-     * Returns information about installed plugins.
-     *
-     * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the plugin list. Available
-     *   filters:
-     *
-     *   - `capability=<capability name>`
-     *   - `enable=<true>|<false>`
-     */
-    pluginList: WithConnectionAgentProvided<typeof pluginList>;
-
-    /**
-     * Pulls and installs a plugin. After the plugin is installed, it can be
-     * enabled using the [`POST /plugins/{name}/enable`
-     * endpoint](#operation/PostPluginsEnable).
-     *
-     * @param remote - Remote reference for plugin to install. The `:latest` tag
-     *   is optional, and is used as the default if omitted.
-     * @param privileges -
-     * @param name - Local name for the pulled plugin. The `:latest` tag is
-     *   optional, and is used as the default if omitted.
-     * @param X_Registry_Auth - A base64url-encoded auth configuration to use
-     *   when pulling a plugin from a registry. Refer to the [authentication
-     *   section](#section/Authentication) for details.
-     */
-    pluginPull: WithConnectionAgentProvided<typeof pluginPull>;
-
-    /**
-     * Push a plugin to the registry.
-     *
-     * @param name - The name of the plugin. The `:latest` tag is optional, and
-     *   is the default if omitted.
-     */
-    pluginPush: WithConnectionAgentProvided<typeof pluginPush>;
+    readonly push: (options: PluginPushOptions) => Effect.Effect<never, PluginsError, void>;
 
     /**
      * Configure a plugin
@@ -581,19 +274,148 @@ export interface IPluginService {
      *   is the default if omitted.
      * @param body -
      */
-    pluginSet: WithConnectionAgentProvided<typeof pluginSet>;
-
-    /**
-     * Upgrade a plugin
-     *
-     * @param name - The name of the plugin. The `:latest` tag is optional, and
-     *   is the default if omitted.
-     * @param remote - Remote reference to upgrade to. The `:latest` tag is
-     *   optional, and is used as the default if omitted.
-     * @param body -
-     * @param X_Registry_Auth - A base64url-encoded auth configuration to use
-     *   when pulling a plugin from a registry. Refer to the [authentication
-     *   section](#section/Authentication) for details.
-     */
-    pluginUpgrade: WithConnectionAgentProvided<typeof pluginUpgrade>;
+    readonly set: (options: PluginSetOptions) => Effect.Effect<never, PluginsError, void>;
 }
+
+const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Plugins> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(NodeHttp.client.Client);
+
+        const client = defaultClient.pipe(
+            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/plugins`)),
+            NodeHttp.client.filterStatusOk
+        );
+
+        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
+        const PluginClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Plugin)));
+        const PluginsClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Plugin)))
+        );
+        const PluginPrivilegesClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(PluginPrivilege)))
+        );
+
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new PluginsError({ method, message }));
+
+        const list_ = (
+            options?: PluginListOptions | undefined
+        ): Effect.Effect<never, PluginsError, Readonly<Array<Plugin>>> =>
+            pipe(
+                NodeHttp.request.get(""),
+                addQueryParameter("filters", options?.filters),
+                PluginsClient,
+                Effect.catchAll(responseHandler("list"))
+            );
+
+        const getPrivileges_ = (
+            options: GetPluginPrivilegesOptions
+        ): Effect.Effect<never, PluginsError, Readonly<Array<PluginPrivilege>>> =>
+            pipe(
+                NodeHttp.request.get("/privileges"),
+                addQueryParameter("remote", options.remote),
+                PluginPrivilegesClient,
+                Effect.catchAll(responseHandler("getPrivileges"))
+            );
+
+        const pull_ = (options: PluginPullOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/pull"),
+                NodeHttp.request.setHeader("X-Registry-Auth", ""),
+                addQueryParameter("remote", options.remote),
+                addQueryParameter("name", options.name),
+                NodeHttp.request.schemaBody(Schema.array(PluginPrivilege))(options.body ?? []),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("pull"))
+            );
+
+        const inspect_ = (options: PluginInspectOptions): Effect.Effect<never, PluginsError, Readonly<Plugin>> =>
+            pipe(
+                NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
+                PluginClient,
+                Effect.catchAll(responseHandler("inspect"))
+            );
+
+        const delete_ = (options: PluginDeleteOptions): Effect.Effect<never, PluginsError, Readonly<Plugin>> =>
+            pipe(
+                NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
+                addQueryParameter("force", options.force),
+                PluginClient,
+                Effect.catchAll(responseHandler("delete"))
+            );
+
+        const enable_ = (options: PluginEnableOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/{name}/enable".replace("{name}", encodeURIComponent(options.name))),
+                addQueryParameter("timeout", options.timeout),
+                voidClient,
+                Effect.catchAll(responseHandler("enable"))
+            );
+
+        const disable_ = (options: PluginDisableOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/{name}/disable".replace("{name}", encodeURIComponent(options.name))),
+                addQueryParameter("force", options.force),
+                voidClient,
+                Effect.catchAll(responseHandler("disable"))
+            );
+
+        const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/{name}/upgrade".replace("{name}", encodeURIComponent(options.name))),
+                NodeHttp.request.setHeader("X-Registry-Auth", ""),
+                addQueryParameter("remote", options.remote),
+                NodeHttp.request.schemaBody(Schema.array(PluginPrivilege))(options.body ?? []),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("upgrade"))
+            );
+
+        const create_ = (options: PluginCreateOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/create"),
+                addQueryParameter("name", options.name),
+                NodeHttp.request.streamBody(options.tarContext),
+                voidClient,
+                Effect.catchAll(responseHandler("create"))
+            );
+
+        const push_ = (options: PluginPushOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
+                voidClient,
+                Effect.catchAll(responseHandler("push"))
+            );
+
+        const set_ = (options: PluginSetOptions): Effect.Effect<never, PluginsError, void> =>
+            pipe(
+                NodeHttp.request.post("/{name}/set".replace("{name}", encodeURIComponent(options.name))),
+                NodeHttp.request.schemaBody(Schema.array(Schema.string))(options.body ?? []),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("set"))
+            );
+
+        return {
+            list: list_,
+            getPrivileges: getPrivileges_,
+            pull: pull_,
+            inspect: inspect_,
+            delete: delete_,
+            enable: enable_,
+            disable: disable_,
+            upgrade: upgrade_,
+            create: create_,
+            push: push_,
+            set: set_,
+        };
+    }
+);
+
+export const Plugins = Context.Tag<Plugins>("the-moby-effect/Plugins");
+export const layer = Layer.effect(Plugins, make).pipe(Layer.provide(MobyHttpClientLive));
+
+export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+
+export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
+    fromAgent(getAgent(connectionOptions));

@@ -1,20 +1,21 @@
-import { Effect, Schedule, Stream } from "effect";
 import url from "node:url";
 import tar from "tar-fs";
 
-import * as MobyApi from "../src/main.js";
+import { Effect, Schedule, Stream } from "effect";
 
-// How long jest has to run the before all and after all hooks.
-const WARMUP_TIMEOUT = 30_000;
-const COOLDOWN_TIMEOUT = 30_000;
+import * as MobyApi from "../src/index.js";
+import { COOLDOWN_TIMEOUT, WARMUP_TIMEOUT } from "./helpers.js";
 
 /** The ID of the dind docker container we can test against on the host. */
-let testDindContainerId: string | undefined;
-let testDindContainerSshPort: string | undefined;
-const testDindContainerName: string = "ssh-dind:latest";
+let testDindContainerId: string = undefined!;
+let testDindContainerSshPort: string = undefined!;
+const testSshDindImageTag: string = "ssh-dind:latest";
 
 /** Connects to the local docker daemon on this host. */
-const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
+const localConnectionOptions: MobyApi.MobyConnectionOptions = {
+    connection: "unix",
+    socketPath: "/var/run/docker.sock",
+};
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
@@ -24,22 +25,28 @@ const localDocker: MobyApi.IMobyService = MobyApi.makeMobyClient();
 beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
-            const containerInspectResponse: MobyApi.ContainerInspectResponse = yield* _(
-                localDocker.run({
+            const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
+                MobyApi.run({
                     imageOptions: {
                         kind: "build",
-                        t: testDindContainerName,
-                        body: Stream.fromAsyncIterable(
-                            tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), {
-                                entries: ["agent-ssh.dockerfile"],
-                            }),
-                            () => new MobyApi.ImageBuildError({ message: "error packing the build context" })
+                        t: testSshDindImageTag,
+                        stream: Stream.orDie(
+                            Stream.fromAsyncIterable(
+                                tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), {
+                                    entries: ["agent-ssh.dockerfile"],
+                                }),
+                                () =>
+                                    new MobyApi.Images.ImagesError({
+                                        method: "buildStream",
+                                        message: "error packing the build context",
+                                    })
+                            )
                         ),
                         dockerfile: "agent-ssh.dockerfile",
                     },
                     containerOptions: {
-                        body: {
-                            Image: testDindContainerName,
+                        spec: {
+                            Image: testSshDindImageTag,
                             HostConfig: {
                                 Privileged: true,
                                 PortBindings: {
@@ -56,7 +63,8 @@ beforeAll(
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerSshPort = containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort!;
         })
-            .pipe(Effect.scoped)
+            .pipe(Effect.provide(MobyApi.Images.fromConnectionOptions(localConnectionOptions)))
+            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
             .pipe(Effect.runPromise),
     WARMUP_TIMEOUT
 );
@@ -64,37 +72,32 @@ beforeAll(
 /** Cleans up the container that will be created in the setup helper. */
 afterAll(
     async () =>
-        await localDocker
-            .containerDelete({ id: testDindContainerId!, force: true })
-            .pipe(Effect.scoped)
+        MobyApi.Containers.Containers.pipe(
+            Effect.flatMap((containers) => containers.delete({ id: testDindContainerId, force: true }))
+        )
+            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
             .pipe(Effect.runPromise),
     COOLDOWN_TIMEOUT
 );
 
 describe("MobyApi ssh agent tests", () => {
-    it("ssh agent should connect but see no containers", async () => {
-        const dindSshMobyClient = MobyApi.makeMobyClient({
-            protocol: "ssh",
-            host: "localhost",
-            port: Number.parseInt(testDindContainerSshPort!),
-            username: "root",
-            password: "password",
-            socketPath: "/var/run/docker.sock",
-        });
-
-        await Effect.runPromise(
-            Effect.retry(
-                dindSshMobyClient.systemPing().pipe(Effect.scoped),
-                Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+    it("ssh agent should be able to ping docker", async () => {
+        const message: string = await Effect.runPromise(
+            Effect.provide(
+                Effect.retry(
+                    Effect.flatMap(MobyApi.System.Systems, (systems) => systems.ping()),
+                    Schedule.recurs(3).pipe(Schedule.addDelay(() => 1000))
+                ),
+                MobyApi.System.fromConnectionOptions({
+                    connection: "ssh",
+                    host: "localhost",
+                    port: Number.parseInt(testDindContainerSshPort!),
+                    username: "root",
+                    password: "password",
+                    remoteSocketPath: "/var/run/docker.sock",
+                })
             )
         );
-
-        const testData: readonly MobyApi.ContainerSummary[] = await dindSshMobyClient
-            .containerList({ all: true })
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise);
-
-        expect(testData).toBeInstanceOf(Array);
-        expect(testData.length).toBe(0);
+        expect(message).toBe("OK");
     });
 });

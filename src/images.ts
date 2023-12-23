@@ -1,56 +1,192 @@
-import type { MobyError } from "./main.js";
-
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Data, Effect, Stream } from "effect";
-
-import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-
-import { addHeader, addQueryParameter, responseErrorHandler, setBody, streamErrorHandler } from "./request-helpers.js";
+import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
 
 import {
+    IMobyConnectionAgent,
+    MobyConnectionAgent,
+    MobyConnectionOptions,
+    MobyHttpClientLive,
+    getAgent,
+} from "./agent-helpers.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
+import {
     BuildPruneResponse,
-    BuildPruneResponseSchema,
     ContainerConfig,
     HistoryResponseItem,
-    HistoryResponseItemSchema,
     IdResponse,
     ImageDeleteResponseItem,
-    ImageDeleteResponseItemSchema,
     ImageInspect,
-    ImageInspectSchema,
     ImagePruneResponse,
-    ImagePruneResponseSchema,
     ImageSearchResponseItem,
-    ImageSearchResponseItemSchema,
     ImageSummary,
-    ImageSummarySchema,
 } from "./schemas.js";
 
-export class BuildPruneError extends Data.TaggedError("BuildPruneError")<{ message: string }> {}
-export class ImageBuildError extends Data.TaggedError("ImageBuildError")<{ message: string }> {}
-export class ImageCommitError extends Data.TaggedError("ImageCommitError")<{ message: string }> {}
-export class ImageCreateError extends Data.TaggedError("ImageCreateError")<{ message: string }> {}
-export class ImageDeleteError extends Data.TaggedError("ImageDeleteError")<{ message: string }> {}
-export class ImageGetError extends Data.TaggedError("ImageGetError")<{ message: string }> {}
-export class ImageGetAllError extends Data.TaggedError("ImageGetAllError")<{ message: string }> {}
-export class ImageHistoryError extends Data.TaggedError("ImageHistoryError")<{ message: string }> {}
-export class ImageInspectError extends Data.TaggedError("ImageInspectError")<{ message: string }> {}
-export class ImageListError extends Data.TaggedError("ImageListError")<{ message: string }> {}
-export class ImageLoadError extends Data.TaggedError("ImageLoadError")<{ message: string }> {}
-export class ImagePruneError extends Data.TaggedError("ImagePruneError")<{ message: string }> {}
-export class ImagePushError extends Data.TaggedError("ImagePushError")<{ message: string }> {}
-export class ImageSearchError extends Data.TaggedError("ImageSearchError")<{ message: string }> {}
-export class ImageTagError extends Data.TaggedError("ImageTagError")<{ message: string }> {}
+export class ImagesError extends Data.TaggedError("ImagesError")<{
+    method: string;
+    message: string;
+}> {}
+
+export interface ImageListOptions {
+    /**
+     * Show all images. Only images from a final layer (no children) are shown
+     * by default.
+     */
+    readonly all?: boolean;
+    /**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the images list.
+     *
+     * Available filters:
+     *
+     * - `before`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
+     * - `dangling=true`
+     * - `label=key` or `label="key=value"` of an image label
+     * - `reference`=(`<image-name>[:<tag>]`)
+     * - `since`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
+     * - `until=<timestamp>`
+     */
+    readonly filters?: string;
+    /** Compute and show shared size as a `SharedSize` field on each image. */
+    readonly "shared-size"?: boolean;
+    /** Show digest information as a `RepoDigests` field on each image. */
+    readonly digests?: boolean;
+}
+
+export interface ImageBuildOptions {
+    /**
+     * A tar archive compressed with one of the following algorithms: identity
+     * (no compression), gzip, bzip2, xz.
+     */
+    readonly stream: Stream.Stream<never, never, Uint8Array>;
+    /**
+     * Path within the build context to the `Dockerfile`. This is ignored if
+     * `remote` is specified and points to an external `Dockerfile`.
+     */
+    readonly dockerfile?: string;
+    /**
+     * A name and optional tag to apply to the image in the `name:tag` format.
+     * If you omit the tag the default `latest` value is assumed. You can
+     * provide several `t` parameters.
+     */
+    readonly t?: string;
+    /** Extra hosts to add to /etc/hosts */
+    readonly extrahosts?: string;
+    /**
+     * A Git repository URI or HTTP/HTTPS context URI. If the URI points to a
+     * single text file, the file’s contents are placed into a file called
+     * `Dockerfile` and the image is built from that file. If the URI points to
+     * a tarball, the file is downloaded by the daemon and the contents therein
+     * used as the context for the build. If the URI points to a tarball and the
+     * `dockerfile` parameter is also specified, there must be a file with the
+     * corresponding path inside the tarball.
+     */
+    readonly remote?: string;
+    /** Suppress verbose build output. */
+    readonly q?: boolean;
+    /** Do not use the cache when building the image. */
+    readonly nocache?: boolean;
+    /** JSON array of images used for build cache resolution. */
+    readonly cachefrom?: string;
+    /** Attempt to pull the image even if an older image exists locally. */
+    readonly pull?: string;
+    /** Remove intermediate containers after a successful build. */
+    readonly rm?: boolean;
+    /** Always remove intermediate containers, even upon failure. */
+    readonly forcerm?: boolean;
+    /** Set memory limit for build. */
+    readonly memory?: number;
+    /** Total memory (memory + swap). Set as `-1` to disable swap. */
+    readonly memswap?: number;
+    /** CPU shares (relative weight). */
+    readonly cpushares?: number;
+    /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
+    readonly cpusetcpus?: string;
+    /** The length of a CPU period in microseconds. */
+    readonly cpuperiod?: number;
+    /** Microseconds of CPU time that the container can get in a CPU period. */
+    readonly cpuquota?: number;
+    /**
+     * JSON map of string pairs for build-time variables. Users pass these
+     * values at build-time. Docker uses the buildargs as the environment
+     * context for commands run via the `Dockerfile` RUN instruction, or for
+     * variable expansion in other `Dockerfile` instructions. This is not meant
+     * for passing secret values.
+     *
+     * For example, the build arg `FOO=bar` would become `{"FOO":"bar"}` in
+     * JSON. This would result in the query parameter `buildargs={"FOO":"bar"}`.
+     * Note that `{"FOO":"bar"}` should be URI component encoded.
+     *
+     * [Read more about the buildargs
+     * instruction.](https://docs.docker.com/engine/reference/builder/#arg)
+     */
+    readonly buildargs?: string;
+    /**
+     * Size of `/dev/shm` in bytes. The size must be greater than 0. If omitted
+     * the system uses 64MB.
+     */
+    readonly shmsize?: number;
+    /**
+     * Squash the resulting images layers into a single layer. _(Experimental
+     * release only.)_
+     */
+    readonly squash?: boolean;
+    /**
+     * Arbitrary key/value labels to set on the image, as a JSON map of string
+     * pairs.
+     */
+    readonly labels?: string;
+    /**
+     * Sets the networking mode for the run commands during build. Supported
+     * standard values are: `bridge`, `host`, `none`, and `container:<name|id>`.
+     * Any other value is taken as a custom network's name or ID to which this
+     * container should connect to.
+     */
+    readonly networkmode?: string;
+    readonly "Content-type"?: string;
+    /**
+     * This is a base64-encoded JSON object with auth configurations for
+     * multiple registries that a build may refer to.
+     *
+     * The key is a registry URL, and the value is an auth configuration object,
+     * [as described in the authentication section](#section/Authentication).
+     * For example:
+     *
+     *     {
+     *         "docker.example.com": {
+     *             "username": "janedoe",
+     *             "password": "hunter2"
+     *         },
+     *         "https://index.docker.io/v1/": {
+     *             "username": "mobydock",
+     *             "password": "conta1n3rize14"
+     *         }
+     *     }
+     *
+     * Only the registry domain name (and port if not the default 443) are
+     * required. However, for legacy reasons, the Docker Hub registry must be
+     * specified with both a `https://` prefix and a `/v1/` suffix even though
+     * Docker will prefer to use the v2 registry API.
+     */
+    readonly "X-Registry-Config"?: string;
+    /** Platform in the format os[/arch[/variant]] */
+    readonly platform?: string;
+    /** Target build stage */
+    readonly target?: string;
+    /** BuildKit output configuration */
+    readonly outputs?: string;
+}
 
 export interface BuildPruneOptions {
     /** Amount of disk space in bytes to keep for cache */
-    keep_storage?: number;
+    readonly "keep-storage"?: number;
     /** Remove all types of build cache */
-    all?: boolean;
+    readonly all?: boolean;
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the list of build cache objects. Available filters:
+     * on the list of build cache objects.
+     *
+     * Available filters:
      *
      * - `until=<timestamp>` remove cache older than `<timestamp>`. The
      *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
@@ -64,257 +200,138 @@ export interface BuildPruneOptions {
      * - `shared`
      * - `private`
      */
-    filters?: string;
-}
-
-export interface ImageBuildOptions {
-    /**
-     * A tar archive compressed with one of the following algorithms: identity
-     * (no compression), gzip, bzip2, xz.
-     */
-    body?: Stream.Stream<never, ImageBuildError, Uint8Array>;
-    /**
-     * Path within the build context to the `Dockerfile`. This is ignored if
-     * `remote` is specified and points to an external `Dockerfile`.
-     */
-    dockerfile?: string;
-    /**
-     * A name and optional tag to apply to the image in the `name:tag` format.
-     * If you omit the tag the default `latest` value is assumed. You can
-     * provide several `t` parameters.
-     */
-    t?: string;
-    /** Extra hosts to add to /etc/hosts */
-    extrahosts?: string;
-    /**
-     * A Git repository URI or HTTP/HTTPS context URI. If the URI points to a
-     * single text file, the file’s contents are placed into a file called
-     * `Dockerfile` and the image is built from that file. If the URI points to
-     * a tarball, the file is downloaded by the daemon and the contents therein
-     * used as the context for the build. If the URI points to a tarball and the
-     * `dockerfile` parameter is also specified, there must be a file with the
-     * corresponding path inside the tarball.
-     */
-    remote?: string;
-    /** Suppress verbose build output. */
-    q?: boolean;
-    /** Do not use the cache when building the image. */
-    nocache?: boolean;
-    /** JSON array of images used for build cache resolution. */
-    cachefrom?: string;
-    /** Attempt to pull the image even if an older image exists locally. */
-    pull?: string;
-    /** Remove intermediate containers after a successful build. */
-    rm?: boolean;
-    /** Always remove intermediate containers, even upon failure. */
-    forcerm?: boolean;
-    /** Set memory limit for build. */
-    memory?: number;
-    /** Total memory (memory + swap). Set as `-1` to disable swap. */
-    memswap?: number;
-    /** CPU shares (relative weight). */
-    cpushares?: number;
-    /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
-    cpusetcpus?: string;
-    /** The length of a CPU period in microseconds. */
-    cpuperiod?: number;
-    /** Microseconds of CPU time that the container can get in a CPU period. */
-    cpuquota?: number;
-    /**
-     * JSON map of string pairs for build-time variables. Users pass these
-     * values at build-time. Docker uses the buildargs as the environment
-     * context for commands run via the `Dockerfile` RUN instruction, or for
-     * variable expansion in other `Dockerfile` instructions. This is not meant
-     * for passing secret values. For example, the build arg `FOO=bar` would
-     * become `{\"FOO\":\"bar\"}` in JSON. This would result in the query
-     * parameter `buildargs={\"FOO\":\"bar\"}`. Note that `{\"FOO\":\"bar\"}`
-     * should be URI component encoded. [Read more about the buildargs
-     * instruction.](https://docs.docker.com/engine/reference/builder/#arg)
-     */
-    buildargs?: string;
-    /**
-     * Size of `/dev/shm` in bytes. The size must be greater than 0. If omitted
-     * the system uses 64MB.
-     */
-    shmsize?: number;
-    /**
-     * Squash the resulting images layers into a single layer. _(Experimental
-     * release only.)_
-     */
-    squash?: boolean;
-    /**
-     * Arbitrary key/value labels to set on the image, as a JSON map of string
-     * pairs.
-     */
-    labels?: string;
-    /**
-     * Sets the networking mode for the run commands during build. Supported
-     * standard values are: `bridge`, `host`, `none`, and `container:<name|id>`.
-     * Any other value is taken as a custom network's name or ID to which this
-     * container should connect to.
-     */
-    networkmode?: string;
-    Content_type?: string;
-    /**
-     * This is a base64-encoded JSON object with auth configurations for
-     * multiple registries that a build may refer to. The key is a registry URL,
-     * and the value is an auth configuration object, [as described in the
-     * authentication section](#section/Authentication). For example: `{
-     * \"docker.example.com\": { \"username\": \"janedoe\", \"password\":
-     * \"hunter2\" }, \"https://index.docker.io/v1/\": { \"username\":
-     * \"mobydock\", \"password\": \"conta1n3rize14\" } }` Only the registry
-     * domain name (and port if not the default 443) are required. However, for
-     * legacy reasons, the Docker Hub registry must be specified with both a
-     * `https://` prefix and a `/v1/` suffix even though Docker will prefer to
-     * use the v2 registry API.
-     */
-    X_Registry_Config?: string;
-    /** Platform in the format os[/arch[/variant]] */
-    platform?: string;
-    /** Target build stage */
-    target?: string;
-    /** BuildKit output configuration */
-    outputs?: string;
-}
-
-export interface ImageCommitOptions {
-    /** The container configuration */
-    body?: ContainerConfig;
-    /** The ID or name of the container to commit */
-    container?: string;
-    /** Repository name for the created image */
-    repo?: string;
-    /** Tag name for the create image */
-    tag?: string;
-    /** Commit message */
-    comment?: string;
-    /** Author of the image (e.g., `John Hannibal Smith <hannibal@a-team.com>`) */
-    author?: string;
-    /** Whether to pause the container before committing */
-    pause?: boolean;
-    /** `Dockerfile` instructions to apply while committing */
-    changes?: string;
+    readonly filters?: string;
 }
 
 export interface ImageCreateOptions {
-    /**
-     * Image content if the value `-` has been specified in fromSrc query
-     * parameter
-     */
-    body?: string;
     /**
      * Name of the image to pull. The name may include a tag or digest. This
      * parameter may only be used when pulling an image. The pull is cancelled
      * if the HTTP connection is closed.
      */
-    fromImage?: string;
+    readonly fromImage?: string;
     /**
      * Source to import. The value may be a URL from which the image can be
      * retrieved or `-` to read the image from the request body. This parameter
      * may only be used when importing an image.
      */
-    fromSrc?: string;
+    readonly fromSrc?: string;
     /**
      * Repository name given to an image when it is imported. The repo may
      * include a tag. This parameter may only be used when importing an image.
      */
-    repo?: string;
+    readonly repo?: string;
     /**
      * Tag or digest. If empty when pulling an image, this causes all tags for
      * the given image to be pulled.
      */
-    tag?: string;
+    readonly tag?: string;
     /** Set commit message for imported image. */
-    message?: string;
+    readonly message?: string;
     /**
-     * A base64url-encoded auth configuration. Refer to the [authentication
-     * section](#section/Authentication) for details.
+     * Image content if the value `-` has been specified in fromSrc query
+     * parameter
      */
-    X_Registry_Auth?: string;
+    readonly inputImage?: string;
+    /**
+     * A base64url-encoded auth configuration.
+     *
+     * Refer to the [authentication section](#section/Authentication) for
+     * details.
+     */
+    readonly "X-Registry-Auth"?: string;
     /**
      * Apply `Dockerfile` instructions to the image that is created, for
      * example: `changes=ENV DEBUG=true`. Note that `ENV DEBUG=true` should be
-     * URI component encoded. Supported `Dockerfile` instructions:
+     * URI component encoded.
+     *
+     * Supported `Dockerfile` instructions:
      * `CMD`|`ENTRYPOINT`|`ENV`|`EXPOSE`|`ONBUILD`|`USER`|`VOLUME`|`WORKDIR`
      */
-    changes?: Array<string>;
+    readonly changes?: string;
     /**
-     * Platform in the format os[/arch[/variant]]. When used in combination with
-     * the `fromImage` option, the daemon checks if the given image is present
-     * in the local image cache with the given OS and Architecture, and
-     * otherwise attempts to pull the image. If the option is not set, the
-     * host's native OS and Architecture are used. If the given image does not
-     * exist in the local image cache, the daemon attempts to pull the image
-     * with the host's native OS and Architecture. If the given image does
-     * exists in the local image cache, but its OS or architecture does not
-     * match, a warning is produced. When used with the `fromSrc` option to
-     * import an image from an archive, this option sets the platform
-     * information for the imported image. If the option is not set, the host's
-     * native OS and Architecture are used for the imported image.
+     * Platform in the format os[/arch[/variant]].
+     *
+     * When used in combination with the `fromImage` option, the daemon checks
+     * if the given image is present in the local image cache with the given OS
+     * and Architecture, and otherwise attempts to pull the image. If the option
+     * is not set, the host's native OS and Architecture are used. If the given
+     * image does not exist in the local image cache, the daemon attempts to
+     * pull the image with the host's native OS and Architecture. If the given
+     * image does exists in the local image cache, but its OS or architecture
+     * does not match, a warning is produced.
+     *
+     * When used with the `fromSrc` option to import an image from an archive,
+     * this option sets the platform information for the imported image. If the
+     * option is not set, the host's native OS and Architecture are used for the
+     * imported image.
      */
-    platform?: string;
-}
-
-export interface ImageDeleteOptions {
-    /** Image name or ID */
-    name: string;
-    /**
-     * Remove the image even if it is being used by stopped containers or has
-     * other tags
-     */
-    force?: boolean;
-    /** Do not delete untagged parent images */
-    noprune?: boolean;
-}
-
-export interface ImageGetOptions {
-    /** Image name or ID */
-    name: string;
-}
-
-export interface ImageGetAllOptions {
-    /** Image names to filter by */
-    names?: Array<string>;
-}
-
-export interface ImageHistoryOptions {
-    /** Image name or ID */
-    name: string;
+    readonly platform?: string;
 }
 
 export interface ImageInspectOptions {
     /** Image name or id */
-    name: string;
+    readonly name: string;
 }
 
-export interface ImageListOptions {
+export interface ImageHistoryOptions {
+    /** Image name or ID */
+    readonly name: string;
+}
+
+export interface ImagePushOptions {
+    /** Image name or ID. */
+    readonly name: string;
+    /** The tag to associate with the image on the registry. */
+    readonly tag?: string;
     /**
-     * Show all images. Only images from a final layer (no children) are shown
-     * by default.
+     * A base64url-encoded auth configuration.
+     *
+     * Refer to the [authentication section](#section/Authentication) for
+     * details.
      */
-    all?: boolean;
+    readonly "X-Registry-Auth": string;
+}
+
+export interface ImageTagOptions {
+    /** Image name or ID to tag. */
+    readonly name: string;
+    /** The repository to tag in. For example, `someuser/someimage`. */
+    readonly repo?: string;
+    /** The name of the new tag. */
+    readonly tag?: string;
+}
+
+export interface ImageDeleteOptions {
+    /** Image name or ID */
+    readonly name: string;
+    /**
+     * Remove the image even if it is being used by stopped containers or has
+     * other tags
+     */
+    readonly force?: boolean;
+    /** Do not delete untagged parent images */
+    readonly noprune?: boolean;
+}
+
+export interface ImageSearchOptions {
+    /** Term to search */
+    readonly term: string;
+    /** Maximum number of results to return */
+    readonly limit?: number;
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
      * on the images list. Available filters:
      *
-     * - `before`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`) -
-     *   `dangling=true`
-     * - `label=key` or `label=\"key=value\"` of an image label
-     * - `reference`=(`<image-name>[:<tag>]`) - `since`=(`<image-name>[:<tag>]`,
-     *   `<image id>` or `<image@digest>`)
+     * - `is-automated=(true|false)` (deprecated, see below)
+     * - `is-official=(true|false)`
+     * - `stars=<number>` Matches images that has at least 'number' stars.
+     *
+     * The `is-automated` filter is deprecated. The `is_automated` field has
+     * been deprecated by Docker Hub's search API. Consequently, searching for
+     * `is-automated=true` will yield no results.
      */
-    filters?: string;
-    /** Compute and show shared size as a `SharedSize` field on each image. */
-    shared_size?: boolean;
-    /** Show digest information as a `RepoDigests` field on each image. */
-    digests?: boolean;
-}
-
-export interface ImageLoadOptions {
-    /** Tar archive containing images */
-    body?: unknown;
-    /** Suppress progress details during load. */
-    quiet?: boolean;
+    readonly filters?: string;
 }
 
 export interface ImagePruneOptions {
@@ -333,785 +350,80 @@ export interface ImagePruneOptions {
      *   `label!=<key>=<value>`) Prune images with (or without, in case
      *   `label!=...` is used) the specified labels.
      */
-    filters?: string;
+    readonly filters?: {
+        dangling?: ["true" | "false"] | undefined;
+        until?: [string] | undefined;
+        label?: string[] | undefined;
+    };
 }
 
-export interface ImagePushOptions {
-    /** Image name or ID. */
-    name: string;
-    /**
-     * A base64url-encoded auth configuration. Refer to the [authentication
-     * section](#section/Authentication) for details.
-     */
-    X_Registry_Auth: string;
-    /** The tag to associate with the image on the registry. */
-    tag?: string;
+export interface ImageCommitOptions {
+    /** The container configuration */
+    readonly containerConfig: ContainerConfig;
+    /** The ID or name of the container to commit */
+    readonly container?: string;
+    /** Repository name for the created image */
+    readonly repo?: string;
+    /** Tag name for the create image */
+    readonly tag?: string;
+    /** Commit message */
+    readonly comment?: string;
+    /** Author of the image (e.g., `John Hannibal Smith <hannibal@a-team.com>`) */
+    readonly author?: string;
+    /** Whether to pause the container before committing */
+    readonly pause?: boolean;
+    /** `Dockerfile` instructions to apply while committing */
+    readonly changes?: string;
 }
 
-export interface ImageSearchOptions {
-    /** Term to search */
-    term: string;
-    /** Maximum number of results to return */
-    limit?: number;
+export interface ImageGetOptions {
+    /** Image name or ID */
+    readonly name: string;
+}
+
+export interface ImageGetAllOptions {
+    /** Image names to filter by */
+    readonly names?: Array<string> | undefined;
+}
+
+export interface ImageLoadOptions {
+    /** Tar archive containing images */
+    readonly imagesTarball: Stream.Stream<never, never, Uint8Array>;
+    /** Suppress progress details during load. */
+    readonly quiet?: boolean;
+}
+
+export interface Images {
     /**
-     * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the images list. Available filters:
+     * List Images
      *
-     * - `is-automated=(true|false)`
-     * - `is-official=(true|false)`
-     * - `stars=<number>` Matches images that has at least 'number' stars.
-     */
-    filters?: string;
-}
-
-export interface ImageTagOptions {
-    /** Image name or ID to tag. */
-    name: string;
-    /** The repository to tag in. For example, `someuser/someimage`. */
-    repo?: string;
-    /** The name of the new tag. */
-    tag?: string;
-}
-
-/**
- * Delete builder cache
- *
- * @param keep_storage - Amount of disk space in bytes to keep for cache
- * @param all - Remove all types of build cache
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the list of build cache objects.
- *   Available filters:
- *
- *   - `until=<timestamp>` remove cache older than `<timestamp>`. The `<timestamp>`
- *       can be Unix timestamps, date formatted timestamps, or Go duration
- *       strings (e.g. `10m`, `1h30m`) computed relative to the daemon's local
- *       time.
- *   - `id=<id>`
- *   - `parent=<id>`
- *   - `type=<string>`
- *   - `description=<string>`
- *   - `inuse`
- *   - `shared`
- *   - `private`
- */
-export const buildPrune = (
-    options: BuildPruneOptions
-): Effect.Effect<IMobyConnectionAgent, BuildPruneError, Readonly<BuildPruneResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/build/prune";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("keep-storage", options.keep_storage))
-            .pipe(addQueryParameter("all", options.all))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(BuildPruneResponseSchema)))
-            .pipe(responseErrorHandler(BuildPruneError));
-    }).pipe(Effect.flatten);
-
-/**
- * Build an image from a tar archive with a `Dockerfile` in it. The `Dockerfile`
- * specifies how the image is built from the tar archive. It is typically in the
- * archive's root, but can be at a different path or have a different name by
- * specifying the `dockerfile` parameter. [See the `Dockerfile` reference for
- * more information](https://docs.docker.com/engine/reference/builder/). The
- * Docker daemon performs a preliminary validation of the `Dockerfile` before
- * starting the build, and returns an error if the syntax is incorrect. After
- * that, each instruction is run one-by-one until the ID of the new image is
- * output. The build is canceled if the client drops the connection by quitting
- * or being killed.
- *
- * @param body - A tar archive compressed with one of the following algorithms:
- *   identity (no compression), gzip, bzip2, xz.
- * @param dockerfile - Path within the build context to the `Dockerfile`. This
- *   is ignored if `remote` is specified and points to an external
- *   `Dockerfile`.
- * @param t - A name and optional tag to apply to the image in the `name:tag`
- *   format. If you omit the tag the default `latest` value is assumed. You can
- *   provide several `t` parameters.
- * @param extrahosts - Extra hosts to add to /etc/hosts
- * @param remote - A Git repository URI or HTTP/HTTPS context URI. If the URI
- *   points to a single text file, the file’s contents are placed into a file
- *   called `Dockerfile` and the image is built from that file. If the URI
- *   points to a tarball, the file is downloaded by the daemon and the contents
- *   therein used as the context for the build. If the URI points to a tarball
- *   and the `dockerfile` parameter is also specified, there must be a file with
- *   the corresponding path inside the tarball.
- * @param q - Suppress verbose build output.
- * @param nocache - Do not use the cache when building the image.
- * @param cachefrom - JSON array of images used for build cache resolution.
- * @param pull - Attempt to pull the image even if an older image exists
- *   locally.
- * @param rm - Remove intermediate containers after a successful build.
- * @param forcerm - Always remove intermediate containers, even upon failure.
- * @param memory - Set memory limit for build.
- * @param memswap - Total memory (memory + swap). Set as `-1` to disable swap.
- * @param cpushares - CPU shares (relative weight).
- * @param cpusetcpus - CPUs in which to allow execution (e.g., `0-3`, `0,1`).
- * @param cpuperiod - The length of a CPU period in microseconds.
- * @param cpuquota - Microseconds of CPU time that the container can get in a
- *   CPU period.
- * @param buildargs - JSON map of string pairs for build-time variables. Users
- *   pass these values at build-time. Docker uses the buildargs as the
- *   environment context for commands run via the `Dockerfile` RUN instruction,
- *   or for variable expansion in other `Dockerfile` instructions. This is not
- *   meant for passing secret values. For example, the build arg `FOO=bar` would
- *   become `{\"FOO\":\"bar\"}` in JSON. This would result in the query
- *   parameter `buildargs={\"FOO\":\"bar\"}`. Note that `{\"FOO\":\"bar\"}`
- *   should be URI component encoded. [Read more about the buildargs
- *   instruction.](https://docs.docker.com/engine/reference/builder/#arg)
- * @param shmsize - Size of `/dev/shm` in bytes. The size must be greater than
- *   0. If omitted the system uses 64MB.
- * @param squash - Squash the resulting images layers into a single layer.
- *   _(Experimental release only.)_
- * @param labels - Arbitrary key/value labels to set on the image, as a JSON map
- *   of string pairs.
- * @param networkmode - Sets the networking mode for the run commands during
- *   build. Supported standard values are: `bridge`, `host`, `none`, and
- *   `container:<name|id>`. Any other value is taken as a custom network's name
- *   or ID to which this container should connect to.
- * @param Content_type -
- * @param X_Registry_Config - This is a base64-encoded JSON object with auth
- *   configurations for multiple registries that a build may refer to. The key
- *   is a registry URL, and the value is an auth configuration object, [as
- *   described in the authentication section](#section/Authentication). For
- *   example: `{ \"docker.example.com\": { \"username\": \"janedoe\",
- *   \"password\": \"hunter2\" }, \"https://index.docker.io/v1/\": {
- *   \"username\": \"mobydock\", \"password\": \"conta1n3rize14\" } }` Only the
- *   registry domain name (and port if not the default 443) are required.
- *   However, for legacy reasons, the Docker Hub registry must be specified with
- *   both a `https://` prefix and a `/v1/` suffix even though Docker will prefer
- *   to use the v2 registry API.
- * @param platform - Platform in the format os[/arch[/variant]]
- * @param target - Target build stage
- * @param outputs - BuildKit output configuration
- */
-export const imageBuild = (
-    options: ImageBuildOptions
-): Effect.Effect<IMobyConnectionAgent, ImageBuildError, Stream.Stream<never, MobyError, string>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/build";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("Content-type", String(options.Content_type)))
-            .pipe(addHeader("X-Registry-Config", String(options.X_Registry_Config)))
-            .pipe(addQueryParameter("dockerfile", options.dockerfile))
-            .pipe(addQueryParameter("t", options.t))
-            .pipe(addQueryParameter("extrahosts", options.extrahosts))
-            .pipe(addQueryParameter("remote", options.remote))
-            .pipe(addQueryParameter("q", options.q))
-            .pipe(addQueryParameter("nocache", options.nocache))
-            .pipe(addQueryParameter("cachefrom", options.cachefrom))
-            .pipe(addQueryParameter("pull", options.pull))
-            .pipe(addQueryParameter("rm", options.rm))
-            .pipe(addQueryParameter("forcerm", options.forcerm))
-            .pipe(addQueryParameter("memory", options.memory))
-            .pipe(addQueryParameter("memswap", options.memswap))
-            .pipe(addQueryParameter("cpushares", options.cpushares))
-            .pipe(addQueryParameter("cpusetcpus", options.cpusetcpus))
-            .pipe(addQueryParameter("cpuperiod", options.cpuperiod))
-            .pipe(addQueryParameter("cpuquota", options.cpuquota))
-            .pipe(addQueryParameter("buildargs", options.buildargs))
-            .pipe(addQueryParameter("shmsize", options.shmsize))
-            .pipe(addQueryParameter("squash", options.squash))
-            .pipe(addQueryParameter("labels", options.labels))
-            .pipe(addQueryParameter("networkmode", options.networkmode))
-            .pipe(addQueryParameter("platform", options.platform))
-            .pipe(addQueryParameter("target", options.target))
-            .pipe(addQueryParameter("outputs", options.outputs))
-            .pipe(addHeader("Content-Type", "application/octet-stream"))
-            .pipe(setBody(options.body, "stream"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.map((response) => response.stream))
-            .pipe(Effect.map(Stream.decodeText("utf8")))
-            .pipe(Effect.map(streamErrorHandler(ImageBuildError)))
-            .pipe(responseErrorHandler(ImageBuildError));
-    }).pipe(Effect.flatten);
-
-/**
- * Create a new image from a container
- *
- * @param body - The container configuration
- * @param container - The ID or name of the container to commit
- * @param repo - Repository name for the created image
- * @param tag - Tag name for the create image
- * @param comment - Commit message
- * @param author - Author of the image (e.g., `John Hannibal Smith
- *   <hannibal@a-team.com>`)
- * @param pause - Whether to pause the container before committing
- * @param changes - `Dockerfile` instructions to apply while committing
- */
-export const imageCommit = (
-    options: ImageCommitOptions
-): Effect.Effect<IMobyConnectionAgent, ImageCommitError, Readonly<IdResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/commit";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("container", options.container))
-            .pipe(addQueryParameter("repo", options.repo))
-            .pipe(addQueryParameter("tag", options.tag))
-            .pipe(addQueryParameter("comment", options.comment))
-            .pipe(addQueryParameter("author", options.author))
-            .pipe(addQueryParameter("pause", options.pause))
-            .pipe(addQueryParameter("changes", options.changes))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "ContainerConfig"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IdResponse)))
-            .pipe(responseErrorHandler(ImageCommitError));
-    }).pipe(Effect.flatten);
-
-/**
- * Create an image by either pulling it from a registry or importing it.
- *
- * @param body - Image content if the value `-` has been specified in fromSrc
- *   query parameter
- * @param fromImage - Name of the image to pull. The name may include a tag or
- *   digest. This parameter may only be used when pulling an image. The pull is
- *   cancelled if the HTTP connection is closed.
- * @param fromSrc - Source to import. The value may be a URL from which the
- *   image can be retrieved or `-` to read the image from the request body. This
- *   parameter may only be used when importing an image.
- * @param repo - Repository name given to an image when it is imported. The repo
- *   may include a tag. This parameter may only be used when importing an
- *   image.
- * @param tag - Tag or digest. If empty when pulling an image, this causes all
- *   tags for the given image to be pulled.
- * @param message - Set commit message for imported image.
- * @param X_Registry_Auth - A base64url-encoded auth configuration. Refer to the
- *   [authentication section](#section/Authentication) for details.
- * @param changes - Apply `Dockerfile` instructions to the image that is
- *   created, for example: `changes=ENV DEBUG=true`. Note that `ENV DEBUG=true`
- *   should be URI component encoded. Supported `Dockerfile` instructions:
- *   `CMD`|`ENTRYPOINT`|`ENV`|`EXPOSE`|`ONBUILD`|`USER`|`VOLUME`|`WORKDIR`
- * @param platform - Platform in the format os[/arch[/variant]]. When used in
- *   combination with the `fromImage` option, the daemon checks if the given
- *   image is present in the local image cache with the given OS and
- *   Architecture, and otherwise attempts to pull the image. If the option is
- *   not set, the host's native OS and Architecture are used. If the given image
- *   does not exist in the local image cache, the daemon attempts to pull the
- *   image with the host's native OS and Architecture. If the given image does
- *   exists in the local image cache, but its OS or architecture does not match,
- *   a warning is produced. When used with the `fromSrc` option to import an
- *   image from an archive, this option sets the platform information for the
- *   imported image. If the option is not set, the host's native OS and
- *   Architecture are used for the imported image.
- */
-export const imageCreate = (
-    options: ImageCreateOptions
-): Effect.Effect<IMobyConnectionAgent, ImageCreateError, Stream.Stream<never, MobyError, string>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/images/create";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
-            .pipe(addQueryParameter("fromImage", options.fromImage))
-            .pipe(addQueryParameter("fromSrc", options.fromSrc))
-            .pipe(addQueryParameter("repo", options.repo))
-            .pipe(addQueryParameter("tag", options.tag))
-            .pipe(addQueryParameter("message", options.message))
-            .pipe(addQueryParameter("changes", options.changes?.join(",")))
-            .pipe(addQueryParameter("platform", options.platform))
-            .pipe(addHeader("Content-Type", "text/plain"))
-            .pipe(setBody(options.body, "string"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.map((response) => response.stream))
-            .pipe(Effect.map(Stream.decodeText("utf8")))
-            .pipe(Effect.map(streamErrorHandler(ImageCreateError)))
-            .pipe(responseErrorHandler(ImageCreateError));
-    }).pipe(Effect.flatten);
-
-/**
- * Remove an image, along with any untagged parent images that were referenced
- * by that image. Images can't be removed if they have descendant images, are
- * being used by a running container or are being used by a build.
- *
- * @param name - Image name or ID
- * @param force - Remove the image even if it is being used by stopped
- *   containers or has other tags
- * @param noprune - Do not delete untagged parent images
- */
-export const imageDelete = (
-    options: ImageDeleteOptions
-): Effect.Effect<IMobyConnectionAgent, ImageDeleteError, Readonly<Array<ImageDeleteResponseItem>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/images/{name}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("force", options.force))
-            .pipe(addQueryParameter("noprune", options.noprune))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ImageDeleteResponseItemSchema))))
-            .pipe(responseErrorHandler(ImageDeleteError));
-    }).pipe(Effect.flatten);
-
-/**
- * Get a tarball containing all images and metadata for a repository. If `name`
- * is a specific name and tag (e.g. `ubuntu:latest`), then only that image (and
- * its parents) are returned. If `name` is an image ID, similarly only that
- * image (and its parents) are returned, but with the exclusion of the
- * `repositories` file in the tarball, as there were no image names referenced.
- *
- * ### Image tarball format An image tarball contains one directory per image
- *
- * Layer (named using its long ID), each containing these files:
- *
- * - `VERSION`: currently `1.0`
- * - The file format version - `json`: detailed layer information, similar to
- *   `docker inspect layer_id`
- * - `layer.tar`: A tarfile containing the filesystem changes in this layer The
- *   `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and directories
- *   for storing attribute changes and deletions. If the tarball defines a
- *   repository, the tarball should also include a `repositories` file at the
- *   root that contains a list of repository and tag names mapped to layer IDs.
- *   `json { \"hello-world\": { \"latest\":
- *   \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\" } } `
- *
- * @param name - Image name or ID
- */
-export const imageGet = (
-    options: ImageGetOptions
-): Effect.Effect<IMobyConnectionAgent, ImageGetError, Readonly<Blob>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ImageGetError({ message: "Required parameter name was null or undefined" }));
-        }
-
-        const endpoint: string = "/images/{name}/get";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
-            .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(responseErrorHandler(ImageGetError));
-    }).pipe(Effect.flatten);
-
-/**
- * Get a tarball containing all images and metadata for several image
- * repositories. For each value of the `names` parameter: if it is a specific
- * name and tag (e.g. `ubuntu:latest`), then only that image (and its parents)
- * are returned; if it is an image ID, similarly only that image (and its
- * parents) are returned and there would be no names referenced in the
- * 'repositories' file for this image ID. For details on the format, see the
- * [export image endpoint](#operation/ImageGet).
- *
- * @param names - Image names to filter by
- */
-export const imageGetAll = (
-    options: ImageGetAllOptions
-): Effect.Effect<IMobyConnectionAgent, ImageGetAllError, Readonly<Blob>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/images/get";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("names", options.names?.join(",")))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap((clientResponse) => clientResponse.text))
-            .pipe(Effect.map((responseText) => new Blob([responseText])))
-            .pipe(responseErrorHandler(ImageGetAllError));
-    }).pipe(Effect.flatten);
-
-/**
- * Return parent layers of an image.
- *
- * @param name - Image name or ID
- */
-export const imageHistory = (
-    options: ImageHistoryOptions
-): Effect.Effect<IMobyConnectionAgent, ImageHistoryError, Readonly<Array<HistoryResponseItem>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ImageHistoryError({ message: "Required parameter name was null or undefined" }));
-        }
-
-        const endpoint: string = "/images/{name}/history";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(HistoryResponseItemSchema))))
-            .pipe(responseErrorHandler(ImageHistoryError));
-    }).pipe(Effect.flatten);
-
-/**
- * Return low-level information about an image.
- *
- * @param name - Image name or id
- */
-export const imageInspect = (
-    options: ImageInspectOptions
-): Effect.Effect<IMobyConnectionAgent, ImageInspectError, Readonly<ImageInspect>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ImageInspectError({ message: "Required parameter name was null or undefined" }));
-        }
-
-        const endpoint: string = "/images/{name}/json";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ImageInspectSchema)))
-            .pipe(responseErrorHandler(ImageInspectError));
-    }).pipe(Effect.flatten);
-
-/**
- * Returns a list of images on the server. Note that it uses a different,
- * smaller representation of an image than inspecting a single image.
- *
- * @param all - Show all images. Only images from a final layer (no children)
- *   are shown by default.
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the images list. Available filters:
- *
- *   - `before`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
- *   - `dangling=true`
- *   - `label=key` or `label=\"key=value\"` of an image label
- *   - `reference`=(`<image-name>[:<tag>]`)
- *   - `since`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
- *
- * @param shared_size - Compute and show shared size as a `SharedSize` field on
- *   each image.
- * @param digests - Show digest information as a `RepoDigests` field on each
- *   image.
- */
-export const imageList = (
-    options?: ImageListOptions | undefined
-): Effect.Effect<IMobyConnectionAgent, ImageListError, Readonly<Array<ImageSummary>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/images/json";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("all", options?.all))
-            .pipe(addQueryParameter("filters", options?.filters))
-            .pipe(addQueryParameter("shared-size", options?.shared_size))
-            .pipe(addQueryParameter("digests", options?.digests))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ImageSummarySchema))))
-            .pipe(responseErrorHandler(ImageListError));
-    }).pipe(Effect.flatten);
-
-/**
- * Load a set of images and tags into a repository. For details on the format,
- * see the [export image endpoint](#operation/ImageGet).
- *
- * @param body - Tar archive containing images
- * @param quiet - Suppress progress details during load.
- */
-export const imageLoad = (options: ImageLoadOptions): Effect.Effect<IMobyConnectionAgent, ImageLoadError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/images/load";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("quiet", options.quiet))
-            .pipe(addHeader("Content-Type", "application/x-tar"))
-            .pipe(setBody(options.body, "unknown"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(ImageLoadError));
-    }).pipe(Effect.flatten);
-
-/**
- * Delete unused images
- *
- * @param filters - Filters to process on the prune list, encoded as JSON (a
- *   `map[string][]string`). Available filters:
- *
- *   - `dangling=<boolean>` When set to `true` (or `1`), prune only unused _and_
- *       untagged images. When set to `false` (or `0`), all unused images are
- *       pruned.
- *   - `until=<string>` Prune images created before this timestamp. The
- *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
- *       duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
- *       machine’s time.
- *   - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
- *       `label!=<key>=<value>`) Prune images with (or without, in case
- *       `label!=...` is used) the specified labels.
- */
-export const imagePrune = (
-    options: ImagePruneOptions
-): Effect.Effect<IMobyConnectionAgent, ImagePruneError, Readonly<ImagePruneResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/images/prune";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(ImagePruneResponseSchema)))
-            .pipe(responseErrorHandler(ImagePruneError));
-    }).pipe(Effect.flatten);
-
-/**
- * Push an image to a registry. If you wish to push an image on to a private
- * registry, that image must already have a tag which references the registry.
- * For example, `registry.example.com/myimage:latest`. The push is cancelled if
- * the HTTP connection is closed.
- *
- * @param name - Image name or ID.
- * @param X_Registry_Auth - A base64url-encoded auth configuration. Refer to the
- *   [authentication section](#section/Authentication) for details.
- * @param tag - The tag to associate with the image on the registry.
- */
-export const imagePush = (options: ImagePushOptions): Effect.Effect<IMobyConnectionAgent, ImagePushError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ImagePushError({ message: "Required parameter name was null or undefined" }));
-        }
-
-        if (options.X_Registry_Auth === null || options.X_Registry_Auth === undefined) {
-            yield* _(new ImagePushError({ message: "Required parameter X_Registry_Auth was null or undefined" }));
-        }
-
-        const endpoint: string = "/images/{name}/push";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("X-Registry-Auth", String(options.X_Registry_Auth)))
-            .pipe(addQueryParameter("tag", options.tag))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(ImagePushError));
-    }).pipe(Effect.flatten);
-
-/**
- * Search for an image on Docker Hub.
- *
- * @param term - Term to search
- * @param limit - Maximum number of results to return
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the images list. Available filters:
- *
- *   - `is-automated=(true|false)`
- *   - `is-official=(true|false)`
- *   - `stars=<number>` Matches images that has at least 'number' stars.
- */
-export const imageSearch = (
-    options: ImageSearchOptions
-): Effect.Effect<IMobyConnectionAgent, ImageSearchError, Readonly<Array<ImageSearchResponseItem>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.term === null || options.term === undefined) {
-            yield* _(new ImageSearchError({ message: "Required parameter term was null or undefined" }));
-        }
-
-        const endpoint: string = "/images/search";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("term", options.term))
-            .pipe(addQueryParameter("limit", options.limit))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(ImageSearchResponseItemSchema))))
-            .pipe(responseErrorHandler(ImageSearchError));
-    }).pipe(Effect.flatten);
-
-/**
- * Tag an image so that it becomes part of a repository.
- *
- * @param name - Image name or ID to tag.
- * @param repo - The repository to tag in. For example, `someuser/someimage`.
- * @param tag - The name of the new tag.
- */
-export const imageTag = (options: ImageTagOptions): Effect.Effect<IMobyConnectionAgent, ImageTagError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        if (options.name === null || options.name === undefined) {
-            yield* _(new ImageTagError({ message: "Required parameter name was null or undefined" }));
-        }
-
-        const endpoint: string = "/images/{name}/tag";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"name"}}`, encodeURIComponent(String(options.name)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("repo", options.repo))
-            .pipe(addQueryParameter("tag", options.tag))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(ImageTagError));
-    }).pipe(Effect.flatten);
-
-export interface IImageService {
-    Errors:
-        | BuildPruneError
-        | ImageBuildError
-        | ImageCommitError
-        | ImageCreateError
-        | ImageDeleteError
-        | ImageGetError
-        | ImageGetAllError
-        | ImageHistoryError
-        | ImageInspectError
-        | ImageListError
-        | ImageLoadError
-        | ImagePruneError
-        | ImagePushError
-        | ImageSearchError
-        | ImageTagError;
-
-    /**
-     * Delete builder cache
-     *
-     * @param keep_storage - Amount of disk space in bytes to keep for cache
-     * @param all - Remove all types of build cache
+     * @param all - Show all images. Only images from a final layer (no
+     *   children) are shown by default.
      * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the list of build cache objects.
+     *   `map[string][]string`) to process on the images list.
+     *
      *   Available filters:
      *
-     *   - `until=<timestamp>` remove cache older than `<timestamp>`. The
-     *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or
-     *       Go duration strings (e.g. `10m`, `1h30m`) computed relative to the
-     *       daemon's local time.
-     *   - `id=<id>`
-     *   - `parent=<id>`
-     *   - `type=<string>`
-     *   - `description=<string>`
-     *   - `inuse`
-     *   - `shared`
-     *   - `private`
+     *   - `before`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
+     *   - `dangling=true`
+     *   - `label=key` or `label="key=value"` of an image label
+     *   - `reference`=(`<image-name>[:<tag>]`)
+     *   - `since`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
+     *   - `until=<timestamp>`
+     *
+     * @param shared-size - Compute and show shared size as a `SharedSize` field
+     *   on each image.
+     * @param digests - Show digest information as a `RepoDigests` field on each
+     *   image.
      */
-    buildPrune: WithConnectionAgentProvided<typeof buildPrune>;
+    readonly list: (
+        options?: ImageListOptions | undefined
+    ) => Effect.Effect<never, ImagesError, Readonly<Array<ImageSummary>>>;
 
     /**
-     * Build an image from a tar archive with a `Dockerfile` in it. The
-     * `Dockerfile` specifies how the image is built from the tar archive. It is
-     * typically in the archive's root, but can be at a different path or have a
-     * different name by specifying the `dockerfile` parameter. [See the
-     * `Dockerfile` reference for more
-     * information](https://docs.docker.com/engine/reference/builder/). The
-     * Docker daemon performs a preliminary validation of the `Dockerfile`
-     * before starting the build, and returns an error if the syntax is
-     * incorrect. After that, each instruction is run one-by-one until the ID of
-     * the new image is output. The build is canceled if the client drops the
-     * connection by quitting or being killed.
+     * Build an image
      *
-     * @param body - A tar archive compressed with one of the following
+     * @param stream - A tar archive compressed with one of the following
      *   algorithms: identity (no compression), gzip, bzip2, xz.
      * @param dockerfile - Path within the build context to the `Dockerfile`.
      *   This is ignored if `remote` is specified and points to an external
@@ -1148,11 +460,14 @@ export interface IImageService {
      *   Users pass these values at build-time. Docker uses the buildargs as the
      *   environment context for commands run via the `Dockerfile` RUN
      *   instruction, or for variable expansion in other `Dockerfile`
-     *   instructions. This is not meant for passing secret values. For example,
-     *   the build arg `FOO=bar` would become `{\"FOO\":\"bar\"}` in JSON. This
-     *   would result in the query parameter `buildargs={\"FOO\":\"bar\"}`. Note
-     *   that `{\"FOO\":\"bar\"}` should be URI component encoded. [Read more
-     *   about the buildargs
+     *   instructions. This is not meant for passing secret values.
+     *
+     *   For example, the build arg `FOO=bar` would become `{"FOO":"bar"}` in
+     *   JSON. This would result in the query parameter
+     *   `buildargs={"FOO":"bar"}`. Note that `{"FOO":"bar"}` should be URI
+     *   component encoded.
+     *
+     *   [Read more about the buildargs
      *   instruction.](https://docs.docker.com/engine/reference/builder/#arg)
      * @param shmsize - Size of `/dev/shm` in bytes. The size must be greater
      *   than 0. If omitted the system uses 64MB.
@@ -1164,15 +479,26 @@ export interface IImageService {
      *   build. Supported standard values are: `bridge`, `host`, `none`, and
      *   `container:<name|id>`. Any other value is taken as a custom network's
      *   name or ID to which this container should connect to.
-     * @param Content_type -
-     * @param X_Registry_Config - This is a base64-encoded JSON object with auth
-     *   configurations for multiple registries that a build may refer to. The
-     *   key is a registry URL, and the value is an auth configuration object,
+     * @param Content-type -
+     * @param X-Registry-Config - This is a base64-encoded JSON object with auth
+     *   configurations for multiple registries that a build may refer to.
+     *
+     *   The key is a registry URL, and the value is an auth configuration object,
      *   [as described in the authentication section](#section/Authentication).
-     *   For example: `{ \"docker.example.com\": { \"username\": \"janedoe\",
-     *   \"password\": \"hunter2\" }, \"https://index.docker.io/v1/\": {
-     *   \"username\": \"mobydock\", \"password\": \"conta1n3rize14\" } }` Only
-     *   the registry domain name (and port if not the default 443) are
+     *   For example:
+     *
+     *       {
+     *           "docker.example.com": {
+     *               "username": "janedoe",
+     *               "password": "hunter2"
+     *           },
+     *           "https://index.docker.io/v1/": {
+     *               "username": "mobydock",
+     *               "password": "conta1n3rize14"
+     *           }
+     *       }
+     *
+     *   Only the registry domain name (and port if not the default 443) are
      *   required. However, for legacy reasons, the Docker Hub registry must be
      *   specified with both a `https://` prefix and a `/v1/` suffix even though
      *   Docker will prefer to use the v2 registry API.
@@ -1180,28 +506,37 @@ export interface IImageService {
      * @param target - Target build stage
      * @param outputs - BuildKit output configuration
      */
-    imageBuild: WithConnectionAgentProvided<typeof imageBuild>;
+    readonly build: (
+        options: ImageBuildOptions
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
 
     /**
-     * Create a new image from a container
+     * Delete builder cache
      *
-     * @param body - The container configuration
-     * @param container - The ID or name of the container to commit
-     * @param repo - Repository name for the created image
-     * @param tag - Tag name for the create image
-     * @param comment - Commit message
-     * @param author - Author of the image (e.g., `John Hannibal Smith
-     *   <hannibal@a-team.com>`)
-     * @param pause - Whether to pause the container before committing
-     * @param changes - `Dockerfile` instructions to apply while committing
+     * @param keep-storage - Amount of disk space in bytes to keep for cache
+     * @param all - Remove all types of build cache
+     * @param filters - A JSON encoded value of the filters (a
+     *   `map[string][]string`) to process on the list of build cache objects.
+     *
+     *   Available filters:
+     *
+     *   - `until=<timestamp>` remove cache older than `<timestamp>`. The
+     *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or
+     *       Go duration strings (e.g. `10m`, `1h30m`) computed relative to the
+     *       daemon's local time.
+     *   - `id=<id>`
+     *   - `parent=<id>`
+     *   - `type=<string>`
+     *   - `description=<string>`
+     *   - `inuse`
+     *   - `shared`
+     *   - `private`
      */
-    imageCommit: WithConnectionAgentProvided<typeof imageCommit>;
+    readonly buildPrune: (options: BuildPruneOptions) => Effect.Effect<never, ImagesError, BuildPruneResponse>;
 
     /**
-     * Create an image by either pulling it from a registry or importing it.
+     * Create an image
      *
-     * @param body - Image content if the value `-` has been specified in
-     *   fromSrc query parameter
      * @param fromImage - Name of the image to pull. The name may include a tag
      *   or digest. This parameter may only be used when pulling an image. The
      *   pull is cancelled if the HTTP connection is closed.
@@ -1214,128 +549,108 @@ export interface IImageService {
      * @param tag - Tag or digest. If empty when pulling an image, this causes
      *   all tags for the given image to be pulled.
      * @param message - Set commit message for imported image.
-     * @param X_Registry_Auth - A base64url-encoded auth configuration. Refer to
-     *   the [authentication section](#section/Authentication) for details.
+     * @param inputImage - Image content if the value `-` has been specified in
+     *   fromSrc query parameter
+     * @param X-Registry-Auth - A base64url-encoded auth configuration.
+     *
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
      * @param changes - Apply `Dockerfile` instructions to the image that is
      *   created, for example: `changes=ENV DEBUG=true`. Note that `ENV
-     *   DEBUG=true` should be URI component encoded. Supported `Dockerfile`
-     *   instructions:
+     *   DEBUG=true` should be URI component encoded.
+     *
+     *   Supported `Dockerfile` instructions:
      *   `CMD`|`ENTRYPOINT`|`ENV`|`EXPOSE`|`ONBUILD`|`USER`|`VOLUME`|`WORKDIR`
-     * @param platform - Platform in the format os[/arch[/variant]]. When used
-     *   in combination with the `fromImage` option, the daemon checks if the
-     *   given image is present in the local image cache with the given OS and
-     *   Architecture, and otherwise attempts to pull the image. If the option
-     *   is not set, the host's native OS and Architecture are used. If the
-     *   given image does not exist in the local image cache, the daemon
+     * @param platform - Platform in the format os[/arch[/variant]].
+     *
+     *   When used in combination with the `fromImage` option, the daemon checks
+     *   if the given image is present in the local image cache with the given
+     *   OS and Architecture, and otherwise attempts to pull the image. If the
+     *   option is not set, the host's native OS and Architecture are used. If
+     *   the given image does not exist in the local image cache, the daemon
      *   attempts to pull the image with the host's native OS and Architecture.
      *   If the given image does exists in the local image cache, but its OS or
-     *   architecture does not match, a warning is produced. When used with the
-     *   `fromSrc` option to import an image from an archive, this option sets
-     *   the platform information for the imported image. If the option is not
-     *   set, the host's native OS and Architecture are used for the imported
-     *   image.
+     *   architecture does not match, a warning is produced.
+     *
+     *   When used with the `fromSrc` option to import an image from an archive,
+     *   this option sets the platform information for the imported image. If
+     *   the option is not set, the host's native OS and Architecture are used
+     *   for the imported image.
      */
-    imageCreate: WithConnectionAgentProvided<typeof imageCreate>;
+    readonly create: (
+        options: ImageCreateOptions
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
 
     /**
-     * Remove an image, along with any untagged parent images that were
-     * referenced by that image. Images can't be removed if they have descendant
-     * images, are being used by a running container or are being used by a
-     * build.
+     * Inspect an image
+     *
+     * @param name - Image name or id
+     */
+    readonly inspect: (options: ImageInspectOptions) => Effect.Effect<never, ImagesError, Readonly<ImageInspect>>;
+
+    /**
+     * Get the history of an image
+     *
+     * @param name - Image name or ID
+     */
+    readonly history: (
+        options: ImageHistoryOptions
+    ) => Effect.Effect<never, ImagesError, Schema.Schema.To<typeof HistoryResponseItem>>;
+
+    /**
+     * Push an image
+     *
+     * @param name - Image name or ID.
+     * @param tag - The tag to associate with the image on the registry.
+     * @param X-Registry-Auth - A base64url-encoded auth configuration.
+     *
+     *   Refer to the [authentication section](#section/Authentication) for
+     *   details.
+     */
+    readonly push: (options: ImagePushOptions) => Effect.Effect<never, ImagesError, void>;
+
+    /**
+     * Tag an image
+     *
+     * @param name - Image name or ID to tag.
+     * @param repo - The repository to tag in. For example,
+     *   `someuser/someimage`.
+     * @param tag - The name of the new tag.
+     */
+    readonly tag: (options: ImageTagOptions) => Effect.Effect<never, ImagesError, void>;
+
+    /**
+     * Remove an image
      *
      * @param name - Image name or ID
      * @param force - Remove the image even if it is being used by stopped
      *   containers or has other tags
      * @param noprune - Do not delete untagged parent images
      */
-    imageDelete: WithConnectionAgentProvided<typeof imageDelete>;
+    readonly delete: (
+        options: ImageDeleteOptions
+    ) => Effect.Effect<never, ImagesError, Readonly<Array<ImageDeleteResponseItem>>>;
 
     /**
-     * Get a tarball containing all images and metadata for a repository. If
-     * `name` is a specific name and tag (e.g. `ubuntu:latest`), then only that
-     * image (and its parents) are returned. If `name` is an image ID, similarly
-     * only that image (and its parents) are returned, but with the exclusion of
-     * the `repositories` file in the tarball, as there were no image names
-     * referenced.
+     * Search images
      *
-     * ### Image tarball format An image tarball contains one directory per image
-     *
-     * Layer (named using its long ID), each containing these files:
-     *
-     * - `VERSION`: currently `1.0`
-     * - The file format version - `json`: detailed layer information, similar to
-     *   `docker inspect layer_id`
-     * - `layer.tar`: A tarfile containing the filesystem changes in this layer
-     *   The `layer.tar` file contains `aufs` style `.wh..wh.aufs` files and
-     *   directories for storing attribute changes and deletions. If the tarball
-     *   defines a repository, the tarball should also include a `repositories`
-     *   file at the root that contains a list of repository and tag names
-     *   mapped to layer IDs. `json { \"hello-world\": { \"latest\":
-     *   \"565a9d68a73f6706862bfe8409a7f659776d4d60a8d096eb4a3cbce6999cc2a1\" }
-     *   } `
-     *
-     * @param name - Image name or ID
-     */
-    imageGet: WithConnectionAgentProvided<typeof imageGet>;
-
-    /**
-     * Get a tarball containing all images and metadata for several image
-     * repositories. For each value of the `names` parameter: if it is a
-     * specific name and tag (e.g. `ubuntu:latest`), then only that image (and
-     * its parents) are returned; if it is an image ID, similarly only that
-     * image (and its parents) are returned and there would be no names
-     * referenced in the 'repositories' file for this image ID. For details on
-     * the format, see the [export image endpoint](#operation/ImageGet).
-     *
-     * @param names - Image names to filter by
-     */
-    imageGetAll: WithConnectionAgentProvided<typeof imageGetAll>;
-
-    /**
-     * Return parent layers of an image.
-     *
-     * @param name - Image name or ID
-     */
-    imageHistory: WithConnectionAgentProvided<typeof imageHistory>;
-
-    /**
-     * Return low-level information about an image.
-     *
-     * @param name - Image name or id
-     */
-    imageInspect: WithConnectionAgentProvided<typeof imageInspect>;
-
-    /**
-     * Returns a list of images on the server. Note that it uses a different,
-     * smaller representation of an image than inspecting a single image.
-     *
-     * @param all - Show all images. Only images from a final layer (no
-     *   children) are shown by default.
+     * @param term - Term to search
+     * @param limit - Maximum number of results to return
      * @param filters - A JSON encoded value of the filters (a
      *   `map[string][]string`) to process on the images list. Available
      *   filters:
      *
-     *   - `before`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
-     *   - `dangling=true`
-     *   - `label=key` or `label=\"key=value\"` of an image label -
-     *       `reference`=(`<image-name>[:<tag>]`) -
-     *       `since`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
+     *   - `is-automated=(true|false)` (deprecated, see below)
+     *   - `is-official=(true|false)`
+     *   - `stars=<number>` Matches images that has at least 'number' stars.
      *
-     * @param shared_size - Compute and show shared size as a `SharedSize` field
-     *   on each image.
-     * @param digests - Show digest information as a `RepoDigests` field on each
-     *   image.
+     *   The `is-automated` filter is deprecated. The `is_automated` field has
+     *   been deprecated by Docker Hub's search API. Consequently, searching for
+     *   `is-automated=true` will yield no results.
      */
-    imageList: WithConnectionAgentProvided<typeof imageList>;
-
-    /**
-     * Load a set of images and tags into a repository. For details on the
-     * format, see the [export image endpoint](#operation/ImageGet).
-     *
-     * @param body - Tar archive containing images
-     * @param quiet - Suppress progress details during load.
-     */
-    imageLoad: WithConnectionAgentProvided<typeof imageLoad>;
+    readonly search: (
+        options: ImageSearchOptions
+    ) => Effect.Effect<never, ImagesError, Schema.Schema.To<typeof ImageSearchResponseItem>>;
 
     /**
      * Delete unused images
@@ -1354,43 +669,308 @@ export interface IImageService {
      *       `label!=<key>=<value>`) Prune images with (or without, in case
      *       `label!=...` is used) the specified labels.
      */
-    imagePrune: WithConnectionAgentProvided<typeof imagePrune>;
+    readonly prune: (options?: ImagePruneOptions | undefined) => Effect.Effect<never, ImagesError, ImagePruneResponse>;
 
     /**
-     * Push an image to a registry. If you wish to push an image on to a private
-     * registry, that image must already have a tag which references the
-     * registry. For example, `registry.example.com/myimage:latest`. The push is
-     * cancelled if the HTTP connection is closed.
+     * Create a new image from a container
      *
-     * @param name - Image name or ID.
-     * @param X_Registry_Auth - A base64url-encoded auth configuration. Refer to
-     *   the [authentication section](#section/Authentication) for details.
-     * @param tag - The tag to associate with the image on the registry.
+     * @param containerConfig - The container configuration
+     * @param container - The ID or name of the container to commit
+     * @param repo - Repository name for the created image
+     * @param tag - Tag name for the create image
+     * @param comment - Commit message
+     * @param author - Author of the image (e.g., `John Hannibal Smith
+     *   <hannibal@a-team.com>`)
+     * @param pause - Whether to pause the container before committing
+     * @param changes - `Dockerfile` instructions to apply while committing
      */
-    imagePush: WithConnectionAgentProvided<typeof imagePush>;
+    readonly commit: (options: ImageCommitOptions) => Effect.Effect<never, ImagesError, Readonly<IdResponse>>;
 
     /**
-     * Search for an image on Docker Hub.
+     * Export an image
      *
-     * @param term - Term to search
-     * @param limit - Maximum number of results to return
-     * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the images list. Available
-     *   filters:
-     *
-     *   - `is-automated=(true|false)`
-     *   - `is-official=(true|false)`
-     *   - `stars=<number>` Matches images that has at least 'number' stars.
+     * @param name - Image name or ID
      */
-    imageSearch: WithConnectionAgentProvided<typeof imageSearch>;
+    readonly get: (
+        options: ImageGetOptions
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
 
     /**
-     * Tag an image so that it becomes part of a repository.
+     * Export several images
      *
-     * @param name - Image name or ID to tag.
-     * @param repo - The repository to tag in. For example,
-     *   `someuser/someimage`.
-     * @param tag - The name of the new tag.
+     * @param names - Image names to filter by
      */
-    imageTag: WithConnectionAgentProvided<typeof imageTag>;
+    readonly getall: (
+        options: ImageGetAllOptions
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
+
+    /**
+     * Import images
+     *
+     * @param imagesTarball - Tar archive containing images
+     * @param quiet - Suppress progress details during load.
+     */
+    readonly load: (options: ImageLoadOptions) => Effect.Effect<never, ImagesError, void>;
 }
+
+const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Images> = Effect.gen(function* (
+    _: Effect.Adapter
+) {
+    const agent = yield* _(MobyConnectionAgent);
+    const defaultClient = yield* _(NodeHttp.client.Client);
+
+    const client = defaultClient.pipe(
+        NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/images`)),
+        NodeHttp.client.filterStatusOk
+    );
+
+    const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
+    const IdResponseClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(IdResponse)));
+    const ImageInspectClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ImageInspect)));
+    const ImageSummariesClient = client.pipe(
+        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(ImageSummary)))
+    );
+    const BuildPruneResponseClient = client.pipe(
+        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(BuildPruneResponse))
+    );
+    const HistoryResponseItemsClient = client.pipe(
+        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(HistoryResponseItem))
+    );
+    const ImageDeleteResponseItemsClient = client.pipe(
+        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(ImageDeleteResponseItem)))
+    );
+    const ImageSearchResponseItemsClient = client.pipe(
+        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ImageSearchResponseItem))
+    );
+    const ImagePruneResponseClient = client.pipe(
+        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ImagePruneResponse))
+    );
+
+    const streamHandler = (method: string) => streamErrorHandler((message) => new ImagesError({ method, message }));
+    const responseHandler = (method: string) => responseErrorHandler((message) => new ImagesError({ method, message }));
+
+    const list_ = (
+        options?: ImageListOptions | undefined
+    ): Effect.Effect<never, ImagesError, Readonly<Array<ImageSummary>>> =>
+        pipe(
+            NodeHttp.request.get("/json"),
+            addQueryParameter("all", options?.all),
+            addQueryParameter("filters", options?.filters),
+            addQueryParameter("shared-size", options?.["shared-size"]),
+            addQueryParameter("digests", options?.digests),
+            ImageSummariesClient,
+            Effect.catchAll(responseHandler("list"))
+        );
+
+    const build_ = (
+        options: ImageBuildOptions
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
+        pipe(
+            NodeHttp.request.post(`${agent.nodeRequestUrl}/build`),
+            NodeHttp.request.setHeader("Content-type", ""),
+            NodeHttp.request.setHeader("X-Registry-Config", ""),
+            addQueryParameter("dockerfile", options.dockerfile),
+            addQueryParameter("t", options.t),
+            addQueryParameter("extrahosts", options.extrahosts),
+            addQueryParameter("remote", options.remote),
+            addQueryParameter("q", options.q),
+            addQueryParameter("nocache", options.nocache),
+            addQueryParameter("cachefrom", options.cachefrom),
+            addQueryParameter("pull", options.pull),
+            addQueryParameter("rm", options.rm),
+            addQueryParameter("forcerm", options.forcerm),
+            addQueryParameter("memory", options.memory),
+            addQueryParameter("memswap", options.memswap),
+            addQueryParameter("cpushares", options.cpushares),
+            addQueryParameter("cpusetcpus", options.cpusetcpus),
+            addQueryParameter("cpuperiod", options.cpuperiod),
+            addQueryParameter("cpuquota", options.cpuquota)
+        ).pipe(
+            addQueryParameter("buildargs", options.buildargs),
+            addQueryParameter("shmsize", options.shmsize),
+            addQueryParameter("squash", options.squash),
+            addQueryParameter("labels", options.labels),
+            addQueryParameter("networkmode", options.networkmode),
+            addQueryParameter("platform", options.platform),
+            addQueryParameter("target", options.target),
+            addQueryParameter("outputs", options.outputs),
+            NodeHttp.request.streamBody(options.stream),
+            defaultClient.pipe(NodeHttp.client.filterStatusOk),
+            Effect.map((response) => response.stream),
+            Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.catchAll(streamHandler("build"))),
+            Effect.catchAll(responseHandler("build"))
+        );
+
+    const buildPrune_ = (options: BuildPruneOptions): Effect.Effect<never, ImagesError, BuildPruneResponse> =>
+        pipe(
+            NodeHttp.request.post("/build/prune"),
+            addQueryParameter("keep-storage", options["keep-storage"]),
+            addQueryParameter("all", options.all),
+            addQueryParameter("filters", options.filters),
+            BuildPruneResponseClient,
+            Effect.catchAll(responseHandler("buildPrune"))
+        );
+
+    const create_ = (
+        options: ImageCreateOptions
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
+        pipe(
+            NodeHttp.request.post("/create"),
+            NodeHttp.request.setHeader("X-Registry-Auth", ""),
+            addQueryParameter("fromImage", options.fromImage),
+            addQueryParameter("fromSrc", options.fromSrc),
+            addQueryParameter("repo", options.repo),
+            addQueryParameter("tag", options.tag),
+            addQueryParameter("message", options.message),
+            addQueryParameter("changes", options.changes),
+            addQueryParameter("platform", options.platform),
+            NodeHttp.request.schemaBody(Schema.string)(options.inputImage ?? ""),
+            Effect.flatMap(client),
+            Effect.map((response) => response.stream),
+            Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.catchAll(streamHandler("create"))),
+            Effect.catchAll(responseHandler("create"))
+        );
+
+    const inspect_ = (options: ImageInspectOptions): Effect.Effect<never, ImagesError, Readonly<ImageInspect>> =>
+        pipe(
+            NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
+            ImageInspectClient,
+            Effect.catchAll(responseHandler("inspect"))
+        );
+
+    const history_ = (
+        options: ImageHistoryOptions
+    ): Effect.Effect<never, ImagesError, Schema.Schema.To<typeof HistoryResponseItem>> =>
+        pipe(
+            NodeHttp.request.get("/{name}/history".replace("{name}", encodeURIComponent(options.name))),
+            HistoryResponseItemsClient,
+            Effect.catchAll(responseHandler("history"))
+        );
+
+    const push_ = (options: ImagePushOptions): Effect.Effect<never, ImagesError, void> =>
+        pipe(
+            NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
+            NodeHttp.request.setHeader("X-Registry-Auth", ""),
+            addQueryParameter("tag", options.tag),
+            voidClient,
+            Effect.catchAll(responseHandler("push"))
+        );
+
+    const tag_ = (options: ImageTagOptions): Effect.Effect<never, ImagesError, void> =>
+        pipe(
+            NodeHttp.request.post("/{name}/tag".replace("{name}", encodeURIComponent(options.name))),
+            addQueryParameter("repo", options.repo),
+            addQueryParameter("tag", options.tag),
+            voidClient,
+            Effect.catchAll(responseHandler("tag"))
+        );
+
+    const delete_ = (
+        options: ImageDeleteOptions
+    ): Effect.Effect<never, ImagesError, Readonly<Array<ImageDeleteResponseItem>>> =>
+        pipe(
+            NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
+            addQueryParameter("force", options.force),
+            addQueryParameter("noprune", options.noprune),
+            ImageDeleteResponseItemsClient,
+            Effect.catchAll(responseHandler("delete"))
+        );
+
+    const search_ = (
+        options: ImageSearchOptions
+    ): Effect.Effect<never, ImagesError, Schema.Schema.To<typeof ImageSearchResponseItem>> =>
+        pipe(
+            NodeHttp.request.get("/search"),
+            addQueryParameter("term", options.term),
+            addQueryParameter("limit", options.limit),
+            addQueryParameter("filters", options.filters),
+            ImageSearchResponseItemsClient,
+            Effect.catchAll(responseHandler("search"))
+        );
+
+    const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<never, ImagesError, ImagePruneResponse> =>
+        pipe(
+            NodeHttp.request.post("/prune"),
+            addQueryParameter("filters", JSON.stringify(options?.filters)),
+            ImagePruneResponseClient,
+            Effect.catchAll(responseHandler("prune"))
+        );
+
+    const commit_ = (options: ImageCommitOptions): Effect.Effect<never, ImagesError, Readonly<IdResponse>> =>
+        pipe(
+            NodeHttp.request.post("/commit"),
+            addQueryParameter("container", options.container),
+            addQueryParameter("repo", options.repo),
+            addQueryParameter("tag", options.tag),
+            addQueryParameter("comment", options.comment),
+            addQueryParameter("author", options.author),
+            addQueryParameter("pause", options.pause),
+            addQueryParameter("changes", options.changes),
+            NodeHttp.request.schemaBody(ContainerConfig)(options.containerConfig),
+            Effect.flatMap(IdResponseClient),
+            Effect.catchAll(responseHandler("commit"))
+        );
+
+    const get_ = (
+        options: ImageGetOptions
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
+        pipe(
+            NodeHttp.request.get("/{name}/get".replace("{name}", encodeURIComponent(options.name))),
+            client,
+            Effect.map((response) => response.stream),
+            Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.catchAll(streamHandler("get"))),
+            Effect.catchAll(responseHandler("get"))
+        );
+
+    const getall_ = (
+        options: ImageGetAllOptions
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
+        pipe(
+            NodeHttp.request.get("/get"),
+            addQueryParameter("names", options.names),
+            client,
+            Effect.map((response) => response.stream),
+            Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.catchAll(streamHandler("getall"))),
+            Effect.catchAll(responseHandler("getall"))
+        );
+
+    const load_ = (options: ImageLoadOptions): Effect.Effect<never, ImagesError, void> =>
+        pipe(
+            NodeHttp.request.post("/load"),
+            addQueryParameter("quiet", options.quiet),
+            NodeHttp.request.streamBody(options.imagesTarball),
+            voidClient,
+            Effect.catchAll(responseHandler("load"))
+        );
+
+    return {
+        list: list_,
+        build: build_,
+        buildPrune: buildPrune_,
+        create: create_,
+        inspect: inspect_,
+        history: history_,
+        push: push_,
+        tag: tag_,
+        delete: delete_,
+        search: search_,
+        prune: prune_,
+        commit: commit_,
+        get: get_,
+        getall: getall_,
+        load: load_,
+    };
+});
+
+export const Images = Context.Tag<Images>("the-moby-effect/Images");
+export const layer = Layer.effect(Images, make).pipe(Layer.provide(MobyHttpClientLive));
+
+export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+
+export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
+    fromAgent(getAgent(connectionOptions));

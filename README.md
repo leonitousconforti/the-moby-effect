@@ -1,14 +1,23 @@
 # the-moby-effect
 
-Moby/Docker API client built using [effect-ts](effect.website). Docker uses the naming convention NounVerb for their endpoints and I am sticking with that here. If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly, then I do have some of those [here](./examples/).
+Moby/Docker Daemon API client built using [effect-ts](effect.website). If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly with effect integration, then I do have some of those [here](./examples/).
 
-## Features
+## Goals
 
 - [x] - local unix socket connections
 - [x] - http and https connections
 - [x] - ssh connections
 - [x] - streaming (just like [dockerode](https://github.com/apocas/dockerode), streams are passed directly through to you)
-- [x] - tests
+- [x] - tests, examples, and in-line JSDoc comments based on the docker api documentation
+- [x] - Strong focus on types and typescript support
+
+## Non-goals
+
+- tighter schema
+The moby/docker api schema is pretty loose - almost nothing is explicitly marked as required and object properties are optional by default under the swagger2.0/openapi specification. I have no intention to try to tighten their schema in my project (with the exception of `Id` fields witch I put as always required/defined on responses). If the moby schema doesn't explicitly mark it as a required field, then it will be nullable+optional.
+
+- version negotiating
+Either install a specific version for the moby/docker daemon that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
 
 ## Versioning
 

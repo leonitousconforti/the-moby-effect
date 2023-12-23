@@ -3,18 +3,43 @@ import https from "node:https";
 import net from "node:net";
 import ssh2 from "ssh2";
 
-import { HttpAgent, HttpAgentTypeId, makeAgentLayer } from "@effect/platform-node/Http/NodeClient";
-import { Context, Effect, Layer, Match, Scope, pipe } from "effect";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
+import { Context, Effect, Layer, Match, Scope, pipe } from "effect";
 
-import type { MobyConnectionOptions, MobyError } from "./main.js";
+/** How to connect to your moby/docker instance. */
+export type MobyConnectionOptions =
+    | { connection: "unix"; socketPath: string }
+    | { connection: "http"; host: string; port: number }
+    | ({ connection: "ssh"; remoteSocketPath: string } & ssh2.ConnectConfig)
+    | {
+          connection: "https";
+          host: string;
+          port: number;
+          cert: string;
+          ca: string;
+          key: string;
+          passphrase?: string | undefined;
+      };
+
+/**
+ * Helper interface to expose the underlying socket from the effect NodeHttp
+ * response. Useful for multiplexing the response stream.
+ */
+export interface IExposeSocketOnEffectClientResponse extends NodeHttp.response.ClientResponse {
+    source: {
+        socket: net.Socket;
+    };
+}
 
 /**
  * Our moby connection needs to be an extension of the effect platform-node
  * httpAgent so that it will still be compatible with all the other
- * platform-node http methods.
+ * platform-node http methods, but it would be nice if it had a few other things
+ * as well. The nodeRequestUrl is the url that the node http client will use to
+ * make requests. And while we don't need to keep track of the connection
+ * options for anything yet, it wouldn't hurt to add them.
  */
-export interface IMobyConnectionAgent extends HttpAgent {
+export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
     ssh: http.Agent;
     unix: http.Agent;
     nodeRequestUrl: string;
@@ -26,17 +51,9 @@ export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnect
     Context.Tag<IMobyConnectionAgent>(Symbol.for("@the-moby-effect/MobyConnectionAgent"));
 
 export const MobyHttpClientLive: Layer.Layer<IMobyConnectionAgent, never, NodeHttp.client.Client.Default> =
-    NodeHttp.nodeClient.layerWithoutAgent.pipe(Layer.provide(Layer.effect(HttpAgent, MobyConnectionAgent)));
-
-/**
- * Takes in a moby endpoint that depends on a connection agent being provided
- * and returns a scoped effect with the connection agent dependency removed.
- */
-export type WithConnectionAgentProvided<Function_> = Function_ extends (
-    ...arguments_: infer U
-) => Effect.Effect<infer R, infer E, infer A>
-    ? (...arguments_: U) => Effect.Effect<Scope.Scope | Exclude<R, IMobyConnectionAgent>, MobyError | Exclude<E, E>, A>
-    : never;
+    NodeHttp.nodeClient.layerWithoutAgent.pipe(
+        Layer.provide(Layer.effect(NodeHttp.nodeClient.HttpAgent, MobyConnectionAgent))
+    );
 
 /**
  * An http agent that connect to remote docker instances over ssh.
@@ -44,7 +61,7 @@ export type WithConnectionAgentProvided<Function_> = Function_ extends (
  * @example
  *     import http from "node:http";
  *
- *     const request1 = http.get(
+ *     http.get(
  *         {
  *             path: "/_ping",
  *             agent: new SSHAgent(ssh2Options),
@@ -54,31 +71,17 @@ export type WithConnectionAgentProvided<Function_> = Function_ extends (
  *             console.dir(response.headers);
  *             response.resume();
  *         }
- *     );
- *     request1.end();
- *
- *     const request2 = http.get(
- *         {
- *             path: "/_ping",
- *             agent: new SSHAgent(ssh2Options),
- *         },
- *         (response) => {
- *             console.log(response.statusCode);
- *             console.dir(response.headers);
- *             response.resume();
- *         }
- *     );
- *     request2.end();
+ *     ).end();
  */
-export class SSHAgent extends http.Agent {
+class SSHAgent extends http.Agent {
     // The ssh client that will be connecting to the server
     private readonly sshClient: ssh2.Client;
 
     // How to connect to the remote server and where the docker socket is located.
-    private readonly connectConfig: ssh2.ConnectConfig & { socketPath: string };
+    private readonly connectConfig: ssh2.ConnectConfig & { remoteSocketPath: string };
 
     public constructor(
-        ssh2ConnectConfig: ssh2.ConnectConfig & { socketPath: string },
+        ssh2ConnectConfig: ssh2.ConnectConfig & { remoteSocketPath: string },
         agentOptions?: http.AgentOptions | undefined
     ) {
         super(agentOptions);
@@ -95,15 +98,15 @@ export class SSHAgent extends http.Agent {
      */
     public createConnection(
         _options: http.ClientRequestArgs,
-        onCreate: (error: Error | undefined, socket?: net.Socket | undefined) => void
+        callback: (error: Error | undefined, socket?: net.Socket | undefined) => void
     ): void {
         this.sshClient
             .on("ready", () => {
                 this.sshClient.openssh_forwardOutStreamLocal(
-                    this.connectConfig.socketPath,
+                    this.connectConfig.remoteSocketPath,
                     (error: Error | undefined, stream: ssh2.ClientChannel) => {
                         if (error) {
-                            return onCreate(error);
+                            return callback(error);
                         }
 
                         stream.once("close", () => {
@@ -112,11 +115,11 @@ export class SSHAgent extends http.Agent {
                             this.sshClient.end();
                         });
 
-                        onCreate(undefined, stream as unknown as net.Socket);
+                        callback(undefined, stream as unknown as net.Socket);
                     }
                 );
             })
-            .on("error", (error) => onCreate(error))
+            .on("error", (error) => callback(error))
             .connect(this.connectConfig);
     }
 }
@@ -134,17 +137,17 @@ export const getAgent = (
             Effect.sync(() =>
                 pipe(
                     Match.value<MobyConnectionOptions>(connectionOptions),
-                    Match.when({ protocol: "ssh" }, (options) => new SSHAgent(options)),
+                    Match.when({ connection: "ssh" }, (options) => new SSHAgent(options)),
                     Match.when(
-                        { protocol: "unix" },
+                        { connection: "unix" },
                         (options) => new http.Agent({ socketPath: options.socketPath } as http.AgentOptions)
                     ),
                     Match.when(
-                        { protocol: "http" },
+                        { connection: "http" },
                         (options) => new http.Agent({ host: options.host, port: options.port })
                     ),
                     Match.when(
-                        { protocol: "https" },
+                        { connection: "https" },
                         (options) =>
                             new https.Agent({
                                 ca: options.ca,
@@ -152,6 +155,7 @@ export const getAgent = (
                                 cert: options.cert,
                                 host: options.host,
                                 port: options.port,
+                                passphrase: options.passphrase,
                             })
                     ),
                     Match.exhaustive
@@ -165,7 +169,7 @@ export const getAgent = (
             http: agent as http.Agent,
             https: agent as https.Agent,
             connectionOptions: connectionOptions,
-            nodeRequestUrl: connectionOptions.protocol === "https" ? "https://0.0.0.0" : "http://0.0.0.0",
-            [HttpAgentTypeId]: HttpAgentTypeId,
+            nodeRequestUrl: connectionOptions.connection === "https" ? "https://0.0.0.0" : "http://0.0.0.0",
+            [NodeHttp.nodeClient.HttpAgentTypeId]: NodeHttp.nodeClient.HttpAgentTypeId,
         })
     );

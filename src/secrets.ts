@@ -1,261 +1,190 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Data, Effect } from "effect";
+import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
 
-import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
-import { IDResponse, IDResponseSchema, Secret, SecretSchema, SecretSpec, SecretsCreateBody } from "./schemas.js";
+import {
+    IMobyConnectionAgent,
+    MobyConnectionAgent,
+    MobyConnectionOptions,
+    MobyHttpClientLive,
+    getAgent,
+} from "./agent-helpers.js";
+import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
+import { IDResponse, Secret, SecretSpec } from "./schemas.js";
 
-export class SecretCreateError extends Data.TaggedError("SecretCreateError")<{ message: string }> {}
-export class SecretDeleteError extends Data.TaggedError("SecretDeleteError")<{ message: string }> {}
-export class SecretInspectError extends Data.TaggedError("SecretInspectError")<{ message: string }> {}
-export class SecretListError extends Data.TaggedError("SecretListError")<{ message: string }> {}
-export class SecretUpdateError extends Data.TaggedError("SecretUpdateError")<{ message: string }> {}
-
-export interface SecretDeleteOptions {
-    /** ID of the secret */
-    id: string;
-}
-
-export interface SecretInspectOptions {
-    /** ID of the secret */
-    id: string;
-}
+export class SecretsError extends Data.TaggedError("SecretsError")<{
+    method: string;
+    message: string;
+}> {}
 
 export interface SecretListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the secrets list. Available filters:
+     * on the secrets list.
+     *
+     * Available filters:
      *
      * - `id=<secret id>`
      * - `label=<key> or label=<key>=value`
      * - `name=<secret name>`
      * - `names=<secret name>`
      */
-    filters?: string;
+    readonly filters?: string;
+}
+
+export interface SecretDeleteOptions {
+    /** ID of the secret */
+    readonly id: string;
+}
+
+export interface SecretInspectOptions {
+    /** ID of the secret */
+    readonly id: string;
 }
 
 export interface SecretUpdateOptions {
     /** The ID or name of the secret */
-    id: string;
-    /**
-     * The version number of the secret object being updated. This is required
-     * to avoid conflicting writes.
-     */
-    version: number;
+    readonly id: string;
     /**
      * The spec of the secret to update. Currently, only the Labels field can be
      * updated. All other fields must remain unchanged from the [SecretInspect
      * endpoint](#operation/SecretInspect) response values.
      */
-    spec?: SecretSpec;
+    readonly spec: Schema.Schema.To<typeof SecretSpec.struct>;
+    /**
+     * The version number of the secret object being updated. This is required
+     * to avoid conflicting writes.
+     */
+    readonly version: number;
 }
 
-/**
- * Create a secret
- *
- * @param Name - User-defined name of the secret.
- * @param Labels - User-defined key/value metadata.
- * @param Data - Base64-url-safe-encoded ([RFC 4648 sec.
- *   5](https://tools.ietf.org/html/rfc4648#section-5)) data to store as
- *   secret.
- * @param Driver -
- * @param Templating
- */
-export const secretCreate = (
-    options: SecretsCreateBody
-): Effect.Effect<IMobyConnectionAgent, SecretCreateError, Readonly<IDResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/secrets/create";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options, "SecretsCreateBody"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(IDResponseSchema)))
-            .pipe(responseErrorHandler(SecretCreateError));
-    }).pipe(Effect.flatten);
-
-/**
- * Delete a secret
- *
- * @param id - ID of the secret
- */
-export const secretDelete = (
-    options: SecretDeleteOptions
-): Effect.Effect<IMobyConnectionAgent, SecretDeleteError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/secrets/{id}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(SecretDeleteError));
-    }).pipe(Effect.flatten);
-
-/**
- * Inspect a secret
- *
- * @param id - ID of the secret
- */
-export const secretInspect = (
-    options: SecretInspectOptions
-): Effect.Effect<IMobyConnectionAgent, SecretInspectError, Readonly<Secret>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/secrets/{id}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(SecretSchema)))
-            .pipe(responseErrorHandler(SecretInspectError));
-    }).pipe(Effect.flatten);
-
-/**
- * List secrets
- *
- * @param filters - A JSON encoded value of the filters (a
- *   `map[string][]string`) to process on the secrets list. Available filters:
- *
- *   - `id=<secret id>`
- *   - `label=<key> or label=<key>=value`
- *   - `name=<secret name>`
- *   - `names=<secret name>`
- */
-export const secretList = (
-    options?: SecretListOptions | undefined
-): Effect.Effect<IMobyConnectionAgent, SecretListError, Readonly<Array<Secret>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/secrets";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("filters", options?.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(SecretSchema))))
-            .pipe(responseErrorHandler(SecretListError));
-    }).pipe(Effect.flatten);
-
-/**
- * Update a Secret
- *
- * @param id - The ID or name of the secret
- * @param version - The version number of the secret object being updated. This
- *   is required to avoid conflicting writes.
- * @param spec - The spec of the secret to update. Currently, only the Labels
- *   field can be updated. All other fields must remain unchanged from the
- *   [SecretInspect endpoint](#operation/SecretInspect) response values.
- */
-export const secretUpdate = (
-    options: SecretUpdateOptions
-): Effect.Effect<IMobyConnectionAgent, SecretUpdateError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/secrets/{id}/update";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("version", options.version))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.spec, "SecretSpec"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(SecretUpdateError));
-    }).pipe(Effect.flatten);
-
-export interface ISecretService {
-    Errors: SecretCreateError | SecretDeleteError | SecretInspectError | SecretListError | SecretUpdateError;
-
-    /**
-     * Create a secret
-     *
-     * @param Name - User-defined name of the secret.
-     * @param Labels - User-defined key/value metadata.
-     * @param Data - Base64-url-safe-encoded ([RFC 4648 sec.
-     *   5](https://tools.ietf.org/html/rfc4648#section-5)) data to store as
-     *   secret.
-     * @param Driver -
-     * @param Templating
-     */
-    secretCreate: WithConnectionAgentProvided<typeof secretCreate>;
-
-    /**
-     * Delete a secret
-     *
-     * @param id - ID of the secret
-     */
-    secretDelete: WithConnectionAgentProvided<typeof secretDelete>;
-
-    /**
-     * Inspect a secret
-     *
-     * @param id - ID of the secret
-     */
-    secretInspect: WithConnectionAgentProvided<typeof secretInspect>;
-
+export interface Secrets {
     /**
      * List secrets
      *
      * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the secrets list. Available
-     *   filters:
+     *   `map[string][]string`) to process on the secrets list.
+     *
+     *   Available filters:
      *
      *   - `id=<secret id>`
      *   - `label=<key> or label=<key>=value`
      *   - `name=<secret name>`
      *   - `names=<secret name>`
      */
-    secretList: WithConnectionAgentProvided<typeof secretList>;
+    readonly list: (
+        options?: SecretListOptions | undefined
+    ) => Effect.Effect<never, SecretsError, Readonly<Array<Secret>>>;
+
+    /**
+     * Create a secret
+     *
+     * @param body -
+     */
+    readonly create: (
+        options: Schema.Schema.To<typeof SecretSpec.struct>
+    ) => Effect.Effect<never, SecretsError, Readonly<IDResponse>>;
+
+    /**
+     * Delete a secret
+     *
+     * @param id - ID of the secret
+     */
+    readonly delete: (options: SecretDeleteOptions) => Effect.Effect<never, SecretsError, void>;
+
+    /**
+     * Inspect a secret
+     *
+     * @param id - ID of the secret
+     */
+    readonly inspect: (options: SecretInspectOptions) => Effect.Effect<never, SecretsError, Readonly<Secret>>;
 
     /**
      * Update a Secret
      *
      * @param id - The ID or name of the secret
-     * @param version - The version number of the secret object being updated.
-     *   This is required to avoid conflicting writes.
      * @param spec - The spec of the secret to update. Currently, only the
      *   Labels field can be updated. All other fields must remain unchanged
      *   from the [SecretInspect endpoint](#operation/SecretInspect) response
      *   values.
+     * @param version - The version number of the secret object being updated.
+     *   This is required to avoid conflicting writes.
      */
-    secretUpdate: WithConnectionAgentProvided<typeof secretUpdate>;
+    readonly update: (options: SecretUpdateOptions) => Effect.Effect<never, SecretsError, void>;
 }
+
+const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Secrets> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(NodeHttp.client.Client);
+
+        const client = defaultClient.pipe(
+            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/secrets`)),
+            NodeHttp.client.filterStatusOk
+        );
+
+        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
+        const SecretClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Secret)));
+        const IDResponseClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(IDResponse)));
+        const SecretsClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Secret)))
+        );
+
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new SecretsError({ method, message }));
+
+        const list_ = (
+            options?: SecretListOptions | undefined
+        ): Effect.Effect<never, SecretsError, Readonly<Array<Secret>>> =>
+            pipe(
+                NodeHttp.request.get(""),
+                addQueryParameter("filters", options?.filters),
+                SecretsClient,
+                Effect.catchAll(responseHandler("list"))
+            );
+
+        const create_ = (
+            options: Schema.Schema.To<typeof SecretSpec.struct>
+        ): Effect.Effect<never, SecretsError, Readonly<IDResponse>> =>
+            pipe(
+                NodeHttp.request.post("/create"),
+                NodeHttp.request.schemaBody(SecretSpec)(new SecretSpec(options)),
+                Effect.flatMap(IDResponseClient),
+                Effect.catchAll(responseHandler("create"))
+            );
+
+        const delete_ = (options: SecretDeleteOptions): Effect.Effect<never, SecretsError, void> =>
+            pipe(
+                NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                voidClient,
+                Effect.catchAll(responseHandler("delete"))
+            );
+
+        const inspect_ = (options: SecretInspectOptions): Effect.Effect<never, SecretsError, Readonly<Secret>> =>
+            pipe(
+                NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                SecretClient,
+                Effect.catchAll(responseHandler("inspect"))
+            );
+
+        const update_ = (options: SecretUpdateOptions): Effect.Effect<never, SecretsError, void> =>
+            pipe(
+                NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("version", options.version),
+                NodeHttp.request.schemaBody(SecretSpec)(new SecretSpec(options.spec)),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("update"))
+            );
+
+        return { list: list_, create: create_, delete: delete_, inspect: inspect_, update: update_ };
+    }
+);
+
+export const Secrets = Context.Tag<Secrets>("the-moby-effect/Secrets");
+export const layer = Layer.effect(Secrets, make).pipe(Layer.provide(MobyHttpClientLive));
+
+export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+
+export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
+    fromAgent(getAgent(connectionOptions));

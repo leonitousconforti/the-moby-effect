@@ -1,9 +1,11 @@
-import { Chunk, Console, Effect, Scope, Stream } from "effect";
+import { Chunk, Console, Effect, Layer, Stream } from "effect";
 
-import { IMobyService, MobyError, makeMobyClient } from "../src/main.js";
+import * as MobyApi from "../src/index.js";
 
-// Passing in no connection options means it will connect to the local docker socket
-const localDocker: IMobyService = makeMobyClient();
+const localImages: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.Images.fromConnectionOptions({
+    connection: "unix",
+    socketPath: "/var/run/docker.sock",
+});
 
 // {"status":"Pulling from library/hello-world","id":"latest"}
 // {"status":"Pulling fs layer","progressDetail":{},"id":"719385e32844"}
@@ -16,16 +18,18 @@ const localDocker: IMobyService = makeMobyClient();
 // {"status":"Pull complete","progressDetail":{},"id":"719385e32844"}
 // {"status":"Digest: sha256:c79d06dfdfd3d3eb04cafd0dc2bacab0992ebc243e083cabe208bac4dd7759e0"}
 // {"status":"Status: Downloaded newer image for hello-world:latest"}
-const main: Effect.Effect<Scope.Scope, MobyError, void> = Effect.gen(function* (_: Effect.Adapter) {
-    yield* _(localDocker.imageDelete({ name: "hello-world" }));
+await Effect.gen(function* (_: Effect.Adapter) {
+    const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
-    const pullStream: Stream.Stream<never, MobyError, string> = yield* _(
-        localDocker.imageCreate({ fromImage: "docker.io/library/hello-world:latest" })
+    yield* _(images.delete({ name: "hello-world" }));
+
+    const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
+        images.create({ fromImage: "docker.io/library/hello-world:latest" })
     );
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
     const data: string = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
     yield* _(Console.log(data));
-});
-
-await Effect.scoped(main).pipe(Effect.runPromise);
+})
+    .pipe(Effect.provide(localImages))
+    .pipe(Effect.runPromise);

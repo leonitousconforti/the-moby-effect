@@ -19,6 +19,7 @@ module.exports = {
         "@typescript-eslint/typedef": "off",
         "unicorn/no-array-callback-reference": "off",
         "unicorn/consistent-function-scoping": "off",
+        "unicorn/no-array-method-this-argument": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/naming-convention": [
             "error",
@@ -31,6 +32,12 @@ module.exports = {
             rules: {
                 "max-lines": "off",
                 "unicorn/prevent-abbreviations": "off",
+            },
+        },
+        {
+            files: ["./examples/**/*.ts"],
+            rules: {
+                "no-console": "off",
             },
         },
     ],

@@ -1,12 +1,14 @@
 import url from "node:url";
 import tar from "tar-fs";
 
-import { Chunk, Effect, Stream } from "effect";
+import { Chunk, Effect, Layer, Stream } from "effect";
 
-import { IMobyService, ImageBuildError, MobyError, makeMobyClient } from "../src/main.js";
+import * as MobyApi from "../src/index.js";
 
-// Passing in no connection options means it will connect to the local docker socket
-const localDocker: IMobyService = makeMobyClient();
+const localImages: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.Images.fromConnectionOptions({
+    connection: "unix",
+    socketPath: "/var/run/docker.sock",
+});
 
 // {"stream":"Step 1/1 : FROM ubuntu:latest"}
 // {"stream":"\n"}
@@ -39,14 +41,22 @@ const localDocker: IMobyService = makeMobyClient();
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
 await Effect.gen(function* (_: Effect.Adapter) {
-    const buildStream: Stream.Stream<never, MobyError, string> = yield* _(
-        localDocker.imageBuild({
+    const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
+
+    const buildStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
+        images.build({
             t: "mydockerimage:latest",
-            body: Stream.fromAsyncIterable(
-                tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
-                    entries: ["build-image.dockerfile"],
-                }),
-                () => new ImageBuildError({ message: "error packing the build context" })
+            stream: Stream.orDie(
+                Stream.fromAsyncIterable(
+                    tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
+                        entries: ["build-image.dockerfile"],
+                    }),
+                    () =>
+                        new MobyApi.Images.ImagesError({
+                            method: "buildStream",
+                            message: "error packing the build context",
+                        })
+                )
             ),
             dockerfile: "build-image.dockerfile",
         })
@@ -55,6 +65,5 @@ await Effect.gen(function* (_: Effect.Adapter) {
     // You could fold/iterate over the stream here too if you wanted progress events in real time
     return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.join(""))));
 })
-    .pipe(Effect.scoped)
-    .pipe(Effect.tap(console.log))
+    .pipe(Effect.provide(localImages))
     .pipe(Effect.runPromise);

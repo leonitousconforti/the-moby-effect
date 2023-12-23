@@ -1,65 +1,35 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Data, Effect } from "effect";
+import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
 
-import { IMobyConnectionAgent, MobyConnectionAgent, WithConnectionAgentProvided } from "./agent-helpers.js";
-import { addHeader, addQueryParameter, responseErrorHandler, setBody } from "./request-helpers.js";
-
+import {
+    IMobyConnectionAgent,
+    MobyConnectionAgent,
+    MobyConnectionOptions,
+    MobyHttpClientLive,
+    getAgent,
+} from "./agent-helpers.js";
+import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
 import {
     Network,
     NetworkConnectRequest,
     NetworkCreateRequest,
     NetworkCreateResponse,
-    NetworkCreateResponseSchema,
     NetworkDisconnectRequest,
     NetworkPruneResponse,
-    NetworkPruneResponseSchema,
-    NetworkSchema,
 } from "./schemas.js";
 
-export class NetworkConnectError extends Data.TaggedError("NetworkConnectError")<{ message: string }> {}
-export class NetworkCreateError extends Data.TaggedError("NetworkCreateError")<{ message: string }> {}
-export class NetworkDeleteError extends Data.TaggedError("NetworkDeleteError")<{ message: string }> {}
-export class NetworkDisconnectError extends Data.TaggedError("NetworkDisconnectError")<{ message: string }> {}
-export class NetworkInspectError extends Data.TaggedError("NetworkInspectError")<{ message: string }> {}
-export class NetworkListError extends Data.TaggedError("NetworkListError")<{ message: string }> {}
-export class NetworkPruneError extends Data.TaggedError("NetworkPruneError")<{ message: string }> {}
-
-export interface NetworkConnectOptions {
-    body: NetworkConnectRequest;
-    /** Network ID or name */
-    id: string;
-}
-
-export interface NetworkCreateOptions {
-    /** Network configuration */
-    body: NetworkCreateRequest;
-}
-
-export interface NetworkDeleteOptions {
-    /** Network ID or name */
-    id: string;
-}
-
-export interface NetworkDisconnectOptions {
-    body: NetworkDisconnectRequest;
-    /** Network ID or name */
-    id: string;
-}
-
-export interface NetworkInspectOptions {
-    /** Network ID or name */
-    id: string;
-    /** Detailed inspect output for troubleshooting */
-    verbose?: boolean;
-    /** Filter the network by scope (swarm, global, or local) */
-    scope?: string;
-}
+export class NetworksError extends Data.TaggedError("NetworksError")<{
+    method: string;
+    message: string;
+}> {}
 
 export interface NetworkListOptions {
     /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
-     * the networks list. Available filters:
+     * the networks list.
+     *
+     * Available filters:
      *
      * - `dangling=<boolean>` When set to `true` (or `1`), returns all networks
      *   that are not in use by a container. When set to `false` (or `0`), only
@@ -68,18 +38,46 @@ export interface NetworkListOptions {
      * - `id=<network-id>` Matches all or part of a network ID.
      * - `label=<key>` or `label=<key>=<value>` of a network label.
      * - `name=<network-name>` Matches all or part of a network name.
-     * - `scope=[\"swarm\"|\"global\"|\"local\"]` Filters networks by scope
-     *   (`swarm`, `global`, or `local`).
-     * - `type=[\"custom\"|\"builtin\"]` Filters networks by type. The `custom`
+     * - `scope=["swarm"|"global"|"local"]` Filters networks by scope (`swarm`,
+     *   `global`, or `local`).
+     * - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
      *   keyword returns all user-defined networks.
      */
-    filters?: string;
+    readonly filters?: string;
+}
+
+export interface NetworkDeleteOptions {
+    /** Network ID or name */
+    readonly id: string;
+}
+
+export interface NetworkInspectOptions {
+    /** Network ID or name */
+    readonly id: string;
+    /** Detailed inspect output for troubleshooting */
+    readonly verbose?: boolean;
+    /** Filter the network by scope (swarm, global, or local) */
+    readonly scope?: string;
+}
+
+export interface NetworkConnectOptions {
+    /** Network ID or name */
+    readonly id: string;
+    readonly container: NetworkConnectRequest;
+}
+
+export interface NetworkDisconnectOptions {
+    /** Network ID or name */
+    readonly id: string;
+    readonly container: NetworkDisconnectRequest;
 }
 
 export interface NetworkPruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
-     * `map[string][]string`). Available filters:
+     * `map[string][]string`).
+     *
+     * Available filters:
      *
      * - `until=<timestamp>` Prune networks created before this timestamp. The
      *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
@@ -89,287 +87,17 @@ export interface NetworkPruneOptions {
      *   `label!=<key>=<value>`) Prune networks with (or without, in case
      *   `label!=...` is used) the specified labels.
      */
-    filters?: string;
+    readonly filters?: string;
 }
 
-/**
- * Connect a container to a network
- *
- * @param body -
- * @param id - Network ID or name
- */
-export const networkConnect = (
-    options: NetworkConnectOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkConnectError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks/{id}/connect";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "NetworkConnectRequest"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(NetworkConnectError));
-    }).pipe(Effect.flatten);
-
-/**
- * Create a network
- *
- * @param body - Network configuration
- */
-export const networkCreate = (
-    options: NetworkCreateOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkCreateError, Readonly<NetworkCreateResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks/create";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "NetworkCreateRequest"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkCreateResponseSchema)))
-            .pipe(responseErrorHandler(NetworkCreateError));
-    }).pipe(Effect.flatten);
-
-/**
- * Remove a network
- *
- * @param id - Network ID or name
- */
-export const networkDelete = (
-    options: NetworkDeleteOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkDeleteError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks/{id}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "DELETE";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(responseErrorHandler(NetworkDeleteError));
-    }).pipe(Effect.flatten);
-
-/**
- * Disconnect a container from a network
- *
- * @param body -
- * @param id - Network ID or name
- */
-export const networkDisconnect = (
-    options: NetworkDisconnectOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkDisconnectError, void> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks/{id}/disconnect";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addHeader("Content-Type", "application/json"))
-            .pipe(setBody(options.body, "NetworkDisconnectRequest"))
-            .pipe(Effect.flatMap(client.pipe(NodeHttp.client.filterStatusOk)))
-            .pipe(responseErrorHandler(NetworkDisconnectError));
-    }).pipe(Effect.flatten);
-
-/**
- * Inspect a network
- *
- * @param id - Network ID or name
- * @param verbose - Detailed inspect output for troubleshooting
- * @param scope - Filter the network by scope (swarm, global, or local)
- */
-export const networkInspect = (
-    options: NetworkInspectOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkInspectError, Readonly<Network>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks/{id}";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint.replace(`{${"id"}}`, encodeURIComponent(String(options.id)));
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("verbose", options.verbose))
-            .pipe(addQueryParameter("scope", options.scope))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkSchema)))
-            .pipe(responseErrorHandler(NetworkInspectError));
-    }).pipe(Effect.flatten);
-
-/**
- * Returns a list of networks. For details on the format, see the [network
- * inspect endpoint](#operation/NetworkInspect). Note that it uses a different,
- * smaller representation of a network than inspecting a single network. For
- * example, the list of containers attached to the network is not propagated in
- * API versions 1.28 and up.
- *
- * @param filters - JSON encoded value of the filters (a `map[string][]string`)
- *   to process on the networks list. Available filters:
- *
- *   - `dangling=<boolean>` When set to `true` (or `1`), returns all networks that
- *       are not in use by a container. When set to `false` (or `0`), only
- *       networks that are in use by one or more containers are returned.
- *   - `driver=<driver-name>` Matches a network's driver.
- *   - `id=<network-id>` Matches all or part of a network ID.
- *   - `label=<key>` or `label=<key>=<value>` of a network label.
- *   - `name=<network-name>` Matches all or part of a network name.
- *   - `scope=[\"swarm\"|\"global\"|\"local\"]` Filters networks by scope (`swarm`,
- *       `global`, or `local`).
- *   - `type=[\"custom\"|\"builtin\"]` Filters networks by type. The `custom`
- *       keyword returns all user-defined networks.
- */
-export const networkList = (
-    options: NetworkListOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkListError, Readonly<Array<Network>>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "GET";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(Schema.array(NetworkSchema))))
-            .pipe(responseErrorHandler(NetworkListError));
-    }).pipe(Effect.flatten);
-
-/**
- * Delete unused networks
- *
- * @param filters - Filters to process on the prune list, encoded as JSON (a
- *   `map[string][]string`). Available filters:
- *
- *   - `until=<timestamp>` Prune networks created before this timestamp. The
- *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
- *       duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
- *       machine’s time.
- *   - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
- *       `label!=<key>=<value>`) Prune networks with (or without, in case
- *       `label!=...` is used) the specified labels.
- */
-export const networkPrune = (
-    options: NetworkPruneOptions
-): Effect.Effect<IMobyConnectionAgent, NetworkPruneError, Readonly<NetworkPruneResponse>> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const endpoint: string = "/networks/prune";
-        const method: "GET" | "HEAD" | "POST" | "PUT" | "DELETE" | "PATCH" | "OPTIONS" = "POST";
-        const sanitizedEndpoint: string = endpoint;
-
-        const agent: IMobyConnectionAgent = yield* _(MobyConnectionAgent);
-        const client: NodeHttp.client.Client.Default = yield* _(
-            NodeHttp.nodeClient.make.pipe(Effect.provideService(NodeHttp.nodeClient.HttpAgent, agent))
-        );
-
-        return NodeHttp.request
-            .make(method)(sanitizedEndpoint)
-            .pipe(NodeHttp.request.prependUrl(agent.nodeRequestUrl))
-            .pipe(addQueryParameter("filters", options.filters))
-            .pipe(client.pipe(NodeHttp.client.filterStatusOk))
-            .pipe(Effect.flatMap(NodeHttp.response.schemaBodyJson(NetworkPruneResponseSchema)))
-            .pipe(responseErrorHandler(NetworkPruneError));
-    }).pipe(Effect.flatten);
-
-export interface INetworkService {
-    Errors:
-        | NetworkConnectError
-        | NetworkCreateError
-        | NetworkDeleteError
-        | NetworkDisconnectError
-        | NetworkInspectError
-        | NetworkListError
-        | NetworkPruneError;
-
+export interface Networks {
     /**
-     * Connect a container to a network
-     *
-     * @param body -
-     * @param id - Network ID or name
-     */
-    networkConnect: WithConnectionAgentProvided<typeof networkConnect>;
-
-    /**
-     * Create a network
-     *
-     * @param body - Network configuration
-     */
-    networkCreate: WithConnectionAgentProvided<typeof networkCreate>;
-
-    /**
-     * Remove a network
-     *
-     * @param id - Network ID or name
-     */
-    networkDelete: WithConnectionAgentProvided<typeof networkDelete>;
-
-    /**
-     * Disconnect a container from a network
-     *
-     * @param body -
-     * @param id - Network ID or name
-     */
-    networkDisconnect: WithConnectionAgentProvided<typeof networkDisconnect>;
-
-    /**
-     * Inspect a network
-     *
-     * @param id - Network ID or name
-     * @param verbose - Detailed inspect output for troubleshooting
-     * @param scope - Filter the network by scope (swarm, global, or local)
-     */
-    networkInspect: WithConnectionAgentProvided<typeof networkInspect>;
-
-    /**
-     * Returns a list of networks. For details on the format, see the [network
-     * inspect endpoint](#operation/NetworkInspect). Note that it uses a
-     * different, smaller representation of a network than inspecting a single
-     * network. For example, the list of containers attached to the network is
-     * not propagated in API versions 1.28 and up.
+     * List networks
      *
      * @param filters - JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the networks list. Available
-     *   filters:
+     *   `map[string][]string`) to process on the networks list.
+     *
+     *   Available filters:
      *
      *   - `dangling=<boolean>` When set to `true` (or `1`), returns all networks
      *       that are not in use by a container. When set to `false` (or `0`),
@@ -379,18 +107,61 @@ export interface INetworkService {
      *   - `id=<network-id>` Matches all or part of a network ID.
      *   - `label=<key>` or `label=<key>=<value>` of a network label.
      *   - `name=<network-name>` Matches all or part of a network name.
-     *   - `scope=[\"swarm\"|\"global\"|\"local\"]` Filters networks by scope
-     *       (`swarm`, `global`, or `local`).
-     *   - `type=[\"custom\"|\"builtin\"]` Filters networks by type. The `custom`
+     *   - `scope=["swarm"|"global"|"local"]` Filters networks by scope (`swarm`,
+     *       `global`, or `local`).
+     *   - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
      *       keyword returns all user-defined networks.
      */
-    networkList: WithConnectionAgentProvided<typeof networkList>;
+    readonly list: (
+        options?: NetworkListOptions | undefined
+    ) => Effect.Effect<never, NetworksError, Readonly<Array<Network>>>;
+
+    /**
+     * Remove a network
+     *
+     * @param id - Network ID or name
+     */
+    readonly delete: (options: NetworkDeleteOptions) => Effect.Effect<never, NetworksError, void>;
+
+    /**
+     * Inspect a network
+     *
+     * @param id - Network ID or name
+     * @param verbose - Detailed inspect output for troubleshooting
+     * @param scope - Filter the network by scope (swarm, global, or local)
+     */
+    readonly inspect: (options: NetworkInspectOptions) => Effect.Effect<never, NetworksError, Readonly<Network>>;
+
+    /**
+     * Create a network
+     *
+     * @param networkConfig - Network configuration
+     */
+    readonly create: (options: NetworkCreateRequest) => Effect.Effect<never, NetworksError, NetworkCreateResponse>;
+
+    /**
+     * Connect a container to a network
+     *
+     * @param id - Network ID or name
+     * @param container -
+     */
+    readonly connect: (options: NetworkConnectOptions) => Effect.Effect<never, NetworksError, void>;
+
+    /**
+     * Disconnect a container from a network
+     *
+     * @param id - Network ID or name
+     * @param container -
+     */
+    readonly disconnect: (options: NetworkDisconnectOptions) => Effect.Effect<never, NetworksError, void>;
 
     /**
      * Delete unused networks
      *
      * @param filters - Filters to process on the prune list, encoded as JSON (a
-     *   `map[string][]string`). Available filters:
+     *   `map[string][]string`).
+     *
+     *   Available filters:
      *
      *   - `until=<timestamp>` Prune networks created before this timestamp. The
      *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or
@@ -400,5 +171,111 @@ export interface INetworkService {
      *       `label!=<key>=<value>`) Prune networks with (or without, in case
      *       `label!=...` is used) the specified labels.
      */
-    networkPrune: WithConnectionAgentProvided<typeof networkPrune>;
+    readonly prune: (options: NetworkPruneOptions) => Effect.Effect<never, NetworksError, NetworkPruneResponse>;
 }
+
+const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Networks> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(NodeHttp.client.Client);
+
+        const client = defaultClient.pipe(
+            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/networks`)),
+            NodeHttp.client.filterStatusOk
+        );
+
+        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
+        const NetworksClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Network)))
+        );
+        const NetworkClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Network)));
+        const NetworkCreateResponseClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(NetworkCreateResponse))
+        );
+        const NetworkPruneResponseClient = client.pipe(
+            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(NetworkPruneResponse))
+        );
+
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new NetworksError({ method, message }));
+
+        const list_ = (
+            options?: NetworkListOptions | undefined
+        ): Effect.Effect<never, NetworksError, Readonly<Array<Network>>> =>
+            pipe(
+                NodeHttp.request.get(""),
+                addQueryParameter("filters", JSON.stringify(options?.filters)),
+                NetworksClient,
+                Effect.catchAll(responseHandler("list"))
+            );
+
+        const delete_ = (options: NetworkDeleteOptions): Effect.Effect<never, NetworksError, void> =>
+            pipe(
+                NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                voidClient,
+                Effect.catchAll(responseHandler("delete"))
+            );
+
+        const inspect_ = (options: NetworkInspectOptions): Effect.Effect<never, NetworksError, Readonly<Network>> =>
+            pipe(
+                NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("verbose", options.verbose),
+                addQueryParameter("scope", options.scope),
+                NetworkClient,
+                Effect.catchAll(responseHandler("inspect"))
+            );
+
+        const create_ = (options: NetworkCreateRequest): Effect.Effect<never, NetworksError, NetworkCreateResponse> =>
+            pipe(
+                NodeHttp.request.post("/create"),
+                NodeHttp.request.schemaBody(NetworkCreateRequest)(options),
+                Effect.flatMap(NetworkCreateResponseClient),
+                Effect.catchAll(responseHandler("create"))
+            );
+
+        const connect_ = (options: NetworkConnectOptions): Effect.Effect<never, NetworksError, void> =>
+            pipe(
+                NodeHttp.request.post("/{id}/connect".replace("{id}", encodeURIComponent(options.id))),
+                NodeHttp.request.schemaBody(NetworkConnectRequest)(options.container),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("connect"))
+            );
+
+        const disconnect_ = (options: NetworkDisconnectOptions): Effect.Effect<never, NetworksError, void> =>
+            pipe(
+                NodeHttp.request.post("/{id}/disconnect".replace("{id}", encodeURIComponent(options.id))),
+                NodeHttp.request.schemaBody(NetworkDisconnectRequest)(
+                    options.container ?? new NetworkDisconnectRequest({})
+                ),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("disconnect"))
+            );
+
+        const prune_ = (options: NetworkPruneOptions): Effect.Effect<never, NetworksError, NetworkPruneResponse> =>
+            pipe(
+                NodeHttp.request.post("/prune"),
+                addQueryParameter("filters", options.filters),
+                NetworkPruneResponseClient,
+                Effect.catchAll(responseHandler("prune"))
+            );
+
+        return {
+            list: list_,
+            delete: delete_,
+            inspect: inspect_,
+            create: create_,
+            connect: connect_,
+            disconnect: disconnect_,
+            prune: prune_,
+        };
+    }
+);
+
+export const Networks = Context.Tag<Networks>("the-moby-effect/Networks");
+export const layer = Layer.effect(Networks, make).pipe(Layer.provide(MobyHttpClientLive));
+
+export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+
+export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
+    fromAgent(getAgent(connectionOptions));

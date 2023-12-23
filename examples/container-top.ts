@@ -1,9 +1,18 @@
-import { Effect } from "effect";
+import { Effect, Layer } from "effect";
 
-import { ContainerInspectResponse, IMobyService, makeMobyClient } from "../src/main.js";
+import * as MobyApi from "../src/index.js";
+import { ContainerInspectResponse } from "../src/schemas.js";
 
-// Passing in no connection options means it will connect to the local docker socket
-const localDocker: IMobyService = makeMobyClient();
+const localContainers: Layer.Layer<never, never, MobyApi.Containers.Containers> =
+    MobyApi.Containers.fromConnectionOptions({
+        connection: "unix",
+        socketPath: "/var/run/docker.sock",
+    });
+
+const localImages: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.Images.fromConnectionOptions({
+    connection: "unix",
+    socketPath: "/var/run/docker.sock",
+});
 
 // {
 //   Titles: [
@@ -25,16 +34,29 @@ const localDocker: IMobyService = makeMobyClient();
 //     ]
 //   ]
 // }
-const main = Effect.gen(function* (_: Effect.Adapter) {
+await Effect.gen(function* (_: Effect.Adapter) {
+    const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
+
     const containerInspectResponse: ContainerInspectResponse = yield* _(
-        localDocker.run({
+        MobyApi.run({
             imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
-            containerOptions: { body: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] } },
+            containerOptions: {
+                spec: {
+                    Image: "ubuntu:latest",
+                    Cmd: ["sleep", "infinity"],
+                    HostConfig: {
+                        PortBindings: { "2375/tcp": [{ HostPort: "0" }], "2376/tcp": [{ HostPort: "0" }] },
+                    },
+                },
+            },
         })
     );
 
-    const data = yield* _(localDocker.containerTop({ id: containerInspectResponse.Id!, ps_args: "aux" }));
-    yield* _(localDocker.containerKill({ id: containerInspectResponse.Id! }));
-    yield* _(localDocker.containerDelete({ id: containerInspectResponse.Id! }));
+    const data: unknown = yield* _(containers.top({ id: containerInspectResponse.Id!, ps_args: "aux" }));
+    yield* _(containers.kill({ id: containerInspectResponse.Id! }));
+    yield* _(containers.delete({ id: containerInspectResponse.Id! }));
     return data;
-});
+})
+    .pipe(Effect.provide(localImages))
+    .pipe(Effect.provide(localContainers))
+    .pipe(Effect.runPromise);
