@@ -8,7 +8,7 @@ import { ISchemaDefinition, type ArraySchema } from "../types.js";
  * would with enums.
  */
 export const genArrayType =
-    (wholeSchema: { definitions: Record<string, ISchemaDefinition> }) =>
+    (wholeSchema: { schemas: Record<string, ISchemaDefinition> }) =>
     (definition: ArraySchema): [thisLevel: string, hoistedValues: string[]] => {
         // Generate the inner type T of Array<T>
         const [itemsType, nestedHoistedValues] = genSchemaType(wholeSchema)({

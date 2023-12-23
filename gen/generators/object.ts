@@ -5,7 +5,7 @@ import { optionalModifier } from "../modifiers/optional.js";
 import type { ISchemaDefinition, ObjectSchema } from "../types.js";
 
 export const genObjectType =
-    (wholeSchema: { definitions: Record<string, ISchemaDefinition> }) =>
+    (wholeSchema: { schemas: Record<string, ISchemaDefinition> }) =>
     (definition: ObjectSchema): [thisLevel: string, hoistedValues: string[]] => {
         if (definition.properties && definition.additionalProperties) {
             throw new Error("An object can not define it's own properties and have additional properties");

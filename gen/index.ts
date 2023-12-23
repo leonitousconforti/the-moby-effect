@@ -20,7 +20,7 @@ import {
  * recursively by the other helpers)
  */
 export const genSchemaType =
-    (wholeSchema: { definitions: Record<string, ISchemaDefinition> }) =>
+    (wholeSchema: { schemas: Record<string, ISchemaDefinition> }) =>
     (definition: ISchemaDefinition): [thisLevel: string, hoistedValues: string[]] => {
         if (isArraySchema(definition)) {
             return genArrayType(wholeSchema)(definition);
@@ -72,15 +72,22 @@ export const orderSchemas = (
 };
 
 export const run = (schema: {
-    definitions: Record<string, ISchemaDefinition>;
+    components: { schemas: Record<string, ISchemaDefinition> };
     paths: Record<
         string,
         Record<
             "get" | "post" | "delete" | "patch" | "options",
             {
                 operationId: string;
-                responses: { name: string; schema: { title?: string; items?: { title: string } } }[];
-                parameters: { name: string; schema: { title?: string; items?: { title: string } } }[];
+                responses: Record<
+                    number,
+                    {
+                        content: Record<"application/json", { schema: { title?: string; items?: { title: string } } }>;
+                    }
+                >;
+                requestBody: {
+                    content: Record<"application/json", { schema: { title?: string; items?: { title: string } } }>;
+                };
             }
         >
     >;
@@ -89,7 +96,11 @@ export const run = (schema: {
     // we will grab them from the request parameters and response types of the paths
     const responseTypesAndParameterTypes = Object.values(schema.paths)
         .flatMap((path) => Object.values(path))
-        .flatMap(({ responses, parameters }) => [...Object.values(responses), ...(parameters ?? [])])
+        .flatMap(({ responses, requestBody }) => [
+            ...Object.values(responses).map((response) => response.content["application/json"]),
+            requestBody?.content["application/json"],
+        ])
+        .filter((a) => a?.schema)
         .filter(({ schema }) => schema?.title || schema?.items?.title)
         .map(({ schema }) => ({ ...schema, name: schema.title || schema.items?.title }))
         .map((schema) => ({ [schema.name!]: schema }));
@@ -97,7 +108,7 @@ export const run = (schema: {
     // Combine all the definitions into one object
     const definitions: Record<string, ISchemaDefinition> = Object.assign(
         {},
-        schema.definitions,
+        schema.components.schemas,
         ...responseTypesAndParameterTypes
     );
 
@@ -105,7 +116,7 @@ export const run = (schema: {
     const generatedSchemas: { [x: string]: { dependencies: Set<string>; type: string; name: string } } = Object.assign(
         {},
         ...Object.entries(definitions).map(([definitionName, definition]) => {
-            const schemaGen = genSchemaType(schema)({ ...definition, name: definitionName });
+            const schemaGen = genSchemaType(schema.components)({ ...definition, name: definitionName });
             const hoistedTypes = schemaGen[1].filter((type) => type.includes("export"));
             const hoistRequests = schemaGen[1]
                 .filter((type) => type.startsWith(HOIST_REQUEST))

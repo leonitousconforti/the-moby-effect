@@ -8,7 +8,7 @@ import type { AllOfSchema, ISchemaDefinition } from "../types.js";
  * having to define additional properties on itself to store them
  */
 export const genAllOfType =
-    (wholeSchema: { definitions: Record<string, ISchemaDefinition> }) =>
+    (wholeSchema: { schemas: Record<string, ISchemaDefinition> }) =>
     (definition: AllOfSchema): [thisLevel: string, hoistedValues: string[]] => {
         if (definition["x-nullable"]) {
             throw new Error("AllOf nullable is not implemented");

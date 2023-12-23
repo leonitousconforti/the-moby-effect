@@ -10,12 +10,12 @@ import { HOIST_REQUEST, isPrimitiveSchema, type ISchemaDefinition, type Referenc
  * that it will be defined before this one in the final TS schema.
  */
 export const genReferenceSchema =
-    (wholeSchema: { definitions: Record<string, ISchemaDefinition> }) =>
+    (wholeSchema: { schemas: Record<string, ISchemaDefinition> }) =>
     (definition: ReferenceSchema): [thisLevel: string, hoistedValues: string[]] => {
-        const type = definition.$ref.replace("#/definitions/", "");
+        const type = definition.$ref.replace("#/components/schemas/", "");
         const hoistRequest = `${HOIST_REQUEST}${type}`;
 
-        const referencedSchema = wholeSchema.definitions[type as keyof typeof wholeSchema.definitions];
+        const referencedSchema = wholeSchema.schemas[type as keyof typeof wholeSchema.schemas];
         if (!referencedSchema) throw new Error(`Could not find referenced schema ${type}`);
 
         /**
