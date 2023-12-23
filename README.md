@@ -11,13 +11,16 @@ Moby/Docker Daemon API client built using [effect-ts](effect.website). If you wa
 - [x] - tests, examples, and in-line JSDoc comments based on the docker api documentation
 - [x] - Strong focus on types and typescript support
 
-## Non-goals
+## Todo/Future
+- Finish unit tests
+- Add more examples
+- Maybe test against something else other than docker as well?
 
-- tighter schema
-The moby/docker api schema is pretty loose - almost nothing is explicitly marked as required and object properties are optional by default under the swagger2.0/openapi specification. I have no intention to try to tighten their schema in my project (with the exception of `Id` fields witch I put as always required/defined on responses). If the moby schema doesn't explicitly mark it as a required field, then it will be nullable+optional.
+## Non-Goals
 
-- version negotiating
-Either install a specific version for the moby/docker daemon that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
+- Tighter schema: the moby/docker api schema is pretty loose - almost nothing is explicitly marked as required and object properties are optional by default under the swagger2.0/openapi specification. I have no intention to try to tighten their schema in my project. If the moby schema doesn't explicitly mark it as a required field, then it will be optional.
+
+- Version negotiating: either install a specific version for the moby/docker daemon that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
 
 ## Versioning
 
