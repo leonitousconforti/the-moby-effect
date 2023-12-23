@@ -6,7 +6,6 @@
         "pretty": true,
         "sourceMap": true,
         "declaration": true,
-        "resolveJsonModule": true,
         "outDir": "./dist",
         "types": ["node", "heft-jest"],
 
@@ -33,5 +32,5 @@
         "isolatedModules": true,
         "forceConsistentCasingInFileNames": true
     },
-    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "gen/**/*.ts"]
+    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"]
 }
