@@ -179,19 +179,6 @@ export class Mount extends Schema.Class<Mount>()({
 
                 /** Create mount point on host if missing */
                 CreateMountpoint: Schema.optional(Schema.boolean),
-
-                /**
-                 * Make the mount non-recursively read-only, but still leave the
-                 * mount recursive (unless NonRecursive is set to true in
-                 * conjunction).
-                 */
-                ReadOnlyNonRecursive: Schema.optional(Schema.boolean),
-
-                /**
-                 * Raise an error if the mount cannot be made recursively
-                 * read-only.
-                 */
-                ReadOnlyForceRecursive: Schema.optional(Schema.boolean),
             })
         )
     ),
@@ -322,12 +309,6 @@ export class HealthConfig extends Schema.Class<HealthConfig>()({
      * 1000000 (1 ms). 0 means inherit.
      */
     StartPeriod: Schema.optional(Schema.number),
-
-    /**
-     * The time to wait between checks in nanoseconds during the start period.
-     * It should be 0 or at least 1000000 (1 ms). 0 means inherit.
-     */
-    StartInterval: Schema.optional(Schema.number),
 }) {}
 
 export class HealthcheckResult extends Schema.Class<HealthcheckResult>()({
@@ -458,8 +439,13 @@ export class ImageSummary extends Schema.Class<ImageSummary>()({
     /**
      * Total size of the image including all layers it is composed of.
      *
-     * Deprecated: this field is omitted in API v1.44, but kept for backward
-     * compatibility. Use Size instead.
+     * In versions of Docker before v1.10, this field was calculated from the
+     * image itself and all of its parent images. Images are now stored
+     * self-contained, and no longer use a parent-chain, making this field an
+     * equivalent of the Size field.
+     *
+     * Deprecated: this field is kept for backward compatibility, and will be
+     * removed in API v1.44.
      */
     VirtualSize: Schema.optional(Schema.number),
 
@@ -523,7 +509,7 @@ export class BuildCache extends Schema.Class<BuildCache>()({
      * ID of the parent build cache record.> **Deprecated**: This field is
      * deprecated, and omitted if empty.
      */
-    Parent: Schema.optional(Schema.nullable(Schema.string)),
+    Parent: Schema.optional(Schema.string),
 
     /** List of parent build cache record IDs. */
     Parents: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
@@ -553,7 +539,7 @@ export class BuildCache extends Schema.Class<BuildCache>()({
      * Date and time at which the build cache was last used in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
-    LastUsedAt: Schema.optional(Schema.nullable(Schema.string)),
+    LastUsedAt: Schema.optional(Schema.string),
     UsageCount: Schema.optional(Schema.number),
 }) {}
 
@@ -580,7 +566,7 @@ export class IdResponse extends Schema.Class<IdResponse>()({
 }) {}
 
 export class IDResponse extends Schema.Class<IDResponse>()({
-    /** The Id of the newly created object. */
+    /** The id of the newly created object. */
     ID: Schema.string,
 }) {}
 
@@ -890,7 +876,7 @@ export class SwarmSpec extends Schema.Class<SwarmSpec>()({
                             Name: Schema.optional(Schema.string),
 
                             /**
-                             * Driver-specific options for the selected log
+                             * Driver-specific options for the selectd log
                              * driver, specified as key/value pairs.
                              */
                             Options: Schema.optional(Schema.nullable(Schema.record(Schema.string, Schema.string))),
@@ -909,8 +895,6 @@ export class JoinTokens extends Schema.Class<JoinTokens>()({
     /** The token managers can use to join the swarm. */
     Manager: Schema.optional(Schema.string),
 }) {}
-
-export class Swarm extends Schema.Class<Swarm>()({}) {}
 
 export enum TaskState {
     "NEW" = "new",
@@ -931,12 +915,6 @@ export enum TaskState {
 }
 
 Schema.optional(Schema.enums(TaskState));
-
-export class ContainerStatus extends Schema.Class<ContainerStatus>()({
-    ContainerID: Schema.optional(Schema.string),
-    PID: Schema.optional(Schema.number),
-    ExitCode: Schema.optional(Schema.number),
-}) {}
 
 export enum EndpointPortConfig_Protocol {
     "TCP" = "tcp",
@@ -976,14 +954,6 @@ export class ImageDeleteResponseItem extends Schema.Class<ImageDeleteResponseIte
 
     /** The image ID of an image that was deleted */
     Deleted: Schema.optional(Schema.string),
-}) {}
-
-export class ServiceCreateResponse extends Schema.Class<ServiceCreateResponse>()({
-    /** The ID of the created service. */
-    ID: Schema.optional(Schema.string),
-
-    /** Optional warning message. */
-    Warnings: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
 }) {}
 
 export class ServiceUpdateResponse extends Schema.Class<ServiceUpdateResponse>()({
@@ -1138,21 +1108,6 @@ export class Runtime extends Schema.Class<Runtime>()({
 
     /** List of command-line arguments to pass to the runtime when invoked. */
     runtimeArgs: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
-
-    /**
-     * Information specific to the runtime.
-     *
-     * While this API specification does not define data provided by runtimes,
-     * the following well-known properties may be provided by runtimes:
-     *
-     * `org.opencontainers.runtime-spec.features`: features structure as defined
-     * in the [OCI Runtime
-     * Specification](https://github.com/opencontainers/runtime-spec/blob/main/features.md),
-     * in a JSON string representation.<p><br /></p>> **Note**: The information
-     * returned in this field, including the> Formatting of values and labels,
-     * should not be considered stable, and may> Change without notice.
-     */
-    status: Schema.optional(Schema.nullable(Schema.record(Schema.string, Schema.string))),
 }) {}
 
 export class Commit extends Schema.Class<Commit>()({
@@ -1288,12 +1243,6 @@ export const ImageSearchResponseItem = Schema.array(
         Schema.struct({
             description: Schema.optional(Schema.string),
             is_official: Schema.optional(Schema.boolean),
-
-            /**
-             * Whether this repository has automated builds enabled.<p><br
-             * /></p>> **Deprecated**: This field is deprecated and will always
-             * be "false"> In future.
-             */
             is_automated: Schema.optional(Schema.boolean),
             name: Schema.optional(Schema.string),
             star_count: Schema.optional(Schema.number),
@@ -1437,6 +1386,14 @@ export class SwarmUnlockRequest extends Schema.Class<SwarmUnlockRequest>()({
     UnlockKey: Schema.optional(Schema.string),
 }) {}
 
+export class ServiceCreateResponse extends Schema.Class<ServiceCreateResponse>()({
+    /** The ID of the created service. */
+    ID: Schema.optional(Schema.string),
+
+    /** Optional warning message */
+    Warning: Schema.optional(Schema.string),
+}) {}
+
 export class Resources extends Schema.Class<Resources>()({
     /**
      * An integer value representing this container's relative CPU weight versus
@@ -1569,13 +1526,13 @@ export class Resources extends Schema.Class<Resources>()({
      * processes. This field is omitted if empty, and the default (as configured
      * on the daemon) is used.
      */
-    Init: Schema.optional(Schema.nullable(Schema.boolean)),
+    Init: Schema.optional(Schema.boolean),
 
     /**
      * Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
      * to not change.
      */
-    PidsLimit: Schema.optional(Schema.nullable(Schema.number)),
+    PidsLimit: Schema.optional(Schema.number),
 
     /**
      * A list of resource limits to set in the container. For example:
@@ -1707,7 +1664,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>()({
     Healthcheck: Schema.optional(Schema.nullable(HealthConfig)),
 
     /** Command is already escaped (Windows only) */
-    ArgsEscaped: Schema.optional(Schema.nullable(Schema.boolean)),
+    ArgsEscaped: Schema.optional(Schema.boolean),
 
     /**
      * The name (or reference) of the image to use when creating the container,
@@ -1734,15 +1691,10 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>()({
     Entrypoint: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
 
     /** Disable networking for the container. */
-    NetworkDisabled: Schema.optional(Schema.nullable(Schema.boolean)),
+    NetworkDisabled: Schema.optional(Schema.boolean),
 
-    /**
-     * MAC address of the container.
-     *
-     * Deprecated: this field is deprecated in API v1.44 and up. Use
-     * EndpointSettings.MacAddress instead.
-     */
-    MacAddress: Schema.optional(Schema.nullable(Schema.string)),
+    /** MAC address of the container. */
+    MacAddress: Schema.optional(Schema.string),
 
     /** `ONBUILD` metadata that were defined in the image's `Dockerfile`. */
     OnBuild: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
@@ -1751,10 +1703,10 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>()({
     Labels: Schema.optional(Schema.nullable(Schema.record(Schema.string, Schema.string))),
 
     /** Signal to stop a container as a string or unsigned integer. */
-    StopSignal: Schema.optional(Schema.nullable(Schema.string)),
+    StopSignal: Schema.optional(Schema.string),
 
     /** Timeout to stop a container in seconds. */
-    StopTimeout: Schema.optional(Schema.nullable(Schema.number)),
+    StopTimeout: Schema.optional(Schema.number),
 
     /** Shell for when `RUN`, `CMD`, and `ENTRYPOINT` uses a shell. */
     Shell: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
@@ -1813,12 +1765,6 @@ export class PushImageInfo extends Schema.Class<PushImageInfo>()({
 export class EndpointSettings extends Schema.Class<EndpointSettings>()({
     IPAMConfig: Schema.optional(Schema.nullable(EndpointIPAMConfig)),
     Links: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
-
-    /**
-     * MAC address for the endpoint on this network. The network driver might
-     * ignore this parameter.
-     */
-    MacAddress: Schema.optional(Schema.string),
     Aliases: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
 
     /** Unique ID of the network. */
@@ -1844,6 +1790,9 @@ export class EndpointSettings extends Schema.Class<EndpointSettings>()({
 
     /** Mask length of the global IPv6 address. */
     GlobalIPv6PrefixLen: Schema.optional(Schema.number),
+
+    /** MAC address for the endpoint on this network. */
+    MacAddress: Schema.optional(Schema.string),
 
     /**
      * DriverOpts is a mapping of driver options and values. These options are
@@ -1960,7 +1909,7 @@ export class ClusterInfo extends Schema.Class<ClusterInfo>()({
     Version: Schema.optional(Schema.nullable(ObjectVersion)),
 
     /**
-     * Date and time at which the swarm was initialized in [RFC
+     * Date and time at which the swarm was initialised in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
     CreatedAt: Schema.optional(Schema.string),
@@ -1996,10 +1945,6 @@ export class ClusterInfo extends Schema.Class<ClusterInfo>()({
     SubnetSize: Schema.optional(Schema.number),
 }) {}
 
-export class PortStatus extends Schema.Class<PortStatus>()({
-    Ports: Schema.optional(Schema.nullable(Schema.array(Schema.nullable(EndpointPortConfig)))),
-}) {}
-
 export enum EndpointSpec_Mode {
     "VIP" = "vip",
     "DNSRR" = "dnsrr",
@@ -2032,19 +1977,7 @@ export class SecretSpec extends Schema.Class<SecretSpec>()({
      * other endpoints.
      */
     Data: Schema.optional(Schema.string),
-
-    /**
-     * Name of the secrets driver used to fetch the secret's value from an
-     * external secret store.
-     */
     Driver: Schema.optional(Schema.nullable(Driver)),
-
-    /**
-     * Templating driver, if applicable
-     *
-     * Templating controls whether and how to evaluate the config payload as a
-     * template. If no driver is set, no templating is used.
-     */
     Templating: Schema.optional(Schema.nullable(Driver)),
 }) {}
 
@@ -2060,13 +1993,6 @@ export class ConfigSpec extends Schema.Class<ConfigSpec>()({
      * 4648](https://tools.ietf.org/html/rfc4648#section-5)) config data.
      */
     Data: Schema.optional(Schema.string),
-
-    /**
-     * Templating driver, if applicable
-     *
-     * Templating controls whether and how to evaluate the config payload as a
-     * template. If no driver is set, no templating is used.
-     */
     Templating: Schema.optional(Schema.nullable(Driver)),
 }) {}
 
@@ -2460,7 +2386,7 @@ export enum HostConfig_1_CgroupnsMode {
 }
 
 export enum HostConfig_1_Isolation {
-    "NONE" = "",
+    "UNKNOWN" = "",
     "DEFAULT" = "default",
     "PROCESS" = "process",
     "HYPERV" = "hyperv",
@@ -2719,11 +2645,7 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
 export class HostConfig extends HostConfig_1.extend<HostConfig>()({}) {}
 
 export class NetworkingConfig extends Schema.Class<NetworkingConfig>()({
-    /**
-     * A mapping of network name to endpoint configuration for that network. The
-     * endpoint configuration can be left empty to connect to that network with
-     * no particular endpoint configuration.
-     */
+    /** A mapping of network name to endpoint configuration for that network. */
     EndpointsConfig: Schema.optional(Schema.nullable(Schema.record(Schema.string, Schema.nullable(EndpointSettings)))),
 }) {}
 
@@ -2887,16 +2809,8 @@ export class ImageInspect extends Schema.Class<ImageInspect>()({
      * The ID of the container that was used to create the image.
      *
      * Depending on how the image was created, this field may be empty.
-     *
-     * _Deprecated_*: this field is kept for backward compatibility, but will be
-     * removed in API v1.45.
      */
     Container: Schema.optional(Schema.string),
-
-    /**
-     * **Deprecated**: this field is kept for backward compatibility, but will
-     * be removed in API v1.45.
-     */
     ContainerConfig: Schema.optional(Schema.nullable(ContainerConfig)),
 
     /**
@@ -2917,7 +2831,7 @@ export class ImageInspect extends Schema.Class<ImageInspect>()({
     Architecture: Schema.optional(Schema.string),
 
     /** CPU architecture variant (presently ARM-only). */
-    Variant: Schema.optional(Schema.nullable(Schema.string)),
+    Variant: Schema.optional(Schema.string),
 
     /** Operating System the image is built to run on. */
     Os: Schema.optional(Schema.string),
@@ -2926,7 +2840,7 @@ export class ImageInspect extends Schema.Class<ImageInspect>()({
      * Operating System version the image is built to run on (especially for
      * Windows).
      */
-    OsVersion: Schema.optional(Schema.nullable(Schema.string)),
+    OsVersion: Schema.optional(Schema.string),
 
     /** Total size of the image including all layers it is composed of. */
     Size: Schema.optional(Schema.number),
@@ -2934,8 +2848,11 @@ export class ImageInspect extends Schema.Class<ImageInspect>()({
     /**
      * Total size of the image including all layers it is composed of.
      *
-     * Deprecated: this field is omitted in API v1.44, but kept for backward
-     * compatibility. Use Size instead.
+     * In versions of Docker before v1.10, this field was calculated from the
+     * image itself and all of its parent images. Images are now stored
+     * self-contained, and no longer use a parent-chain, making this field an
+     * equivalent of the Size field.> **Deprecated**: this field is kept for
+     * backward compatibility, but> Will be removed in API v1.44.
      */
     VirtualSize: Schema.optional(Schema.number),
     GraphDriver: Schema.optional(Schema.nullable(GraphDriverData)),
@@ -2965,7 +2882,7 @@ export class ImageInspect extends Schema.Class<ImageInspect>()({
                  * This information is only available if the image was tagged
                  * locally, and omitted otherwise.
                  */
-                LastTagTime: Schema.optional(Schema.nullable(Schema.string)),
+                LastTagTime: Schema.optional(Schema.string),
             })
         )
     ),
@@ -3013,19 +2930,14 @@ export class NodeDescription extends Schema.Class<NodeDescription>()({
     TLSInfo: Schema.optional(Schema.nullable(TLSInfo)),
 }) {}
 
-export enum TaskSpec_ContainerSpec_Privileges_Seccomp_Mode {
-    "DEFAULT" = "default",
-    "UNCONFINED" = "unconfined",
-    "CUSTOM" = "custom",
-}
+export class Swarm_0 extends ClusterInfo.extend<Swarm_0>()({}) {}
 
-export enum TaskSpec_ContainerSpec_Privileges_AppArmor_Mode {
-    "DEFAULT" = "default",
-    "DISABLED" = "disabled",
-}
+export class Swarm_1 extends Schema.Class<Swarm_1>()({ JoinTokens: Schema.optional(Schema.nullable(JoinTokens)) }) {}
+
+export class Swarm extends Swarm_1.extend<Swarm>()({}) {}
 
 export enum TaskSpec_ContainerSpec_Isolation {
-    "NONE" = "",
+    "UNKNOWN" = "",
     "DEFAULT" = "default",
     "PROCESS" = "process",
     "HYPERV" = "hyperv",
@@ -3188,40 +3100,6 @@ export class TaskSpec extends Schema.Class<TaskSpec>()({
                                     })
                                 )
                             ),
-
-                            /** Options for configuring seccomp on the container */
-                            Seccomp: Schema.optional(
-                                Schema.nullable(
-                                    Schema.struct({
-                                        Mode: Schema.optional(
-                                            Schema.enums(TaskSpec_ContainerSpec_Privileges_Seccomp_Mode)
-                                        ),
-
-                                        /**
-                                         * The custom seccomp profile as a json
-                                         * object
-                                         */
-                                        Profile: Schema.optional(Schema.string),
-                                    })
-                                )
-                            ),
-
-                            /** Options for configuring AppArmor on the container */
-                            AppArmor: Schema.optional(
-                                Schema.nullable(
-                                    Schema.struct({
-                                        Mode: Schema.optional(
-                                            Schema.enums(TaskSpec_ContainerSpec_Privileges_AppArmor_Mode)
-                                        ),
-                                    })
-                                )
-                            ),
-
-                            /**
-                             * Configuration of the no_new_priv bit in the
-                             * container
-                             */
-                            NoNewPrivileges: Schema.optional(Schema.boolean),
                         })
                     )
                 ),
@@ -3419,7 +3297,7 @@ export class TaskSpec extends Schema.Class<TaskSpec>()({
                  * reaps processes. This field is omitted if empty, and the
                  * default (as configured on the daemon) is used.
                  */
-                Init: Schema.optional(Schema.nullable(Schema.boolean)),
+                Init: Schema.optional(Schema.boolean),
 
                 /**
                  * Set kernel namedspaced parameters (sysctls) in the container.
@@ -3493,10 +3371,7 @@ export class TaskSpec extends Schema.Class<TaskSpec>()({
     Resources: Schema.optional(
         Schema.nullable(
             Schema.struct({
-                /** Define resources limits. */
                 Limits: Schema.optional(Schema.nullable(Limit)),
-
-                /** Define resources reservation. */
                 Reservations: Schema.optional(Schema.nullable(ResourceObject)),
             })
         )
@@ -3629,15 +3504,6 @@ export class TaskSpec extends Schema.Class<TaskSpec>()({
             })
         )
     ),
-}) {}
-
-export class TaskStatus extends Schema.Class<TaskStatus>()({
-    Timestamp: Schema.optional(Schema.string),
-    State: Schema.optional(Schema.nullable(Schema.enums(TaskState))),
-    Message: Schema.optional(Schema.string),
-    Err: Schema.optional(Schema.string),
-    ContainerStatus: Schema.optional(Schema.nullable(ContainerStatus)),
-    PortStatus: Schema.optional(Schema.nullable(PortStatus)),
 }) {}
 
 export class ContainerSummary extends Schema.Class<ContainerSummary>()({
@@ -3782,10 +3648,10 @@ export class SwarmInfo extends Schema.Class<SwarmInfo>()({
     RemoteManagers: Schema.optional(Schema.nullable(Schema.array(Schema.nullable(PeerNode)))),
 
     /** Total number of nodes in the swarm. */
-    Nodes: Schema.optional(Schema.nullable(Schema.number)),
+    Nodes: Schema.optional(Schema.number),
 
     /** Total number of managers in the swarm. */
-    Managers: Schema.optional(Schema.nullable(Schema.number)),
+    Managers: Schema.optional(Schema.number),
     Cluster: Schema.optional(Schema.nullable(ClusterInfo)),
 }) {}
 
@@ -3882,7 +3748,14 @@ export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>()({
     /** The network's name. */
     Name: Schema.string,
 
-    /** Deprecated: CheckDuplicate is now always enabled. */
+    /**
+     * Check for networks with duplicate names. Since Network is primarily keyed
+     * based on a random ID and not on the name, and network name is strictly a
+     * user-friendly alias to the network which is uniquely identified using ID,
+     * there is no guaranteed way to check for duplicates. CheckDuplicate is
+     * there to provide a best effort checking of any networks which has the
+     * same name but it is not guaranteed to catch all name collisions.
+     */
     CheckDuplicate: Schema.optional(Schema.boolean),
 
     /** Name of the network driver plugin to use. */
@@ -3902,8 +3775,6 @@ export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>()({
      * mode.
      */
     Ingress: Schema.optional(Schema.boolean),
-
-    /** Optional custom IP scheme for the network. */
     IPAM: Schema.optional(Schema.nullable(IPAM)),
 
     /** Enable IPv6 on the network. */
@@ -4030,14 +3901,26 @@ export class Task extends Schema.Class<Task>()({
     /** The ID of the node that this task is on. */
     NodeID: Schema.optional(Schema.string),
     AssignedGenericResources: Schema.optional(Schema.nullable(GenericResources)),
-    Status: Schema.optional(Schema.nullable(TaskStatus)),
+    Status: Schema.optional(
+        Schema.nullable(
+            Schema.struct({
+                Timestamp: Schema.optional(Schema.string),
+                State: Schema.optional(Schema.nullable(Schema.enums(TaskState))),
+                Message: Schema.optional(Schema.string),
+                Err: Schema.optional(Schema.string),
+                ContainerStatus: Schema.optional(
+                    Schema.nullable(
+                        Schema.struct({
+                            ContainerID: Schema.optional(Schema.string),
+                            PID: Schema.optional(Schema.number),
+                            ExitCode: Schema.optional(Schema.number),
+                        })
+                    )
+                ),
+            })
+        )
+    ),
     DesiredState: Schema.optional(Schema.nullable(Schema.enums(TaskState))),
-
-    /**
-     * If the Service this Task belongs to is a job-mode service, contains the
-     * JobIteration of the Service this Task was created for. Absent if the Task
-     * was created for a Replicated or Global Service.
-     */
     JobIteration: Schema.optional(Schema.nullable(ObjectVersion)),
 }) {}
 
@@ -4196,12 +4079,7 @@ export class ServiceSpec extends Schema.Class<ServiceSpec>()({
         )
     ),
 
-    /**
-     * Specifies which networks the service should attach to.
-     *
-     * Deprecated: This field is deprecated since v1.44. The Networks field in
-     * TaskSpec should be used instead.
-     */
+    /** Specifies which networks the service should attach to. */
     Networks: Schema.optional(Schema.nullable(Schema.array(Schema.nullable(NetworkAttachmentConfig)))),
     EndpointSpec: Schema.optional(Schema.nullable(EndpointSpec)),
 }) {}
@@ -4218,7 +4096,7 @@ export enum SystemInfo_CgroupVersion {
 }
 
 export enum SystemInfo_Isolation {
-    "NONE" = "",
+    "UNKNOWN" = "",
     "DEFAULT" = "default",
     "HYPERV" = "hyperv",
     "PROCESS" = "process",
@@ -4399,7 +4277,7 @@ export class SystemInfo extends Schema.Class<SystemInfo>()({
      *
      * Currently returned values are "linux" and "windows". A full list of
      * possible values can be found in the [Go
-     * documentation](https://go.dev/doc/install/source#environment).
+     * documentation](https://golang.org/doc/install/source#environment).
      */
     OSType: Schema.optional(Schema.string),
 
@@ -4408,7 +4286,7 @@ export class SystemInfo extends Schema.Class<SystemInfo>()({
      * (`GOARCH`).
      *
      * A full list of possible values can be found in the [Go
-     * documentation](https://go.dev/doc/install/source#environment).
+     * documentation](https://golang.org/doc/install/source#environment).
      */
     Architecture: Schema.optional(Schema.string),
 
@@ -4584,21 +4462,6 @@ export class SystemInfo extends Schema.Class<SystemInfo>()({
      * These messages can be printed by the client as information to the user.
      */
     Warnings: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
-
-    /**
-     * List of directories where (Container Device Interface) CDI specifications
-     * are located.
-     *
-     * These specifications define vendor-specific modifications to an OCI
-     * runtime specification for a container being created.
-     *
-     * An empty list indicates that CDI device injection is disabled.
-     *
-     * Note that since using CDI device injection requires the daemon to have
-     * experimental enabled. For non-experimental daemons an empty list will
-     * always be returned.
-     */
-    CDISpecDirs: Schema.optional(Schema.nullable(Schema.array(Schema.string))),
 }) {}
 
 export class ContainerInspectResponse extends Schema.Class<ContainerInspectResponse>()({
@@ -4740,17 +4603,6 @@ export class Service extends Schema.Class<Service>()({
     JobStatus: Schema.optional(
         Schema.nullable(
             Schema.struct({
-                /**
-                 * JobIteration is a value increased each time a Job is
-                 * executed, successfully or otherwise. "Executed", in this
-                 * case, means the job as a whole has been started, not that an
-                 * individual Task has been launched. A job is "Executed" when
-                 * its ServiceSpec is updated. JobIteration can be used to
-                 * disambiguate Tasks belonging to different executions of a
-                 * job. Though JobIteration will increase with each subsequent
-                 * execution, it may not necessarily increase by 1, and so
-                 * JobIteration should not be used to
-                 */
                 JobIteration: Schema.optional(Schema.nullable(ObjectVersion)),
 
                 /**

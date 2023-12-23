@@ -1,4 +1,4 @@
-import { Layer } from "effect";
+import { Effect, Layer } from "effect";
 
 import * as MobyApi from "../src/index.js";
 import { cooldown, warmup } from "./helpers.js";
@@ -13,5 +13,9 @@ describe("MobyApi Exec tests", () => {
         [dindContainerId, testExecsService] = await warmup(MobyApi.Execs.fromConnectionOptions);
     }, 30_000);
 
-    it("Should do something", async () => {});
+    it("Should do something", async () => {
+        await Effect.gen(function* (_: Effect.Adapter) {})
+            .pipe(Effect.provide(testExecsService))
+            .pipe(Effect.runPromise);
+    });
 });
