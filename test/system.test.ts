@@ -1,15 +1,15 @@
 import { Effect, Layer } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { cooldown, warmup } from "./helpers.js";
+import { AfterAll, BeforeAll } from "./helpers.js";
 
 let dindContainerId: string = undefined!;
 let testSystemService: Layer.Layer<never, never, MobyApi.System.Systems> = undefined!;
 
 describe("MobyApi System tests", () => {
-    afterAll(async () => await cooldown(dindContainerId), 30_000);
+    afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testSystemService] = await warmup(MobyApi.System.fromConnectionOptions);
+        [dindContainerId, testSystemService] = await BeforeAll(MobyApi.System.fromConnectionOptions);
     }, 30_000);
 
     it("Should ping the docker daemon", async () => {

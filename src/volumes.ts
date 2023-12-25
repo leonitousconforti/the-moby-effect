@@ -33,7 +33,7 @@ export interface VolumeListOptions {
     readonly filters?: {
         label?: string[] | undefined;
         name?: [string] | undefined;
-        driver?: string[] | undefined;
+        driver?: [string] | undefined;
         dangling?: ["true" | "false" | "1" | "0"] | undefined;
     };
 }
@@ -180,7 +180,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         ): Effect.Effect<never, VolumesError, VolumeListResponse> =>
             pipe(
                 NodeHttp.request.get(""),
-                addQueryParameter("filters", JSON.stringify(options?.filters ?? {})),
+                addQueryParameter("filters", JSON.stringify(options?.filters)),
                 VolumeListResponseClient,
                 Effect.catchAll(responseHandler("list"))
             );

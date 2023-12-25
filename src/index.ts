@@ -37,7 +37,27 @@ export * as System from "./system.js";
 export * as Tasks from "./tasks.js";
 export * as Volumes from "./volumes.js";
 
-export const layer = Layer.mergeAll(
+export type MobyApi = Layer.Layer<
+    never,
+    never,
+    | Configs.Configs
+    | Containers.Containers
+    | Distributions.Distributions
+    | Execs.Execs
+    | Images.Images
+    | Networks.Networks
+    | Nodes.Nodes
+    | Plugins.Plugins
+    | Secrets.Secrets
+    | Services.Services
+    | Sessions.Sessions
+    | Swarm.Swarms
+    | System.Systems
+    | Tasks.Tasks
+    | Volumes.Volumes
+>;
+
+const layer = Layer.mergeAll(
     Configs.layer,
     Containers.layer,
     Distributions.layer,
@@ -55,8 +75,8 @@ export const layer = Layer.mergeAll(
     Volumes.layer
 );
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, AgentHelpers.IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, AgentHelpers.IMobyConnectionAgent>): MobyApi =>
     layer.pipe(Layer.provide(Layer.scoped(AgentHelpers.MobyConnectionAgent, agent)));
 
-export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnectionOptions) =>
+export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnectionOptions): MobyApi =>
     fromAgent(AgentHelpers.getAgent(connectionOptions));

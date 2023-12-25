@@ -4,7 +4,7 @@ import * as NodeFs from "@effect/platform-node/FileSystem";
 import { Effect, Schedule } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { COOLDOWN_TIMEOUT, WARMUP_TIMEOUT } from "./helpers.js";
+import { AFTER_ALL_TIMEOUT, BEFORE_ALL_TIMEOUT } from "./helpers.js";
 
 /** The ID of the dind docker container we can test against on the host. */
 let testDindContainerId: string = undefined!;
@@ -14,10 +14,10 @@ let testDindContainerHttpsPort: string = undefined!;
 let testDindContainerHttpsCertDirectory: string = undefined!;
 
 /** Connects to the local docker daemon on this host. */
-const localConnectionOptions: MobyApi.MobyConnectionOptions = {
+const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "unix",
     socketPath: "/var/run/docker.sock",
-};
+});
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
@@ -51,10 +51,9 @@ beforeAll(
             testDindContainerHttpsPort = containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort!;
         })
             .pipe(Effect.provide(NodeFs.layer))
-            .pipe(Effect.provide(MobyApi.Images.fromConnectionOptions(localConnectionOptions)))
-            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
+            .pipe(Effect.provide(localDocker))
             .pipe(Effect.runPromise),
-    WARMUP_TIMEOUT
+    BEFORE_ALL_TIMEOUT
 );
 
 /** Cleans up the container that will be created in the setup helper. */
@@ -67,9 +66,9 @@ afterAll(
             yield* _(fsService.remove(testDindContainerHttpsCertDirectory!, { recursive: true }));
         })
             .pipe(Effect.provide(NodeFs.layer))
-            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
+            .pipe(Effect.provide(localDocker))
             .pipe(Effect.runPromise),
-    COOLDOWN_TIMEOUT
+    AFTER_ALL_TIMEOUT
 );
 
 describe("MobyApi https agent tests", () => {

@@ -1,17 +1,17 @@
 import { Effect, Schedule } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { COOLDOWN_TIMEOUT, WARMUP_TIMEOUT } from "./helpers.js";
+import { AFTER_ALL_TIMEOUT, AfterAll, BEFORE_ALL_TIMEOUT } from "./helpers.js";
 
 /** The ID of the dind docker container we can test against on the host. */
 let testDindContainerId: string = undefined!;
 let testDindContainerHttpPort: string = undefined!;
 
 /** Connects to the local docker daemon on this host. */
-const localConnectionOptions: MobyApi.MobyConnectionOptions = {
+const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "unix",
     socketPath: "/var/run/docker.sock",
-};
+});
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
@@ -41,22 +41,13 @@ beforeAll(
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerHttpPort = containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!;
         })
-            .pipe(Effect.provide(MobyApi.Images.fromConnectionOptions(localConnectionOptions)))
-            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
+            .pipe(Effect.provide(localDocker))
             .pipe(Effect.runPromise),
-    WARMUP_TIMEOUT
+    BEFORE_ALL_TIMEOUT
 );
 
 /** Cleans up the container that will be created in the setup helper. */
-afterAll(
-    async () =>
-        MobyApi.Containers.Containers.pipe(
-            Effect.flatMap((containers) => containers.delete({ id: testDindContainerId, force: true }))
-        )
-            .pipe(Effect.provide(MobyApi.Containers.fromConnectionOptions(localConnectionOptions)))
-            .pipe(Effect.runPromise),
-    COOLDOWN_TIMEOUT
-);
+afterAll(async () => await AfterAll(testDindContainerId), AFTER_ALL_TIMEOUT);
 
 describe("MobyApi http agent tests", () => {
     it("http agent should be able to ping docker", async () => {

@@ -1,15 +1,15 @@
 import { Effect, Layer } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { cooldown, warmup } from "./helpers.js";
+import { AfterAll, BeforeAll } from "./helpers.js";
 
 let dindContainerId: string = undefined!;
 let testSecretsService: Layer.Layer<never, never, MobyApi.Secrets.Secrets> = undefined!;
 
 describe("MobyApi Secrets tests", () => {
-    afterAll(async () => await cooldown(dindContainerId), 30_000);
+    afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testSecretsService] = await warmup(MobyApi.Secrets.fromConnectionOptions);
+        [dindContainerId, testSecretsService] = await BeforeAll(MobyApi.Secrets.fromConnectionOptions);
     }, 30_000);
 
     it("Should see no secrets", async () => {

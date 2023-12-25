@@ -1,11 +1,11 @@
 import url from "node:url";
 import tar from "tar-fs";
 
-import { Chunk, Effect, Layer, Stream } from "effect";
+import { Chunk, Effect, Stream } from "effect";
 
 import * as MobyApi from "../src/index.js";
 
-const localImages: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.Images.fromConnectionOptions({
+const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "unix",
     socketPath: "/var/run/docker.sock",
 });
@@ -65,5 +65,5 @@ await Effect.gen(function* (_: Effect.Adapter) {
     // You could fold/iterate over the stream here too if you wanted progress events in real time
     return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.join(""))));
 })
-    .pipe(Effect.provide(localImages))
+    .pipe(Effect.provide(localDocker))
     .pipe(Effect.runPromise);

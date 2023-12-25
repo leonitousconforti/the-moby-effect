@@ -3,22 +3,20 @@ import { Effect, Layer, Schedule } from "effect";
 import * as MobyApi from "../src/index.js";
 
 /** Connects to the local docker daemon on this host. */
-const localConnectionOptions: MobyApi.MobyConnectionOptions = {
+const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "unix",
     socketPath: "/var/run/docker.sock",
-};
-const localImagesService = MobyApi.Images.fromConnectionOptions(localConnectionOptions);
-const localContainersService = MobyApi.Containers.fromConnectionOptions(localConnectionOptions);
+});
 
-export const WARMUP_TIMEOUT = 30_000;
-export const COOLDOWN_TIMEOUT = 30_000;
+export const BEFORE_ALL_TIMEOUT = 30_000;
+export const AFTER_ALL_TIMEOUT = 30_000;
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
  * container on the host so that we have something to test the api against
  * without needing to mess with the host docker install too much.
  */
-export const warmup = <
+export const BeforeAll = <
     T extends
         | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Configs.Configs>)
         | ((
@@ -92,12 +90,11 @@ export const warmup = <
         const testService = forService(connectionOptions) as ReturnType<T>;
         return [containerInspectResponse.Id!, testService, connectionOptions] as const;
     })
-        .pipe(Effect.provide(localImagesService))
-        .pipe(Effect.provide(localContainersService))
+        .pipe(Effect.provide(localDocker))
         .pipe(Effect.runPromise);
 
 /** Cleans up the container that will be created in the setup helper. */
-export const cooldown = (id: string) =>
+export const AfterAll = (id: string) =>
     MobyApi.Containers.Containers.pipe(Effect.flatMap((containers) => containers.delete({ id, force: true })))
-        .pipe(Effect.provide(localContainersService))
+        .pipe(Effect.provide(localDocker))
         .pipe(Effect.runPromise);

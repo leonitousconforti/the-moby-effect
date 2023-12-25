@@ -1,15 +1,15 @@
 import { Effect, Layer } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { cooldown, warmup } from "./helpers.js";
+import { AfterAll, BeforeAll } from "./helpers.js";
 
 let dindContainerId: string = undefined!;
 let testNetworksService: Layer.Layer<never, never, MobyApi.Networks.Networks> = undefined!;
 
 describe("MobyApi Networks tests", () => {
-    afterAll(async () => await cooldown(dindContainerId), 30_000);
+    afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testNetworksService] = await warmup(MobyApi.Networks.fromConnectionOptions);
+        [dindContainerId, testNetworksService] = await BeforeAll(MobyApi.Networks.fromConnectionOptions);
     }, 30_000);
 
     it("Should list all the networks", async () => {

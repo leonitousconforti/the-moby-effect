@@ -7,15 +7,16 @@ export enum Port_Type {
 }
 
 export class Port extends Schema.Class<Port>()({
-    /** Host IP address that the container's port is mapped to */
-    IP: Schema.optional(Schema.string),
+    Type: Schema.enums(Port_Type),
 
     /** Port on the container */
     PrivatePort: Schema.number,
 
+    /** Host IP address that the container's port is mapped to */
+    IP: Schema.optional(Schema.string),
+
     /** Port exposed on the host */
     PublicPort: Schema.optional(Schema.number),
-    Type: Schema.enums(Port_Type),
 }) {}
 
 export enum MountPoint_Type {
@@ -876,7 +877,7 @@ export class SwarmSpec extends Schema.Class<SwarmSpec>()({
                             Name: Schema.optional(Schema.string),
 
                             /**
-                             * Driver-specific options for the selectd log
+                             * Driver-specific options for the selected log
                              * driver, specified as key/value pairs.
                              */
                             Options: Schema.optional(Schema.nullable(Schema.record(Schema.string, Schema.string))),
@@ -1909,7 +1910,7 @@ export class ClusterInfo extends Schema.Class<ClusterInfo>()({
     Version: Schema.optional(Schema.nullable(ObjectVersion)),
 
     /**
-     * Date and time at which the swarm was initialised in [RFC
+     * Date and time at which the swarm was initialized in [RFC
      * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
      */
     CreatedAt: Schema.optional(Schema.string),

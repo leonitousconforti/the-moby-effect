@@ -1,7 +1,7 @@
 import { Effect, Layer, Stream } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { cooldown, warmup } from "./helpers.js";
+import { AfterAll, BeforeAll } from "./helpers.js";
 
 let dindContainerId: string = undefined!;
 let dindConnectionOptions: MobyApi.MobyConnectionOptions = undefined!;
@@ -9,9 +9,9 @@ let testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = undefi
 let testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> = undefined!;
 
 describe("MobyApi Containers tests", () => {
-    afterAll(async () => await cooldown(dindContainerId), 30_000);
+    afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testContainersService, dindConnectionOptions] = await warmup(
+        [dindContainerId, testContainersService, dindConnectionOptions] = await BeforeAll(
             MobyApi.Containers.fromConnectionOptions
         );
         testImagesService = MobyApi.Images.fromConnectionOptions(dindConnectionOptions);

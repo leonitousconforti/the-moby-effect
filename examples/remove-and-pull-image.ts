@@ -1,8 +1,8 @@
-import { Chunk, Console, Effect, Layer, Stream } from "effect";
+import { Chunk, Console, Effect, Stream } from "effect";
 
 import * as MobyApi from "../src/index.js";
 
-const localImages: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.Images.fromConnectionOptions({
+const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "unix",
     socketPath: "/var/run/docker.sock",
 });
@@ -21,8 +21,10 @@ const localImages: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.Im
 await Effect.gen(function* (_: Effect.Adapter) {
     const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
+    // Delete the image if it exists already
     yield* _(images.delete({ name: "hello-world" }));
 
+    // Pull the image using the images service
     const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
         images.create({ fromImage: "docker.io/library/hello-world:latest" })
     );
@@ -31,5 +33,5 @@ await Effect.gen(function* (_: Effect.Adapter) {
     const data: string = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
     yield* _(Console.log(data));
 })
-    .pipe(Effect.provide(localImages))
+    .pipe(Effect.provide(localDocker))
     .pipe(Effect.runPromise);
