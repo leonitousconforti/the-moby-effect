@@ -26,7 +26,7 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 
 ## Compatibility
 
-the-moby-effect targets the current stable version of the docker api, which is v1.43 at the time of writing. If you are curious what that translates to for docker versions then take a look at [this](https://docs.docker.com/engine/api/#api-version-matrix) api version matrix published by Docker. As stated in the api version matrix, only Docker v24.0 would be officially supported by the-moby-effect, however, we still test against docker v20, v23, v24, and the next release candidate which is v25 (there is no v21 or v22 btw). Here is another note from Docker:
+the-moby-effect targets the current stable version of the moby api, which is v1.43 at the time of writing. If you are curious what that translates to for docker versions then take a look at [this](https://docs.docker.com/engine/api/#api-version-matrix) api version matrix published by Docker. As stated in the api version matrix, only Docker v24.0 would be officially supported by the-moby-effect, however, we still test against docker v20, v23, v24, and the next release candidate which is v25 (there is no v21 or v22 btw). Here is another note from Docker:
 
 "The Docker daemon and client don't necessarily need to be the same version at all times. However, keep the following in mind":
 1. "If the daemon is newer than the client, the client doesn't know about new features or deprecated API endpoints in the daemon" (shouldn't really happen because the-moby-effect will always target the latest stable api version)
