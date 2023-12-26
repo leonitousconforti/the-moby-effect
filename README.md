@@ -10,7 +10,7 @@ Moby Daemon API client built using [effect-ts](http://effect.website). If you wa
 - [x] - streaming (just like [dockerode](https://github.com/apocas/dockerode), streams are passed directly through to you)
 - [x] - tests, examples, and in-line JSDoc comments based on the moby api documentation
 - [x] - Strong focus on types and typescript support
-- [ ] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __Currently only docker is tested against__
+- [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __currently only docker is tested against__
 
 ## Non-Goals
 
