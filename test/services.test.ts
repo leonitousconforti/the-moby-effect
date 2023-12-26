@@ -1,15 +1,19 @@
 import { Effect, Layer } from "effect";
 
 import * as MobyApi from "../src/index.js";
-import { AfterAll, BeforeAll } from "./helpers.js";
+import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
 
 let dindContainerId: string = undefined!;
+let dindStorageVolumeName: string = undefined!;
 let testServicesService: Layer.Layer<never, never, MobyApi.Services.Services> = undefined!;
 
-describe.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Services tests", (dindTag) => {
-    afterAll(async () => await AfterAll(dindContainerId), 30_000);
+describe.each(testEngines)("MobyApi Services tests", (image) => {
+    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testServicesService] = await BeforeAll(dindTag, MobyApi.Services.fromConnectionOptions);
+        [dindContainerId, dindStorageVolumeName, testServicesService] = await BeforeAll(
+            image,
+            MobyApi.Services.fromConnectionOptions
+        );
     }, 30_000);
 
     it("Should see no services", async () => {

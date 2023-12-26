@@ -11,6 +11,14 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 export const BEFORE_ALL_TIMEOUT = 30_000;
 export const AFTER_ALL_TIMEOUT = 30_000;
 
+export const testEngines = [
+    "docker.io/library/docker:20-dind",
+    "docker.io/library/docker:23-dind",
+    "docker.io/library/docker:24-dind",
+    "docker.io/library/docker:25-rc-dind",
+    "docker.io/library/docker:dind",
+];
+
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
  * container on the host so that we have something to test the api against
@@ -38,23 +46,35 @@ export const BeforeAll = <
         | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Tasks.Tasks>)
         | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Volumes.Volumes>),
 >(
-    dindTag: string,
+    image: string,
     forService: T
 ): Promise<
-    Readonly<[dindContainerId: string, testService: ReturnType<T>, connectionOptions: MobyApi.MobyConnectionOptions]>
+    Readonly<
+        [
+            dindContainerId: string,
+            dindVolumeId: string,
+            testService: ReturnType<T>,
+            connectionOptions: MobyApi.MobyConnectionOptions,
+        ]
+    >
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
-        const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
+        const volumes: MobyApi.Volumes.Volumes = yield* _(MobyApi.Volumes.Volumes);
+        const volumeCreateResponse: Readonly<MobyApi.Schemas.Volume> = yield* _(volumes.create({}));
+
+        const containerInspectResponse: Readonly<MobyApi.Schemas.ContainerInspectResponse> = yield* _(
             MobyApi.run({
-                imageOptions: { kind: "pull", fromImage: `docker.io/library/docker:${dindTag}` },
+                imageOptions: { kind: "pull", fromImage: image },
                 containerOptions: {
                     spec: {
-                        Image: `docker:${dindTag}`,
+                        Image: image,
                         Env: ["DOCKER_TLS_CERTDIR="],
                         Cmd: ["--tls=false"],
+                        Volumes: { "/var/lib/docker": {} },
                         HostConfig: {
                             Privileged: true,
                             PortBindings: { "2375/tcp": [{ HostPort: "0" }], "2376/tcp": [{ HostPort: "0" }] },
+                            Binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],
                         },
                     },
                 },
@@ -89,13 +109,19 @@ export const BeforeAll = <
         );
 
         const testService = forService(connectionOptions) as ReturnType<T>;
-        return [containerInspectResponse.Id!, testService, connectionOptions] as const;
+        return [containerInspectResponse.Id!, volumeCreateResponse.Name, testService, connectionOptions] as const;
     })
         .pipe(Effect.provide(localDocker))
         .pipe(Effect.runPromise);
 
 /** Cleans up the container that will be created in the setup helper. */
-export const AfterAll = (id: string) =>
-    MobyApi.Containers.Containers.pipe(Effect.flatMap((containers) => containers.delete({ id, force: true })))
+export const AfterAll = (containerId: string, volumeName: string) =>
+    Effect.gen(function* (_: Effect.Adapter) {
+        const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
+        yield* _(containers.delete({ id: containerId, force: true }));
+
+        const volumes: MobyApi.Volumes.Volumes = yield* _(MobyApi.Volumes.Volumes);
+        yield* _(volumes.delete({ name: volumeName, force: true }));
+    })
         .pipe(Effect.provide(localDocker))
         .pipe(Effect.runPromise);

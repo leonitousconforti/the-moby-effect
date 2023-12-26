@@ -5,6 +5,7 @@ import { AFTER_ALL_TIMEOUT, AfterAll, BEFORE_ALL_TIMEOUT } from "./helpers.js";
 
 /** The ID of the dind docker container we can test against on the host. */
 let testDindContainerId: string = undefined!;
+let dindStorageVolumeName: string = undefined!;
 let testDindContainerHttpPort: string = undefined!;
 
 /** Connects to the local docker daemon on this host. */
@@ -21,6 +22,9 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 beforeAll(
     async () =>
         await Effect.gen(function* (_: Effect.Adapter) {
+            const volumes: MobyApi.Volumes.Volumes = yield* _(MobyApi.Volumes.Volumes);
+            const volumeCreateResponse: Readonly<MobyApi.Schemas.Volume> = yield* _(volumes.create({}));
+
             const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
                 MobyApi.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
@@ -29,15 +33,18 @@ beforeAll(
                             Image: "docker:dind",
                             Env: ["DOCKER_TLS_CERTDIR="],
                             Cmd: ["--tls=false"],
+                            Volumes: { "/var/lib/docker": {} },
                             HostConfig: {
                                 Privileged: true,
                                 PortBindings: { "2375/tcp": [{ HostPort: "0" }], "2376/tcp": [{ HostPort: "0" }] },
+                                Binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],
                             },
                         },
                     },
                 })
             );
 
+            dindStorageVolumeName = volumeCreateResponse.Name;
             testDindContainerId = containerInspectResponse.Id!;
             testDindContainerHttpPort = containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!;
         })
@@ -47,7 +54,7 @@ beforeAll(
 );
 
 /** Cleans up the container that will be created in the setup helper. */
-afterAll(async () => await AfterAll(testDindContainerId), AFTER_ALL_TIMEOUT);
+afterAll(async () => await AfterAll(testDindContainerId, dindStorageVolumeName), AFTER_ALL_TIMEOUT);
 
 describe("MobyApi http agent tests", () => {
     it("http agent should be able to ping docker", async () => {
