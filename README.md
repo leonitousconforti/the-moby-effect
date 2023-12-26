@@ -22,13 +22,13 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 - Finish tests
 - Add more examples
 - Maybe add tests against something else other than docker like podman?
-- Patch upstream @effect/platform-node to support just streaming responses: [upstream pr](https://github.com/Effect-TS/platform/pull/375)
+- Patch upstream @effect/platform-node to support just streaming responses, needed for session and container attach endpoints: [upstream pr](https://github.com/Effect-TS/platform/pull/375)
 
 ## Compatibility
 
-the-moby-effect targets the current stable version of the docker api as its main testing target, which is v1.43 at the time of writing. If you are curious what that translates to for docker versions then take a look at [this](https://docs.docker.com/engine/api/#api-version-matrix) api version matrix published by Docker. As stated in the api version matrix, only Docker v24.0 would be officially supported by the-moby-effect, however, we still test against docker v20, v23, v24, latest, and the next release candidate. Here is another note from Docker:
+the-moby-effect targets the current stable version of the docker api, which is v1.43 at the time of writing. If you are curious what that translates to for docker versions then take a look at [this](https://docs.docker.com/engine/api/#api-version-matrix) api version matrix published by Docker. As stated in the api version matrix, only Docker v24.0 would be officially supported by the-moby-effect, however, we still test against docker v20, v23, v24, latest, and the next release candidate. Here is another note from Docker:
 
-The Docker daemon and client don't necessarily need to be the same version at all times. However, keep the following in mind:
+"The Docker daemon and client don't necessarily need to be the same version at all times. However, keep the following in mind":
 1. "If the daemon is newer than the client, the client doesn't know about new features or deprecated API endpoints in the daemon" (shouldn't really happen because the-moby-effect will always target the latest stable api version)
 2. "If the client is newer than the daemon, the client can request API endpoints that the daemon doesn't know about" (this could happen, although most of the endpoints are pretty stable at this point so its more like an endpoint parameter might change).
 
@@ -36,4 +36,4 @@ The only compatibility issue found so far is that when using the-moby-effect wit
 
 ## Contributing and getting help
 
-Contributions, suggestions, and questions are welcome!
+Contributions, suggestions, and questions are welcome! I'll accept prs and look at issues/discussion here but if you want more direct and probably quicker communication you can find me in the [effect discord](https://discord.gg/effect-ts) as @leonitous
