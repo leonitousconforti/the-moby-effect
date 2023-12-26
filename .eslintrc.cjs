@@ -35,12 +35,6 @@ module.exports = {
                 "unicorn/prevent-abbreviations": "off",
             },
         },
-        {
-            files: ["./examples/**/*.ts"],
-            rules: {
-                "no-console": "off",
-            },
-        },
     ],
     ignorePatterns: ["dist/", ".eslintrc.cjs"],
 };
