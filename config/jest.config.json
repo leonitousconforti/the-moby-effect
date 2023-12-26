@@ -3,6 +3,7 @@
     "roots": ["<rootDir>/dist"],
     "testMatch": ["<rootDir>/dist/test/*.test.js"],
     "collectCoverageFrom": ["<rootDir>/dist/src/*.js"],
+    "globalSetup": "<rootDir>/dist/test/setup.js",
     "collectCoverage": true,
     "coverageProvider": "v8"
 }
