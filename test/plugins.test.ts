@@ -6,10 +6,10 @@ import { AfterAll, BeforeAll } from "./helpers.js";
 let dindContainerId: string = undefined!;
 let testPluginsService: Layer.Layer<never, never, MobyApi.Plugins.Plugins> = undefined!;
 
-describe.skip("MobyApi Plugins tests", () => {
+describe.skip.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Plugins tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testPluginsService] = await BeforeAll(MobyApi.Plugins.fromConnectionOptions);
+        [dindContainerId, testPluginsService] = await BeforeAll(dindTag, MobyApi.Plugins.fromConnectionOptions);
     }, 30_000);
 
     it("Should see no plugins", async () => {
@@ -27,7 +27,10 @@ describe.skip("MobyApi Plugins tests", () => {
         await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) =>
-                    plugins.pull({ remote: "docker.io/grafana/loki-docker-driver:main", name: "test-plugin:latest" })
+                    plugins.pull({
+                        remote: "docker.io/grafana/loki-docker-driver:main",
+                        name: "test-plugin:latest",
+                    })
                 ),
                 testPluginsService
             )
@@ -55,7 +58,10 @@ describe.skip("MobyApi Plugins tests", () => {
         await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) =>
-                    plugins.upgrade({ remote: "docker.io/grafana/loki-docker-driver:main", name: "test-plugin:latest" })
+                    plugins.upgrade({
+                        remote: "docker.io/grafana/loki-docker-driver:main",
+                        name: "test-plugin:latest",
+                    })
                 ),
                 testPluginsService
             )

@@ -6,10 +6,10 @@ import { AfterAll, BeforeAll } from "./helpers.js";
 let dindContainerId: string = undefined!;
 let testSecretsService: Layer.Layer<never, never, MobyApi.Secrets.Secrets> = undefined!;
 
-describe("MobyApi Secrets tests", () => {
+describe.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Secrets tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testSecretsService] = await BeforeAll(MobyApi.Secrets.fromConnectionOptions);
+        [dindContainerId, testSecretsService] = await BeforeAll(dindTag, MobyApi.Secrets.fromConnectionOptions);
     }, 30_000);
 
     it("Should see no secrets", async () => {

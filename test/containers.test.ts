@@ -8,10 +8,11 @@ let dindConnectionOptions: MobyApi.MobyConnectionOptions = undefined!;
 let testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = undefined!;
 let testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> = undefined!;
 
-describe("MobyApi Containers tests", () => {
+describe.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Containers tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
         [dindContainerId, testContainersService, dindConnectionOptions] = await BeforeAll(
+            dindTag,
             MobyApi.Containers.fromConnectionOptions
         );
         testImagesService = MobyApi.Images.fromConnectionOptions(dindConnectionOptions);

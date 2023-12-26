@@ -6,10 +6,10 @@ import { AfterAll, BeforeAll } from "./helpers.js";
 let dindContainerId: string = undefined!;
 let testSystemService: Layer.Layer<never, never, MobyApi.System.Systems> = undefined!;
 
-describe("MobyApi System tests", () => {
+describe.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi System tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testSystemService] = await BeforeAll(MobyApi.System.fromConnectionOptions);
+        [dindContainerId, testSystemService] = await BeforeAll(dindTag, MobyApi.System.fromConnectionOptions);
     }, 30_000);
 
     it("Should ping the docker daemon", async () => {

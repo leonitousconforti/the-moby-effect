@@ -6,10 +6,10 @@ import { AfterAll, BeforeAll } from "./helpers.js";
 let dindContainerId: string = undefined!;
 let testSwarmService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = undefined!;
 
-describe("MobyApi Swarm tests", () => {
+describe.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Swarm tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testSwarmService] = await BeforeAll(MobyApi.Swarm.fromConnectionOptions);
+        [dindContainerId, testSwarmService] = await BeforeAll(dindTag, MobyApi.Swarm.fromConnectionOptions);
     }, 30_000);
 
     it("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", async () => {

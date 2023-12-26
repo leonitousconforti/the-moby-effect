@@ -38,6 +38,7 @@ export const BeforeAll = <
         | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Tasks.Tasks>)
         | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Volumes.Volumes>),
 >(
+    dindTag: string,
     forService: T
 ): Promise<
     Readonly<[dindContainerId: string, testService: ReturnType<T>, connectionOptions: MobyApi.MobyConnectionOptions]>
@@ -45,10 +46,10 @@ export const BeforeAll = <
     Effect.gen(function* (_: Effect.Adapter) {
         const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
             MobyApi.run({
-                imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
+                imageOptions: { kind: "pull", fromImage: `docker.io/library/docker:${dindTag}` },
                 containerOptions: {
                     spec: {
-                        Image: "docker:dind",
+                        Image: `docker:${dindTag}`,
                         Env: ["DOCKER_TLS_CERTDIR="],
                         Cmd: ["--tls=false"],
                         HostConfig: {

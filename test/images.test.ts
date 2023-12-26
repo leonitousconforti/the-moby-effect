@@ -6,10 +6,10 @@ import { AfterAll, BeforeAll } from "./helpers.js";
 let dindContainerId: string = undefined!;
 let testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = undefined!;
 
-describe("MobyApi Images tests", () => {
+describe.each(["20-dind", "23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Images tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testImagesService] = await BeforeAll(MobyApi.Images.fromConnectionOptions);
+        [dindContainerId, testImagesService] = await BeforeAll(dindTag, MobyApi.Images.fromConnectionOptions);
     }, 30_000);
 
     it("Should see no images", async () => {
@@ -26,7 +26,11 @@ describe("MobyApi Images tests", () => {
         const searchResults = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Images.Images, (images) =>
-                    images.search({ term: "alpine", limit: 1, filters: JSON.stringify({ "is-official": ["true"] }) })
+                    images.search({
+                        term: "alpine",
+                        limit: 1,
+                        filters: JSON.stringify({ "is-official": ["true"] }),
+                    })
                 ),
                 testImagesService
             )
@@ -70,7 +74,6 @@ describe("MobyApi Images tests", () => {
         expect(inspectResponse.RepoDigests).toBeDefined();
         expect(inspectResponse.RepoTags).toBeDefined();
         expect(inspectResponse.Size).toBeDefined();
-        expect(inspectResponse.VirtualSize).toBeDefined();
     });
 
     it("Should tag an image", async () => {

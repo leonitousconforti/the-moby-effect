@@ -6,10 +6,11 @@ import { AfterAll, BeforeAll } from "./helpers.js";
 let dindContainerId: string = undefined!;
 let testVolumesService: Layer.Layer<never, never, MobyApi.Volumes.Volumes> = undefined!;
 
-describe("MobyApi Volumes tests", () => {
+// FIXME: either drop 20-dind from all the other test suites or try to fix it here
+describe.each(["23-dind", "24-dind", "25-rc-dind", "dind"])("MobyApi Volumes tests", (dindTag) => {
     afterAll(async () => await AfterAll(dindContainerId), 30_000);
     beforeAll(async () => {
-        [dindContainerId, testVolumesService] = await BeforeAll(MobyApi.Volumes.fromConnectionOptions);
+        [dindContainerId, testVolumesService] = await BeforeAll(dindTag, MobyApi.Volumes.fromConnectionOptions);
     }, 30_000);
 
     it("Should see no volumes", async () => {
