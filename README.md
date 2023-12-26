@@ -36,4 +36,4 @@ The only compatibility issue found so far is that when using the-moby-effect wit
 
 ## Contributing and getting help
 
-Contributions, suggestions, and questions are welcome! I'll accept prs and look at issues/discussion here but if you want more direct and probably quicker communication you can find me in the [effect discord](https://discord.gg/effect-ts) as @leonitous
+Contributions, suggestions, and questions are welcome! I'll review prs and respond to issues/discussion here on GitHub but if you want more direct and probably quicker communication you can find me in the [effect discord](https://discord.gg/effect-ts) as @leonitous
