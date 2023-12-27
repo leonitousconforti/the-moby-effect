@@ -2,7 +2,7 @@ import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeRuntime from "@effect/platform-node/Runtime";
 import * as NodeSink from "@effect/platform-node/Sink";
 import * as NodeStream from "@effect/platform-node/Stream";
-import { Data, Effect, Stream, pipe } from "effect";
+import { Console, Data, Effect, Stream, pipe } from "effect";
 
 import * as MobyApi from "../src/index.js";
 
@@ -62,8 +62,8 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         )
     );
 
-    console.log("Disconnected from container");
-    console.log(`Removing container ${containerName}...`);
+    yield* _(Console.log("Disconnected from container"));
+    yield* _(Console.log(`Removing container ${containerName}...`));
     yield* _(containers.delete({ id: containerId!, force: true }));
 });
 

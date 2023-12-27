@@ -1,3 +1,4 @@
+import * as NodeRuntime from "@effect/platform-node/Runtime";
 import { Chunk, Console, Effect, Stream } from "effect";
 
 import * as MobyApi from "../src/index.js";
@@ -18,11 +19,8 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"status":"Pull complete","progressDetail":{},"id":"719385e32844"}
 // {"status":"Digest: sha256:c79d06dfdfd3d3eb04cafd0dc2bacab0992ebc243e083cabe208bac4dd7759e0"}
 // {"status":"Status: Downloaded newer image for hello-world:latest"}
-await Effect.gen(function* (_: Effect.Adapter) {
+const program = Effect.gen(function* (_: Effect.Adapter) {
     const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
-
-    // Delete the image if it exists already
-    yield* _(images.delete({ name: "hello-world" }));
 
     // Pull the image using the images service
     const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
@@ -32,6 +30,9 @@ await Effect.gen(function* (_: Effect.Adapter) {
     // You could fold/iterate over the stream here too if you wanted progress events in real time
     const data: string = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
     yield* _(Console.log(data));
-})
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.runPromise);
+
+    // Delete the image
+    yield* _(images.delete({ name: "hello-world" }));
+});
+
+program.pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

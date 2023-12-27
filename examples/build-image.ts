@@ -1,7 +1,8 @@
 import url from "node:url";
 import tar from "tar-fs";
 
-import { Chunk, Effect, Stream } from "effect";
+import * as NodeRuntime from "@effect/platform-node/Runtime";
+import { Chunk, Console, Effect, Stream } from "effect";
 
 import * as MobyApi from "../src/index.js";
 
@@ -40,12 +41,13 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"aux":{"ID":"sha256:b6548eacb0639263e9d8abfee48f8ac8b327102a05335b67572f715c580a968e"}}
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
-await Effect.gen(function* (_: Effect.Adapter) {
+const program = Effect.gen(function* (_: Effect.Adapter) {
     const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
     const buildStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
         images.build({
             t: "mydockerimage:latest",
+            // FIXME: I really dislike have to do stream.orDie here
             stream: Stream.orDie(
                 Stream.fromAsyncIterable(
                     tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
@@ -64,6 +66,6 @@ await Effect.gen(function* (_: Effect.Adapter) {
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
     return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.join(""))));
-})
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.runPromise);
+});
+
+program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
