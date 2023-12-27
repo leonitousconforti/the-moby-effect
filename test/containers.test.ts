@@ -68,6 +68,8 @@ describe.each(testEngines)("MobyApi Containers tests", (image) => {
             const archiveStream: Stream.Stream<never, MobyApi.Containers.ContainersError, Uint8Array> = yield* _(
                 containers.archive({ id, path: "/bin" })
             );
+
+            // FIXME: I really dislike have to do stream.orDie here
             yield* _(containers.putArchive({ id, path: "/bin", stream: Stream.orDie(archiveStream) }));
 
             // Export the container

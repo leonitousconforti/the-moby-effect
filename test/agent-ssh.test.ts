@@ -34,6 +34,7 @@ beforeAll(
                     imageOptions: {
                         kind: "build",
                         t: testSshDindImageTag,
+                        // FIXME: I really dislike have to do stream.orDie here
                         stream: Stream.orDie(
                             Stream.fromAsyncIterable(
                                 tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), {
