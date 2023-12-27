@@ -607,7 +607,9 @@ export interface Images {
      *   Refer to the [authentication section](#section/Authentication) for
      *   details.
      */
-    readonly push: (options: ImagePushOptions) => Effect.Effect<never, ImagesError, void>;
+    readonly push: (
+        options: ImagePushOptions
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
 
     /**
      * Tag an image
@@ -817,7 +819,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
         pipe(
             NodeHttp.request.post("/create"),
-            NodeHttp.request.setHeader("X-Registry-Auth", ""),
+            NodeHttp.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
             addQueryParameter("fromImage", options.fromImage),
             addQueryParameter("fromSrc", options.fromSrc),
             addQueryParameter("repo", options.repo),
@@ -849,12 +851,17 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             Effect.catchAll(responseHandler("history"))
         );
 
-    const push_ = (options: ImagePushOptions): Effect.Effect<never, ImagesError, void> =>
+    const push_ = (
+        options: ImagePushOptions
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
         pipe(
             NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
-            NodeHttp.request.setHeader("X-Registry-Auth", ""),
+            NodeHttp.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"]),
             addQueryParameter("tag", options.tag),
-            voidClient,
+            client,
+            Effect.map((response) => response.stream),
+            Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.catchAll(streamHandler("push"))),
             Effect.catchAll(responseHandler("push"))
         );
 

@@ -1,4 +1,5 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as Schema from "@effect/schema/Schema";
 import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
 
 import {
@@ -63,7 +64,9 @@ export interface Systems {
      *
      * @param authConfig - Authentication to check
      */
-    readonly auth: (options?: AuthConfig | undefined) => Effect.Effect<never, SystemsError, SystemAuthResponse>;
+    readonly auth: (
+        options: Schema.Schema.From<typeof AuthConfig.struct>
+    ) => Effect.Effect<never, SystemsError, SystemAuthResponse>;
 
     /** Get system information */
     readonly info: () => Effect.Effect<never, SystemsError, Readonly<SystemInfo>>;
@@ -145,10 +148,12 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const responseHandler = (method: string) =>
             responseErrorHandler((message) => new SystemsError({ method, message }));
 
-        const auth_ = (options?: AuthConfig | undefined): Effect.Effect<never, SystemsError, SystemAuthResponse> =>
+        const auth_ = (
+            options: Schema.Schema.From<typeof AuthConfig.struct>
+        ): Effect.Effect<never, SystemsError, SystemAuthResponse> =>
             pipe(
                 NodeHttp.request.post("/auth"),
-                NodeHttp.request.schemaBody(AuthConfig)(options ?? new AuthConfig({})),
+                NodeHttp.request.schemaBody(AuthConfig)(new AuthConfig(options)),
                 Effect.flatMap(SystemAuthResponseClient),
                 Effect.catchAll(responseHandler("auth"))
             );
