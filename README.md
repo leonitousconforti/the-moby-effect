@@ -33,6 +33,10 @@ the-moby-effect targets the current stable version of the moby api, which is v1.
 
 The only compatibility issue found so far is that when using the-moby-effect with docker v20 you can not filter or prune volumes using the `all` filter as it was not present at the time. Other than that all functionality appears to still work.
 
+## Versioning
+
+This package does not follow semantic versioning, instead the major and minor part represents the version the of moby api. All bugfixes, breaking or otherwise, will be released under an incremented patch version.
+
 ## Contributing and getting help
 
 Contributions, suggestions, and questions are welcome! I'll review prs and respond to issues/discussion here on GitHub but if you want more direct and probably quicker communication you can find me in the [effect discord](https://discord.gg/effect-ts) as @leonitous
