@@ -19,7 +19,6 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 - Version negotiating: either install a specific version for the moby api that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
 
 ## Todo/Future
-- Finish tests
 - Add more examples
 - Maybe add tests against something else other than docker like podman?
 - Patch upstream @effect/platform-node to support just streaming responses, needed for session and container attach endpoints: [upstream pr](https://github.com/Effect-TS/platform/pull/375)
