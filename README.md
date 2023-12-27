@@ -35,7 +35,7 @@ The only compatibility issue found so far is that when using the-moby-effect wit
 
 ## Versioning
 
-This package does not follow semantic versioning, instead the major and minor part represents the version the of moby api. All bugfixes, breaking or otherwise, will be released under an incremented patch version.
+This package does not follow semantic versioning, instead the major and minor part represents the version of the moby api. All bugfixes, breaking or otherwise, will be released under an incremented patch version.
 
 ## Contributing and getting help
 
