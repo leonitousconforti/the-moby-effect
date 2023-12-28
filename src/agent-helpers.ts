@@ -9,15 +9,16 @@ import { Context, Effect, Layer, Match, Scope, pipe } from "effect";
 /** How to connect to your moby/docker instance. */
 export type MobyConnectionOptions =
     | { connection: "unix"; socketPath: string }
-    | { connection: "http"; host: string; port: number }
     | ({ connection: "ssh"; remoteSocketPath: string } & ssh2.ConnectConfig)
+    | { connection: "http"; host: string; port: number; path?: string | undefined }
     | {
           connection: "https";
           host: string;
           port: number;
-          cert: string;
-          ca: string;
-          key: string;
+          path?: string | undefined;
+          cert?: string | undefined;
+          ca?: string | undefined;
+          key?: string | undefined;
           passphrase?: string | undefined;
       };
 
@@ -169,7 +170,12 @@ export const getAgent = (
             http: agent as http.Agent,
             https: agent as https.Agent,
             connectionOptions: connectionOptions,
-            nodeRequestUrl: connectionOptions.connection === "https" ? "https://0.0.0.0" : "http://0.0.0.0",
+            nodeRequestUrl:
+                connectionOptions.connection === "https"
+                    ? `https://0.0.0.0${connectionOptions.path ?? ""}`
+                    : connectionOptions.connection === "http"
+                      ? `http://0.0.0.0${connectionOptions.path ?? ""}`
+                      : "http://0.0.0.0",
             [NodeHttp.nodeClient.HttpAgentTypeId]: NodeHttp.nodeClient.HttpAgentTypeId,
         })
     );
