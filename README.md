@@ -7,6 +7,7 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 - [x] - local unix socket connections
 - [x] - http and https connections
 - [x] - ssh connections
+- [x] - `DOCKER_HOST` environment variable support
 - [x] - streaming (just like [dockerode](https://github.com/apocas/dockerode), streams are passed directly through to you)
 - [x] - tests, examples, and in-line JSDoc comments based on the moby api documentation
 - [x] - Strong focus on types and typescript support
