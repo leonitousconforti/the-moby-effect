@@ -5,6 +5,5 @@
     "collectCoverageFrom": ["<rootDir>/dist/src/*.js"],
     "globalSetup": "<rootDir>/dist/test/setup.js",
     "collectCoverage": true,
-    "coverageProvider": "v8",
-    "maxWorkers": 20
+    "coverageProvider": "v8"
 }
