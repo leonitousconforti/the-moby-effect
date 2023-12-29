@@ -11,6 +11,7 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 export const BEFORE_ALL_TIMEOUT = 30_000;
 export const AFTER_ALL_TIMEOUT = 30_000;
 
+// TODO: Update the engines once 25 comes out of RC
 export const testEngines = [
     "docker.io/library/docker:20-dind",
     "docker.io/library/docker:23-dind",
