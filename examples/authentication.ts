@@ -44,7 +44,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     }
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
+    const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
         images.create({
             fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
             "X-Registry-Auth":
@@ -53,8 +53,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     );
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    const data: string = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
-    yield* _(Console.log(data));
+    return yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.toReadonlyArray)));
 });
 
-program.pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Console.log).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

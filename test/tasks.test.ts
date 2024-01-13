@@ -7,7 +7,6 @@ let dindContainerId: string = undefined!;
 let dindStorageVolumeName: string = undefined!;
 let testTaskService: Layer.Layer<never, never, MobyApi.Tasks.Tasks> = undefined!;
 
-/** TODO: Figure out how to test Tasks better. */
 describe.each(testEngines)("MobyApi Tasks tests", (image) => {
     afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
     beforeAll(async () => {

@@ -44,28 +44,25 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 const program = Effect.gen(function* (_: Effect.Adapter) {
     const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
-    const buildStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
+    const buildStream: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
         images.build({
             t: "mydockerimage:latest",
-            // FIXME: I really dislike have to do stream.orDie here
-            stream: Stream.orDie(
-                Stream.fromAsyncIterable(
-                    tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
-                        entries: ["build-image.dockerfile"],
-                    }),
-                    () =>
-                        new MobyApi.Images.ImagesError({
-                            method: "buildStream",
-                            message: "error packing the build context",
-                        })
-                )
+            context: Stream.fromAsyncIterable(
+                tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
+                    entries: ["build-image.dockerfile"],
+                }),
+                () =>
+                    new MobyApi.Images.ImagesError({
+                        method: "buildStream",
+                        message: "error packing the build context",
+                    })
             ),
             dockerfile: "build-image.dockerfile",
         })
     );
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.join(""))));
+    return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.toReadonlyArray)));
 });
 
 program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

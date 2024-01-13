@@ -54,4 +54,13 @@ describe.each(testEngines)("MobyApi System tests", (image) => {
         );
         expect(dataUsageResponse).toBeDefined();
     });
+
+    it("Should see docker events", async () => {
+        await Effect.runPromise(
+            Effect.provide(
+                Effect.flatMap(MobyApi.System.Systems, (systems) => systems.events()),
+                testSystemService
+            )
+        );
+    });
 });

@@ -167,5 +167,34 @@ describe.each(testEngines.filter((engine) => engine !== "docker.io/library/docke
             expect(testData.Volumes).toBeInstanceOf(Array);
             expect(testData.Volumes).toHaveLength(0);
         });
+
+        it("Should update a volume", async () => {
+            const testData: Readonly<MobyApi.Schemas.Volume> = await Effect.runPromise(
+                Effect.provide(
+                    Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
+                        volumes.create({
+                            Name: "testVolume2",
+                            ClusterVolumeSpec: new MobyApi.Schemas.ClusterVolumeSpec({
+                                AccessMode: {
+                                    MountVolume: {},
+                                },
+                            }),
+                        })
+                    ),
+                    testVolumesService
+                )
+            );
+
+            const spec = testData.ClusterVolume!.Spec!;
+            const version = testData.ClusterVolume!.Version!.Index!;
+            await Effect.runPromise(
+                Effect.provide(
+                    Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
+                        volumes.update({ name: testData.ClusterVolume!.ID!, version, spec })
+                    ),
+                    testVolumesService
+                )
+            );
+        });
     }
 );

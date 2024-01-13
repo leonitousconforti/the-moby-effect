@@ -22,7 +22,6 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 ## Todo/Future :bulb:
 - Add more examples
 - Maybe add tests against something else other than docker like podman?
-- Patch upstream @effect/platform-node to support just streaming responses, needed for session and container attach endpoints: [upstream pr](https://github.com/Effect-TS/effect/pull/1796)
 
 ## Compatibility :closed_lock_with_key:
 

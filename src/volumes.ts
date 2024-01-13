@@ -57,7 +57,7 @@ export interface VolumeUpdateOptions {
      * The spec of the volume to update. Currently, only Availability may
      * change. All other fields must remain unchanged.
      */
-    readonly spec?: ClusterVolumeSpec;
+    readonly spec: Schema.Schema.To<typeof ClusterVolumeSpec.struct>;
     /**
      * The version number of the volume being updated. This is required to avoid
      * conflicting writes. Found in the volume's `ClusterVolume` field.
@@ -128,7 +128,7 @@ export interface Volumes {
      * "Update a volume. Valid only for Swarm cluster volumes"
      *
      * @param name - The name or ID of the volume
-     * @param body - The spec of the volume to update. Currently, only
+     * @param spec - The spec of the volume to update. Currently, only
      *   Availability may change. All other fields must remain unchanged.
      * @param version - The version number of the volume being updated. This is
      *   required to avoid conflicting writes. Found in the volume's
@@ -214,7 +214,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             pipe(
                 NodeHttp.request.put("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("version", options.version),
-                NodeHttp.request.schemaBody(ClusterVolumeSpec)(options.spec ?? new ClusterVolumeSpec({})),
+                NodeHttp.request.schemaBody(ClusterVolumeSpec)(new ClusterVolumeSpec(options.spec)),
                 Effect.flatMap(voidClient),
                 Effect.catchAll(responseHandler("update"))
             );
