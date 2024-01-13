@@ -5,11 +5,46 @@ import * as Images from "./images.js";
 import * as Schemas from "./schemas.js";
 
 /**
- * Attempts to be similar to the `docker run` command. Note that, while this
- * helper will wait for the image build/image pull to complete, it will not
- * expose the build stream directly to you. If you need to do that, you should
- * use the `imageCreate` method directly.
+ * Implements the `docker pull` command but it doesn't have all the features
+ * that the images create endpoint exposes.
  */
+export const pull = ({
+    auth,
+    image,
+    platform,
+}: {
+    image: string;
+    auth?: string | undefined;
+    platform?: string | undefined;
+}): Effect.Effect<Images.Images, Images.ImagesError, Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo>> =>
+    Effect.gen(function* (_: Effect.Adapter) {
+        const images: Images.Images = yield* _(Images.Images);
+        return yield* _(images.create({ fromImage: image, "X-Registry-Auth": auth, platform }));
+    });
+
+/**
+ * Implements the `docker build` command but it doesn't have all the features
+ * that the images build endpoint exposes.
+ */
+export const build = ({
+    tag,
+    auth,
+    context,
+    platform,
+    dockerfile,
+}: {
+    tag: string;
+    auth?: string | undefined;
+    platform?: string | undefined;
+    dockerfile?: string | undefined;
+    context: Stream.Stream<never, Images.ImagesError, Uint8Array>;
+}): Effect.Effect<Images.Images, Images.ImagesError, Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo>> =>
+    Effect.gen(function* (_: Effect.Adapter) {
+        const images: Images.Images = yield* _(Images.Images);
+        return yield* _(images.build({ context, dockerfile, platform, t: tag, "X-Registry-Config": auth }));
+    });
+
+/** Implements `docker run` command. */
 export const run = ({
     imageOptions,
     containerOptions,
@@ -26,7 +61,7 @@ export const run = ({
         const containers: Containers.Containers = yield* _(Containers.Containers);
 
         // Start pulling or building the image
-        const buildStream: Stream.Stream<never, Images.ImagesError, string> =
+        const buildStream: Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo> =
             imageOptions.kind === "pull" ? yield* _(images.create(imageOptions)) : yield* _(images.build(imageOptions));
 
         // Wait for image pull or build to complete
@@ -43,7 +78,7 @@ export const run = ({
         // Helper to wait until a container is dead or running
         const waitUntilContainerDeadOrRunning: Effect.Effect<never, Containers.ContainersError, void> = pipe(
             containers.inspect({ id: containerCreateResponse.Id }),
-            // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
+            Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 pipe(
                     Match.value(State?.Status),
@@ -63,9 +98,9 @@ export const run = ({
         // Helper for if the container has a healthcheck, wait for it to report healthy
         const waitUntilContainerHealthy: Effect.Effect<never, Containers.ContainersError, void> = pipe(
             containers.inspect({ id: containerCreateResponse.Id }),
-            // Effect.tap(({ State }) =>
-            //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
-            // ),
+            Effect.tap(({ State }) =>
+                Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
+            ),
             Effect.flatMap(({ State }) =>
                 pipe(
                     Match.value(State?.Health?.Status),

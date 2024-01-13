@@ -1,6 +1,6 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
 
 import {
     IMobyConnectionAgent,
@@ -9,7 +9,7 @@ import {
     MobyHttpClientLive,
     getAgent,
 } from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
 import {
     AuthConfig,
     EventMessage,
@@ -50,7 +50,22 @@ export interface SystemEventsOptions {
      *   `config`
      * - `volume=<string>` volume name
      */
-    readonly filters?: string;
+    readonly filters?: {
+        config?: string | undefined;
+        container?: string | undefined;
+        daemon?: string | undefined;
+        event?: string | undefined;
+        image?: string | undefined;
+        label?: string | undefined;
+        network?: string | undefined;
+        node?: string | undefined;
+        plugin?: string | undefined;
+        scope?: string | undefined;
+        secret?: string | undefined;
+        service?: string | undefined;
+        type?: string | undefined;
+        volume?: string | undefined;
+    };
 }
 
 export interface SystemDataUsageOptions {
@@ -108,7 +123,9 @@ export interface Systems {
      *       `secret` or `config`
      *   - `volume=<string>` volume name
      */
-    readonly events: (options: SystemEventsOptions) => Effect.Effect<never, SystemsError, EventMessage>;
+    readonly events: (
+        options?: SystemEventsOptions | undefined
+    ) => Effect.Effect<never, SystemsError, Stream.Stream<never, SystemsError, EventMessage>>;
 
     /**
      * Get data usage information
@@ -138,15 +155,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const SystemVersionClient = client.pipe(
             NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(SystemVersion))
         );
-        const SystemEventsResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(EventMessage))
-        );
         const SystemDataUsageResponseClient = client.pipe(
             NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(SystemDataUsageResponse))
         );
 
         const responseHandler = (method: string) =>
             responseErrorHandler((message) => new SystemsError({ method, message }));
+        const streamHandler = (method: string) =>
+            streamErrorHandler((message) => new SystemsError({ method, message }));
 
         const auth_ = (
             options: Schema.Schema.From<typeof AuthConfig.struct>
@@ -175,13 +191,19 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const pingHead_ = (): Effect.Effect<never, SystemsError, void> =>
             pipe(NodeHttp.request.head("/_ping"), voidClient, Effect.catchAll(responseHandler("pingHead")));
 
-        const events_ = (options: SystemEventsOptions): Effect.Effect<never, SystemsError, EventMessage> =>
+        const events_ = (
+            options?: SystemEventsOptions | undefined
+        ): Effect.Effect<never, SystemsError, Stream.Stream<never, SystemsError, EventMessage>> =>
             pipe(
                 NodeHttp.request.get("/events"),
-                addQueryParameter("since", options.since),
-                addQueryParameter("until", options.until),
-                addQueryParameter("filters", options.filters),
-                SystemEventsResponseClient,
+                addQueryParameter("since", options?.since),
+                addQueryParameter("until", options?.until),
+                addQueryParameter("filters", JSON.stringify(options?.filters)),
+                client,
+                Effect.map((response) => response.stream),
+                Effect.map(Stream.decodeText("utf8")),
+                Effect.map(Stream.map(Schema.parse(EventMessage))),
+                Effect.map(Stream.catchAll(streamHandler("events"))),
                 Effect.catchAll(responseHandler("events"))
             );
 

@@ -53,7 +53,7 @@ describe.each(testEngines)("MobyApi Images tests", (image) => {
         await Effect.gen(function* (_: Effect.Adapter) {
             const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
-            const pullResponse: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
+            const pullResponse: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
                 images.create({
                     fromImage: "docker.io/library/alpine:latest",
                 })

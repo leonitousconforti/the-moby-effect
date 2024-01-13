@@ -1,6 +1,6 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
+import { Context, Data, Effect, Layer, Scope, Stream, String, pipe } from "effect";
 
 import {
     IMobyConnectionAgent,
@@ -11,6 +11,7 @@ import {
 } from "./agent-helpers.js";
 import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
 import {
+    BuildInfo,
     BuildPruneResponse,
     ContainerConfig,
     HistoryResponseItem,
@@ -58,20 +59,20 @@ export interface ImageBuildOptions {
      * A tar archive compressed with one of the following algorithms: identity
      * (no compression), gzip, bzip2, xz.
      */
-    readonly stream: Stream.Stream<never, never, Uint8Array>;
+    readonly context: Stream.Stream<never, ImagesError, Uint8Array>;
     /**
      * Path within the build context to the `Dockerfile`. This is ignored if
      * `remote` is specified and points to an external `Dockerfile`.
      */
-    readonly dockerfile?: string;
+    readonly dockerfile?: string | undefined;
     /**
      * A name and optional tag to apply to the image in the `name:tag` format.
      * If you omit the tag the default `latest` value is assumed. You can
      * provide several `t` parameters.
      */
-    readonly t?: string;
+    readonly t?: string | undefined;
     /** Extra hosts to add to /etc/hosts */
-    readonly extrahosts?: string;
+    readonly extrahosts?: string | undefined;
     /**
      * A Git repository URI or HTTP/HTTPS context URI. If the URI points to a
      * single text file, the file’s contents are placed into a file called
@@ -81,31 +82,31 @@ export interface ImageBuildOptions {
      * `dockerfile` parameter is also specified, there must be a file with the
      * corresponding path inside the tarball.
      */
-    readonly remote?: string;
+    readonly remote?: string | undefined;
     /** Suppress verbose build output. */
-    readonly q?: boolean;
+    readonly q?: boolean | undefined;
     /** Do not use the cache when building the image. */
-    readonly nocache?: boolean;
+    readonly nocache?: boolean | undefined;
     /** JSON array of images used for build cache resolution. */
-    readonly cachefrom?: string;
+    readonly cachefrom?: string | undefined;
     /** Attempt to pull the image even if an older image exists locally. */
-    readonly pull?: string;
+    readonly pull?: string | undefined;
     /** Remove intermediate containers after a successful build. */
-    readonly rm?: boolean;
+    readonly rm?: boolean | undefined;
     /** Always remove intermediate containers, even upon failure. */
-    readonly forcerm?: boolean;
+    readonly forcerm?: boolean | undefined;
     /** Set memory limit for build. */
-    readonly memory?: number;
+    readonly memory?: number | undefined;
     /** Total memory (memory + swap). Set as `-1` to disable swap. */
-    readonly memswap?: number;
+    readonly memswap?: number | undefined;
     /** CPU shares (relative weight). */
-    readonly cpushares?: number;
+    readonly cpushares?: number | undefined;
     /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
-    readonly cpusetcpus?: string;
+    readonly cpusetcpus?: string | undefined;
     /** The length of a CPU period in microseconds. */
-    readonly cpuperiod?: number;
+    readonly cpuperiod?: number | undefined;
     /** Microseconds of CPU time that the container can get in a CPU period. */
-    readonly cpuquota?: number;
+    readonly cpuquota?: number | undefined;
     /**
      * JSON map of string pairs for build-time variables. Users pass these
      * values at build-time. Docker uses the buildargs as the environment
@@ -120,30 +121,30 @@ export interface ImageBuildOptions {
      * [Read more about the buildargs
      * instruction.](https://docs.docker.com/engine/reference/builder/#arg)
      */
-    readonly buildargs?: string;
+    readonly buildargs?: string | undefined;
     /**
      * Size of `/dev/shm` in bytes. The size must be greater than 0. If omitted
      * the system uses 64MB.
      */
-    readonly shmsize?: number;
+    readonly shmsize?: number | undefined;
     /**
      * Squash the resulting images layers into a single layer. _(Experimental
      * release only.)_
      */
-    readonly squash?: boolean;
+    readonly squash?: boolean | undefined;
     /**
      * Arbitrary key/value labels to set on the image, as a JSON map of string
      * pairs.
      */
-    readonly labels?: string;
+    readonly labels?: string | undefined;
     /**
      * Sets the networking mode for the run commands during build. Supported
      * standard values are: `bridge`, `host`, `none`, and `container:<name|id>`.
      * Any other value is taken as a custom network's name or ID to which this
      * container should connect to.
      */
-    readonly networkmode?: string;
-    readonly "Content-type"?: string;
+    readonly networkmode?: string | undefined;
+    readonly "Content-type"?: string | undefined;
     /**
      * This is a base64-encoded JSON object with auth configurations for
      * multiple registries that a build may refer to.
@@ -168,13 +169,13 @@ export interface ImageBuildOptions {
      * specified with both a `https://` prefix and a `/v1/` suffix even though
      * Docker will prefer to use the v2 registry API.
      */
-    readonly "X-Registry-Config"?: string;
+    readonly "X-Registry-Config"?: string | undefined;
     /** Platform in the format os[/arch[/variant]] */
-    readonly platform?: string;
+    readonly platform?: string | undefined;
     /** Target build stage */
-    readonly target?: string;
+    readonly target?: string | undefined;
     /** BuildKit output configuration */
-    readonly outputs?: string;
+    readonly outputs?: string | undefined;
 }
 
 export interface BuildPruneOptions {
@@ -209,37 +210,37 @@ export interface ImageCreateOptions {
      * parameter may only be used when pulling an image. The pull is cancelled
      * if the HTTP connection is closed.
      */
-    readonly fromImage?: string;
+    readonly fromImage?: string | undefined;
     /**
      * Source to import. The value may be a URL from which the image can be
      * retrieved or `-` to read the image from the request body. This parameter
      * may only be used when importing an image.
      */
-    readonly fromSrc?: string;
+    readonly fromSrc?: string | undefined;
     /**
      * Repository name given to an image when it is imported. The repo may
      * include a tag. This parameter may only be used when importing an image.
      */
-    readonly repo?: string;
+    readonly repo?: string | undefined;
     /**
      * Tag or digest. If empty when pulling an image, this causes all tags for
      * the given image to be pulled.
      */
-    readonly tag?: string;
+    readonly tag?: string | undefined;
     /** Set commit message for imported image. */
-    readonly message?: string;
+    readonly message?: string | undefined;
     /**
      * Image content if the value `-` has been specified in fromSrc query
      * parameter
      */
-    readonly inputImage?: string;
+    readonly inputImage?: string | undefined;
     /**
      * A base64url-encoded auth configuration.
      *
      * Refer to the [authentication section](#section/Authentication) for
      * details.
      */
-    readonly "X-Registry-Auth"?: string;
+    readonly "X-Registry-Auth"?: string | undefined;
     /**
      * Apply `Dockerfile` instructions to the image that is created, for
      * example: `changes=ENV DEBUG=true`. Note that `ENV DEBUG=true` should be
@@ -248,7 +249,7 @@ export interface ImageCreateOptions {
      * Supported `Dockerfile` instructions:
      * `CMD`|`ENTRYPOINT`|`ENV`|`EXPOSE`|`ONBUILD`|`USER`|`VOLUME`|`WORKDIR`
      */
-    readonly changes?: string;
+    readonly changes?: string | undefined;
     /**
      * Platform in the format os[/arch[/variant]].
      *
@@ -266,7 +267,7 @@ export interface ImageCreateOptions {
      * option is not set, the host's native OS and Architecture are used for the
      * imported image.
      */
-    readonly platform?: string;
+    readonly platform?: string | undefined;
 }
 
 export interface ImageInspectOptions {
@@ -423,7 +424,7 @@ export interface Images {
     /**
      * Build an image
      *
-     * @param stream - A tar archive compressed with one of the following
+     * @param context - A tar archive compressed with one of the following
      *   algorithms: identity (no compression), gzip, bzip2, xz.
      * @param dockerfile - Path within the build context to the `Dockerfile`.
      *   This is ignored if `remote` is specified and points to an external
@@ -508,7 +509,7 @@ export interface Images {
      */
     readonly build: (
         options: ImageBuildOptions
-    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, BuildInfo>>;
 
     /**
      * Delete builder cache
@@ -579,7 +580,7 @@ export interface Images {
      */
     readonly create: (
         options: ImageCreateOptions
-    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>>;
+    ) => Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, BuildInfo>>;
 
     /**
      * Inspect an image
@@ -766,7 +767,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
     const build_ = (
         options: ImageBuildOptions
-    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, BuildInfo>> =>
         pipe(
             NodeHttp.request.post(`${agent.nodeRequestUrl}/build`),
             NodeHttp.request.setHeader("Content-type", ""),
@@ -796,10 +797,22 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             addQueryParameter("platform", options.platform),
             addQueryParameter("target", options.target),
             addQueryParameter("outputs", options.outputs),
-            NodeHttp.request.streamBody(options.stream),
+            NodeHttp.request.streamBody(
+                Stream.mapError(options.context, (error) =>
+                    NodeHttp.error.RequestError({
+                        reason: "Encode",
+                        error: error,
+                        request: {} as unknown as NodeHttp.request.ClientRequest,
+                    })
+                )
+            ),
             defaultClient.pipe(NodeHttp.client.filterStatusOk),
             Effect.map((response) => response.stream),
             Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.map(String.linesWithSeparators)), // TODO: update once https://github.com/Effect-TS/effect/pull/1798 is merged
+            Effect.map(Stream.flattenIterables),
+            Effect.map(Stream.map(Schema.parse(Schema.parseJson(BuildInfo)))),
+            Effect.map((stream) => Stream.flattenEffect(stream)),
             Effect.map(Stream.catchAll(streamHandler("build"))),
             Effect.catchAll(responseHandler("build"))
         );
@@ -816,7 +829,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
     const create_ = (
         options: ImageCreateOptions
-    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
+    ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, BuildInfo>> =>
         pipe(
             NodeHttp.request.post("/create"),
             NodeHttp.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
@@ -831,6 +844,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             Effect.flatMap(client),
             Effect.map((response) => response.stream),
             Effect.map(Stream.decodeText("utf8")),
+            Effect.map(Stream.map(Schema.parse(BuildInfo))),
             Effect.map(Stream.catchAll(streamHandler("create"))),
             Effect.catchAll(responseHandler("create"))
         );

@@ -45,10 +45,11 @@ export const responseErrorHandler =
 
 export const streamErrorHandler =
     <E>(toError: (message: string) => E) =>
-    (error: NodeHttp.error.ResponseError): Stream.Stream<never, E, never> =>
+    (error: NodeHttp.error.ResponseError | ParseResult.ParseError): Stream.Stream<never, E, never> =>
         pipe(
             error,
             Match.valueTags({
+                ParseError: (parseError) => Effect.fail(toError(`parsing errors\n${parseError.toString()}\n`)),
                 ResponseError: (responseError) =>
                     responseError.response.text.pipe(
                         Effect.catchTag("ResponseError", () =>

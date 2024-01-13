@@ -7,7 +7,6 @@ let dindContainerId: string = undefined!;
 let dindStorageVolumeName: string = undefined!;
 let testExecsService: Layer.Layer<never, never, MobyApi.Execs.Execs> = undefined!;
 
-/** TODO: Figure out how to test Exec. */
 describe.each(testEngines)("MobyApi Exec tests", (image) => {
     afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
     beforeAll(async () => {

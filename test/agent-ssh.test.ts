@@ -34,18 +34,15 @@ beforeAll(
                     imageOptions: {
                         kind: "build",
                         t: testSshDindImageTag,
-                        // FIXME: I really dislike have to do stream.orDie here
-                        stream: Stream.orDie(
-                            Stream.fromAsyncIterable(
-                                tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), {
-                                    entries: ["agent-ssh.dockerfile"],
-                                }),
-                                () =>
-                                    new MobyApi.Images.ImagesError({
-                                        method: "buildStream",
-                                        message: "error packing the build context",
-                                    })
-                            )
+                        context: Stream.fromAsyncIterable(
+                            tar.pack(url.fileURLToPath(new URL("../../test", import.meta.url)), {
+                                entries: ["agent-ssh.dockerfile"],
+                            }),
+                            () =>
+                                new MobyApi.Images.ImagesError({
+                                    method: "buildStream",
+                                    message: "error packing the build context",
+                                })
                         ),
                         dockerfile: "agent-ssh.dockerfile",
                     },

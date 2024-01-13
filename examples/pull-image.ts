@@ -23,12 +23,12 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, string> = yield* _(
+    const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
         images.create({ fromImage: "docker.io/library/hello-world:latest" })
     );
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    const data: string = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.join(""))));
+    const data = yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.toReadonlyArray)));
     yield* _(Console.log(data));
 
     // Delete the image

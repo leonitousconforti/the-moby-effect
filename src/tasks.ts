@@ -131,7 +131,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const list_ = (options?: TaskListOptions | undefined): Effect.Effect<never, TasksError, Readonly<Array<Task>>> =>
         pipe(
             NodeHttp.request.get(""),
-            addQueryParameter("filters", JSON.stringify(options?.filters ?? {})),
+            addQueryParameter("filters", JSON.stringify(options?.filters)),
             TasksClient,
             Effect.catchAll(responseHandler("list"))
         );
