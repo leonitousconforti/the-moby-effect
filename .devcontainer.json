@@ -75,6 +75,7 @@
                     "cpusetcpus",
                     "cpushares",
                     "Datacenter",
+                    "demux",
                     "dind",
                     "Dnsrr",
                     "Domainname",

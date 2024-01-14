@@ -1,12 +1,7 @@
 import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeRuntime from "@effect/platform-node/Runtime";
-import * as NodeSink from "@effect/platform-node/Sink";
-import * as NodeStream from "@effect/platform-node/Stream";
 import * as Console from "effect/Console";
-import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Stream from "effect/Stream";
 
 import * as MobyApi from "../src/index.js";
 
@@ -46,25 +41,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}
-    class StdoutError extends Data.TaggedError("StdoutError")<{ message: string }> {}
-
-    yield* _(
-        Function.pipe(
-            NodeStream.fromReadable(
-                () => process.stdin,
-                () => new StdinError({ message: "stdin is not readable" })
-            ),
-            Stream.pipeThroughChannel(NodeSocket.toChannel(socket)),
-            Stream.run(
-                NodeSink.fromWritable(
-                    () => process.stdout,
-                    () => new StdoutError({ message: "stdout is not writable" }),
-                    { endOnDone: false }
-                )
-            )
-        )
-    );
+    yield* _(MobyApi.demuxToStdinAndStdout(socket));
 
     yield* _(Console.log("Disconnected from container"));
     yield* _(Console.log(`Removing container ${containerName}...`));
