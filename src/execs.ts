@@ -1,4 +1,6 @@
+import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
@@ -7,6 +9,7 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import {
+    IExposeSocketOnEffectClientResponse,
     IMobyConnectionAgent,
     MobyConnectionAgent,
     MobyConnectionOptions,
@@ -23,13 +26,13 @@ export class ExecsError extends Data.TaggedError("ExecsError")<{
 
 export interface ContainerExecOptions {
     /** Exec configuration */
-    readonly execConfig: ExecConfig;
+    readonly execConfig: Schema.Schema.To<typeof ExecConfig.struct>;
     /** ID or name of container */
     readonly id: string;
 }
 
 export interface ExecStartOptions {
-    readonly execStartConfig: ExecStartConfig;
+    readonly execStartConfig: Schema.Schema.To<typeof ExecStartConfig.struct>;
     /** Exec instance ID */
     readonly id: string;
 }
@@ -63,7 +66,7 @@ export interface Execs {
      * @param execStartConfig -
      * @param id - Exec instance ID
      */
-    readonly start: (options: ExecStartOptions) => Effect.Effect<never, ExecsError, void>;
+    readonly start: (options: ExecStartOptions) => Effect.Effect<never, ExecsError, NodeSocket.Socket>;
 
     /**
      * Resize an exec instance
@@ -104,16 +107,18 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const container_ = (options: ContainerExecOptions): Effect.Effect<never, ExecsError, Readonly<IdResponse>> =>
         Function.pipe(
             NodeHttp.request.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
-            NodeHttp.request.schemaBody(ExecConfig)(options.execConfig),
+            NodeHttp.request.schemaBody(ExecConfig)(Schema.parseSync(ExecConfig)(options.execConfig)),
             Effect.flatMap(IdResponseClient),
             Effect.catchAll(responseHandler("container"))
         );
 
-    const start_ = (options: ExecStartOptions): Effect.Effect<never, ExecsError, void> =>
+    const start_ = (options: ExecStartOptions): Effect.Effect<never, ExecsError, NodeSocket.Socket> =>
         Function.pipe(
             NodeHttp.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
-            NodeHttp.request.schemaBody(ExecStartConfig)(options.execStartConfig),
-            Effect.flatMap(voidClient),
+            NodeHttp.request.schemaBody(ExecStartConfig)(Schema.parseSync(ExecStartConfig)(options.execStartConfig)),
+            Effect.flatMap(client),
+            Effect.map((response) => (response as IExposeSocketOnEffectClientResponse).source.socket),
+            Effect.flatMap((socket) => NodeSocket.fromNetSocket(Effect.sync(() => socket))),
             Effect.catchAll(responseHandler("start"))
         );
 
