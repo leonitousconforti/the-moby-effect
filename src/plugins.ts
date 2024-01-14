@@ -1,6 +1,12 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Stream from "effect/Stream";
 
 import {
     IMobyConnectionAgent,
@@ -302,7 +308,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const list_ = (
             options?: PluginListOptions | undefined
         ): Effect.Effect<never, PluginsError, Readonly<Array<Plugin>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", options?.filters),
                 PluginsClient,
@@ -312,7 +318,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const getPrivileges_ = (
             options: GetPluginPrivilegesOptions
         ): Effect.Effect<never, PluginsError, Readonly<Array<PluginPrivilege>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/privileges"),
                 addQueryParameter("remote", options.remote),
                 PluginPrivilegesClient,
@@ -320,7 +326,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const pull_ = (options: PluginPullOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/pull"),
                 NodeHttp.request.setHeader("X-Registry-Auth", ""),
                 addQueryParameter("remote", options.remote),
@@ -331,14 +337,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const inspect_ = (options: PluginInspectOptions): Effect.Effect<never, PluginsError, Readonly<Plugin>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
                 PluginClient,
                 Effect.catchAll(responseHandler("inspect"))
             );
 
         const delete_ = (options: PluginDeleteOptions): Effect.Effect<never, PluginsError, Readonly<Plugin>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
                 PluginClient,
@@ -346,7 +352,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const enable_ = (options: PluginEnableOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{name}/enable".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("timeout", options.timeout),
                 voidClient,
@@ -354,7 +360,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const disable_ = (options: PluginDisableOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{name}/disable".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
                 voidClient,
@@ -362,7 +368,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{name}/upgrade".replace("{name}", encodeURIComponent(options.name))),
                 NodeHttp.request.setHeader("X-Registry-Auth", ""),
                 addQueryParameter("remote", options.remote),
@@ -372,7 +378,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const create_ = (options: PluginCreateOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/create"),
                 addQueryParameter("name", options.name),
                 NodeHttp.request.streamBody(options.tarContext),
@@ -381,14 +387,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const push_ = (options: PluginPushOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
                 voidClient,
                 Effect.catchAll(responseHandler("push"))
             );
 
         const set_ = (options: PluginSetOptions): Effect.Effect<never, PluginsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{name}/set".replace("{name}", encodeURIComponent(options.name))),
                 NodeHttp.request.schemaBody(Schema.array(Schema.string))(options.body ?? []),
                 Effect.flatMap(voidClient),

@@ -2,7 +2,10 @@ import url from "node:url";
 import tar from "tar-fs";
 
 import * as NodeRuntime from "@effect/platform-node/Runtime";
-import { Chunk, Console, Effect, Stream } from "effect";
+import * as Chunk from "effect/Chunk";
+import * as Console from "effect/Console";
+import * as Effect from "effect/Effect";
+import * as Stream from "effect/Stream";
 
 import * as MobyApi from "../src/index.js";
 

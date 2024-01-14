@@ -1,4 +1,4 @@
-import { Effect } from "effect";
+import * as Effect from "effect/Effect";
 
 import * as MobyApi from "../src/index.js";
 import { testEngines } from "./helpers.js";

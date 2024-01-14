@@ -1,7 +1,9 @@
 import url from "node:url";
 import tar from "tar-fs";
 
-import { Effect, Schedule, Stream } from "effect";
+import * as Effect from "effect/Effect";
+import * as Schedule from "effect/Schedule";
+import * as Stream from "effect/Stream";
 
 import * as MobyApi from "../src/index.js";
 import { AFTER_ALL_TIMEOUT, AfterAll, BEFORE_ALL_TIMEOUT } from "./helpers.js";

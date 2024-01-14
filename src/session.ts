@@ -1,6 +1,11 @@
 import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IExposeSocketOnEffectClientResponse,
@@ -45,7 +50,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             responseErrorHandler((message) => new SessionsError({ method, message }));
 
         const session_ = (): Effect.Effect<never, SessionsError, NodeSocket.Socket> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/session"),
                 NodeHttp.request.setHeader("Upgrade", "h2c"),
                 NodeHttp.request.setHeader("Connection", "Upgrade"),

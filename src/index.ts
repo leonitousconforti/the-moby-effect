@@ -1,4 +1,9 @@
-import { Config, ConfigError, Effect, Layer, Scope, Secret } from "effect";
+import * as Config from "effect/Config";
+import * as ConfigError from "effect/ConfigError";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Secret from "effect/Secret";
 
 import * as AgentHelpers from "./agent-helpers.js";
 import * as Configs from "./configs.js";

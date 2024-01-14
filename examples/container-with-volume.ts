@@ -1,7 +1,7 @@
 import path from "node:url";
 
 import * as NodeRuntime from "@effect/platform-node/Runtime";
-import { Effect } from "effect";
+import * as Effect from "effect/Effect";
 
 import * as MobyApi from "../src/index.js";
 

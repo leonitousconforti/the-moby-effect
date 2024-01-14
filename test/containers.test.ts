@@ -1,4 +1,6 @@
-import { Effect, Layer, Stream } from "effect";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as Stream from "effect/Stream";
 
 import * as MobyApi from "../src/index.js";
 import { AfterAll, BeforeAll, testEngines } from "./helpers.js";

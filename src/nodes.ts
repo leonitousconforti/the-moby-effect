@@ -1,6 +1,11 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -126,7 +131,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const responseHandler = (method: string) => responseErrorHandler((message) => new NodesError({ method, message }));
 
     const list_ = (options?: NodeListOptions | undefined): Effect.Effect<never, NodesError, Readonly<Array<Node>>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get(""),
             addQueryParameter("filters", options?.filters),
             NodesClient,
@@ -134,7 +139,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const delete_ = (options: NodeDeleteOptions): Effect.Effect<never, NodesError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
             addQueryParameter("force", options.force),
             voidClient,
@@ -142,14 +147,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const inspect_ = (options: NodeInspectOptions): Effect.Effect<never, NodesError, Readonly<Node>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             NodeClient,
             Effect.catchAll(responseHandler("inspect"))
         );
 
     const update_ = (options: NodeUpdateOptions): Effect.Effect<never, NodesError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
             addQueryParameter("version", options.version),
             NodeHttp.request.schemaBody(NodeSpec)(options.body),

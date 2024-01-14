@@ -1,6 +1,11 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -178,7 +183,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const list_ = (
             options: VolumeListOptions | undefined
         ): Effect.Effect<never, VolumesError, VolumeListResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 VolumeListResponseClient,
@@ -188,7 +193,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const create_ = (
             options: Schema.Schema.To<typeof VolumeCreateOptions.struct>
         ): Effect.Effect<never, VolumesError, Readonly<Volume>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/create"),
                 NodeHttp.request.schemaBody(VolumeCreateOptions)(new VolumeCreateOptions(options)),
                 Effect.flatMap(VolumeClient),
@@ -196,7 +201,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const delete_ = (options: VolumeDeleteOptions): Effect.Effect<never, VolumesError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
                 voidClient,
@@ -204,14 +209,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const inspect_ = (options: VolumeInspectOptions): Effect.Effect<never, VolumesError, Readonly<Volume>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 VolumeClient,
                 Effect.catchAll(responseHandler("inspect"))
             );
 
         const update_ = (options: VolumeUpdateOptions): Effect.Effect<never, VolumesError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.put("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("version", options.version),
                 NodeHttp.request.schemaBody(ClusterVolumeSpec)(new ClusterVolumeSpec(options.spec)),
@@ -222,7 +227,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const prune_ = (
             options: VolumePruneOptions | undefined
         ): Effect.Effect<never, VolumesError, VolumePruneResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/prune"),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 VolumePruneResponseClient,

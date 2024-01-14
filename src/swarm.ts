@@ -1,6 +1,11 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -123,12 +128,12 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const responseHandler = (method: string) => responseErrorHandler((message) => new SwarmsError({ method, message }));
 
     const inspect_ = (): Effect.Effect<never, SwarmsError, Readonly<Swarm>> =>
-        pipe(NodeHttp.request.get("/"), SwarmClient, Effect.catchAll(responseHandler("inspect")));
+        Function.pipe(NodeHttp.request.get("/"), SwarmClient, Effect.catchAll(responseHandler("inspect")));
 
     const init_ = (
         options: Schema.Schema.To<typeof SwarmInitRequest.struct>
     ): Effect.Effect<never, SwarmsError, Readonly<string>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/init"),
             NodeHttp.request.schemaBody(SwarmInitRequest)(new SwarmInitRequest(options)),
             Effect.flatMap(StringClient),
@@ -138,7 +143,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const join_ = (
         options: Schema.Schema.To<typeof SwarmInitRequest.struct>
     ): Effect.Effect<never, SwarmsError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/join"),
             NodeHttp.request.schemaBody(SwarmJoinRequest)(new SwarmJoinRequest(options)),
             Effect.flatMap(voidClient),
@@ -146,7 +151,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const leave_ = (options: SwarmLeaveOptions): Effect.Effect<never, SwarmsError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/leave"),
             addQueryParameter("force", options.force),
             voidClient,
@@ -154,7 +159,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const update_ = (options: SwarmUpdateOptions): Effect.Effect<never, SwarmsError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/update"),
             addQueryParameter("version", options.version),
             addQueryParameter("rotateWorkerToken", options.rotateWorkerToken),
@@ -166,7 +171,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const unlockkey_ = (): Effect.Effect<never, SwarmsError, UnlockKeyResponse> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/unlockkey"),
             UnlockKeyResponseClient,
             Effect.catchAll(responseHandler("unlockkey"))
@@ -175,7 +180,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const unlock_ = (
         options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>
     ): Effect.Effect<never, SwarmsError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/unlock"),
             NodeHttp.request.schemaBody(SwarmUnlockRequest)(new SwarmUnlockRequest(options)),
             Effect.flatMap(voidClient),

@@ -1,6 +1,11 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -141,7 +146,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const list_ = (
             options?: ConfigListOptions | undefined
         ): Effect.Effect<never, ConfigsError, Readonly<Array<Config>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 ConfigsClient,
@@ -151,7 +156,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const create_ = (
             options: Schema.Schema.To<typeof ConfigSpec.struct>
         ): Effect.Effect<never, ConfigsError, Readonly<IDResponse>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/create"),
                 NodeHttp.request.schemaBody(ConfigSpec)(new ConfigSpec(options)),
                 Effect.flatMap(IDResponseClient),
@@ -159,21 +164,21 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const delete_ = (options: ConfigDeleteOptions): Effect.Effect<never, ConfigsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
                 Effect.catchAll(responseHandler("delete"))
             );
 
         const inspect_ = (options: ConfigInspectOptions): Effect.Effect<never, ConfigsError, Readonly<Config>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 ConfigClient,
                 Effect.catchAll(responseHandler("inspect"))
             );
 
         const update_ = (options: ConfigUpdateOptions): Effect.Effect<never, ConfigsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("version", options.version),
                 NodeHttp.request.schemaBody(ConfigSpec)(new ConfigSpec(options.spec)),

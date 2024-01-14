@@ -1,6 +1,11 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -136,7 +141,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const list_ = (
             options?: SecretListOptions | undefined
         ): Effect.Effect<never, SecretsError, Readonly<Array<Secret>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", options?.filters),
                 SecretsClient,
@@ -146,7 +151,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const create_ = (
             options: Schema.Schema.To<typeof SecretSpec.struct>
         ): Effect.Effect<never, SecretsError, Readonly<IDResponse>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/create"),
                 NodeHttp.request.schemaBody(SecretSpec)(new SecretSpec(options)),
                 Effect.flatMap(IDResponseClient),
@@ -154,21 +159,21 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const delete_ = (options: SecretDeleteOptions): Effect.Effect<never, SecretsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
                 Effect.catchAll(responseHandler("delete"))
             );
 
         const inspect_ = (options: SecretInspectOptions): Effect.Effect<never, SecretsError, Readonly<Secret>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 SecretClient,
                 Effect.catchAll(responseHandler("inspect"))
             );
 
         const update_ = (options: SecretUpdateOptions): Effect.Effect<never, SecretsError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("version", options.version),
                 NodeHttp.request.schemaBody(SecretSpec)(new SecretSpec(options.spec)),

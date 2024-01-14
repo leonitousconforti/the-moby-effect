@@ -1,13 +1,16 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as ParseResult from "@effect/schema/ParseResult";
-import { Effect, Match, Stream, identity, pipe } from "effect";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Match from "effect/Match";
+import * as Stream from "effect/Stream";
 
 export const addQueryParameter = (
     key: string,
     value: unknown | unknown[] | undefined
 ): ((self: NodeHttp.request.ClientRequest) => NodeHttp.request.ClientRequest) =>
     value === undefined || (Array.isArray(value) && value.length === 0)
-        ? identity
+        ? Function.identity
         : NodeHttp.request.setUrlParam(key, String(value));
 
 export const responseErrorHandler =
@@ -19,7 +22,7 @@ export const responseErrorHandler =
             | NodeHttp.error.ResponseError
             | ParseResult.ParseError
     ): Effect.Effect<never, E, never> =>
-        pipe(
+        Function.pipe(
             error,
             Match.valueTags({
                 ParseError: (parseError) => Effect.fail(toError(`parsing errors\n${parseError.toString()}\n`)),
@@ -46,7 +49,7 @@ export const responseErrorHandler =
 export const streamErrorHandler =
     <E>(toError: (message: string) => E) =>
     (error: NodeHttp.error.ResponseError | ParseResult.ParseError): Stream.Stream<never, E, never> =>
-        pipe(
+        Function.pipe(
             error,
             Match.valueTags({
                 ParseError: (parseError) => Effect.fail(toError(`parsing errors\n${parseError.toString()}\n`)),

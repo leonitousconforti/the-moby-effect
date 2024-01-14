@@ -1,6 +1,12 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Stream from "effect/Stream";
 
 import {
     IMobyConnectionAgent,
@@ -129,7 +135,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const responseHandler = (method: string) => responseErrorHandler((message) => new TasksError({ method, message }));
 
     const list_ = (options?: TaskListOptions | undefined): Effect.Effect<never, TasksError, Readonly<Array<Task>>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get(""),
             addQueryParameter("filters", JSON.stringify(options?.filters)),
             TasksClient,
@@ -137,7 +143,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const inspect_ = (options: TaskInspectOptions): Effect.Effect<never, TasksError, Readonly<Task>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             TaskClient,
             Effect.catchAll(responseHandler("inspect"))
@@ -146,7 +152,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const logs_ = (
         options: TaskLogsOptions
     ): Effect.Effect<never, TasksError, Stream.Stream<never, TasksError, string>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
             addQueryParameter("details", options.details),
             addQueryParameter("follow", options.follow),
