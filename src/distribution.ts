@@ -1,5 +1,10 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -52,7 +57,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const inspect_ = (
             options: DistributionInspectOptions
         ): Effect.Effect<never, DistributionsError, Readonly<DistributionInspect>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
                 DistributionInspectResponseClient,
                 Effect.catchAll(responseHandler("inspect"))

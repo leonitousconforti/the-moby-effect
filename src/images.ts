@@ -1,6 +1,13 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, Stream, String, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Stream from "effect/Stream";
+import * as String from "effect/String";
 
 import {
     IMobyConnectionAgent,
@@ -755,7 +762,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const list_ = (
         options?: ImageListOptions | undefined
     ): Effect.Effect<never, ImagesError, Readonly<Array<ImageSummary>>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/json"),
             addQueryParameter("all", options?.all),
             addQueryParameter("filters", options?.filters),
@@ -768,7 +775,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const build_ = (
         options: ImageBuildOptions
     ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, BuildInfo>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post(`${agent.nodeRequestUrl}/build`),
             NodeHttp.request.setHeader("Content-type", ""),
             NodeHttp.request.setHeader("X-Registry-Config", ""),
@@ -818,7 +825,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const buildPrune_ = (options: BuildPruneOptions): Effect.Effect<never, ImagesError, BuildPruneResponse> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/build/prune"),
             addQueryParameter("keep-storage", options["keep-storage"]),
             addQueryParameter("all", options.all),
@@ -830,7 +837,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const create_ = (
         options: ImageCreateOptions
     ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, BuildInfo>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/create"),
             NodeHttp.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
             addQueryParameter("fromImage", options.fromImage),
@@ -850,7 +857,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const inspect_ = (options: ImageInspectOptions): Effect.Effect<never, ImagesError, Readonly<ImageInspect>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
             ImageInspectClient,
             Effect.catchAll(responseHandler("inspect"))
@@ -859,7 +866,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const history_ = (
         options: ImageHistoryOptions
     ): Effect.Effect<never, ImagesError, Schema.Schema.To<typeof HistoryResponseItem>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/{name}/history".replace("{name}", encodeURIComponent(options.name))),
             HistoryResponseItemsClient,
             Effect.catchAll(responseHandler("history"))
@@ -868,7 +875,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const push_ = (
         options: ImagePushOptions
     ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
             NodeHttp.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"]),
             addQueryParameter("tag", options.tag),
@@ -880,7 +887,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const tag_ = (options: ImageTagOptions): Effect.Effect<never, ImagesError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/{name}/tag".replace("{name}", encodeURIComponent(options.name))),
             addQueryParameter("repo", options.repo),
             addQueryParameter("tag", options.tag),
@@ -891,7 +898,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const delete_ = (
         options: ImageDeleteOptions
     ): Effect.Effect<never, ImagesError, Readonly<Array<ImageDeleteResponseItem>>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
             addQueryParameter("force", options.force),
             addQueryParameter("noprune", options.noprune),
@@ -902,7 +909,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const search_ = (
         options: ImageSearchOptions
     ): Effect.Effect<never, ImagesError, Schema.Schema.To<typeof ImageSearchResponseItem>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/search"),
             addQueryParameter("term", options.term),
             addQueryParameter("limit", options.limit),
@@ -912,7 +919,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<never, ImagesError, ImagePruneResponse> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/prune"),
             addQueryParameter("filters", JSON.stringify(options?.filters)),
             ImagePruneResponseClient,
@@ -920,7 +927,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const commit_ = (options: ImageCommitOptions): Effect.Effect<never, ImagesError, Readonly<IdResponse>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/commit"),
             addQueryParameter("container", options.container),
             addQueryParameter("repo", options.repo),
@@ -937,7 +944,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const get_ = (
         options: ImageGetOptions
     ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/{name}/get".replace("{name}", encodeURIComponent(options.name))),
             client,
             Effect.map((response) => response.stream),
@@ -949,7 +956,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const getall_ = (
         options: ImageGetAllOptions
     ): Effect.Effect<never, ImagesError, Stream.Stream<never, ImagesError, string>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/get"),
             addQueryParameter("names", options.names),
             client,
@@ -960,7 +967,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const load_ = (options: ImageLoadOptions): Effect.Effect<never, ImagesError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/load"),
             addQueryParameter("quiet", options.quiet),
             NodeHttp.request.streamBody(options.imagesTarball),

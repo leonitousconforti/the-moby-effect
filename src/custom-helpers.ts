@@ -1,4 +1,8 @@
-import { Effect, Match, Schedule, Stream, pipe } from "effect";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Match from "effect/Match";
+import * as Schedule from "effect/Schedule";
+import * as Stream from "effect/Stream";
 
 import * as Containers from "./containers.js";
 import * as Images from "./images.js";
@@ -76,11 +80,11 @@ export const run = ({
         yield* _(containers.start({ id: containerCreateResponse.Id }));
 
         // Helper to wait until a container is dead or running
-        const waitUntilContainerDeadOrRunning: Effect.Effect<never, Containers.ContainersError, void> = pipe(
+        const waitUntilContainerDeadOrRunning: Effect.Effect<never, Containers.ContainersError, void> = Function.pipe(
             containers.inspect({ id: containerCreateResponse.Id }),
             Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
-                pipe(
+                Function.pipe(
                     Match.value(State?.Status),
                     Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.unit),
                     Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
@@ -96,13 +100,13 @@ export const run = ({
         );
 
         // Helper for if the container has a healthcheck, wait for it to report healthy
-        const waitUntilContainerHealthy: Effect.Effect<never, Containers.ContainersError, void> = pipe(
+        const waitUntilContainerHealthy: Effect.Effect<never, Containers.ContainersError, void> = Function.pipe(
             containers.inspect({ id: containerCreateResponse.Id }),
             Effect.tap(({ State }) =>
                 Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
             ),
             Effect.flatMap(({ State }) =>
-                pipe(
+                Function.pipe(
                     Match.value(State?.Health?.Status),
                     Match.when(undefined, (_s) => Effect.unit),
                     Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.unit),

@@ -1,6 +1,12 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Stream from "effect/Stream";
 
 import {
     IMobyConnectionAgent,
@@ -167,7 +173,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const auth_ = (
             options: Schema.Schema.From<typeof AuthConfig.struct>
         ): Effect.Effect<never, SystemsError, SystemAuthResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/auth"),
                 NodeHttp.request.schemaBody(AuthConfig)(new AuthConfig(options)),
                 Effect.flatMap(SystemAuthResponseClient),
@@ -175,13 +181,17 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const info_ = (): Effect.Effect<never, SystemsError, Readonly<SystemInfo>> =>
-            pipe(NodeHttp.request.get("/info"), SystemInfoClient, Effect.catchAll(responseHandler("info")));
+            Function.pipe(NodeHttp.request.get("/info"), SystemInfoClient, Effect.catchAll(responseHandler("info")));
 
         const version_ = (): Effect.Effect<never, SystemsError, Readonly<SystemVersion>> =>
-            pipe(NodeHttp.request.get("/version"), SystemVersionClient, Effect.catchAll(responseHandler("version")));
+            Function.pipe(
+                NodeHttp.request.get("/version"),
+                SystemVersionClient,
+                Effect.catchAll(responseHandler("version"))
+            );
 
         const ping_ = (): Effect.Effect<never, SystemsError, Readonly<string>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/_ping"),
                 client,
                 Effect.flatMap((response) => response.text),
@@ -189,12 +199,12 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const pingHead_ = (): Effect.Effect<never, SystemsError, void> =>
-            pipe(NodeHttp.request.head("/_ping"), voidClient, Effect.catchAll(responseHandler("pingHead")));
+            Function.pipe(NodeHttp.request.head("/_ping"), voidClient, Effect.catchAll(responseHandler("pingHead")));
 
         const events_ = (
             options?: SystemEventsOptions | undefined
         ): Effect.Effect<never, SystemsError, Stream.Stream<never, SystemsError, EventMessage>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/events"),
                 addQueryParameter("since", options?.since),
                 addQueryParameter("until", options?.until),
@@ -210,7 +220,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const dataUsage_ = (
             options?: SystemDataUsageOptions | undefined
         ): Effect.Effect<never, SystemsError, SystemDataUsageResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/system/df"),
                 addQueryParameter("type", options?.type),
                 SystemDataUsageResponseClient,

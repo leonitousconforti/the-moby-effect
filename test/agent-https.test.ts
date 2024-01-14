@@ -1,7 +1,8 @@
 import path from "node:path";
 
 import * as NodeFs from "@effect/platform-node/FileSystem";
-import { Effect, Schedule } from "effect";
+import * as Effect from "effect/Effect";
+import * as Schedule from "effect/Schedule";
 
 import * as MobyApi from "../src/index.js";
 import { AFTER_ALL_TIMEOUT, BEFORE_ALL_TIMEOUT } from "./helpers.js";

@@ -1,7 +1,13 @@
 import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, Stream, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
+import * as Stream from "effect/Stream";
 
 import {
     IExposeSocketOnEffectClientResponse,
@@ -737,7 +743,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const list_ = (
             options?: ContainerListOptions | undefined
         ): Effect.Effect<never, ContainersError, Readonly<Array<ContainerSummary>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/json"),
                 addQueryParameter("all", options?.all),
                 addQueryParameter("limit", options?.limit),
@@ -750,7 +756,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const create_ = (
             options: ContainerCreateOptions
         ): Effect.Effect<never, ContainersError, ContainerCreateResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/create"),
                 addQueryParameter("name", options.name),
                 addQueryParameter("platform", options.platform),
@@ -762,7 +768,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const inspect_ = (
             options: ContainerInspectOptions
         ): Effect.Effect<never, ContainersError, ContainerInspectResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/json".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("size", options.size),
                 ContainerInspectResponseClient,
@@ -770,7 +776,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const top_ = (options: ContainerTopOptions): Effect.Effect<never, ContainersError, unknown> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/top".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("ps_args", options.ps_args),
                 unknownClient,
@@ -780,7 +786,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const logs_ = (
             options: ContainerLogsOptions
         ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, string>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("follow", options.follow),
                 addQueryParameter("stdout", options.stdout),
@@ -799,7 +805,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const changes_ = (
             options: ContainerChangesOptions
         ): Effect.Effect<never, ContainersError, Readonly<Array<FilesystemChange>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/changes".replace("{id}", encodeURIComponent(options.id))),
                 FilesystemChangesClient,
                 Effect.map((response) => response ?? []),
@@ -809,7 +815,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const export_ = (
             options: ContainerExportOptions
         ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, Uint8Array>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/export".replace("{id}", encodeURIComponent(options.id))),
                 client,
                 Effect.map((response) => response.stream),
@@ -820,7 +826,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const stats_ = (
             options: ContainerStatsOptions
         ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, string>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/stats".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("stream", options.stream),
                 addQueryParameter("one-shot", options["one-shot"]),
@@ -832,7 +838,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const resize_ = (options: ContainerResizeOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/resize".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("h", options.h),
                 addQueryParameter("w", options.w),
@@ -841,7 +847,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const start_ = (options: ContainerStartOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/start".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
                 voidClient,
@@ -849,7 +855,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const stop_ = (options: ContainerStopOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/stop".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("signal", options.signal),
                 addQueryParameter("t", options.t),
@@ -858,7 +864,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const restart_ = (options: ContainerRestartOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/restart".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("signal", options.signal),
                 addQueryParameter("t", options.t),
@@ -867,7 +873,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const kill_ = (options: ContainerKillOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/kill".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("signal", options.signal),
                 voidClient,
@@ -877,7 +883,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const update_ = (
             options: ContainerUpdateOptions
         ): Effect.Effect<never, ContainersError, ContainerUpdateResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
                 NodeHttp.request.schemaBody(ContainerUpdateSpec)(new ContainerUpdateSpec(options.spec)),
                 Effect.flatMap(ContainerUpdateResponseClient),
@@ -885,7 +891,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const rename_ = (options: ContainerRenameOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/rename".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("name", options.name),
                 voidClient,
@@ -893,21 +899,21 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const pause_ = (options: ContainerPauseOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/pause".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
                 Effect.catchAll(responseHandler("pause"))
             );
 
         const unpause_ = (options: ContainerUnpauseOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/unpause".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
                 Effect.catchAll(responseHandler("unpause"))
             );
 
         const attach_ = (options: ContainerAttachOptions): Effect.Effect<never, ContainersError, NodeSocket.Socket> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/attach".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
                 addQueryParameter("logs", options.logs),
@@ -924,7 +930,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const attachWebsocket_ = (
             options: ContainerAttachWebsocketOptions
         ): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/attach/ws".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
                 addQueryParameter("logs", options.logs),
@@ -937,7 +943,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const wait_ = (options: ContainerWaitOptions): Effect.Effect<never, ContainersError, ContainerWaitResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/wait".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("condition", options.condition),
                 ContainerWaitResponseClient,
@@ -945,7 +951,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const delete_ = (options: ContainerDeleteOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("v", options.v),
                 addQueryParameter("force", options.force),
@@ -957,7 +963,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const archive_ = (
             options: ContainerArchiveOptions
         ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, Uint8Array>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 client,
@@ -967,7 +973,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const archiveInfo_ = (options: ContainerArchiveInfoOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.head("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 voidClient,
@@ -975,7 +981,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const putArchive_ = (options: PutContainerArchiveOptions): Effect.Effect<never, ContainersError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.put("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 addQueryParameter("noOverwriteDirNonDir", options.noOverwriteDirNonDir),
@@ -988,7 +994,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const prune_ = (
             options?: ContainerPruneOptions | undefined
         ): Effect.Effect<never, ContainersError, ContainerPruneResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/prune"),
                 addQueryParameter("filters", options?.filters),
                 ContainerPruneResponseClient,

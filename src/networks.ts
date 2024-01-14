@@ -1,6 +1,11 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -202,7 +207,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         const list_ = (
             options?: NetworkListOptions | undefined
         ): Effect.Effect<never, NetworksError, Readonly<Array<Network>>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 NetworksClient,
@@ -210,14 +215,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const delete_ = (options: NetworkDeleteOptions): Effect.Effect<never, NetworksError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
                 Effect.catchAll(responseHandler("delete"))
             );
 
         const inspect_ = (options: NetworkInspectOptions): Effect.Effect<never, NetworksError, Readonly<Network>> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("verbose", options.verbose),
                 addQueryParameter("scope", options.scope),
@@ -226,7 +231,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const create_ = (options: NetworkCreateRequest): Effect.Effect<never, NetworksError, NetworkCreateResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/create"),
                 NodeHttp.request.schemaBody(NetworkCreateRequest)(options),
                 Effect.flatMap(NetworkCreateResponseClient),
@@ -234,7 +239,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const connect_ = (options: NetworkConnectOptions): Effect.Effect<never, NetworksError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/connect".replace("{id}", encodeURIComponent(options.id))),
                 NodeHttp.request.schemaBody(NetworkConnectRequest)(options.container),
                 Effect.flatMap(voidClient),
@@ -242,7 +247,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const disconnect_ = (options: NetworkDisconnectOptions): Effect.Effect<never, NetworksError, void> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/{id}/disconnect".replace("{id}", encodeURIComponent(options.id))),
                 NodeHttp.request.schemaBody(NetworkDisconnectRequest)(
                     options.container ?? new NetworkDisconnectRequest({})
@@ -252,7 +257,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             );
 
         const prune_ = (options: NetworkPruneOptions): Effect.Effect<never, NetworksError, NetworkPruneResponse> =>
-            pipe(
+            Function.pipe(
                 NodeHttp.request.post("/prune"),
                 addQueryParameter("filters", options.filters),
                 NetworkPruneResponseClient,

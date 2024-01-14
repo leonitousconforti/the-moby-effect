@@ -1,5 +1,10 @@
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Context, Data, Effect, Layer, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Data from "effect/Data";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
@@ -97,7 +102,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const responseHandler = (method: string) => responseErrorHandler((message) => new ExecsError({ method, message }));
 
     const container_ = (options: ContainerExecOptions): Effect.Effect<never, ExecsError, Readonly<IdResponse>> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
             NodeHttp.request.schemaBody(ExecConfig)(options.execConfig),
             Effect.flatMap(IdResponseClient),
@@ -105,7 +110,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const start_ = (options: ExecStartOptions): Effect.Effect<never, ExecsError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
             NodeHttp.request.schemaBody(ExecStartConfig)(options.execStartConfig),
             Effect.flatMap(voidClient),
@@ -113,7 +118,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const resize_ = (options: ExecResizeOptions): Effect.Effect<never, ExecsError, void> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.post("/exec/{id}/resize".replace("{id}", encodeURIComponent(options.id))),
             addQueryParameter("h", options.h),
             addQueryParameter("w", options.w),
@@ -122,7 +127,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
         );
 
     const inspect_ = (options: ExecInspectOptions): Effect.Effect<never, ExecsError, ExecInspectResponse> =>
-        pipe(
+        Function.pipe(
             NodeHttp.request.get("/exec/{id}/json".replace("{id}", encodeURIComponent(options.id))),
             ExecInspectResponseClient,
             Effect.catchAll(responseHandler("inspect"))

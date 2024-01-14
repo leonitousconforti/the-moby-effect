@@ -1,5 +1,6 @@
 import * as NodeRuntime from "@effect/platform-node/Runtime";
-import { Console, Effect } from "effect";
+import * as Console from "effect/Console";
+import * as Effect from "effect/Effect";
 
 import * as MobyApi from "../src/index.js";
 

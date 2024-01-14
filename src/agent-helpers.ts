@@ -4,7 +4,12 @@ import net from "node:net";
 import ssh2 from "ssh2";
 
 import * as NodeHttp from "@effect/platform-node/HttpClient";
-import { Context, Effect, Layer, Match, Scope, pipe } from "effect";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Match from "effect/Match";
+import * as Scope from "effect/Scope";
 
 /** How to connect to your moby/docker instance. */
 export type MobyConnectionOptions =
@@ -136,7 +141,7 @@ export const getAgent = (
     Effect.map(
         Effect.acquireRelease(
             Effect.sync(() =>
-                pipe(
+                Function.pipe(
                     Match.value<MobyConnectionOptions>(connectionOptions),
                     Match.when({ connection: "ssh" }, (options) => new SSHAgent(options)),
                     Match.when(
