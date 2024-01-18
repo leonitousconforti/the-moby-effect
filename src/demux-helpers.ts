@@ -168,10 +168,10 @@ export const demuxMultiplexedSocket = Function.dual<
 
 /**
  * Demux an http socket. The source stream is the stream that you want to
- * forward to the containers stdin. If the source stream is a raw stream, then
- * there will only be one sink that combines the containers stdout and stderr.
- * if the source stream is a multiplexed stream, then there will be two sinks,
- * one for stdout and one for stderr.
+ * forward to the containers stdin. If the socket is a raw stream, then there
+ * will only be one sink that combines the containers stdout and stderr. if the
+ * socket is a multiplexed stream, then there will be two sinks, one for stdout
+ * and one for stderr.
  */
 export const demuxSocket: {
     <E1, E2>(
@@ -220,13 +220,11 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
         () => process.stdin,
         () => new StdinError({ message: "stdin is not readable" })
     );
-
     const stdout = NodeSink.fromWritable(
         () => process.stdout,
         () => new StdoutError({ message: "stdout is not writable" }),
         { endOnDone: false }
     );
-
     const stderr = NodeSink.fromWritable(
         () => process.stderr,
         () => new StderrError({ message: "stderr is not writable" }),
