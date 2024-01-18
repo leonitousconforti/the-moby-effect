@@ -1,4 +1,3 @@
-import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -10,13 +9,13 @@ import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
 import {
-    IExposeSocketOnEffectClientResponse,
     IMobyConnectionAgent,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
 } from "./agent-helpers.js";
+import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocket } from "./demux-helpers.js";
 import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
 import {
     ContainerCreateResponse,
@@ -607,7 +606,9 @@ export interface Containers {
      * @param stdout - Attach to `stdout`
      * @param stderr - Attach to `stderr`
      */
-    readonly attach: (options: ContainerAttachOptions) => Effect.Effect<never, ContainersError, NodeSocket.Socket>;
+    readonly attach: (
+        options: ContainerAttachOptions
+    ) => Effect.Effect<never, ContainersError, RawStreamSocket | MultiplexedStreamSocket>;
 
     /**
      * Attach to a container via a websocket
@@ -912,7 +913,9 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("unpause"))
             );
 
-        const attach_ = (options: ContainerAttachOptions): Effect.Effect<never, ContainersError, NodeSocket.Socket> =>
+        const attach_ = (
+            options: ContainerAttachOptions
+        ): Effect.Effect<never, ContainersError, RawStreamSocket | MultiplexedStreamSocket> =>
             Function.pipe(
                 NodeHttp.request.post("/{id}/attach".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
@@ -922,8 +925,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 addQueryParameter("stdout", options.stdout),
                 addQueryParameter("stderr", options.stderr),
                 client,
-                Effect.map((response) => (response as IExposeSocketOnEffectClientResponse).source.socket),
-                Effect.flatMap((socket) => NodeSocket.fromNetSocket(Effect.sync(() => socket))),
+                Effect.flatMap(responseToStreamingSocket),
                 Effect.catchAll(responseHandler("attach"))
             );
 

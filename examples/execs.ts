@@ -1,4 +1,3 @@
-import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeRuntime from "@effect/platform-node/Runtime";
 import * as Effect from "effect/Effect";
 
@@ -33,11 +32,12 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    const socket: NodeSocket.Socket = yield* _(
-        execs.start({ id: execCreateResponse.Id!, execStartConfig: { Detach: false } })
-    );
+    const socket = yield* _(execs.start({ id: execCreateResponse.Id!, execStartConfig: { Detach: false } }));
+    if (!socket) {
+        throw new Error("something went wrong");
+    }
 
-    yield* _(MobyApi.demuxToStdinAndStdout(socket));
+    yield* _(MobyApi.demuxSocketFromStdinToStdoutAndStderr(socket));
     yield* _(containers.kill({ id: containerInspectResponse.Id! }));
     yield* _(containers.delete({ id: containerInspectResponse.Id! }));
 });

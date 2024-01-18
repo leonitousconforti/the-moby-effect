@@ -1,4 +1,3 @@
-import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -9,13 +8,13 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import {
-    IExposeSocketOnEffectClientResponse,
     IMobyConnectionAgent,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
 } from "./agent-helpers.js";
+import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocket } from "./demux-helpers.js";
 import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
 import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "./schemas.js";
 
@@ -66,7 +65,9 @@ export interface Execs {
      * @param execStartConfig -
      * @param id - Exec instance ID
      */
-    readonly start: (options: ExecStartOptions) => Effect.Effect<never, ExecsError, NodeSocket.Socket>;
+    readonly start: (
+        options: ExecStartOptions
+    ) => Effect.Effect<never, ExecsError, RawStreamSocket | MultiplexedStreamSocket | void>;
 
     /**
      * Resize an exec instance
@@ -112,13 +113,16 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             Effect.catchAll(responseHandler("container"))
         );
 
-    const start_ = (options: ExecStartOptions): Effect.Effect<never, ExecsError, NodeSocket.Socket> =>
+    const start_ = (
+        options: ExecStartOptions
+    ): Effect.Effect<never, ExecsError, RawStreamSocket | MultiplexedStreamSocket | void> =>
         Function.pipe(
             NodeHttp.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
             NodeHttp.request.schemaBody(ExecStartConfig)(Schema.parseSync(ExecStartConfig)(options.execStartConfig)),
             Effect.flatMap(client),
-            Effect.map((response) => (response as IExposeSocketOnEffectClientResponse).source.socket),
-            Effect.flatMap((socket) => NodeSocket.fromNetSocket(Effect.sync(() => socket))),
+            Effect.flatMap((response) =>
+                options.execStartConfig.Detach ? Effect.unit : responseToStreamingSocket(response)
+            ),
             Effect.catchAll(responseHandler("start"))
         );
 

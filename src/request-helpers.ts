@@ -1,3 +1,4 @@
+import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Effect from "effect/Effect";
@@ -21,6 +22,7 @@ export const responseErrorHandler =
             | NodeHttp.error.RequestError
             | NodeHttp.error.ResponseError
             | ParseResult.ParseError
+            | NodeSocket.SocketError
     ): Effect.Effect<never, E, never> =>
         Function.pipe(
             error,
@@ -30,6 +32,8 @@ export const responseErrorHandler =
                     Effect.fail(toError(`body error ${bodyError.reason._tag}, ${String(bodyError.reason.error)}`)),
                 RequestError: (requestError) =>
                     Effect.fail(toError(`request error ${requestError.reason}, ${String(requestError.error)}`)),
+                SocketError: (socketError) =>
+                    Effect.fail(toError(`socket error ${socketError.reason}, ${String(socketError.error)}`)),
                 ResponseError: (responseError) =>
                     responseError.response.text.pipe(
                         Effect.catchTag("ResponseError", () =>

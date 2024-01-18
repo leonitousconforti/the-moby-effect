@@ -1,4 +1,3 @@
-import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeRuntime from "@effect/platform-node/Runtime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
@@ -30,7 +29,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    const socket: NodeSocket.Socket = yield* _(
+    const socket = yield* _(
         containers.attach({
             id: containerId!,
             stdin: true,
@@ -41,7 +40,8 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    yield* _(MobyApi.demuxToStdinAndStdout(socket));
+    // Courtesy new line before demultiplexing the socket
+    yield* _(MobyApi.demuxSocketFromStdinToStdoutAndStderr(socket));
 
     yield* _(Console.log("Disconnected from container"));
     yield* _(Console.log(`Removing container ${containerName}...`));
