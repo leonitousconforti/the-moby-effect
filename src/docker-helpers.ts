@@ -1,54 +1,12 @@
-import * as NodeSocket from "@effect/experimental/Socket";
-import * as NodeSink from "@effect/platform-node/Sink";
-import * as NodeStream from "@effect/platform-node/Stream";
-import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
 import * as Schedule from "effect/Schedule";
-import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
 import * as Containers from "./containers.js";
 import * as Images from "./images.js";
 import * as Schemas from "./schemas.js";
-
-export class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}
-export class StdoutError extends Data.TaggedError("StdoutError")<{ message: string }> {}
-
-/** Demux an http stream. */
-export const demuxSocket = Function.dual<
-    <E1, E2>(
-        source: Stream.Stream<never, E1, Uint8Array>,
-        sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ) => (socket: NodeSocket.Socket) => Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void>,
-    <E1, E2>(
-        socket: NodeSocket.Socket,
-        source: Stream.Stream<never, E1, Uint8Array>,
-        sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ) => Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void>
->(
-    3,
-    <E1, E2>(
-        socket: NodeSocket.Socket,
-        source: Stream.Stream<never, E1, Uint8Array>,
-        sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void> =>
-        Function.pipe(source, Stream.pipeThroughChannel(NodeSocket.toChannel(socket)), Stream.run(sink))
-);
-
-/** Demux to stdin and stdout */
-export const demuxToStdinAndStdout = demuxSocket(
-    NodeStream.fromReadable(
-        () => process.stdin,
-        () => new StdinError({ message: "stdin is not readable" })
-    ),
-    NodeSink.fromWritable(
-        () => process.stdout,
-        () => new StdoutError({ message: "stdout is not writable" }),
-        { endOnDone: false }
-    )
-);
 
 /**
  * Implements the `docker pull` command but it doesn't have all the features
@@ -171,3 +129,21 @@ export const run = ({
 
 /** Implements `docker exec` command. */
 export const exec = {};
+
+/** Implements the `docker ps` command. */
+export const ps = {};
+
+/** Implements the `docker push` command. */
+export const push = {};
+
+/** Implements the `docker images` command. */
+export const images = {};
+
+/** Implements the `docker search` command. */
+export const search = {};
+
+/** Implements the `docker version` command. */
+export const version = {};
+
+/** Implements the `docker info` command. */
+export const info = {};

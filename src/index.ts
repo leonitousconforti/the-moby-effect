@@ -22,8 +22,9 @@ import * as System from "./system.js";
 import * as Tasks from "./tasks.js";
 import * as Volumes from "./volumes.js";
 
-export type { MobyConnectionOptions } from "./agent-helpers.js";
-export * from "./custom-helpers.js";
+export * from "./agent-helpers.js";
+export * from "./demux-helpers.js";
+export * from "./docker-helpers.js";
 
 export * as Configs from "./configs.js";
 export * as Containers from "./containers.js";
