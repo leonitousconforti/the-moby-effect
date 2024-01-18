@@ -15,18 +15,18 @@ Moby API client and CLI client built using [effect-ts](http://effect.website). I
 - [ ] - Implement all common docker commands except for login/logout because I don't want to interact with credential helpers
 
 ## Common docker commands implemented as CLIs
-run         Create and run a new container from an image
-exec        Execute a command in a running container
-ps          List containers
-build       Build an image from a Dockerfile
-pull        Download an image from a registry
-push        Upload an image to a registry
-images      List images
-login       Log in to a registry
-logout      Log out from a registry
-search      Search Docker Hub for images
-version     Show the Docker version information
-info        Display system-wide information
+- run         Create and run a new container from an image
+- exec        Execute a command in a running container
+- ps          List containers
+- build       Build an image from a Dockerfile
+- pull        Download an image from a registry
+- push        Upload an image to a registry
+- images      List images
+- login       Log in to a registry
+- logout      Log out from a registry
+- search      Search Docker Hub for images
+- version     Show the Docker version information
+- info        Display system-wide information
 
 ## Non-Goals :wastebasket:
 
