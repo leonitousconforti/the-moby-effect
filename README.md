@@ -1,6 +1,6 @@
 # the-moby-effect
 
-Moby API client built using [effect-ts](http://effect.website). If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly with effect integration, then I do have some of those [here](./examples/).
+Moby API client and CLI client built using [effect-ts](http://effect.website). If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly with effect integration, then I do have some of those [here](./examples/).
 
 ## Goals :white_check_mark:
 
@@ -12,6 +12,21 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 - [x] - tests, examples, and in-line JSDoc comments based on the moby api documentation
 - [x] - Strong focus on types and typescript support
 - [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __currently only docker is tested against__
+- [ ] - Implement all common docker commands except for login/logout because I don't want to interact with credential helpers
+
+## Common docker commands implemented as CLIs
+run         Create and run a new container from an image
+exec        Execute a command in a running container
+ps          List containers
+build       Build an image from a Dockerfile
+pull        Download an image from a registry
+push        Upload an image to a registry
+images      List images
+login       Log in to a registry
+logout      Log out from a registry
+search      Search Docker Hub for images
+version     Show the Docker version information
+info        Display system-wide information
 
 ## Non-Goals :wastebasket:
 
@@ -21,6 +36,7 @@ Moby API client built using [effect-ts](http://effect.website). If you want docu
 
 ## Todo/Future :bulb:
 - Add more examples
+- Finish implementing all common docker commands
 - Maybe add tests against something else other than docker like podman?
 
 ## Compatibility :closed_lock_with_key:
