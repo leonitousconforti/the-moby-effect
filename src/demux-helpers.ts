@@ -11,7 +11,7 @@ import * as Function from "effect/Function";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { IExposeSocketOnEffectClientResponse } from "./agent-helpers.js";
+import { IExposeSocketOnEffectClientResponse } from "./request-helpers.js";
 
 // Errors when demultiplexing stdin and stdout
 export class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}

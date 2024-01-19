@@ -33,7 +33,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
 
     const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
-        MobyApi.run({
+        MobyApi.DockerCommon.run({
             imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
             containerOptions: {
                 spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },

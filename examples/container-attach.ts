@@ -13,7 +13,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
 
     const { Id: containerId, Name: containerName } = yield* _(
-        MobyApi.run({
+        MobyApi.DockerCommon.run({
             imageOptions: { kind: "pull", fromImage: "docker.io/library/alpine:latest" },
             containerOptions: {
                 spec: {
@@ -41,7 +41,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     );
 
     // Courtesy new line before demultiplexing the socket
-    yield* _(MobyApi.demuxSocketFromStdinToStdoutAndStderr(socket));
+    yield* _(MobyApi.DemuxHelpers.demuxSocketFromStdinToStdoutAndStderr(socket));
 
     yield* _(Console.log("Disconnected from container"));
     yield* _(Console.log(`Removing container ${containerName}...`));

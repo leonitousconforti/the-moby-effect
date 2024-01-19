@@ -1,3 +1,5 @@
+import net from "node:net";
+
 import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as ParseResult from "@effect/schema/ParseResult";
@@ -5,6 +7,16 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
 import * as Stream from "effect/Stream";
+
+/**
+ * Helper interface to expose the underlying socket from the effect NodeHttp
+ * response. Useful for multiplexing the response stream.
+ */
+export interface IExposeSocketOnEffectClientResponse extends NodeHttp.response.ClientResponse {
+    source: {
+        socket: net.Socket;
+    };
+}
 
 export const addQueryParameter = (
     key: string,

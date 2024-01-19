@@ -23,8 +23,8 @@ import * as Tasks from "./tasks.js";
 import * as Volumes from "./volumes.js";
 
 export * from "./agent-helpers.js";
-export * from "./demux-helpers.js";
-export * from "./docker-helpers.js";
+export * as DemuxHelpers from "./demux-helpers.js";
+export * as DockerCommon from "./docker-helpers.js";
 
 export * as Configs from "./configs.js";
 export * as Containers from "./containers.js";

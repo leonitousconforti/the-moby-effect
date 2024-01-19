@@ -137,7 +137,10 @@ export const ps = {};
 export const push = {};
 
 /** Implements the `docker images` command. */
-export const images = {};
+export const images = Effect.gen(function* (_: Effect.Adapter) {
+    const images: Images.Images = yield* _(Images.Images);
+    return yield* _(images.list());
+});
 
 /** Implements the `docker search` command. */
 export const search = {};

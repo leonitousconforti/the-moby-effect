@@ -13,7 +13,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
 
     const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
-        MobyApi.run({
+        MobyApi.DockerCommon.run({
             imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
             containerOptions: {
                 spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
@@ -37,7 +37,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         throw new Error("something went wrong");
     }
 
-    yield* _(MobyApi.demuxSocketFromStdinToStdoutAndStderr(socket));
+    yield* _(MobyApi.DemuxHelpers.demuxSocketFromStdinToStdoutAndStderr(socket));
     yield* _(containers.kill({ id: containerInspectResponse.Id! }));
     yield* _(containers.delete({ id: containerInspectResponse.Id! }));
 });

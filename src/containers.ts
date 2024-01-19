@@ -354,7 +354,7 @@ export interface PutContainerArchiveOptions {
      * following algorithms: `identity` (no compression), `gzip`, `bzip2`, or
      * `xz`.
      */
-    readonly stream: Stream.Stream<never, never, Uint8Array>;
+    readonly stream: Stream.Stream<never, ContainersError, Uint8Array>;
 }
 
 export interface ContainerPruneOptions {
@@ -988,7 +988,15 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 addQueryParameter("path", options.path),
                 addQueryParameter("noOverwriteDirNonDir", options.noOverwriteDirNonDir),
                 addQueryParameter("copyUIDGID", options.copyUIDGID),
-                NodeHttp.request.streamBody(options.stream),
+                NodeHttp.request.streamBody(
+                    Stream.mapError(options.stream, (error) =>
+                        NodeHttp.error.RequestError({
+                            reason: "Encode",
+                            error: error,
+                            request: {} as unknown as NodeHttp.request.ClientRequest,
+                        })
+                    )
+                ),
                 voidClient,
                 Effect.catchAll(responseHandler("putArchive"))
             );

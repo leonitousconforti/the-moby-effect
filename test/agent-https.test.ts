@@ -36,7 +36,7 @@ beforeAll(
             const volumeCreateResponse: Readonly<MobyApi.Schemas.Volume> = yield* _(volumes.create({}));
 
             const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
-                MobyApi.run({
+                MobyApi.DockerCommon.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/docker:dind" },
                     containerOptions: {
                         spec: {
