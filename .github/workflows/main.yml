@@ -16,9 +16,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - env:
-        DOCKER_CLI_EXPERIMENTAL: enabled
-
     - uses: actions/checkout@v4
 
     - uses: crazy-max/ghaction-setup-docker@v2
