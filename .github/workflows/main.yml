@@ -18,6 +18,7 @@ jobs:
         context: .
         file: test/agent-ssh.dockerfile
         tags: ssh-dind:latest
+        platforms: linux/amd64,linux/arm64,windows/amd64
         outputs: type=docker,dest=/tmp/ssh-dind-docker-image.tar
     - uses: actions/upload-artifact@v4
       with:
