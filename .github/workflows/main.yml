@@ -7,6 +7,26 @@ on:
     branches: [ "main" ]
 
 jobs:
+  build-ssh-test-docker-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: test/agent-ssh.dockerfile
+        tags: ssh-dind:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max,
+        outputs: type=docker,dest=/tmp/ssh-dind-docker-image.tar
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ssh-dind-docker-image
+        path: /tmp/ssh-dind-docker-image.tar
+        if-no-files-found: error
+
   build:
     strategy:
       matrix:
@@ -14,16 +34,21 @@ jobs:
         os: [ubuntu-latest, mac-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
+    needs: build-ssh-test-docker-image
 
     steps:
     - uses: actions/checkout@v4
 
-    - uses: docker/build-push-action@v5
+    - uses: actions/download-artifact@v3
       with:
-        context: .
-        load: true
-        file: test/agent-ssh.dockerfile
-        tags: ssh-dind:latest
+        name: ssh-dind-docker-image
+        path: /tmp
+
+    - name: Load Docker image
+      shell: bash
+      run: |
+        docker load --input /tmp/ssh-dind-docker-image.tar
+        docker image ls -a
 
     - name: Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
