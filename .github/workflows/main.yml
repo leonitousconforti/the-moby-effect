@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      env:
+    - env:
         DOCKER_CLI_EXPERIMENTAL: enabled
 
     - uses: actions/checkout@v4
