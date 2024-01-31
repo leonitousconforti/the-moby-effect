@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as NodeSink from "@effect/platform-node/Sink";
@@ -13,27 +11,43 @@ import * as Stream from "effect/Stream";
 
 import { IExposeSocketOnEffectClientResponse } from "./request-helpers.js";
 
-// Errors when demultiplexing stdin and stdout
+// Errors when multiplexing stdin and stdout
 export class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}
 export class StdoutError extends Data.TaggedError("StdoutError")<{ message: string }> {}
 export class StderrError extends Data.TaggedError("StderrError")<{ message: string }> {}
 
-// The different types of sockets that can be returned from endpoints
-export type RawStreamSocket = NodeSocket.Socket & Brand.Brand<"RawStreamSocket">;
-export type MultiplexedStreamSocket = NodeSocket.Socket & Brand.Brand<"MultiplexedStreamSocket">;
+/**
+ * When the TTY setting is enabled in POST /containers/create, the stream is not
+ * multiplexed. The data exchanged over the hijacked connection is simply the
+ * raw data from the process PTY and client's stdin.
+ */
+export type RawStreamSocket = NodeSocket.Socket & {
+    "content-type": "application/vnd.docker.raw-stream";
+} & Brand.Brand<"RawStreamSocket">;
 
-export const RawStreamSocket = Brand.nominal<RawStreamSocket>();
-export const MultiplexedStreamSocket = Brand.nominal<MultiplexedStreamSocket>();
-
-export const isMultiplexedStreamSocket = (
-    socket: NodeSocket.Socket & Brand.Brand<any>
-): socket is MultiplexedStreamSocket => socket[Brand.BrandTypeId]["MultiplexedStreamSocket"];
-
-export const isRawStreamSocket = (socket: NodeSocket.Socket & Brand.Brand<any>): socket is RawStreamSocket =>
-    socket[Brand.BrandTypeId]["RawStreamSocket"];
+export const RawStreamSocket = Brand.refined<RawStreamSocket>(
+    (socket) => socket["content-type"] === "application/vnd.docker.raw-stream",
+    () => Brand.error(`Expected a raw stream socket`)
+);
 
 export const isRawStreamSocketResponse = (response: NodeHttp.response.ClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.raw-stream";
+
+/**
+ * When the TTY setting is disabled in POST /containers/create, the HTTP
+ * Content-Type header is set to application/vnd.docker.multiplexed-stream and
+ * the stream over the hijacked connected is multiplexed to separate out stdout
+ * and stderr. The stream consists of a series of frames, each containing a
+ * header and a payload.
+ */
+export type MultiplexedStreamSocket = NodeSocket.Socket & {
+    "content-type": "application/vnd.docker.multiplexed-stream";
+} & Brand.Brand<"MultiplexedStreamSocket">;
+
+export const MultiplexedStreamSocket = Brand.refined<MultiplexedStreamSocket>(
+    (socket) => socket["content-type"] === "application/vnd.docker.multiplexed-stream",
+    () => Brand.error(`Expected a multiplexed stream socket`)
+);
 
 export const isMultiplexedStreamSocketResponse = (response: NodeHttp.response.ClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.multiplexed-stream";
@@ -43,7 +57,7 @@ export const isMultiplexedStreamSocketResponse = (response: NodeHttp.response.Cl
  * socket. If the response is neither a multiplexed stream socket nor a raw,
  * then an error will be returned.
  */
-export const responseToStreamingSocket = (
+export const responseToStreamingSocketOrFail = (
     response: NodeHttp.response.ClientResponse
 ): Effect.Effect<never, NodeSocket.SocketError, RawStreamSocket | MultiplexedStreamSocket> =>
     Effect.gen(function* (_: Effect.Adapter) {
@@ -51,9 +65,12 @@ export const responseToStreamingSocket = (
         const effectSocket: NodeSocket.Socket = yield* _(NodeSocket.fromNetSocket(Effect.sync(() => socket)));
 
         if (isRawStreamSocketResponse(response)) {
-            return RawStreamSocket(effectSocket);
+            return RawStreamSocket({ ...effectSocket, "content-type": "application/vnd.docker.raw-stream" });
         } else if (isMultiplexedStreamSocketResponse(response)) {
-            return MultiplexedStreamSocket(effectSocket);
+            return MultiplexedStreamSocket({
+                ...effectSocket,
+                "content-type": "application/vnd.docker.multiplexed-stream",
+            });
         } else {
             return yield* _(
                 new NodeSocket.SocketError({ reason: "Open", error: "Response is not a streaming socket" })
@@ -201,10 +218,16 @@ export const demuxSocket: {
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2?: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void> =>
-        isMultiplexedStreamSocket(socket)
-            ? demuxMultiplexedSocket(socket, source, sink1, sink2!)
-            : demuxRawSocket(socket, source, sink1)
+    ): Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void> => {
+        switch (socket["content-type"]) {
+            case "application/vnd.docker.raw-stream": {
+                return demuxRawSocket(socket, source, sink1);
+            }
+            case "application/vnd.docker.multiplexed-stream": {
+                return demuxMultiplexedSocket(socket, source, sink1, sink2!);
+            }
+        }
+    }
 );
 
 /**
@@ -231,7 +254,12 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
         { endOnDone: false }
     );
 
-    return isRawStreamSocket(socket)
-        ? demuxRawSocket(socket, stdin, stdout)
-        : demuxMultiplexedSocket(socket, stdin, stdout, stderr);
+    switch (socket["content-type"]) {
+        case "application/vnd.docker.raw-stream": {
+            return demuxRawSocket(socket, stdin, stdout);
+        }
+        case "application/vnd.docker.multiplexed-stream": {
+            return demuxMultiplexedSocket(socket, stdin, stdout, stderr);
+        }
+    }
 };

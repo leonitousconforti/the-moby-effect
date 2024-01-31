@@ -15,7 +15,7 @@ import {
     MobyHttpClientLive,
     getAgent,
 } from "./agent-helpers.js";
-import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocket } from "./demux-helpers.js";
+import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "./demux-helpers.js";
 import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
 import {
     ContainerCreateResponse,
@@ -925,7 +925,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 addQueryParameter("stdout", options.stdout),
                 addQueryParameter("stderr", options.stderr),
                 client,
-                Effect.flatMap(responseToStreamingSocket),
+                Effect.flatMap(responseToStreamingSocketOrFail),
                 Effect.catchAll(responseHandler("attach"))
             );
 

@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+
 import * as Schema from "@effect/schema/Schema";
 
 export enum Port_Type {
@@ -594,7 +596,7 @@ export class PluginDevice extends Schema.Class<PluginDevice>()({
     Path: Schema.string,
 }) {}
 
-export class PluginEnv extends Schema.Class<PluginEnv>()({
+export class PluginEnvironment extends Schema.Class<PluginEnvironment>()({
     Name: Schema.string,
     Description: Schema.string,
     Settable: Schema.nullable(Schema.array(Schema.string)),
@@ -1302,9 +1304,6 @@ export class ExecConfig extends Schema.Class<ExecConfig>()({
 }) {}
 
 export class ExecStartConfig extends Schema.Class<ExecStartConfig>()({
-    /** Detach from the command. */
-    Detach: Schema.optional(Schema.boolean),
-
     /** Allocate a pseudo-TTY. */
     Tty: Schema.optional(Schema.boolean),
 
@@ -1867,7 +1866,7 @@ export class Plugin extends Schema.Class<Plugin>()({
             IpcHost: Schema.boolean,
             PidHost: Schema.boolean,
             Mounts: Schema.nullable(Schema.array(Schema.nullable(PluginMount))),
-            Env: Schema.nullable(Schema.array(Schema.nullable(PluginEnv))),
+            Env: Schema.nullable(Schema.array(Schema.nullable(PluginEnvironment))),
             Args: Schema.nullable(
                 Schema.struct({
                     Name: Schema.string,
