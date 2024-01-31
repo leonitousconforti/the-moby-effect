@@ -161,8 +161,7 @@
                 ]
             }
         }
-    }
+    },
 
-    // TODO: waiting for https://github.com/devcontainers/features/pull/770
-    // "postCreateCommand": "pnpm install && pnpm run gen && pnpm run test"
+    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/setup.sh'"
 }
