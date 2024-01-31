@@ -27,14 +27,5 @@ module.exports = {
             { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
         ],
     },
-    overrides: [
-        {
-            files: ["./src/schemas.ts"],
-            rules: {
-                "max-lines": "off",
-                "unicorn/prevent-abbreviations": "off",
-            },
-        },
-    ],
     ignorePatterns: ["dist/", ".eslintrc.cjs"],
 };

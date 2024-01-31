@@ -816,7 +816,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             defaultClient.pipe(NodeHttp.client.filterStatusOk),
             Effect.map((response) => response.stream),
             Effect.map(Stream.decodeText("utf8")),
-            Effect.map(Stream.map(String.linesWithSeparators)), // TODO: update once https://github.com/Effect-TS/effect/pull/1798 is merged
+            Effect.map(Stream.map(String.linesIterator)),
             Effect.map(Stream.flattenIterables),
             Effect.map(Stream.map(Schema.parse(Schema.parseJson(BuildInfo)))),
             Effect.map((stream) => Stream.flattenEffect(stream)),

@@ -30,7 +30,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "isolatedModules": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
     },
-    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"]
+    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
 }

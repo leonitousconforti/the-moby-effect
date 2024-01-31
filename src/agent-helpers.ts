@@ -28,16 +28,6 @@ export type MobyConnectionOptions =
       };
 
 /**
- * Helper interface to expose the underlying socket from the effect NodeHttp
- * response. Useful for multiplexing the response stream.
- */
-export interface IExposeSocketOnEffectClientResponse extends NodeHttp.response.ClientResponse {
-    source: {
-        socket: net.Socket;
-    };
-}
-
-/**
  * Our moby connection needs to be an extension of the effect platform-node
  * httpAgent so that it will still be compatible with all the other
  * platform-node http methods, but it would be nice if it had a few other things

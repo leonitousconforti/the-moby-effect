@@ -27,7 +27,7 @@ describe.each(testEngines)("MobyApi Containers tests", (image) => {
 
             // Download the image from docker hub if necessary, create the container, start it, wait for it to be running
             const { Id: containerId } = yield* _(
-                MobyApi.run({
+                MobyApi.DockerCommon.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/alpine:latest" },
                     containerOptions: {
                         spec: {
@@ -70,9 +70,7 @@ describe.each(testEngines)("MobyApi Containers tests", (image) => {
             const archiveStream: Stream.Stream<never, MobyApi.Containers.ContainersError, Uint8Array> = yield* _(
                 containers.archive({ id, path: "/bin" })
             );
-
-            // FIXME: I really dislike have to do stream.orDie here
-            yield* _(containers.putArchive({ id, path: "/bin", stream: Stream.orDie(archiveStream) }));
+            yield* _(containers.putArchive({ id, path: "/bin", stream: archiveStream }));
 
             // Export the container
             const exportStream = yield* _(containers.export({ id }));
@@ -93,7 +91,7 @@ describe.each(testEngines)("MobyApi Containers tests", (image) => {
             const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
 
             const { Id: containerId } = yield* _(
-                MobyApi.run({
+                MobyApi.DockerCommon.run({
                     imageOptions: { kind: "pull", fromImage: "docker.io/library/alpine:latest" },
                     containerOptions: {
                         spec: {

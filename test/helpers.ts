@@ -66,7 +66,7 @@ export const BeforeAll = <
         const volumeCreateResponse: Readonly<MobyApi.Schemas.Volume> = yield* _(volumes.create({}));
 
         const containerInspectResponse: Readonly<MobyApi.Schemas.ContainerInspectResponse> = yield* _(
-            MobyApi.run({
+            MobyApi.DockerCommon.run({
                 imageOptions: { kind: "pull", fromImage: image },
                 containerOptions: {
                     spec: {

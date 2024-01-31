@@ -1,4 +1,3 @@
-import * as NodeSocket from "@effect/experimental/Socket";
 import * as NodeRuntime from "@effect/platform-node/Runtime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
@@ -13,8 +12,8 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 const program = Effect.gen(function* (_: Effect.Adapter) {
     const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
 
-    const { Id: containerId, Name: containerName } = yield* _(
-        MobyApi.run({
+    const { Id: containerId } = yield* _(
+        MobyApi.DockerCommon.runScoped({
             imageOptions: { kind: "pull", fromImage: "docker.io/library/alpine:latest" },
             containerOptions: {
                 spec: {
@@ -30,7 +29,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    const socket: NodeSocket.Socket = yield* _(
+    const socket = yield* _(
         containers.attach({
             id: containerId!,
             stdin: true,
@@ -41,11 +40,8 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    yield* _(MobyApi.demuxToStdinAndStdout(socket));
-
+    yield* _(MobyApi.DemuxHelpers.demuxSocketFromStdinToStdoutAndStderr(socket));
     yield* _(Console.log("Disconnected from container"));
-    yield* _(Console.log(`Removing container ${containerName}...`));
-    yield* _(containers.delete({ id: containerId!, force: true }));
 });
 
-program.pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);

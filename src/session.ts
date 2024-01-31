@@ -8,14 +8,13 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import {
-    IExposeSocketOnEffectClientResponse,
     IMobyConnectionAgent,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
 } from "./agent-helpers.js";
-import { responseErrorHandler } from "./request-helpers.js";
+import { IExposeSocketOnEffectClientResponse, responseErrorHandler } from "./request-helpers.js";
 
 export class SessionsError extends Data.TaggedError("SessionsError")<{
     method: string;

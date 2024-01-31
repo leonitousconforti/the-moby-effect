@@ -1,4 +1,3 @@
-import * as NodeSocket from "@effect/experimental/Socket/Node";
 import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -9,13 +8,13 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import {
-    IExposeSocketOnEffectClientResponse,
     IMobyConnectionAgent,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
 } from "./agent-helpers.js";
+import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "./demux-helpers.js";
 import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
 import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "./schemas.js";
 
@@ -66,7 +65,11 @@ export interface Execs {
      * @param execStartConfig -
      * @param id - Exec instance ID
      */
-    readonly start: (options: ExecStartOptions) => Effect.Effect<never, ExecsError, NodeSocket.Socket>;
+    readonly start: <T extends boolean | undefined>(
+        options: ExecStartOptions & {
+            execStartConfig: Omit<Schema.Schema.To<typeof ExecStartConfig.struct>, "Detach"> & { Detach?: T };
+        }
+    ) => Effect.Effect<never, ExecsError, T extends true ? void : MultiplexedStreamSocket | RawStreamSocket>;
 
     /**
      * Resize an exec instance
@@ -112,15 +115,29 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             Effect.catchAll(responseHandler("container"))
         );
 
-    const start_ = (options: ExecStartOptions): Effect.Effect<never, ExecsError, NodeSocket.Socket> =>
-        Function.pipe(
+    const start_ = <T extends boolean | undefined>(
+        options: ExecStartOptions & {
+            execStartConfig: Omit<Schema.Schema.To<typeof ExecStartConfig.struct>, "Detach"> & { Detach?: T };
+        }
+    ): Effect.Effect<never, ExecsError, T extends true ? void : MultiplexedStreamSocket | RawStreamSocket> => {
+        type U = Effect.Effect<never, ExecsError, T extends true ? void : MultiplexedStreamSocket | RawStreamSocket>;
+
+        const response = Function.pipe(
             NodeHttp.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
             NodeHttp.request.schemaBody(ExecStartConfig)(Schema.parseSync(ExecStartConfig)(options.execStartConfig)),
             Effect.flatMap(client),
-            Effect.map((response) => (response as IExposeSocketOnEffectClientResponse).source.socket),
-            Effect.flatMap((socket) => NodeSocket.fromNetSocket(Effect.sync(() => socket))),
             Effect.catchAll(responseHandler("start"))
         );
+
+        const detachedResponse: U = Effect.flatMap(response, () => Effect.unit) as U;
+        const streamingResponse: U = Function.pipe(
+            response,
+            Effect.flatMap(responseToStreamingSocketOrFail),
+            Effect.catchTag("SocketError", () => new ExecsError({ method: "start", message: "socket error" }))
+        ) as U;
+
+        return options.execStartConfig.Detach ? detachedResponse : streamingResponse;
+    };
 
     const resize_ = (options: ExecResizeOptions): Effect.Effect<never, ExecsError, void> =>
         Function.pipe(
