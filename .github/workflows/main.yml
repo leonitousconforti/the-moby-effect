@@ -21,7 +21,7 @@ jobs:
     - name: Enable containerd image store
       run: |
         cat /etc/docker/daemon.json
-        echo '{ "features": { "containerd-snapshotter": true } }' > /etc/docker/daemon.json
+        sudo echo '{ "exec-opts": ["native.cgroupdriver=cgroupfs"], "cgroup-parent": "/actions_job", "features": { "containerd-snapshotter": true } }' > /etc/docker/daemon.json
         cat /etc/docker/daemon.json
         sudo systemctl restart docker
 
