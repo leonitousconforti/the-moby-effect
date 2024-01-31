@@ -7,6 +7,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
+import * as String from "effect/String";
 
 import {
     IMobyConnectionAgent,
@@ -212,7 +213,9 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
-                Effect.map(Stream.map(Schema.parse(EventMessage))),
+                Effect.map(Stream.map(String.linesIterator)),
+                Effect.map(Stream.flattenIterables),
+                Effect.map(Stream.map(Schema.decode(Schema.parseJson(EventMessage)))),
                 Effect.map(Stream.catchAll(streamHandler("events"))),
                 Effect.catchAll(responseHandler("events"))
             );
