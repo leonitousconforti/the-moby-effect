@@ -23,12 +23,11 @@ import * as Tasks from "./tasks.js";
 import * as Volumes from "./volumes.js";
 
 export * from "./agent-helpers.js";
-export * as DemuxHelpers from "./demux-helpers.js";
-export * as DockerCommon from "./docker-helpers.js";
-
 export * as Configs from "./configs.js";
 export * as Containers from "./containers.js";
+export * as DemuxHelpers from "./demux-helpers.js";
 export * as Distributions from "./distribution.js";
+export * as DockerCommon from "./docker-helpers.js";
 export * as Execs from "./execs.js";
 export * as Images from "./images.js";
 export * as Networks from "./networks.js";
@@ -177,3 +176,23 @@ export const fromDockerHostEnvironmentVariable: Layer.Layer<
     .pipe(Config.map(Secret.value))
     .pipe(Effect.map(fromUrl))
     .pipe(Layer.unwrapEffect);
+
+/** Creates a MobyApi layer from the platform default socket location. */
+export const fromPlatformDefault = (): Layer.Layer<
+    Layer.Layer.Context<MobyApi>,
+    Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
+    Layer.Layer.Success<MobyApi>
+> => {
+    switch (process.platform) {
+        case "linux":
+        case "darwin": {
+            return fromConnectionOptions({ connection: "unix", socketPath: "/var/run/docker.sock" });
+        }
+        case "win32": {
+            return fromConnectionOptions({ connection: "unix", socketPath: "//./pipe/docker_engine" });
+        }
+        default: {
+            return Layer.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`));
+        }
+    }
+};
