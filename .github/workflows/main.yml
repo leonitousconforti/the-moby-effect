@@ -40,12 +40,11 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: ssh-dind-docker-image
-        path: /tmp
 
     - name: Load Docker image
       shell: bash
       run: |
-        docker load --input /tmp/ssh-dind-docker-image.tar
+        docker load --input ssh-dind-docker-image.tar
         docker image ls -a
 
     - name: Node.js ${{ matrix.node-version }}
