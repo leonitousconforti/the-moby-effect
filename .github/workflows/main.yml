@@ -16,14 +16,20 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      env:
+        DOCKER_CLI_EXPERIMENTAL: enabled
+
     - uses: actions/checkout@v4
 
-    - name: Enable containerd image store
-      run: |
-        cat /etc/docker/daemon.json
-        sudo echo '{ "exec-opts": ["native.cgroupdriver=cgroupfs"], "cgroup-parent": "/actions_job", "features": { "containerd-snapshotter": true } }' > /etc/docker/daemon.json
-        cat /etc/docker/daemon.json
-        sudo systemctl restart docker
+    - uses: crazy-max/ghaction-setup-docker@v2
+      with:
+        version: v24.0.6
+        daemon-config: |
+          {
+            "features": {
+              "containerd-snapshotter": true
+            }
+          }
 
     - uses: docker/build-push-action@v5
       with:
