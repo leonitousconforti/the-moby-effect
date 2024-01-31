@@ -110,7 +110,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     const container_ = (options: ContainerExecOptions): Effect.Effect<never, ExecsError, Readonly<IdResponse>> =>
         Function.pipe(
             NodeHttp.request.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
-            NodeHttp.request.schemaBody(ExecConfig)(Schema.parseSync(ExecConfig)(options.execConfig)),
+            NodeHttp.request.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
             Effect.flatMap(IdResponseClient),
             Effect.catchAll(responseHandler("container"))
         );
@@ -124,7 +124,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const response = Function.pipe(
             NodeHttp.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
-            NodeHttp.request.schemaBody(ExecStartConfig)(Schema.parseSync(ExecStartConfig)(options.execStartConfig)),
+            NodeHttp.request.schemaBody(ExecStartConfig)(Schema.decodeSync(ExecStartConfig)(options.execStartConfig)),
             Effect.flatMap(client),
             Effect.catchAll(responseHandler("start"))
         );

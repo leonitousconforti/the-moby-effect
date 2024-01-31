@@ -761,7 +761,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 NodeHttp.request.post("/create"),
                 addQueryParameter("name", options.name),
                 addQueryParameter("platform", options.platform),
-                NodeHttp.request.schemaBody(ContainerCreateSpec)(Schema.parseSync(ContainerCreateSpec)(options.spec)),
+                NodeHttp.request.schemaBody(ContainerCreateSpec)(Schema.decodeSync(ContainerCreateSpec)(options.spec)),
                 Effect.flatMap(ContainerCreateResponseClient),
                 Effect.catchAll(responseHandler("create"))
             );
