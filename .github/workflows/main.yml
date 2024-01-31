@@ -18,8 +18,6 @@ jobs:
         context: .
         file: test/agent-ssh.dockerfile
         tags: ssh-dind:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max,
         outputs: type=docker,dest=/tmp/ssh-dind-docker-image.tar
     - uses: actions/upload-artifact@v4
       with:
