@@ -18,24 +18,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - uses: crazy-max/ghaction-setup-docker@v2
-      with:
-        version: v24.0.6
-        daemon-config: |
-          {
-            "features": {
-              "containerd-snapshotter": true
-            }
-          }
-
     - uses: docker/build-push-action@v5
       with:
         context: .
         load: true
         file: test/agent-ssh.dockerfile
         tags: ssh-dind:latest
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
 
     - name: Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
