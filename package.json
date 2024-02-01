@@ -15,8 +15,13 @@
     "author": "Leo Conforti <leo@leoconforti.us> (https://leoconforti.us)",
     "type": "module",
     "main": "dist/src/index.js",
+    "bin": {
+        "the-moby-effect": "dist/cli/cli.cjs"
+    },
     "files": [
-        "dist/src"
+        "dist/src",
+        "dist/cli",
+        "dist/package.json"
     ],
     "scripts": {
         "build": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean"
