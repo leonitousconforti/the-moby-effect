@@ -4,7 +4,7 @@ import * as Effect from "effect/Effect";
 import * as MobyApi from "../src/index.js";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
-    connection: "unix",
+    connection: "socket",
     socketPath: "/var/run/docker.sock",
 });
 

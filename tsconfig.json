@@ -7,6 +7,7 @@
         "sourceMap": true,
         "declaration": true,
         "outDir": "./dist",
+        "resolveJsonModule": true,
         "types": ["node", "heft-jest"],
 
         // https://github.com/tsconfig/bases/blob/main/bases/node18.json
@@ -32,5 +33,5 @@
         "isolatedModules": true,
         "forceConsistentCasingInFileNames": true,
     },
-    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts"],
+    "include": ["src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", "bin/**/*.ts"],
 }

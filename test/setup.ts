@@ -4,7 +4,7 @@ import * as MobyApi from "../src/index.js";
 import { testEngines } from "./helpers.js";
 
 const connectionOptions: MobyApi.MobyConnectionOptions = {
-    connection: "unix",
+    connection: "socket",
     socketPath: "/var/run/docker.sock",
 };
 

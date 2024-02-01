@@ -4,7 +4,7 @@ import * as MobyApi from "../src/index.js";
 
 /** Connects to the local docker daemon on this host. */
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
-    connection: "unix",
+    connection: "socket",
     socketPath: "/var/run/docker.sock",
 });
 
