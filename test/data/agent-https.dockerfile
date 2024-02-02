@@ -1,1 +1,4 @@
 FROM docker:dind
+
+EXPOSE 2376
+ENV DOCKER_TLS_CERTDIR=/certs
