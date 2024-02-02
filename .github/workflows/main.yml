@@ -255,7 +255,6 @@ jobs:
         go version
         go install tailscale.com/cmd/tailscale{,d}@v1.58.2
         sudo $HOME/go/bin/tailscaled install-system-daemon
-        tailscale status
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export HOSTNAME="github-$(cat /etc/hostname)"
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
