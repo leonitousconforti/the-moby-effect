@@ -64,7 +64,6 @@ jobs:
     - run: |
         docker run \
             --rm --privileged \
-            --ulimit nofile=-1 \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
@@ -90,7 +89,6 @@ jobs:
         timeout 5m \
             docker run \
             --rm --privileged \
-        	--ulimit nofile=-1 \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
@@ -117,7 +115,6 @@ jobs:
         timeout 5m \
             docker run \
             --rm --detach --privileged \
-        	--ulimit nofile=-1 \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
@@ -144,7 +141,6 @@ jobs:
         timeout 5m \
             docker run \
             --rm --detach --privileged \
-        	--ulimit nofile=-1 \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
