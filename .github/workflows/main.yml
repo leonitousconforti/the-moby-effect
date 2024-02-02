@@ -263,6 +263,7 @@ jobs:
     - if: ${{ runner.os == 'macOS' }}
       run: |
         brew install tailscale
+        sudo brew services start tailscale
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
