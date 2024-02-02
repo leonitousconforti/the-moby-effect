@@ -211,6 +211,9 @@ jobs:
   test:
     needs: [docker-build]
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
