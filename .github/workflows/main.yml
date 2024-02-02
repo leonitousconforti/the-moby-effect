@@ -293,6 +293,7 @@ jobs:
         key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
             ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
+    - run: python3 -m pip install setuptools
     - run: pnpm install
     - run: node test/ci-wait-for-artifacts.js
       env:
