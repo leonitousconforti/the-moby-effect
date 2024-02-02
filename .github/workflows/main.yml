@@ -101,7 +101,7 @@ jobs:
     - run: docker image ls -a
     - run: ifconfig
     - id: connection-string
-      run: echo "$(hostname -I)" >> "$GITHUB_OUTPUT"
+      run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> "$GITHUB_OUTPUT"
     - run: |
         timeout 5m \
             docker run \
