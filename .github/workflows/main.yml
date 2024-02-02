@@ -195,9 +195,11 @@ jobs:
     - run: sleep 30
     - uses: actions/download-artifact@v4
       with:
-        name: ssh-docker-service-connection-string
-    - run: cat connection-string
-    - run: cat connection-string | ping -c 5
+        pattern: "*-service-connection-string"
+    - run: ls -la
+    - run: ls -R
+    - run: cat ssh-docker-service-connection-string/connection-string
+    - run: ping -c 5 "$(cat ssh-docker-service-connection-string/connection-string)"
 
 #   build:
 #     needs: docker-build
