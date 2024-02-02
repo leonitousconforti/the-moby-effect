@@ -13,7 +13,7 @@ import * as Scope from "effect/Scope";
 
 /** How to connect to your moby/docker instance. */
 export type MobyConnectionOptions =
-    | { connection: "unix"; socketPath: string }
+    | { connection: "socket"; socketPath: string }
     | ({ connection: "ssh"; remoteSocketPath: string } & ssh2.ConnectConfig)
     | { connection: "http"; host: string; port: number; path?: string | undefined }
     | {
@@ -135,7 +135,7 @@ export const getAgent = (
                     Match.value<MobyConnectionOptions>(connectionOptions),
                     Match.when({ connection: "ssh" }, (options) => new SSHAgent(options)),
                     Match.when(
-                        { connection: "unix" },
+                        { connection: "socket" },
                         (options) => new http.Agent({ socketPath: options.socketPath } as http.AgentOptions)
                     ),
                     Match.when(

@@ -123,7 +123,7 @@ export const fromUrl = (
     const url: URL = new URL(dockerHost);
 
     if (url.protocol === "unix") {
-        return fromConnectionOptions({ connection: "unix", socketPath: url.pathname });
+        return fromConnectionOptions({ connection: "socket", socketPath: url.pathname });
     }
 
     if (url.protocol === "ssh") {
@@ -186,10 +186,10 @@ export const fromPlatformDefault = (): Layer.Layer<
     switch (process.platform) {
         case "linux":
         case "darwin": {
-            return fromConnectionOptions({ connection: "unix", socketPath: "/var/run/docker.sock" });
+            return fromConnectionOptions({ connection: "socket", socketPath: "/var/run/docker.sock" });
         }
         case "win32": {
-            return fromConnectionOptions({ connection: "unix", socketPath: "//./pipe/docker_engine" });
+            return fromConnectionOptions({ connection: "socket", socketPath: "//./pipe/docker_engine" });
         }
         default: {
             return Layer.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`));
