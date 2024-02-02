@@ -252,14 +252,14 @@ jobs:
         'tailscale.exe' status
     - if: ${{ runner.os == 'macOS' }}
       run: |
-        go version
-        go install tailscale.com/cmd/tailscale{,d}@v1.58.2
-        sudo $HOME/go/bin/tailscaled install-system-daemon
+        # go install tailscale.com/cmd/tailscale{,d}@v1.58.2
+        # sudo $HOME/go/bin/tailscaled install-system-daemon
+        brew install --formula tailscale
+        sudo brew services start tailscale
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-        tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
-        tailscale status
+        sudo tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
     - uses: tailscale/github-action@v2
       if: ${{ runner.os == 'Linux'}}
       with:
