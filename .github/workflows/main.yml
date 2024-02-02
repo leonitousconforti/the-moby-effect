@@ -71,8 +71,12 @@ jobs:
         images: ghcr.io/${{ github.repository }}/ssh-dind
     - run: docker load --input /tmp/ssh-dind-docker-image.tar
     - run: docker image ls -a
-    - run: ifconfig
-    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: tailscale/github-action@v2
+      with:
+        tags: tag:tme-ci
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+    - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
     - uses: actions/upload-artifact@v4
       with:
         path: /tmp/connection-string
@@ -104,8 +108,12 @@ jobs:
         images: ghcr.io/${{ github.repository }}/http-dind
     - run: docker load --input /tmp/http-dind-docker-image.tar
     - run: docker image ls -a
-    - run: ifconfig
-    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: tailscale/github-action@v2
+      with:
+        tags: tag:tme-ci
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+    - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
     - uses: actions/upload-artifact@v4
       with:
         path: /tmp/connection-string
@@ -137,8 +145,12 @@ jobs:
         images: ghcr.io/${{ github.repository }}/https-dind
     - run: docker load --input /tmp/https-dind-docker-image.tar
     - run: docker image ls -a
-    - run: ifconfig
-    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: tailscale/github-action@v2
+      with:
+        tags: tag:tme-ci
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+    - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
     - uses: actions/upload-artifact@v4
       with:
         path: /tmp/connection-string
@@ -155,7 +167,7 @@ jobs:
             ${{ steps.meta.outputs.tags }} \
         || true
 
-  socket-docker-service:
+  unix-socket-docker-service:
     runs-on: ubuntu-latest
     needs: [docker-build]
     steps:
@@ -170,8 +182,12 @@ jobs:
         images: ghcr.io/${{ github.repository }}/socket-dind
     - run: docker load --input /tmp/socket-dind-docker-image.tar
     - run: docker image ls -a
-    - run: ifconfig
-    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: tailscale/github-action@v2
+      with:
+        tags: tag:tme-ci
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+    - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
     - uses: actions/upload-artifact@v4
       with:
         path: /tmp/connection-string
