@@ -20,7 +20,7 @@
                     "taskPlugin": {
                         "pluginPackage": "@rushstack/heft-webpack5-plugin",
                         "options": {
-                            "configurationPath": "config/webpack.config.cjs"
+                            "configurationPath": ".webpack.config.cjs"
                         }
                     }
                 }

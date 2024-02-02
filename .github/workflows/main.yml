@@ -339,6 +339,12 @@ jobs:
         tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
         tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
         tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
+    - run: pnpm build
+      env:
+        SSH_DOCKER_SERVICE: "$(cat ssh-docker-service-connection-string/connection-string)"
+        HTTP_DOCKER_SERVICE: "$(cat http-docker-service-connection-string/connection-string)"
+        HTTPS_DOCKER_SERVICE: "$(cat https-docker-service-connection-string/connection-string)"
+        SOCKET_DOCKER_SERVICE: "$(cat socket-docker-service-connection-string/connection-string)"
     - if: ${{ runner.os == 'Windows' }}
       run: |
         /C/Program\ Files/Tailscale/tailscale down
