@@ -72,8 +72,7 @@ jobs:
     - run: docker load --input /tmp/ssh-dind-docker-image.tar
     - run: docker image ls -a
     - run: ifconfig
-    - id: connection-string
-      run: echo "connection_string=$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
     - uses: actions/upload-artifact@v4
       with:
         path: /tmp/connection-string
@@ -105,6 +104,13 @@ jobs:
         images: ghcr.io/${{ github.repository }}/http-dind
     - run: docker load --input /tmp/http-dind-docker-image.tar
     - run: docker image ls -a
+    - run: ifconfig
+    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: actions/upload-artifact@v4
+      with:
+        path: /tmp/connection-string
+        name: http-docker-service-connection-string
+        if-no-files-found: error
     - run: |
         timeout 5m \
             docker run \
@@ -131,6 +137,13 @@ jobs:
         images: ghcr.io/${{ github.repository }}/https-dind
     - run: docker load --input /tmp/https-dind-docker-image.tar
     - run: docker image ls -a
+    - run: ifconfig
+    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: actions/upload-artifact@v4
+      with:
+        path: /tmp/connection-string
+        name: https-docker-service-connection-string
+        if-no-files-found: error
     - run: |
         timeout 5m \
             docker run \
@@ -157,6 +170,13 @@ jobs:
         images: ghcr.io/${{ github.repository }}/socket-dind
     - run: docker load --input /tmp/socket-dind-docker-image.tar
     - run: docker image ls -a
+    - run: ifconfig
+    - run: echo "$(ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1)" >> /tmp/connection-string
+    - uses: actions/upload-artifact@v4
+      with:
+        path: /tmp/connection-string
+        name: socket-docker-service-connection-string
+        if-no-files-found: error
     - run: |
         timeout 5m \
             docker run \
@@ -172,17 +192,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [docker-build]
     steps:
+    - run: sleep 30
     - uses: actions/download-artifact@v4
       with:
-        path: /tmp
         name: ssh-docker-service-connection-string
-    - run: cat /tmp/ssh-docker-service-connection-string
-    - run: sleep 60
-    - uses: actions/download-artifact@v4
-      with:
-        path: /tmp
-        name: ssh-docker-service-connection-string
-    - run: cat /tmp/ssh-docker-service-connection-string
+    - run: cat connection-string
 
 #   build:
 #     needs: docker-build
