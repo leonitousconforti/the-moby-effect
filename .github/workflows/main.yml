@@ -240,11 +240,11 @@ jobs:
       with:
         pattern: "*-service-connection-string"
     - if: ${{ runner.os == 'Windows' }}
-      run: |
-        choco install tailscale
-        refreshenv
+      run: choco install tailscale
     - if: ${{ runner.os == 'macOS' }}
-      run: brew install tailscale
+      run: |
+        brew install tailscale
+        brew services start tailscale
     - uses: tailscale/github-action@v2
       if: ${{ runner.os == 'Linux'}}
       with:
