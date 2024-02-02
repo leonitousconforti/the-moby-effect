@@ -85,6 +85,8 @@ jobs:
   http-docker-service:
     runs-on: ubuntu-latest
     needs: [docker-build]
+    outputs:
+      connection-string: ${{ steps.connection-string.outputs.connection-string }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
@@ -97,6 +99,9 @@ jobs:
         images: ghcr.io/${{ github.repository }}/http-dind
     - run: docker load --input /tmp/http-dind-docker-image.tar
     - run: docker image ls -a
+    - run: ipconfig
+    - id: connection-string
+      run: echo "$(hostname -I)" >> "$GITHUB_OUTPUT"
     - run: |
         timeout 5m \
             docker run \
@@ -159,6 +164,13 @@ jobs:
             --oom-score-adj -500 \
             ${{ steps.meta.outputs.tags }} \
         || true
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "${{ needs.http-docker-service.outputs.connection-string }}"
+    - run: sleep 60
+    - run: echo "${{ needs.http-docker-service.outputs.connection-string }}"
 
 #   build:
 #     needs: docker-build
