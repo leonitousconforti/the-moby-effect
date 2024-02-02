@@ -84,7 +84,7 @@ jobs:
         name: ssh-docker-service-connection-string
         if-no-files-found: error
     - run: |
-        timeout 5m \
+        timeout 15m \
             docker run \
             --rm --privileged \
             --ulimit nproc=-1 \
@@ -122,7 +122,7 @@ jobs:
         name: http-docker-service-connection-string
         if-no-files-found: error
     - run: |
-        timeout 5m \
+        timeout 15m \
             docker run \
             --rm --privileged \
             --ulimit nproc=-1 \
@@ -160,7 +160,7 @@ jobs:
         name: https-docker-service-connection-string
         if-no-files-found: error
     - run: |
-        timeout 5m \
+        timeout 15m \
             docker run \
             --rm --privileged \
             --ulimit nproc=-1 \
@@ -198,7 +198,7 @@ jobs:
         name: socket-docker-service-connection-string
         if-no-files-found: error
     - run: |
-        timeout 5m \
+        timeout 15m \
             docker run \
             --rm --privileged \
             --ulimit nproc=-1 \
