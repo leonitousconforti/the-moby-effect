@@ -57,8 +57,8 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
       with:
+        path: /tmp
         name: ${{ matrix.dockerfile }}-dind-docker-image
-        path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
     - run: docker image import /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
     - run: docker image ls -a
 
