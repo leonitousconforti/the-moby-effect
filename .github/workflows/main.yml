@@ -236,10 +236,16 @@ jobs:
         restore-keys: |
             ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
     - run: pnpm install
+    # - run: pnpm run ci-wait
     - uses: actions/download-artifact@v4
       with:
         pattern: "*-service-connection-string"
+    - if: ${{ runner.os == 'Windows' }}
+      run: choco install tailscale
+    - if: ${{ runner.os == 'Mac' }}
+      run: brew install tailscale
     - uses: tailscale/github-action@v2
+      if: ${{ runner.os == 'Linux'}}
       with:
         tags: tag:tme-ci
         version: 1.58.2
