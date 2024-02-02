@@ -360,8 +360,17 @@ jobs:
         name: stop-services
         if-no-files-found: error
 
-  publish:
+  publish-pre-release:
     runs-on: ubuntu-latest
+    environment: "NPM pre-release"
+    needs: [test, http-docker-service, https-docker-service, ssh-docker-service, unix-socket-docker-service]
+    steps:
+    - run: echo "Publishing artifacts"
+
+  publish-official-release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
+    environment: "NPM official-release"
     needs: [test, http-docker-service, https-docker-service, ssh-docker-service, unix-socket-docker-service]
     steps:
     - run: echo "Publishing artifacts"
