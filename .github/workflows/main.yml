@@ -256,13 +256,21 @@ jobs:
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
         /C/Program\ Files/Tailscale/tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
+        /C/Program\ Files/Tailscale/tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
+        /C/Program\ Files/Tailscale/tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
+        /C/Program\ Files/Tailscale/tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
+        /C/Program\ Files/Tailscale/tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
     - if: ${{ runner.os == 'macOS' }}
       run: |
-        sudo brew install tailscale
+        brew install tailscale
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-        tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
+        sudo tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
+        tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
+        tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
+        tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
+        tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
     - uses: tailscale/github-action@v2
       if: ${{ runner.os == 'Linux'}}
       with:
@@ -270,10 +278,12 @@ jobs:
         version: 1.58.2
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-    - run: tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
-    - run: tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
-    - run: tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
-    - run: tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
+    - if: ${{ runner.os == 'Linux'}}
+      run: |
+        tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
+        tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
+        tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
+        tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
     - name: Setup tmate session
       if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
