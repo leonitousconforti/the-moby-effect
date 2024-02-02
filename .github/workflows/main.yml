@@ -69,7 +69,7 @@ jobs:
       id: meta
       with:
         images: ghcr.io/${{ github.repository }}/ssh-dind
-    - run: docker import /tmp/ssh-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
+    - run: docker load --input /tmp/ssh-dind-docker-image.tar
     - run: docker image ls -a
     - run: |
         timeout 5m \
@@ -95,7 +95,7 @@ jobs:
       id: meta
       with:
         images: ghcr.io/${{ github.repository }}/http-dind
-    - run: docker import /tmp/http-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
+    - run: docker load --input /tmp/http-dind-docker-image.tar
     - run: docker image ls -a
     - run: |
         timeout 5m \
@@ -121,7 +121,7 @@ jobs:
       id: meta
       with:
         images: ghcr.io/${{ github.repository }}/https-dind
-    - run: docker import /tmp/https-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
+    - run: docker load --input /tmp/https-dind-docker-image.tar
     - run: docker image ls -a
     - run: |
         timeout 5m \
@@ -147,7 +147,7 @@ jobs:
       id: meta
       with:
         images: ghcr.io/${{ github.repository }}/socket-dind
-    - run: docker import /tmp/socket-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
+    - run: docker load --input /tmp/socket-dind-docker-image.tar
     - run: docker image ls -a
     - run: |
         timeout 5m \
