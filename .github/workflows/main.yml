@@ -49,6 +49,7 @@ jobs:
   ssh-docker-service:
     runs-on: ubuntu-latest
     needs: [docker-build]
+    timeout-minutes: 7
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
@@ -61,11 +62,20 @@ jobs:
         images: ghcr.io/${{ github.repository }}/ssh-dind
     - run: docker import /tmp/ssh-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
     - run: docker image ls -a
-    - run: timeout 5m docker run --rm --privileged ${{ steps.meta.outputs.tags }}
+    - run: |
+        docker run
+            --rm --detach --privileged \
+        	--ulimit nofile=-1 \
+            --ulimit nproc=-1 \
+            --ulimit core=-1 \
+            --pids-limit -1 \
+            --oom-score-adj -500 \
+            ${{ steps.meta.outputs.tags }}
 
   http-docker-service:
     runs-on: ubuntu-latest
     needs: [docker-build]
+    timeout-minutes: 7
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
@@ -78,11 +88,20 @@ jobs:
         images: ghcr.io/${{ github.repository }}/http-dind
     - run: docker import /tmp/http-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
     - run: docker image ls -a
-    - run: timeout 5m docker run --rm --privileged ${{ steps.meta.outputs.tags }}
+    - run: |
+        docker run
+            --rm --detach --privileged \
+        	--ulimit nofile=-1 \
+            --ulimit nproc=-1 \
+            --ulimit core=-1 \
+            --pids-limit -1 \
+            --oom-score-adj -500 \
+            ${{ steps.meta.outputs.tags }}
 
   https-docker-service:
     runs-on: ubuntu-latest
     needs: [docker-build]
+    timeout-minutes: 7
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
@@ -95,11 +114,20 @@ jobs:
         images: ghcr.io/${{ github.repository }}/https-dind
     - run: docker import /tmp/https-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
     - run: docker image ls -a
-    - run: timeout 5m docker run --rm --privileged ${{ steps.meta.outputs.tags }}
+    - run: |
+        docker run
+            --rm --detach --privileged \
+        	--ulimit nofile=-1 \
+            --ulimit nproc=-1 \
+            --ulimit core=-1 \
+            --pids-limit -1 \
+            --oom-score-adj -500 \
+            ${{ steps.meta.outputs.tags }}
 
   socket-docker-service:
     runs-on: ubuntu-latest
     needs: [docker-build]
+    timeout-minutes: 7
     steps:
     - uses: actions/checkout@v4
     - uses: actions/download-artifact@v4
@@ -112,7 +140,15 @@ jobs:
         images: ghcr.io/${{ github.repository }}/socket-dind
     - run: docker import /tmp/socket-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
     - run: docker image ls -a
-    - run: timeout 5m docker run --rm --privileged ${{ steps.meta.outputs.tags }}
+    - run: |
+        docker run
+            --rm --detach --privileged \
+        	--ulimit nofile=-1 \
+            --ulimit nproc=-1 \
+            --ulimit core=-1 \
+            --pids-limit -1 \
+            --oom-score-adj -500 \
+            ${{ steps.meta.outputs.tags }}
 
 #   build:
 #     needs: docker-build
