@@ -62,13 +62,15 @@ jobs:
     - run: docker import /tmp/ssh-dind-docker-image.tar ${{ steps.meta.outputs.tags }}
     - run: docker image ls -a
     - run: |
-        docker run \
+        timeout 5m \
+            docker run \
             --rm --privileged \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
             --oom-score-adj -500 \
-            docker:dind \
+            ${{ steps.meta.outputs.tags }} \
+        || true
 
   http-docker-service:
     runs-on: ubuntu-latest
@@ -93,7 +95,7 @@ jobs:
             --ulimit core=-1 \
             --pids-limit -1 \
             --oom-score-adj -500 \
-            docker:dind \
+            ${{ steps.meta.outputs.tags }} \
         || true
 
   https-docker-service:
@@ -114,12 +116,12 @@ jobs:
     - run: |
         timeout 5m \
             docker run \
-            --rm --detach --privileged \
+            --rm --privileged \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
             --oom-score-adj -500 \
-            docker:dind \
+            ${{ steps.meta.outputs.tags }} \
         || true
 
   socket-docker-service:
@@ -140,12 +142,12 @@ jobs:
     - run: |
         timeout 5m \
             docker run \
-            --rm --detach --privileged \
+            --rm --privileged \
             --ulimit nproc=-1 \
             --ulimit core=-1 \
             --pids-limit -1 \
             --oom-score-adj -500 \
-            docker:dind \
+            ${{ steps.meta.outputs.tags }} \
         || true
 
 #   build:
