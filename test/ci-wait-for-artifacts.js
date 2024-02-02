@@ -7,8 +7,10 @@ import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
 import * as NodeFetch from "node-fetch";
 
-const schedule = Schedule.recurs(12).pipe(Schedule.addDelay(() => 5000));
-const octokit = new Octokit.Octokit({ request: { fetch: globalThis.fetch ?? NodeFetch.default } });
+const octokit = new Octokit.Octokit({
+    auth: process.env["GITHUB_TOKEN"],
+    request: { fetch: globalThis.fetch ?? NodeFetch.default },
+});
 
 const hasAllArtifacts = Effect.gen(function* (_) {
     const repo = "the-moby-effect";
@@ -33,7 +35,7 @@ const hasAllArtifacts = Effect.gen(function* (_) {
 
 Function.pipe(
     hasAllArtifacts,
-    Effect.retry(schedule),
+    Effect.retry(Schedule.recurs(12).pipe(Schedule.addDelay(() => 5000))),
     Effect.provide(PlatformNode.NodeContext.layer),
     PlatformNode.Runtime.runMain
 );
