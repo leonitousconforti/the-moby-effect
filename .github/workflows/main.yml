@@ -313,6 +313,7 @@ jobs:
       run: |
         brew install tailscale
         sudo /usr/local/opt/tailscale/bin/tailscaled &
+        sleep 5
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
