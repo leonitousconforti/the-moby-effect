@@ -16,6 +16,7 @@ const hasAllArtifacts = Effect.gen(function* (_) {
     const repo = "the-moby-effect";
     const owner = "leonitousconforti";
     const run_id = yield* _(Config.number("GITHUB_RUN_ID"));
+    const artifact_count = yield* _(Config.number("GITHUB_ARTIFACT_COUNT"));
 
     const { data } = yield* _(
         Effect.promise(() =>
@@ -27,7 +28,7 @@ const hasAllArtifacts = Effect.gen(function* (_) {
         )
     );
 
-    if (data.total_count !== 2 ** 3) {
+    if (data.total_count !== artifact_count) {
         yield* _(Console.log("Not all artifacts are ready"));
         yield* _(Effect.fail(new Error("Not all artifacts are ready")));
     }
@@ -35,7 +36,7 @@ const hasAllArtifacts = Effect.gen(function* (_) {
 
 Function.pipe(
     hasAllArtifacts,
-    Effect.retry(Schedule.recurs(12).pipe(Schedule.addDelay(() => 5000))),
+    Effect.retry(Schedule.recurs(30).pipe(Schedule.addDelay(() => 30_000))),
     Effect.provide(PlatformNode.NodeContext.layer),
     PlatformNode.Runtime.runMain
 );
