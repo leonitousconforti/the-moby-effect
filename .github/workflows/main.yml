@@ -39,7 +39,7 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
         outputs: type=oci,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-   - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.dockerfile }}-dind-docker-image
         path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
