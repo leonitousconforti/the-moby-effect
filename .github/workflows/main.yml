@@ -285,6 +285,14 @@ jobs:
         tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
         tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
         tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
+    - if: ${{ runner.os == 'Windows' }}
+      run: |
+        /C/Program\ Files/Tailscale/tailscale down
+        /C/Program\ Files/Tailscale/tailscale logout
+    - if: ${{ runner.os == 'macOS' || runner.os == 'Linux'}}
+      run: |
+        sudo tailscale down
+        sudo tailscale logout
     - name: Setup tmate session
       if: ${{ failure() }}
       uses: mxschmitt/action-tmate@v3
