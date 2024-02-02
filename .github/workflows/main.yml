@@ -248,12 +248,11 @@ jobs:
         pattern: "*-service-connection-string"
     - if: ${{ runner.os == 'Windows' }}
       run: |
-        go install tailscale.com/cmd/tailscale{,d}@v1.58.2
-        $HOME/go/bin/tailscaled install-system-daemon
+        choco install tailscale -y
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-        tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
+        /C/Program\ Files/Tailscale/tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
     - if: ${{ runner.os == 'macOS' }}
       run: |
         go install tailscale.com/cmd/tailscale{,d}@v1.58.2
