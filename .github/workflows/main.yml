@@ -248,18 +248,20 @@ jobs:
         pattern: "*-service-connection-string"
     - if: ${{ runner.os == 'Windows' }}
       run: |
-        choco install tailscale -y
-        'tailscale.exe' status
-    - if: ${{ runner.os == 'macOS' }}
-      run: |
-        # go install tailscale.com/cmd/tailscale{,d}@v1.58.2
-        # sudo $HOME/go/bin/tailscaled install-system-daemon
-        brew install --formula tailscale
-        sudo brew services start tailscale
+        go install tailscale.com/cmd/tailscale{,d}@v1.58.2
+        $HOME/go/bin/tailscaled install-system-daemon
         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
         export TAGS_ARG="--advertise-tags=tag:tme-ci"
         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-        sudo tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
+        tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
+    - if: ${{ runner.os == 'macOS' }}
+      run: |
+        go install tailscale.com/cmd/tailscale{,d}@v1.58.2
+        sudo $HOME/go/bin/tailscaled install-system-daemon
+        export TS_EXPERIMENT_OAUTH_AUTHKEY=true
+        export TAGS_ARG="--advertise-tags=tag:tme-ci"
+        export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
+        tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
     - uses: tailscale/github-action@v2
       if: ${{ runner.os == 'Linux'}}
       with:
@@ -271,3 +273,6 @@ jobs:
     - run: tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
     - run: tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
     - run: tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
+    - name: Setup tmate session
+      if: ${{ failure() }}
+      uses: mxschmitt/action-tmate@v3
