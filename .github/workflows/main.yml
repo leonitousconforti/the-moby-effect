@@ -59,7 +59,7 @@ jobs:
       with:
         path: /tmp
         name: ${{ matrix.dockerfile }}-dind-docker-image
-    - run: docker load --input /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+    - run: docker import /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
     - run: docker image ls -a
 
 #   build:
