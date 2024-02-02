@@ -58,7 +58,8 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: ${{ matrix.dockerfile }}-dind-docker-image
-    - run: docker load --input ${{ matrix.dockerfile }}-dind-docker-image.tar
+        path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+    - run: docker load --input /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
     - run: docker image ls -a
 
 #   build:
