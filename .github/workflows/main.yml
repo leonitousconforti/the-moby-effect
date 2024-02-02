@@ -197,6 +197,7 @@ jobs:
       with:
         name: ssh-docker-service-connection-string
     - run: cat connection-string
+    - run: cat connection-string | ping -c 5
 
 #   build:
 #     needs: docker-build
