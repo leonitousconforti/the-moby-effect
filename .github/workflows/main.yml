@@ -16,6 +16,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      tag: ${{ steps.meta.outputs.tags }}
     steps:
     - uses: actions/checkout@v4
     - uses: docker/setup-qemu-action@v3
@@ -39,7 +41,7 @@ jobs:
         push: ${{ github.event_name != 'pull_request' }}
         file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
         platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
-        outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+        outputs: type=oci,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.dockerfile }}-dind-docker-image
@@ -59,7 +61,7 @@ jobs:
       with:
         path: /tmp
         name: ${{ matrix.dockerfile }}-dind-docker-image
-    - run: docker load --input /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+    - run: docker import /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar ${{ needs.docker-build.outputs.tag }}
     - run: docker image ls -a
 
 #   build:
