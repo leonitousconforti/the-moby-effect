@@ -236,13 +236,14 @@ jobs:
         restore-keys: |
             ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
     - run: pnpm install
-    # - run: pnpm run ci-wait
     - uses: actions/download-artifact@v4
       with:
         pattern: "*-service-connection-string"
     - if: ${{ runner.os == 'Windows' }}
-      run: choco install tailscale
-    - if: ${{ runner.os == 'Mac' }}
+      run: |
+        choco install tailscale
+        refreshenv
+    - if: ${{ runner.os == 'macOS' }}
       run: brew install tailscale
     - uses: tailscale/github-action@v2
       if: ${{ runner.os == 'Linux'}}
@@ -255,4 +256,3 @@ jobs:
     - run: tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
     - run: tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
     - run: tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
-    # - run: pnpm build
