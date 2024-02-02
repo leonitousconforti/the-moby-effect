@@ -74,6 +74,7 @@ jobs:
     - uses: tailscale/github-action@v2
       with:
         tags: tag:tme-ci
+        version: 1.58.2
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
@@ -111,6 +112,7 @@ jobs:
     - uses: tailscale/github-action@v2
       with:
         tags: tag:tme-ci
+        version: 1.58.2
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
@@ -148,6 +150,7 @@ jobs:
     - uses: tailscale/github-action@v2
       with:
         tags: tag:tme-ci
+        version: 1.58.2
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
@@ -185,6 +188,7 @@ jobs:
     - uses: tailscale/github-action@v2
       with:
         tags: tag:tme-ci
+        version: 1.58.2
         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
@@ -212,10 +216,16 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         pattern: "*-service-connection-string"
-    - run: ls -la
-    - run: ls -R
-    - run: cat ssh-docker-service-connection-string/connection-string
-    - run: ping -c 5 "$(cat ssh-docker-service-connection-string/connection-string)"
+    - uses: tailscale/github-action@v2
+      with:
+        tags: tag:tme-ci
+        version: 1.58.2
+        oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+        oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+    - run: tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
+    - run: tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
+    - run: tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
+    - run: tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
 
 #   build:
 #     needs: docker-build
