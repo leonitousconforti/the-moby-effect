@@ -40,6 +40,7 @@ jobs:
         file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
         platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
         outputs: type=oci,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+    - run: docker image ls -a
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.dockerfile }}-dind-docker-image
