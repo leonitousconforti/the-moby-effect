@@ -13,8 +13,10 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions(connectionOpt
 
 export default async function (_globalConfig: unknown, _projectConfig: unknown) {
     await Effect.gen(function* (_: Effect.Adapter) {
-        if (process.platform === "win32") {
-            const windows_testing_host: string = yield* _(Config.string("windows_testing_host"));
+        const node_environment: string = yield* _(Config.string("NODE_ENV"));
+
+        if (node_environment !== "ci") {
+            yield* _(Effect.fail("Tests are meant to run in CI only"));
         }
 
         const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
@@ -26,5 +28,3 @@ export default async function (_globalConfig: unknown, _projectConfig: unknown) 
         .pipe(Effect.provide(localDocker))
         .pipe(Effect.runPromise);
 }
-
-const a = globalThis["__THE_MOBY_EFFECT_TEST_HOST"];
