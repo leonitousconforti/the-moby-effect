@@ -293,7 +293,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest, macos-beta]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         docker-engine: [ssh, http, https]
     steps:
     - uses: actions/checkout@v4
@@ -383,7 +383,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest, macos-beta]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         docker-desktop: [v1, v2, v3, v4, v5, v6]
     steps:
     - uses: actions/checkout@v4
@@ -398,7 +398,7 @@ jobs:
       fail-fast: false
       matrix:
         node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest, macos-beta]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         podman-desktop: [v1, v2, v3, v4, v5, v6]
     steps:
     - uses: actions/checkout@v4
