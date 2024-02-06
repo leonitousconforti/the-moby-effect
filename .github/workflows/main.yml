@@ -23,7 +23,7 @@ jobs:
         run_install: false
     - run: pnpm install
     - id: start
-      uses: ./.github/actions/workflow-level-service/start.yml
+      uses: ./.github/actions/workflow-level-service/start
       with:
         service-name: ${{ env.test-service-identifier }}
         service-command: ""
@@ -38,7 +38,7 @@ jobs:
         version: 8
         run_install: false
     - run: pnpm install
-    - uses: ./.github/actions/workflow-level-service/connect.yml
+    - uses: ./.github/actions/workflow-level-service/connect
       with:
         service-identifer: ${{ env.test-service-identifier }}
     - run: echo "Testing service"
@@ -55,7 +55,7 @@ jobs:
         version: 8
         run_install: false
     - run: pnpm install
-    - uses: ./.github/actions/workflow-level-service/stop.yml
+    - uses: ./.github/actions/workflow-level-service/stop
       with:
         service-identifer: ${{ env.test-service-identifier }}
 
