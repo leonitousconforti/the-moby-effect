@@ -40,7 +40,7 @@ jobs:
     - run: pnpm install
     - uses: ./.github/workflows/workflow-level-service/connect
       with:
-        service-identifer: ${{ env.test-service-identifier }}
+        service-identifier: ${{ env.test-service-identifier }}
     - run: echo "Testing service"
     - run: sleep 30s
 
@@ -57,7 +57,7 @@ jobs:
     - run: pnpm install
     - uses: ./.github/workflows/workflow-level-service/stop
       with:
-        service-identifer: ${{ env.test-service-identifier }}
+        service-identifier: ${{ env.test-service-identifier }}
 
 #   docker-build:
 #     runs-on: ubuntu-latest
