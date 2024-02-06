@@ -74,6 +74,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
                 )
             )
         );
+
         core.info(JSON.stringify(data));
     }
 });

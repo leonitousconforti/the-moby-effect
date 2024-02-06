@@ -4,6 +4,7 @@ import * as PlatformNode from "@effect/platform-node";
 import * as Effect from "effect/Effect";
 import * as Schedule from "effect/Schedule";
 import * as path from "node:path";
+import * as stun from "stun";
 import * as uuid from "uuid";
 
 const client_identifier = uuid.v4();
@@ -21,7 +22,8 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
     const fs = yield* _(PlatformNode.FileSystem.FileSystem);
     const tempDirectory = yield* _(fs.makeTempDirectoryScoped());
     const artifactFile = path.join(tempDirectory, `${service_identifier}_connection-request_${client_identifier}`);
-    yield* _(fs.writeFileString(artifactFile, "AAAAAAAA"));
+    const stunResponse = yield* _(Effect.promise(() => stun.request("stun.l.google.com:19302")));
+    yield* _(fs.writeFileString(artifactFile, stunResponse.getXorAddress().address));
     yield* _(
         Effect.promise(() =>
             artifactClient.uploadArtifact(
