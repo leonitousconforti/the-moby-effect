@@ -11,7 +11,7 @@ const main = Effect.gen(function* (_) {
     const tempFile = yield* _(fs.makeTempFileScoped());
     yield* _(
         Effect.promise(() =>
-            artifactClient.uploadArtifact(`${service_identifier}_stop`, [tempFile], "", {
+            artifactClient.uploadArtifact(`${service_identifier}_stop`, [tempFile], "/", {
                 retentionDays: 1,
             })
         )

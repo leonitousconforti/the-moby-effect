@@ -19,6 +19,7 @@ const hasStopRequest = async () => {
     const { artifacts } = await artifactClient.listArtifacts();
 
     if (artifacts.some((artifact) => artifact.name === `${service_identifier}_stop`)) {
+        core.info(`Stop request received, stopping service ${service_identifier}`);
         await artifactClient.deleteArtifact(`${service_identifier}_stop`);
         return true;
     }
@@ -42,8 +43,10 @@ const hasStopRequest = async () => {
  * information in the response artifact to establish a connection with the
  * service.
  */
-const processConnectionRequest = async () => {
-    const { artifacts } = await artifactClient.listArtifacts();
+const processConnectionRequest = Effect.gen(function* (_) {
+    const fs = yield* _(PlatformNode.FileSystem.FileSystem);
+
+    const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
     const connectionRequests = artifacts.filter((artifact) =>
         artifact.name.startsWith(`${service_identifier}_connection-request`)
     );
@@ -55,28 +58,38 @@ const processConnectionRequest = async () => {
         }
 
         core.info(`Processing connection request from client ${client_identifier}`);
-        const data = await artifactClient.downloadArtifact(connectionRequest.id);
-        await artifactClient.deleteArtifact(connectionRequest.name);
-        await artifactClient.uploadArtifact(`${service_identifier}_connection-response_${client_identifier}`, [], "/", {
-            retentionDays: 1,
-        });
+        const data = yield* _(Effect.promise(() => artifactClient.downloadArtifact(connectionRequest.id)));
+        yield* _(Effect.promise(() => artifactClient.deleteArtifact(connectionRequest.name)));
 
-        console.log(data);
-        console.log(client_identifier);
+        const tempFile = yield* _(fs.makeTempFileScoped());
+        yield* _(
+            Effect.promise(() =>
+                artifactClient.uploadArtifact(
+                    `${service_identifier}_connection-response_${client_identifier}`,
+                    [tempFile],
+                    "/",
+                    {
+                        retentionDays: 1,
+                    }
+                )
+            )
+        );
+        core.info(JSON.stringify(data));
     }
-};
+});
 
 /**
  * Processes connection requests every 30 seconds until there is a stop request
  * or we have a defect (unexpected error).
  */
-Effect.suspend(() => Effect.promise(processConnectionRequest)).pipe(
+Effect.suspend(() => processConnectionRequest).pipe(
     Effect.schedule(
         Function.pipe(
             Schedule.recurUntilEffect(() => Effect.promise(hasStopRequest)),
             Schedule.addDelay(() => 30_000)
         )
     ),
+    Effect.scoped,
     Effect.provide(PlatformNode.NodeContext.layer),
     PlatformNode.Runtime.runMain
 );
