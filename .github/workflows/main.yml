@@ -25,7 +25,7 @@ jobs:
     - id: start
       uses: ./.github/workflows/workflow-level-service/start
       with:
-        service-name: ${{ env.test-service-identifier }}
+        service-identifier: ${{ env.test-service-identifier }}
         service-command: ""
 
   test-consumer:
