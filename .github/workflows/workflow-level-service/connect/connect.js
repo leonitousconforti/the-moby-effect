@@ -8,12 +8,7 @@ import * as uuid from "uuid";
 
 const client_identifier = uuid.v4();
 const artifactClient = new artifacts.DefaultArtifactClient();
-
 const service_identifier = core.getInput("service-identifier");
-if (!uuid.validate(service_identifier)) {
-    core.setFailed("Invalid service identifier");
-    process.exit();
-}
 
 /**
  * Connection requests to a service will be made by uploading an artifact with a
