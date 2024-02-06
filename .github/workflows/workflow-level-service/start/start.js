@@ -4,6 +4,7 @@ import * as PlatformNode from "@effect/platform-node";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
+import * as path from "node:path";
 import * as uuid from "uuid";
 
 const artifactClient = new artifacts.DefaultArtifactClient();
@@ -79,7 +80,10 @@ const processConnectionRequest = Effect.gen(function* (_) {
             )
         );
 
-        const data = yield* _(fs.readFileString(downloadPath));
+        const data1 = yield* _(fs.readDirectory(downloadPath));
+        core.info(JSON.stringify(data1));
+
+        const data = yield* _(fs.readFileString(path.join(downloadPath, connectionRequest.name)));
         core.info(data);
     }
 });
