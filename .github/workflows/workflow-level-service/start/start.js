@@ -57,7 +57,7 @@ const processConnectionRequest = async () => {
         core.info(`Processing connection request from client ${client_identifier}`);
         const data = await artifactClient.downloadArtifact(connectionRequest.id);
         await artifactClient.deleteArtifact(connectionRequest.name);
-        await artifactClient.uploadArtifact(`${service_identifier}_connection-response_${client_identifier}`, [], "", {
+        await artifactClient.uploadArtifact(`${service_identifier}_connection-response_${client_identifier}`, [], "/", {
             retentionDays: 1,
         });
 
