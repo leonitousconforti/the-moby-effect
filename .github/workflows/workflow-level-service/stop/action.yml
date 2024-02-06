@@ -8,4 +8,4 @@ inputs:
 
 runs:
   using: 'node20'
-  main: './.github/workflows/workflow-level-service/stop.js'
+  main: './.github/workflows/workflow-level-service/stop/stop.js'

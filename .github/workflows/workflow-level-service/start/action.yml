@@ -11,4 +11,4 @@ inputs:
 
 runs:
   using: 'node20'
-  main: './.github/workflows/workflow-level-service/start.js'
+  main: './.github/workflows/workflow-level-service/start/start.js'
