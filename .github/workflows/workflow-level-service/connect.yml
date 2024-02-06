@@ -1,0 +1,11 @@
+name: 'Workflow level service - Connect'
+description: 'Connects a workflow level service'
+
+inputs:
+  service-identifier:
+    description: "UUID of the started service"
+    required: true
+
+runs:
+  using: 'node20'
+  main: './.github/workflows/workflow-level-service/connect.js'

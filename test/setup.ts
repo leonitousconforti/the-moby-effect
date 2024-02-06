@@ -1,30 +1,18 @@
 import * as Config from "effect/Config";
+import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
-
-import * as MobyApi from "../src/index.js";
-import { testEngines } from "./unit/helpers.js";
-
-const connectionOptions: MobyApi.MobyConnectionOptions = {
-    connection: "socket",
-    socketPath: "/var/run/docker.sock",
-};
-
-const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions(connectionOptions);
 
 export default async function (_globalConfig: unknown, _projectConfig: unknown) {
     await Effect.gen(function* (_: Effect.Adapter) {
         const node_environment: string = yield* _(Config.string("NODE_ENV"));
+        const docker_host: string = yield* _(Config.string("THE_MOBY_EFFECT_DOCKER_HOST"));
 
         if (node_environment !== "ci") {
-            yield* _(Effect.fail("Tests are meant to run in CI only"));
+            yield* _(
+                Console.warn(
+                    "You are not running in a CI environment. I recommend you setup a dind container to test against rather than you local docker host"
+                )
+            );
         }
-
-        const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
-
-        for (const engineImage of testEngines) {
-            yield* _(images.create({ fromImage: engineImage }));
-        }
-    })
-        .pipe(Effect.provide(localDocker))
-        .pipe(Effect.runPromise);
+    }).pipe(Effect.runPromise);
 }
