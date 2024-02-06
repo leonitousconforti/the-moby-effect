@@ -59,7 +59,7 @@ const waitForResponse = async () => {
     if (connectionResponse) {
         const data = await artifactClient.downloadArtifact(connectionResponse.id);
         await artifactClient.deleteArtifact(connectionResponse.name);
-        console.log(data);
+        core.info(JSON.stringify(data));
         return;
     }
 
