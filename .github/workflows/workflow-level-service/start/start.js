@@ -58,8 +58,12 @@ const processConnectionRequest = Effect.gen(function* (_) {
         }
 
         core.info(`Processing connection request from client ${client_identifier}`);
-        const data = yield* _(Effect.promise(() => artifactClient.downloadArtifact(connectionRequest.id)));
+        const { downloadPath } = yield* _(Effect.promise(() => artifactClient.downloadArtifact(connectionRequest.id)));
         yield* _(Effect.promise(() => artifactClient.deleteArtifact(connectionRequest.name)));
+
+        if (!downloadPath) {
+            throw new Error("Failed to download connection request artifact");
+        }
 
         const tempFile = yield* _(fs.makeTempFileScoped());
         yield* _(
@@ -75,7 +79,8 @@ const processConnectionRequest = Effect.gen(function* (_) {
             )
         );
 
-        core.info(JSON.stringify(data));
+        const data = yield* _(fs.readFileString(downloadPath));
+        core.info(data);
     }
 });
 
