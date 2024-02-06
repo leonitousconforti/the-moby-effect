@@ -20,7 +20,8 @@ jobs:
     - uses: pnpm/action-setup@v2
       with:
         version: 8
-        run_install: true
+        run_install: false
+    - run: pnpm install
     - id: start
       uses: ./.github/actions/workflow-level-service/start.yml
       with:
@@ -35,7 +36,8 @@ jobs:
     - uses: pnpm/action-setup@v2
       with:
         version: 8
-        run_install: true
+        run_install: false
+    - run: pnpm install
     - uses: ./.github/actions/workflow-level-service/connect.yml
       with:
         service-identifer: ${{ env.test-service-identifier }}
@@ -51,7 +53,8 @@ jobs:
     - uses: pnpm/action-setup@v2
       with:
         version: 8
-        run_install: true
+        run_install: false
+    - run: pnpm install
     - uses: ./.github/actions/workflow-level-service/stop.yml
       with:
         service-identifer: ${{ env.test-service-identifier }}
