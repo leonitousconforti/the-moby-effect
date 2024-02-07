@@ -126,7 +126,7 @@ jobs:
     - run: docker load --input /tmp/ssh-dind-docker-image.tar
     - run: docker image ls -a
     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-    - uses: ./.github/workflows/workflow-level-service/expose
+    - uses: ./.github/actions/workflow-level-service/expose
       with:
         service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -147,7 +147,7 @@ jobs:
     - run: docker load --input /tmp/http-dind-docker-image.tar
     - run: docker image ls -a
     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-    - uses: ./.github/workflows/workflow-level-service/expose
+    - uses: ./.github/actions/workflow-level-service/expose
       with:
         service-identifier: ${{ env.http-docker-engine-service-identifier }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -168,7 +168,7 @@ jobs:
     - run: docker load --input /tmp/https-dind-docker-image.tar
     - run: docker image ls -a
     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-    - uses: ./.github/workflows/workflow-level-service/expose
+    - uses: ./.github/actions/workflow-level-service/expose
       with:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -178,13 +178,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/workflow-level-service/connect
+    - uses: ./.github/actions/workflow-level-service/connect
       with:
         service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-    - uses: ./.github/workflows/workflow-level-service/connect
+    - uses: ./.github/actions/workflow-level-service/connect
       with:
         service-identifier: ${{ env.http-docker-engine-service-identifier }}
-    - uses: ./.github/workflows/workflow-level-service/connect
+    - uses: ./.github/actions/workflow-level-service/connect
       with:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
 
@@ -226,13 +226,13 @@ jobs:
     needs: [remote-docker-engine-tests]
     steps:
     - uses: actions/checkout@v4
-    - uses: ./.github/workflows/workflow-level-service/stop
+    - uses: ./.github/actions/workflow-level-service/stop
       with:
         service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-    - uses: ./.github/workflows/workflow-level-service/stop
+    - uses: ./.github/actions/workflow-level-service/stop
       with:
         service-identifier: ${{ env.http-docker-engine-service-identifier }}
-    - uses: ./.github/workflows/workflow-level-service/stop
+    - uses: ./.github/actions/workflow-level-service/stop
       with:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
 
