@@ -48,6 +48,12 @@ devDependencies:
   '@effect/typeclass':
     specifier: 0.22.12
     version: 0.22.12(effect@2.2.3)
+  '@protobuf-ts/runtime':
+    specifier: ^2.9.3
+    version: 2.9.3
+  '@protobuf-ts/runtime-rpc':
+    specifier: ^2.9.3
+    version: 2.9.3
   '@rushstack/eslint-config':
     specifier: 3.6.3
     version: 3.6.3(eslint@8.56.0)(typescript@5.3.3)
