@@ -30,10 +30,10 @@ runs:
 
     - name: "Restore pnpm store"
       id: test
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: ${{ env.STORE_PATH }}
-        restore-keys: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-
+        restore-keys: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store
         key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
 
     - shell: bash
