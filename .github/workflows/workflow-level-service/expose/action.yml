@@ -42,12 +42,6 @@ runs:
           core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
     - shell: bash
-      run: |
-        echo "ACTIONS_CACHE_URL: $ACTIONS_CACHE_URL"
-        echo "ACTIONS_RUNTIME_URL: $ACTIONS_RUNTIME_URL"
-        echo "ACTIONS_RESULTS_URL: $ACTIONS_RESULTS_URL"
-        echo "ACTIONS_RUNTIME_TOKEN: $ACTIONS_RUNTIME_TOKEN"
-    - shell: bash
       run: node .github/workflows/workflow-level-service/expose/expose.js
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
