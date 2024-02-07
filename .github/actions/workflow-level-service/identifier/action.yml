@@ -10,7 +10,7 @@ inputs:
 outputs:
   service-identifier:
     description: "UUID of the service"
-    value: ${{ steps.identifier.outputs.random-number }}
+    value: ${{ steps.identifier.outputs.service-identifier }}
 
 runs:
   using: "composite"
