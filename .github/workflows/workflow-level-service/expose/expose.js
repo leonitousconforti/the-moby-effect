@@ -1,6 +1,7 @@
 import * as artifacts from "@actions/artifact";
 import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
+import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
@@ -8,7 +9,6 @@ import * as path from "node:path";
 import * as uuid from "uuid";
 
 const artifactClient = new artifacts.DefaultArtifactClient();
-const service_identifier = core.getInput("service-identifier", { required: true, trimWhitespace: true });
 
 /**
  * The service should continue to listen for connection requests and host the
@@ -16,17 +16,18 @@ const service_identifier = core.getInput("service-identifier", { required: true,
  * run with a name in the format of "service-identifier_stop" where
  * service_identifier is the UUID of the service to stop.
  */
-const hasStopRequest = async () => {
-    const { artifacts } = await artifactClient.listArtifacts();
+const hasStopRequest = Effect.gen(function* (_) {
+    const service_identifier = yield* _(Config.string("SERVICE_IDENTIFIER"));
+    const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
 
     if (artifacts.some((artifact) => artifact.name === `${service_identifier}_stop`)) {
         core.info(`Stop request received, stopping service ${service_identifier}`);
-        await artifactClient.deleteArtifact(`${service_identifier}_stop`);
+        yield* _(Effect.promise(() => artifactClient.deleteArtifact(`${service_identifier}_stop`)));
         return true;
     }
 
     return false;
-};
+});
 
 /**
  * Connection requests will show up as artifacts with a name in the format
@@ -46,6 +47,7 @@ const hasStopRequest = async () => {
  */
 const processConnectionRequest = Effect.gen(function* (_) {
     const fs = yield* _(PlatformNode.FileSystem.FileSystem);
+    const service_identifier = yield* _(Config.string("SERVICE_IDENTIFIER"));
 
     const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
     const connectionRequests = artifacts.filter((artifact) =>
@@ -98,7 +100,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
 Effect.suspend(() => processConnectionRequest).pipe(
     Effect.schedule(
         Function.pipe(
-            Schedule.recurUntilEffect(() => Effect.promise(hasStopRequest)),
+            Schedule.recurUntilEffect(() => Effect.orDie(hasStopRequest)),
             Schedule.addDelay(() => 30_000)
         )
     ),
