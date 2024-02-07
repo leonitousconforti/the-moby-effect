@@ -249,7 +249,10 @@ jobs:
         docker-desktop: [v1, v2, v3, v4, v5, v6]
     steps:
     - uses: actions/checkout@v4
-    - run: sleep 10s
+    - if: ${{ runner.os != 'macOS' }}
+      run: sleep 10s
+    - if: ${{ runner.os == 'macOS' }}
+      run: sleep 10
 
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
@@ -265,7 +268,10 @@ jobs:
         podman-desktop: [v1, v2, v3, v4, v5, v6]
     steps:
     - uses: actions/checkout@v4
-    - run: sleep 10s
+    - if: ${{ runner.os != 'macOS' }}
+      run: sleep 10s
+    - if: ${{ runner.os == 'macOS' }}
+      run: sleep 10
 
   publish-pre-release:
     runs-on: ubuntu-latest
