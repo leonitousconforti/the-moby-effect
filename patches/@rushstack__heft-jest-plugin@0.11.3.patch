@@ -1,0 +1,13 @@
+diff --git a/lib/JestPlugin.js b/lib/JestPlugin.js
+index e1e6247a5faef41dab691ce864f58b48c482b71b..60b6dad5c20d7a2317ce08088630fd9352b14820 100644
+--- a/lib/JestPlugin.js
++++ b/lib/JestPlugin.js
+@@ -42,7 +42,7 @@ const jestPluginSymbol = Symbol('heft-jest-plugin');
+ const PLUGIN_NAME = 'jest-plugin';
+ const PLUGIN_PACKAGE_NAME = '@rushstack/heft-jest-plugin';
+ const PLUGIN_PACKAGE_FOLDER = path.resolve(__dirname, '..');
+-const JEST_CONFIGURATION_LOCATION = `config/jest.config.json`;
++const JEST_CONFIGURATION_LOCATION = `jest.config.json`;
+ const ROOTDIR_TOKEN = '<rootDir>';
+ const CONFIGDIR_TOKEN = '<configDir>';
+ const PACKAGE_CAPTUREGROUP = 'package';
