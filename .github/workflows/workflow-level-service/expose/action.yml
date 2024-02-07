@@ -32,4 +32,4 @@ runs:
     - shell: bash
       run: node .github/workflows/workflow-level-service/expose/expose.js
       env:
-        service-identifier: ${{ inputs.service-identifier }}
+        SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}

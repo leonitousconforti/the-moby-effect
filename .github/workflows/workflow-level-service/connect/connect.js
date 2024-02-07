@@ -1,7 +1,9 @@
 import * as artifacts from "@actions/artifact";
 import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
-import * as Effect from "effect/Effect";
+import { Effect } from "effect";
+import * as Config from "effect/Config";
+import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
 import * as path from "node:path";
 import * as stun from "stun";
@@ -9,7 +11,7 @@ import * as uuid from "uuid";
 
 const client_identifier = uuid.v4();
 const artifactClient = new artifacts.DefaultArtifactClient();
-const service_identifier = core.getInput("service-identifier");
+const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER");
 
 /**
  * Connection requests to a service will be made by uploading an artifact with a
@@ -20,6 +22,7 @@ const service_identifier = core.getInput("service-identifier");
  */
 const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
     const fs = yield* _(PlatformNode.FileSystem.FileSystem);
+    const service_identifier = yield* _(SERVICE_IDENTIFIER);
     const tempDirectory = yield* _(fs.makeTempDirectoryScoped());
     const artifactFile = path.join(tempDirectory, `${service_identifier}_connection-request_${client_identifier}`);
     const stunResponse = yield* _(Effect.promise(() => stun.request("stun.l.google.com:19302")));
@@ -44,8 +47,9 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
  * connection string inside and that should be everything needed to connect to
  * the service.
  */
-const waitForResponse = async () => {
-    const { artifacts } = await artifactClient.listArtifacts();
+const waitForResponse = Effect.gen(function* (_) {
+    const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
+    const service_identifier = yield* _(SERVICE_IDENTIFIER);
     const connectionResponses = artifacts.filter(
         (artifact) => artifact.name === `${service_identifier}_connection-response_${client_identifier}`
     );
@@ -59,26 +63,21 @@ const waitForResponse = async () => {
     // Even if there are more than two connection response artifacts, we will only take the first
     const connectionResponse = connectionResponses[0];
     if (connectionResponse) {
-        const data = await artifactClient.downloadArtifact(connectionResponse.id);
-        await artifactClient.deleteArtifact(connectionResponse.name);
+        const data = yield* _(Effect.promise(() => artifactClient.downloadArtifact(connectionResponse.id)));
+        yield* _(Effect.promise(() => artifactClient.deleteArtifact(connectionResponse.name)));
         core.info(JSON.stringify(data));
         return;
     }
 
     // Still waiting for a connection response
-    throw new Error("Still waiting for a connection response");
-};
+    yield* _(Effect.fail(new Error("Still waiting for a connection response")));
+});
 
-Effect.suspend(() => uploadConnectionRequestArtifact).pipe(
-    Effect.scoped,
-    Effect.provide(PlatformNode.NodeContext.layer),
-    PlatformNode.Runtime.runMain
-);
-
-core.info("here");
-
-Effect.suspend(() => Effect.tryPromise(waitForResponse)).pipe(
-    Effect.retry({ times: 100, schedule: Schedule.forever.pipe(Schedule.addDelay(() => 30_000)) }),
+Function.pipe(
+    Effect.scoped(uploadConnectionRequestArtifact),
+    Effect.andThen(
+        Effect.retry(waitForResponse, { times: 100, schedule: Schedule.forever.pipe(Schedule.addDelay(() => 30_000)) })
+    ),
     Effect.provide(PlatformNode.NodeContext.layer),
     PlatformNode.Runtime.runMain
 );

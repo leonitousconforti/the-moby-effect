@@ -31,3 +31,5 @@ runs:
       run: pnpm install
     - shell: bash
       run: node .github/workflows/workflow-level-service/connect/connect.js
+      env:
+        SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}

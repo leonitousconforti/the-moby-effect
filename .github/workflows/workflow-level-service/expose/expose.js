@@ -9,6 +9,7 @@ import * as path from "node:path";
 import * as uuid from "uuid";
 
 const artifactClient = new artifacts.DefaultArtifactClient();
+const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER");
 
 /**
  * The service should continue to listen for connection requests and host the
@@ -17,7 +18,7 @@ const artifactClient = new artifacts.DefaultArtifactClient();
  * service_identifier is the UUID of the service to stop.
  */
 const hasStopRequest = Effect.gen(function* (_) {
-    const service_identifier = yield* _(Config.string("SERVICE_IDENTIFIER"));
+    const service_identifier = yield* _(SERVICE_IDENTIFIER);
     const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
 
     if (artifacts.some((artifact) => artifact.name === `${service_identifier}_stop`)) {
@@ -47,7 +48,7 @@ const hasStopRequest = Effect.gen(function* (_) {
  */
 const processConnectionRequest = Effect.gen(function* (_) {
     const fs = yield* _(PlatformNode.FileSystem.FileSystem);
-    const service_identifier = yield* _(Config.string("SERVICE_IDENTIFIER"));
+    const service_identifier = yield* _(SERVICE_IDENTIFIER);
 
     const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
     const connectionRequests = artifacts.filter((artifact) =>
