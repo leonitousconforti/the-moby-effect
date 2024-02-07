@@ -30,4 +30,4 @@ runs:
     - shell: bash
       run: pnpm install
     - shell: bash
-      run: node connect.js
+      run: node .github/workflows/workflow-level-service/connect/connect.js

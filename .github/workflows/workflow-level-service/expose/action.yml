@@ -30,4 +30,4 @@ runs:
     - shell: bash
       run: pnpm install
     - shell: bash
-      run: node expose.js
+      run: node .github/workflows/workflow-level-service/expose/expose.js
