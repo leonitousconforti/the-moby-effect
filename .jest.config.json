@@ -1,8 +1,8 @@
 {
     "extends": "@rushstack/heft-jest-plugin/includes/jest-shared.config.json",
     "roots": ["<rootDir>/dist"],
-    "testMatch": ["<rootDir>/dist/test/*.test.js"],
-    "collectCoverageFrom": ["<rootDir>/dist/src/*.js"],
+    "testMatch": ["<rootDir>/dist/test/**/*.test.js"],
+    "collectCoverageFrom": ["<rootDir>/dist/src/**/*.js", "<rootDir>/dist/bin/**/*.js"],
     "globalSetup": "<rootDir>/dist/test/setup.js",
     "collectCoverage": true,
     "coverageProvider": "v8"

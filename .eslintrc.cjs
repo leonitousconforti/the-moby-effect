@@ -27,5 +27,5 @@ module.exports = {
             { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
         ],
     },
-    ignorePatterns: ["dist/", ".eslintrc.cjs"],
+    ignorePatterns: ["dist/", ".eslintrc.cjs", "test/ci-wait-for-artifacts.js"],
 };

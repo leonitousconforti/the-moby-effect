@@ -23,7 +23,8 @@
                 "editorconfig.editorconfig",
                 "streetsidesoftware.code-spell-checker",
                 "eamodio.gitlens",
-                "mutantdino.resourcemonitor"
+                "mutantdino.resourcemonitor",
+                "GitHub.vscode-github-actions"
             ],
             "settings": {
                 "cSpell.enabled": true,
