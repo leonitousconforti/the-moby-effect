@@ -275,6 +275,7 @@ jobs:
 
   publish-pre-release:
     runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/main'}}
     environment: "NPM pre-release"
     needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests]
     steps:
