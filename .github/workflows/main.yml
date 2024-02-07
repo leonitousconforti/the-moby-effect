@@ -10,17 +10,109 @@ env:
   test-service-identifier: "test-service01"
 
 jobs:
+  update-pnpm-cache:
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: "Install pnpm"
+      shell: bash
+      run: npm install pnpm@8 -g
+    - name: "Get pnpm store"
+      shell: bash
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+    - uses: actions/cache@v4
+      with:
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+            ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
+    - run: python3 -m pip install setuptools
+    - run: pnpm install
+
+  docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile: ["ssh", "http", "https", "socket"]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - uses: docker/metadata-action@v5
+      id: meta
+      with:
+        images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
+    - uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
+        outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.dockerfile }}-dind-docker-image
+        path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+        if-no-files-found: error
+
+  docker-publish:
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    environment: "Docker release"
+    strategy:
+      matrix:
+        dockerfile: ["ssh", "http", "https", "socket"]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-qemu-action@v3
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - uses: docker/metadata-action@v5
+      id: meta
+      with:
+        images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
+    - uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
+        platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+
   test-service:
+    needs: [update-pnpm-cache]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-
-    - uses: actions/cache/restore@v4
-      with:
-        path: /tmp
-        restore-keys: Linux-node18.x-pnpm-store-
-        key: Linux-node18.x-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-
     - run: docker run --detach --publish 8080:80 nginx
     - uses: ./.github/workflows/workflow-level-service/expose
       with:
@@ -28,6 +120,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   test-consumer:
+    needs: [update-pnpm-cache]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -45,105 +138,6 @@ jobs:
     - uses: ./.github/workflows/workflow-level-service/stop
       with:
         service-identifier: ${{ env.test-service-identifier }}
-
-#   docker-build:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         dockerfile: ["ssh", "http", "https", "socket"]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: docker/setup-qemu-action@v3
-#     - uses: docker/setup-buildx-action@v3
-#     - uses: docker/login-action@v3
-#       with:
-#         registry: ghcr.io
-#         username: ${{ github.actor }}
-#         password: ${{ secrets.GITHUB_TOKEN }}
-#     - uses: docker/metadata-action@v5
-#       id: meta
-#       with:
-#         images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-#     - uses: docker/build-push-action@v5
-#       with:
-#         context: .
-#         push: false
-#         cache-from: type=gha
-#         cache-to: type=gha,mode=max
-#         tags: ${{ steps.meta.outputs.tags }}
-#         labels: ${{ steps.meta.outputs.labels }}
-#         file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
-#         outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-#     - uses: actions/upload-artifact@v4
-#       with:
-#         name: ${{ matrix.dockerfile }}-dind-docker-image
-#         path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-#         if-no-files-found: error
-
-#   docker-publish:
-#     runs-on: ubuntu-latest
-#     needs: [docker-build]
-#     environment: "Docker release"
-#     strategy:
-#       matrix:
-#         dockerfile: ["ssh", "http", "https", "socket"]
-#     permissions:
-#       contents: read
-#       packages: write
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: docker/setup-qemu-action@v3
-#     - uses: docker/setup-buildx-action@v3
-#     - uses: docker/login-action@v3
-#       with:
-#         registry: ghcr.io
-#         username: ${{ github.actor }}
-#         password: ${{ secrets.GITHUB_TOKEN }}
-#     - uses: docker/metadata-action@v5
-#       id: meta
-#       with:
-#         images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-#     - uses: docker/build-push-action@v5
-#       with:
-#         context: .
-#         push: true
-#         cache-from: type=gha
-#         cache-to: type=gha,mode=max
-#         tags: ${{ steps.meta.outputs.tags }}
-#         labels: ${{ steps.meta.outputs.labels }}
-#         file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
-#         platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
-
-#   update-pnpm-cache:
-#     runs-on: ${{ matrix.os }}
-#     defaults:
-#       run:
-#         shell: bash
-#     strategy:
-#       matrix:
-#         node-version: [16.x, 18.x, 20.x]
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: ${{ matrix.node-version }}
-#     - uses: pnpm/action-setup@v2
-#       with:
-#         version: 8
-#         run_install: false
-#     - name: Get pnpm store directory
-#       shell: bash
-#       run: |
-#         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-#     - uses: actions/cache@v3
-#       with:
-#         path: ${{ env.STORE_PATH }}
-#         key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-#         restore-keys: |
-#             ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
-#     - run: python3 -m pip install setuptools
-#     - run: pnpm install
 
 #   ssh-docker-service:
 #     runs-on: ubuntu-latest
