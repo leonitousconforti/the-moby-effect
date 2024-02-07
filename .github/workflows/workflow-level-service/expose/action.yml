@@ -27,5 +27,7 @@ runs:
       with:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-
-    - run: pnpm install
-    - run: node expose.js
+    - shell: bash
+      run: pnpm install
+    - shell: bash
+      run: node expose.js
