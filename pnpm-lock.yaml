@@ -4,6 +4,14 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@rushstack/heft-jest-plugin@0.11.3':
+    hash: n6k2ue4lp6ap7o3pnlbmjotjeu
+    path: patches/@rushstack__heft-jest-plugin@0.11.3.patch
+  '@rushstack/heft@0.64.3':
+    hash: yjutblonwze4uabilnn27gknda
+    path: patches/@rushstack__heft@0.64.3.patch
+
 dependencies:
   ssh2:
     specifier: ~1.15.0
@@ -16,9 +24,6 @@ devDependencies:
   '@actions/core':
     specifier: 1.10.1
     version: 1.10.1
-  '@actions/exec':
-    specifier: 1.1.1
-    version: 1.1.1
   '@effect/cli':
     specifier: 0.31.7
     version: 0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.3)
@@ -47,17 +52,17 @@ devDependencies:
     specifier: 2.9.3
     version: 2.9.3
   '@protobuf-ts/runtime-rpc':
-    specifier: ^2.9.3
+    specifier: 2.9.3
     version: 2.9.3
   '@rushstack/eslint-config':
     specifier: 3.6.3
     version: 3.6.3(eslint@8.56.0)(typescript@5.3.3)
   '@rushstack/heft':
     specifier: 0.64.3
-    version: 0.64.3(@types/node@20.11.16)
+    version: 0.64.3(patch_hash=yjutblonwze4uabilnn27gknda)(@types/node@20.11.16)
   '@rushstack/heft-jest-plugin':
     specifier: 0.11.3
-    version: 0.11.3(@rushstack/heft@0.64.3)(@types/node@20.11.16)
+    version: 0.11.3(patch_hash=n6k2ue4lp6ap7o3pnlbmjotjeu)(@rushstack/heft@0.64.3)(@types/node@20.11.16)
   '@rushstack/heft-lint-plugin':
     specifier: 0.3.3
     version: 0.3.3(@rushstack/heft@0.64.3)(@types/node@20.11.16)
@@ -116,7 +121,7 @@ devDependencies:
     specifier: 2.4.10
     version: 2.4.10(prettier@3.2.4)
   stun:
-    specifier: ^2.1.0
+    specifier: 2.1.0
     version: 2.1.0
   tar-fs:
     specifier: 3.0.4
@@ -170,12 +175,6 @@ packages:
       uuid: 8.3.2
     dev: true
 
-  /@actions/exec@1.1.1:
-    resolution: {integrity: sha512-+sCcHHbVdk93a0XT19ECtO/gIXoxvdsgQLzb2fE2/5sIZmWQuluYyjPQtrtTHdU1YzTZ7bAPN4sITq2xi1679w==}
-    dependencies:
-      '@actions/io': 1.1.3
-    dev: true
-
   /@actions/github@5.1.1:
     resolution: {integrity: sha512-Nk59rMDoJaV+mHCOJPXuvB1zIbomlKS0dmSIqPGxd0enAXBnOfn4VWF+CGtRCwXZG9Epa54tZA7VIRlJDS8A6g==}
     dependencies:
@@ -192,10 +191,6 @@ packages:
     dependencies:
       tunnel: 0.0.6
       undici: 5.28.3
-    dev: true
-
-  /@actions/io@1.1.3:
-    resolution: {integrity: sha512-wi9JjgKLYS7U/z8PPbco+PvTb/nRWjeoFlJ1Qer83k/3C5PHQi28hiVdeE2kHXmIL99mQFawx8qt/JPjZilJ8Q==}
     dev: true
 
   /@ampproject/remapping@2.2.1:
@@ -1435,7 +1430,7 @@ packages:
       - '@types/node'
     dev: true
 
-  /@rushstack/heft-jest-plugin@0.11.3(@rushstack/heft@0.64.3)(@types/node@20.11.16):
+  /@rushstack/heft-jest-plugin@0.11.3(patch_hash=n6k2ue4lp6ap7o3pnlbmjotjeu)(@rushstack/heft@0.64.3)(@types/node@20.11.16):
     resolution: {integrity: sha512-GmqRXM6pJhbHyIT6CPYBdg3Gs1lnNDgQdxjdZJ8yrSGYC3ntpuUyPwOaOmIibpjUTeg/Np45AspLDeX+FDiqcw==}
     peerDependencies:
       '@rushstack/heft': ^0.64.3
@@ -1450,7 +1445,7 @@ packages:
       '@jest/core': 29.5.0
       '@jest/reporters': 29.5.0
       '@jest/transform': 29.5.0
-      '@rushstack/heft': 0.64.3(@types/node@20.11.16)
+      '@rushstack/heft': 0.64.3(patch_hash=yjutblonwze4uabilnn27gknda)(@types/node@20.11.16)
       '@rushstack/heft-config-file': 0.14.7(@types/node@20.11.16)
       '@rushstack/node-core-library': 3.64.2(@types/node@20.11.16)
       jest-config: 29.5.0(@types/node@20.11.16)
@@ -1464,13 +1459,14 @@ packages:
       - supports-color
       - ts-node
     dev: true
+    patched: true
 
   /@rushstack/heft-lint-plugin@0.3.3(@rushstack/heft@0.64.3)(@types/node@20.11.16):
     resolution: {integrity: sha512-odaRqjD/f8K9XUwhlF63bTuBKjBi5WVVUZEqCzEGM1buoc8maZi26OWPlI5EZwdJKm7ionjGHefVhZVETHttcg==}
     peerDependencies:
       '@rushstack/heft': 0.64.3
     dependencies:
-      '@rushstack/heft': 0.64.3(@types/node@20.11.16)
+      '@rushstack/heft': 0.64.3(patch_hash=yjutblonwze4uabilnn27gknda)(@types/node@20.11.16)
       '@rushstack/node-core-library': 3.64.2(@types/node@20.11.16)
       semver: 7.5.4
     transitivePeerDependencies:
@@ -1482,7 +1478,7 @@ packages:
     peerDependencies:
       '@rushstack/heft': 0.64.3
     dependencies:
-      '@rushstack/heft': 0.64.3(@types/node@20.11.16)
+      '@rushstack/heft': 0.64.3(patch_hash=yjutblonwze4uabilnn27gknda)(@types/node@20.11.16)
       '@rushstack/heft-config-file': 0.14.7(@types/node@20.11.16)
       '@rushstack/node-core-library': 3.64.2(@types/node@20.11.16)
       '@types/tapable': 1.0.6
@@ -1499,7 +1495,7 @@ packages:
       webpack: ~5.82.1
     dependencies:
       '@rushstack/debug-certificate-manager': 1.3.20(@types/node@20.11.16)
-      '@rushstack/heft': 0.64.3(@types/node@20.11.16)
+      '@rushstack/heft': 0.64.3(patch_hash=yjutblonwze4uabilnn27gknda)(@types/node@20.11.16)
       '@rushstack/node-core-library': 3.64.2(@types/node@20.11.16)
       '@types/tapable': 1.0.6
       tapable: 1.1.3
@@ -1515,7 +1511,7 @@ packages:
       - webpack-cli
     dev: true
 
-  /@rushstack/heft@0.64.3(@types/node@20.11.16):
+  /@rushstack/heft@0.64.3(patch_hash=yjutblonwze4uabilnn27gknda)(@types/node@20.11.16):
     resolution: {integrity: sha512-uCUF++RbJdFfHC+6mgJXeVBInyn/nihREuP6XRhfEL7S5EEQwoRqofDXguQwPWMQx3Y6BZEjZa2hRb3HMdYTxA==}
     engines: {node: '>=10.13.0'}
     hasBin: true
@@ -1536,6 +1532,7 @@ packages:
     transitivePeerDependencies:
       - '@types/node'
     dev: true
+    patched: true
 
   /@rushstack/node-core-library@3.64.2(@types/node@20.11.16):
     resolution: {integrity: sha512-n1S2VYEklONiwKpUyBq/Fym6yAsfsCXrqFabuOMcCuj4C+zW+HyaspSHXJCKqkMxfjviwe/c9+DUqvRWIvSN9Q==}

@@ -39,8 +39,7 @@
         "test/**/*.ts",
         "examples/**/*.ts",
         "bin/**/*.ts",
-        "test/**/*.js",
         ".github/**/*.js",
-        ".github/**/*.ts",
+        ".github/**/*.d.ts",
     ],
 }
