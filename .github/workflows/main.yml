@@ -117,6 +117,7 @@ jobs:
 
   ssh-docker-engine-service-identifier:
     runs-on: ubuntu-latest
+    needs: [update-pnpm-caches]
     outputs:
       service-identifier: ${{ steps.identifier.outputs.service-identifier }}
     steps:
@@ -126,6 +127,7 @@ jobs:
 
   http-docker-engine-service-identifier:
     runs-on: ubuntu-latest
+    needs: [update-pnpm-caches]
     outputs:
       service-identifier: ${{ steps.identifier.outputs.service-identifier }}
     steps:
@@ -135,6 +137,7 @@ jobs:
 
   https-docker-engine-service-identifier:
     runs-on: ubuntu-latest
+    needs: [update-pnpm-caches]
     outputs:
       service-identifier: ${{ steps.identifier.outputs.service-identifier }}
     steps:
@@ -143,7 +146,7 @@ jobs:
         uses: ./.github/actions/workflow-level-service/identifier
 
   ssh-docker-engine-service:
-    needs: [update-pnpm-caches, docker-build, ssh-docker-engine-service-identifier]
+    needs: [docker-build, ssh-docker-engine-service-identifier]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -164,7 +167,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   http-docker-engine-service:
-    needs: [update-pnpm-caches, docker-build, http-docker-engine-service-identifier]
+    needs: [docker-build, http-docker-engine-service-identifier]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -185,7 +188,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   https-docker-engine-service:
-    needs: [update-pnpm-caches, docker-build, https-docker-engine-service-identifier]
+    needs: [docker-build, https-docker-engine-service-identifier]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
