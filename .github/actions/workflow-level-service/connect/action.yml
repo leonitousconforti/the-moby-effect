@@ -1,17 +1,14 @@
-name: "Workflow level service - Expose"
-description: "Exposes a workflow level service"
+name: "Workflow level service - Connect"
+description: "Connects a workflow level service"
 
 inputs:
   service-identifier:
-    description: "Name of the service"
+    description: "UUID of the started service"
     required: true
   node-version:
     description: "Node.js version"
     required: true
     default: "18.x"
-  GITHUB_TOKEN:
-    description: "GitHub token"
-    required: true
 
 runs:
   using: "composite"
@@ -26,7 +23,8 @@ runs:
 
     - name: "Get pnpm store"
       shell: bash
-      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      run: |
+        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
     - name: "Restore pnpm store"
       uses: actions/cache/restore@v4
@@ -50,8 +48,8 @@ runs:
           core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
 
-    - name: "Expose service"
+    - name: "Connect to service"
       shell: bash
-      run: node .github/workflows/workflow-level-service/expose/expose.js
+      run: node .github/actions/workflow-level-service/connect/connect.js
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
