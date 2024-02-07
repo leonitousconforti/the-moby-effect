@@ -12,7 +12,7 @@ env:
   https-docker-engine-service-identifier: "https-docker-engine-service"
 
 jobs:
-  update-pnpm-cache:
+  update-pnpm-caches:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -110,7 +110,7 @@ jobs:
         platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   ssh-docker-engine-service:
-    needs: [update-pnpm-cache, docker-build]
+    needs: [update-pnpm-caches, docker-build]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -131,7 +131,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   http-docker-engine-service:
-    needs: [update-pnpm-cache, docker-build]
+    needs: [update-pnpm-caches, docker-build]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -152,7 +152,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   https-docker-engine-service:
-    needs: [update-pnpm-cache, docker-build]
+    needs: [update-pnpm-caches, docker-build]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -173,7 +173,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   remote-docker-engine-services-online:
-    needs: [update-pnpm-cache]
+    needs: [docker-build, update-pnpm-caches]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -187,18 +187,8 @@ jobs:
       with:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
 
-#   test:
-#     runs-on: ubuntu-latest
-#     needs: [docker-build, remote-docker-engine-services-online]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: ./.github/workflows/workflow-level-service/connect
-#       with:
-#         service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-#     - run: sleep 30s
-
   remote-docker-engine-tests:
-    needs: [docker-build, remote-docker-engine-services-online]
+    needs: [remote-docker-engine-services-online]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -245,59 +235,49 @@ jobs:
       with:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
 
-#   local-docker-desktop-tests:
-#     runs-on: ${{ matrix.os }}
-#     needs: [remote-docker-engine-tests]
-#     defaults:
-#       run:
-#         shell: bash
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         node-version: [16.x, 18.x, 20.x]
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#         docker-desktop: [v1, v2, v3, v4, v5, v6]
-#     steps:
-#     - uses: actions/checkout@v4
+  local-docker-desktop-tests:
+    runs-on: ${{ matrix.os }}
+    needs: [remote-docker-engine-tests, stop-services]
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        docker-desktop: [v1, v2, v3, v4, v5, v6]
+    steps:
+    - uses: actions/checkout@v4
+    - run: sleep 10s
 
-#   local-podman-desktop-tests:
-#     runs-on: ${{ matrix.os }}
-#     needs: [remote-docker-engine-tests]
-#     defaults:
-#       run:
-#         shell: bash
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         node-version: [16.x, 18.x, 20.x]
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#         podman-desktop: [v1, v2, v3, v4, v5, v6]
-#     steps:
-#     - uses: actions/checkout@v4
+  local-podman-desktop-tests:
+    runs-on: ${{ matrix.os }}
+    needs: [remote-docker-engine-tests, stop-services]
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        podman-desktop: [v1, v2, v3, v4, v5, v6]
+    steps:
+    - uses: actions/checkout@v4
+    - run: sleep 10s
 
-#   stop-services:
-#     runs-on: ubuntu-latest
-#     needs: [remote-docker-engine-tests]
-#     if: always()
-#     steps:
-#     - run: touch /tmp/stop-services
-#     - uses: actions/upload-artifact@v4
-#       with:
-#         path: /tmp/stop-services
-#         name: stop-services
-#         if-no-files-found: error
+  publish-pre-release:
+    runs-on: ubuntu-latest
+    environment: "NPM pre-release"
+    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+    steps:
+    - run: echo "Publishing artifacts"
 
-#   publish-pre-release:
-#     runs-on: ubuntu-latest
-#     environment: "NPM pre-release"
-#     needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests, http-docker-service, https-docker-service, ssh-docker-service, unix-socket-docker-service]
-#     steps:
-#     - run: echo "Publishing artifacts"
-
-#   publish-official-release:
-#     runs-on: ubuntu-latest
-#     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
-#     environment: "NPM official-release"
-#     needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests, http-docker-service, https-docker-service, ssh-docker-service, unix-socket-docker-service]
-#     steps:
-#     - run: echo "Publishing artifacts"
+  publish-official-release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
+    environment: "NPM official-release"
+    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+    steps:
+    - run: echo "Publishing artifacts"
