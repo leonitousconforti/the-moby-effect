@@ -19,20 +19,27 @@ runs:
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
-    - uses: pnpm/action-setup@v2.4.0
-      with:
-        version: 8
-        run_install: false
-    - shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-    - uses: actions/cache/restore@v3
+
+    - name: "Install pnpm"
+      shell: bash
+      run: npm install pnpm@8 -g
+
+    - name: "Get pnpm store"
+      shell: bash
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: "Restore pnpm store"
+      uses: actions/cache/restore@v4
       with:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-
-    - shell: bash
+
+    - name: "Install dependencies with pnpm"
+      shell: bash
       run: pnpm install
-    - uses: actions/github-script@v7
+
+    - name: "Export runtime variables"
+      uses: actions/github-script@v7
       env:
         github-token: ${{ inputs.GITHUB_TOKEN }}
       with:
@@ -41,7 +48,9 @@ runs:
           core.exportVariable('ACTIONS_RUNTIME_URL', process.env['ACTIONS_RUNTIME_URL'])
           core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
-    - shell: bash
+
+    - name: "Expose service"
+      shell: bash
       run: node .github/workflows/workflow-level-service/expose/expose.js
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
