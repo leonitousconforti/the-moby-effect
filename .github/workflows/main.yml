@@ -12,32 +12,17 @@ env:
 jobs:
   test-service:
     runs-on: ubuntu-latest
-    outputs:
-      service-identifer: ${{ steps.start.outputs.service-identifer }}
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v4
-    - uses: pnpm/action-setup@v2
-      with:
-        version: 8
-        run_install: false
-    - run: pnpm install
-    - id: start
-      uses: ./.github/workflows/workflow-level-service/start
+    - run: docker run --detach --publish 8080:80 nginx
+    - uses: ./.github/workflows/workflow-level-service/expose
       with:
         service-identifier: ${{ env.test-service-identifier }}
-        service-command: ""
 
   test-consumer:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v4
-    - uses: pnpm/action-setup@v2
-      with:
-        version: 8
-        run_install: false
-    - run: pnpm install
     - uses: ./.github/workflows/workflow-level-service/connect
       with:
         service-identifier: ${{ env.test-service-identifier }}
@@ -49,12 +34,6 @@ jobs:
     needs: [test-consumer]
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-node@v4
-    - uses: pnpm/action-setup@v2
-      with:
-        version: 8
-        run_install: false
-    - run: pnpm install
     - uses: ./.github/workflows/workflow-level-service/stop
       with:
         service-identifier: ${{ env.test-service-identifier }}

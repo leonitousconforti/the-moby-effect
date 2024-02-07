@@ -23,7 +23,6 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
     const tempDirectory = yield* _(fs.makeTempDirectoryScoped());
     const artifactFile = path.join(tempDirectory, `${service_identifier}_connection-request_${client_identifier}`);
     const stunResponse = yield* _(Effect.promise(() => stun.request("stun.l.google.com:19302")));
-    core.info(`Stun response: ${JSON.stringify(stunResponse)}`);
     yield* _(fs.writeFileString(artifactFile, stunResponse.getXorAddress().address));
     yield* _(
         Effect.promise(() =>

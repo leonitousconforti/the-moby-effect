@@ -66,7 +66,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
             throw new Error("Failed to download connection request artifact");
         }
 
-        const tempFile = yield* _(fs.makeTempFileScoped());
+        const tempFile = yield* _(fs.makeTempFile());
         yield* _(
             Effect.promise(() =>
                 artifactClient.uploadArtifact(
@@ -79,8 +79,14 @@ const processConnectionRequest = Effect.gen(function* (_) {
                 )
             )
         );
+        yield* _(fs.remove(tempFile));
 
         const data = yield* _(fs.readFileString(path.join(downloadPath, connectionRequest.name)));
+        const [clientIp, natPort, hostPort] = data.split(":");
+        if (!clientIp || !natPort || !hostPort) {
+            // throw new Error("Invalid connection request artifact contents");
+        }
+
         core.info(data);
     }
 });
@@ -96,7 +102,6 @@ Effect.suspend(() => processConnectionRequest).pipe(
             Schedule.addDelay(() => 30_000)
         )
     ),
-    Effect.scoped,
     Effect.provide(PlatformNode.NodeContext.layer),
     PlatformNode.Runtime.runMain
 );

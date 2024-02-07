@@ -1,9 +1,9 @@
-name: "Workflow level service - Connect"
-description: "Connects a workflow level service"
+name: "Workflow level service - Expose"
+description: "Exposes a workflow level service"
 
 inputs:
   service-identifier:
-    description: "UUID of the started service"
+    description: "Name of the service"
     required: true
   node-version:
     description: "Node.js version"
@@ -28,4 +28,4 @@ runs:
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-
     - run: pnpm install
-    - run: node connect.js
+    - run: node expose.js
