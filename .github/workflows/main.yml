@@ -172,7 +172,7 @@ jobs:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  test-consumer:
+  remote-docker-engine-services-online:
     needs: [update-pnpm-cache]
     runs-on: ubuntu-latest
     steps:
@@ -180,12 +180,59 @@ jobs:
     - uses: ./.github/workflows/workflow-level-service/connect
       with:
         service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-    - run: echo "Testing service"
-    - run: sleep 30s
+    - uses: ./.github/workflows/workflow-level-service/connect
+      with:
+        service-identifier: ${{ env.http-docker-engine-service-identifier }}
+    - uses: ./.github/workflows/workflow-level-service/connect
+      with:
+        service-identifier: ${{ env.https-docker-engine-service-identifier }}
+
+#   test:
+#     runs-on: ubuntu-latest
+#     needs: [docker-build, remote-docker-engine-services-online]
+#     steps:
+#     - uses: actions/checkout@v4
+#     - uses: ./.github/workflows/workflow-level-service/connect
+#       with:
+#         service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
+#     - run: sleep 30s
+
+  remote-docker-engine-tests:
+    needs: [docker-build, remote-docker-engine-services-online]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        remote-docker-engine: [ssh, http, https]
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+    - name: "Install pnpm"
+      shell: bash
+      run: npm install pnpm@8 -g
+    - name: "Get pnpm store"
+      shell: bash
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+    - name: "Restore pnpm store"
+      uses: actions/cache/restore@v4
+      with:
+        fail-on-cache-miss: true
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+    - name: "Install dependencies with pnpm"
+      shell: bash
+      run: pnpm install
 
   stop-services:
+    if: always()
     runs-on: ubuntu-latest
-    needs: [test-consumer]
+    needs: [remote-docker-engine-tests]
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/workflow-level-service/stop
@@ -197,273 +244,6 @@ jobs:
     - uses: ./.github/workflows/workflow-level-service/stop
       with:
         service-identifier: ${{ env.https-docker-engine-service-identifier }}
-
-#   http-docker-service:
-#     runs-on: ubuntu-latest
-#     needs: [docker-build]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: 18
-#     - uses: pnpm/action-setup@v2
-#       with:
-#         version: 8
-#         run_install: false
-#     - name: Get pnpm store directory
-#       shell: bash
-#       run: |
-#         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-#     - uses: actions/cache/restore@v3
-#       with:
-#         path: ${{ env.STORE_PATH }}
-#         key: ${{ runner.os }}-node18-pnpm-store-
-#     - run: pnpm install
-#     - uses: actions/download-artifact@v4
-#       with:
-#         path: /tmp
-#         name: http-dind-docker-image
-#     - uses: docker/metadata-action@v5
-#       id: meta
-#       with:
-#         images: ghcr.io/${{ github.repository }}/http-dind
-#     - run: docker load --input /tmp/http-dind-docker-image.tar
-#     - run: docker image ls -a
-#     - uses: tailscale/github-action@v2
-#       with:
-#         tags: tag:tme-ci
-#         version: 1.58.2
-#         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-#         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-#     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
-#     - uses: actions/upload-artifact@v4
-#       with:
-#         path: /tmp/connection-string
-#         name: http-docker-service-connection-string
-#         if-no-files-found: error
-#     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-#     - run: node test/ci-wait-for-artifacts.js
-#       env:
-#         GITHUB_ARTIFACT_COUNT: 9
-#         GITHUB_RUN_ID: ${{ github.run_id }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#   https-docker-service:
-#     runs-on: ubuntu-latest
-#     needs: [docker-build]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: 18
-#     - uses: pnpm/action-setup@v2
-#       with:
-#         version: 8
-#         run_install: false
-#     - name: Get pnpm store directory
-#       shell: bash
-#       run: |
-#         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-#     - uses: actions/cache/restore@v3
-#       with:
-#         path: ${{ env.STORE_PATH }}
-#         key: ${{ runner.os }}-node18-pnpm-store-
-#     - run: pnpm install
-#     - uses: actions/download-artifact@v4
-#       with:
-#         path: /tmp
-#         name: https-dind-docker-image
-#     - uses: docker/metadata-action@v5
-#       id: meta
-#       with:
-#         images: ghcr.io/${{ github.repository }}/https-dind
-#     - run: docker load --input /tmp/https-dind-docker-image.tar
-#     - run: docker image ls -a
-#     - uses: tailscale/github-action@v2
-#       with:
-#         tags: tag:tme-ci
-#         version: 1.58.2
-#         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-#         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-#     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
-#     - uses: actions/upload-artifact@v4
-#       with:
-#         path: /tmp/connection-string
-#         name: https-docker-service-connection-string
-#         if-no-files-found: error
-#     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-#     - run: node test/ci-wait-for-artifacts.js
-#       env:
-#         GITHUB_ARTIFACT_COUNT: 9
-#         GITHUB_RUN_ID: ${{ github.run_id }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#   unix-socket-docker-service:
-#     runs-on: ubuntu-latest
-#     needs: [docker-build]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: 18
-#     - uses: pnpm/action-setup@v2
-#       with:
-#         version: 8
-#         run_install: false
-#     - name: Get pnpm store directory
-#       shell: bash
-#       run: |
-#         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-#     - uses: actions/cache/restore@v3
-#       with:
-#         path: ${{ env.STORE_PATH }}
-#         key: ${{ runner.os }}-node18-pnpm-store-
-#     - run: pnpm install
-#     - uses: actions/download-artifact@v4
-#       with:
-#         path: /tmp
-#         name: socket-dind-docker-image
-#     - uses: docker/metadata-action@v5
-#       id: meta
-#       with:
-#         images: ghcr.io/${{ github.repository }}/socket-dind
-#     - run: docker load --input /tmp/socket-dind-docker-image.tar
-#     - run: docker image ls -a
-#     - uses: tailscale/github-action@v2
-#       with:
-#         tags: tag:tme-ci
-#         version: 1.58.2
-#         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-#         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-#     - run: echo "$(tailscale ip -4)" >> /tmp/connection-string
-#     - uses: actions/upload-artifact@v4
-#       with:
-#         path: /tmp/connection-string
-#         name: socket-docker-service-connection-string
-#         if-no-files-found: error
-#     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-#     - run: node test/ci-wait-for-artifacts.js
-#       env:
-#         GITHUB_ARTIFACT_COUNT: 9
-#         GITHUB_RUN_ID: ${{ github.run_id }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#   remote-docker-engine-services-starts:
-#     runs-on: ubuntu-latest
-#     needs: [docker-build]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: 18
-#     - uses: pnpm/action-setup@v2
-#       with:
-#         version: 8
-#         run_install: false
-#     - name: Get pnpm store directory
-#       shell: bash
-#       run: |
-#         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-#     - uses: actions/cache/restore@v3
-#       with:
-#         path: ${{ env.STORE_PATH }}
-#         key: ${{ runner.os }}-node18-pnpm-store-
-#     - run: pnpm install
-#     - run: node test/ci-wait-for-artifacts.js
-#       env:
-#         GITHUB_ARTIFACT_COUNT: 8
-#         GITHUB_RUN_ID: ${{ github.run_id }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-#   remote-docker-engine-tests:
-#     needs: [docker-build, remote-docker-engine-services-starts]
-#     runs-on: ${{ matrix.os }}
-#     defaults:
-#       run:
-#         shell: bash
-#     strategy:
-#       fail-fast: false
-#       matrix:
-#         node-version: [16.x, 18.x, 20.x]
-#         os: [ubuntu-latest, macos-latest, windows-latest]
-#         docker-engine: [ssh, http, https]
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-node@v4
-#       with:
-#         node-version: ${{ matrix.node-version }}
-#     - uses: actions/setup-go@v5
-#       with:
-#         go-version: '^1.21'
-#     - uses: pnpm/action-setup@v2
-#       with:
-#         version: 8
-#         run_install: false
-#     - name: Get pnpm store directory
-#       shell: bash
-#       run: |
-#         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-#     - uses: actions/cache@v3
-#       with:
-#         path: ${{ env.STORE_PATH }}
-#         key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-#         restore-keys: |
-#             ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
-#     - run: python3 -m pip install setuptools
-#     - run: pnpm install
-#     - run: node test/ci-wait-for-artifacts.js
-#       env:
-#         GITHUB_ARTIFACT_COUNT: 8
-#         GITHUB_RUN_ID: ${{ github.run_id }}
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#     - uses: actions/download-artifact@v4
-#       with:
-#         pattern: "*-service-connection-string"
-#     - if: ${{ runner.os == 'Windows' }}
-#       run: |
-#         choco install tailscale -y
-#         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
-#         export TAGS_ARG="--advertise-tags=tag:tme-ci"
-#         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-#         /C/Program\ Files/Tailscale/tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
-#         /C/Program\ Files/Tailscale/tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
-#         /C/Program\ Files/Tailscale/tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
-#         /C/Program\ Files/Tailscale/tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
-#         /C/Program\ Files/Tailscale/tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
-#     - if: ${{ runner.os == 'macOS' }}
-#       run: |
-#         brew install tailscale
-#         sudo /usr/local/opt/tailscale/bin/tailscaled &
-#         sleep 5
-#         export TS_EXPERIMENT_OAUTH_AUTHKEY=true
-#         export TAGS_ARG="--advertise-tags=tag:tme-ci"
-#         export TAILSCALE_AUTHKEY="${{ secrets.TS_OAUTH_SECRET }}?preauthorized=true&ephemeral=true"
-#         sudo tailscale up ${TAGS_ARG} --authkey=${TAILSCALE_AUTHKEY}
-#         tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
-#         tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
-#         tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
-#         tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
-#     - uses: tailscale/github-action@v2
-#       if: ${{ runner.os == 'Linux'}}
-#       with:
-#         tags: tag:tme-ci
-#         version: 1.58.2
-#         oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-#         oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-#     - if: ${{ runner.os == 'Linux'}}
-#       run: |
-#         tailscale ping "$(cat ssh-docker-service-connection-string/connection-string)"
-#         tailscale ping "$(cat http-docker-service-connection-string/connection-string)"
-#         tailscale ping "$(cat https-docker-service-connection-string/connection-string)"
-#         tailscale ping "$(cat socket-docker-service-connection-string/connection-string)"
-#     - if: ${{ runner.os == 'Windows' }}
-#       run: |
-#         /C/Program\ Files/Tailscale/tailscale down
-#         /C/Program\ Files/Tailscale/tailscale logout
-#     - if: ${{ runner.os == 'macOS' || runner.os == 'Linux'}}
-#       run: |
-#         sudo tailscale down
-#         sudo tailscale logout
 
 #   local-docker-desktop-tests:
 #     runs-on: ${{ matrix.os }}
