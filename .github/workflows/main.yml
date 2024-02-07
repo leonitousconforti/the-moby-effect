@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: "Restore pnpm store"
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v3
       with:
         path: /tmp
         key: ${{ runner.os }}-node18.x-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
