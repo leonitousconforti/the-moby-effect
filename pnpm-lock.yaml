@@ -26,16 +26,16 @@ devDependencies:
     version: 1.10.1
   '@effect/cli':
     specifier: 0.31.7
-    version: 0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.3)
+    version: 0.31.7(@effect/platform@0.43.9)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.3)
   '@effect/experimental':
     specifier: 0.8.6
-    version: 0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.7)(@effect/schema@0.61.5)(effect@2.2.3)(ws@8.16.0)
+    version: 0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.9)(@effect/schema@0.61.5)(effect@2.2.3)(ws@8.16.0)
   '@effect/platform':
-    specifier: 0.43.7
-    version: 0.43.7(@effect/schema@0.61.5)(effect@2.2.3)
+    specifier: 0.43.9
+    version: 0.43.9(@effect/schema@0.61.5)(effect@2.2.3)
   '@effect/platform-node':
     specifier: 0.42.7
-    version: 0.42.7(@effect/platform@0.43.7)(effect@2.2.3)
+    version: 0.42.7(@effect/platform@0.43.9)(effect@2.2.3)
   '@effect/printer':
     specifier: 0.30.12
     version: 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.3)
@@ -631,7 +631,7 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@effect/cli@0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.3):
+  /@effect/cli@0.31.7(@effect/platform@0.43.9)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.3):
     resolution: {integrity: sha512-HsOfCvNVq1/NkDH5dvfxFWOOoDyAoLQDS+sSq3LYLQ+dPYE0n64uQpxQ76GBBCt6Seln21HV17srK998c+fJsw==}
     peerDependencies:
       '@effect/platform': ^0.43.7
@@ -640,7 +640,7 @@ packages:
       '@effect/schema': ^0.61.5
       effect: ^2.2.3
     dependencies:
-      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.3)
+      '@effect/platform': 0.43.9(@effect/schema@0.61.5)(effect@2.2.3)
       '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.3)
       '@effect/printer-ansi': 0.31.12(@effect/typeclass@0.22.12)(effect@2.2.3)
       '@effect/schema': 0.61.5(effect@2.2.3)(fast-check@3.15.1)
@@ -650,7 +650,7 @@ packages:
       yaml: 2.3.4
     dev: true
 
-  /@effect/experimental@0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.7)(@effect/schema@0.61.5)(effect@2.2.3)(ws@8.16.0):
+  /@effect/experimental@0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.9)(@effect/schema@0.61.5)(effect@2.2.3)(ws@8.16.0):
     resolution: {integrity: sha512-0IT3VIaF8xzneo06xPIdcyMMx+NCHBdKDLAi3E87kmRmlx+VK7GvTuU/2m7PfDgAeQ8fEynAGASztl/OfcKe7w==}
     peerDependencies:
       '@effect/platform': ^0.43.7
@@ -667,8 +667,8 @@ packages:
       ws:
         optional: true
     dependencies:
-      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.3)
-      '@effect/platform-node': 0.42.7(@effect/platform@0.43.7)(effect@2.2.3)
+      '@effect/platform': 0.43.9(@effect/schema@0.61.5)(effect@2.2.3)
+      '@effect/platform-node': 0.42.7(@effect/platform@0.43.9)(effect@2.2.3)
       '@effect/schema': 0.61.5(effect@2.2.3)(fast-check@3.15.1)
       effect: 2.2.3
       isomorphic-ws: 5.0.0(ws@8.16.0)
@@ -676,20 +676,20 @@ packages:
       ws: 8.16.0
     dev: true
 
-  /@effect/platform-node@0.42.7(@effect/platform@0.43.7)(effect@2.2.3):
+  /@effect/platform-node@0.42.7(@effect/platform@0.43.9)(effect@2.2.3):
     resolution: {integrity: sha512-bKXv8SncQNhAI24NVAxzGHHgjPaGejQJWWa5DpOakYp9Yx8DWJQh9FVC59o797nC7+g1gQVbng+eJVkDbymuFA==}
     peerDependencies:
       '@effect/platform': ^0.43.7
       effect: ^2.2.3
     dependencies:
-      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.3)
+      '@effect/platform': 0.43.9(@effect/schema@0.61.5)(effect@2.2.3)
       effect: 2.2.3
       mime: 3.0.0
       multipasta: 0.1.21
     dev: true
 
-  /@effect/platform@0.43.7(@effect/schema@0.61.5)(effect@2.2.3):
-    resolution: {integrity: sha512-2kyaXHQ/kRFOMj4evztgu8cmOp7jQY6WQwOtRs4D1U+JRwcrYFDyauaT0X9qeIcv3KV2KFhS7J7t0vOKgtMxrg==}
+  /@effect/platform@0.43.9(@effect/schema@0.61.5)(effect@2.2.3):
+    resolution: {integrity: sha512-ldpmj03OzQc576xoIO2/FfCwoXLFYKQqXE6k0WioyUnHdVLzgl7KE01CkJQD013xFtkX/+IOuhsyp0yWt3inCw==}
     peerDependencies:
       '@effect/schema': ^0.61.5
       effect: ^2.2.3
