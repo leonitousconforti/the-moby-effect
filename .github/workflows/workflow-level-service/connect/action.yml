@@ -9,6 +9,9 @@ inputs:
     description: "Node.js version"
     required: true
     default: "18.x"
+  github-token:
+    description: "GitHub token"
+    required: true
 
 runs:
   using: "composite"
@@ -33,3 +36,4 @@ runs:
       run: node .github/workflows/workflow-level-service/connect/connect.js
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
