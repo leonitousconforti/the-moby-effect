@@ -27,10 +27,11 @@ runs:
         echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
     - name: "Restore pnpm store"
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store
+        key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-
 
     - name: "Install dependencies with pnpm"
       shell: bash
