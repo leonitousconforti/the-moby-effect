@@ -40,7 +40,7 @@
         "@effect/printer-ansi": "0.31.12",
         "@effect/schema": "0.61.5",
         "@effect/typeclass": "0.22.12",
-        "@rushstack/eslint-config": "3.6.2",
+        "@rushstack/eslint-config": "3.6.3",
         "@rushstack/heft": "0.64.3",
         "@rushstack/heft-jest-plugin": "0.11.3",
         "@rushstack/heft-lint-plugin": "0.3.3",
