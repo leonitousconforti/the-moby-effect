@@ -33,3 +33,4 @@ runs:
       run: node .github/workflows/workflow-level-service/expose/expose.js
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
+        ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
