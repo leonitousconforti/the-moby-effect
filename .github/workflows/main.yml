@@ -237,7 +237,7 @@ jobs:
 
   local-docker-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, stop-services]
+    needs: [remote-docker-engine-tests, stop-services, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
     defaults:
       run:
         shell: bash
@@ -253,7 +253,7 @@ jobs:
 
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, stop-services]
+    needs: [remote-docker-engine-tests, stop-services, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
     defaults:
       run:
         shell: bash
@@ -270,7 +270,7 @@ jobs:
   publish-pre-release:
     runs-on: ubuntu-latest
     environment: "NPM pre-release"
-    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests]
     steps:
     - run: echo "Publishing artifacts"
 
@@ -278,6 +278,6 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
     environment: "NPM official-release"
-    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests]
     steps:
     - run: echo "Publishing artifacts"
