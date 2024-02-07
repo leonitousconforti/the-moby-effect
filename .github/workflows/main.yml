@@ -15,12 +15,10 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: "Restore pnpm store"
-      uses: actions/cache/restore@v3
+    - uses: actions/cache/restore@v3
       with:
         path: /tmp
-        key: ${{ runner.os }}-node18.x-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-        restore-keys: ${{ runner.os }}-node18.x-pnpm-store-
+        key: Linux-node18.x-pnpm-store-
 
     - run: docker run --detach --publish 8080:80 nginx
     - uses: ./.github/workflows/workflow-level-service/expose
