@@ -12,21 +12,25 @@ env:
 jobs:
   test-service:
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        actions: write
     steps:
     - uses: actions/checkout@v2
     - run: docker run --detach --publish 8080:80 nginx
     - uses: ./.github/workflows/workflow-level-service/expose
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
         service-identifier: ${{ env.test-service-identifier }}
 
   test-consumer:
     runs-on: ubuntu-latest
+    permissions:
+        contents: read
+        actions: write
     steps:
     - uses: actions/checkout@v2
     - uses: ./.github/workflows/workflow-level-service/connect
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
         service-identifier: ${{ env.test-service-identifier }}
     - run: echo "Testing service"
     - run: sleep 30s
