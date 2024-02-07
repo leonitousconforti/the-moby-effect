@@ -12,9 +12,6 @@ env:
 jobs:
   test-service:
     runs-on: ubuntu-latest
-    permissions:
-        contents: read
-        actions: write
     steps:
     - uses: actions/checkout@v4
     - run: docker run --detach --publish 8080:80 nginx
@@ -25,9 +22,6 @@ jobs:
 
   test-consumer:
     runs-on: ubuntu-latest
-    permissions:
-        contents: read
-        actions: write
     steps:
     - uses: actions/checkout@v4
     - uses: ./.github/workflows/workflow-level-service/connect
