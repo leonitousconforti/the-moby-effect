@@ -24,7 +24,7 @@
         "dist/package.json"
     ],
     "scripts": {
-        "build": "cross-env NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean --config .jest.config.json"
+        "build": "cross-env NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean"
     },
     "dependencies": {
         "ssh2": "~1.15.0"

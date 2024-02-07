@@ -7,7 +7,7 @@ index a98afe7eddb0c388d9666d80c715c0fec91bae39..756584fd9c92d84fdd8aa2844e71b934
  }
  exports.Constants = Constants;
 -Constants.projectConfigFolderName = 'config';
-+Constants.projectConfigFolderName = '';
++Constants.projectConfigFolderName = './';
  Constants.cacheFolderName = '.cache';
  Constants.tempFolderName = 'temp';
  Constants.heftConfigurationFilename = 'heft.json';
