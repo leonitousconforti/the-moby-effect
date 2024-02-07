@@ -11,6 +11,10 @@ env:
   http-docker-engine-service-identifier: "http-docker-engine-service"
   https-docker-engine-service-identifier: "https-docker-engine-service"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   update-pnpm-caches:
     runs-on: ${{ matrix.os }}
