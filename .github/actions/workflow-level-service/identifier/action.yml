@@ -1,0 +1,44 @@
+name: "Workflow level service - Identifier"
+description: "Creates an identifier for a workflow level service"
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+    default: "18.x"
+
+outputs:
+  service-identifier:
+    description: "UUID of the service"
+    value: ${{ steps.identifier.outputs.random-number }}
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: "Install pnpm"
+      shell: bash
+      run: npm install pnpm@8 -g
+
+    - name: "Get pnpm store"
+      shell: bash
+      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    - name: "Restore pnpm store"
+      uses: actions/cache/restore@v4
+      with:
+        fail-on-cache-miss: true
+        path: ${{ env.STORE_PATH }}
+        key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    - name: "Install dependencies with pnpm"
+      shell: bash
+      run: pnpm install
+
+    - name: "Get a service identifier"
+      shell: bash
+      id: identifier
+      run: node .github/actions/workflow-level-service/identifier/identifier.js
