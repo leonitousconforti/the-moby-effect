@@ -31,5 +31,5 @@ runs:
       run: pnpm install
     - shell: bash
       run: node .github/workflows/workflow-level-service/expose/expose.js
-      with:
+      env:
         service-identifier: ${{ inputs.service-identifier }}
