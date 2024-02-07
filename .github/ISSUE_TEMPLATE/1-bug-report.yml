@@ -7,8 +7,8 @@ body:
       value: |
         Thank you for submitting a bug report.
 
-        If you need help or support using Effect, and are not reporting a bug, please
-        join our [Discord](https://discord.gg/effect-ts) server.
+        If you need help or support using Effect, and are not reporting a bug, consider
+        joining the effect [Discord](https://discord.gg/effect-ts) server.
 
         Make sure you are running the latest versions.
         The bug you are experiencing may already have been fixed.
