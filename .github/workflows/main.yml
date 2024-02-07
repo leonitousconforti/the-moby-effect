@@ -121,7 +121,7 @@ jobs:
     - uses: docker/metadata-action@v5
       id: meta
       with:
-        images: ghcr.io/${{ github.repository }}/http-dind
+        images: ghcr.io/${{ github.repository }}/ssh-dind
     - run: docker load --input /tmp/ssh-dind-docker-image.tar
     - run: docker image ls -a
     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
@@ -163,7 +163,7 @@ jobs:
     - uses: docker/metadata-action@v5
       id: meta
       with:
-        images: ghcr.io/${{ github.repository }}/http-dind
+        images: ghcr.io/${{ github.repository }}/https-dind
     - run: docker load --input /tmp/https-dind-docker-image.tar
     - run: docker image ls -a
     - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
@@ -275,6 +275,7 @@ jobs:
 
   publish-pre-release:
     runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/main'}}
     environment: "NPM pre-release"
     needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests]
     steps:
