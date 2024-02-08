@@ -1,21 +1,11 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-
 import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
 
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testSecretsService: Layer.Layer<never, never, MobyApi.Secrets.Secrets> = undefined!;
-
-describe.each(testEngines)("MobyApi Secrets tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testSecretsService] = await BeforeAll(
-            image,
-            MobyApi.Secrets.fromConnectionOptions
-        );
-    }, 30_000);
+describe("MobyApi Secrets tests", () => {
+    const testSecretsService: Layer.Layer<never, never, MobyApi.Secrets.Secrets> = MobyApi.fromUrl(
+        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    ).pipe(Layer.orDie);
 
     it("Should see no secrets", async () => {
         const secrets: Readonly<MobyApi.Schemas.Secret[]> = await Effect.runPromise(

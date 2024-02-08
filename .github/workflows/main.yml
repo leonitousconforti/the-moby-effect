@@ -261,6 +261,11 @@ jobs:
       - name: "Install dependencies with pnpm"
         shell: bash
         run: pnpm install
+      - name: "Run tests"
+        shell: bash
+        run: pnpm build
+        env:
+          THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
 
   stop-services:
     if: always()

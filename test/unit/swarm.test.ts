@@ -1,21 +1,11 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-
 import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
 
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testSwarmService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = undefined!;
-
-describe.each(testEngines)("MobyApi Swarm tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testSwarmService] = await BeforeAll(
-            image,
-            MobyApi.Swarm.fromConnectionOptions
-        );
-    }, 30_000);
+describe("MobyApi Swarm tests", () => {
+    const testSwarmService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromUrl(
+        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    ).pipe(Layer.orDie);
 
     it("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", async () => {
         await Effect.gen(function* (_: Effect.Adapter) {

@@ -3,7 +3,6 @@ import * as Effect from "effect/Effect";
 
 export default async function (_globalConfig: unknown, _projectConfig: unknown) {
     await Effect.gen(function* (_: Effect.Adapter) {
-        // const docker_host: string = yield* _(Config.string("THE_MOBY_EFFECT_DOCKER_HOST"));
         const node_environment: string = yield* _(Config.string("NODE_ENV").pipe(Config.withDefault("development")));
 
         if (node_environment !== "ci") {
@@ -15,5 +14,8 @@ export default async function (_globalConfig: unknown, _projectConfig: unknown) 
                 )
             );
         }
+
+        const testing_host: string = yield* _(Config.string("THE_MOBY_EFFECT_TESTING_URL"));
+        globalThis.__THE_MOBY_EFFECT_TEST_URL = testing_host;
     }).pipe(Effect.runPromise);
 }

@@ -1,22 +1,12 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Stream from "effect/Stream";
-
 import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
 
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = undefined!;
-
-describe.each(testEngines)("MobyApi Images tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testImagesService] = await BeforeAll(
-            image,
-            MobyApi.Images.fromConnectionOptions
-        );
-    }, 30_000);
+describe("MobyApi Images tests", () => {
+    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromUrl(
+        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    ).pipe(Layer.orDie);
 
     it("Should see no images", async () => {
         const images: Readonly<MobyApi.Schemas.ImageSummary[]> = await Effect.runPromise(
