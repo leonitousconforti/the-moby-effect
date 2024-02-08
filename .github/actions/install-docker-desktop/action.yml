@@ -10,12 +10,17 @@ runs:
   steps:
     - name: "Install Docker Macos"
       if: ${{ runner.os == 'Macos' }}
-      run: brew install --cask docker
+      shell: bash
+      run: |
+        brew install --cask docker
     - name: "Install Docker Windows"
       if: ${{ runner.os == 'Windows' }}
-      run: choco install docker-desktop
+      shell: bash
+      run: |
+        choco install docker-desktop
     - name: "Install Docker Linux"
       if: ${{ runner.os == 'Linux' }}
+      shell: bash
       run: |
         sudo apt-get update
         wget https://desktop.docker.com/linux/main/amd64/136059/docker-desktop-4.27.1-amd64.deb?utm_source=docker&utm_medium=webreferral&utm_campaign=docs-driven-download-linux-amd64

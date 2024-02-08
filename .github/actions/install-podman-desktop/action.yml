@@ -10,12 +10,17 @@ runs:
   steps:
     - name: "Install Podman Macos"
       if: ${{ runner.os == 'Macos' }}
-      run: brew install podman-desktop
+      shell: bash
+      run: |
+        brew install podman-desktop
     - name: "Install Podman Windows"
       if: ${{ runner.os == 'Windows' }}
-      run: choco install podman-desktop
+      shell: bash
+      run: |
+        choco install podman-desktop
     - name: "Install Podman Linux"
       if: ${{ runner.os == 'Linux' }}
+      shell: bash
       run: |
         sudo apt-get install podman
         flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
