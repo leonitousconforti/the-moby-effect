@@ -1,0 +1,22 @@
+name: "Install Docker Desktop"
+
+inputs:
+  docker-version:
+    description: "The specific version of docker to install"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Docker Macos"
+      if: ${{ runner.os == 'Macos' }}
+      run: brew install --cask docker
+    - name: "Install Docker Windows"
+      if: ${{ runner.os == 'Windows' }}
+      run: choco install docker-desktop
+    - name: "Install Docker Linux"
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt-get update
+        wget https://desktop.docker.com/linux/main/amd64/136059/docker-desktop-4.27.1-amd64.deb?utm_source=docker&utm_medium=webreferral&utm_campaign=docs-driven-download-linux-amd64
+        sudo apt-get install ./docker-desktop-4.27.1-amd64.deb

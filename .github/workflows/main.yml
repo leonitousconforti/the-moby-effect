@@ -299,6 +299,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-docker-desktop
+        with:
+          docker-version: ${{ matrix.docker-desktop }}
 
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
