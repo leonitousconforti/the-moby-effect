@@ -1,0 +1,23 @@
+name: "Install Podman Desktop"
+
+inputs:
+  podman-version:
+    description: "The specific version of podman to install"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Install Podman Macos"
+      if: ${{ runner.os == 'Macos' }}
+      run: brew install podman-desktop
+    - name: "Install Podman Windows"
+      if: ${{ runner.os == 'Windows' }}
+      run: choco install podman-desktop
+    - name: "Install Podman Linux"
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        sudo apt-get install podman
+        flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak install --user flathub io.podman_desktop.PodmanDesktop
+        flatpak run io.podman_desktop.PodmanDesktop
