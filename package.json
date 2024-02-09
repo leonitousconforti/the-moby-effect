@@ -24,7 +24,8 @@
         "dist/package.json"
     ],
     "scripts": {
-        "build": "cross-env NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean"
+        "build": "cross-env NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test --clean --production",
+        "dev": "cross-env NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" heft test-watch --clean"
     },
     "dependencies": {
         "ssh2": "~1.15.0"
