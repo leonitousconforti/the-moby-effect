@@ -4,12 +4,11 @@ import * as Stream from "effect/Stream";
 import * as MobyApi from "../../src/index.js";
 
 describe("MobyApi Containers tests", () => {
-    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
-    const testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
-    ).pipe(Layer.orDie);
+    const testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> =
+        MobyApi.fromConnectionOptions(globalThis.__TEST_CONNECTION_OPTIONS).pipe(Layer.orDie);
 
     it("Should create, list, pause, unpause, top, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)", async () => {
         await Effect.gen(function* (_: Effect.Adapter) {

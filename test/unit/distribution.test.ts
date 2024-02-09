@@ -3,9 +3,8 @@ import * as Layer from "effect/Layer";
 import * as MobyApi from "../../src/index.js";
 
 describe("MobyApi Distribution tests", () => {
-    const testDistributionsService: Layer.Layer<never, never, MobyApi.Distributions.Distributions> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
-    ).pipe(Layer.orDie);
+    const testDistributionsService: Layer.Layer<never, never, MobyApi.Distributions.Distributions> =
+        MobyApi.fromConnectionOptions(globalThis.__TEST_CONNECTION_OPTIONS).pipe(Layer.orDie);
 
     it("Should inspect an image", async () => {
         const testData: Readonly<MobyApi.Schemas.DistributionInspect> = await Effect.runPromise(

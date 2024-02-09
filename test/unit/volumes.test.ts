@@ -3,8 +3,8 @@ import * as Layer from "effect/Layer";
 import * as MobyApi from "../../src/index.js";
 
 describe("MobyApi Volumes tests", () => {
-    const testVolumesService: Layer.Layer<never, never, MobyApi.Volumes.Volumes> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    const testVolumesService: Layer.Layer<never, never, MobyApi.Volumes.Volumes> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 
     it("Should see no volumes", async () => {

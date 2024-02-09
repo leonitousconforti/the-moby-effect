@@ -3,8 +3,8 @@ import * as Layer from "effect/Layer";
 import * as MobyApi from "../../src/index.js";
 
 describe("MobyApi Swarm tests", () => {
-    const testSwarmService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    const testSwarmService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 
     it("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", async () => {

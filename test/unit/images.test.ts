@@ -4,8 +4,8 @@ import * as Stream from "effect/Stream";
 import * as MobyApi from "../../src/index.js";
 
 describe("MobyApi Images tests", () => {
-    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 
     it("Should see no images", async () => {

@@ -3,8 +3,8 @@ import * as Layer from "effect/Layer";
 import * as MobyApi from "../../src/index.js";
 
 describe.skip("MobyApi Plugins tests", () => {
-    const testPluginsService: Layer.Layer<never, never, MobyApi.Plugins.Plugins> = MobyApi.fromUrl(
-        globalThis.__THE_MOBY_EFFECT_TEST_URL
+    const testPluginsService: Layer.Layer<never, never, MobyApi.Plugins.Plugins> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 
     it("Should see no plugins", async () => {
