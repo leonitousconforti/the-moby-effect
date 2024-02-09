@@ -265,6 +265,7 @@ jobs:
         shell: bash
         run: pnpm build
         env:
+          NODE_ENV: "ci"
           THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
 
   stop-services:
