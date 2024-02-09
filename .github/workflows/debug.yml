@@ -1,0 +1,9 @@
+name: debug
+
+on: [workflow_dispatch]
+
+jobs:
+  debug:
+    runs-on: windows-latest
+    steps:
+      - uses: mxschmitt/action-tmate@v3
