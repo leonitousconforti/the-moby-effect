@@ -3,6 +3,7 @@
     "plugins": ["prettier-plugin-packagejson", "prettier-plugin-jsdoc"],
 
     "semi": true,
+    "endOfLine": "auto",
     "singleQuote": false,
     "jsdocPrintWidth": 80,
     "trailingComma": "es5"
