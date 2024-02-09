@@ -38,16 +38,16 @@ devDependencies:
     version: 0.42.7(@effect/platform@0.43.7)(effect@2.2.5)
   '@effect/printer':
     specifier: 0.30.12
-    version: 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5)
+    version: 0.30.12(@effect/typeclass@0.22.14)(effect@2.2.5)
   '@effect/printer-ansi':
     specifier: 0.31.12
-    version: 0.31.12(@effect/typeclass@0.22.12)(effect@2.2.5)
+    version: 0.31.12(@effect/typeclass@0.22.14)(effect@2.2.5)
   '@effect/schema':
     specifier: 0.61.5
     version: 0.61.5(effect@2.2.5)(fast-check@3.15.1)
   '@effect/typeclass':
-    specifier: 0.22.12
-    version: 0.22.12(effect@2.2.5)
+    specifier: 0.22.14
+    version: 0.22.14(effect@2.2.5)
   '@protobuf-ts/runtime':
     specifier: 2.9.3
     version: 2.9.3
@@ -641,8 +641,8 @@ packages:
       effect: ^2.2.3
     dependencies:
       '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.5)
-      '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5)
-      '@effect/printer-ansi': 0.31.12(@effect/typeclass@0.22.12)(effect@2.2.5)
+      '@effect/printer': 0.30.12(@effect/typeclass@0.22.14)(effect@2.2.5)
+      '@effect/printer-ansi': 0.31.12(@effect/typeclass@0.22.14)(effect@2.2.5)
       '@effect/schema': 0.61.5(effect@2.2.5)(fast-check@3.15.1)
       effect: 2.2.5
       ini: 4.1.1
@@ -701,24 +701,24 @@ packages:
       path-browserify: 1.0.1
     dev: true
 
-  /@effect/printer-ansi@0.31.12(@effect/typeclass@0.22.12)(effect@2.2.5):
+  /@effect/printer-ansi@0.31.12(@effect/typeclass@0.22.14)(effect@2.2.5):
     resolution: {integrity: sha512-hi7gbICrWa/oAcIXLnYXohwsSRXMVceAGTvgq0pnrphBg5K72Eb3F5bl8Fa3TSHQgD4KR+7iAjCjE4HYQWE5eA==}
     peerDependencies:
       '@effect/typeclass': ^0.22.12
       effect: ^2.2.3
     dependencies:
-      '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5)
-      '@effect/typeclass': 0.22.12(effect@2.2.5)
+      '@effect/printer': 0.30.12(@effect/typeclass@0.22.14)(effect@2.2.5)
+      '@effect/typeclass': 0.22.14(effect@2.2.5)
       effect: 2.2.5
     dev: true
 
-  /@effect/printer@0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5):
+  /@effect/printer@0.30.12(@effect/typeclass@0.22.14)(effect@2.2.5):
     resolution: {integrity: sha512-FwHnQ/w7+Qh9lx/gIBKSqyt1+L6jYlilrZlSeWqNOY07KWY0WjolzSl4aDxaaKWKhZUSKjYbWpS56bUHvHmkHA==}
     peerDependencies:
       '@effect/typeclass': ^0.22.12
       effect: ^2.2.3
     dependencies:
-      '@effect/typeclass': 0.22.12(effect@2.2.5)
+      '@effect/typeclass': 0.22.14(effect@2.2.5)
       effect: 2.2.5
     dev: true
 
@@ -732,10 +732,10 @@ packages:
       fast-check: 3.15.1
     dev: true
 
-  /@effect/typeclass@0.22.12(effect@2.2.5):
-    resolution: {integrity: sha512-quIp5UwAbPbpn4gFScdcqsOxM4wQhzaScb/uswRIymTnNGzRQPP/NWoTice7fth6x8VPnDeB2rGwyETGH32foQ==}
+  /@effect/typeclass@0.22.14(effect@2.2.5):
+    resolution: {integrity: sha512-nL+qMTp5JF5JWN5yrKT2TD3GUkVNdI5MVvCzG+g0WvmXWCUKdDRISyv8uJ5s1pGK+USPqfS0ZYAE8Da+oTkbOQ==}
     peerDependencies:
-      effect: ^2.2.3
+      effect: ^2.2.5
     dependencies:
       effect: 2.2.5
     dev: true

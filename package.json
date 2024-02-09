@@ -39,7 +39,7 @@
         "@effect/printer": "0.30.12",
         "@effect/printer-ansi": "0.31.12",
         "@effect/schema": "0.61.5",
-        "@effect/typeclass": "0.22.12",
+        "@effect/typeclass": "0.22.14",
         "@protobuf-ts/runtime": "2.9.3",
         "@protobuf-ts/runtime-rpc": "2.9.3",
         "@rushstack/eslint-config": "3.6.3",
