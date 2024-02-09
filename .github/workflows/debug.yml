@@ -3,7 +3,17 @@ name: debug
 on: [workflow_dispatch]
 
 jobs:
-  debug:
+  debug1:
     runs-on: windows-latest
+    steps:
+      - uses: mxschmitt/action-tmate@v3
+
+  debug2:
+    runs-on: macos-latest
+    steps:
+      - uses: mxschmitt/action-tmate@v3
+
+  debug3:
+    runs-on: linux-latest
     steps:
       - uses: mxschmitt/action-tmate@v3
