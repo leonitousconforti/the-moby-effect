@@ -7,25 +7,47 @@ on:
     branches: ["main"]
 
 env:
-  node-versions: 16.x, 18.x, 20.x
-  docker-desktop-versions: v1, v2, v3
-  podman-desktop-versions: v1, v2, v3
-  os-variants: ubuntu-latest, macos-latest, windows-latest
+  node-versions: "['16.x', '18.x', '20.x']"
+  docker-desktop-versions: "['v1', 'v2', 'v3']"
+  podman-desktop-versions: "['v1', 'v2', 'v3']"
+  docker-engine-versions: "['v1', 'v2', 'v3', 'v4', 'v5']"
+  docker-engine-variants: "['ssh', 'http', 'https', 'socket']"
+  os-variants: "['ubuntu-latest', 'macos-latest', 'windows-latest']"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  compute-matricies:
+    runs-on: ubuntu-latest
+    outputs:
+      os-variants: ${{ steps.compute-matricies.outputs.os-variants }}
+      node-versions: ${{ steps.compute-matricies.outputs.node-versions }}
+      docker-desktop-versions: ${{ steps.compute-matricies.outputs.docker-desktop-versions }}
+      podman-desktop-versions: ${{ steps.compute-matricies.outputs.podman-desktop-versions }}
+      docker-engine-versions: ${{ steps.compute-matricies.outputs.docker-engine-versions }}
+      docker-engine-variants: ${{ steps.compute-matricies.outputs.docker-engine-variants }}
+    steps:
+      - id: compute-matricies
+        run: |
+          echo "os-variants=${{ env.os-variants }}" >> $GITHUB_OUTPUT
+          echo "node-versions=${{ env.node-versions }}" >> $GITHUB_OUTPUT
+          echo "docker-desktop-versions=${{ env.docker-desktop-versions }}" >> $GITHUB_OUTPUT
+          echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
+          echo "docker-engine-versions=${{ env.docker-engine-versions }}" >> $GITHUB_OUTPUT
+          echo "docker-engine-variants=${{ env.docker-engine-variants }}" >> $GITHUB_OUTPUT
+
   update-pnpm-caches:
     runs-on: ${{ matrix.os }}
+    needs: [compute-matricies]
     defaults:
       run:
         shell: bash
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -35,12 +57,13 @@ jobs:
         shell: bash
         run: npm install pnpm@8 -g
       - name: "Get pnpm store"
+        id: get-store-path
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
       - uses: actions/cache@v4
         with:
-          path: ${{ env.STORE_PATH }}
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
           restore-keys: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
           key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
       - run: python3 -m pip install setuptools
@@ -48,9 +71,10 @@ jobs:
 
   docker-build:
     runs-on: ubuntu-latest
+    needs: [compute-matricies]
     strategy:
       matrix:
-        dockerfile: ["ssh", "http", "https", "socket"]
+        dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-variants) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -82,12 +106,12 @@ jobs:
 
   docker-publish:
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [docker-build, compute-matricies]
     if: ${{ contains(github.event.head_commit.modified, 'test/data/agent-http.dockerfile') || contains(github.event.head_commit.modified, 'test/data/agent-https.dockerfile') || contains(github.event.head_commit.modified, 'test/data/agent-socket.dockerfile') || contains(github.event.head_commit.modified, 'test/data/agent-ssh.dockerfile') }}
     environment: "Docker release"
     strategy:
       matrix:
-        dockerfile: ["ssh", "http", "https", "socket"]
+        dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-variants) }}
     permissions:
       contents: read
       packages: write
@@ -231,16 +255,16 @@ jobs:
           service-identifier: ${{ needs.https-docker-engine-service-identifier.outputs.service-identifier }}
 
   remote-docker-engine-tests:
-    needs: [remote-docker-engine-services-online]
+    needs: [remote-docker-engine-services-online, compute-matricies]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        remote-docker-engine: [ssh, http, https]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        remote-docker-engine: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -250,13 +274,14 @@ jobs:
         shell: bash
         run: npm install pnpm@8 -g
       - name: "Get pnpm store"
+        id: get-store-path
         shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      - name: "Restore pnpm store"
-        uses: actions/cache/restore@v4
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
         with:
           fail-on-cache-miss: true
-          path: ${{ env.STORE_PATH }}
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
           key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
       - name: "Install dependencies with pnpm"
         shell: bash
@@ -293,16 +318,16 @@ jobs:
   local-docker-desktop-tests:
     runs-on: ${{ matrix.os }}
     needs:
-      [remote-docker-engine-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+      [remote-docker-engine-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service, compute-matricies]
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
       matrix:
-        docker-desktop: [v1, v2]
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        docker-desktop: ${{ fromJSON(needs.compute-matricies.outputs.docker-desktop-versions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/install-docker-desktop
@@ -312,16 +337,16 @@ jobs:
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
     needs:
-      [remote-docker-engine-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+      [remote-docker-engine-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service, compute-matricies]
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
       matrix:
-        podman-desktop: [v1, v2]
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        podman-desktop: ${{ fromJSON(needs.compute-matricies.outputs.podman-desktop-versions) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/install-podman-desktop
