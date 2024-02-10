@@ -43,7 +43,7 @@ jobs:
 
           output1="["
           for ((i=0; i<${{ env.remote-docker-engine-service-count }}; i++)); do
-            if [ $i -eq (${{ env.remote-docker-engine-service-count }}-1) ]; then
+            if [ $i -eq $((${{ env.remote-docker-engine-service-count }}-1)) ]; then
               output1+="'$i'"
             else
               output1+="'$i', "
