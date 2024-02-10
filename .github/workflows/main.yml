@@ -7,6 +7,7 @@ on:
     branches: ["main"]
 
 env:
+  remote-docker-engine-service-count: 5
   node-versions: "['16.x', '18.x', '20.x']"
   docker-desktop-versions: "['v1', 'v2', 'v3']"
   podman-desktop-versions: "['v1', 'v2', 'v3']"
@@ -24,19 +25,44 @@ jobs:
     outputs:
       os-variants: ${{ steps.compute-matricies.outputs.os-variants }}
       node-versions: ${{ steps.compute-matricies.outputs.node-versions }}
-      docker-desktop-versions: ${{ steps.compute-matricies.outputs.docker-desktop-versions }}
-      podman-desktop-versions: ${{ steps.compute-matricies.outputs.podman-desktop-versions }}
       docker-engine-versions: ${{ steps.compute-matricies.outputs.docker-engine-versions }}
       docker-engine-variants: ${{ steps.compute-matricies.outputs.docker-engine-variants }}
+      docker-desktop-versions: ${{ steps.compute-matricies.outputs.docker-desktop-versions }}
+      podman-desktop-versions: ${{ steps.compute-matricies.outputs.podman-desktop-versions }}
+      remote-docker-engine-service-indicies: ${{ steps.compute-matricies.outputs.remote-docker-engine-service-indicies }}
+      remote-docker-engine-service-identifiers: ${{ steps.compute-matricies.outputs.remote-docker-engine-service-identifiers }}
     steps:
       - id: compute-matricies
         run: |
           echo "os-variants=${{ env.os-variants }}" >> $GITHUB_OUTPUT
           echo "node-versions=${{ env.node-versions }}" >> $GITHUB_OUTPUT
-          echo "docker-desktop-versions=${{ env.docker-desktop-versions }}" >> $GITHUB_OUTPUT
-          echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
           echo "docker-engine-versions=${{ env.docker-engine-versions }}" >> $GITHUB_OUTPUT
           echo "docker-engine-variants=${{ env.docker-engine-variants }}" >> $GITHUB_OUTPUT
+          echo "docker-desktop-versions=${{ env.docker-desktop-versions }}" >> $GITHUB_OUTPUT
+          echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
+
+          output1="["
+          for ((i=1; i<=${{ env.remote-docker-engine-service-count }}; i++)); do
+            if [ $i -eq ${{ env.remote-docker-engine-service-count }} ]; then
+              output1+="'$i'"
+            else
+              output1+="'$i', "
+            fi
+          done
+          output1+="]"
+          echo "remote-docker-engine-service-indicies=$output1" >> $GITHUB_OUTPUT
+
+          output2="["
+          for ((i=1; i<=${{ env.remote-docker-engine-service-count }}; i++)); do
+            uuid=$(uuidgen)
+            if [ $i -eq ${{ env.remote-docker-engine-service-count }} ]; then
+              output2+="'$uuid'"
+            else
+              output2+="'$uuid', "
+            fi
+          done
+          output2+="]"
+          echo "remote-docker-engine-service-identifiers=$output2" >> $GITHUB_OUTPUT
 
   update-pnpm-caches:
     runs-on: ${{ matrix.os }}
@@ -139,120 +165,41 @@ jobs:
           file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
-  remote-docker-engine-service1-identifier:
+  remote-docker-engine-services:
+    needs: [docker-build, update-pnpm-caches, compute-matricies]
     runs-on: ubuntu-latest
-    needs: [update-pnpm-caches]
-    outputs:
-      service-identifier: ${{ steps.identifier.outputs.service-identifier }}
+    strategy:
+      matrix:
+        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
       - uses: actions/checkout@v4
-      - id: identifier
-        uses: ./.github/actions/workflow-level-service/identifier
-
-  remote-docker-engine-service2-identifier:
-    runs-on: ubuntu-latest
-    needs: [update-pnpm-caches]
-    outputs:
-      service-identifier: ${{ steps.identifier.outputs.service-identifier }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: identifier
-        uses: ./.github/actions/workflow-level-service/identifier
-
-  remote-docker-engine-service3-identifier:
-    runs-on: ubuntu-latest
-    needs: [update-pnpm-caches]
-    outputs:
-      service-identifier: ${{ steps.identifier.outputs.service-identifier }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: identifier
-        uses: ./.github/actions/workflow-level-service/identifier
-
-  remote-docker-engine-service1:
-    needs: [docker-build, remote-docker-engine-service1-identifier]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: /tmp
-          name: ssh-dind-docker-image
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: ghcr.io/${{ github.repository }}/ssh-dind
-      - run: docker load --input /tmp/ssh-dind-docker-image.tar
-      - run: docker image ls -a
-      - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
+      # - uses: actions/download-artifact@v4
+      #   with:
+      #     path: /tmp
+      #     name: ${{ matrix.dockerfile }}-dind-docker-image
+      # - uses: docker/metadata-action@v5
+      #   id: meta
+      #   with:
+      #     images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
+      # - run: docker load --input /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+      # - run: docker image ls -a
+      # - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
       - uses: ./.github/actions/workflow-level-service/expose
         with:
-          service-identifier: ${{ needs.remote-docker-engine-service1-identifier.outputs.service-identifier }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  remote-docker-engine-service2:
-    needs: [docker-build, remote-docker-engine-service2-identifier]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: /tmp
-          name: http-dind-docker-image
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: ghcr.io/${{ github.repository }}/http-dind
-      - run: docker load --input /tmp/http-dind-docker-image.tar
-      - run: docker image ls -a
-      - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-      - uses: ./.github/actions/workflow-level-service/expose
-        with:
-          service-identifier: ${{ needs.remote-docker-engine-service2-identifier.outputs.service-identifier }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  remote-docker-engine-service3:
-    needs: [docker-build, remote-docker-engine-service3-identifier]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: /tmp
-          name: https-dind-docker-image
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: ghcr.io/${{ github.repository }}/https-dind
-      - run: docker load --input /tmp/https-dind-docker-image.tar
-      - run: docker image ls -a
-      - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-      - uses: ./.github/actions/workflow-level-service/expose
-        with:
-          service-identifier: ${{ needs.remote-docker-engine-service3-identifier.outputs.service-identifier }}
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   remote-docker-engine-services-online:
-    needs:
-      [
-        docker-build,
-        update-pnpm-caches,
-        remote-docker-engine-service1-identifier,
-        remote-docker-engine-service2-identifier,
-        remote-docker-engine-service3-identifier,
-      ]
+    needs: [docker-build, update-pnpm-caches, compute-matricies]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/workflow-level-service/connect
         with:
-          service-identifier: ${{ needs.remote-docker-engine-service1-identifier.outputs.service-identifier}}
-      - uses: ./.github/actions/workflow-level-service/connect
-        with:
-          service-identifier: ${{ needs.remote-docker-engine-service2-identifier.outputs.service-identifier}}
-      - uses: ./.github/actions/workflow-level-service/connect
-        with:
-          service-identifier: ${{ needs.remote-docker-engine-service3-identifier.outputs.service-identifier }}
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
 
   remote-docker-engine-tests:
     needs: [remote-docker-engine-services-online, compute-matricies]
@@ -296,30 +243,20 @@ jobs:
 
   stop-services:
     if: always()
+    needs: [remote-docker-engine-tests, compute-matricies]
     runs-on: ubuntu-latest
-    needs:
-      [
-        remote-docker-engine-tests,
-        remote-docker-engine-service1-identifier,
-        remote-docker-engine-service2-identifier,
-        remote-docker-engine-service3-identifier,
-      ]
+    strategy:
+      matrix:
+        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/workflow-level-service/stop
         with:
-          service-identifier: ${{ needs.remote-docker-engine-service1-identifier.outputs.service-identifier }}
-      - uses: ./.github/actions/workflow-level-service/stop
-        with:
-          service-identifier: ${{ needs.remote-docker-engine-service2-identifier.outputs.service-identifier }}
-      - uses: ./.github/actions/workflow-level-service/stop
-        with:
-          service-identifier: ${{ needs.remote-docker-engine-service3-identifier.outputs.service-identifier }}
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
 
   local-docker-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs:
-      [remote-docker-engine-tests, remote-docker-engine-service1, remote-docker-engine-service2, remote-docker-engine-service3, compute-matricies]
+    needs: [remote-docker-engine-tests, remote-docker-engine-services, compute-matricies]
     defaults:
       run:
         shell: bash
@@ -337,8 +274,7 @@ jobs:
 
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs:
-      [remote-docker-engine-tests, remote-docker-engine-service1, remote-docker-engine-service2, remote-docker-engine-service3, compute-matricies]
+    needs: [remote-docker-engine-tests, remote-docker-engine-services, compute-matricies]
     defaults:
       run:
         shell: bash
