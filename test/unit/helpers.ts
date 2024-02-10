@@ -44,9 +44,11 @@ export const spawnDind = (
             containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!
         );
 
+        const testDindContainerHost = containerInspectResponse.NetworkSettings?.Gateway;
+
         const connectionOptions: MobyApi.MobyConnectionOptions = {
             connection: "http",
-            host: "localhost",
+            host: testDindContainerHost!,
             port: testDindContainerHttpPort,
         };
 
