@@ -42,8 +42,8 @@ jobs:
           echo "docker-engine-connection-variants=${{ env.docker-engine-connection-variants }}" >> $GITHUB_OUTPUT
 
           output1="["
-          for ((i=1; i<=${{ env.remote-docker-engine-service-count }}; i++)); do
-            if [ $i -eq ${{ env.remote-docker-engine-service-count }} ]; then
+          for ((i=0; i<${{ env.remote-docker-engine-service-count }}; i++)); do
+            if [ $i -eq (${{ env.remote-docker-engine-service-count }}-1) ]; then
               output1+="'$i'"
             else
               output1+="'$i', "
