@@ -264,7 +264,8 @@ jobs:
       matrix:
         os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
         node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
-        remote-docker-engine: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
+        remote-docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
+        remote-docker-engine-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-variants) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
