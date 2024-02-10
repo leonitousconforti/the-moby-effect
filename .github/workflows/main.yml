@@ -173,17 +173,15 @@ jobs:
         index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
       - uses: actions/checkout@v4
-      # - uses: actions/download-artifact@v4
-      #   with:
-      #     path: /tmp
-      #     name: ${{ matrix.dockerfile }}-dind-docker-image
-      # - uses: docker/metadata-action@v5
-      #   id: meta
-      #   with:
-      #     images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-      # - run: docker load --input /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-      # - run: docker image ls -a
-      # - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp
+          name: -dind-docker-image
+      - run: docker load --input /tmp/ssh-dind-docker-image.tar
+      - run: docker load --input /tmp/http-dind-docker-image.tar
+      - run: docker load --input /tmp/https-dind-docker-image.tar
+      - run: docker load --input /tmp/socket-dind-docker-image.tar
+      - run: docker image ls -a
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
