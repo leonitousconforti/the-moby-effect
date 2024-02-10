@@ -213,25 +213,15 @@ jobs:
         docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: "Install pnpm"
-        shell: bash
-        run: npm install pnpm@8 -g
-      - name: "Get pnpm store"
-        id: get-store-path
+      - name: "Choose service at random"
+        id: random-service
         shell: bash
         run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
+          RANDOM_INDEX=$(( RANDOM % ${{ env.remote-docker-engine-service-count }} ))
+          echo "random_index=$RANDOM_INDEX" >> $GITHUB_OUTPUT
+      - uses: ./.github/actions/workflow-level-service/connect
         with:
-          fail-on-cache-miss: true
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - name: "Install dependencies with pnpm"
-        shell: bash
-        run: pnpm install
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', steps.random-service.outputs.random_index)] }}
       - name: "Run tests"
         shell: bash
         run: pnpm build
