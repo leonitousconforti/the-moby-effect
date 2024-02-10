@@ -177,10 +177,10 @@ jobs:
         with:
           path: /tmp
           pattern: "*-dind-docker-image"
-      - run: docker load --input /tmp/ssh-dind-docker-image.tar
-      - run: docker load --input /tmp/http-dind-docker-image.tar
-      - run: docker load --input /tmp/https-dind-docker-image.tar
-      - run: docker load --input /tmp/socket-dind-docker-image.tar
+      - run: docker load --input /tmp/ssh-dind-docker-image/ssh-dind-docker-image.tar
+      - run: docker load --input /tmp/http-dind-docker-image/http-dind-docker-image.tar
+      - run: docker load --input /tmp/https-dind-docker-image/https-dind-docker-image.tar
+      - run: docker load --input /tmp/socket-dind-docker-image/socket-dind-docker-image.tar
       - run: docker image ls -a
       - uses: ./.github/actions/workflow-level-service/expose
         with:
