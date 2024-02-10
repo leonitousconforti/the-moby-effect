@@ -176,7 +176,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: /tmp
-          name: -dind-docker-image
+          pattern: "*-dind-docker-image"
       - run: docker load --input /tmp/ssh-dind-docker-image.tar
       - run: docker load --input /tmp/http-dind-docker-image.tar
       - run: docker load --input /tmp/https-dind-docker-image.tar
