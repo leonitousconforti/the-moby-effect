@@ -139,7 +139,7 @@ jobs:
           file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
-  ssh-docker-engine-service-identifier:
+  remote-docker-engine-service1-identifier:
     runs-on: ubuntu-latest
     needs: [update-pnpm-caches]
     outputs:
@@ -149,7 +149,7 @@ jobs:
       - id: identifier
         uses: ./.github/actions/workflow-level-service/identifier
 
-  http-docker-engine-service-identifier:
+  remote-docker-engine-service2-identifier:
     runs-on: ubuntu-latest
     needs: [update-pnpm-caches]
     outputs:
@@ -159,7 +159,7 @@ jobs:
       - id: identifier
         uses: ./.github/actions/workflow-level-service/identifier
 
-  https-docker-engine-service-identifier:
+  remote-docker-engine-service3-identifier:
     runs-on: ubuntu-latest
     needs: [update-pnpm-caches]
     outputs:
@@ -169,8 +169,8 @@ jobs:
       - id: identifier
         uses: ./.github/actions/workflow-level-service/identifier
 
-  ssh-docker-engine-service:
-    needs: [docker-build, ssh-docker-engine-service-identifier]
+  remote-docker-engine-service1:
+    needs: [docker-build, remote-docker-engine-service1-identifier]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -187,11 +187,11 @@ jobs:
       - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
       - uses: ./.github/actions/workflow-level-service/expose
         with:
-          service-identifier: ${{ needs.ssh-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service1-identifier.outputs.service-identifier }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  http-docker-engine-service:
-    needs: [docker-build, http-docker-engine-service-identifier]
+  remote-docker-engine-service2:
+    needs: [docker-build, remote-docker-engine-service2-identifier]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -208,11 +208,11 @@ jobs:
       - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
       - uses: ./.github/actions/workflow-level-service/expose
         with:
-          service-identifier: ${{ needs.http-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service2-identifier.outputs.service-identifier }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  https-docker-engine-service:
-    needs: [docker-build, https-docker-engine-service-identifier]
+  remote-docker-engine-service3:
+    needs: [docker-build, remote-docker-engine-service3-identifier]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -229,7 +229,7 @@ jobs:
       - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
       - uses: ./.github/actions/workflow-level-service/expose
         with:
-          service-identifier: ${{ needs.https-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service3-identifier.outputs.service-identifier }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   remote-docker-engine-services-online:
@@ -237,22 +237,22 @@ jobs:
       [
         docker-build,
         update-pnpm-caches,
-        ssh-docker-engine-service-identifier,
-        http-docker-engine-service-identifier,
-        https-docker-engine-service-identifier,
+        remote-docker-engine-service1-identifier,
+        remote-docker-engine-service2-identifier,
+        remote-docker-engine-service3-identifier,
       ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/workflow-level-service/connect
         with:
-          service-identifier: ${{ needs.ssh-docker-engine-service-identifier.outputs.service-identifier}}
+          service-identifier: ${{ needs.remote-docker-engine-service1-identifier.outputs.service-identifier}}
       - uses: ./.github/actions/workflow-level-service/connect
         with:
-          service-identifier: ${{ needs.http-docker-engine-service-identifier.outputs.service-identifier}}
+          service-identifier: ${{ needs.remote-docker-engine-service2-identifier.outputs.service-identifier}}
       - uses: ./.github/actions/workflow-level-service/connect
         with:
-          service-identifier: ${{ needs.https-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service3-identifier.outputs.service-identifier }}
 
   remote-docker-engine-tests:
     needs: [remote-docker-engine-services-online, compute-matricies]
@@ -299,26 +299,26 @@ jobs:
     needs:
       [
         remote-docker-engine-tests,
-        ssh-docker-engine-service-identifier,
-        http-docker-engine-service-identifier,
-        https-docker-engine-service-identifier,
+        remote-docker-engine-service1-identifier,
+        remote-docker-engine-service2-identifier,
+        remote-docker-engine-service3-identifier,
       ]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/workflow-level-service/stop
         with:
-          service-identifier: ${{ needs.ssh-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service1-identifier.outputs.service-identifier }}
       - uses: ./.github/actions/workflow-level-service/stop
         with:
-          service-identifier: ${{ needs.http-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service2-identifier.outputs.service-identifier }}
       - uses: ./.github/actions/workflow-level-service/stop
         with:
-          service-identifier: ${{ needs.https-docker-engine-service-identifier.outputs.service-identifier }}
+          service-identifier: ${{ needs.remote-docker-engine-service3-identifier.outputs.service-identifier }}
 
   local-docker-desktop-tests:
     runs-on: ${{ matrix.os }}
     needs:
-      [remote-docker-engine-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service, compute-matricies]
+      [remote-docker-engine-tests, remote-docker-engine-service1, remote-docker-engine-service2, remote-docker-engine-service3, compute-matricies]
     defaults:
       run:
         shell: bash
@@ -337,7 +337,7 @@ jobs:
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
     needs:
-      [remote-docker-engine-tests, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service, compute-matricies]
+      [remote-docker-engine-tests, remote-docker-engine-service1, remote-docker-engine-service2, remote-docker-engine-service3, compute-matricies]
     defaults:
       run:
         shell: bash
