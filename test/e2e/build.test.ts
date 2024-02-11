@@ -1,1 +1,3 @@
-console.log("Hi, mom!");
+describe("e2e / build command", () => {
+    it("should execute the build command", () => {});
+});

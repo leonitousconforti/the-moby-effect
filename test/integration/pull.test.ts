@@ -1,1 +1,3 @@
-console.log("Hi, mom!");
+describe("integration / pull", () => {
+    it("should pull an image", () => {});
+});

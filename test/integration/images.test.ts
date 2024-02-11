@@ -1,1 +1,3 @@
-console.log("Hi, mom!");
+describe("integration / images", () => {
+    it("should get all the cached images", () => {});
+});
