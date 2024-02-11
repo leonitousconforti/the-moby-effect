@@ -87,7 +87,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const data = yield* _(fs.readFileString(path.join(downloadPath, connectionRequest.name)));
         const [clientIp, natPort, hostPort] = data.split(":");
         if (!clientIp || !natPort || !hostPort) {
-            // throw new Error("Invalid connection request artifact contents");
+            throw new Error("Invalid connection request artifact contents");
         }
 
         core.info(data);

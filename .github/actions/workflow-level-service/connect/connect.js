@@ -1,10 +1,11 @@
 import * as artifacts from "@actions/artifact";
 import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
-import { Effect } from "effect";
 import * as Config from "effect/Config";
+import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
+import * as dgram from "node:dgram";
 import * as path from "node:path";
 import * as stun from "stun";
 import * as uuid from "uuid";
@@ -25,8 +26,12 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
     const service_identifier = yield* _(SERVICE_IDENTIFIER);
     const tempDirectory = yield* _(fs.makeTempDirectoryScoped());
     const artifactFile = path.join(tempDirectory, `${service_identifier}_connection-request_${client_identifier}`);
-    const stunResponse = yield* _(Effect.promise(() => stun.request("stun.l.google.com:19302")));
-    yield* _(fs.writeFileString(artifactFile, stunResponse.getXorAddress().address));
+    const stunSocket = dgram.createSocket("udp4");
+    stunSocket.bind(0);
+    const stunResponse = yield* _(Effect.promise(() => stun.request("stun.ekiga.net", { socket: stunSocket })));
+    const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_MAPPED_ADDRESS).value;
+    const myLocation = `${mappedAddress.address}:${mappedAddress.port}:${stunSocket.address().port}`;
+    yield* _(fs.writeFileString(artifactFile, myLocation));
     yield* _(
         Effect.promise(() =>
             artifactClient.uploadArtifact(

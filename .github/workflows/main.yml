@@ -11,9 +11,9 @@ env:
   node-versions: "['16.x', '18.x', '20.x']"
   docker-desktop-versions: "['v1', 'v2', 'v3']"
   podman-desktop-versions: "['v1', 'v2', 'v3']"
-  docker-engine-versions: "['v1', 'v2', 'v3', 'v4', 'v5']"
   os-variants: "['ubuntu-latest', 'macos-latest', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
+  docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:dind']"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -227,6 +227,7 @@ jobs:
         run: pnpm build
         env:
           THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
+          THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
 
   stop-services:
     if: always()
