@@ -14,6 +14,6 @@ jobs:
       - uses: mxschmitt/action-tmate@v3
 
   debug3:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: mxschmitt/action-tmate@v3
