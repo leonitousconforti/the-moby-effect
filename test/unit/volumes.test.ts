@@ -6,6 +6,23 @@ describe("MobyApi Volumes tests", () => {
     const testVolumesService: Layer.Layer<never, never, MobyApi.Volumes.Volumes> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
+    const testSwarmsService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
+
+    beforeAll(async () =>
+        Effect.provide(
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
+            testSwarmsService
+        ).pipe(Effect.runPromise)
+    );
+
+    afterAll(async () =>
+        Effect.provide(
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
+            testSwarmsService
+        ).pipe(Effect.runPromise)
+    );
 
     it("Should see no volumes", async () => {
         const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(

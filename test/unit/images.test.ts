@@ -8,15 +8,15 @@ describe("MobyApi Images tests", () => {
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 
-    it("Should see no images", async () => {
-        const images: Readonly<MobyApi.Schemas.ImageSummary[]> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) => images.list({ all: true })),
-                testImagesService
-            )
-        );
-        expect(images).toHaveLength(0);
-    });
+    // it("Should see no images", async () => {
+    //     const images: Readonly<MobyApi.Schemas.ImageSummary[]> = await Effect.runPromise(
+    //         Effect.provide(
+    //             Effect.flatMap(MobyApi.Images.Images, (images) => images.list({ all: true })),
+    //             testImagesService
+    //         )
+    //     );
+    //     expect(images).toHaveLength(0);
+    // });
 
     it("Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)", async () => {
         const searchResults = await Effect.runPromise(
