@@ -6,6 +6,23 @@ describe("MobyApi Secrets tests", () => {
     const testSecretsService: Layer.Layer<never, never, MobyApi.Secrets.Secrets> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
+    const testSwarmsService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
+
+    beforeAll(async () =>
+        Effect.provide(
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({})),
+            testSwarmsService
+        ).pipe(Effect.runPromise)
+    );
+
+    afterAll(async () =>
+        Effect.provide(
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
+            testSwarmsService
+        ).pipe(Effect.runPromise)
+    );
 
     it("Should see no secrets", async () => {
         const secrets: Readonly<MobyApi.Schemas.Secret[]> = await Effect.runPromise(
