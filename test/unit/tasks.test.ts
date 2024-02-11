@@ -12,7 +12,7 @@ describe("MobyApi Tasks tests", () => {
 
     beforeAll(async () =>
         Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({})),
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
             testSwarmsService
         ).pipe(Effect.runPromise)
     );
