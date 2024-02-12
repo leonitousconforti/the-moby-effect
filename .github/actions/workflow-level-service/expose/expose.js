@@ -66,7 +66,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
             throw new Error("Invalid connection request artifact contents");
         }
 
-        const stunSocket = dgram.createSocket({ type: "udp4", reuseAddr: true });
+        const stunSocket = dgram.createSocket("udp4");
         stunSocket.bind(0);
         const stunResponse = yield* _(
             Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
@@ -109,12 +109,13 @@ const processConnectionRequest = Effect.gen(function* (_) {
             ],
         });
 
-        console.log(stunSocket.address().port);
-        stunSocket.close();
-        console.log(stunSocket.address().port);
         yield* _(Effect.promise(() => hostConfig.writeToFile()));
+        const tempPort = stunSocket.address().port;
+        stunSocket.close();
         yield* _(Effect.promise(() => hostConfig.up()));
-        setInterval(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
+        const stunSocket2 = dgram.createSocket({ type: "udp4", reuseAddr: true });
+        stunSocket2.bind(tempPort);
+        setInterval(() => stunSocket2.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
 
         yield* _(
             helpers.uploadSingleFileArtifact(
