@@ -3,7 +3,7 @@ name: debug
 on: [workflow_dispatch]
 
 env:
-  service-identifier: "test-service"
+  service-identifier: "a6637425-7127-4591-9314-b1ca9f239c2a"
 
 jobs:
   debug1:
