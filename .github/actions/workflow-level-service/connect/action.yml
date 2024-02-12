@@ -29,7 +29,6 @@ runs:
     - name: "Restore pnpm store"
       uses: actions/cache/restore@v4
       with:
-        fail-on-cache-miss: true
         path: ${{ env.STORE_PATH }}
         key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
 
