@@ -2,18 +2,23 @@ name: debug
 
 on: [workflow_dispatch]
 
+env:
+  service-identifier: "test-service"
+
 jobs:
   debug1:
     runs-on: ubuntu-latest
     steps:
-      - uses: mxschmitt/action-tmate@v3
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/expose
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-identifier: ${{ env.service-identifier }}
 
   debug2:
     runs-on: ubuntu-latest
     steps:
-      - uses: mxschmitt/action-tmate@v3
-
-  debug3:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: mxschmitt/action-tmate@v3
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ env.service-identifier }}
