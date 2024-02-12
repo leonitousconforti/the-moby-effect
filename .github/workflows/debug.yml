@@ -22,3 +22,5 @@ jobs:
       - uses: ./.github/actions/workflow-level-service/connect
         with:
           service-identifier: ${{ env.service-identifier }}
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
