@@ -66,7 +66,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
             throw new Error("Invalid connection request artifact contents");
         }
 
-        const stunSocket = dgram.createSocket("udp4");
+        const stunSocket = dgram.createSocket({ type: "udp4", reuseAddr: true });
         stunSocket.bind(0);
         const stunResponse = yield* _(
             Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
