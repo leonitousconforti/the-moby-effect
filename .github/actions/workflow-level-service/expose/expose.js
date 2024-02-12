@@ -78,6 +78,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const { privateKey, publicKey } = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
 
         const hostConfig = new wireguard.WgConfig({
+            filePath: "/etc/wireguard/wg0.conf",
             wgInterface: {
                 name: "wg0",
                 privateKey,
@@ -109,6 +110,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
             ],
         });
 
+        yield* _(Effect.promise(() => hostConfig.writeToFile()));
         yield* _(Effect.promise(() => hostConfig.up()));
         yield* _(
             helpers.uploadSingleFileArtifact(
