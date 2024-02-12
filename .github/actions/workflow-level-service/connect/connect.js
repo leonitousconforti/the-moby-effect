@@ -1,18 +1,15 @@
-import * as artifacts from "@actions/artifact";
 import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
-import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
 import * as dgram from "node:dgram";
-import * as path from "node:path";
 import * as stun from "stun";
 import * as uuid from "uuid";
+import * as helpers from "../shared/helpers.js";
 
+/** @type {NodeJS.Timeout | undefined} */
+let timer = undefined;
 const client_identifier = uuid.v4();
-const artifactClient = new artifacts.DefaultArtifactClient();
-const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER");
 
 /**
  * Connection requests to a service will be made by uploading an artifact with a
@@ -22,25 +19,17 @@ const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER");
  * identifier is the uuid generated for this client.
  */
 const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
-    const fs = yield* _(PlatformNode.FileSystem.FileSystem);
-    const service_identifier = yield* _(SERVICE_IDENTIFIER);
-    const tempDirectory = yield* _(fs.makeTempDirectoryScoped());
-    const artifactFile = path.join(tempDirectory, `${service_identifier}_connection-request_${client_identifier}`);
+    const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
     const stunSocket = dgram.createSocket("udp4");
     stunSocket.bind(0);
-    const stunResponse = yield* _(Effect.promise(() => stun.request("stun.ekiga.net", { socket: stunSocket })));
+    timer = setInterval(() => stunSocket.send(".", 0, 1, 80, "3.3.3.3"), 10_000);
+    const stunResponse = yield* _(
+        Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
+    );
     const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_MAPPED_ADDRESS).value;
     const myLocation = `${mappedAddress.address}:${mappedAddress.port}:${stunSocket.address().port}`;
-    yield* _(fs.writeFileString(artifactFile, myLocation));
     yield* _(
-        Effect.promise(() =>
-            artifactClient.uploadArtifact(
-                `${service_identifier}_connection-request_${client_identifier}`,
-                [artifactFile],
-                tempDirectory,
-                { retentionDays: 1 }
-            )
-        )
+        helpers.uploadSingleFileArtifact(`${service_identifier}_connection-request_${client_identifier}`, myLocation)
     );
 });
 
@@ -53,8 +42,8 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
  * the service.
  */
 const waitForResponse = Effect.gen(function* (_) {
-    const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
-    const service_identifier = yield* _(SERVICE_IDENTIFIER);
+    const { artifacts } = yield* _(helpers.listArtifacts);
+    const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
     const connectionResponses = artifacts.filter(
         (artifact) => artifact.name === `${service_identifier}_connection-response_${client_identifier}`
     );
@@ -68,9 +57,10 @@ const waitForResponse = Effect.gen(function* (_) {
     // Even if there are more than two connection response artifacts, we will only take the first
     const connectionResponse = connectionResponses[0];
     if (connectionResponse) {
-        const data = yield* _(Effect.promise(() => artifactClient.downloadArtifact(connectionResponse.id)));
-        yield* _(Effect.promise(() => artifactClient.deleteArtifact(connectionResponse.name)));
-        core.info(JSON.stringify(data));
+        clearInterval(timer);
+        const data = yield* _(helpers.downloadSingleFileArtifact(connectionResponse.id, connectionResponse.name));
+        yield* _(helpers.deleteArtifact(connectionResponse.name));
+        core.info(data);
         return;
     }
 
@@ -78,8 +68,7 @@ const waitForResponse = Effect.gen(function* (_) {
     yield* _(Effect.fail(new Error("Still waiting for a connection response")));
 });
 
-Function.pipe(
-    Effect.scoped(uploadConnectionRequestArtifact),
+Effect.suspend(() => uploadConnectionRequestArtifact).pipe(
     Effect.andThen(
         Effect.retry(waitForResponse, { times: 100, schedule: Schedule.forever.pipe(Schedule.addDelay(() => 30_000)) })
     ),

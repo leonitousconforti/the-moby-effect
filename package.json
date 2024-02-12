@@ -71,7 +71,7 @@
         "typescript": "5.3.3",
         "uuid": "9.0.1",
         "webpack": "5.82.1",
-        "wireguard-tools.js": "1.8.1",
+        "wireguard-tools": "0.1.0",
         "ws": "8.16.0"
     },
     "peerDependencies": {

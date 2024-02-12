@@ -1,15 +1,13 @@
-import * as artifacts from "@actions/artifact";
 import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
-import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Schedule from "effect/Schedule";
-import * as path from "node:path";
+import * as dgram from "node:dgram";
+import * as stun from "stun";
 import * as uuid from "uuid";
-
-const artifactClient = new artifacts.DefaultArtifactClient();
-const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER");
+import * as wireguard from "wireguard-tools";
+import * as helpers from "../shared/helpers.js";
 
 /**
  * The service should continue to listen for connection requests and host the
@@ -18,12 +16,12 @@ const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER");
  * service_identifier is the UUID of the service to stop.
  */
 const hasStopRequest = Effect.gen(function* (_) {
-    const service_identifier = yield* _(SERVICE_IDENTIFIER);
-    const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
+    const { artifacts } = yield* _(helpers.listArtifacts);
+    const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
 
     if (artifacts.some((artifact) => artifact.name === `${service_identifier}_stop`)) {
         core.info(`Stop request received, stopping service ${service_identifier}`);
-        yield* _(Effect.promise(() => artifactClient.deleteArtifact(`${service_identifier}_stop`)));
+        yield* _(helpers.deleteArtifact(`${service_identifier}_stop`));
         return true;
     }
 
@@ -47,10 +45,9 @@ const hasStopRequest = Effect.gen(function* (_) {
  * service.
  */
 const processConnectionRequest = Effect.gen(function* (_) {
-    const fs = yield* _(PlatformNode.FileSystem.FileSystem);
-    const service_identifier = yield* _(SERVICE_IDENTIFIER);
+    const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
 
-    const { artifacts } = yield* _(Effect.promise(() => artifactClient.listArtifacts()));
+    const { artifacts } = yield* _(helpers.listArtifacts);
     const connectionRequests = artifacts.filter((artifact) =>
         artifact.name.startsWith(`${service_identifier}_connection-request`)
     );
@@ -62,35 +59,63 @@ const processConnectionRequest = Effect.gen(function* (_) {
         }
 
         core.info(`Processing connection request from client ${client_identifier}`);
-        const { downloadPath } = yield* _(Effect.promise(() => artifactClient.downloadArtifact(connectionRequest.id)));
-        yield* _(Effect.promise(() => artifactClient.deleteArtifact(connectionRequest.name)));
+        const data = yield* _(helpers.downloadSingleFileArtifact(connectionRequest.id, connectionRequest.name));
 
-        if (!downloadPath) {
-            throw new Error("Failed to download connection request artifact");
-        }
-
-        const tempFile = yield* _(fs.makeTempFile());
-        yield* _(
-            Effect.promise(() =>
-                artifactClient.uploadArtifact(
-                    `${service_identifier}_connection-response_${client_identifier}`,
-                    [tempFile],
-                    "/",
-                    {
-                        retentionDays: 1,
-                    }
-                )
-            )
-        );
-        yield* _(fs.remove(tempFile));
-
-        const data = yield* _(fs.readFileString(path.join(downloadPath, connectionRequest.name)));
         const [clientIp, natPort, hostPort] = data.split(":");
         if (!clientIp || !natPort || !hostPort) {
             throw new Error("Invalid connection request artifact contents");
         }
 
-        core.info(data);
+        const stunSocket = dgram.createSocket("udp4");
+        stunSocket.bind(0);
+        const stunResponse = yield* _(
+            Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
+        );
+        const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_MAPPED_ADDRESS).value;
+        const myLocation = `${mappedAddress.address}:${mappedAddress.port}`;
+        setInterval(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
+
+        const { privateKey, publicKey } = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
+
+        const hostConfig = new wireguard.WgConfig({
+            wgInterface: {
+                name: "wg0",
+                privateKey,
+                address: ["192.168.166.1/30"],
+                listenPort: stunSocket.address().port,
+            },
+            peers: [
+                {
+                    publicKey,
+                    allowedIps: ["192.168.166.2/32"],
+                },
+            ],
+        });
+
+        const peerConfig = new wireguard.WgConfig({
+            wgInterface: {
+                name: "wg0",
+                privateKey,
+                address: ["192.168.166.2/30"],
+                listenPort: Number.parseInt(hostPort),
+            },
+            peers: [
+                {
+                    publicKey,
+                    endpoint: myLocation,
+                    persistentKeepalive: 25,
+                    allowedIps: ["192.168.166.1/32"],
+                },
+            ],
+        });
+
+        yield* _(Effect.promise(() => hostConfig.up()));
+        yield* _(
+            helpers.uploadSingleFileArtifact(
+                `${service_identifier}_connection-response_${client_identifier}`,
+                peerConfig.toString()
+            )
+        );
     }
 });
 

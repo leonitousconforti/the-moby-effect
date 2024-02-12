@@ -32,14 +32,14 @@
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "isolatedModules": true,
-        "forceConsistentCasingInFileNames": true,
+        "forceConsistentCasingInFileNames": true
     },
     "include": [
+        "bin/**/*.ts",
         "src/**/*.ts",
         "test/**/*.ts",
         "examples/**/*.ts",
-        "bin/**/*.ts",
         ".github/**/*.js",
-        ".github/**/*.d.ts",
-    ],
+        ".github/**/*.d.ts"
+    ]
 }
