@@ -53,15 +53,15 @@ const processConnectionRequest = Effect.gen(function* (_) {
     );
 
     for (const connectionRequest of connectionRequests) {
-        yield* _(helpers.deleteArtifact(connectionRequest.name));
-
         const client_identifier = connectionRequest.name.split("_")[2];
         if (!client_identifier || !uuid.validate(client_identifier)) {
+            yield* _(helpers.deleteArtifact(connectionRequest.name));
             throw new Error("Invalid client identifier in connection request artifact name");
         }
 
         core.info(`Processing connection request from client ${client_identifier}`);
         const data = yield* _(helpers.downloadSingleFileArtifact(connectionRequest.id, connectionRequest.name));
+        yield* _(helpers.deleteArtifact(connectionRequest.name));
 
         const [clientIp, natPort, hostPort] = data.split(":");
         if (!clientIp || !natPort || !hostPort) {
