@@ -71,7 +71,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const stunResponse = yield* _(
             Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
         );
-        const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_MAPPED_ADDRESS).value;
+        const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_XOR_MAPPED_ADDRESS).value;
         const myLocation = `${mappedAddress.address}:${mappedAddress.port}`;
         setInterval(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
 

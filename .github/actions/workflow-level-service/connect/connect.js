@@ -26,8 +26,7 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
     const stunResponse = yield* _(
         Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
     );
-    console.log(stunResponse);
-    const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_MAPPED_ADDRESS).value;
+    const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_XOR_MAPPED_ADDRESS).value;
     const myLocation = `${mappedAddress.address}:${mappedAddress.port}:${stunSocket.address().port}`;
     yield* _(
         helpers.uploadSingleFileArtifact(`${service_identifier}_connection-request_${client_identifier}`, myLocation)

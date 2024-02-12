@@ -95,7 +95,7 @@ declare module "stun" {
 
     export class StunMessage {
         getXorAddress: () => { address: string };
-        getAttribute: (type: (typeof constants)["STUN_ATTR_MAPPED_ADDRESS"]) => {
+        getAttribute: (type: (typeof constants)["STUN_ATTR_XOR_MAPPED_ADDRESS"]) => {
             /** Get attribute value. */
             value: {
                 port: number;
