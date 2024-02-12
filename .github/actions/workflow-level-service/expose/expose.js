@@ -53,6 +53,8 @@ const processConnectionRequest = Effect.gen(function* (_) {
     );
 
     for (const connectionRequest of connectionRequests) {
+        yield* _(helpers.deleteArtifact(connectionRequest.name));
+
         const client_identifier = connectionRequest.name.split("_")[2];
         if (!client_identifier || !uuid.validate(client_identifier)) {
             throw new Error("Invalid client identifier in connection request artifact name");
