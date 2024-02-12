@@ -85,19 +85,21 @@ const processConnectionRequest = Effect.gen(function* (_) {
                     ),
             })
         );
-        const { privateKey, publicKey } = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
+
+        const hostKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
+        const peerKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
 
         const hostConfig = new wireguard.WgConfig({
             filePath: "/etc/wireguard/wg0.conf",
             wgInterface: {
                 name: "wg0",
-                privateKey,
                 address: ["192.168.166.1/30"],
+                privateKey: hostKeys.privateKey,
                 listenPort: stunSocket.address().port,
             },
             peers: [
                 {
-                    publicKey,
+                    publicKey: peerKeys.publicKey,
                     allowedIps: ["192.168.166.2/32"],
                 },
             ],
@@ -106,15 +108,15 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const peerConfig = new wireguard.WgConfig({
             wgInterface: {
                 name: "wg0",
-                privateKey,
                 address: ["192.168.166.2/30"],
+                privateKey: peerKeys.privateKey,
                 listenPort: Number.parseInt(hostPort),
             },
             peers: [
                 {
-                    publicKey,
                     endpoint: myLocation,
                     persistentKeepalive: 25,
+                    publicKey: hostKeys.publicKey,
                     allowedIps: ["192.168.166.1/32"],
                 },
             ],
