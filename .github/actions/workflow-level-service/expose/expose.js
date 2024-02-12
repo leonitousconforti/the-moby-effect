@@ -110,7 +110,9 @@ const processConnectionRequest = Effect.gen(function* (_) {
             ],
         });
 
+        yield* _(Effect.promise(() => hostConfig.writeToFile()));
         yield* _(Effect.promise(() => hostConfig.up()));
+
         yield* _(
             helpers.uploadSingleFileArtifact(
                 `${service_identifier}_connection-response_${client_identifier}`,
