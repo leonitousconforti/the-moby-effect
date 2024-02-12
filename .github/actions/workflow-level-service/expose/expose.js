@@ -66,14 +66,23 @@ const processConnectionRequest = Effect.gen(function* (_) {
             throw new Error("Invalid connection request artifact contents");
         }
 
-        const stunSocket = dgram.createSocket("udp4");
+        const stunSocket = dgram.createSocket({ type: "udp4", reuseAddr: true });
         stunSocket.bind(0);
         const stunResponse = yield* _(
             Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
         );
         const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_XOR_MAPPED_ADDRESS).value;
         const myLocation = `${mappedAddress.address}:${mappedAddress.port}`;
-
+        yield* _(
+            Effect.loop(0, {
+                step: (i) => i + 1,
+                while: (i) => i < 5,
+                body: () =>
+                    Effect.sync(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp)).pipe(
+                        Effect.andThen(Effect.sleep(10_000))
+                    ),
+            })
+        );
         const { privateKey, publicKey } = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
 
         const hostConfig = new wireguard.WgConfig({
@@ -110,12 +119,8 @@ const processConnectionRequest = Effect.gen(function* (_) {
         });
 
         yield* _(Effect.promise(() => hostConfig.writeToFile()));
-        const tempPort = stunSocket.address().port;
         stunSocket.close();
         yield* _(Effect.promise(() => hostConfig.up()));
-        const stunSocket2 = dgram.createSocket({ type: "udp4", reuseAddr: true });
-        stunSocket2.bind(tempPort);
-        setInterval(() => stunSocket2.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
 
         yield* _(
             helpers.uploadSingleFileArtifact(
