@@ -56,6 +56,6 @@ runs:
 
     - name: "Expose service"
       shell: bash
-      run: node .github/actions/workflow-level-service/expose/expose.js
+      run: sudo node .github/actions/workflow-level-service/expose/expose.js
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
