@@ -73,7 +73,6 @@ const processConnectionRequest = Effect.gen(function* (_) {
         );
         const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_XOR_MAPPED_ADDRESS).value;
         const myLocation = `${mappedAddress.address}:${mappedAddress.port}`;
-        setInterval(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
 
         const { privateKey, publicKey } = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
 
@@ -110,8 +109,12 @@ const processConnectionRequest = Effect.gen(function* (_) {
             ],
         });
 
+        console.log(stunSocket.address().port);
+        stunSocket.close();
+        console.log(stunSocket.address().port);
         yield* _(Effect.promise(() => hostConfig.writeToFile()));
         yield* _(Effect.promise(() => hostConfig.up()));
+        setInterval(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp), 5_000);
 
         yield* _(
             helpers.uploadSingleFileArtifact(
