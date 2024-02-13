@@ -108,11 +108,12 @@ const processConnectionRequest = (
         );
     });
 
+class NoStopRequest extends Data.TaggedError("NoStopRequest")<{ message: string }> {}
 class HasStopRequest extends Data.TaggedError("HasStopRequest")<{ message: string }> {}
 
 const program: Effect.Effect<
     PlatformNode.FileSystem.FileSystem,
-    ConfigError.ConfigError | Cause.UnknownException | HasStopRequest,
+    ConfigError.ConfigError | Cause.UnknownException | HasStopRequest | NoStopRequest,
     void
 > = Effect.gen(function* (_: Effect.Adapter) {
     const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
@@ -161,6 +162,7 @@ const program: Effect.Effect<
             Effect.all
         )
     );
+    yield* _(new NoStopRequest({ message: "No stop request received" }));
 }).pipe(
     Effect.retry({
         schedule: Schedule.spaced("30 seconds"),
