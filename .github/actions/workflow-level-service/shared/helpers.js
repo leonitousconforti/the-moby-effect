@@ -20,6 +20,19 @@ export const SERVICE_IDENTIFIER = Config.string("SERVICE_IDENTIFIER").pipe(
     })
 );
 
+/**
+ * Retrieves the service subnet from the environment variable and validates that
+ * it is a valid CIDR block.
+ */
+export const SERVICE_SUBNET = Config.string("SERVICE_SUBNET").pipe(
+    Config.mapAttempt((subnet) => {
+        if (!subnet || !subnet.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.0$/)) {
+            throw new Error("Invalid service subnet");
+        }
+        return subnet;
+    })
+);
+
 export const listArtifacts = Effect.tryPromise(() => artifactClient.listArtifacts());
 
 export const deleteArtifact = (/** @type {string} */ artifactName) =>

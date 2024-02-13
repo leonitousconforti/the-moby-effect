@@ -184,8 +184,9 @@ jobs:
       - run: docker image ls -a
       - uses: ./.github/actions/workflow-level-service/expose
         with:
-          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-subnet: 192.168.${{ matrix.index }}.0
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
 
   remote-docker-engine-services-online:
     needs: [docker-build, update-pnpm-caches, compute-matricies]

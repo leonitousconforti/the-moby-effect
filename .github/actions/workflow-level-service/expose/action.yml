@@ -2,6 +2,9 @@ name: "Workflow level service - Expose"
 description: "Exposes a workflow level service"
 
 inputs:
+  service-subnet:
+    description: "Subnet used for this service"
+    required: true
   service-identifier:
     description: "Name of the service"
     required: true
@@ -64,8 +67,10 @@ runs:
           core.exportVariable('ACTIONS_RESULTS_URL', process.env['ACTIONS_RESULTS_URL'])
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
 
+    # FIXME: can we get rid of this sudo -E?
     - name: "Expose service"
       shell: bash
       run: sudo -E node .github/actions/workflow-level-service/expose/expose.js
       env:
+        SERVICE_SUBNET: ${{ inputs.service-subnet }}
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}

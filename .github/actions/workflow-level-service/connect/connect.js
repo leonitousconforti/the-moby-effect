@@ -5,6 +5,7 @@ import * as Schedule from "effect/Schedule";
 import * as dgram from "node:dgram";
 import * as stun from "stun";
 import * as uuid from "uuid";
+import * as wireguard from "wireguard-tools";
 import * as helpers from "../shared/helpers.js";
 
 /** @type {NodeJS.Timeout | undefined} */
@@ -61,7 +62,20 @@ const waitForResponse = Effect.gen(function* (_) {
         const data = yield* _(helpers.downloadSingleFileArtifact(connectionResponse.id, connectionResponse.name));
         yield* _(helpers.deleteArtifact(connectionResponse.name));
         core.info(data);
-        return;
+        const parsed = data.match(/AllowedIPs = (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/\d{1,3}/);
+        if (!parsed) {
+            throw new Error("Invalid connection response artifact contents");
+        }
+        if (parsed[1]) {
+            core.info(parsed[1]);
+            core.setOutput("service-address", parsed[1]);
+            const a = wireguard.parseConfigString(data);
+            const config = new wireguard.WgConfig(a);
+            yield* _(Effect.promise(() => config.up()));
+            return;
+        } else {
+            throw new Error("Invalid connection response artifact contents");
+        }
     }
 
     // Still waiting for a connection response

@@ -45,6 +45,7 @@ const hasStopRequest = Effect.gen(function* (_) {
  * service.
  */
 const processConnectionRequest = Effect.gen(function* (_) {
+    const service_subnet = yield* _(helpers.SERVICE_SUBNET);
     const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
 
     const { artifacts } = yield* _(helpers.listArtifacts);
@@ -68,7 +69,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
             throw new Error("Invalid connection request artifact contents");
         }
 
-        const stunSocket = dgram.createSocket({ type: "udp4", reuseAddr: true });
+        const stunSocket = dgram.createSocket("udp4");
         stunSocket.bind(0);
         const stunResponse = yield* _(
             Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
@@ -93,14 +94,14 @@ const processConnectionRequest = Effect.gen(function* (_) {
             filePath: "/etc/wireguard/wg0.conf",
             wgInterface: {
                 name: "wg0",
-                address: ["192.168.166.1/30"],
+                address: [service_subnet.replace(/.$/, ".1/30")],
                 privateKey: hostKeys.privateKey,
                 listenPort: stunSocket.address().port,
             },
             peers: [
                 {
                     publicKey: peerKeys.publicKey,
-                    allowedIps: ["192.168.166.2/32"],
+                    allowedIps: [service_subnet.replace(/.$/, ".2/32")],
                 },
             ],
         });
@@ -108,7 +109,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const peerConfig = new wireguard.WgConfig({
             wgInterface: {
                 name: "wg0",
-                address: ["192.168.166.2/30"],
+                address: [service_subnet.replace(/.$/, ".2/30")],
                 privateKey: peerKeys.privateKey,
                 listenPort: Number.parseInt(hostPort),
             },
@@ -117,7 +118,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
                     endpoint: myLocation,
                     persistentKeepalive: 25,
                     publicKey: hostKeys.publicKey,
-                    allowedIps: ["192.168.166.1/32"],
+                    allowedIps: [service_subnet.replace(/.$/, ".1/32")],
                 },
             ],
         });
