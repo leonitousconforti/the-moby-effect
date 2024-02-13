@@ -21,6 +21,16 @@ runs:
       if: runner.os == 'Linux'
       run: sudo apt-get install -y --no-install-recommends wireguard
 
+    - name: "Install wireguard macOS"
+      shell: bash
+      if: runner.os == 'macOS'
+      run: brew install wireguard-tools
+
+    - name: "Install wireguard windows"
+      shell: bash
+      if: runner.os == 'Windows'
+      run: choco install wireguard
+
     - uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}

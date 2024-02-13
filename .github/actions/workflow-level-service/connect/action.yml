@@ -3,12 +3,16 @@ description: "Connects a workflow level service"
 
 inputs:
   service-identifier:
-    description: "UUID of the started service"
+    description: "UUID of the service to connect to"
     required: true
   node-version:
     description: "Node.js version"
     required: true
     default: "18.x"
+
+outputs:
+  service-address:
+    description: "IP Address of the service connected to"
 
 runs:
   using: "composite"
@@ -17,6 +21,16 @@ runs:
       shell: bash
       if: runner.os == 'Linux'
       run: sudo apt-get install -y --no-install-recommends wireguard
+
+    - name: "Install wireguard macOS"
+      shell: bash
+      if: runner.os == 'macOS'
+      run: brew install wireguard-tools
+
+    - name: "Install wireguard windows"
+      shell: bash
+      if: runner.os == 'Windows'
+      run: choco install wireguard
 
     - uses: actions/setup-node@v4
       with:
