@@ -44,6 +44,7 @@ jobs:
     needs: [create-identifiers]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,6 +56,7 @@ jobs:
     needs: [create-identifiers]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -66,6 +68,7 @@ jobs:
     needs: [create-identifiers]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,6 +80,7 @@ jobs:
     needs: [create-identifiers]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -91,6 +95,7 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
       - id: connect1
         uses: ./.github/actions/workflow-level-service/connect
         with:
