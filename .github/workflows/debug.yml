@@ -11,10 +11,10 @@ jobs:
   create-identifiers:
     runs-on: ubuntu-latest
     outputs:
-      macos-service-subnet: ${{ steps.subnets.outputs.macos-subnet }}
-      linux-service-subnet1: ${{ steps.subnets.outputs.linux-subnet1 }}
-      linux-service-subnet2: ${{ steps.subnets.outputs.linux-subnet2 }}
-      windows-service-subnet: ${{ steps.subnets.outputs.windows-subnet }}
+      macos-service-subnet: ${{ steps.subnets.outputs.macos-service-subnet }}
+      linux-service-subnet1: ${{ steps.subnets.outputs.linux-service-subnet1 }}
+      linux-service-subnet2: ${{ steps.subnets.outputs.linux-service-subnet2 }}
+      windows-service-subnet: ${{ steps.subnets.outputs.windows-service-subnet }}
       macos-service-identifier: ${{ steps.identifiers.outputs.macos-service-identifier }}
       linux-service-identifier1: ${{ steps.identifiers.outputs.linux-service-identifier1 }}
       linux-service-identifier2: ${{ steps.identifiers.outputs.linux-service-identifier2 }}
