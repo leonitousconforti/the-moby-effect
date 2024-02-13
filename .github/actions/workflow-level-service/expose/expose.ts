@@ -3,6 +3,7 @@ import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
 import * as Cause from "effect/Cause";
 import * as ConfigError from "effect/ConfigError";
+import * as Console from "effect/Console";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -115,7 +116,9 @@ const processConnectionRequest = (
             )
         );
         core.info(`Connection response artifact uploaded`);
-    });
+    })
+        .pipe(Effect.tapError(Console.log))
+        .pipe(Effect.tapDefect(Console.log));
 
 class NoStopRequest extends Data.TaggedError("NoStopRequest")<{ message: string }> {}
 class HasStopRequest extends Data.TaggedError("HasStopRequest")<{ message: string }> {}
