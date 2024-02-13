@@ -1,26 +1,97 @@
-name: debug
+name: "Workflow level service - Test"
 
-on: [workflow_dispatch]
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
 
 env:
-  service-identifier: "a6637425-7127-4591-9314-b1ca9f239c2a"
+  macos-service-identifier: "39d18052-e25d-4df7-868c-63279f7fb191"
+  linux-service-identifier1: "a6637425-7127-4591-9314-b1ca9f239c2a"
+  linux-service-identifier2: "1261d2f5-01f9-4e03-b50a-d37c7bcd03b0"
+  windows-service-identifier: "bcc71905-d368-4220-9232-028f2e120a2b"
 
 jobs:
-  debug1:
+  linux-service1:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          service-identifier: ${{ env.service-identifier }}
+          service-identifier: ${{ env.linux-service-identifier1 }}
 
-  debug2:
+  linux-service2:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/workflow-level-service/connect
+      - uses: ./.github/actions/workflow-level-service/expose
         with:
-          service-identifier: ${{ env.service-identifier }}
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-identifier: ${{ env.linux-service-identifier2 }}
+
+  windows-service:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/expose
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-identifier: ${{ env.windows-service-identifier }}
+
+  macos-service:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/expose
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-identifier: ${{ env.macos-service-identifier }}
+
+  clients:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - id: connect1
+        uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ env.linux-service-identifier1 }}
+      - id: connect2
+        uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ env.linux-service-identifier2 }}
+      - id: connect3
+        uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ env.windows-service-identifier }}
+      - id: connect4
+        uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ env.macos-service-identifier }}
+      - run: ping ${{ steps.connect1.outputs.service-address }}
+      - run: ping ${{ steps.connect2.outputs.service-address }}
+      - run: ping ${{ steps.connect3.outputs.service-address }}
+      - run: ping ${{ steps.connect4.outputs.service-address }}
+
+  kill:
+    needs: [clients]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/stop
+        with:
+          service-identifier: ${{ env.linux-service-identifier1 }}
+      - uses: ./.github/actions/workflow-level-service/stop
+        with:
+          service-identifier: ${{ env.linux-service-identifier2 }}
+      - uses: ./.github/actions/workflow-level-service/stop
+        with:
+          service-identifier: ${{ env.windows-service-identifier }}
+      - uses: ./.github/actions/workflow-level-service/stop
+        with:
+          service-identifier: ${{ env.macos-service-identifier }}
