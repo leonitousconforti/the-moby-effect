@@ -65,6 +65,7 @@ const processConnectionRequest = (
 
         const hostKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
         const peerKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
+        core.info(`Generated wireguard keys`);
 
         const hostConfig = new wireguard.WgConfig({
             filePath: `/etc/wireguard/wg-${service_identifier}-${client_identifier}.conf`.replaceAll("-", ""),
@@ -81,6 +82,7 @@ const processConnectionRequest = (
                 },
             ],
         });
+        core.info(`Generated wireguard config`);
 
         const peerConfig = new wireguard.WgConfig({
             wgInterface: {
