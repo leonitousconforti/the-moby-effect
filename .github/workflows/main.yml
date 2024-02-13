@@ -231,7 +231,7 @@ jobs:
           THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
 
   stop-services:
-    if: always()
+    if: ${{ always() }}
     needs: [remote-docker-engine-tests, compute-matricies]
     runs-on: ubuntu-latest
     strategy:

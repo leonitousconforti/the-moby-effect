@@ -112,7 +112,8 @@ jobs:
       - run: ping ${{ steps.connect3.outputs.service-address }}
       - run: ping ${{ steps.connect4.outputs.service-address }}
 
-  kill:
+  stop-services:
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     needs: [clients, create-identifiers]
     steps:
@@ -129,3 +130,12 @@ jobs:
       - uses: ./.github/actions/workflow-level-service/stop
         with:
           service-identifier: ${{ needs.create-identifiers.outputs.macos-service-identifier }}
+
+  # https://github.com/orgs/community/discussions/26822
+  pr-can-merge:
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    needs: [clients, linux-service1, linux-service2, windows-service, macos-service]
+    steps:
+      - run: exit 1
+        if: ${{ contains(needs.clients.result, 'failure') || contains(needs.clients.result, 'cancelled') || contains(needs.clients.result, 'skipped') }}
