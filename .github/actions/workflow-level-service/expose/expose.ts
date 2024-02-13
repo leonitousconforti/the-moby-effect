@@ -42,6 +42,7 @@ const processConnectionRequest = (
             return yield* _(Effect.fail(new Error("Invalid connection request artifact contents")));
         }
 
+        core.info(`Sending stun request...`);
         const stunSocket = dgram.createSocket("udp4");
         stunSocket.bind(0);
         const stunResponse = yield* _(
@@ -49,6 +50,7 @@ const processConnectionRequest = (
         );
         const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_XOR_MAPPED_ADDRESS).value;
         const myLocation = `${mappedAddress.address}:${mappedAddress.port}`;
+        core.info(`Stun response received: ${JSON.stringify(myLocation)}`);
         yield* _(
             Effect.loop(0, {
                 step: (i) => i + 1,
@@ -59,12 +61,13 @@ const processConnectionRequest = (
                     ),
             })
         );
+        core.info("Done udp hole punching");
 
         const hostKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
         const peerKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
 
         const hostConfig = new wireguard.WgConfig({
-            filePath: `/etc/wireguard/wg-${service_identifier}-${client_identifier}.conf`,
+            filePath: `/etc/wireguard/wg-${service_identifier}-${client_identifier}.conf`.replaceAll("-", ""),
             wgInterface: {
                 name: `wg-${service_identifier}-${client_identifier}`.replaceAll("-", ""),
                 address: [service_subnet.replace(/.$/, "1/30")],
@@ -96,16 +99,20 @@ const processConnectionRequest = (
             ],
         });
 
+        core.info(`Writing wireguard config to file...`);
         yield* _(Effect.promise(() => hostConfig.writeToFile()));
         stunSocket.close();
+        core.info(`Wireguard config written to file`);
         yield* _(Effect.promise(() => hostConfig.up()));
 
+        core.info(`Uploading connection response artifact...`);
         yield* _(
             helpers.uploadSingleFileArtifact(
                 `${service_identifier}_connection-response_${client_identifier}`,
                 peerConfig.toString()
             )
         );
+        core.info(`Connection response artifact uploaded`);
     });
 
 class NoStopRequest extends Data.TaggedError("NoStopRequest")<{ message: string }> {}
