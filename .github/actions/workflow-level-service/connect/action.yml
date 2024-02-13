@@ -26,6 +26,6 @@ runs:
 
     - name: "Connect to service"
       shell: bash
-      run: node .github/actions/workflow-level-service/connect/connect.js
+      run: tsx .github/actions/workflow-level-service/connect/connect.ts
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}

@@ -1,6 +1,9 @@
 import * as core from "@actions/core";
 import * as PlatformNode from "@effect/platform-node";
+import * as Cause from "effect/Cause";
+import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
+import * as ReadonlyArray from "effect/ReadonlyArray";
 import * as Schedule from "effect/Schedule";
 import * as dgram from "node:dgram";
 import * as stun from "stun";
@@ -8,9 +11,8 @@ import * as uuid from "uuid";
 import * as wireguard from "wireguard-tools";
 import * as helpers from "../shared/helpers.js";
 
-/** @type {NodeJS.Timeout | undefined} */
-let timer = undefined;
 const client_identifier = uuid.v4();
+let timer: NodeJS.Timeout | undefined = undefined;
 
 /**
  * Connection requests to a service will be made by uploading an artifact with a
@@ -19,16 +21,20 @@ const client_identifier = uuid.v4();
  * service-identifier is the uuid of the service to connect to and client
  * identifier is the uuid generated for this client.
  */
-const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
-    const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
-    const stunSocket = dgram.createSocket("udp4");
+const uploadConnectionRequestArtifact: Effect.Effect<
+    PlatformNode.FileSystem.FileSystem,
+    ConfigError.ConfigError | PlatformNode.Error.PlatformError | Cause.UnknownException,
+    void
+> = Effect.gen(function* (_) {
+    const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
+    const stunSocket: dgram.Socket = dgram.createSocket("udp4");
     stunSocket.bind(0);
     timer = setInterval(() => stunSocket.send(".", 0, 1, 80, "3.3.3.3"), 10_000);
-    const stunResponse = yield* _(
+    const stunResponse: stun.StunMessage = yield* _(
         Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
     );
     const mappedAddress = stunResponse.getAttribute(stun.constants.STUN_ATTR_XOR_MAPPED_ADDRESS).value;
-    const myLocation = `${mappedAddress.address}:${mappedAddress.port}:${stunSocket.address().port}`;
+    const myLocation: string = `${mappedAddress.address}:${mappedAddress.port}:${stunSocket.address().port}`;
     yield* _(
         helpers.uploadSingleFileArtifact(`${service_identifier}_connection-request_${client_identifier}`, myLocation)
     );
@@ -43,15 +49,19 @@ const uploadConnectionRequestArtifact = Effect.gen(function* (_) {
  * the service.
  */
 const waitForResponse = Effect.gen(function* (_) {
-    const { artifacts } = yield* _(helpers.listArtifacts);
-    const service_identifier = yield* _(helpers.SERVICE_IDENTIFIER);
-    const connectionResponses = artifacts.filter(
-        (artifact) => artifact.name === `${service_identifier}_connection-response_${client_identifier}`
-    );
+    const artifacts = yield* _(helpers.listArtifacts);
+    const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
 
+    const [, isConnectionResponse] = helpers.connectionResponseArtifact(service_identifier, client_identifier);
+
+    const connectionResponses = ReadonlyArray.filter(artifacts, isConnectionResponse);
     if (connectionResponses.length >= 2) {
-        core.warning(
-            `Received more than one connection response artifact for client: ${client_identifier} from service: ${service_identifier}`
+        yield* _(
+            Effect.die(
+                new Error(
+                    `Received more than one connection response artifact for client: ${client_identifier} from service: ${service_identifier}`
+                )
+            )
         );
     }
 
@@ -64,7 +74,7 @@ const waitForResponse = Effect.gen(function* (_) {
         core.info(data);
         const parsed = data.match(/AllowedIPs = (\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\/\d{1,3}/);
         if (!parsed) {
-            throw new Error("Invalid connection response artifact contents");
+            return yield* _(Effect.fail(new Error("Invalid connection response artifact contents")));
         }
         if (parsed[1]) {
             core.info(parsed[1]);
@@ -78,7 +88,7 @@ const waitForResponse = Effect.gen(function* (_) {
             yield* _(Effect.promise(() => config.up()));
             return;
         } else {
-            throw new Error("Invalid connection response artifact contents");
+            yield* _(Effect.fail(new Error("Invalid connection response artifact contents")));
         }
     }
 

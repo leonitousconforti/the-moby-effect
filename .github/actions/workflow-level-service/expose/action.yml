@@ -24,7 +24,7 @@ runs:
     # FIXME: can we get rid of this sudo -E?
     - name: "Expose service"
       shell: bash
-      run: sudo -E node .github/actions/workflow-level-service/expose/expose.js
+      run: sudo -E tsx .github/actions/workflow-level-service/expose/expose.ts
       env:
         SERVICE_SUBNET: ${{ inputs.service-subnet }}
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
