@@ -93,23 +93,23 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const hostConfig = new wireguard.WgConfig({
             filePath: "/etc/wireguard/wg0.conf",
             wgInterface: {
-                name: "wg0",
-                address: [service_subnet.replace(/.$/, ".1/30")],
+                name: `wg-${service_identifier}-${client_identifier}`,
+                address: [service_subnet.replace(/.$/, "1/30")],
                 privateKey: hostKeys.privateKey,
                 listenPort: stunSocket.address().port,
             },
             peers: [
                 {
                     publicKey: peerKeys.publicKey,
-                    allowedIps: [service_subnet.replace(/.$/, ".2/32")],
+                    allowedIps: [service_subnet.replace(/.$/, "2/32")],
                 },
             ],
         });
 
         const peerConfig = new wireguard.WgConfig({
             wgInterface: {
-                name: "wg0",
-                address: [service_subnet.replace(/.$/, ".2/30")],
+                name: `wg-${service_identifier}-${client_identifier}`,
+                address: [service_subnet.replace(/.$/, "2/30")],
                 privateKey: peerKeys.privateKey,
                 listenPort: Number.parseInt(hostPort),
             },
@@ -118,7 +118,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
                     endpoint: myLocation,
                     persistentKeepalive: 25,
                     publicKey: hostKeys.publicKey,
-                    allowedIps: [service_subnet.replace(/.$/, ".1/32")],
+                    allowedIps: [service_subnet.replace(/.$/, "1/32")],
                 },
             ],
         });
