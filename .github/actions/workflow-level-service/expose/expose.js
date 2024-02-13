@@ -91,7 +91,7 @@ const processConnectionRequest = Effect.gen(function* (_) {
         const peerKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
 
         const hostConfig = new wireguard.WgConfig({
-            filePath: "/etc/wireguard/wg0.conf",
+            filePath: `/etc/wireguard/wg-${service_identifier}-${client_identifier}.conf`,
             wgInterface: {
                 name: `wg-${service_identifier}-${client_identifier}`,
                 address: [service_subnet.replace(/.$/, "1/30")],

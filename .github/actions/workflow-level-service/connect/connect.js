@@ -70,7 +70,11 @@ const waitForResponse = Effect.gen(function* (_) {
             core.info(parsed[1]);
             core.setOutput("service-address", parsed[1]);
             const a = wireguard.parseConfigString(data);
-            const config = new wireguard.WgConfig(a);
+            const config = new wireguard.WgConfig({
+                ...a,
+                filePath: `/etc/wireguard/wg-${service_identifier}-${client_identifier}.conf`,
+            });
+            yield* _(Effect.promise(() => config.writeToFile()));
             yield* _(Effect.promise(() => config.up()));
             return;
         } else {

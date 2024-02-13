@@ -1,4 +1,4 @@
-name: "Workflow level service - Test"
+name: "WLS - Debug"
 
 on:
   push:
