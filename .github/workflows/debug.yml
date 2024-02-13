@@ -43,6 +43,7 @@ jobs:
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-subnet: ${{ needs.create-identifiers.outputs.linux-service-subnet1 }}
           service-identifier: ${{ needs.create-identifiers.outputs.linux-service-identifier1 }}
 
   linux-service2:
@@ -53,6 +54,7 @@ jobs:
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-subnet: ${{ needs.create-identifiers.outputs.linux-service-subnet2 }}
           service-identifier: ${{ needs.create-identifiers.outputs.linux-service-identifier2 }}
 
   windows-service:
@@ -63,6 +65,7 @@ jobs:
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-subnet: ${{ needs.create-identifiers.outputs.windows-service-subnet }}
           service-identifier: ${{ needs.create-identifiers.outputs.windows-service-identifier }}
 
   macos-service:
@@ -73,6 +76,7 @@ jobs:
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-subnet: ${{ needs.create-identifiers.outputs.macos-service-subnet }}
           service-identifier: ${{ needs.create-identifiers.outputs.macos-service-identifier }}
 
   clients:
