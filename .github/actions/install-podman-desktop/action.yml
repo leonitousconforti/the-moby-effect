@@ -13,11 +13,13 @@ runs:
       shell: bash
       run: |
         brew install podman-desktop
+
     - name: "Install Podman Windows"
       if: ${{ runner.os == 'Windows' }}
       shell: bash
       run: |
         choco install podman-desktop
+
     - name: "Install Podman Linux"
       if: ${{ runner.os == 'Linux' }}
       shell: bash

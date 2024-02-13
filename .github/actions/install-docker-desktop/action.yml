@@ -13,11 +13,13 @@ runs:
       shell: bash
       run: |
         brew install --cask docker
+
     - name: "Install Docker Windows"
       if: ${{ runner.os == 'Windows' }}
       shell: bash
       run: |
         choco install docker-desktop
+
     - name: "Install Docker Linux"
       if: ${{ runner.os == 'Linux' }}
       shell: bash
