@@ -10,8 +10,7 @@ runs:
   using: "composite"
   steps:
     - shell: bash
-      run: |
-        echo " " > ${{ inputs.service-identifier }}_stop
+      run: echo " " > ${{ inputs.service-identifier }}_stop
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.service-identifier }}_stop

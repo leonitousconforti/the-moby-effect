@@ -130,6 +130,22 @@ jobs:
           path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
           if-no-files-found: error
 
+  docs-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+  typescript-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16.x'
+      - run: npm install
+      - run: npm run build
+      - run: npm test
+
   docker-publish:
     runs-on: ubuntu-latest
     needs: [docker-build, compute-matricies]
@@ -166,7 +182,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   remote-docker-engine-services:
-    needs: [docker-build, update-pnpm-caches, compute-matricies]
+    needs: [docker-build, update-pnpm-caches, compute-matricies, docs-generate, typescript-build]
     runs-on: ubuntu-latest
     strategy:
       matrix:

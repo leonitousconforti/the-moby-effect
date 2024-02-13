@@ -1,0 +1,51 @@
+  # node-version:
+  #   description: "Node.js version"
+  #   required: true
+  #   default: "18.x"
+
+    # - uses: actions/setup-node@v4
+    #   with:
+    #     node-version: ${{ inputs.node-version }}
+
+    # - name: "Install pnpm"
+    #   shell: bash
+    #   run: npm install pnpm@8 -g
+
+    # - name: "Get pnpm store"
+    #   shell: bash
+    #   run: |
+    #     echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    # - name: "Restore pnpm store"
+    #   uses: actions/cache/restore@v4
+    #   with:
+    #     path: ${{ env.STORE_PATH }}
+    #     key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    # - name: "Install dependencies with pnpm"
+    #   shell: bash
+    #   run: pnpm install
+
+
+    # - uses: actions/setup-node@v4
+    #   with:
+    #     node-version: ${{ inputs.node-version }}
+
+    # - name: "Install pnpm"
+    #   shell: bash
+    #   run: npm install pnpm@8 -g
+
+    # - name: "Get pnpm store"
+    #   shell: bash
+    #   run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+    # - name: "Restore pnpm store"
+    #   uses: actions/cache/restore@v4
+    #   with:
+    #     path: ${{ env.STORE_PATH }}
+    #     key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+
+    # - name: "Install dependencies with pnpm"
+    #   shell: bash
+    #   run: pnpm install
+

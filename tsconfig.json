@@ -3,7 +3,6 @@
     // "extends": ["@tsconfig/strictest/tsconfig.json", "@tsconfig/node18/tsconfig.json"],
 
     "compilerOptions": {
-        "checkJs": true,
         "pretty": true,
         "sourceMap": true,
         "declaration": true,
@@ -34,12 +33,5 @@
         "isolatedModules": true,
         "forceConsistentCasingInFileNames": true
     },
-    "include": [
-        "bin/**/*.ts",
-        "src/**/*.ts",
-        "test/**/*.ts",
-        "examples/**/*.ts",
-        ".github/**/*.js",
-        ".github/**/*.d.ts"
-    ]
+    "include": ["bin/**/*.ts", "src/**/*.ts", "test/**/*.ts", "examples/**/*.ts", ".github/**/*.ts"]
 }
