@@ -8,10 +8,7 @@
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/devcontainers/features/github-cli:1": {},
         "ghcr.io/devcontainers/features/common-utils:2": {},
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
-            // https://github.com/devcontainers/features/issues/837
-            "installDockerBuildx": false
-        }
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1.4.0": {}
     },
 
     "customizations": {
