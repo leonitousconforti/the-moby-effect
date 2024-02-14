@@ -20,19 +20,6 @@ export const SERVICE_IDENTIFIER: Config.Config<string> = Config.string("SERVICE_
     })
 );
 
-/**
- * Retrieves the service subnet from the environment variable and validates that
- * it is a valid CIDR block.
- */
-export const SERVICE_SUBNET: Config.Config<string> = Config.string("SERVICE_SUBNET").pipe(
-    Config.mapAttempt((subnet) => {
-        if (!subnet || !subnet.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.0$/)) {
-            throw new Error("Invalid service subnet");
-        }
-        return subnet;
-    })
-);
-
 /** Predicate to check if an artifact is a stop artifact for the service. */
 export const stopArtifact = (
     service_identifier: string

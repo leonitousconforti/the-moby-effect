@@ -2,9 +2,6 @@ name: "Workflow level service - Expose"
 description: "Exposes a workflow level service"
 
 inputs:
-  service-subnet:
-    description: "Subnet used for this service"
-    required: true
   service-identifier:
     description: "Name of the service"
     required: true
@@ -26,5 +23,4 @@ runs:
       shell: bash
       run: sudo -E ./node_modules/.bin/tsx .github/actions/workflow-level-service/expose/expose.ts
       env:
-        SERVICE_SUBNET: ${{ inputs.service-subnet }}
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}

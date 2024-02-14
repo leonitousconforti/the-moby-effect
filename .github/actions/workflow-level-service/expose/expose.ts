@@ -23,7 +23,6 @@ const processConnectionRequest = (
     void
 > =>
     Effect.gen(function* (_) {
-        const service_subnet: string = yield* _(helpers.SERVICE_SUBNET);
         const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
         const client_identifier: string | undefined = connectionRequest.name.split("_")[2];
 
@@ -68,14 +67,16 @@ const processConnectionRequest = (
         const hostConfig = new wireguard.WgConfig({
             wgInterface: {
                 name: `wg-${service_identifier}-${client_identifier}`,
-                address: [service_subnet.replace(/.$/, "1/30")],
+                address: [`192.168.${service_identifier}.1/30`],
                 privateKey: hostKeys.privateKey,
                 listenPort: stunSocket.address().port,
             },
             peers: [
                 {
+                    persistentKeepalive: 25,
                     publicKey: peerKeys.publicKey,
-                    allowedIps: [service_subnet.replace(/.$/, "2/32")],
+                    endpoint: `${clientIp}:${natPort}`,
+                    allowedIps: [`192.168.${service_identifier}.2/32`],
                 },
             ],
         });
@@ -83,7 +84,7 @@ const processConnectionRequest = (
         const peerConfig = new wireguard.WgConfig({
             wgInterface: {
                 name: `wg-${service_identifier}-${client_identifier}`,
-                address: [service_subnet.replace(/.$/, "2/30")],
+                address: [`192.168.${service_identifier}.2/30`],
                 privateKey: peerKeys.privateKey,
                 listenPort: Number.parseInt(hostPort),
             },
@@ -92,14 +93,14 @@ const processConnectionRequest = (
                     endpoint: myLocation,
                     persistentKeepalive: 25,
                     publicKey: hostKeys.publicKey,
-                    allowedIps: [service_subnet.replace(/.$/, "1/32")],
+                    allowedIps: [`192.168.${service_identifier}.1/32`],
                 },
             ],
         });
 
-        yield* _(Effect.promise(() => hostConfig.writeToFile("wg0.conf")));
+        yield* _(Effect.promise(() => hostConfig.writeToFile("./wg0.conf")));
         stunSocket.close();
-        yield* _(Effect.promise(() => hostConfig.up("wg0")));
+        yield* _(Effect.promise(() => hostConfig.up("./wg0.conf")));
 
         yield* _(
             helpers.uploadSingleFileArtifact(
