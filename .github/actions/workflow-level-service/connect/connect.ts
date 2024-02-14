@@ -26,7 +26,7 @@ const uploadConnectionRequestArtifact: Effect.Effect<
     ConfigError.ConfigError | PlatformNode.Error.PlatformError | Cause.UnknownException,
     void
 > = Effect.gen(function* (_) {
-    const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
+    const service_identifier: number = yield* _(helpers.SERVICE_IDENTIFIER);
     const stunSocket: dgram.Socket = dgram.createSocket("udp4");
     stunSocket.bind(0);
     timer = setInterval(() => stunSocket.send(".", 0, 1, 80, "3.3.3.3"), 10_000);
@@ -50,7 +50,7 @@ const uploadConnectionRequestArtifact: Effect.Effect<
  */
 const waitForResponse = Effect.gen(function* (_) {
     const artifacts = yield* _(helpers.listArtifacts);
-    const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
+    const service_identifier: number = yield* _(helpers.SERVICE_IDENTIFIER);
 
     const [, isConnectionResponse] = helpers.connectionResponseArtifact(service_identifier, client_identifier);
 

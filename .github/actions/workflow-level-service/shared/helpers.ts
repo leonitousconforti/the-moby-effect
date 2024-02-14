@@ -5,24 +5,16 @@ import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Predicate from "effect/Predicate";
 import * as path from "node:path";
-import * as uuid from "uuid";
 
 /**
  * Retrieves the service identifier from the environment variable and validates
  * that it is a valid UUID.
  */
-export const SERVICE_IDENTIFIER: Config.Config<string> = Config.string("SERVICE_IDENTIFIER").pipe(
-    Config.mapAttempt((identifier) => {
-        if (!uuid.validate(identifier)) {
-            throw new Error("Invalid service identifier");
-        }
-        return identifier;
-    })
-);
+export const SERVICE_IDENTIFIER: Config.Config<number> = Config.number("SERVICE_IDENTIFIER");
 
 /** Predicate to check if an artifact is a stop artifact for the service. */
 export const stopArtifact = (
-    service_identifier: string
+    service_identifier: number
 ): [stopArtifactName: string, isStopArtifact: Predicate.Predicate<artifacts.Artifact>] => [
     `${service_identifier}_stop`,
     (artifact: artifacts.Artifact) => artifact.name === `${service_identifier}_stop`,
@@ -30,7 +22,7 @@ export const stopArtifact = (
 
 /** Predicate to check if an artifact is a connection request for the service. */
 export const connectionRequestArtifact = (
-    service_identifier: string
+    service_identifier: number
 ): [connectionRequestName: string, isConnectionRequest: Predicate.Predicate<artifacts.Artifact>] => [
     `${service_identifier}_connection-request`,
     (artifact: artifacts.Artifact) => artifact.name.startsWith(`${service_identifier}_connection-request`),
@@ -38,7 +30,7 @@ export const connectionRequestArtifact = (
 
 /** Predicate to check if an artifact is a connection response for the service. */
 export const connectionResponseArtifact = (
-    service_identifier: string,
+    service_identifier: number,
     client_identifier: string
 ): [connectionResponseName: string, isConnectionResponse: Predicate.Predicate<artifacts.Artifact>] => [
     `${service_identifier}_connection-response_${client_identifier}`,

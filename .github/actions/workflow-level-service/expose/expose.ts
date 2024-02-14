@@ -23,7 +23,7 @@ const processConnectionRequest = (
     void
 > =>
     Effect.gen(function* (_) {
-        const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
+        const service_identifier: number = yield* _(helpers.SERVICE_IDENTIFIER);
         const client_identifier: string | undefined = connectionRequest.name.split("_")[2];
 
         // Check that client_identifier is a valid UUID
@@ -120,7 +120,7 @@ const program: Effect.Effect<
     ConfigError.ConfigError | Cause.UnknownException | HasStopRequest | NoStopRequest,
     void
 > = Effect.gen(function* (_: Effect.Adapter) {
-    const service_identifier: string = yield* _(helpers.SERVICE_IDENTIFIER);
+    const service_identifier: number = yield* _(helpers.SERVICE_IDENTIFIER);
     const artifacts: ReadonlyArray<artifacts.Artifact> = yield* _(helpers.listArtifacts);
 
     const [stopRequestName, isStopRequest] = helpers.stopArtifact(service_identifier);
