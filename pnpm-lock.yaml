@@ -24,6 +24,9 @@ devDependencies:
   '@actions/core':
     specifier: 1.10.1
     version: 1.10.1
+  '@actions/exec':
+    specifier: 1.1.1
+    version: 1.1.1
   '@effect/cli':
     specifier: 0.31.7
     version: 0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.5)
@@ -130,7 +133,7 @@ devDependencies:
     specifier: 3.0.5
     version: 3.0.5
   tsx:
-    specifier: ^4.7.1
+    specifier: 4.7.1
     version: 4.7.1
   typescript:
     specifier: 5.3.3
@@ -184,6 +187,12 @@ packages:
       uuid: 8.3.2
     dev: true
 
+  /@actions/exec@1.1.1:
+    resolution: {integrity: sha512-+sCcHHbVdk93a0XT19ECtO/gIXoxvdsgQLzb2fE2/5sIZmWQuluYyjPQtrtTHdU1YzTZ7bAPN4sITq2xi1679w==}
+    dependencies:
+      '@actions/io': 1.1.3
+    dev: true
+
   /@actions/github@5.1.1:
     resolution: {integrity: sha512-Nk59rMDoJaV+mHCOJPXuvB1zIbomlKS0dmSIqPGxd0enAXBnOfn4VWF+CGtRCwXZG9Epa54tZA7VIRlJDS8A6g==}
     dependencies:
@@ -200,6 +209,10 @@ packages:
     dependencies:
       tunnel: 0.0.6
       undici: 5.28.3
+    dev: true
+
+  /@actions/io@1.1.3:
+    resolution: {integrity: sha512-wi9JjgKLYS7U/z8PPbco+PvTb/nRWjeoFlJ1Qer83k/3C5PHQi28hiVdeE2kHXmIL99mQFawx8qt/JPjZilJ8Q==}
     dev: true
 
   /@ampproject/remapping@2.2.1:

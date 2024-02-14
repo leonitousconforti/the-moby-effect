@@ -43,7 +43,6 @@ const processConnectionRequest = (
             return yield* _(Effect.fail(new Error("Invalid connection request artifact contents")));
         }
 
-        core.info(`Sending stun request...`);
         const stunSocket = dgram.createSocket("udp4");
         stunSocket.bind(0);
         const stunResponse = yield* _(
@@ -58,20 +57,17 @@ const processConnectionRequest = (
                 while: (i) => i < 5,
                 body: () =>
                     Effect.sync(() => stunSocket.send(".", 0, 1, Number.parseInt(natPort), clientIp)).pipe(
-                        Effect.andThen(Effect.sleep(7_000))
+                        Effect.andThen(Effect.sleep(1_000))
                     ),
             })
         );
-        core.info("Done udp hole punching");
 
         const hostKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
         const peerKeys = yield* _(Effect.promise(() => wireguard.generateKeyPair()));
-        core.info(`Generated wireguard keys`);
 
         const hostConfig = new wireguard.WgConfig({
-            filePath: `/etc/wireguard/wg-${service_identifier}-${client_identifier}.conf`.replaceAll("-", ""),
             wgInterface: {
-                name: `wg-${service_identifier}-${client_identifier}`.replaceAll("-", ""),
+                name: `wg-${service_identifier}-${client_identifier}`,
                 address: [service_subnet.replace(/.$/, "1/30")],
                 privateKey: hostKeys.privateKey,
                 listenPort: stunSocket.address().port,
@@ -83,11 +79,10 @@ const processConnectionRequest = (
                 },
             ],
         });
-        core.info(`Generated wireguard config`);
 
         const peerConfig = new wireguard.WgConfig({
             wgInterface: {
-                name: `wg-${service_identifier}-${client_identifier}`.replaceAll("-", ""),
+                name: `wg-${service_identifier}-${client_identifier}`,
                 address: [service_subnet.replace(/.$/, "2/30")],
                 privateKey: peerKeys.privateKey,
                 listenPort: Number.parseInt(hostPort),
@@ -102,20 +97,22 @@ const processConnectionRequest = (
             ],
         });
 
-        core.info(`Writing wireguard config to file...`);
-        yield* _(Effect.promise(() => hostConfig.writeToFile()));
+        yield* _(
+            Effect.promise(() =>
+                hostConfig.writeToFile(`wg${service_identifier}${client_identifier}.conf`.replace(/-/g, "_"))
+            )
+        );
         stunSocket.close();
-        core.info(`Wireguard config written to file`);
-        yield* _(Effect.promise(() => hostConfig.up()));
+        yield* _(
+            Effect.promise(() => hostConfig.up(`wg${service_identifier}${client_identifier}.conf`.replace(/-/g, "_")))
+        );
 
-        core.info(`Uploading connection response artifact...`);
         yield* _(
             helpers.uploadSingleFileArtifact(
                 `${service_identifier}_connection-response_${client_identifier}`,
                 peerConfig.toString()
             )
         );
-        core.info(`Connection response artifact uploaded`);
     })
         .pipe(Effect.tapError(Console.log))
         .pipe(Effect.tapDefect(Console.log));
@@ -141,7 +138,6 @@ const program: Effect.Effect<
      * service_identifier is the UUID of the service to stop.
      */
     if (ReadonlyArray.some(artifacts, isStopRequest)) {
-        core.info(`Stop request received, stopping service ${service_identifier}`);
         yield* _(helpers.deleteArtifact(stopRequestName));
         yield* _(new HasStopRequest({ message: "Stop request received" }));
     }
