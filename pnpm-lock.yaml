@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@rushstack/heft-jest-plugin@0.11.3':
-    hash: n6k2ue4lp6ap7o3pnlbmjotjeu
+    hash: 3276a6l474ojfnhw3gyd7himoa
     path: patches/@rushstack__heft-jest-plugin@0.11.3.patch
   '@rushstack/heft@0.64.3':
     hash: ox6odirr3wstbc5ukwnhm7ow6q
@@ -65,7 +65,7 @@ devDependencies:
     version: 0.64.3(patch_hash=ox6odirr3wstbc5ukwnhm7ow6q)(@types/node@20.11.17)
   '@rushstack/heft-jest-plugin':
     specifier: 0.11.3
-    version: 0.11.3(patch_hash=n6k2ue4lp6ap7o3pnlbmjotjeu)(@rushstack/heft@0.64.3)(@types/node@20.11.17)
+    version: 0.11.3(patch_hash=3276a6l474ojfnhw3gyd7himoa)(@rushstack/heft@0.64.3)(@types/node@20.11.17)
   '@rushstack/heft-lint-plugin':
     specifier: 0.3.3
     version: 0.3.3(@rushstack/heft@0.64.3)(@types/node@20.11.17)
@@ -1659,7 +1659,7 @@ packages:
       - '@types/node'
     dev: true
 
-  /@rushstack/heft-jest-plugin@0.11.3(patch_hash=n6k2ue4lp6ap7o3pnlbmjotjeu)(@rushstack/heft@0.64.3)(@types/node@20.11.17):
+  /@rushstack/heft-jest-plugin@0.11.3(patch_hash=3276a6l474ojfnhw3gyd7himoa)(@rushstack/heft@0.64.3)(@types/node@20.11.17):
     resolution: {integrity: sha512-GmqRXM6pJhbHyIT6CPYBdg3Gs1lnNDgQdxjdZJ8yrSGYC3ntpuUyPwOaOmIibpjUTeg/Np45AspLDeX+FDiqcw==}
     peerDependencies:
       '@rushstack/heft': ^0.64.3
@@ -2412,9 +2412,6 @@ packages:
 
   /ajv-formats@2.1.1:
     resolution: {integrity: sha512-Wx0Kx52hxE7C18hkMEggYlEifqWZtYaRgouJor+WMdPnQyEK13vgEWyVNup7SoeeoLMsr4kf5h6dOW11I15MUA==}
-    peerDependenciesMeta:
-      ajv:
-        optional: true
     dependencies:
       ajv: 8.12.0
     dev: true
