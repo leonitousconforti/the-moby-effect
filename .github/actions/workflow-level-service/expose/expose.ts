@@ -97,15 +97,9 @@ const processConnectionRequest = (
             ],
         });
 
-        yield* _(
-            Effect.promise(() =>
-                hostConfig.writeToFile(`wg${service_identifier}${client_identifier}.conf`.replace(/-/g, "_"))
-            )
-        );
+        yield* _(Effect.promise(() => hostConfig.writeToFile("wg0.conf".replace(/-/g, "_"))));
         stunSocket.close();
-        yield* _(
-            Effect.promise(() => hostConfig.up(`wg${service_identifier}${client_identifier}.conf`.replace(/-/g, "_")))
-        );
+        yield* _(Effect.promise(() => hostConfig.up("wg0.conf".replace(/-/g, "_"))));
 
         yield* _(
             helpers.uploadSingleFileArtifact(
