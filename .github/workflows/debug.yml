@@ -102,8 +102,6 @@ jobs:
       - run: ping ${{ steps.connect2.outputs.service-address }}
       - run: ping ${{ steps.connect3.outputs.service-address }}
       - run: ping ${{ steps.connect4.outputs.service-address }}
-      - if: ${{ always() }}
-        uses: mxschmitt/action-tmate@v3
 
   stop-services:
     if: ${{ always() }}
