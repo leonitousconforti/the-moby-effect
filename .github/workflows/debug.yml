@@ -12,6 +12,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
   create-identifiers:
     runs-on: ubuntu-latest
     outputs:
