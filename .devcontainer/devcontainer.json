@@ -164,5 +164,5 @@
         }
     },
 
-    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/setup.sh'"
+    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/.devcontainer/setup.sh'"
 }
