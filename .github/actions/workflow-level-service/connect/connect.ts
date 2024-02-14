@@ -84,9 +84,9 @@ const waitForResponse = Effect.gen(function* (_) {
             core.setOutput("service-address", parsed[1]);
             const a = wireguard.parseConfigString(data);
             const config = new wireguard.WgConfig(a);
-            yield* _(Effect.promise(() => config.writeToFile("./wg0.conf")));
+            yield* _(Effect.promise(() => config.writeToFile(`./wg${service_identifier}.conf`)));
             b();
-            yield* _(Effect.promise(() => config.up("./wg0.conf")));
+            yield* _(Effect.promise(() => config.up(`./wg${service_identifier}.conf`)));
             return;
         } else {
             yield* _(Effect.fail(new Error("Invalid connection response artifact contents")));

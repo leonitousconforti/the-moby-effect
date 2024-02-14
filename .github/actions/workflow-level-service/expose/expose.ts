@@ -98,9 +98,9 @@ const processConnectionRequest = (
             ],
         });
 
-        yield* _(Effect.promise(() => hostConfig.writeToFile("./wg0.conf")));
+        yield* _(Effect.promise(() => hostConfig.writeToFile(`./${client_identifier}/wg0.conf`)));
         stunSocket.close();
-        yield* _(Effect.promise(() => hostConfig.up("./wg0.conf")));
+        yield* _(Effect.promise(() => hostConfig.up(`./${client_identifier}/wg0.conf`)));
 
         yield* _(
             helpers.uploadSingleFileArtifact(
