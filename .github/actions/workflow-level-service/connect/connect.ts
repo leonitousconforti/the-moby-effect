@@ -13,6 +13,8 @@ import * as helpers from "../shared/helpers.js";
 
 const client_identifier = uuid.v4();
 let timer: NodeJS.Timeout | undefined = undefined;
+const unbind = (stunSocket: dgram.Socket) => () => stunSocket.close();
+let b: () => void = () => {};
 
 /**
  * Connection requests to a service will be made by uploading an artifact with a
@@ -29,6 +31,7 @@ const uploadConnectionRequestArtifact: Effect.Effect<
     const service_identifier: number = yield* _(helpers.SERVICE_IDENTIFIER);
     const stunSocket: dgram.Socket = dgram.createSocket("udp4");
     stunSocket.bind(0);
+    b = unbind(stunSocket);
     timer = setInterval(() => stunSocket.send(".", 0, 1, 80, "3.3.3.3"), 10_000);
     const stunResponse: stun.StunMessage = yield* _(
         Effect.promise(() => stun.request("stun.l.google.com:19302", { socket: stunSocket }))
@@ -82,6 +85,7 @@ const waitForResponse = Effect.gen(function* (_) {
             const a = wireguard.parseConfigString(data);
             const config = new wireguard.WgConfig(a);
             yield* _(Effect.promise(() => config.writeToFile("./wg0.conf")));
+            b();
             yield* _(Effect.promise(() => config.up("./wg0.conf")));
             return;
         } else {
