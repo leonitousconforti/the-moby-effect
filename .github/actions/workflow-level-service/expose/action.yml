@@ -27,7 +27,7 @@ runs:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
 
     - name: "Expose service (Windows)"
-      shell: bash
+      shell: pwsh
       if: runner.os == 'Windows'
       run: ./node_modules/.bin/tsx .github/actions/workflow-level-service/expose/expose.ts
       env:
