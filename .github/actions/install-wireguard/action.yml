@@ -16,4 +16,6 @@ runs:
     - name: "Install wireguard windows"
       if: runner.os == 'Windows'
       shell: bash
-      run: choco install wireguard
+      run: |
+        choco install wireguard
+        refreshenv
