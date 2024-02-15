@@ -18,4 +18,5 @@ runs:
       shell: pwsh
       run: |
         choco install wireguard
+        refreshenv
         wg-quick
