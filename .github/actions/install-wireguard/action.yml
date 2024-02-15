@@ -20,4 +20,4 @@ runs:
         choco install wireguard
         Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
         refreshenv
-        wg-quick
+        wg
