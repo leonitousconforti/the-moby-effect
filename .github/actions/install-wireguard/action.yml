@@ -15,7 +15,7 @@ runs:
 
     - name: "Install wireguard windows"
       if: runner.os == 'Windows'
-      shell: bash
+      shell: pwsh
       run: |
         choco install wireguard
-        refreshenv
+        wg-quick
