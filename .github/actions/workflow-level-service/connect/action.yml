@@ -33,4 +33,4 @@ runs:
 
     - name: "Test connection"
       shell: bash
-      run: ping ${{ steps.connect.outputs.service-address }}
+      run: ping -c 2 ${{ steps.connect.outputs.service-address }}
