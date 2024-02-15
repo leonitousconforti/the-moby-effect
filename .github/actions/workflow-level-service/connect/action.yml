@@ -25,7 +25,11 @@ runs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
 
     - name: "Connect to service"
+      id: connect
       shell: bash
       run: ./node_modules/.bin/tsx .github/actions/workflow-level-service/connect/connect.ts
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
+
+    - name: "Test connection"
+      run: ping ${{ steps.connect.outputs.service-address }}

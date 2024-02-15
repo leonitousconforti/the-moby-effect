@@ -23,6 +23,7 @@ const processConnectionRequest = (
     void
 > =>
     Effect.gen(function* (_) {
+        const fs = yield* _(PlatformNode.FileSystem.FileSystem);
         const service_identifier: number = yield* _(helpers.SERVICE_IDENTIFIER);
         const client_identifier: string | undefined = connectionRequest.name.split("_")[2];
 
@@ -98,6 +99,7 @@ const processConnectionRequest = (
             ],
         });
 
+        yield* _(fs.makeDirectory(`./${client_identifier}`));
         yield* _(Effect.promise(() => hostConfig.writeToFile(`./${client_identifier}/wg0.conf`)));
         stunSocket.close();
         yield* _(Effect.promise(() => hostConfig.up(`./${client_identifier}/wg0.conf`)));
