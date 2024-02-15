@@ -32,4 +32,5 @@ runs:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
 
     - name: "Test connection"
+      shell: bash
       run: ping ${{ steps.connect.outputs.service-address }}
