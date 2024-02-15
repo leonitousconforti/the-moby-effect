@@ -23,7 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
-      - uses: ./.github/actions/install-wireguard
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           service-identifier: ${{ env.linux-service-identifier1 }}
@@ -33,7 +32,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
-      - uses: ./.github/actions/install-wireguard
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           service-identifier: ${{ env.linux-service-identifier2 }}
@@ -43,7 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
-      - uses: ./.github/actions/install-wireguard
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           service-identifier: ${{ env.windows-service-identifier }}
@@ -53,7 +50,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
-      - uses: ./.github/actions/install-wireguard
       - uses: ./.github/actions/workflow-level-service/expose
         with:
           service-identifier: ${{ env.macos-service-identifier }}
@@ -67,7 +63,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
-      - uses: ./.github/actions/install-wireguard
       - id: connect1
         uses: ./.github/actions/workflow-level-service/connect
         with:

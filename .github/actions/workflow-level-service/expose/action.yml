@@ -9,6 +9,9 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: "Install WireGuard"
+      uses: ./.github/actions/install-wireguard
+
     - name: "Export runtime variables"
       uses: actions/github-script@v7
       with:
@@ -29,6 +32,10 @@ runs:
     - name: "Expose service (Windows)"
       shell: pwsh
       if: runner.os == 'Windows'
-      run: ./node_modules/.bin/tsx .github/actions/workflow-level-service/expose/expose.ts
+      run: |
+        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
+        refreshenv
+        wg --help
+        .\node_modules\.bin\tsx .github\actions\workflow-level-service\expose\expose.ts
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
