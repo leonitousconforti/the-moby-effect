@@ -19,8 +19,16 @@ runs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
 
     # FIXME: can we get rid of this sudo -E?
-    - name: "Expose service"
+    - name: "Expose service (Unix)"
       shell: bash
+      if: runner.os !== 'Windows'
       run: sudo -E ./node_modules/.bin/tsx .github/actions/workflow-level-service/expose/expose.ts
+      env:
+        SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
+
+    - name: "Expose service (Windows)"
+      shell: bash
+      if: runner.os == 'Windows'
+      run: ./node_modules/.bin/tsx .github/actions/workflow-level-service/expose/expose.ts
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
