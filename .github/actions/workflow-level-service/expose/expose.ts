@@ -99,10 +99,18 @@ const processConnectionRequest = (
             ],
         });
 
-        yield* _(fs.makeDirectory(`./${client_identifier}`));
-        yield* _(Effect.promise(() => hostConfig.writeToFile(`./${client_identifier}/wg0.conf`)));
+        const exists = yield* _(fs.exists("./wg"));
+        if (!exists) yield* _(fs.makeDirectory("./wg"));
+        const files = yield* _(fs.readDirectory("./wg"));
+        const maxInterface = Math.max(
+            ...files
+                .filter((file) => file.startsWith("wg"))
+                .map((file) => file.replace("wg", ""))
+                .map(Number.parseInt)
+        );
+        yield* _(Effect.promise(() => hostConfig.writeToFile(`./wg/wg${maxInterface + 1}.conf`)));
         stunSocket.close();
-        yield* _(Effect.promise(() => hostConfig.up(`./${client_identifier}/wg0.conf`)));
+        yield* _(Effect.promise(() => hostConfig.up(`./wg/wg${maxInterface + 1}.conf`)));
 
         yield* _(
             helpers.uploadSingleFileArtifact(
