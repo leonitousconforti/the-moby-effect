@@ -8,10 +8,7 @@
         "ghcr.io/devcontainers/features/node:1": {},
         "ghcr.io/devcontainers/features/github-cli:1": {},
         "ghcr.io/devcontainers/features/common-utils:2": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:2": {
-            "moby": false,
-            "dockerDashComposeVersion": "v2"
-        }
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1.4.0": {}
     },
 
     "customizations": {
@@ -35,7 +32,7 @@
                 "codemetrics.basics.DecorationModeEnabled": false,
                 "codemetrics.basics.OverviewRulerModeEnabled": false,
                 "editor.defaultFormatter": "EditorConfig.EditorConfig",
-                "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc]": {
+                "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc][yaml]": {
                     "editor.defaultFormatter": "esbenp.prettier-vscode"
                 },
                 "editor.codeActionsOnSave": {
@@ -130,6 +127,7 @@
                     "percpu",
                     "Pids",
                     "precpu",
+                    "protobuf",
                     "resolv",
                     "rize",
                     "Rootfs",
@@ -151,6 +149,7 @@
                     "Templating",
                     "Tmpfs",
                     "tsdoc",
+                    "typeclass",
                     "UIDGID",
                     "Ulimits",
                     "Unlockkey",
@@ -165,5 +164,5 @@
         }
     },
 
-    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/setup.sh'"
+    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/.devcontainer/setup.sh'"
 }

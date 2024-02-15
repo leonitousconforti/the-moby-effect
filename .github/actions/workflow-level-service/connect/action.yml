@@ -3,39 +3,18 @@ description: "Connects a workflow level service"
 
 inputs:
   service-identifier:
-    description: "UUID of the started service"
+    description: "UUID of the service to connect to"
     required: true
-  node-version:
-    description: "Node.js version"
-    required: true
-    default: "18.x"
+
+outputs:
+  service-address:
+    description: "IP Address of the service connected to"
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
-      with:
-        node-version: ${{ inputs.node-version }}
-
-    - name: "Install pnpm"
-      shell: bash
-      run: npm install pnpm@8 -g
-
-    - name: "Get pnpm store"
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-    - name: "Restore pnpm store"
-      uses: actions/cache/restore@v4
-      with:
-        fail-on-cache-miss: true
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-node${{ inputs.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-
-    - name: "Install dependencies with pnpm"
-      shell: bash
-      run: pnpm install
+    - name: "Install WireGuard"
+      uses: ./.github/actions/install-wireguard
 
     - name: "Export runtime variables"
       uses: actions/github-script@v7
@@ -49,7 +28,12 @@ runs:
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'])
 
     - name: "Connect to service"
+      id: connect
       shell: bash
-      run: node .github/actions/workflow-level-service/connect/connect.js
+      run: ./node_modules/.bin/tsx .github/actions/workflow-level-service/connect/connect.ts
       env:
         SERVICE_IDENTIFIER: ${{ inputs.service-identifier }}
+
+    - name: "Test connection"
+      shell: bash
+      run: ping -c 2 ${{ steps.connect.outputs.service-address }}

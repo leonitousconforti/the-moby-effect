@@ -1,21 +1,28 @@
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-
 import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
 
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testNodesService: Layer.Layer<never, never, MobyApi.Nodes.Nodes> = undefined!;
+describe("MobyApi Nodes tests", () => {
+    const testNodesService: Layer.Layer<never, never, MobyApi.Nodes.Nodes> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
+    const testSwarmsService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
 
-describe.each(testEngines)("MobyApi Nodes tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testNodesService] = await BeforeAll(
-            image,
-            MobyApi.Nodes.fromConnectionOptions
-        );
-    }, 30_000);
+    beforeAll(async () =>
+        Effect.provide(
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
+            testSwarmsService
+        ).pipe(Effect.runPromise)
+    );
+
+    afterAll(async () =>
+        Effect.provide(
+            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
+            testSwarmsService
+        ).pipe(Effect.runPromise)
+    );
 
     it("Should see and inspect one node", async () => {
         const nodes: Readonly<MobyApi.Schemas.Node[]> = await Effect.runPromise(

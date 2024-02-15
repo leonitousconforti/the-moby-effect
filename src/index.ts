@@ -122,11 +122,11 @@ export const fromUrl = (
 > => {
     const url: URL = new URL(dockerHost);
 
-    if (url.protocol === "unix") {
+    if (url.protocol === "unix:") {
         return fromConnectionOptions({ connection: "socket", socketPath: url.pathname });
     }
 
-    if (url.protocol === "ssh") {
+    if (url.protocol === "ssh:") {
         return fromConnectionOptions({
             connection: "ssh",
             host: url.hostname,
@@ -137,7 +137,7 @@ export const fromUrl = (
         });
     }
 
-    if (url.protocol === "http") {
+    if (url.protocol === "http:") {
         return fromConnectionOptions({
             connection: "http",
             host: url.hostname ?? "127.0.0.1",
@@ -146,7 +146,7 @@ export const fromUrl = (
         });
     }
 
-    if (url.protocol === "https") {
+    if (url.protocol === "https:") {
         return fromConnectionOptions({
             connection: "https",
             host: url.hostname ?? "127.0.0.1",
@@ -155,7 +155,7 @@ export const fromUrl = (
         });
     }
 
-    if (url.protocol === "tcp") {
+    if (url.protocol === "tcp:") {
         const path: string = url.pathname;
         const host: string = url.hostname ?? "127.0.0.0.1";
         const port: number = url.port ? Number.parseInt(url.port) : 2375;

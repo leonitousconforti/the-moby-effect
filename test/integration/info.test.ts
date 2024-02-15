@@ -1,1 +1,3 @@
-console.log("Hi, mom!");
+describe("integration / info", () => {
+    it("should get system info", () => {});
+});

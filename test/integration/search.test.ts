@@ -1,1 +1,3 @@
-console.log("Hi, mom!");
+describe("integration / search", () => {
+    it("should search for images", () => {});
+});
