@@ -102,12 +102,16 @@ const processConnectionRequest = (
         const exists = yield* _(fs.exists("./wg"));
         if (!exists) yield* _(fs.makeDirectory("./wg"));
         const files = yield* _(fs.readDirectory("./wg"));
-        const maxInterface = Math.max(
-            ...files
-                .filter((file) => file.startsWith("wg"))
-                .map((file) => file.replace("wg", ""))
-                .map(Number.parseInt)
-        );
+        core.info(`Existing wireguard interfaces: ${JSON.stringify(files)}`);
+        const maxInterface =
+            files.length > 0
+                ? Math.max(
+                      ...files
+                          .filter((file) => file.startsWith("wg"))
+                          .map((file) => file.replace("wg", ""))
+                          .map(Number.parseInt)
+                  )
+                : 0;
         yield* _(Effect.promise(() => hostConfig.writeToFile(`./wg/wg${maxInterface + 1}.conf`)));
         stunSocket.close();
         yield* _(Effect.promise(() => hostConfig.up(`./wg/wg${maxInterface + 1}.conf`)));
