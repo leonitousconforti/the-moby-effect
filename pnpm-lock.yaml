@@ -26,28 +26,28 @@ devDependencies:
     version: 1.10.1
   '@effect/cli':
     specifier: 0.31.7
-    version: 0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.5)
+    version: 0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.4.17)
   '@effect/experimental':
     specifier: 0.8.6
-    version: 0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.7)(@effect/schema@0.61.5)(effect@2.2.5)(ws@8.16.0)
+    version: 0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.7)(@effect/schema@0.61.5)(effect@2.4.17)(ws@8.16.0)
   '@effect/platform':
     specifier: 0.43.7
-    version: 0.43.7(@effect/schema@0.61.5)(effect@2.2.5)
+    version: 0.43.7(@effect/schema@0.61.5)(effect@2.4.17)
   '@effect/platform-node':
     specifier: 0.42.7
-    version: 0.42.7(@effect/platform@0.43.7)(effect@2.2.5)
+    version: 0.42.7(@effect/platform@0.43.7)(effect@2.4.17)
   '@effect/printer':
     specifier: 0.30.12
-    version: 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5)
+    version: 0.30.12(@effect/typeclass@0.22.12)(effect@2.4.17)
   '@effect/printer-ansi':
     specifier: 0.31.12
-    version: 0.31.12(@effect/typeclass@0.22.12)(effect@2.2.5)
+    version: 0.31.12(@effect/typeclass@0.22.12)(effect@2.4.17)
   '@effect/schema':
     specifier: 0.61.5
-    version: 0.61.5(effect@2.2.5)(fast-check@3.15.1)
+    version: 0.61.5(effect@2.4.17)(fast-check@3.15.1)
   '@effect/typeclass':
     specifier: 0.22.12
-    version: 0.22.12(effect@2.2.5)
+    version: 0.22.12(effect@2.4.17)
   '@protobuf-ts/runtime':
     specifier: 2.9.3
     version: 2.9.3
@@ -91,8 +91,8 @@ devDependencies:
     specifier: 7.0.3
     version: 7.0.3
   effect:
-    specifier: 2.2.5
-    version: 2.2.5
+    specifier: 2.4.17
+    version: 2.4.17
   eslint:
     specifier: 8.56.0
     version: 8.56.0
@@ -631,7 +631,7 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@effect/cli@0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.2.5):
+  /@effect/cli@0.31.7(@effect/platform@0.43.7)(@effect/printer-ansi@0.31.12)(@effect/printer@0.30.12)(@effect/schema@0.61.5)(effect@2.4.17):
     resolution: {integrity: sha512-HsOfCvNVq1/NkDH5dvfxFWOOoDyAoLQDS+sSq3LYLQ+dPYE0n64uQpxQ76GBBCt6Seln21HV17srK998c+fJsw==}
     peerDependencies:
       '@effect/platform': ^0.43.7
@@ -640,17 +640,17 @@ packages:
       '@effect/schema': ^0.61.5
       effect: ^2.2.3
     dependencies:
-      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.5)
-      '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5)
-      '@effect/printer-ansi': 0.31.12(@effect/typeclass@0.22.12)(effect@2.2.5)
-      '@effect/schema': 0.61.5(effect@2.2.5)(fast-check@3.15.1)
-      effect: 2.2.5
+      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.4.17)
+      '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.4.17)
+      '@effect/printer-ansi': 0.31.12(@effect/typeclass@0.22.12)(effect@2.4.17)
+      '@effect/schema': 0.61.5(effect@2.4.17)(fast-check@3.15.1)
+      effect: 2.4.17
       ini: 4.1.1
       toml: 3.0.0
       yaml: 2.3.4
     dev: true
 
-  /@effect/experimental@0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.7)(@effect/schema@0.61.5)(effect@2.2.5)(ws@8.16.0):
+  /@effect/experimental@0.8.6(@effect/platform-node@0.42.7)(@effect/platform@0.43.7)(@effect/schema@0.61.5)(effect@2.4.17)(ws@8.16.0):
     resolution: {integrity: sha512-0IT3VIaF8xzneo06xPIdcyMMx+NCHBdKDLAi3E87kmRmlx+VK7GvTuU/2m7PfDgAeQ8fEynAGASztl/OfcKe7w==}
     peerDependencies:
       '@effect/platform': ^0.43.7
@@ -667,77 +667,77 @@ packages:
       ws:
         optional: true
     dependencies:
-      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.5)
-      '@effect/platform-node': 0.42.7(@effect/platform@0.43.7)(effect@2.2.5)
-      '@effect/schema': 0.61.5(effect@2.2.5)(fast-check@3.15.1)
-      effect: 2.2.5
+      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.4.17)
+      '@effect/platform-node': 0.42.7(@effect/platform@0.43.7)(effect@2.4.17)
+      '@effect/schema': 0.61.5(effect@2.4.17)(fast-check@3.15.1)
+      effect: 2.4.17
       isomorphic-ws: 5.0.0(ws@8.16.0)
       msgpackr: 1.10.1
       ws: 8.16.0
     dev: true
 
-  /@effect/platform-node@0.42.7(@effect/platform@0.43.7)(effect@2.2.5):
+  /@effect/platform-node@0.42.7(@effect/platform@0.43.7)(effect@2.4.17):
     resolution: {integrity: sha512-bKXv8SncQNhAI24NVAxzGHHgjPaGejQJWWa5DpOakYp9Yx8DWJQh9FVC59o797nC7+g1gQVbng+eJVkDbymuFA==}
     peerDependencies:
       '@effect/platform': ^0.43.7
       effect: ^2.2.3
     dependencies:
-      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.2.5)
-      effect: 2.2.5
+      '@effect/platform': 0.43.7(@effect/schema@0.61.5)(effect@2.4.17)
+      effect: 2.4.17
       mime: 3.0.0
       multipasta: 0.1.21
     dev: true
 
-  /@effect/platform@0.43.7(@effect/schema@0.61.5)(effect@2.2.5):
+  /@effect/platform@0.43.7(@effect/schema@0.61.5)(effect@2.4.17):
     resolution: {integrity: sha512-2kyaXHQ/kRFOMj4evztgu8cmOp7jQY6WQwOtRs4D1U+JRwcrYFDyauaT0X9qeIcv3KV2KFhS7J7t0vOKgtMxrg==}
     peerDependencies:
       '@effect/schema': ^0.61.5
       effect: ^2.2.3
     dependencies:
-      '@effect/schema': 0.61.5(effect@2.2.5)(fast-check@3.15.1)
-      effect: 2.2.5
+      '@effect/schema': 0.61.5(effect@2.4.17)(fast-check@3.15.1)
+      effect: 2.4.17
       find-my-way-ts: 0.1.1
       multipasta: 0.1.21
       path-browserify: 1.0.1
     dev: true
 
-  /@effect/printer-ansi@0.31.12(@effect/typeclass@0.22.12)(effect@2.2.5):
+  /@effect/printer-ansi@0.31.12(@effect/typeclass@0.22.12)(effect@2.4.17):
     resolution: {integrity: sha512-hi7gbICrWa/oAcIXLnYXohwsSRXMVceAGTvgq0pnrphBg5K72Eb3F5bl8Fa3TSHQgD4KR+7iAjCjE4HYQWE5eA==}
     peerDependencies:
       '@effect/typeclass': ^0.22.12
       effect: ^2.2.3
     dependencies:
-      '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5)
-      '@effect/typeclass': 0.22.12(effect@2.2.5)
-      effect: 2.2.5
+      '@effect/printer': 0.30.12(@effect/typeclass@0.22.12)(effect@2.4.17)
+      '@effect/typeclass': 0.22.12(effect@2.4.17)
+      effect: 2.4.17
     dev: true
 
-  /@effect/printer@0.30.12(@effect/typeclass@0.22.12)(effect@2.2.5):
+  /@effect/printer@0.30.12(@effect/typeclass@0.22.12)(effect@2.4.17):
     resolution: {integrity: sha512-FwHnQ/w7+Qh9lx/gIBKSqyt1+L6jYlilrZlSeWqNOY07KWY0WjolzSl4aDxaaKWKhZUSKjYbWpS56bUHvHmkHA==}
     peerDependencies:
       '@effect/typeclass': ^0.22.12
       effect: ^2.2.3
     dependencies:
-      '@effect/typeclass': 0.22.12(effect@2.2.5)
-      effect: 2.2.5
+      '@effect/typeclass': 0.22.12(effect@2.4.17)
+      effect: 2.4.17
     dev: true
 
-  /@effect/schema@0.61.5(effect@2.2.5)(fast-check@3.15.1):
+  /@effect/schema@0.61.5(effect@2.4.17)(fast-check@3.15.1):
     resolution: {integrity: sha512-Z+16tlYGSMQIcurMsIyhR1zlJnIRKxKc+/a0+sTums9VN52FXjQcDEhfhInYUWjhI81k8QkeG4TV6B3GyFKKMw==}
     peerDependencies:
       effect: ^2.2.3
       fast-check: ^3.13.2
     dependencies:
-      effect: 2.2.5
+      effect: 2.4.17
       fast-check: 3.15.1
     dev: true
 
-  /@effect/typeclass@0.22.12(effect@2.2.5):
+  /@effect/typeclass@0.22.12(effect@2.4.17):
     resolution: {integrity: sha512-quIp5UwAbPbpn4gFScdcqsOxM4wQhzaScb/uswRIymTnNGzRQPP/NWoTice7fth6x8VPnDeB2rGwyETGH32foQ==}
     peerDependencies:
       effect: ^2.2.3
     dependencies:
-      effect: 2.2.5
+      effect: 2.4.17
     dev: true
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.56.0):
@@ -3234,8 +3234,8 @@ packages:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
     dev: true
 
-  /effect@2.2.5:
-    resolution: {integrity: sha512-F1bfJXeecK6WpZDSU1UK8C8tUr3n7AqGVL1b8HWeVlHD4192x+6yN0Eb7Qa0CASike5dsbloTfidxBZFr0IpVg==}
+  /effect@2.4.17:
+    resolution: {integrity: sha512-laxKfBOFrD9cZoxuQaYlGektelNn1cLRK9/i+lTTjRKDZB9/gRbnIt4XrG95pa+M3MiFlNHzMn/nBsppkmrt1A==}
     dev: true
 
   /electron-to-chromium@1.4.652:
