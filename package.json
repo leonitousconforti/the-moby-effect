@@ -54,7 +54,7 @@
         "@types/tar-fs": "2.0.4",
         "@types/uuid": "9.0.8",
         "cross-env": "7.0.3",
-        "effect": "2.2.5",
+        "effect": "2.4.18",
         "eslint": "8.56.0",
         "eslint-config-prettier": "9.1.0",
         "eslint-plugin-prettier": "5.1.3",
