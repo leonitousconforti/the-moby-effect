@@ -1,4 +1,3 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -139,7 +138,7 @@ export interface PluginCreateOptions {
      */
     readonly name: string;
     /** Path to tar containing plugin rootfs and manifest */
-    readonly tarContext: Stream.Stream<never, never, Uint8Array>;
+    readonly tarContext: Stream.Stream<Uint8Array>;
 }
 
 export interface PluginPushOptions {
@@ -173,7 +172,7 @@ export interface Plugins {
      */
     readonly list: (
         options?: PluginListOptions | undefined
-    ) => Effect.Effect<never, PluginsError, Readonly<Array<Plugin>>>;
+    ) => Effect.Effect<Readonly<Array<Plugin>>, PluginsError>;
 
     /**
      * Get plugin privileges
@@ -183,7 +182,7 @@ export interface Plugins {
      */
     readonly getPrivileges: (
         options: GetPluginPrivilegesOptions
-    ) => Effect.Effect<never, PluginsError, Readonly<Array<PluginPrivilege>>>;
+    ) => Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError>;
 
     /**
      * Install a plugin
@@ -201,7 +200,7 @@ export interface Plugins {
      *   details.
      * @param body -
      */
-    readonly pull: (options: PluginPullOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly pull: (options: PluginPullOptions) => Effect.Effect<void, PluginsError>;
 
     /**
      * Inspect a plugin
@@ -209,7 +208,7 @@ export interface Plugins {
      * @param name - The name of the plugin. The `:latest` tag is optional, and
      *   is the default if omitted.
      */
-    readonly inspect: (options: PluginInspectOptions) => Effect.Effect<never, PluginsError, Readonly<Plugin>>;
+    readonly inspect: (options: PluginInspectOptions) => Effect.Effect<Readonly<Plugin>, PluginsError>;
 
     /**
      * Remove a plugin
@@ -219,7 +218,7 @@ export interface Plugins {
      * @param force - Disable the plugin before removing. This may result in
      *   issues if the plugin is in use by a container.
      */
-    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<never, PluginsError, Readonly<Plugin>>;
+    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<Readonly<Plugin>, PluginsError>;
 
     /**
      * Enable a plugin
@@ -228,7 +227,7 @@ export interface Plugins {
      *   is the default if omitted.
      * @param timeout - Set the HTTP client timeout (in seconds)
      */
-    readonly enable: (options: PluginEnableOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly enable: (options: PluginEnableOptions) => Effect.Effect<void, PluginsError>;
 
     /**
      * Disable a plugin
@@ -237,7 +236,7 @@ export interface Plugins {
      *   is the default if omitted.
      * @param force - Force disable a plugin even if still in use.
      */
-    readonly disable: (options: PluginDisableOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly disable: (options: PluginDisableOptions) => Effect.Effect<void, PluginsError>;
 
     /**
      * Upgrade a plugin
@@ -254,7 +253,7 @@ export interface Plugins {
      *   details.
      * @param body -
      */
-    readonly upgrade: (options: PluginUpgradeOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly upgrade: (options: PluginUpgradeOptions) => Effect.Effect<void, PluginsError>;
 
     /**
      * Create a plugin
@@ -263,7 +262,7 @@ export interface Plugins {
      *   is the default if omitted.
      * @param tarContext - Path to tar containing plugin rootfs and manifest
      */
-    readonly create: (options: PluginCreateOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly create: (options: PluginCreateOptions) => Effect.Effect<void, PluginsError>;
 
     /**
      * Push a plugin
@@ -271,7 +270,7 @@ export interface Plugins {
      * @param name - The name of the plugin. The `:latest` tag is optional, and
      *   is the default if omitted.
      */
-    readonly push: (options: PluginPushOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly push: (options: PluginPushOptions) => Effect.Effect<void, PluginsError>;
 
     /**
      * Configure a plugin
@@ -280,10 +279,10 @@ export interface Plugins {
      *   is the default if omitted.
      * @param body -
      */
-    readonly set: (options: PluginSetOptions) => Effect.Effect<never, PluginsError, void>;
+    readonly set: (options: PluginSetOptions) => Effect.Effect<void, PluginsError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Plugins> = Effect.gen(
+const make: Effect.Effect<Plugins, never, IMobyConnectionAgent | NodeHttp.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(NodeHttp.client.Client);
@@ -307,7 +306,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const list_ = (
             options?: PluginListOptions | undefined
-        ): Effect.Effect<never, PluginsError, Readonly<Array<Plugin>>> =>
+        ): Effect.Effect<Readonly<Array<Plugin>>, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", options?.filters),
@@ -317,7 +316,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const getPrivileges_ = (
             options: GetPluginPrivilegesOptions
-        ): Effect.Effect<never, PluginsError, Readonly<Array<PluginPrivilege>>> =>
+        ): Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.get("/privileges"),
                 addQueryParameter("remote", options.remote),
@@ -325,7 +324,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("getPrivileges"))
             );
 
-        const pull_ = (options: PluginPullOptions): Effect.Effect<never, PluginsError, void> =>
+        const pull_ = (options: PluginPullOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/pull"),
                 NodeHttp.request.setHeader("X-Registry-Auth", ""),
@@ -336,14 +335,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("pull"))
             );
 
-        const inspect_ = (options: PluginInspectOptions): Effect.Effect<never, PluginsError, Readonly<Plugin>> =>
+        const inspect_ = (options: PluginInspectOptions): Effect.Effect<Readonly<Plugin>, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
                 PluginClient,
                 Effect.catchAll(responseHandler("inspect"))
             );
 
-        const delete_ = (options: PluginDeleteOptions): Effect.Effect<never, PluginsError, Readonly<Plugin>> =>
+        const delete_ = (options: PluginDeleteOptions): Effect.Effect<Readonly<Plugin>, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
@@ -351,7 +350,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("delete"))
             );
 
-        const enable_ = (options: PluginEnableOptions): Effect.Effect<never, PluginsError, void> =>
+        const enable_ = (options: PluginEnableOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/{name}/enable".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("timeout", options.timeout),
@@ -359,7 +358,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("enable"))
             );
 
-        const disable_ = (options: PluginDisableOptions): Effect.Effect<never, PluginsError, void> =>
+        const disable_ = (options: PluginDisableOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/{name}/disable".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
@@ -367,7 +366,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("disable"))
             );
 
-        const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<never, PluginsError, void> =>
+        const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/{name}/upgrade".replace("{name}", encodeURIComponent(options.name))),
                 NodeHttp.request.setHeader("X-Registry-Auth", ""),
@@ -377,7 +376,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("upgrade"))
             );
 
-        const create_ = (options: PluginCreateOptions): Effect.Effect<never, PluginsError, void> =>
+        const create_ = (options: PluginCreateOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/create"),
                 addQueryParameter("name", options.name),
@@ -386,14 +385,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("create"))
             );
 
-        const push_ = (options: PluginPushOptions): Effect.Effect<never, PluginsError, void> =>
+        const push_ = (options: PluginPushOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
                 voidClient,
                 Effect.catchAll(responseHandler("push"))
             );
 
-        const set_ = (options: PluginSetOptions): Effect.Effect<never, PluginsError, void> =>
+        const set_ = (options: PluginSetOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
                 NodeHttp.request.post("/{name}/set".replace("{name}", encodeURIComponent(options.name))),
                 NodeHttp.request.schemaBody(Schema.array(Schema.string))(options.body ?? []),
@@ -417,10 +416,10 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     }
 );
 
-export const Plugins = Context.Tag<Plugins>("the-moby-effect/Plugins");
+export const Plugins = Context.GenericTag<Plugins>("the-moby-effect/Plugins");
 export const layer = Layer.effect(Plugins, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

@@ -1,5 +1,5 @@
 import * as NodeSocket from "@effect/experimental/Socket/Node";
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
@@ -35,24 +35,24 @@ export interface Sessions {
     readonly session: () => Effect.Effect<never, SessionsError, NodeSocket.Socket>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Sessions> = Effect.gen(
+const make: Effect.Effect<IMobyConnectionAgent | HttpClient.client.Client.Default, never, Sessions> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(agent.nodeRequestUrl)),
-            NodeHttp.client.filterStatus((status) => status === 101)
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(agent.nodeRequestUrl)),
+            HttpClient.client.filterStatus((status) => status === 101)
         );
 
         const responseHandler = (method: string) =>
             responseErrorHandler((message) => new SessionsError({ method, message }));
 
-        const session_ = (): Effect.Effect<never, SessionsError, NodeSocket.Socket> =>
+        const session_ = (): Effect.Effect<Scope.Scope, SessionsError, NodeSocket.Socket> =>
             Function.pipe(
-                NodeHttp.request.post("/session"),
-                NodeHttp.request.setHeader("Upgrade", "h2c"),
-                NodeHttp.request.setHeader("Connection", "Upgrade"),
+                HttpClient.request.post("/session"),
+                HttpClient.request.setHeader("Upgrade", "h2c"),
+                HttpClient.request.setHeader("Connection", "Upgrade"),
                 client,
                 Effect.map((response) => (response as IExposeSocketOnEffectClientResponse).source.socket),
                 Effect.flatMap((socket) => NodeSocket.fromNetSocket(Effect.sync(() => socket))),

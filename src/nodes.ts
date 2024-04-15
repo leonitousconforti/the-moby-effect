@@ -1,4 +1,3 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -85,7 +84,7 @@ export interface Nodes {
      *   - `node.label=<node label>`
      *   - `role=`(`manager`|`worker`)`
      */
-    readonly list: (options?: NodeListOptions | undefined) => Effect.Effect<never, NodesError, Readonly<Array<Node>>>;
+    readonly list: (options?: NodeListOptions | undefined) => Effect.Effect<Readonly<Array<Node>>, NodesError>;
 
     /**
      * Delete a node
@@ -93,14 +92,14 @@ export interface Nodes {
      * @param id - The ID or name of the node
      * @param force - Force remove a node from the swarm
      */
-    readonly delete: (options: NodeDeleteOptions) => Effect.Effect<never, NodesError, void>;
+    readonly delete: (options: NodeDeleteOptions) => Effect.Effect<void, NodesError>;
 
     /**
      * Inspect a node
      *
      * @param id - The ID or name of the node
      */
-    readonly inspect: (options: NodeInspectOptions) => Effect.Effect<never, NodesError, Readonly<Node>>;
+    readonly inspect: (options: NodeInspectOptions) => Effect.Effect<Readonly<Node>, NodesError>;
 
     /**
      * Update a node
@@ -110,10 +109,10 @@ export interface Nodes {
      * @param version - The version number of the node object being updated.
      *   This is required to avoid conflicting writes.
      */
-    readonly update: (options: NodeUpdateOptions) => Effect.Effect<never, NodesError, void>;
+    readonly update: (options: NodeUpdateOptions) => Effect.Effect<void, NodesError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Nodes> = Effect.gen(function* (
+const make: Effect.Effect<Nodes, never, IMobyConnectionAgent | NodeHttp.client.Client.Default> = Effect.gen(function* (
     _: Effect.Adapter
 ) {
     const agent = yield* _(MobyConnectionAgent);
@@ -130,7 +129,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
     const responseHandler = (method: string) => responseErrorHandler((message) => new NodesError({ method, message }));
 
-    const list_ = (options?: NodeListOptions | undefined): Effect.Effect<never, NodesError, Readonly<Array<Node>>> =>
+    const list_ = (options?: NodeListOptions | undefined): Effect.Effect<Readonly<Array<Node>>, NodesError> =>
         Function.pipe(
             NodeHttp.request.get(""),
             addQueryParameter("filters", options?.filters),
@@ -138,7 +137,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             Effect.catchAll(responseHandler("list"))
         );
 
-    const delete_ = (options: NodeDeleteOptions): Effect.Effect<never, NodesError, void> =>
+    const delete_ = (options: NodeDeleteOptions): Effect.Effect<void, NodesError> =>
         Function.pipe(
             NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
             addQueryParameter("force", options.force),
@@ -146,14 +145,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
             Effect.catchAll(responseHandler("delete"))
         );
 
-    const inspect_ = (options: NodeInspectOptions): Effect.Effect<never, NodesError, Readonly<Node>> =>
+    const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<Node>, NodesError> =>
         Function.pipe(
             NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             NodeClient,
             Effect.catchAll(responseHandler("inspect"))
         );
 
-    const update_ = (options: NodeUpdateOptions): Effect.Effect<never, NodesError, void> =>
+    const update_ = (options: NodeUpdateOptions): Effect.Effect<void, NodesError> =>
         Function.pipe(
             NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
             addQueryParameter("version", options.version),
@@ -165,10 +164,10 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     return { list: list_, delete: delete_, inspect: inspect_, update: update_ };
 });
 
-export const Nodes = Context.Tag<Nodes>("the-moby-effect/Nodes");
+export const Nodes = Context.GenericTag<Nodes>("the-moby-effect/Nodes");
 export const layer = Layer.effect(Nodes, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

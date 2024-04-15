@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -115,7 +115,7 @@ export interface ContainerCreateOptions {
      */
     readonly platform?: string;
     /** Container to create */
-    readonly spec: Schema.Schema.From<typeof ContainerCreateSpec.struct>;
+    readonly spec: Schema.Schema.Type<typeof ContainerCreateSpec>;
 }
 
 export interface ContainerInspectOptions {
@@ -227,7 +227,7 @@ export interface ContainerKillOptions {
 export interface ContainerUpdateOptions {
     /** ID or name of the container */
     readonly id: string;
-    readonly spec: Schema.Schema.To<typeof ContainerUpdateSpec.struct>;
+    readonly spec: Schema.Schema.Encoded<typeof ContainerUpdateSpec>;
 }
 
 export interface ContainerRenameOptions {
@@ -354,7 +354,7 @@ export interface PutContainerArchiveOptions {
      * following algorithms: `identity` (no compression), `gzip`, `bzip2`, or
      * `xz`.
      */
-    readonly stream: Stream.Stream<never, ContainersError, Uint8Array>;
+    readonly stream: Stream.Stream<Uint8Array, ContainersError>;
 }
 
 export interface ContainerPruneOptions {
@@ -409,7 +409,7 @@ export interface Containers {
      */
     readonly list: (
         options?: ContainerListOptions | undefined
-    ) => Effect.Effect<never, ContainersError, Readonly<Array<ContainerSummary>>>;
+    ) => Effect.Effect<Readonly<Array<ContainerSummary>>, ContainersError>;
 
     /**
      * Create a container
@@ -435,9 +435,7 @@ export interface Containers {
      *   requested
      * @param spec - Container to create
      */
-    readonly create: (
-        options: ContainerCreateOptions
-    ) => Effect.Effect<never, ContainersError, ContainerCreateResponse>;
+    readonly create: (options: ContainerCreateOptions) => Effect.Effect<ContainerCreateResponse, ContainersError>;
 
     /**
      * Inspect a container
@@ -446,9 +444,7 @@ export interface Containers {
      * @param size - Return the size of container as fields `SizeRw` and
      *   `SizeRootFs`
      */
-    readonly inspect: (
-        options: ContainerInspectOptions
-    ) => Effect.Effect<never, ContainersError, ContainerInspectResponse>;
+    readonly inspect: (options: ContainerInspectOptions) => Effect.Effect<ContainerInspectResponse, ContainersError>;
 
     /**
      * List processes running inside a container
@@ -456,7 +452,7 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param ps_args - The arguments to pass to `ps`. For example, `aux`
      */
-    readonly top: (options: ContainerTopOptions) => Effect.Effect<never, ContainersError, unknown>;
+    readonly top: (options: ContainerTopOptions) => Effect.Effect<unknown, ContainersError>;
 
     /**
      * Get container logs
@@ -473,7 +469,7 @@ export interface Containers {
      */
     readonly logs: (
         options: ContainerLogsOptions
-    ) => Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, string>>;
+    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError>;
 
     /**
      * Get changes on a container’s filesystem
@@ -482,7 +478,7 @@ export interface Containers {
      */
     readonly changes: (
         options: ContainerChangesOptions
-    ) => Effect.Effect<never, ContainersError, Readonly<Array<FilesystemChange>>>;
+    ) => Effect.Effect<Readonly<Array<FilesystemChange>>, ContainersError>;
 
     /**
      * Export a container
@@ -491,7 +487,7 @@ export interface Containers {
      */
     readonly export: (
         options: ContainerExportOptions
-    ) => Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, Uint8Array>>;
+    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError>;
 
     /**
      * Get container stats based on resource usage
@@ -504,7 +500,7 @@ export interface Containers {
      */
     readonly stats: (
         options: ContainerStatsOptions
-    ) => Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, string>>;
+    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError>;
 
     /**
      * Resize a container TTY
@@ -513,7 +509,7 @@ export interface Containers {
      * @param h - Height of the TTY session in characters
      * @param w - Width of the TTY session in characters
      */
-    readonly resize: (options: ContainerResizeOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly resize: (options: ContainerResizeOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Start a container
@@ -523,7 +519,7 @@ export interface Containers {
      *   Format is a single character `[a-Z]` or `ctrl-<value>` where `<value>`
      *   is one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
      */
-    readonly start: (options: ContainerStartOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly start: (options: ContainerStartOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Stop a container
@@ -533,7 +529,7 @@ export interface Containers {
      *   (e.g. `SIGINT`).
      * @param t - Number of seconds to wait before killing the container
      */
-    readonly stop: (options: ContainerStopOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly stop: (options: ContainerStopOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Restart a container
@@ -543,7 +539,7 @@ export interface Containers {
      *   (e.g. `SIGINT`).
      * @param t - Number of seconds to wait before killing the container
      */
-    readonly restart: (options: ContainerRestartOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly restart: (options: ContainerRestartOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Kill a container
@@ -552,7 +548,7 @@ export interface Containers {
      * @param signal - Signal to send to the container as an integer or string
      *   (e.g. `SIGINT`).
      */
-    readonly kill: (options: ContainerKillOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly kill: (options: ContainerKillOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Update a container
@@ -560,9 +556,7 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param spec -
      */
-    readonly update: (
-        options: ContainerUpdateOptions
-    ) => Effect.Effect<never, ContainersError, ContainerUpdateResponse>;
+    readonly update: (options: ContainerUpdateOptions) => Effect.Effect<ContainerUpdateResponse, ContainersError>;
 
     /**
      * Rename a container
@@ -570,21 +564,21 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param name - New name for the container
      */
-    readonly rename: (options: ContainerRenameOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly rename: (options: ContainerRenameOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Pause a container
      *
      * @param id - ID or name of the container
      */
-    readonly pause: (options: ContainerPauseOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly pause: (options: ContainerPauseOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Unpause a container
      *
      * @param id - ID or name of the container
      */
-    readonly unpause: (options: ContainerUnpauseOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly unpause: (options: ContainerUnpauseOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Attach to a container
@@ -608,7 +602,7 @@ export interface Containers {
      */
     readonly attach: (
         options: ContainerAttachOptions
-    ) => Effect.Effect<never, ContainersError, RawStreamSocket | MultiplexedStreamSocket>;
+    ) => Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope>;
 
     /**
      * Attach to a container via a websocket
@@ -623,7 +617,9 @@ export interface Containers {
      * @param stdout - Attach to `stdout`
      * @param stderr - Attach to `stderr`
      */
-    readonly attachWebsocket: (options: ContainerAttachWebsocketOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly attachWebsocket: (
+        options: ContainerAttachWebsocketOptions
+    ) => Effect.Effect<void, ContainersError, Scope.Scope>;
 
     /**
      * Wait for a container
@@ -634,7 +630,7 @@ export interface Containers {
      *
      *   Defaults to `not-running` if omitted or empty.
      */
-    readonly wait: (options: ContainerWaitOptions) => Effect.Effect<never, ContainersError, ContainerWaitResponse>;
+    readonly wait: (options: ContainerWaitOptions) => Effect.Effect<ContainerWaitResponse, ContainersError>;
 
     /**
      * Remove a container
@@ -644,7 +640,7 @@ export interface Containers {
      * @param force - If the container is running, kill it before removing it.
      * @param link - Remove the specified link associated with the container.
      */
-    readonly delete: (options: ContainerDeleteOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly delete: (options: ContainerDeleteOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Get an archive of a filesystem resource in a container
@@ -654,7 +650,7 @@ export interface Containers {
      */
     readonly archive: (
         options: ContainerArchiveOptions
-    ) => Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, Uint8Array>>;
+    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError>;
 
     /**
      * Get information about files in a container
@@ -662,7 +658,7 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param path - Resource in the container’s filesystem to archive.
      */
-    readonly archiveInfo: (options: ContainerArchiveInfoOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly archiveInfo: (options: ContainerArchiveInfoOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Extract an archive of files or folders to a directory in a container
@@ -679,7 +675,7 @@ export interface Containers {
      *   one of the following algorithms: `identity` (no compression), `gzip`,
      *   `bzip2`, or `xz`.
      */
-    readonly putArchive: (options: PutContainerArchiveOptions) => Effect.Effect<never, ContainersError, void>;
+    readonly putArchive: (options: PutContainerArchiveOptions) => Effect.Effect<void, ContainersError>;
 
     /**
      * Delete stopped containers
@@ -699,41 +695,45 @@ export interface Containers {
      */
     readonly prune: (
         options?: ContainerPruneOptions | undefined
-    ) => Effect.Effect<never, ContainersError, ContainerPruneResponse>;
+    ) => Effect.Effect<ContainerPruneResponse, ContainersError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Containers> = Effect.gen(
+const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/containers`)),
-            NodeHttp.client.filterStatusOk
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/containers`)),
+            HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-        const unknownClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.unknown)));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const unknownClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.unknown))
+        );
         const ContainerSummariesClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(ContainerSummary)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(ContainerSummary)))
         );
         const ContainerCreateResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ContainerCreateResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ContainerCreateResponse))
         );
         const ContainerInspectResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ContainerInspectResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ContainerInspectResponse))
         );
         const FilesystemChangesClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.nullable(Schema.array(FilesystemChange))))
+            HttpClient.client.mapEffect(
+                HttpClient.response.schemaBodyJson(Schema.nullable(Schema.array(FilesystemChange)))
+            )
         );
         const ContainerUpdateResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ContainerUpdateResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ContainerUpdateResponse))
         );
         const ContainerWaitResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ContainerWaitResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ContainerWaitResponse))
         );
         const ContainerPruneResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ContainerPruneResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ContainerPruneResponse))
         );
 
         const streamHandler = (method: string) =>
@@ -743,52 +743,54 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const list_ = (
             options?: ContainerListOptions | undefined
-        ): Effect.Effect<never, ContainersError, Readonly<Array<ContainerSummary>>> =>
+        ): Effect.Effect<Readonly<Array<ContainerSummary>>, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/json"),
+                HttpClient.request.get("/json"),
                 addQueryParameter("all", options?.all),
                 addQueryParameter("limit", options?.limit),
                 addQueryParameter("size", options?.size),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 ContainerSummariesClient,
-                Effect.catchAll(responseHandler("list"))
+                Effect.catchAll(responseHandler("list")),
+                Effect.scoped
             );
 
-        const create_ = (
-            options: ContainerCreateOptions
-        ): Effect.Effect<never, ContainersError, ContainerCreateResponse> =>
+        const create_ = (options: ContainerCreateOptions): Effect.Effect<ContainerCreateResponse, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/create"),
+                HttpClient.request.post("/create"),
                 addQueryParameter("name", options.name),
                 addQueryParameter("platform", options.platform),
-                NodeHttp.request.schemaBody(ContainerCreateSpec)(Schema.decodeSync(ContainerCreateSpec)(options.spec)),
+                HttpClient.request.schemaBody(ContainerCreateSpec)(
+                    Schema.decodeSync(ContainerCreateSpec)(options.spec)
+                ),
                 Effect.flatMap(ContainerCreateResponseClient),
-                Effect.catchAll(responseHandler("create"))
+                Effect.catchAll(responseHandler("create")),
+                Effect.scoped
             );
 
-        const inspect_ = (
-            options: ContainerInspectOptions
-        ): Effect.Effect<never, ContainersError, ContainerInspectResponse> =>
+        const inspect_ = (options: ContainerInspectOptions): Effect.Effect<ContainerInspectResponse, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/json".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/json".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("size", options.size),
                 ContainerInspectResponseClient,
-                Effect.catchAll(responseHandler("inspect"))
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
             );
 
-        const top_ = (options: ContainerTopOptions): Effect.Effect<never, ContainersError, unknown> =>
+        const top_ = (options: ContainerTopOptions): Effect.Effect<unknown, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/top".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/top".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("ps_args", options.ps_args),
                 unknownClient,
-                Effect.catchAll(responseHandler("top"))
+                Effect.catchAll(responseHandler("top")),
+                Effect.scoped
             );
 
         const logs_ = (
             options: ContainerLogsOptions
-        ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, string>> =>
+        ): Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("follow", options.follow),
                 addQueryParameter("stdout", options.stdout),
                 addQueryParameter("stderr", options.stderr),
@@ -800,124 +802,135 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.catchAll(streamHandler("logs"))),
-                Effect.catchAll(responseHandler("logs"))
+                Effect.catchAll(responseHandler("logs")),
+                Effect.scoped
             );
 
         const changes_ = (
             options: ContainerChangesOptions
-        ): Effect.Effect<never, ContainersError, Readonly<Array<FilesystemChange>>> =>
+        ): Effect.Effect<Readonly<Array<FilesystemChange>>, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/changes".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/changes".replace("{id}", encodeURIComponent(options.id))),
                 FilesystemChangesClient,
                 Effect.map((response) => response ?? []),
-                Effect.catchAll(responseHandler("changes"))
+                Effect.catchAll(responseHandler("changes")),
+                Effect.scoped
             );
 
         const export_ = (
             options: ContainerExportOptions
-        ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, Uint8Array>> =>
+        ): Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/export".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/export".replace("{id}", encodeURIComponent(options.id))),
                 client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.catchAll(streamHandler("export"))),
-                Effect.catchAll(responseHandler("export"))
+                Effect.catchAll(responseHandler("export")),
+                Effect.scoped
             );
 
         const stats_ = (
             options: ContainerStatsOptions
-        ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, string>> =>
+        ): Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/stats".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/stats".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("stream", options.stream),
                 addQueryParameter("one-shot", options["one-shot"]),
                 client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.catchAll(streamHandler("stats"))),
-                Effect.catchAll(responseHandler("stats"))
+                Effect.catchAll(responseHandler("stats")),
+                Effect.scoped
             );
 
-        const resize_ = (options: ContainerResizeOptions): Effect.Effect<never, ContainersError, void> =>
+        const resize_ = (options: ContainerResizeOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/resize".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/resize".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("h", options.h),
                 addQueryParameter("w", options.w),
                 voidClient,
-                Effect.catchAll(responseHandler("resize"))
+                Effect.catchAll(responseHandler("resize")),
+                Effect.scoped
             );
 
-        const start_ = (options: ContainerStartOptions): Effect.Effect<never, ContainersError, void> =>
+        const start_ = (options: ContainerStartOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/start".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/start".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
                 voidClient,
-                Effect.catchAll(responseHandler("start"))
+                Effect.catchAll(responseHandler("start")),
+                Effect.scoped
             );
 
-        const stop_ = (options: ContainerStopOptions): Effect.Effect<never, ContainersError, void> =>
+        const stop_ = (options: ContainerStopOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/stop".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/stop".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("signal", options.signal),
                 addQueryParameter("t", options.t),
                 voidClient,
-                Effect.catchAll(responseHandler("stop"))
+                Effect.catchAll(responseHandler("stop")),
+                Effect.scoped
             );
 
-        const restart_ = (options: ContainerRestartOptions): Effect.Effect<never, ContainersError, void> =>
+        const restart_ = (options: ContainerRestartOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/restart".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/restart".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("signal", options.signal),
                 addQueryParameter("t", options.t),
                 voidClient,
-                Effect.catchAll(responseHandler("restart"))
+                Effect.catchAll(responseHandler("restart")),
+                Effect.scoped
             );
 
-        const kill_ = (options: ContainerKillOptions): Effect.Effect<never, ContainersError, void> =>
+        const kill_ = (options: ContainerKillOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/kill".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/kill".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("signal", options.signal),
                 voidClient,
-                Effect.catchAll(responseHandler("kill"))
+                Effect.catchAll(responseHandler("kill")),
+                Effect.scoped
             );
 
-        const update_ = (
-            options: ContainerUpdateOptions
-        ): Effect.Effect<never, ContainersError, ContainerUpdateResponse> =>
+        const update_ = (options: ContainerUpdateOptions): Effect.Effect<ContainerUpdateResponse, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
-                NodeHttp.request.schemaBody(ContainerUpdateSpec)(new ContainerUpdateSpec(options.spec)),
+                HttpClient.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.schemaBody(ContainerUpdateSpec)(new ContainerUpdateSpec(options.spec)),
                 Effect.flatMap(ContainerUpdateResponseClient),
-                Effect.catchAll(responseHandler("update"))
+                Effect.catchAll(responseHandler("update")),
+                Effect.scoped
             );
 
-        const rename_ = (options: ContainerRenameOptions): Effect.Effect<never, ContainersError, void> =>
+        const rename_ = (options: ContainerRenameOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/rename".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/rename".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("name", options.name),
                 voidClient,
-                Effect.catchAll(responseHandler("rename"))
+                Effect.catchAll(responseHandler("rename")),
+                Effect.scoped
             );
 
-        const pause_ = (options: ContainerPauseOptions): Effect.Effect<never, ContainersError, void> =>
+        const pause_ = (options: ContainerPauseOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/pause".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/pause".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
-                Effect.catchAll(responseHandler("pause"))
+                Effect.catchAll(responseHandler("pause")),
+                Effect.scoped
             );
 
-        const unpause_ = (options: ContainerUnpauseOptions): Effect.Effect<never, ContainersError, void> =>
+        const unpause_ = (options: ContainerUnpauseOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/unpause".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/unpause".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
-                Effect.catchAll(responseHandler("unpause"))
+                Effect.catchAll(responseHandler("unpause")),
+                Effect.scoped
             );
 
         const attach_ = (
             options: ContainerAttachOptions
-        ): Effect.Effect<never, ContainersError, RawStreamSocket | MultiplexedStreamSocket> =>
+        ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/attach".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/attach".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
                 addQueryParameter("logs", options.logs),
                 addQueryParameter("stream", options.stream),
@@ -931,9 +944,9 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const attachWebsocket_ = (
             options: ContainerAttachWebsocketOptions
-        ): Effect.Effect<never, ContainersError, void> =>
+        ): Effect.Effect<void, ContainersError, Scope.Scope> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/attach/ws".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/attach/ws".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("detachKeys", options.detachKeys),
                 addQueryParameter("logs", options.logs),
                 addQueryParameter("stream", options.stream),
@@ -941,74 +954,83 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 addQueryParameter("stdout", options.stdout),
                 addQueryParameter("stderr", options.stderr),
                 voidClient,
-                Effect.catchAll(responseHandler("attachWebsocket"))
+                Effect.catchAll(responseHandler("attachWebsocket")),
+                Effect.scoped
             );
 
-        const wait_ = (options: ContainerWaitOptions): Effect.Effect<never, ContainersError, ContainerWaitResponse> =>
+        const wait_ = (options: ContainerWaitOptions): Effect.Effect<ContainerWaitResponse, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/wait".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/wait".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("condition", options.condition),
                 ContainerWaitResponseClient,
-                Effect.catchAll(responseHandler("wait"))
+                Effect.catchAll(responseHandler("wait")),
+                Effect.scoped
             );
 
-        const delete_ = (options: ContainerDeleteOptions): Effect.Effect<never, ContainersError, void> =>
+        const delete_ = (options: ContainerDeleteOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("v", options.v),
                 addQueryParameter("force", options.force),
                 addQueryParameter("link", options.link),
                 voidClient,
-                Effect.catchAll(responseHandler("delete"))
+                Effect.catchAll(responseHandler("delete")),
+                Effect.scoped
             );
 
         const archive_ = (
             options: ContainerArchiveOptions
-        ): Effect.Effect<never, ContainersError, Stream.Stream<never, ContainersError, Uint8Array>> =>
+        ): Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.catchAll(streamHandler("archive"))),
-                Effect.catchAll(responseHandler("archive"))
+                Effect.catchAll(responseHandler("archive")),
+                Effect.scoped
             );
 
-        const archiveInfo_ = (options: ContainerArchiveInfoOptions): Effect.Effect<never, ContainersError, void> =>
+        const archiveInfo_ = (options: ContainerArchiveInfoOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.head("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.head("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 voidClient,
-                Effect.catchAll(responseHandler("archiveInfo"))
+                Effect.catchAll(responseHandler("archiveInfo")),
+                Effect.scoped
             );
 
-        const putArchive_ = (options: PutContainerArchiveOptions): Effect.Effect<never, ContainersError, void> =>
+        const putArchive_ = (options: PutContainerArchiveOptions): Effect.Effect<void, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.put("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.put("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 addQueryParameter("noOverwriteDirNonDir", options.noOverwriteDirNonDir),
                 addQueryParameter("copyUIDGID", options.copyUIDGID),
-                NodeHttp.request.streamBody(
-                    Stream.mapError(options.stream, (error) =>
-                        NodeHttp.error.RequestError({
-                            reason: "Encode",
-                            error: error,
-                            request: {} as unknown as NodeHttp.request.ClientRequest,
-                        })
+                HttpClient.request.streamBody(
+                    Stream.mapError(
+                        options.stream,
+                        (error) =>
+                            new HttpClient.error.RequestError({
+                                reason: "Encode",
+                                error: error,
+                                request: {} as unknown as HttpClient.request.ClientRequest,
+                            })
                     )
                 ),
                 voidClient,
-                Effect.catchAll(responseHandler("putArchive"))
+                Effect.catchAll(responseHandler("putArchive")),
+                Effect.scoped
             );
 
         const prune_ = (
             options?: ContainerPruneOptions | undefined
-        ): Effect.Effect<never, ContainersError, ContainerPruneResponse> =>
+        ): Effect.Effect<ContainerPruneResponse, ContainersError> =>
             Function.pipe(
-                NodeHttp.request.post("/prune"),
+                HttpClient.request.post("/prune"),
                 addQueryParameter("filters", options?.filters),
                 ContainerPruneResponseClient,
-                Effect.catchAll(responseHandler("prune"))
+                Effect.catchAll(responseHandler("prune")),
+                Effect.scoped
             );
 
         return {
@@ -1041,10 +1063,10 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     }
 );
 
-export const Containers = Context.Tag<Containers>("the-moby-effect/Containers");
+export const Containers = Context.GenericTag<Containers>("the-moby-effect/Containers");
 export const layer = Layer.effect(Containers, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

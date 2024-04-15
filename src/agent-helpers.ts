@@ -3,7 +3,8 @@ import https from "node:https";
 import net from "node:net";
 import ssh2 from "ssh2";
 
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as NodeHttp from "@effect/platform-node/NodeHttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -35,7 +36,7 @@ export type MobyConnectionOptions =
  * make requests. And while we don't need to keep track of the connection
  * options for anything yet, it wouldn't hurt to add them.
  */
-export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
+export interface IMobyConnectionAgent extends NodeHttp.HttpAgent {
     ssh: http.Agent;
     unix: http.Agent;
     nodeRequestUrl: string;
@@ -44,12 +45,10 @@ export interface IMobyConnectionAgent extends NodeHttp.nodeClient.HttpAgent {
 
 /** Context identifier for our moby connection agent. */
 export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnectionAgent> =
-    Context.Tag<IMobyConnectionAgent>(Symbol.for("@the-moby-effect/MobyConnectionAgent"));
+    Context.GenericTag<IMobyConnectionAgent>("@the-moby-effect/MobyConnectionAgent");
 
-export const MobyHttpClientLive: Layer.Layer<IMobyConnectionAgent, never, NodeHttp.client.Client.Default> =
-    NodeHttp.nodeClient.layerWithoutAgent.pipe(
-        Layer.provide(Layer.effect(NodeHttp.nodeClient.HttpAgent, MobyConnectionAgent))
-    );
+export const MobyHttpClientLive: Layer.Layer<HttpClient.client.Client.Default, never, IMobyConnectionAgent> =
+    NodeHttp.layerWithoutAgent.pipe(Layer.provide(Layer.effect(NodeHttp.HttpAgent, MobyConnectionAgent)));
 
 /**
  * An http agent that connect to remote docker instances over ssh.
@@ -127,7 +126,7 @@ class SSHAgent extends http.Agent {
  */
 export const getAgent = (
     connectionOptions: MobyConnectionOptions
-): Effect.Effect<Scope.Scope, never, IMobyConnectionAgent> =>
+): Effect.Effect<IMobyConnectionAgent, never, Scope.Scope> =>
     Effect.map(
         Effect.acquireRelease(
             Effect.sync(() =>
@@ -171,6 +170,6 @@ export const getAgent = (
                     : connectionOptions.connection === "http"
                       ? `http://0.0.0.0${connectionOptions.path ?? ""}`
                       : "http://0.0.0.0",
-            [NodeHttp.nodeClient.HttpAgentTypeId]: NodeHttp.nodeClient.HttpAgentTypeId,
+            [NodeHttp.HttpAgentTypeId]: NodeHttp.HttpAgentTypeId,
         })
     );

@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -103,7 +103,7 @@ export interface Volumes {
      *       presence of a `label` alone or a `label` and a value.
      *   - `name=<volume-name>` Matches all or part of a volume name.
      */
-    readonly list: (options?: VolumeListOptions | undefined) => Effect.Effect<never, VolumesError, VolumeListResponse>;
+    readonly list: (options?: VolumeListOptions | undefined) => Effect.Effect<VolumeListResponse, VolumesError>;
 
     /**
      * Create a volume
@@ -112,7 +112,7 @@ export interface Volumes {
      */
     readonly create: (
         options: Schema.Schema.To<typeof VolumeCreateOptions.struct>
-    ) => Effect.Effect<never, VolumesError, Readonly<Volume>>;
+    ) => Effect.Effect<Readonly<Volume>, VolumesError>;
 
     /**
      * Remove a volume
@@ -120,14 +120,14 @@ export interface Volumes {
      * @param name - Volume name or ID
      * @param force - Force the removal of the volume
      */
-    readonly delete: (options: VolumeDeleteOptions) => Effect.Effect<never, VolumesError, void>;
+    readonly delete: (options: VolumeDeleteOptions) => Effect.Effect<void, VolumesError>;
 
     /**
      * Inspect a volume
      *
      * @param name - Volume name or ID
      */
-    readonly inspect: (options: VolumeInspectOptions) => Effect.Effect<never, VolumesError, Readonly<Volume>>;
+    readonly inspect: (options: VolumeInspectOptions) => Effect.Effect<Readonly<Volume>, VolumesError>;
 
     /**
      * "Update a volume. Valid only for Swarm cluster volumes"
@@ -139,7 +139,7 @@ export interface Volumes {
      *   required to avoid conflicting writes. Found in the volume's
      *   `ClusterVolume` field.
      */
-    readonly update: (options: VolumeUpdateOptions) => Effect.Effect<never, VolumesError, void>;
+    readonly update: (options: VolumeUpdateOptions) => Effect.Effect<void, VolumesError>;
 
     /**
      * Delete unused volumes
@@ -155,93 +155,95 @@ export interface Volumes {
      *   - `all` (`all=true`) - Consider all (local) volumes for pruning and not
      *       just anonymous volumes.
      */
-    readonly prune: (options: VolumePruneOptions) => Effect.Effect<never, VolumesError, VolumePruneResponse>;
+    readonly prune: (options: VolumePruneOptions) => Effect.Effect<VolumePruneResponse, VolumesError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Volumes> = Effect.gen(
+const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/volumes`)),
-            NodeHttp.client.filterStatusOk
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/volumes`)),
+            HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-        const VolumeClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Volume)));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const VolumeClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Volume)));
         const VolumeListResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(VolumeListResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(VolumeListResponse))
         );
         const VolumePruneResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(VolumePruneResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(VolumePruneResponse))
         );
 
         const responseHandler = (method: string) =>
             responseErrorHandler((message) => new VolumesError({ method, message }));
 
-        const list_ = (
-            options: VolumeListOptions | undefined
-        ): Effect.Effect<never, VolumesError, VolumeListResponse> =>
+        const list_ = (options: VolumeListOptions | undefined): Effect.Effect<VolumeListResponse, VolumesError> =>
             Function.pipe(
-                NodeHttp.request.get(""),
+                HttpClient.request.get(""),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 VolumeListResponseClient,
-                Effect.catchAll(responseHandler("list"))
+                Effect.catchAll(responseHandler("list")),
+                Effect.scoped
             );
 
         const create_ = (
             options: Schema.Schema.To<typeof VolumeCreateOptions.struct>
-        ): Effect.Effect<never, VolumesError, Readonly<Volume>> =>
+        ): Effect.Effect<Readonly<Volume>, VolumesError> =>
             Function.pipe(
-                NodeHttp.request.post("/create"),
-                NodeHttp.request.schemaBody(VolumeCreateOptions)(new VolumeCreateOptions(options)),
+                HttpClient.request.post("/create"),
+                HttpClient.request.schemaBody(VolumeCreateOptions)(new VolumeCreateOptions(options)),
                 Effect.flatMap(VolumeClient),
-                Effect.catchAll(responseHandler("create"))
+                Effect.catchAll(responseHandler("create")),
+                Effect.scoped
             );
 
-        const delete_ = (options: VolumeDeleteOptions): Effect.Effect<never, VolumesError, void> =>
+        const delete_ = (options: VolumeDeleteOptions): Effect.Effect<void, VolumesError> =>
             Function.pipe(
-                NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
                 voidClient,
-                Effect.catchAll(responseHandler("delete"))
+                Effect.catchAll(responseHandler("delete")),
+                Effect.scoped
             );
 
-        const inspect_ = (options: VolumeInspectOptions): Effect.Effect<never, VolumesError, Readonly<Volume>> =>
+        const inspect_ = (options: VolumeInspectOptions): Effect.Effect<Readonly<Volume>, VolumesError> =>
             Function.pipe(
-                NodeHttp.request.get("/{name}".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.get("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 VolumeClient,
-                Effect.catchAll(responseHandler("inspect"))
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
             );
 
-        const update_ = (options: VolumeUpdateOptions): Effect.Effect<never, VolumesError, void> =>
+        const update_ = (options: VolumeUpdateOptions): Effect.Effect<void, VolumesError> =>
             Function.pipe(
-                NodeHttp.request.put("/{name}".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.put("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("version", options.version),
-                NodeHttp.request.schemaBody(ClusterVolumeSpec)(new ClusterVolumeSpec(options.spec)),
+                HttpClient.request.schemaBody(ClusterVolumeSpec)(new ClusterVolumeSpec(options.spec)),
                 Effect.flatMap(voidClient),
-                Effect.catchAll(responseHandler("update"))
+                Effect.catchAll(responseHandler("update")),
+                Effect.scoped
             );
 
-        const prune_ = (
-            options: VolumePruneOptions | undefined
-        ): Effect.Effect<never, VolumesError, VolumePruneResponse> =>
+        const prune_ = (options: VolumePruneOptions | undefined): Effect.Effect<VolumePruneResponse, VolumesError> =>
             Function.pipe(
-                NodeHttp.request.post("/prune"),
+                HttpClient.request.post("/prune"),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
                 VolumePruneResponseClient,
-                Effect.catchAll(responseHandler("prune"))
+                Effect.catchAll(responseHandler("prune")),
+                Effect.scoped
             );
 
         return { list: list_, create: create_, delete: delete_, inspect: inspect_, update: update_, prune: prune_ };
     }
 );
 
-export const Volumes = Context.Tag<Volumes>("the-moby-effect/Volumes");
+export const Volumes = Context.GenericTag<Volumes>("the-moby-effect/Volumes");
 export const layer = Layer.effect(Volumes, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

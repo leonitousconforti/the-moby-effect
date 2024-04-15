@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -54,7 +54,7 @@ export interface SwarmUpdateOptions {
 
 export interface Swarms {
     /** Inspect swarm */
-    readonly inspect: () => Effect.Effect<never, SwarmsError, Readonly<Swarm>>;
+    readonly inspect: () => Effect.Effect<Readonly<Swarm>, SwarmsError>;
 
     /**
      * Initialize a new swarm
@@ -63,16 +63,14 @@ export interface Swarms {
      */
     readonly init: (
         options: Schema.Schema.To<typeof SwarmInitRequest.struct>
-    ) => Effect.Effect<never, SwarmsError, Readonly<string>>;
+    ) => Effect.Effect<Readonly<string>, SwarmsError>;
 
     /**
      * Join an existing swarm
      *
      * @param body -
      */
-    readonly join: (
-        options: Schema.Schema.To<typeof SwarmInitRequest.struct>
-    ) => Effect.Effect<never, SwarmsError, void>;
+    readonly join: (options: Schema.Schema.To<typeof SwarmInitRequest.struct>) => Effect.Effect<void, SwarmsError>;
 
     /**
      * Leave a swarm
@@ -80,7 +78,7 @@ export interface Swarms {
      * @param force - Force leave swarm, even if this is the last manager or
      *   that it will break the cluster.
      */
-    readonly leave: (options: SwarmLeaveOptions) => Effect.Effect<never, SwarmsError, void>;
+    readonly leave: (options: SwarmLeaveOptions) => Effect.Effect<void, SwarmsError>;
 
     /**
      * Update a swarm
@@ -92,116 +90,121 @@ export interface Swarms {
      * @param rotateManagerToken - Rotate the manager join token.
      * @param rotateManagerUnlockKey - Rotate the manager unlock key.
      */
-    readonly update: (options: SwarmUpdateOptions) => Effect.Effect<never, SwarmsError, void>;
+    readonly update: (options: SwarmUpdateOptions) => Effect.Effect<void, SwarmsError>;
 
     /** Get the unlock key */
-    readonly unlockkey: () => Effect.Effect<never, SwarmsError, UnlockKeyResponse>;
+    readonly unlockkey: () => Effect.Effect<UnlockKeyResponse, SwarmsError>;
 
     /**
      * Unlock a locked manager
      *
      * @param body -
      */
-    readonly unlock: (
-        options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>
-    ) => Effect.Effect<never, SwarmsError, void>;
+    readonly unlock: (options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>) => Effect.Effect<void, SwarmsError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Swarms> = Effect.gen(function* (
-    _: Effect.Adapter
-) {
-    const agent = yield* _(MobyConnectionAgent);
-    const defaultClient = yield* _(NodeHttp.client.Client);
+const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
-    const client = defaultClient.pipe(
-        NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/swarm`)),
-        NodeHttp.client.filterStatusOk
-    );
-
-    const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-    const SwarmClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Swarm)));
-    const StringClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.string)));
-    const UnlockKeyResponseClient = client.pipe(
-        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(UnlockKeyResponse))
-    );
-
-    const responseHandler = (method: string) => responseErrorHandler((message) => new SwarmsError({ method, message }));
-
-    const inspect_ = (): Effect.Effect<never, SwarmsError, Readonly<Swarm>> =>
-        Function.pipe(NodeHttp.request.get("/"), SwarmClient, Effect.catchAll(responseHandler("inspect")));
-
-    const init_ = (
-        options: Schema.Schema.To<typeof SwarmInitRequest.struct>
-    ): Effect.Effect<never, SwarmsError, Readonly<string>> =>
-        Function.pipe(
-            NodeHttp.request.post("/init"),
-            NodeHttp.request.schemaBody(SwarmInitRequest)(new SwarmInitRequest(options)),
-            Effect.flatMap(StringClient),
-            Effect.catchAll(responseHandler("init"))
+        const client = defaultClient.pipe(
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/swarm`)),
+            HttpClient.client.filterStatusOk
         );
 
-    const join_ = (
-        options: Schema.Schema.To<typeof SwarmInitRequest.struct>
-    ): Effect.Effect<never, SwarmsError, void> =>
-        Function.pipe(
-            NodeHttp.request.post("/join"),
-            NodeHttp.request.schemaBody(SwarmJoinRequest)(new SwarmJoinRequest(options)),
-            Effect.flatMap(voidClient),
-            Effect.catchAll(responseHandler("join"))
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const SwarmClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Swarm)));
+        const StringClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.string))
+        );
+        const UnlockKeyResponseClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(UnlockKeyResponse))
         );
 
-    const leave_ = (options: SwarmLeaveOptions): Effect.Effect<never, SwarmsError, void> =>
-        Function.pipe(
-            NodeHttp.request.post("/leave"),
-            addQueryParameter("force", options.force),
-            voidClient,
-            Effect.catchAll(responseHandler("leave"))
-        );
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new SwarmsError({ method, message }));
 
-    const update_ = (options: SwarmUpdateOptions): Effect.Effect<never, SwarmsError, void> =>
-        Function.pipe(
-            NodeHttp.request.post("/update"),
-            addQueryParameter("version", options.version),
-            addQueryParameter("rotateWorkerToken", options.rotateWorkerToken),
-            addQueryParameter("rotateManagerToken", options.rotateManagerToken),
-            addQueryParameter("rotateManagerUnlockKey", options.rotateManagerUnlockKey),
-            NodeHttp.request.schemaBody(SwarmSpec)(options.body ?? new SwarmSpec({})),
-            Effect.flatMap(voidClient),
-            Effect.catchAll(responseHandler("update"))
-        );
+        const inspect_ = (): Effect.Effect<Readonly<Swarm>, SwarmsError> =>
+            Function.pipe(HttpClient.request.get("/"), SwarmClient, Effect.catchAll(responseHandler("inspect")));
 
-    const unlockkey_ = (): Effect.Effect<never, SwarmsError, UnlockKeyResponse> =>
-        Function.pipe(
-            NodeHttp.request.get("/unlockkey"),
-            UnlockKeyResponseClient,
-            Effect.catchAll(responseHandler("unlockkey"))
-        );
+        const init_ = (
+            options: Schema.Schema.To<typeof SwarmInitRequest.struct>
+        ): Effect.Effect<Readonly<string>, SwarmsError> =>
+            Function.pipe(
+                HttpClient.request.post("/init"),
+                HttpClient.request.schemaBody(SwarmInitRequest)(new SwarmInitRequest(options)),
+                Effect.flatMap(StringClient),
+                Effect.catchAll(responseHandler("init")),
+                Effect.scoped
+            );
 
-    const unlock_ = (
-        options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>
-    ): Effect.Effect<never, SwarmsError, void> =>
-        Function.pipe(
-            NodeHttp.request.post("/unlock"),
-            NodeHttp.request.schemaBody(SwarmUnlockRequest)(new SwarmUnlockRequest(options)),
-            Effect.flatMap(voidClient),
-            Effect.catchAll(responseHandler("unlock"))
-        );
+        const join_ = (options: Schema.Schema.To<typeof SwarmInitRequest.struct>): Effect.Effect<void, SwarmsError> =>
+            Function.pipe(
+                HttpClient.request.post("/join"),
+                HttpClient.request.schemaBody(SwarmJoinRequest)(new SwarmJoinRequest(options)),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("join")),
+                Effect.scoped
+            );
 
-    return {
-        inspect: inspect_,
-        init: init_,
-        join: join_,
-        leave: leave_,
-        update: update_,
-        unlockkey: unlockkey_,
-        unlock: unlock_,
-    };
-});
+        const leave_ = (options: SwarmLeaveOptions): Effect.Effect<void, SwarmsError> =>
+            Function.pipe(
+                HttpClient.request.post("/leave"),
+                addQueryParameter("force", options.force),
+                voidClient,
+                Effect.catchAll(responseHandler("leave")),
+                Effect.scoped
+            );
 
-export const Swarms = Context.Tag<Swarms>("the-moby-effects");
+        const update_ = (options: SwarmUpdateOptions): Effect.Effect<void, SwarmsError> =>
+            Function.pipe(
+                HttpClient.request.post("/update"),
+                addQueryParameter("version", options.version),
+                addQueryParameter("rotateWorkerToken", options.rotateWorkerToken),
+                addQueryParameter("rotateManagerToken", options.rotateManagerToken),
+                addQueryParameter("rotateManagerUnlockKey", options.rotateManagerUnlockKey),
+                HttpClient.request.schemaBody(SwarmSpec)(options.body ?? new SwarmSpec({})),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("update")),
+                Effect.scoped
+            );
+
+        const unlockkey_ = (): Effect.Effect<UnlockKeyResponse, SwarmsError> =>
+            Function.pipe(
+                HttpClient.request.get("/unlockkey"),
+                UnlockKeyResponseClient,
+                Effect.catchAll(responseHandler("unlockkey")),
+                Effect.scoped
+            );
+
+        const unlock_ = (
+            options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>
+        ): Effect.Effect<void, SwarmsError> =>
+            Function.pipe(
+                HttpClient.request.post("/unlock"),
+                HttpClient.request.schemaBody(SwarmUnlockRequest)(new SwarmUnlockRequest(options)),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("unlock")),
+                Effect.scoped
+            );
+
+        return {
+            inspect: inspect_,
+            init: init_,
+            join: join_,
+            leave: leave_,
+            update: update_,
+            unlockkey: unlockkey_,
+            unlock: unlock_,
+        };
+    }
+);
+
+export const Swarms = Context.GenericTag<Swarms>("the-moby-effects");
 export const layer = Layer.effect(Swarms, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

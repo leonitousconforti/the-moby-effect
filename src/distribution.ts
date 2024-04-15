@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
@@ -34,21 +34,21 @@ export interface Distributions {
      */
     readonly inspect: (
         options: DistributionInspectOptions
-    ) => Effect.Effect<never, DistributionsError, Readonly<DistributionInspect>>;
+    ) => Effect.Effect<Readonly<DistributionInspect>, DistributionsError, never>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Distributions> = Effect.gen(
+const make: Effect.Effect<Distributions, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/distribution`)),
-            NodeHttp.client.filterStatusOk
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/distribution`)),
+            HttpClient.client.filterStatusOk
         );
 
         const DistributionInspectResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(DistributionInspect))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(DistributionInspect))
         );
 
         const responseHandler = (method: string) =>
@@ -56,21 +56,22 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const inspect_ = (
             options: DistributionInspectOptions
-        ): Effect.Effect<never, DistributionsError, Readonly<DistributionInspect>> =>
+        ): Effect.Effect<Readonly<DistributionInspect>, DistributionsError, never> =>
             Function.pipe(
-                NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
                 DistributionInspectResponseClient,
-                Effect.catchAll(responseHandler("inspect"))
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
             );
 
         return { inspect: inspect_ };
     }
 );
 
-export const Distributions = Context.Tag<Distributions>("the-moby-effect/Distributions");
+export const Distributions = Context.GenericTag<Distributions>("the-moby-effect/Distributions");
 export const layer = Layer.effect(Distributions, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

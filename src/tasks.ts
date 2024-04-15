@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -90,14 +90,14 @@ export interface Tasks {
      *   - `node=<node id or name>`
      *   - `service=<service name>`
      */
-    readonly list: (options?: TaskListOptions | undefined) => Effect.Effect<never, TasksError, Readonly<Array<Task>>>;
+    readonly list: (options?: TaskListOptions | undefined) => Effect.Effect<Readonly<Array<Task>>, TasksError>;
 
     /**
      * Inspect a task
      *
      * @param id - ID of the task
      */
-    readonly inspect: (options: TaskInspectOptions) => Effect.Effect<never, TasksError, Readonly<Task>>;
+    readonly inspect: (options: TaskInspectOptions) => Effect.Effect<Readonly<Task>, TasksError>;
 
     /**
      * Get task logs
@@ -112,69 +112,71 @@ export interface Tasks {
      * @param tail - Only return this number of log lines from the end of the
      *   logs. Specify as an integer or `all` to output all log lines.
      */
-    readonly logs: (
-        options: TaskLogsOptions
-    ) => Effect.Effect<never, TasksError, Readonly<Stream.Stream<never, TasksError, string>>>;
+    readonly logs: (options: TaskLogsOptions) => Effect.Effect<Readonly<Stream.Stream<string, TasksError>>, TasksError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Tasks> = Effect.gen(function* (
-    _: Effect.Adapter
-) {
-    const agent = yield* _(MobyConnectionAgent);
-    const defaultClient = yield* _(NodeHttp.client.Client);
+const make: Effect.Effect<Tasks, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+    function* (_) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
-    const client = defaultClient.pipe(
-        NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/tasks`)),
-        NodeHttp.client.filterStatusOk
-    );
-
-    const TasksClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Task))));
-    const TaskClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Task)));
-
-    const streamHandler = (method: string) => streamErrorHandler((message) => new TasksError({ method, message }));
-    const responseHandler = (method: string) => responseErrorHandler((message) => new TasksError({ method, message }));
-
-    const list_ = (options?: TaskListOptions | undefined): Effect.Effect<never, TasksError, Readonly<Array<Task>>> =>
-        Function.pipe(
-            NodeHttp.request.get(""),
-            addQueryParameter("filters", JSON.stringify(options?.filters)),
-            TasksClient,
-            Effect.catchAll(responseHandler("list"))
+        const client = defaultClient.pipe(
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/tasks`)),
+            HttpClient.client.filterStatusOk
         );
 
-    const inspect_ = (options: TaskInspectOptions): Effect.Effect<never, TasksError, Readonly<Task>> =>
-        Function.pipe(
-            NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
-            TaskClient,
-            Effect.catchAll(responseHandler("inspect"))
+        const TasksClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(Task)))
         );
+        const TaskClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Task)));
 
-    const logs_ = (
-        options: TaskLogsOptions
-    ): Effect.Effect<never, TasksError, Stream.Stream<never, TasksError, string>> =>
-        Function.pipe(
-            NodeHttp.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
-            addQueryParameter("details", options.details),
-            addQueryParameter("follow", options.follow),
-            addQueryParameter("stdout", options.stdout),
-            addQueryParameter("stderr", options.stderr),
-            addQueryParameter("since", options.since),
-            addQueryParameter("timestamps", options.timestamps),
-            addQueryParameter("tail", options.tail),
-            client,
-            Effect.map((response) => response.stream),
-            Effect.map(Stream.decodeText("utf8")),
-            Effect.map(Stream.catchAll(streamHandler("logs"))),
-            Effect.catchAll(responseHandler("logs"))
-        );
+        const streamHandler = (method: string) => streamErrorHandler((message) => new TasksError({ method, message }));
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new TasksError({ method, message }));
 
-    return { list: list_, inspect: inspect_, logs: logs_ };
-});
+        const list_ = (options?: TaskListOptions | undefined): Effect.Effect<Readonly<Array<Task>>, TasksError> =>
+            Function.pipe(
+                HttpClient.request.get(""),
+                addQueryParameter("filters", JSON.stringify(options?.filters)),
+                TasksClient,
+                Effect.catchAll(responseHandler("list")),
+                Effect.scoped
+            );
 
-export const Tasks = Context.Tag<Tasks>("the-moby-effect/Tasks");
+        const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<Task>, TasksError> =>
+            Function.pipe(
+                HttpClient.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                TaskClient,
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
+            );
+
+        const logs_ = (options: TaskLogsOptions): Effect.Effect<Stream.Stream<string, TasksError>, TasksError> =>
+            Function.pipe(
+                HttpClient.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("details", options.details),
+                addQueryParameter("follow", options.follow),
+                addQueryParameter("stdout", options.stdout),
+                addQueryParameter("stderr", options.stderr),
+                addQueryParameter("since", options.since),
+                addQueryParameter("timestamps", options.timestamps),
+                addQueryParameter("tail", options.tail),
+                client,
+                Effect.map((response) => response.stream),
+                Effect.map(Stream.decodeText("utf8")),
+                Effect.map(Stream.catchAll(streamHandler("logs"))),
+                Effect.catchAll(responseHandler("logs")),
+                Effect.scoped
+            );
+
+        return { list: list_, inspect: inspect_, logs: logs_ };
+    }
+);
+
+export const Tasks = Context.GenericTag<Tasks>("the-moby-effect/Tasks");
 export const layer = Layer.effect(Tasks, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

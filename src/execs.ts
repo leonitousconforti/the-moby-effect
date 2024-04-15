@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -25,13 +25,13 @@ export class ExecsError extends Data.TaggedError("ExecsError")<{
 
 export interface ContainerExecOptions {
     /** Exec configuration */
-    readonly execConfig: Schema.Schema.To<typeof ExecConfig.struct>;
+    readonly execConfig: Schema.Schema.Type<typeof ExecConfig>;
     /** ID or name of container */
     readonly id: string;
 }
 
 export interface ExecStartOptions {
-    readonly execStartConfig: Schema.Schema.To<typeof ExecStartConfig.struct>;
+    readonly execStartConfig: Schema.Schema.Type<typeof ExecStartConfig>;
     /** Exec instance ID */
     readonly id: string;
 }
@@ -57,7 +57,7 @@ export interface Execs {
      * @param execConfig - Exec configuration
      * @param id - ID or name of container
      */
-    readonly container: (options: ContainerExecOptions) => Effect.Effect<never, ExecsError, Readonly<IdResponse>>;
+    readonly container: (options: ContainerExecOptions) => Effect.Effect<Readonly<IdResponse>, ExecsError>;
 
     /**
      * Start an exec instance
@@ -67,9 +67,9 @@ export interface Execs {
      */
     readonly start: <T extends boolean | undefined>(
         options: ExecStartOptions & {
-            execStartConfig: Omit<Schema.Schema.To<typeof ExecStartConfig.struct>, "Detach"> & { Detach?: T };
+            execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T };
         }
-    ) => Effect.Effect<never, ExecsError, T extends true ? void : MultiplexedStreamSocket | RawStreamSocket>;
+    ) => Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError>;
 
     /**
      * Resize an exec instance
@@ -78,90 +78,98 @@ export interface Execs {
      * @param h - Height of the TTY session in characters
      * @param w - Width of the TTY session in characters
      */
-    readonly resize: (options: ExecResizeOptions) => Effect.Effect<never, ExecsError, void>;
+    readonly resize: (options: ExecResizeOptions) => Effect.Effect<void, ExecsError>;
 
     /**
      * Inspect an exec instance
      *
      * @param id - Exec instance ID
      */
-    readonly inspect: (options: ExecInspectOptions) => Effect.Effect<never, ExecsError, ExecInspectResponse>;
+    readonly inspect: (options: ExecInspectOptions) => Effect.Effect<ExecInspectResponse, ExecsError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Execs> = Effect.gen(function* (
-    _: Effect.Adapter
-) {
-    const agent = yield* _(MobyConnectionAgent);
-    const defaultClient = yield* _(NodeHttp.client.Client);
+const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
-    const client = defaultClient.pipe(
-        NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(agent.nodeRequestUrl)),
-        NodeHttp.client.filterStatusOk
-    );
-
-    const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-    const IdResponseClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(IdResponse)));
-    const ExecInspectResponseClient = client.pipe(
-        NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(ExecInspectResponse))
-    );
-
-    const responseHandler = (method: string) => responseErrorHandler((message) => new ExecsError({ method, message }));
-
-    const container_ = (options: ContainerExecOptions): Effect.Effect<never, ExecsError, Readonly<IdResponse>> =>
-        Function.pipe(
-            NodeHttp.request.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
-            NodeHttp.request.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
-            Effect.flatMap(IdResponseClient),
-            Effect.catchAll(responseHandler("container"))
+        const client = defaultClient.pipe(
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(agent.nodeRequestUrl)),
+            HttpClient.client.filterStatusOk
         );
 
-    const start_ = <T extends boolean | undefined>(
-        options: ExecStartOptions & {
-            execStartConfig: Omit<Schema.Schema.To<typeof ExecStartConfig.struct>, "Detach"> & { Detach?: T };
-        }
-    ): Effect.Effect<never, ExecsError, T extends true ? void : MultiplexedStreamSocket | RawStreamSocket> => {
-        type U = Effect.Effect<never, ExecsError, T extends true ? void : MultiplexedStreamSocket | RawStreamSocket>;
-
-        const response = Function.pipe(
-            NodeHttp.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
-            NodeHttp.request.schemaBody(ExecStartConfig)(Schema.decodeSync(ExecStartConfig)(options.execStartConfig)),
-            Effect.flatMap(client),
-            Effect.catchAll(responseHandler("start"))
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const IdResponseClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(IdResponse))
+        );
+        const ExecInspectResponseClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ExecInspectResponse))
         );
 
-        const detachedResponse: U = Effect.flatMap(response, () => Effect.unit) as U;
-        const streamingResponse: U = Function.pipe(
-            response,
-            Effect.flatMap(responseToStreamingSocketOrFail),
-            Effect.catchTag("SocketError", () => new ExecsError({ method: "start", message: "socket error" }))
-        ) as U;
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new ExecsError({ method, message }));
 
-        return options.execStartConfig.Detach ? detachedResponse : streamingResponse;
-    };
+        const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IdResponse>, ExecsError> =>
+            Function.pipe(
+                HttpClient.request.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
+                Effect.flatMap(IdResponseClient),
+                Effect.catchAll(responseHandler("container")),
+                Effect.scoped
+            );
 
-    const resize_ = (options: ExecResizeOptions): Effect.Effect<never, ExecsError, void> =>
-        Function.pipe(
-            NodeHttp.request.post("/exec/{id}/resize".replace("{id}", encodeURIComponent(options.id))),
-            addQueryParameter("h", options.h),
-            addQueryParameter("w", options.w),
-            voidClient,
-            Effect.catchAll(responseHandler("resize"))
-        );
+        const start_ = <T extends boolean | undefined>(
+            options: ExecStartOptions & {
+                execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T };
+            }
+        ): Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError> => {
+            type U = Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError>;
 
-    const inspect_ = (options: ExecInspectOptions): Effect.Effect<never, ExecsError, ExecInspectResponse> =>
-        Function.pipe(
-            NodeHttp.request.get("/exec/{id}/json".replace("{id}", encodeURIComponent(options.id))),
-            ExecInspectResponseClient,
-            Effect.catchAll(responseHandler("inspect"))
-        );
+            const response = Function.pipe(
+                HttpClient.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.schemaBody(ExecStartConfig)(
+                    Schema.decodeSync(ExecStartConfig)(options.execStartConfig)
+                ),
+                Effect.flatMap(client),
+                Effect.catchAll(responseHandler("start"))
+            );
 
-    return { container: container_, start: start_, resize: resize_, inspect: inspect_ };
-});
+            const detachedResponse: U = Effect.flatMap(response, () => Effect.unit) as U;
+            const streamingResponse: U = Function.pipe(
+                response,
+                Effect.flatMap(responseToStreamingSocketOrFail),
+                Effect.catchTag("SocketError", () => new ExecsError({ method: "start", message: "socket error" }))
+            ) as U;
 
-export const Execs = Context.Tag<Execs>("the-moby-effect/Execs");
+            return options.execStartConfig.Detach ? detachedResponse : streamingResponse;
+        };
+
+        const resize_ = (options: ExecResizeOptions): Effect.Effect<void, ExecsError> =>
+            Function.pipe(
+                HttpClient.request.post("/exec/{id}/resize".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("h", options.h),
+                addQueryParameter("w", options.w),
+                voidClient,
+                Effect.catchAll(responseHandler("resize")),
+                Effect.scoped
+            );
+
+        const inspect_ = (options: ExecInspectOptions): Effect.Effect<ExecInspectResponse, ExecsError> =>
+            Function.pipe(
+                HttpClient.request.get("/exec/{id}/json".replace("{id}", encodeURIComponent(options.id))),
+                ExecInspectResponseClient,
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
+            );
+
+        return { container: container_, start: start_, resize: resize_, inspect: inspect_ };
+    }
+);
+
+export const Execs = Context.GenericTag<Execs>("the-moby-effect/Execs");
 export const layer = Layer.effect(Execs, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

@@ -1,4 +1,3 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -119,14 +118,14 @@ export interface Networks {
      */
     readonly list: (
         options?: NetworkListOptions | undefined
-    ) => Effect.Effect<never, NetworksError, Readonly<Array<Network>>>;
+    ) => Effect.Effect<Readonly<Array<Network>>, NetworksError>;
 
     /**
      * Remove a network
      *
      * @param id - Network ID or name
      */
-    readonly delete: (options: NetworkDeleteOptions) => Effect.Effect<never, NetworksError, void>;
+    readonly delete: (options: NetworkDeleteOptions) => Effect.Effect<void, NetworksError>;
 
     /**
      * Inspect a network
@@ -135,14 +134,14 @@ export interface Networks {
      * @param verbose - Detailed inspect output for troubleshooting
      * @param scope - Filter the network by scope (swarm, global, or local)
      */
-    readonly inspect: (options: NetworkInspectOptions) => Effect.Effect<never, NetworksError, Readonly<Network>>;
+    readonly inspect: (options: NetworkInspectOptions) => Effect.Effect<Readonly<Network>, NetworksError>;
 
     /**
      * Create a network
      *
      * @param networkConfig - Network configuration
      */
-    readonly create: (options: NetworkCreateRequest) => Effect.Effect<never, NetworksError, NetworkCreateResponse>;
+    readonly create: (options: NetworkCreateRequest) => Effect.Effect<NetworkCreateResponse, NetworksError>;
 
     /**
      * Connect a container to a network
@@ -150,7 +149,7 @@ export interface Networks {
      * @param id - Network ID or name
      * @param container -
      */
-    readonly connect: (options: NetworkConnectOptions) => Effect.Effect<never, NetworksError, void>;
+    readonly connect: (options: NetworkConnectOptions) => Effect.Effect<void, NetworksError>;
 
     /**
      * Disconnect a container from a network
@@ -158,7 +157,7 @@ export interface Networks {
      * @param id - Network ID or name
      * @param container -
      */
-    readonly disconnect: (options: NetworkDisconnectOptions) => Effect.Effect<never, NetworksError, void>;
+    readonly disconnect: (options: NetworkDisconnectOptions) => Effect.Effect<void, NetworksError>;
 
     /**
      * Delete unused networks
@@ -176,10 +175,10 @@ export interface Networks {
      *       `label!=<key>=<value>`) Prune networks with (or without, in case
      *       `label!=...` is used) the specified labels.
      */
-    readonly prune: (options: NetworkPruneOptions) => Effect.Effect<never, NetworksError, NetworkPruneResponse>;
+    readonly prune: (options: NetworkPruneOptions) => Effect.Effect<NetworkPruneResponse, NetworksError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Networks> = Effect.gen(
+const make: Effect.Effect<Networks, never, IMobyConnectionAgent | NodeHttp.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(NodeHttp.client.Client);
@@ -206,7 +205,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const list_ = (
             options?: NetworkListOptions | undefined
-        ): Effect.Effect<never, NetworksError, Readonly<Array<Network>>> =>
+        ): Effect.Effect<Readonly<Array<Network>>, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.get(""),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
@@ -214,14 +213,14 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("list"))
             );
 
-        const delete_ = (options: NetworkDeleteOptions): Effect.Effect<never, NetworksError, void> =>
+        const delete_ = (options: NetworkDeleteOptions): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
                 Effect.catchAll(responseHandler("delete"))
             );
 
-        const inspect_ = (options: NetworkInspectOptions): Effect.Effect<never, NetworksError, Readonly<Network>> =>
+        const inspect_ = (options: NetworkInspectOptions): Effect.Effect<Readonly<Network>, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("verbose", options.verbose),
@@ -230,7 +229,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("inspect"))
             );
 
-        const create_ = (options: NetworkCreateRequest): Effect.Effect<never, NetworksError, NetworkCreateResponse> =>
+        const create_ = (options: NetworkCreateRequest): Effect.Effect<NetworkCreateResponse, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.post("/create"),
                 NodeHttp.request.schemaBody(NetworkCreateRequest)(options),
@@ -238,7 +237,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("create"))
             );
 
-        const connect_ = (options: NetworkConnectOptions): Effect.Effect<never, NetworksError, void> =>
+        const connect_ = (options: NetworkConnectOptions): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.post("/{id}/connect".replace("{id}", encodeURIComponent(options.id))),
                 NodeHttp.request.schemaBody(NetworkConnectRequest)(options.container),
@@ -246,7 +245,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("connect"))
             );
 
-        const disconnect_ = (options: NetworkDisconnectOptions): Effect.Effect<never, NetworksError, void> =>
+        const disconnect_ = (options: NetworkDisconnectOptions): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.post("/{id}/disconnect".replace("{id}", encodeURIComponent(options.id))),
                 NodeHttp.request.schemaBody(NetworkDisconnectRequest)(
@@ -256,7 +255,7 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.catchAll(responseHandler("disconnect"))
             );
 
-        const prune_ = (options: NetworkPruneOptions): Effect.Effect<never, NetworksError, NetworkPruneResponse> =>
+        const prune_ = (options: NetworkPruneOptions): Effect.Effect<NetworkPruneResponse, NetworksError> =>
             Function.pipe(
                 NodeHttp.request.post("/prune"),
                 addQueryParameter("filters", options.filters),
@@ -276,10 +275,10 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     }
 );
 
-export const Networks = Context.Tag<Networks>("the-moby-effect/Networks");
+export const Networks = Context.GenericTag<Networks>("the-moby-effect/Networks");
 export const layer = Layer.effect(Networks, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

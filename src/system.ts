@@ -1,4 +1,4 @@
-import * as NodeHttp from "@effect/platform-node/HttpClient";
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -88,19 +88,19 @@ export interface Systems {
      */
     readonly auth: (
         options: Schema.Schema.From<typeof AuthConfig.struct>
-    ) => Effect.Effect<never, SystemsError, SystemAuthResponse>;
+    ) => Effect.Effect<SystemAuthResponse, SystemsError>;
 
     /** Get system information */
-    readonly info: () => Effect.Effect<never, SystemsError, Readonly<SystemInfo>>;
+    readonly info: () => Effect.Effect<Readonly<SystemInfo>, SystemsError>;
 
     /** Get version */
-    readonly version: () => Effect.Effect<never, SystemsError, Readonly<SystemVersion>>;
+    readonly version: () => Effect.Effect<Readonly<SystemVersion>, SystemsError>;
 
     /** Ping */
-    readonly ping: () => Effect.Effect<never, SystemsError, Readonly<string>>;
+    readonly ping: () => Effect.Effect<Readonly<string>, SystemsError>;
 
     /** Ping */
-    readonly pingHead: () => Effect.Effect<never, SystemsError, void>;
+    readonly pingHead: () => Effect.Effect<void, SystemsError>;
 
     /**
      * Monitor events
@@ -132,7 +132,7 @@ export interface Systems {
      */
     readonly events: (
         options?: SystemEventsOptions | undefined
-    ) => Effect.Effect<never, SystemsError, Stream.Stream<never, SystemsError, EventMessage>>;
+    ) => Effect.Effect<Stream.Stream<EventMessage, SystemsError>, SystemsError>;
 
     /**
      * Get data usage information
@@ -141,29 +141,31 @@ export interface Systems {
      */
     readonly dataUsage: (
         options?: SystemDataUsageOptions | undefined
-    ) => Effect.Effect<never, SystemsError, SystemDataUsageResponse>;
+    ) => Effect.Effect<SystemDataUsageResponse, SystemsError>;
 }
 
-const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default, never, Systems> = Effect.gen(
+const make: Effect.Effect<Systems, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(agent.nodeRequestUrl)),
-            NodeHttp.client.filterStatusOk
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(agent.nodeRequestUrl)),
+            HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-        const SystemInfoClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(SystemInfo)));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const SystemInfoClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(SystemInfo))
+        );
         const SystemAuthResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(SystemAuthResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(SystemAuthResponse))
         );
         const SystemVersionClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(SystemVersion))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(SystemVersion))
         );
         const SystemDataUsageResponseClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(SystemDataUsageResponse))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(SystemDataUsageResponse))
         );
 
         const responseHandler = (method: string) =>
@@ -173,40 +175,53 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
 
         const auth_ = (
             options: Schema.Schema.From<typeof AuthConfig.struct>
-        ): Effect.Effect<never, SystemsError, SystemAuthResponse> =>
+        ): Effect.Effect<SystemAuthResponse, SystemsError> =>
             Function.pipe(
-                NodeHttp.request.post("/auth"),
-                NodeHttp.request.schemaBody(AuthConfig)(new AuthConfig(options)),
+                HttpClient.request.post("/auth"),
+                HttpClient.request.schemaBody(AuthConfig)(new AuthConfig(options)),
                 Effect.flatMap(SystemAuthResponseClient),
-                Effect.catchAll(responseHandler("auth"))
+                Effect.catchAll(responseHandler("auth")),
+                Effect.scoped
             );
 
-        const info_ = (): Effect.Effect<never, SystemsError, Readonly<SystemInfo>> =>
-            Function.pipe(NodeHttp.request.get("/info"), SystemInfoClient, Effect.catchAll(responseHandler("info")));
-
-        const version_ = (): Effect.Effect<never, SystemsError, Readonly<SystemVersion>> =>
+        const info_ = (): Effect.Effect<Readonly<SystemInfo>, SystemsError> =>
             Function.pipe(
-                NodeHttp.request.get("/version"),
+                HttpClient.request.get("/info"),
+                SystemInfoClient,
+                Effect.catchAll(responseHandler("info")),
+                Effect.scoped
+            );
+
+        const version_ = (): Effect.Effect<Readonly<SystemVersion>, SystemsError> =>
+            Function.pipe(
+                HttpClient.request.get("/version"),
                 SystemVersionClient,
-                Effect.catchAll(responseHandler("version"))
+                Effect.catchAll(responseHandler("version")),
+                Effect.scoped
             );
 
-        const ping_ = (): Effect.Effect<never, SystemsError, Readonly<string>> =>
+        const ping_ = (): Effect.Effect<Readonly<string>, SystemsError> =>
             Function.pipe(
-                NodeHttp.request.get("/_ping"),
+                HttpClient.request.get("/_ping"),
                 client,
                 Effect.flatMap((response) => response.text),
-                Effect.catchAll(responseHandler("ping"))
+                Effect.catchAll(responseHandler("ping")),
+                Effect.scoped
             );
 
-        const pingHead_ = (): Effect.Effect<never, SystemsError, void> =>
-            Function.pipe(NodeHttp.request.head("/_ping"), voidClient, Effect.catchAll(responseHandler("pingHead")));
+        const pingHead_ = (): Effect.Effect<void, SystemsError> =>
+            Function.pipe(
+                HttpClient.request.head("/_ping"),
+                voidClient,
+                Effect.catchAll(responseHandler("pingHead")),
+                Effect.scoped
+            );
 
         const events_ = (
             options?: SystemEventsOptions | undefined
-        ): Effect.Effect<never, SystemsError, Stream.Stream<never, SystemsError, EventMessage>> =>
+        ): Effect.Effect<Stream.Stream<EventMessage, SystemsError>, SystemsError> =>
             Function.pipe(
-                NodeHttp.request.get("/events"),
+                HttpClient.request.get("/events"),
                 addQueryParameter("since", options?.since),
                 addQueryParameter("until", options?.until),
                 addQueryParameter("filters", JSON.stringify(options?.filters)),
@@ -217,17 +232,19 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
                 Effect.map(Stream.flattenIterables),
                 Effect.map(Stream.map(Schema.decode(Schema.parseJson(EventMessage)))),
                 Effect.map(Stream.catchAll(streamHandler("events"))),
-                Effect.catchAll(responseHandler("events"))
+                Effect.catchAll(responseHandler("events")),
+                Effect.scoped
             );
 
         const dataUsage_ = (
             options?: SystemDataUsageOptions | undefined
-        ): Effect.Effect<never, SystemsError, SystemDataUsageResponse> =>
+        ): Effect.Effect<SystemDataUsageResponse, SystemsError> =>
             Function.pipe(
-                NodeHttp.request.get("/system/df"),
+                HttpClient.request.get("/system/df"),
                 addQueryParameter("type", options?.type),
                 SystemDataUsageResponseClient,
-                Effect.catchAll(responseHandler("dataUsage"))
+                Effect.catchAll(responseHandler("dataUsage")),
+                Effect.scoped
             );
 
         return {
@@ -242,10 +259,10 @@ const make: Effect.Effect<IMobyConnectionAgent | NodeHttp.client.Client.Default,
     }
 );
 
-export const Systems = Context.Tag<Systems>("the-moby-effect/Systems");
+export const Systems = Context.GenericTag<Systems>("the-moby-effect/Systems");
 export const layer = Layer.effect(Systems, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, IMobyConnectionAgent>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

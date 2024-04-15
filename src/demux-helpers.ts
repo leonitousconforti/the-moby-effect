@@ -1,7 +1,8 @@
-import * as NodeSocket from "@effect/experimental/Socket/Node";
-import * as NodeHttp from "@effect/platform-node/HttpClient";
-import * as NodeSink from "@effect/platform-node/Sink";
-import * as NodeStream from "@effect/platform-node/Stream";
+import * as NodeSink from "@effect/platform-node/NodeSink";
+import * as NodeSocket from "@effect/platform-node/NodeSocket";
+import * as NodeStream from "@effect/platform-node/NodeStream";
+import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
 import * as Brand from "effect/Brand";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
@@ -21,7 +22,7 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * multiplexed. The data exchanged over the hijacked connection is simply the
  * raw data from the process PTY and client's stdin.
  */
-export type RawStreamSocket = NodeSocket.Socket & {
+export type RawStreamSocket = Socket.Socket & {
     "content-type": "application/vnd.docker.raw-stream";
 } & Brand.Brand<"RawStreamSocket">;
 
@@ -30,7 +31,7 @@ export const RawStreamSocket = Brand.refined<RawStreamSocket>(
     () => Brand.error(`Expected a raw stream socket`)
 );
 
-export const isRawStreamSocketResponse = (response: NodeHttp.response.ClientResponse) =>
+export const isRawStreamSocketResponse = (response: HttpClient.response.ClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.raw-stream";
 
 /**
@@ -40,7 +41,7 @@ export const isRawStreamSocketResponse = (response: NodeHttp.response.ClientResp
  * and stderr. The stream consists of a series of frames, each containing a
  * header and a payload.
  */
-export type MultiplexedStreamSocket = NodeSocket.Socket & {
+export type MultiplexedStreamSocket = Socket.Socket & {
     "content-type": "application/vnd.docker.multiplexed-stream";
 } & Brand.Brand<"MultiplexedStreamSocket">;
 
@@ -49,7 +50,7 @@ export const MultiplexedStreamSocket = Brand.refined<MultiplexedStreamSocket>(
     () => Brand.error(`Expected a multiplexed stream socket`)
 );
 
-export const isMultiplexedStreamSocketResponse = (response: NodeHttp.response.ClientResponse) =>
+export const isMultiplexedStreamSocketResponse = (response: HttpClient.response.ClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.multiplexed-stream";
 
 /**
@@ -58,11 +59,11 @@ export const isMultiplexedStreamSocketResponse = (response: NodeHttp.response.Cl
  * then an error will be returned.
  */
 export const responseToStreamingSocketOrFail = (
-    response: NodeHttp.response.ClientResponse
-): Effect.Effect<never, NodeSocket.SocketError, RawStreamSocket | MultiplexedStreamSocket> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
-        const effectSocket: NodeSocket.Socket = yield* _(NodeSocket.fromNetSocket(Effect.sync(() => socket)));
+    response: HttpClient.response.ClientResponse
+): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never> =>
+    Effect.gen(function* (_) {
+        const socket = (response as unknown as IExposeSocketOnEffectClientResponse).source.socket;
+        const effectSocket: Socket.Socket = yield* _(NodeSocket.fromNetSocket(Effect.sync(() => socket)));
 
         if (isRawStreamSocketResponse(response)) {
             return RawStreamSocket({ ...effectSocket, "content-type": "application/vnd.docker.raw-stream" });
@@ -73,7 +74,7 @@ export const responseToStreamingSocketOrFail = (
             });
         } else {
             return yield* _(
-                new NodeSocket.SocketError({ reason: "Open", error: "Response is not a streaming socket" })
+                new Socket.SocketGenericError({ reason: "Open", error: "Response is not a streaming socket" })
             );
         }
     });
@@ -96,22 +97,25 @@ export enum MultiplexedStreamSocketHeaderType {
  */
 export const demuxRawSocket = Function.dual<
     <E1, E2>(
-        source: Stream.Stream<never, E1, Uint8Array>,
-        sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ) => (socket: RawStreamSocket) => Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void>,
+        source: Stream.Stream<Uint8Array, E1, never>,
+        // Sink<out R, out E, in In, out L, out Z>
+        // Sink<out A, in In = unknown, out L = never, out E = never, out R = never>
+        // sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
+        sink: Sink.Sink<never, string | Uint8Array, never, E2, never>
+    ) => (socket: RawStreamSocket) => Effect.Effect<void, E1 | E2 | Socket.SocketError, never>,
     <E1, E2>(
         socket: RawStreamSocket,
-        source: Stream.Stream<never, E1, Uint8Array>,
-        sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ) => Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void>
+        source: Stream.Stream<Uint8Array, E1, never>,
+        sink: Sink.Sink<never, string | Uint8Array, never, E2, never>
+    ) => Effect.Effect<void, E1 | E2 | Socket.SocketError, never>
 >(
     3,
     <E1, E2>(
         socket: RawStreamSocket,
-        source: Stream.Stream<never, E1, Uint8Array>,
-        sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void> =>
-        Function.pipe(source, Stream.pipeThroughChannel(NodeSocket.toChannel(socket)), Stream.run(sink))
+        source: Stream.Stream<Uint8Array, E1, never>,
+        sink: Sink.Sink<never, string | Uint8Array, never, E2, never>
+    ): Effect.Effect<void, E1 | E2 | Socket.SocketError, never> =>
+        Function.pipe(source, Stream.pipeThroughChannel(Socket.toChannel(socket)), Stream.run(sink))
 );
 
 /**
@@ -128,13 +132,13 @@ export const demuxMultiplexedSocket = Function.dual<
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ) => (socket: MultiplexedStreamSocket) => Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void>,
+    ) => (socket: MultiplexedStreamSocket) => Effect.Effect<never, E1 | E2 | E3 | Socket.SocketError, void>,
     <E1, E2, E3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ) => Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void>
+    ) => Effect.Effect<never, E1 | E2 | E3 | Socket.SocketError, void>
 >(
     4,
     <E1, E2, E3>(
@@ -142,10 +146,10 @@ export const demuxMultiplexedSocket = Function.dual<
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void> =>
+    ): Effect.Effect<never, E1 | E2 | E3 | Socket.SocketError, void> =>
         Function.pipe(
             source,
-            Stream.pipeThroughChannel(NodeSocket.toChannel(socket)),
+            Stream.pipeThroughChannel(Socket.toChannel(socket)),
             Stream.mapConcat((data) => {
                 let offset = 0;
                 const output: Array<{ type: MultiplexedStreamSocketHeaderType; contents: Uint8Array }> = [];
@@ -195,30 +199,30 @@ export const demuxSocket: {
         socket: RawStreamSocket,
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void>;
+    ): Effect.Effect<never, E1 | E2 | Socket.SocketError, void>;
     <E1, E2>(
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>
-    ): (socket: RawStreamSocket) => Effect.Effect<never, E1 | E2 | NodeSocket.SocketError, void>;
+    ): (socket: RawStreamSocket) => Effect.Effect<never, E1 | E2 | Socket.SocketError, void>;
     <E1, E2, E3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void>;
+    ): Effect.Effect<never, E1 | E2 | E3 | Socket.SocketError, void>;
     <E1, E2, E3>(
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ): (socket: MultiplexedStreamSocket) => Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void>;
+    ): (socket: MultiplexedStreamSocket) => Effect.Effect<never, E1 | E2 | E3 | Socket.SocketError, void>;
 } = Function.dual(
-    (arguments_) => arguments_[0][NodeSocket.SocketTypeId],
+    (arguments_) => arguments_[0][Socket.SocketTypeId],
     <E1, E2, E3>(
         socket: RawStreamSocket | MultiplexedStreamSocket,
         source: Stream.Stream<never, E1, Uint8Array>,
         sink1: Sink.Sink<never, E2, string | Uint8Array, never, void>,
         sink2?: Sink.Sink<never, E3, string | Uint8Array, never, void>
-    ): Effect.Effect<never, E1 | E2 | E3 | NodeSocket.SocketError, void> => {
+    ): Effect.Effect<never, E1 | E2 | E3 | Socket.SocketError, void> => {
         switch (socket["content-type"]) {
             case "application/vnd.docker.raw-stream": {
                 return demuxRawSocket(socket, source, sink1);
@@ -238,7 +242,7 @@ export const demuxSocket: {
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
     socket: RawStreamSocket | MultiplexedStreamSocket
-): Effect.Effect<never, NodeSocket.SocketError | StdinError | StdoutError | StderrError, void> => {
+): Effect.Effect<never, Socket.SocketError | StdinError | StdoutError | StderrError, void> => {
     const stdin = NodeStream.fromReadable(
         () => process.stdin,
         () => new StdinError({ message: "stdin is not readable" })
