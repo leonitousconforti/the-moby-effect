@@ -1,92 +1,66 @@
-import * as Config from "effect/Config";
-import * as ConfigError from "effect/ConfigError";
-import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
-import * as Scope from "effect/Scope";
-import * as Secret from "effect/Secret";
+/**
+ * Our moby connection needs to be an extension of the effect platform-node
+ * httpAgent so that it will still be compatible with all the other
+ * platform-node http methods, but it would be nice if it had a few other things
+ * as well. The nodeRequestUrl is the url that the node http client will use to
+ * make requests. And while we don't need to keep track of the connection
+ * options for anything yet, it wouldn't hurt to add them.
+ */
+export * as agent-helpers from "./agent-helpers.js"
 
-import * as AgentHelpers from "./agent-helpers.js";
-import * as Configs from "./configs.js";
-import * as Containers from "./containers.js";
-import * as Distributions from "./distribution.js";
-import * as Execs from "./execs.js";
-import * as Images from "./images.js";
-import * as Networks from "./networks.js";
-import * as Nodes from "./nodes.js";
-import * as Plugins from "./plugins.js";
-import * as Secrets from "./secrets.js";
-import * as Services from "./services.js";
-import * as Sessions from "./session.js";
-import * as Swarm from "./swarm.js";
-import * as System from "./system.js";
-import * as Tasks from "./tasks.js";
-import * as Volumes from "./volumes.js";
+/**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the configs list.
+     *
+     * Available filters:
+     *
+     * - `id=<config id>`
+     * - `label=<key> or label=<key>=value`
+     * - `name=<config name>`
+     * - `names=<config name>`
+     */
+export * as configs from "./configs.js"
 
-export * from "./agent-helpers.js";
-export * as Configs from "./configs.js";
-export * as Containers from "./containers.js";
-export * as DemuxHelpers from "./demux-helpers.js";
-export * as Distributions from "./distribution.js";
-export * as DockerCommon from "./docker-helpers.js";
-export * as Execs from "./execs.js";
-export * as Images from "./images.js";
-export * as Networks from "./networks.js";
-export * as Nodes from "./nodes.js";
-export * as Plugins from "./plugins.js";
-export * as Schemas from "./schemas.js";
-export * as Secrets from "./secrets.js";
-export * as Services from "./services.js";
-export * as Sessions from "./session.js";
-export * as Swarm from "./swarm.js";
-export * as System from "./system.js";
-export * as Tasks from "./tasks.js";
-export * as Volumes from "./volumes.js";
+/**
+     * Return this number of most recently created containers, including
+     * non-running ones.
+     */
+export * as containers from "./containers.js"
 
-export type MobyApi = Layer.Layer<
-    never,
-    never,
-    | Configs.Configs
-    | Containers.Containers
-    | Distributions.Distributions
-    | Execs.Execs
-    | Images.Images
-    | Networks.Networks
-    | Nodes.Nodes
-    | Plugins.Plugins
-    | Secrets.Secrets
-    | Services.Services
-    | Sessions.Sessions
-    | Swarm.Swarms
-    | System.Systems
-    | Tasks.Tasks
-    | Volumes.Volumes
->;
+/**
+ * When the TTY setting is enabled in POST /containers/create, the stream is not
+ * multiplexed. The data exchanged over the hijacked connection is simply the
+ * raw data from the process PTY and client's stdin.
+ */
+export * as demux-helpers from "./demux-helpers.js"
 
-const layer = Layer.mergeAll(
-    Configs.layer,
-    Containers.layer,
-    Distributions.layer,
-    Execs.layer,
-    Images.layer,
-    Networks.layer,
-    Nodes.layer,
-    Plugins.layer,
-    Secrets.layer,
-    Services.layer,
-    Sessions.layer,
-    Swarm.layer,
-    System.layer,
-    Tasks.layer,
-    Volumes.layer
-);
+/**
+     * Get image information from the registry
+     *
+     * @param name - Image name or id
+     */
+export * as distribution from "./distribution.js"
 
-/** Creates a MobyApi layer from the provided connection agent */
-export const fromAgent = (agent: Effect.Effect<Scope.Scope, never, AgentHelpers.IMobyConnectionAgent>): MobyApi =>
-    layer.pipe(Layer.provide(Layer.scoped(AgentHelpers.MobyConnectionAgent, agent)));
+/**
+ * Implements the `docker pull` command.
+ *
+ * Note: it doesn't have all the flags that the images create endpoint exposes.
+ */
+export * as docker-helpers from "./docker-helpers.js"
 
-/** Creates a MobyApi layer from the provided connection options */
-export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnectionOptions): MobyApi =>
-    fromAgent(AgentHelpers.getAgent(connectionOptions));
+/**
+     * Create an exec instance
+     *
+     * @param execConfig - Exec configuration
+     * @param id - ID or name of container
+     */
+export * as execs from "./execs.js"
+
+/**
+     * Show all images. Only images from a final layer (no children) are shown
+     * by default.
+     */
+export * as images from "./images.js"
 
 /**
  * From
@@ -113,86 +87,163 @@ export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnec
  * - `ssh://me@example.com:22/var/run/docker.sock` -> SSH connection to
  *   example.com on port 22
  */
-export const fromUrl = (
-    dockerHost: string
-): Layer.Layer<
-    Layer.Layer.Context<MobyApi> | never,
-    Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
-    Layer.Layer.Success<MobyApi>
-> => {
-    const url: URL = new URL(dockerHost);
+export * as moby from "./moby.js"
 
-    if (url.protocol === "unix:") {
-        return fromConnectionOptions({ connection: "socket", socketPath: url.pathname });
-    }
+/**
+     * JSON encoded value of the filters (a `map[string][]string`) to process on
+     * the networks list.
+     *
+     * Available filters:
+     *
+     * - `dangling=<boolean>` When set to `true` (or `1`), returns all networks
+     *   that are not in use by a container. When set to `false` (or `0`), only
+     *   networks that are in use by one or more containers are returned.
+     * - `driver=<driver-name>` Matches a network's driver.
+     * - `id=<network-id>` Matches all or part of a network ID.
+     * - `label=<key>` or `label=<key>=<value>` of a network label.
+     * - `name=<network-name>` Matches all or part of a network name.
+     * - `scope=["swarm"|"global"|"local"]` Filters networks by scope (`swarm`,
+     *   `global`, or `local`).
+     * - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
+     *   keyword returns all user-defined networks.
+     */
+export * as networks from "./networks.js"
 
-    if (url.protocol === "ssh:") {
-        return fromConnectionOptions({
-            connection: "ssh",
-            host: url.hostname,
-            username: url.username,
-            password: url.password,
-            remoteSocketPath: url.pathname,
-            port: url.port ? Number.parseInt(url.port) : 22,
-        });
-    }
+/**
+     * Filters to process on the nodes list, encoded as JSON (a
+     * `map[string][]string`).
+     *
+     * Available filters:
+     *
+     * - `id=<node id>`
+     * - `label=<engine label>`
+     * - `membership=`(`accepted`|`pending`)`
+     * - `name=<node name>`
+     * - `node.label=<node label>`
+     * - `role=`(`manager`|`worker`)`
+     */
+export * as nodes from "./nodes.js"
 
-    if (url.protocol === "http:") {
-        return fromConnectionOptions({
-            connection: "http",
-            host: url.hostname ?? "127.0.0.1",
-            port: url.port ? Number.parseInt(url.port) : 2375,
-            path: url.pathname,
-        });
-    }
+/**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the plugin list.
+     *
+     * Available filters:
+     *
+     * - `capability=<capability name>`
+     * - `enable=<true>|<false>`
+     */
+export * as plugins from "./plugins.js"
 
-    if (url.protocol === "https:") {
-        return fromConnectionOptions({
-            connection: "https",
-            host: url.hostname ?? "127.0.0.1",
-            port: url.port ? Number.parseInt(url.port) : 2376,
-            path: url.pathname,
-        });
-    }
+/**
+ * Helper interface to expose the underlying socket from the effect NodeHttp
+ * response. Useful for multiplexing the response stream.
+ */
+export * as request-helpers from "./request-helpers.js"
 
-    if (url.protocol === "tcp:") {
-        const path: string = url.pathname;
-        const host: string = url.hostname ?? "127.0.0.0.1";
-        const port: number = url.port ? Number.parseInt(url.port) : 2375;
-        return fromConnectionOptions({ connection: port === 2376 ? "https" : "http", host, port, path });
-    }
+/**
+     * The mount type:
+     *
+     * - `bind` a mount of a file or directory from the host into the container.
+     * - `volume` a docker volume with the given `Name`.
+     * - `tmpfs` a `tmpfs`.
+     * - `npipe` a named pipe from the host into the container.
+     * - `cluster` a Swarm cluster volume
+     */
+export * as schemas from "./schemas.js"
 
-    // Any other protocols are not supported
-    return Layer.fail(ConfigError.InvalidData([""], `Unsupported protocol ${url.protocol}`));
-};
+/**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the secrets list.
+     *
+     * Available filters:
+     *
+     * - `id=<secret id>`
+     * - `label=<key> or label=<key>=value`
+     * - `name=<secret name>`
+     * - `names=<secret name>`
+     */
+export * as secrets from "./secrets.js"
 
-/** Creates a MobyApi layer from the DOCKER_HOST environment variable as a url */
-export const fromDockerHostEnvironmentVariable: Layer.Layer<
-    Layer.Layer.Context<MobyApi>,
-    Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
-    Layer.Layer.Success<MobyApi>
-> = Config.secret("DOCKER_HOST")
-    .pipe(Config.withDefault(Secret.fromString("unix:///var/run/docker.sock")))
-    .pipe(Config.map(Secret.value))
-    .pipe(Effect.map(fromUrl))
-    .pipe(Layer.unwrapEffect);
+/**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the services list.
+     *
+     * Available filters:
+     *
+     * - `id=<service id>`
+     * - `label=<service label>`
+     * - `mode=["replicated"|"global"]`
+     * - `name=<service name>`
+     */
+export * as services from "./services.js"
 
-/** Creates a MobyApi layer from the platform default socket location. */
-export const fromPlatformDefault = (): Layer.Layer<
-    Layer.Layer.Context<MobyApi>,
-    Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
-    Layer.Layer.Success<MobyApi>
-> => {
-    switch (process.platform) {
-        case "linux":
-        case "darwin": {
-            return fromConnectionOptions({ connection: "socket", socketPath: "/var/run/docker.sock" });
-        }
-        case "win32": {
-            return fromConnectionOptions({ connection: "socket", socketPath: "//./pipe/docker_engine" });
-        }
-        default: {
-            return Layer.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`));
-        }
-    }
-};
+/**
+     * Start a new interactive session with a server. Session allows server to
+     * call back to the client for advanced capabilities. ### Hijacking This
+     * endpoint hijacks the HTTP connection to HTTP2 transport that allows the
+     * client to expose gPRC services on that connection. For example, the
+     * client sends this request to upgrade the connection: `POST /session
+     * HTTP/1.1 Upgrade: h2c Connection: Upgrade` The Docker daemon responds
+     * with a `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
+     * UPGRADED Connection: Upgrade Upgrade: h2c`
+     */
+export * as session from "./session.js"
+
+/**
+     * Force leave swarm, even if this is the last manager or that it will break
+     * the cluster.
+     */
+export * as swarm from "./swarm.js"
+
+/**
+     * A JSON encoded value of filters (a `map[string][]string`) to process on
+     * the event list. Available filters:
+     *
+     * - `config=<string>` config name or ID
+     * - `container=<string>` container name or ID
+     * - `daemon=<string>` daemon name or ID
+     * - `event=<string>` event type
+     * - `image=<string>` image name or ID
+     * - `label=<string>` image or container label
+     * - `network=<string>` network name or ID
+     * - `node=<string>` node ID
+     * - `plugin`=<string> plugin name or ID
+     * - `scope`=<string> local or swarm
+     * - `secret=<string>` secret name or ID
+     * - `service=<string>` service name or ID
+     * - `type=<string>` object to filter by, one of `container`, `image`,
+     *   `volume`, `network`, `daemon`, `plugin`, `node`, `service`, `secret` or
+     *   `config`
+     * - `volume=<string>` volume name
+     */
+export * as system from "./system.js"
+
+/**
+     * A JSON encoded value of the filters (a `map[string][]string`) to process
+     * on the tasks list.
+     *
+     * Available filters:
+     *
+     * - `desired-state=(running | shutdown | accepted)`
+     * - `id=<task id>`
+     * - `label=key` or `label="key=value"`
+     * - `name=<task name>`
+     * - `node=<node id or name>`
+     * - `service=<service name>`
+     */
+export * as tasks from "./tasks.js"
+
+/**
+     * JSON encoded value of the filters (a `map[string][]string`) to process on
+     * the volumes list. Available filters:
+     *
+     * - `dangling=<boolean>` When set to `true` (or `1`), returns all volumes
+     *   that are not in use by a container. When set to `false` (or `0`), only
+     *   volumes that are in use by one or more containers are returned.
+     * - `driver=<volume-driver-name>` Matches volumes based on their driver.
+     * - `label=<key>` or `label=<key>:<value>` Matches volumes based on the
+     *   presence of a `label` alone or a `label` and a value.
+     * - `name=<volume-name>` Matches all or part of a volume name.
+     */
+export * as volumes from "./volumes.js"
