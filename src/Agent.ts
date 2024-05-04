@@ -1,7 +1,7 @@
-import http from "node:http";
-import https from "node:https";
-import net from "node:net";
-import ssh2 from "ssh2";
+import * as http from "node:http";
+import * as https from "node:https";
+import * as net from "node:net";
+import * as ssh2 from "ssh2";
 
 import * as NodeHttp from "@effect/platform-node/NodeHttpClient";
 import * as HttpClient from "@effect/platform/HttpClient";
@@ -159,11 +159,11 @@ export const getAgent = (
             (agent) => Effect.sync(() => agent.destroy())
         ),
         (agent: http.Agent | https.Agent | SSHAgent) => ({
+            connectionOptions,
             ssh: agent as SSHAgent,
             unix: agent as http.Agent,
             http: agent as http.Agent,
             https: agent as https.Agent,
-            connectionOptions: connectionOptions,
             nodeRequestUrl:
                 connectionOptions.connection === "https"
                     ? `https://0.0.0.0${connectionOptions.path ?? ""}`

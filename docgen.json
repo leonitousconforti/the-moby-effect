@@ -1,7 +1,7 @@
 {
     "$schema": "./node_modules/@effect/docgen/schema.json",
     "exclude": ["src/internal/**/*.ts"],
-    "projectHomepage": "https://github.com/leonitousconforti/the-wireguard-effect",
+    "projectHomepage": "https://github.com/leonitousconforti/the-moby-effect",
     "examplesCompilerOptions": {
         "noEmit": true,
         "strict": true,
@@ -12,8 +12,8 @@
         "lib": ["ES2022"],
         "baseUrl": "../../",
         "paths": {
-            "the-wireguard-effect": ["./src/index.js"],
-            "the-wireguard-effect/*": ["./src/*.js"]
+            "the-moby-effect": ["./src/index.js"],
+            "the-moby-effect/*": ["./src/*.js"]
         }
     }
 }

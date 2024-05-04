@@ -4,7 +4,7 @@ We welcome contributions via pull requests! Here are some guidelines to help you
 
 1. Fork the repository and clone it to your local machine.
 2. Create a new branch for your changes: `git checkout -b my-new-feature`
-3. Install dependencies: `pnpm install` (`pnpm@8.x`)
+3. Install dependencies: `pnpm install` (`pnpm@9.x`)
 4. Make your changes and add tests if applicable.
 5. Run the tests: `pnpm build` (or just let the ci run them)
 6. Commit your changes with a descriptive commit message: `git commit -m 'Add some feature'`.

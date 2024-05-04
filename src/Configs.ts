@@ -13,9 +13,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
+} from "./Agent.js";
+import { Config, ConfigSpec, IDResponse } from "./Schemas.js";
 import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
-import { Config, ConfigSpec, IDResponse } from "./schemas.js";
 
 export class ConfigsError extends Data.TaggedError("ConfigsError")<{
     method: string;
@@ -133,13 +133,13 @@ const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.clie
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const ConfigClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Config)));
         const IDResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(IDResponse))
         );
         const ConfigsClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(Config)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(Config)))
         );
 
         const responseHandler = (method: string) =>

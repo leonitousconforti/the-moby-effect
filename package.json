@@ -23,28 +23,25 @@
     "module": "./dist/esm/index.js",
     "types": "./dist/dts/index.d.ts",
     "directories": {
+        "bin": "bin",
         "doc": "docs",
         "example": "examples",
         "test": "test"
     },
     "scripts": {
-        "build": "pnpm clean && pnpm codegen && pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2 && pnpm build-submodules && docgen",
+        "build": "pnpm clean && pnpm codegen && pnpm build-esm && pnpm build-cjs && pnpm build-annotate && build-utils pack-v2 && docgen",
         "build-annotate": "babel build --plugins annotate-pure-calls --out-dir build --source-maps",
         "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
         "build-esm": "tsc -b tsconfig.build.json",
-        "build-submodules": "./submodules/build.mjs",
         "check": "tsc -b tsconfig.json",
-        "clean": "rimraf .tsbuildinfo docs build dist coverage && rimraf --glob src/internal/*-wireguard-go src/internal/*-wg-quick src/internal/*-wintun.dll src/internal/LICENSE-* src/internal/*.exe src/internal/*-bzImage",
+        "clean": "rimraf .tsbuildinfo docs build dist coverage",
         "codegen": "build-utils prepare-v2",
         "coverage": "vitest --coverage",
         "lint": "eslint .",
         "test": "vitest"
     },
-    "resolutions": {
-        "rollup": "npm:@rollup/wasm-node"
-    },
     "dependencies": {
-        "ssh2": "~1.15.0"
+        "ssh2": "^1.15.0"
     },
     "devDependencies": {
         "@babel/cli": "7.24.5",
@@ -52,8 +49,10 @@
         "@babel/plugin-transform-export-namespace-from": "7.24.1",
         "@babel/plugin-transform-modules-commonjs": "7.24.1",
         "@effect/build-utils": "0.7.6",
+        "@effect/cli": "0.36.17",
         "@effect/docgen": "0.4.3",
         "@effect/eslint-plugin": "0.1.2",
+        "@effect/experimental": "0.15.17",
         "@effect/language-service": "0.1.0",
         "@effect/platform": "0.52.2",
         "@effect/platform-node": "0.48.3",
@@ -64,13 +63,14 @@
         "@effect/vitest": "0.4.1",
         "@rollup/wasm-node": "4.17.2",
         "@types/node": "20.12.8",
+        "@types/ssh2": "1.15.0",
         "@typescript-eslint/eslint-plugin": "7.8.0",
         "@typescript-eslint/parser": "7.8.0",
         "@typescript-eslint/utils": "7.8.0",
         "@vitest/coverage-v8": "1.6.0",
         "babel-plugin-annotate-pure-calls": "0.4.0",
         "effect": "3.1.2",
-        "eslint": "9.1.1",
+        "eslint": "8.57.0",
         "eslint-config-prettier": "9.1.0",
         "eslint-import-resolver-typescript": "3.6.1",
         "eslint-plugin-codegen": "0.28.0",
@@ -79,14 +79,9 @@
         "eslint-plugin-prettier": "5.1.3",
         "eslint-plugin-sort-destructure-keys": "2.0.0",
         "fast-check": "3.18.0",
-        "list-item": "2.0.0",
-        "markdown-link": "0.1.1",
-        "mixin-deep": "2.0.1",
-        "object.pick": "1.3.0",
         "prettier": "3.2.5",
         "prettier-plugin-jsdoc": "1.3.0",
         "prettier-plugin-packagejson": "2.5.0",
-        "remarkable": "2.0.1",
         "rimraf": "5.0.5",
         "tsx": "4.9.0",
         "typescript": "5.4.5",
@@ -95,11 +90,10 @@
         "ws": "8.17.0"
     },
     "peerDependencies": {
-        "@effect/platform-node": "0.42.7",
-        "@effect/schema": "0.61.5",
-        "effect": "~2.2.0"
+        "@effect/platform-node": "0.48.3",
+        "@effect/schema": "0.66.14",
+        "effect": "3.1.2"
     },
-    "packageManager": "pnpm@8.15.4",
     "engines": {
         "node": ">=18.0.0"
     },
@@ -110,8 +104,7 @@
     },
     "pnpm": {
         "patchedDependencies": {
-            "@effect/build-utils@0.7.6": "patches/@effect__build-utils@0.7.6.patch",
-            "@effect/docgen@0.4.2": "patches/@effect__docgen@0.4.2.patch"
+            "@effect/build-utils@0.7.6": "patches/@effect__build-utils@0.7.6.patch"
         }
     }
 }

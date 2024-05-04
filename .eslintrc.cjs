@@ -1,31 +1,52 @@
-// This is a workaround for https://github.com/eslint/eslint/issues/3458
-require("@rushstack/eslint-config/patch/modern-module-resolution");
-
 module.exports = {
     root: true,
+    env: { node: true, es2022: true },
+    parser: "@typescript-eslint/parser",
+    parserOptions: { ecmaVersion: 2022, sourceType: "module" },
+    settings: {
+        "import/parsers": {
+            "@typescript-eslint/parser": [".ts", ".tsx"],
+        },
+        "import/resolver": {
+            typescript: {
+                alwaysTryTypes: true,
+            },
+        },
+    },
     extends: [
-        "@rushstack/eslint-config/profile/node",
-        "@rushstack/eslint-config/mixins/tsdoc",
-        "@rushstack/eslint-config/mixins/friendly-locals",
-        "plugin:unicorn/recommended",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@effect/recommended",
         "plugin:prettier/recommended",
     ],
-    plugins: ["unicorn", "prettier"],
-    env: { node: true, es2022: true },
-    parserOptions: { ecmaVersion: 2022, sourceType: "module" },
+    plugins: ["deprecation", "import", "sort-destructure-keys", "codegen", "prettier"],
     rules: {
         "no-console": "warn",
-        "dot-notation": "off",
-        "tsdoc/syntax": "off",
-        "@typescript-eslint/typedef": "off",
-        "unicorn/no-array-callback-reference": "off",
-        "unicorn/consistent-function-scoping": "off",
-        "unicorn/no-array-method-this-argument": "off",
-        "@typescript-eslint/explicit-function-return-type": "off",
-        "@typescript-eslint/naming-convention": [
+        "no-case-declarations": "off",
+        "codegen/codegen": "error",
+        "object-shorthand": "error",
+        "import/newline-after-import": "error",
+        "import/no-duplicates": "error",
+        "sort-destructure-keys/sort-destructure-keys": "error",
+        "@typescript-eslint/array-type": ["warn", { default: "generic", readonly: "generic" }],
+        "@typescript-eslint/consistent-type-imports": "off",
+        "@typescript-eslint/no-unused-vars": [
             "error",
-            { format: null, selector: "parameter", filter: { regex: "^_", match: false } },
+            {
+                argsIgnorePattern: "^_",
+                varsIgnorePattern: "^_",
+            },
         ],
+        "@effect/dprint": "off",
     },
-    ignorePatterns: ["dist/", ".eslintrc.cjs", "test/ci-wait-for-artifacts.js"],
+    overrides: [
+        {
+            files: ["./src/index.ts"],
+            rules: {
+                "prettier/prettier": "off",
+            },
+        },
+    ],
+    ignorePatterns: ["dist", "*.mjs", "docs", "*.md", "submodules", "build"],
 };

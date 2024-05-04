@@ -36,8 +36,8 @@
         "declarationMap": true,
         "baseUrl": ".",
         "paths": {
-            "the-wireguard-effect": ["./src/index.js"],
-            "the-wireguard-effect/*": ["./src/*.js"]
+            "the-moby-effect": ["./src/index.js"],
+            "the-moby-effect/*": ["./src/*.js"]
         },
         "types": ["node"],
         "plugins": [
