@@ -29,6 +29,7 @@ export class NodesError extends Data.TaggedError("NodesError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface NodeListOptions {
     /**
      * Filters to process on the nodes list, encoded as JSON (a
@@ -53,6 +54,7 @@ export interface NodeListOptions {
     };
 }
 
+/** @since 1.0.0 */
 export interface NodeDeleteOptions {
     /** The ID or name of the node */
     readonly id: string;
@@ -60,11 +62,13 @@ export interface NodeDeleteOptions {
     readonly force?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface NodeInspectOptions {
     /** The ID or name of the node */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface NodeUpdateOptions {
     /** The ID of the node */
     readonly id: string;
@@ -76,6 +80,7 @@ export interface NodeUpdateOptions {
     readonly version: number;
 }
 
+/** @since 1.0.0 */
 export interface Nodes {
     /**
      * List nodes

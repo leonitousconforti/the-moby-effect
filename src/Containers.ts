@@ -39,11 +39,16 @@ import {
     HostConfig,
 } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class ContainersError extends Data.TaggedError("ContainersError")<{
     method: string;
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface ContainerListOptions {
     /** Return all containers. By default, only running containers are shown. */
     readonly all?: boolean;
@@ -99,6 +104,7 @@ export interface ContainerListOptions {
     };
 }
 
+/** @since 1.0.0 */
 export interface ContainerCreateOptions {
     /**
      * Assign the specified name to the container. Must match
@@ -128,6 +134,7 @@ export interface ContainerCreateOptions {
     readonly spec: Schema.Schema.Type<typeof ContainerCreateSpec>;
 }
 
+/** @since 1.0.0 */
 export interface ContainerInspectOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -135,6 +142,7 @@ export interface ContainerInspectOptions {
     readonly size?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ContainerTopOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -142,6 +150,7 @@ export interface ContainerTopOptions {
     readonly ps_args?: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerLogsOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -164,16 +173,19 @@ export interface ContainerLogsOptions {
     readonly tail?: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerChangesOptions {
     /** ID or name of the container */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerExportOptions {
     /** ID or name of the container */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerStatsOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -189,6 +201,7 @@ export interface ContainerStatsOptions {
     readonly "one-shot"?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ContainerResizeOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -198,6 +211,7 @@ export interface ContainerResizeOptions {
     readonly w?: number;
 }
 
+/** @since 1.0.0 */
 export interface ContainerStartOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -209,6 +223,7 @@ export interface ContainerStartOptions {
     readonly detachKeys?: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerStopOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -218,6 +233,7 @@ export interface ContainerStopOptions {
     readonly t?: number;
 }
 
+/** @since 1.0.0 */
 export interface ContainerRestartOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -227,6 +243,7 @@ export interface ContainerRestartOptions {
     readonly t?: number;
 }
 
+/** @since 1.0.0 */
 export interface ContainerKillOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -234,12 +251,14 @@ export interface ContainerKillOptions {
     readonly signal?: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerUpdateOptions {
     /** ID or name of the container */
     readonly id: string;
     readonly spec: Schema.Schema.Encoded<typeof ContainerUpdateSpec>;
 }
 
+/** @since 1.0.0 */
 export interface ContainerRenameOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -247,16 +266,19 @@ export interface ContainerRenameOptions {
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerPauseOptions {
     /** ID or name of the container */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerUnpauseOptions {
     /** ID or name of the container */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerAttachOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -286,6 +308,7 @@ export interface ContainerAttachOptions {
     readonly stderr?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ContainerAttachWebsocketOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -307,6 +330,7 @@ export interface ContainerAttachWebsocketOptions {
     readonly stderr?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ContainerWaitOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -318,6 +342,7 @@ export interface ContainerWaitOptions {
     readonly condition?: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerDeleteOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -329,6 +354,7 @@ export interface ContainerDeleteOptions {
     readonly link?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ContainerArchiveOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -336,6 +362,7 @@ export interface ContainerArchiveOptions {
     readonly path: string;
 }
 
+/** @since 1.0.0 */
 export interface ContainerArchiveInfoOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -343,6 +370,7 @@ export interface ContainerArchiveInfoOptions {
     readonly path: string;
 }
 
+/** @since 1.0.0 */
 export interface PutContainerArchiveOptions {
     /** ID or name of the container */
     readonly id: string;
@@ -367,6 +395,7 @@ export interface PutContainerArchiveOptions {
     readonly stream: Stream.Stream<Uint8Array, ContainersError>;
 }
 
+/** @since 1.0.0 */
 export interface ContainerPruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
@@ -385,6 +414,10 @@ export interface ContainerPruneOptions {
     readonly filters?: string;
 }
 
+/**
+ * @since 1.0.0
+ * @category Containers
+ */
 export interface Containers {
     /**
      * List containers
@@ -714,8 +747,12 @@ export interface Containers {
     ) => Effect.Effect<ContainerPruneResponse, ContainersError, never>;
 }
 
-const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
-    function* (_: Effect.Adapter) {
+/**
+ * @since 1.0.0
+ * @category Containers
+ */
+export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default> =
+    Effect.gen(function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
 
@@ -1076,18 +1113,43 @@ const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.c
             putArchive: putArchive_,
             prune: prune_,
         };
-    }
-);
+    });
 
+/**
+ * Containers service
+ *
+ * @since 1.0.0
+ * @category Containers
+ */
 export const Containers: Context.Tag<Containers, Containers> =
     Context.GenericTag<Containers>("@the-moby-effect/Containers");
 
-export const layer = Layer.effect(Containers, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Containers layer that depends on a Moby connection agent
+ *
+ * @since 1.0.0
+ * @category Containers
+ */
+export const layer: Layer.Layer<Containers, never, IMobyConnectionAgent> = Layer.effect(Containers, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Containers
+ */
 export const fromAgent = (
     agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
 ): Layer.Layer<Containers, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
 
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Containers
+ */
 export const fromConnectionOptions = (
     connectionOptions: MobyConnectionOptions
 ): Layer.Layer<Containers, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

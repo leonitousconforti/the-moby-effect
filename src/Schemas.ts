@@ -33,7 +33,6 @@ const NonNullableNonRequiredField = NonRequiredField;
 const NullabilityOmittedRequiredField = NonNullableRequiredField;
 const NullabilityOmittedNonRequiredField = NonNullableNonRequiredField;
 
-/** An open port on a container. */
 export class Port extends Schema.Class<Port>("Port")({
     Type: NullabilityOmittedRequiredField(
         Schema.Union(Schema.Literal("tcp"), Schema.Literal("udp"), Schema.Literal("sctp"))
@@ -52,6 +51,8 @@ export class Port extends Schema.Class<Port>("Port")({
 /**
  * MountPoint represents a mount point configuration inside the container. This
  * is used for reporting the mountpoints in use by a container.
+ *
+ * @since 1.45.0
  */
 export class MountPoint extends Schema.Class<MountPoint>("MountPoint")({
     /**
@@ -121,14 +122,22 @@ export class MountPoint extends Schema.Class<MountPoint>("MountPoint")({
     Propagation: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-/** A device mapping between the host and container. */
+/**
+ * A device mapping between the host and container.
+ *
+ * @since 1.45.0
+ */
 export class DeviceMapping extends Schema.Class<DeviceMapping>("DeviceMapping")({
     PathOnHost: NullabilityOmittedNonRequiredField(Schema.String),
     PathInContainer: NullabilityOmittedNonRequiredField(Schema.String),
     CgroupPermissions: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-/** A request for devices to be sent to device drivers. */
+/**
+ * A request for devices to be sent to device drivers.
+ *
+ * @since 1.45.0
+ */
 export class DeviceRequest extends Schema.Class<DeviceRequest>("DeviceRequest")({
     Driver: NullabilityOmittedNonRequiredField(Schema.String),
     Count: NullabilityOmittedNonRequiredField(Schema.Int),
@@ -144,6 +153,7 @@ export class DeviceRequest extends Schema.Class<DeviceRequest>("DeviceRequest")(
     Options: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ThrottleDevice extends Schema.Class<ThrottleDevice>("ThrottleDevice")({
     /** Device path */
     Path: NullabilityOmittedNonRequiredField(Schema.String),
@@ -152,6 +162,7 @@ export class ThrottleDevice extends Schema.Class<ThrottleDevice>("ThrottleDevice
     Rate: NullabilityOmittedNonRequiredField(Schema.Int.pipe(Schema.greaterThanOrEqualTo(0))),
 }) {}
 
+/** @since 1.45.0 */
 export class Mount extends Schema.Class<Mount>("Mount")({
     /** Container path. */
     Target: NullabilityOmittedNonRequiredField(Schema.String),
@@ -278,6 +289,8 @@ export class Mount extends Schema.Class<Mount>("Mount")({
  * The behavior to apply when the container exits. The default is not to
  * restart. An ever increasing delay (double the previous delay, starting at
  * 100ms) is added before each restart to prevent flooding the server.
+ *
+ * @since 1.45.0
  */
 export class RestartPolicy extends Schema.Class<RestartPolicy>("RestartPolicy")({
     /**
@@ -302,7 +315,11 @@ export class RestartPolicy extends Schema.Class<RestartPolicy>("RestartPolicy")(
     MaximumRetryCount: NullabilityOmittedNonRequiredField(Schema.Int),
 }) {}
 
-/** An object describing a limit on resources which can be requested by a task. */
+/**
+ * An object describing a limit on resources which can be requested by a task.
+ *
+ * @since 1.45.0
+ */
 export class Limit extends Schema.Class<Limit>("Limit")({
     NanoCPUs: NullabilityOmittedNonRequiredField(Schema.Int),
     MemoryBytes: NullabilityOmittedNonRequiredField(Schema.Int),
@@ -319,6 +336,8 @@ export class Limit extends Schema.Class<Limit>("Limit")({
  * string resources (e.g, `GPU=UUID1`).
  *
  * TODO: What should the top level be wrapped in?
+ *
+ * @since 1.45.0
  */
 export const GenericResources = NullabilityOmittedRequiredField(
     Schema.Array(
@@ -339,7 +358,11 @@ export const GenericResources = NullabilityOmittedRequiredField(
     )
 );
 
-/** A test to perform to check that the container is healthy. */
+/**
+ * A test to perform to check that the container is healthy.
+ *
+ * @since 1.45.0
+ */
 export class HealthConfig extends Schema.Class<HealthConfig>("HealthConfig")({
     /**
      * The test to perform. Possible values are:
@@ -387,6 +410,8 @@ export class HealthConfig extends Schema.Class<HealthConfig>("HealthConfig")({
  * HealthcheckResult stores information about a single run of a healthcheck
  * probe. TODO: marked as x-nullable at the top level, what does that mean for
  * consumers?
+ *
+ * @since 1.45.0
  */
 export class HealthcheckResult extends Schema.Class<HealthcheckResult>("HealthcheckResult")({
     /**
@@ -415,7 +440,11 @@ export class HealthcheckResult extends Schema.Class<HealthcheckResult>("Healthch
     Output: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-/** Address represents an IPv4 or IPv6 IP address. */
+/**
+ * Address represents an IPv4 or IPv6 IP address.
+ *
+ * @since 1.45.0
+ */
 export class Address extends Schema.Class<Address>("Address")({
     /** IP address. */
     Addr: NullabilityOmittedNonRequiredField(Schema.String),
@@ -424,7 +453,11 @@ export class Address extends Schema.Class<Address>("Address")({
     PrefixLen: NullabilityOmittedNonRequiredField(Schema.Int),
 }) {}
 
-/** PortBinding represents a binding between a host IP address and a host port. */
+/**
+ * PortBinding represents a binding between a host IP address and a host port.
+ *
+ * @since 1.45.0
+ */
 export class PortBinding extends Schema.Class<PortBinding>("PortBinding")({
     /** Host IP address that the container's port is mapped to. */
     HostIp: NullabilityOmittedNonRequiredField(Schema.String),
@@ -436,6 +469,8 @@ export class PortBinding extends Schema.Class<PortBinding>("PortBinding")({
 /**
  * Information about the storage driver used to store the container's and
  * image's filesystem.
+ *
+ * @since 1.45.0
  */
 export class GraphDriverData extends Schema.Class<GraphDriverData>("GraphDriverData")({
     /** Name of the storage driver. */
@@ -450,6 +485,7 @@ export class GraphDriverData extends Schema.Class<GraphDriverData>("GraphDriverD
     Data: NonNullableRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")({
     /**
      * ID is the content-addressable ID of an image.
@@ -531,6 +567,7 @@ export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")({
     Containers: NonNullableRequiredField(Schema.Int),
 }) {}
 
+/** @since 1.45.0 */
 export class AuthConfig extends Schema.Class<AuthConfig>("AuthConfig")({
     username: NullabilityOmittedNonRequiredField(Schema.String),
     password: NullabilityOmittedNonRequiredField(Schema.String),
@@ -538,6 +575,7 @@ export class AuthConfig extends Schema.Class<AuthConfig>("AuthConfig")({
     serveraddress: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ProcessConfig extends Schema.Class<ProcessConfig>("ProcessConfig")({
     privileged: NullabilityOmittedNonRequiredField(Schema.Boolean),
     user: NullabilityOmittedNonRequiredField(Schema.String),
@@ -546,6 +584,7 @@ export class ProcessConfig extends Schema.Class<ProcessConfig>("ProcessConfig")(
     arguments: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class IPAMConfig extends Schema.Class<IPAMConfig>("IPAMConfig")({
     Subnet: NullabilityOmittedNonRequiredField(Schema.String),
     IPRange: NullabilityOmittedNonRequiredField(Schema.String),
@@ -553,6 +592,7 @@ export class IPAMConfig extends Schema.Class<IPAMConfig>("IPAMConfig")({
     AuxiliaryAddresses: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkContainer extends Schema.Class<NetworkContainer>("NetworkContainer")({
     Name: NullabilityOmittedNonRequiredField(Schema.String),
     EndpointID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -561,7 +601,11 @@ export class NetworkContainer extends Schema.Class<NetworkContainer>("NetworkCon
     IPv6Address: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-/** BuildCache contains information about a build cache record. */
+/**
+ * BuildCache contains information about a build cache record.
+ *
+ * @since 1.45.0
+ */
 export class BuildCache extends Schema.Class<BuildCache>("BuildCache")({
     /** Unique ID of the build cache record. */
     ID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -613,30 +657,39 @@ export class BuildCache extends Schema.Class<BuildCache>("BuildCache")({
     UsageCount: NullabilityOmittedNonRequiredField(Schema.Int),
 }) {}
 
-/** Image ID or Digest */
+/**
+ * Image ID or Digest
+ *
+ * @since 1.45.0
+ */
 export class ImageID extends Schema.Class<ImageID>("ImageID")({
     ID: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ErrorDetail extends Schema.Class<ErrorDetail>("ErrorDetail")({
     code: NullabilityOmittedNonRequiredField(Schema.Int),
     message: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ProgressDetail extends Schema.Class<ProgressDetail>("ProgressDetail")({
     current: NullabilityOmittedNonRequiredField(Schema.Int),
     total: NullabilityOmittedNonRequiredField(Schema.Int),
 }) {}
 
+/** @since 1.45.0 */
 export class ErrorResponse extends Schema.Class<ErrorResponse>("ErrorResponse")({
     message: NonNullableRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class IdResponse extends Schema.Class<IdResponse>("IdResponse")({
     /** The id of the newly created object. */
     Id: NonNullableRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class IDResponse extends Schema.Class<IDResponse>("IDResponse")({
     /** The id of the newly created object. */
     ID: NonNullableRequiredField(Schema.String),
@@ -649,6 +702,7 @@ export class EndpointIPAMConfig extends Schema.Class<EndpointIPAMConfig>("Endpoi
     LinkLocalIPs: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class PluginMount extends Schema.Class<PluginMount>("PluginMount")({
     Name: NonNullableRequiredField(Schema.String),
     Description: NonNullableRequiredField(Schema.String),
@@ -659,6 +713,7 @@ export class PluginMount extends Schema.Class<PluginMount>("PluginMount")({
     Options: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class PluginDevice extends Schema.Class<PluginDevice>("PluginDevice")({
     Name: NonNullableRequiredField(Schema.String),
     Description: NonNullableRequiredField(Schema.String),
@@ -666,6 +721,7 @@ export class PluginDevice extends Schema.Class<PluginDevice>("PluginDevice")({
     Path: NullabilityOmittedRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class PluginEnvironment extends Schema.Class<PluginEnvironment>("PluginEnvironment")({
     Name: NonNullableRequiredField(Schema.String),
     Description: NonNullableRequiredField(Schema.String),
@@ -673,18 +729,21 @@ export class PluginEnvironment extends Schema.Class<PluginEnvironment>("PluginEn
     Value: NullabilityOmittedRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class PluginInterfaceType extends Schema.Class<PluginInterfaceType>("PluginInterfaceType")({
     Prefix: NonNullableRequiredField(Schema.String),
     Capability: NonNullableRequiredField(Schema.String),
     Version: NonNullableRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class PluginPrivilege extends Schema.Class<PluginPrivilege>("PluginPrivilege")({
     Name: NullabilityOmittedNonRequiredField(Schema.String),
     Description: NullabilityOmittedNonRequiredField(Schema.String),
     Value: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class NodeSpec extends Schema.Class<NodeSpec>("NodeSpec")({
     /** Name for the node. */
     Name: NullabilityOmittedNonRequiredField(Schema.String),
@@ -701,6 +760,7 @@ export class NodeSpec extends Schema.Class<NodeSpec>("NodeSpec")({
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class Platform extends Schema.Class<Platform>("Platform")({
     /**
      * Architecture represents the hardware architecture (for example,
@@ -712,6 +772,7 @@ export class Platform extends Schema.Class<Platform>("Platform")({
     OS: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class EngineDescription extends Schema.Class<EngineDescription>("EngineDescription")({
     EngineVersion: NullabilityOmittedNonRequiredField(Schema.String),
     Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
@@ -728,6 +789,8 @@ export class EngineDescription extends Schema.Class<EngineDescription>("EngineDe
 /**
  * Information about the issuer of leaf TLS certificates and the trusted root CA
  * certificate
+ *
+ * @since 1.45.0
  */
 export class TLSInfo extends Schema.Class<TLSInfo>("TLSInfo")({
     /**
@@ -743,6 +806,7 @@ export class TLSInfo extends Schema.Class<TLSInfo>("TLSInfo")({
     CertIssuerPublicKey: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class SwarmSpec extends Schema.Class<SwarmSpec>("SwarmSpec")({
     /** Name of the swarm. */
     Name: NullabilityOmittedNonRequiredField(Schema.String),
@@ -909,7 +973,11 @@ export class SwarmSpec extends Schema.Class<SwarmSpec>("SwarmSpec")({
     ),
 }) {}
 
-/** JoinTokens contains the tokens workers and managers need to join the swarm. */
+/**
+ * JoinTokens contains the tokens workers and managers need to join the swarm.
+ *
+ * @since 1.45.0
+ */
 export class JoinTokens extends Schema.Class<JoinTokens>("JoinTokens")({
     /** The token workers can use to join the swarm. */
     Worker: NullabilityOmittedNonRequiredField(Schema.String),
@@ -918,6 +986,7 @@ export class JoinTokens extends Schema.Class<JoinTokens>("JoinTokens")({
     Manager: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class EndpointPortConfig extends Schema.Class<EndpointPortConfig>("EndpointPortConfig")({
     Name: NullabilityOmittedNonRequiredField(Schema.String),
     Protocol: NullabilityOmittedNonRequiredField(
@@ -943,6 +1012,7 @@ export class EndpointPortConfig extends Schema.Class<EndpointPortConfig>("Endpoi
     }),
 }) {}
 
+/** @since 1.45.0 */
 export class ImageDeleteResponseItem extends Schema.Class<ImageDeleteResponseItem>("ImageDeleteResponseItem")({
     /** The image ID of an image that was untagged */
     Untagged: NullabilityOmittedNonRequiredField(Schema.String),
@@ -951,6 +1021,7 @@ export class ImageDeleteResponseItem extends Schema.Class<ImageDeleteResponseIte
     Deleted: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ServiceCreateResponse extends Schema.Class<ServiceCreateResponse>("ServiceCreateResponse")({
     ID: NonNullableNonRequiredField(Schema.String),
 
@@ -958,11 +1029,13 @@ export class ServiceCreateResponse extends Schema.Class<ServiceCreateResponse>("
     Warnings: NullableNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ServiceUpdateResponse extends Schema.Class<ServiceUpdateResponse>("ServiceUpdateResponse")({
     /** Optional warning messages */
     Warnings: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class Driver extends Schema.Class<Driver>("Driver")({
     /** Name of the driver. */
     Name: NonNullableRequiredField(Schema.String),
@@ -971,6 +1044,7 @@ export class Driver extends Schema.Class<Driver>("Driver")({
     Options: NonNullableNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerCreateResponse extends Schema.Class<ContainerCreateResponse>("ContainerCreateResponse")({
     /** The ID of the created container */
     Id: NonNullableRequiredField(Schema.String),
@@ -979,11 +1053,13 @@ export class ContainerCreateResponse extends Schema.Class<ContainerCreateRespons
     Warnings: NonNullableRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerWaitExitError extends Schema.Class<ContainerWaitExitError>("ContainerWaitExitError")({
     /** Details of an error */
     Message: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class SystemVersion extends Schema.Class<SystemVersion>("SystemVersion")({
     Platform: NullabilityOmittedNonRequiredField(
         Schema.Struct({ Name: NullabilityOmittedRequiredField(Schema.String) })
@@ -1055,6 +1131,7 @@ export class SystemVersion extends Schema.Class<SystemVersion>("SystemVersion")(
     BuildTime: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class PluginsInfo extends Schema.Class<PluginsInfo>("PluginsInfo")({
     /** Names of available volume-drivers, and network-driver plugins. */
     Volume: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
@@ -1097,6 +1174,7 @@ export class IndexInfo extends Schema.Class<IndexInfo>("IndexInfo")({
     Official: NullabilityOmittedNonRequiredField(Schema.Boolean),
 }) {}
 
+/** @since 1.45.0 */
 export class Runtime extends Schema.Class<Runtime>("Runtime")({
     status: NullableNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
@@ -1112,6 +1190,7 @@ export class Runtime extends Schema.Class<Runtime>("Runtime")({
     runtimeArgs: NullableNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class Commit extends Schema.Class<Commit>("Commit")({
     /** Actual commit ID of external tool. */
     ID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1120,6 +1199,7 @@ export class Commit extends Schema.Class<Commit>("Commit")({
     Expected: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class PeerNode extends Schema.Class<PeerNode>("PeerNode")({
     /** Unique identifier of for this node in the swarm. */
     NodeID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1128,6 +1208,7 @@ export class PeerNode extends Schema.Class<PeerNode>("PeerNode")({
     Addr: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkAttachmentConfig extends Schema.Class<NetworkAttachmentConfig>("NetworkAttachmentConfig")({
     /** The target network for attachment. Must be a network name or ID. */
     Target: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1139,6 +1220,7 @@ export class NetworkAttachmentConfig extends Schema.Class<NetworkAttachmentConfi
     DriverOpts: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class EventActor extends Schema.Class<EventActor>("EventActor")({
     /** The ID of the object emitting the event */
     ID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1147,6 +1229,7 @@ export class EventActor extends Schema.Class<EventActor>("EventActor")({
     Attributes: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class OCIDescriptor extends Schema.Class<OCIDescriptor>("OCIDescriptor")({
     /** The media type of the object this schema refers to. */
     mediaType: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1158,6 +1241,7 @@ export class OCIDescriptor extends Schema.Class<OCIDescriptor>("OCIDescriptor")(
     size: NullabilityOmittedNonRequiredField(Schema.Int),
 }) {}
 
+/** @since 1.45.0 */
 export class OCIPlatform extends Schema.Class<OCIPlatform>("OCIPlatform")({
     /** The CPU architecture, for example `amd64` or `ppc64`. */
     architecture: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1184,6 +1268,7 @@ export class OCIPlatform extends Schema.Class<OCIPlatform>("OCIPlatform")({
     variant: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class Resources extends Schema.Class<Resources>("Resources")({
     /**
      * An integer value representing this container's relative CPU weight versus
@@ -1448,6 +1533,7 @@ export class RegistryServiceConfig extends Schema.Class<RegistryServiceConfig>("
     Mirrors: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerConfig")({
     /** The hostname to use for the container, as a valid RFC 1123 hostname. */
     Hostname: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1543,12 +1629,14 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
     Shell: NullableNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ResourceObject extends Schema.Class<ResourceObject>("ResourceObject")({
     NanoCPUs: NullableNonRequiredField(Schema.Int),
     MemoryBytes: NullableNonRequiredField(Schema.Int),
     GenericResources: NullableNonRequiredField(GenericResources),
 }) {}
 
+/** @since 1.45.0 */
 export class TaskSpec extends Schema.Class<TaskSpec>("TaskSpec")({
     /**
      * Plugin spec for the service. _(Experimental release only.)_<p><br /></p>>
@@ -2108,6 +2196,7 @@ export class ClusterInfo extends Schema.Class<ClusterInfo>("ClusterInfo")({
     }),
 }) {}
 
+/** @since 1.45.0 */
 export class SwarmInfo extends Schema.Class<SwarmInfo>("SwarmInfo")({
     /** Unique identifier of for this node in the swarm. */
     NodeID: NullabilityOmittedNonRequiredField(Schema.String, { default: () => "" as const }),
@@ -2140,6 +2229,7 @@ export class SwarmInfo extends Schema.Class<SwarmInfo>("SwarmInfo")({
     Cluster: NullabilityOmittedNonRequiredField(ClusterInfo),
 }) {}
 
+/** @since 1.45.0 */
 export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")({
     /**
      * Unique identifier of the daemon.<p><br /></p>> **Note**: The format of
@@ -2516,6 +2606,7 @@ export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")({
     CDISpecDirs: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterVolumeSpec")({
     /**
      * Group defines the volume group of this volume. Volumes belonging to the
@@ -2651,6 +2742,7 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")({
     /**
      * The Swarm ID of this volume. Because cluster volumes are Swarm objects,
@@ -2740,6 +2832,7 @@ export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")(
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class Volume extends Schema.Class<Volume>("Volume")({
     /** Name of the volume. */
     Name: NonNullableRequiredField(Schema.String),
@@ -2799,6 +2892,7 @@ export class Volume extends Schema.Class<Volume>("Volume")({
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class NodeDescription extends Schema.Class<NodeDescription>("NodeDescription")({
     Hostname: NullabilityOmittedNonRequiredField(Schema.String),
     Platform: NullabilityOmittedNonRequiredField(Platform),
@@ -2807,6 +2901,7 @@ export class NodeDescription extends Schema.Class<NodeDescription>("NodeDescript
     TLSInfo: NullabilityOmittedNonRequiredField(TLSInfo),
 }) {}
 
+/** @since 1.45.0 */
 export class NodeStatus extends Schema.Class<NodeStatus>("NodeStatus")({
     State: NullabilityOmittedNonRequiredField(
         Schema.Union(
@@ -2833,6 +2928,7 @@ export class ManagerStatus extends Schema.Class<ManagerStatus>("ManagerStatus")(
     Addr: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class Node extends Schema.Class<Node>("Node")({
     ID: NullabilityOmittedNonRequiredField(Schema.String),
     Version: NullabilityOmittedNonRequiredField(
@@ -2856,16 +2952,19 @@ export class Node extends Schema.Class<Node>("Node")({
     ManagerStatus: NullabilityOmittedNonRequiredField(ManagerStatus),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerStatus extends Schema.Class<ContainerStatus>("ContainerStatus")({
     ID: NullabilityOmittedNonRequiredField(Schema.String),
     PID: NullabilityOmittedNonRequiredField(Schema.Number),
     ExitCode: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class PortStatus extends Schema.Class<PortStatus>("PortStatus")({
     Ports: NullabilityOmittedNonRequiredField(Schema.Array(EndpointPortConfig)),
 }) {}
 
+/** @since 1.45.0 */
 export class TaskStatus extends Schema.Class<TaskStatus>("TaskStatus")({
     Timestamp: NullabilityOmittedNonRequiredField(Schema.String),
     State: NullabilityOmittedNonRequiredField(
@@ -2893,6 +2992,7 @@ export class TaskStatus extends Schema.Class<TaskStatus>("TaskStatus")({
     PortStatus: NullabilityOmittedNonRequiredField(PortStatus),
 }) {}
 
+/** @since 1.45.0 */
 export class Task extends Schema.Class<Task>("Task")({
     /** The ID of the task. */
     ID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -2941,6 +3041,7 @@ export class Task extends Schema.Class<Task>("Task")({
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class EndpointSpec extends Schema.Class<EndpointSpec>("EndpointSpec")({
     /** The mode of resolution to use for internal load balancing between tasks. */
     Mode: NullabilityOmittedNonRequiredField(Schema.Union(Schema.Literal("vip"), Schema.Literal("dnsrr")), {
@@ -2954,6 +3055,7 @@ export class EndpointSpec extends Schema.Class<EndpointSpec>("EndpointSpec")({
     Ports: NullabilityOmittedNonRequiredField(Schema.Array(EndpointPortConfig)),
 }) {}
 
+/** @since 1.45.0 */
 export class ServiceSpec extends Schema.Class<ServiceSpec>("ServiceSpec")({
     /** Name of the service. */
     Name: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3177,6 +3279,7 @@ export class ContainerState extends Schema.Class<ContainerState>("ContainerState
     Health: NullabilityOmittedNonRequiredField(Health),
 }) {}
 
+/** @since 1.45.0 */
 export class EndpointSettings extends Schema.Class<EndpointSettings>("EndpointSettings")({
     IPAMConfig: NullabilityOmittedNonRequiredField(EndpointIPAMConfig),
     Links: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
@@ -3225,6 +3328,7 @@ export class EndpointSettings extends Schema.Class<EndpointSettings>("EndpointSe
     DNSNames: NullableNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkSettings extends Schema.Class<NetworkSettings>("NetworkSettings")({
     /** Name of the network's bridge (for example, `docker0`). */
     Bridge: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3329,6 +3433,7 @@ export class NetworkSettings extends Schema.Class<NetworkSettings>("NetworkSetti
     Networks: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, EndpointSettings)),
 }) {}
 
+/** @since 1.45.0 */
 export class Plugin extends Schema.Class<Plugin>("Plugin")({
     Id: NullabilityOmittedNonRequiredField(Schema.String),
     Name: NonNullableRequiredField(Schema.String),
@@ -3409,6 +3514,7 @@ export class Plugin extends Schema.Class<Plugin>("Plugin")({
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerTopResponse extends Schema.Class<ContainerTopResponse>("ContainerTopResponse")({
     /** The ps column titles */
     Titles: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
@@ -3420,6 +3526,7 @@ export class ContainerTopResponse extends Schema.Class<ContainerTopResponse>("Co
     Processes: NullabilityOmittedNonRequiredField(Schema.Array(Schema.Array(Schema.String))),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerUpdateResponse extends Schema.Class<ContainerUpdateResponse>("ContainerUpdateResponse")({
     Warnings: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
@@ -3432,6 +3539,7 @@ export class ContainerPruneResponse extends Schema.Class<ContainerPruneResponse>
     SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class BuildPruneResponse extends Schema.Class<BuildPruneResponse>("BuildPruneResponse")({
     CachesDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
@@ -3439,6 +3547,7 @@ export class BuildPruneResponse extends Schema.Class<BuildPruneResponse>("BuildP
     SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class HistoryResponseItem extends Schema.Class<HistoryResponseItem>("HistoryResponseItem")({
     Id: NonNullableRequiredField(Schema.String),
     Created: NonNullableRequiredField(Schema.Number),
@@ -3448,6 +3557,7 @@ export class HistoryResponseItem extends Schema.Class<HistoryResponseItem>("Hist
     Comment: NonNullableRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ImageSearchResponseItem extends Schema.Class<ImageSearchResponseItem>("ImageSearchResponseItem")({
     description: NullabilityOmittedNonRequiredField(Schema.String),
     is_official: NullabilityOmittedNonRequiredField(Schema.Boolean),
@@ -3456,6 +3566,7 @@ export class ImageSearchResponseItem extends Schema.Class<ImageSearchResponseIte
     star_count: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class SystemAuthResponse extends Schema.Class<SystemAuthResponse>("SystemAuthResponse")({
     /** The status of the authentication */
     Status: NonNullableRequiredField(Schema.String),
@@ -3464,6 +3575,7 @@ export class SystemAuthResponse extends Schema.Class<SystemAuthResponse>("System
     IdentityToken: NonNullableNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ExecConfig extends Schema.Class<ExecConfig>("ExecConfig")({
     /** Attach to `stdin` of the exec command. */
     AttachStdin: NullabilityOmittedNonRequiredField(Schema.Boolean),
@@ -3506,6 +3618,7 @@ export class ExecConfig extends Schema.Class<ExecConfig>("ExecConfig")({
     WorkingDir: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class ExecStartConfig extends Schema.Class<ExecStartConfig>("ExecStartConfig")({
     Detach: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
@@ -3516,6 +3629,7 @@ export class ExecStartConfig extends Schema.Class<ExecStartConfig>("ExecStartCon
     ConsoleSize: NullableNonRequiredField(Schema.Array(Schema.Number)),
 }) {}
 
+/** @since 1.45.0 */
 export class VolumePruneResponse extends Schema.Class<VolumePruneResponse>("VolumePruneResponse")({
     /** Volumes that were deleted */
     VolumesDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
@@ -3524,12 +3638,14 @@ export class VolumePruneResponse extends Schema.Class<VolumePruneResponse>("Volu
     SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkCreateResponse extends Schema.Class<NetworkCreateResponse>("NetworkCreateResponse")({
     /** The ID of the created network. */
     Id: NullabilityOmittedNonRequiredField(Schema.String),
     Warning: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkDisconnectRequest extends Schema.Class<NetworkDisconnectRequest>("NetworkDisconnectRequest")({
     /** The ID or name of the container to disconnect from the network. */
     Container: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3538,11 +3654,13 @@ export class NetworkDisconnectRequest extends Schema.Class<NetworkDisconnectRequ
     Force: NullabilityOmittedNonRequiredField(Schema.Boolean),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkPruneResponse extends Schema.Class<NetworkPruneResponse>("NetworkPruneResponse")({
     /** Networks that were deleted */
     NetworksDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>("SwarmJoinRequest")({
     /**
      * Listen address used for inter-manager communication if the node gets
@@ -3581,22 +3699,26 @@ export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>("SwarmJoinR
     JoinToken: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class UnlockKeyResponse extends Schema.Class<UnlockKeyResponse>("UnlockKeyResponse")({
     /** The swarm's unlock key. */
     UnlockKey: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class SwarmUnlockRequest extends Schema.Class<SwarmUnlockRequest>("SwarmUnlockRequest")({
     /** The swarm's unlock key. */
     UnlockKey: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
+/** @since 1.45.0 */
 export class FilesystemChange extends Schema.Class<FilesystemChange>("FilesystemChange")({
     /** Path to file or directory that has changed. */
     Path: NonNullableRequiredField(Schema.String),
     Kind: NullabilityOmittedRequiredField(Schema.Union(Schema.Literal(0), Schema.Literal(1), Schema.Literal(2))),
 }) {}
 
+/** @since 1.45.0 */
 export class IPAM extends Schema.Class<IPAM>("IPAM")({
     /** Name of the IPAM driver to use. */
     Driver: NullabilityOmittedNonRequiredField(Schema.String, { default: () => "default" }),
@@ -3612,6 +3734,7 @@ export class IPAM extends Schema.Class<IPAM>("IPAM")({
     Options: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class BuildInfo extends Schema.Class<BuildInfo>("BuildInfo")({
     id: NullabilityOmittedNonRequiredField(Schema.String),
     stream: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3623,6 +3746,7 @@ export class BuildInfo extends Schema.Class<BuildInfo>("BuildInfo")({
     aux: NullabilityOmittedNonRequiredField(ImageID),
 }) {}
 
+/** @since 1.45.0 */
 export class CreateImageInfo extends Schema.Class<CreateImageInfo>("CreateImageInfo")({
     id: NullabilityOmittedNonRequiredField(Schema.String),
     error: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3632,6 +3756,7 @@ export class CreateImageInfo extends Schema.Class<CreateImageInfo>("CreateImageI
     progressDetail: NullabilityOmittedNonRequiredField(ProgressDetail),
 }) {}
 
+/** @since 1.45.0 */
 export class PushImageInfo extends Schema.Class<PushImageInfo>("PushImageInfo")({
     error: NullabilityOmittedNonRequiredField(Schema.String),
     status: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3639,6 +3764,7 @@ export class PushImageInfo extends Schema.Class<PushImageInfo>("PushImageInfo")(
     progressDetail: NullabilityOmittedNonRequiredField(ProgressDetail),
 }) {}
 
+/** @since 1.45.0 */
 export class SecretSpec extends Schema.Class<SecretSpec>("SecretSpec")({
     /** User-defined name of the secret. */
     Name: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3659,6 +3785,7 @@ export class SecretSpec extends Schema.Class<SecretSpec>("SecretSpec")({
     Templating: NullabilityOmittedNonRequiredField(Driver),
 }) {}
 
+/** @since 1.45.0 */
 export class ConfigSpec extends Schema.Class<ConfigSpec>("ConfigSpec")({
     /** User-defined name of the config. */
     Name: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3674,12 +3801,14 @@ export class ConfigSpec extends Schema.Class<ConfigSpec>("ConfigSpec")({
     Templating: NullabilityOmittedNonRequiredField(Driver),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerWaitResponse extends Schema.Class<ContainerWaitResponse>("ContainerWaitResponse")({
     /** Exit code of the container */
     StatusCode: NonNullableRequiredField(Schema.Number),
     Error: NullabilityOmittedNonRequiredField(ContainerWaitExitError),
 }) {}
 
+/** @since 1.45.0 */
 export class EventMessage extends Schema.Class<EventMessage>("EventMessage")({
     /** The type of object emitting the event */
     Type: NullabilityOmittedNonRequiredField(
@@ -3715,6 +3844,7 @@ export class EventMessage extends Schema.Class<EventMessage>("EventMessage")({
     timeNano: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class DistributionInspect extends Schema.Class<DistributionInspect>("DistributionInspect")({
     Descriptor: NullabilityOmittedRequiredField(OCIDescriptor),
 
@@ -3722,6 +3852,7 @@ export class DistributionInspect extends Schema.Class<DistributionInspect>("Dist
     Platforms: NullabilityOmittedRequiredField(Schema.Array(OCIPlatform)),
 }) {}
 
+/** @since 1.45.0 */
 export class ImagePruneResponse extends Schema.Class<ImagePruneResponse>("ImagePruneResponse")({
     /** Images that were deleted */
     ImagesDeleted: NullabilityOmittedNonRequiredField(Schema.Array(ImageDeleteResponseItem)),
@@ -3730,6 +3861,7 @@ export class ImagePruneResponse extends Schema.Class<ImagePruneResponse>("ImageP
     SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class ExecInspectResponse extends Schema.Class<ExecInspectResponse>("ExecInspectResponse")({
     CanRemove: NullabilityOmittedNonRequiredField(Schema.Boolean),
     DetachKeys: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3746,6 +3878,7 @@ export class ExecInspectResponse extends Schema.Class<ExecInspectResponse>("Exec
     Pid: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
+/** @since 1.45.0 */
 export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitRequest")({
     /**
      * Listen address used for inter-manager communication, as well as
@@ -3804,11 +3937,13 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
     Spec: NullabilityOmittedNonRequiredField(SwarmSpec),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkingConfig extends Schema.Class<NetworkingConfig>("NetworkingConfig")({
     /** A mapping of network name to endpoint configuration for that network. */
     EndpointsConfig: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, EndpointSettings)),
 }) {}
 
+/** @since 1.45.0 */
 export class ImageInspect extends Schema.Class<ImageInspect>("ImageInspect")({
     /**
      * ID is the content-addressable ID of an image.
@@ -3940,6 +4075,7 @@ export class ImageInspect extends Schema.Class<ImageInspect>("ImageInspect")({
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>("VolumeCreateOptions")({
     /** The new volume's name. If not specified, Docker generates a name. */
     Name: NonNullableNonRequiredField(Schema.String),
@@ -3958,6 +4094,7 @@ export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>("Volu
     ClusterVolumeSpec: NullabilityOmittedNonRequiredField(ClusterVolumeSpec),
 }) {}
 
+/** @since 1.45.0 */
 export class Network extends Schema.Class<Network>("Network")({
     Name: NullabilityOmittedNonRequiredField(Schema.String),
     Id: NullabilityOmittedNonRequiredField(Schema.String),
@@ -3974,6 +4111,7 @@ export class Network extends Schema.Class<Network>("Network")({
     Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerSummary extends Schema.Class<ContainerSummary>("ContainerSummary")({
     /** The ID of this container */
     Id: NullabilityOmittedNonRequiredField(Schema.String),
@@ -4023,6 +4161,7 @@ export class ContainerSummary extends Schema.Class<ContainerSummary>("ContainerS
     Mounts: NullabilityOmittedNonRequiredField(Schema.Array(MountPoint)),
 }) {}
 
+/** @since 1.45.0 */
 export class Secret extends Schema.Class<Secret>("Secret")({
     ID: NullabilityOmittedNonRequiredField(Schema.String),
     Version: NullabilityOmittedNonRequiredField(
@@ -4035,6 +4174,7 @@ export class Secret extends Schema.Class<Secret>("Secret")({
     Spec: NullabilityOmittedNonRequiredField(SecretSpec),
 }) {}
 
+/** @since 1.45.0 */
 export class Config extends Schema.Class<Config>("Config")({
     ID: NullabilityOmittedNonRequiredField(Schema.String),
     Version: NullabilityOmittedNonRequiredField(
@@ -4047,6 +4187,7 @@ export class Config extends Schema.Class<Config>("Config")({
     Spec: NullabilityOmittedNonRequiredField(ConfigSpec),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("NetworkCreateRequest")({
     /** The network's name. */
     Name: NullabilityOmittedRequiredField(Schema.String),
@@ -4090,12 +4231,14 @@ export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("Ne
     Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class NetworkConnectRequest extends Schema.Class<NetworkConnectRequest>("NetworkConnectRequest")({
     /** The ID or name of the container to connect to the network. */
     Container: NullabilityOmittedNonRequiredField(Schema.String),
     EndpointConfig: NullabilityOmittedNonRequiredField(EndpointSettings),
 }) {}
 
+/** @since 1.45.0 */
 export class VolumeListResponse extends Schema.Class<VolumeListResponse>("VolumeListResponse")({
     /** List of volumes */
     Volumes: NullabilityOmittedNonRequiredField(Schema.Array(Volume)),
@@ -4104,6 +4247,7 @@ export class VolumeListResponse extends Schema.Class<VolumeListResponse>("Volume
     Warnings: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
     /**
      * A list of volume bindings for this container. Each volume binding is a
@@ -4370,6 +4514,7 @@ export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
     ReadonlyPaths: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerInspectResponse extends Schema.Class<ContainerInspectResponse>("ContainerInspectResponse")({
     /** The ID of the container */
     Id: NullabilityOmittedNonRequiredField(Schema.String),
@@ -4413,6 +4558,7 @@ export class ContainerInspectResponse extends Schema.Class<ContainerInspectRespo
     NetworkSettings: NullabilityOmittedNonRequiredField(NetworkSettings),
 }) {}
 
+/** @since 1.45.0 */
 export class Service extends Schema.Class<Service>("Service")({
     ID: NullabilityOmittedNonRequiredField(Schema.String),
     Version: NullabilityOmittedNonRequiredField(
@@ -4504,6 +4650,7 @@ export class Service extends Schema.Class<Service>("Service")({
     ),
 }) {}
 
+/** @since 1.45.0 */
 export class SystemDataUsageResponse extends Schema.Class<SystemDataUsageResponse>("SystemDataUsageResponse")({
     LayersSize: NullabilityOmittedNonRequiredField(Schema.Number),
     Images: NullabilityOmittedNonRequiredField(Schema.Array(ImageSummary)),
@@ -4512,15 +4659,18 @@ export class SystemDataUsageResponse extends Schema.Class<SystemDataUsageRespons
     BuildCache: NullabilityOmittedNonRequiredField(Schema.Array(BuildCache)),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerUpdateSpec extends Resources.extend<ContainerUpdateSpec>("ContainerUpdateSpec")({
     RestartPolicy: NullabilityOmittedNonRequiredField(RestartPolicy),
 }) {}
 
+/** @since 1.45.0 */
 export class ContainerCreateSpec extends ContainerConfig.extend<ContainerCreateSpec>("ContainerCreateSpec")({
     HostConfig: NullabilityOmittedNonRequiredField(HostConfig),
     NetworkingConfig: NullabilityOmittedNonRequiredField(NetworkingConfig),
 }) {}
 
+/** @since 1.45.0 */
 export class Swarm extends ClusterInfo.extend<Swarm>("Swarm")({
     JoinTokens: NullabilityOmittedNonRequiredField(JoinTokens),
 }) {}

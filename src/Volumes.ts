@@ -29,6 +29,7 @@ export class VolumesError extends Data.TaggedError("VolumesError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface VolumeListOptions {
     /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
@@ -50,6 +51,7 @@ export interface VolumeListOptions {
     };
 }
 
+/** @since 1.0.0 */
 export interface VolumeDeleteOptions {
     /** Volume name or ID */
     readonly name: string;
@@ -57,11 +59,13 @@ export interface VolumeDeleteOptions {
     readonly force?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface VolumeInspectOptions {
     /** Volume name or ID */
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface VolumeUpdateOptions {
     /** The name or ID of the volume */
     readonly name: string;
@@ -77,6 +81,7 @@ export interface VolumeUpdateOptions {
     readonly version: number;
 }
 
+/** @since 1.0.0 */
 export interface VolumePruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
@@ -93,6 +98,7 @@ export interface VolumePruneOptions {
     readonly filters?: { label?: Array<string> | undefined; all?: ["true" | "false" | "1" | "0"] | undefined };
 }
 
+/** @since 1.0.0 */
 export interface Volumes {
     /**
      * List volumes

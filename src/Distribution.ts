@@ -23,16 +23,27 @@ import {
 import { responseErrorHandler } from "./Requests.js";
 import { DistributionInspect } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class DistributionsError extends Data.TaggedError("DistributionsError")<{
     method: string;
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface DistributionInspectOptions {
     /** Image name or id */
     readonly name: string;
 }
 
+/**
+ * Distributions service
+ *
+ * @since 1.0.0
+ * @category Distributions
+ */
 export interface Distributions {
     /**
      * Get image information from the registry
@@ -44,8 +55,12 @@ export interface Distributions {
     ) => Effect.Effect<Readonly<DistributionInspect>, DistributionsError, never>;
 }
 
-const make: Effect.Effect<Distributions, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
-    function* (_: Effect.Adapter) {
+/**
+ * @since 1.0.0
+ * @category Distributions
+ */
+export const make: Effect.Effect<Distributions, never, IMobyConnectionAgent | HttpClient.client.Client.Default> =
+    Effect.gen(function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
 
@@ -72,14 +87,37 @@ const make: Effect.Effect<Distributions, never, IMobyConnectionAgent | HttpClien
             );
 
         return { inspect: inspect_ };
-    }
+    });
+
+/**
+ * @since 1.0.0
+ * @category Distributions
+ */
+export const Distributions: Context.Tag<Distributions, Distributions> = Context.GenericTag<Distributions>(
+    "@the-moby-effect/Distributions"
 );
 
-export const Distributions = Context.GenericTag<Distributions>("the-moby-effect/Distributions");
-export const layer = Layer.effect(Distributions, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * @since 1.0.0
+ * @category Distributions
+ */
+export const layer: Layer.Layer<Distributions, never, IMobyConnectionAgent> = Layer.effect(Distributions, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
+/**
+ * @since 1.0.0
+ * @category Distributions
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Distributions, never, Scope.Scope> =>
     layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * @since 1.0.0
+ * @category Distributions
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Distributions, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

@@ -30,6 +30,7 @@ export class TasksError extends Data.TaggedError("TasksError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface TaskListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -54,11 +55,13 @@ export interface TaskListOptions {
     };
 }
 
+/** @since 1.0.0 */
 export interface TaskInspectOptions {
     /** ID of the task */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface TaskLogsOptions {
     /** ID of the task */
     readonly id: string;
@@ -81,6 +84,7 @@ export interface TaskLogsOptions {
     readonly tail?: string;
 }
 
+/** @since 1.0.0 */
 export interface Tasks {
     /**
      * List tasks

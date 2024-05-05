@@ -36,6 +36,7 @@ export class SwarmsError extends Data.TaggedError("SwarmsError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface SwarmLeaveOptions {
     /**
      * Force leave swarm, even if this is the last manager or that it will break
@@ -44,6 +45,7 @@ export interface SwarmLeaveOptions {
     readonly force?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface SwarmUpdateOptions {
     readonly body: SwarmSpec;
     /**
@@ -59,6 +61,7 @@ export interface SwarmUpdateOptions {
     readonly rotateManagerUnlockKey?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface Swarms {
     /** Inspect swarm */
     readonly inspect: () => Effect.Effect<Readonly<Swarm>, SwarmsError>;

@@ -30,6 +30,7 @@ export class ServicesError extends Data.TaggedError("ServicesError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface ServiceListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -47,6 +48,7 @@ export interface ServiceListOptions {
     readonly status?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ServiceCreateOptions {
     readonly body: ServiceSpec;
     /**
@@ -59,11 +61,13 @@ export interface ServiceCreateOptions {
     readonly "X-Registry-Auth"?: string;
 }
 
+/** @since 1.0.0 */
 export interface ServiceDeleteOptions {
     /** ID or name of service. */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ServiceInspectOptions {
     /** ID or name of service. */
     readonly id: string;
@@ -71,6 +75,7 @@ export interface ServiceInspectOptions {
     readonly insertDefaults?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ServiceUpdateOptions {
     /** ID or name of service. */
     readonly id: string;
@@ -103,6 +108,7 @@ export interface ServiceUpdateOptions {
     readonly "X-Registry-Auth"?: string;
 }
 
+/** @since 1.0.0 */
 export interface ServiceLogsOptions {
     /** ID or name of the service */
     readonly id: string;
@@ -125,6 +131,7 @@ export interface ServiceLogsOptions {
     readonly tail?: string;
 }
 
+/** @since 1.0.0 */
 export interface Services {
     /**
      * List services

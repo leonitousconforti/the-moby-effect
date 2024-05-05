@@ -42,6 +42,7 @@ export class ImagesError extends Data.TaggedError("ImagesError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface ImageListOptions {
     /**
      * Show all images. Only images from a final layer (no children) are shown
@@ -68,6 +69,7 @@ export interface ImageListOptions {
     readonly digests?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ImageBuildOptions {
     /**
      * A tar archive compressed with one of the following algorithms: identity
@@ -192,6 +194,7 @@ export interface ImageBuildOptions {
     readonly outputs?: string | undefined;
 }
 
+/** @since 1.0.0 */
 export interface BuildPruneOptions {
     /** Amount of disk space in bytes to keep for cache */
     readonly "keep-storage"?: number;
@@ -218,6 +221,7 @@ export interface BuildPruneOptions {
     readonly filters?: string;
 }
 
+/** @since 1.0.0 */
 export interface ImageCreateOptions {
     /**
      * Name of the image to pull. The name may include a tag or digest. This
@@ -284,16 +288,19 @@ export interface ImageCreateOptions {
     readonly platform?: string | undefined;
 }
 
+/** @since 1.0.0 */
 export interface ImageInspectOptions {
     /** Image name or id */
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface ImageHistoryOptions {
     /** Image name or ID */
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface ImagePushOptions {
     /** Image name or ID. */
     readonly name: string;
@@ -308,6 +315,7 @@ export interface ImagePushOptions {
     readonly "X-Registry-Auth": string;
 }
 
+/** @since 1.0.0 */
 export interface ImageTagOptions {
     /** Image name or ID to tag. */
     readonly name: string;
@@ -317,6 +325,7 @@ export interface ImageTagOptions {
     readonly tag?: string;
 }
 
+/** @since 1.0.0 */
 export interface ImageDeleteOptions {
     /** Image name or ID */
     readonly name: string;
@@ -329,6 +338,7 @@ export interface ImageDeleteOptions {
     readonly noprune?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface ImageSearchOptions {
     /** Term to search */
     readonly term: string;
@@ -349,6 +359,7 @@ export interface ImageSearchOptions {
     readonly filters?: string;
 }
 
+/** @since 1.0.0 */
 export interface ImagePruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
@@ -372,6 +383,7 @@ export interface ImagePruneOptions {
     };
 }
 
+/** @since 1.0.0 */
 export interface ImageCommitOptions {
     /** The container configuration */
     readonly containerConfig: ContainerConfig;
@@ -391,16 +403,19 @@ export interface ImageCommitOptions {
     readonly changes?: string;
 }
 
+/** @since 1.0.0 */
 export interface ImageGetOptions {
     /** Image name or ID */
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface ImageGetAllOptions {
     /** Image names to filter by */
     readonly names?: Array<string> | undefined;
 }
 
+/** @since 1.0.0 */
 export interface ImageLoadOptions {
     /** Tar archive containing images */
     readonly imagesTarball: Stream.Stream<Uint8Array>;
@@ -408,6 +423,7 @@ export interface ImageLoadOptions {
     readonly quiet?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface Images {
     /**
      * List Images

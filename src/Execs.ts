@@ -30,6 +30,7 @@ export class ExecsError extends Data.TaggedError("ExecsError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface ContainerExecOptions {
     /** Exec configuration */
     readonly execConfig: Schema.Schema.Type<typeof ExecConfig>;
@@ -37,12 +38,14 @@ export interface ContainerExecOptions {
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ExecStartOptions {
     readonly execStartConfig: Schema.Schema.Type<typeof ExecStartConfig>;
     /** Exec instance ID */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface ExecResizeOptions {
     /** Exec instance ID */
     readonly id: string;
@@ -52,6 +55,7 @@ export interface ExecResizeOptions {
     readonly w?: number;
 }
 
+/** @since 1.0.0 */
 export interface ExecInspectOptions {
     /** Exec instance ID */
     readonly id: string;

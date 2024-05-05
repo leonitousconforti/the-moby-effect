@@ -132,7 +132,7 @@ export class SSHAgent extends http.Agent {
      * connection to the unix domain socket at socketPath on the remote server
      * and forwards traffic.
      */
-    public createConnection(
+    protected createConnection(
         _options: http.ClientRequestArgs,
         callback: (error: Error | undefined, socket?: net.Socket | undefined) => void
     ): void {

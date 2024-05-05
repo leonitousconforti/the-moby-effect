@@ -30,6 +30,7 @@ export class PluginsError extends Data.TaggedError("PluginsError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface PluginListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -43,6 +44,7 @@ export interface PluginListOptions {
     readonly filters?: { compatibility?: [string]; enable?: ["true" | "false"] };
 }
 
+/** @since 1.0.0 */
 export interface GetPluginPrivilegesOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -51,6 +53,7 @@ export interface GetPluginPrivilegesOptions {
     readonly remote: string;
 }
 
+/** @since 1.0.0 */
 export interface PluginPullOptions {
     /**
      * Remote reference for plugin to install.
@@ -75,6 +78,7 @@ export interface PluginPullOptions {
     readonly body?: Array<PluginPrivilege>;
 }
 
+/** @since 1.0.0 */
 export interface PluginInspectOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -83,6 +87,7 @@ export interface PluginInspectOptions {
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface PluginDeleteOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -96,6 +101,7 @@ export interface PluginDeleteOptions {
     readonly force?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface PluginEnableOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -106,6 +112,7 @@ export interface PluginEnableOptions {
     readonly timeout?: number;
 }
 
+/** @since 1.0.0 */
 export interface PluginDisableOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -116,6 +123,7 @@ export interface PluginDisableOptions {
     readonly force?: boolean;
 }
 
+/** @since 1.0.0 */
 export interface PluginUpgradeOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -139,6 +147,7 @@ export interface PluginUpgradeOptions {
     readonly body?: Array<PluginPrivilege>;
 }
 
+/** @since 1.0.0 */
 export interface PluginCreateOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -149,6 +158,7 @@ export interface PluginCreateOptions {
     readonly tarContext: Stream.Stream<Uint8Array>;
 }
 
+/** @since 1.0.0 */
 export interface PluginPushOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -157,6 +167,7 @@ export interface PluginPushOptions {
     readonly name: string;
 }
 
+/** @since 1.0.0 */
 export interface PluginSetOptions {
     /**
      * The name of the plugin. The `:latest` tag is optional, and is the default
@@ -166,6 +177,7 @@ export interface PluginSetOptions {
     readonly body?: Array<string>;
 }
 
+/** @since 1.0.0 */
 export interface Plugins {
     /**
      * List plugins

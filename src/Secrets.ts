@@ -29,6 +29,7 @@ export class SecretsError extends Data.TaggedError("SecretsError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface SecretListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -44,16 +45,19 @@ export interface SecretListOptions {
     readonly filters?: string;
 }
 
+/** @since 1.0.0 */
 export interface SecretDeleteOptions {
     /** ID of the secret */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface SecretInspectOptions {
     /** ID of the secret */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface SecretUpdateOptions {
     /** The ID or name of the secret */
     readonly id: string;
@@ -70,6 +74,7 @@ export interface SecretUpdateOptions {
     readonly version: number;
 }
 
+/** @since 1.0.0 */
 export interface Secrets {
     /**
      * List secrets

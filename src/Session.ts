@@ -29,6 +29,7 @@ export class SessionsError extends Data.TaggedError("SessionsError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface Sessions {
     /**
      * Start a new interactive session with a server. Session allows server to

@@ -38,6 +38,7 @@ export class SystemsError extends Data.TaggedError("SystemsError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface SystemEventsOptions {
     /** Show events created since this timestamp then stream new events. */
     readonly since?: string;
@@ -82,11 +83,13 @@ export interface SystemEventsOptions {
     };
 }
 
+/** @since 1.0.0 */
 export interface SystemDataUsageOptions {
     /** Object types, for which to compute and return data. */
     readonly type?: Array<"container" | "image" | "volume" | "build-cache"> | undefined;
 }
 
+/** @since 1.0.0 */
 export interface Systems {
     /**
      * Check auth configuration

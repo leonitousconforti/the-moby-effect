@@ -36,6 +36,7 @@ export class NetworksError extends Data.TaggedError("NetworksError")<{
     message: string;
 }> {}
 
+/** @since 1.0.0 */
 export interface NetworkListOptions {
     /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
@@ -58,11 +59,13 @@ export interface NetworkListOptions {
     readonly filters?: string;
 }
 
+/** @since 1.0.0 */
 export interface NetworkDeleteOptions {
     /** Network ID or name */
     readonly id: string;
 }
 
+/** @since 1.0.0 */
 export interface NetworkInspectOptions {
     /** Network ID or name */
     readonly id: string;
@@ -72,18 +75,21 @@ export interface NetworkInspectOptions {
     readonly scope?: string;
 }
 
+/** @since 1.0.0 */
 export interface NetworkConnectOptions {
     /** Network ID or name */
     readonly id: string;
     readonly container: NetworkConnectRequest;
 }
 
+/** @since 1.0.0 */
 export interface NetworkDisconnectOptions {
     /** Network ID or name */
     readonly id: string;
     readonly container: NetworkDisconnectRequest;
 }
 
+/** @since 1.0.0 */
 export interface NetworkPruneOptions {
     /**
      * Filters to process on the prune list, encoded as JSON (a
@@ -102,6 +108,7 @@ export interface NetworkPruneOptions {
     readonly filters?: string;
 }
 
+/** @since 1.0.0 */
 export interface Networks {
     /**
      * List networks

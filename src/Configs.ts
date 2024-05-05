@@ -33,10 +33,7 @@ export class ConfigsError extends Data.TaggedError("ConfigsError")<{
     message: string;
 }> {}
 
-/**
- * @since 1.0.0
- * @category Configs
- */
+/** @since 1.0.0 */
 export interface ConfigListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -57,28 +54,19 @@ export interface ConfigListOptions {
     };
 }
 
-/**
- * @since 1.0.0
- * @category Configs
- */
+/** @since 1.0.0 */
 export interface ConfigDeleteOptions {
     /** ID of the config */
     readonly id: string;
 }
 
-/**
- * @since 1.0.0
- * @category Configs
- */
+/** @since 1.0.0 */
 export interface ConfigInspectOptions {
     /** ID of the config */
     readonly id: string;
 }
 
-/**
- * @since 1.0.0
- * @category Configs
- */
+/** @since 1.0.0 */
 export interface ConfigUpdateOptions {
     /** The ID or name of the config */
     readonly id: string;
