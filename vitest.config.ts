@@ -5,12 +5,15 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
     test: {
-        include: ["./test/**/*.test.ts"],
         globals: true,
+        pool: "forks",
+        fileParallelism: false,
+        globalSetup: "./test/setup.ts",
+        include: ["./test/unit/*.test.ts"],
+        reporters: ["default"],
         coverage: {
             provider: "v8",
         },
-        reporters: ["hanging-process", "github-actions", "default"],
     },
     resolve: {
         alias: {
@@ -18,3 +21,6 @@ export default defineConfig({
         },
     },
 });
+
+// "globalSetup": "<rootDir>/dist/test/setup.js",
+// "globalTeardown": "<rootDir>/dist/test/teardown.js",

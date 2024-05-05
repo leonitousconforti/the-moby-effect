@@ -1,4 +1,4 @@
-import { describe, it } from "@effect/vitest";
+import { describe, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -6,11 +6,12 @@ import * as Stream from "effect/Stream";
 import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Containers tests", () => {
-    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+    const testImagesService: Layer.Layer<MobyApi.Images.Images, never, never> = MobyApi.fromConnectionOptions(
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
-    const testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> =
-        MobyApi.fromConnectionOptions(globalThis.__TEST_CONNECTION_OPTIONS).pipe(Layer.orDie);
+
+    const testContainersService: Layer.Layer<MobyApi.Containers.Containers, never, never> =
+        MobyApi.fromConnectionOptions(inject("__TEST_CONNECTION_OPTIONS")).pipe(Layer.orDie);
 
     it("Should create, list, pause, unpause, top, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)", async () => {
         await Effect.gen(function* (_: Effect.Adapter) {
@@ -58,7 +59,7 @@ describe("MobyApi Containers tests", () => {
             // Get the FS changes, get details about a path, and get a tarball for a path
             yield* _(containers.changes({ id }));
             yield* _(containers.archiveInfo({ id, path: "/bin" }));
-            const archiveStream: Stream.Stream<never, MobyApi.Containers.ContainersError, Uint8Array> = yield* _(
+            const archiveStream: Stream.Stream<Uint8Array, MobyApi.Containers.ContainersError, never> = yield* _(
                 containers.archive({ id, path: "/bin" })
             );
             yield* _(containers.putArchive({ id, path: "/bin", stream: archiveStream }));
@@ -74,6 +75,7 @@ describe("MobyApi Containers tests", () => {
         })
             .pipe(Effect.provide(testImagesService))
             .pipe(Effect.provide(testContainersService))
+            .pipe(Effect.scoped)
             .pipe(Effect.runPromise);
     }, 60_000);
 
@@ -101,6 +103,7 @@ describe("MobyApi Containers tests", () => {
         })
             .pipe(Effect.provide(testImagesService))
             .pipe(Effect.provide(testContainersService))
+            .pipe(Effect.scoped)
             .pipe(Effect.runPromise);
     }, 10_000);
 });

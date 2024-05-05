@@ -1,11 +1,13 @@
 {
     "cSpell.words": [
+        "aaahhhhh",
         "Addrs",
         "awslogs",
         "Blkio",
         "buildargs",
         "cachefrom",
         "cachemount",
+        "CERTDIR",
         "cfssl",
         "cgroupfs",
         "Cgroupns",
@@ -47,6 +49,7 @@
         "mobydock",
         "Mountpoint",
         "mountpoints",
+        "mydockerimage",
         "namedspaced",
         "NCPU",
         "ndots",

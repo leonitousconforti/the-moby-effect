@@ -46,28 +46,26 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"aux":{"ID":"sha256:b6548eacb0639263e9d8abfee48f8ac8b327102a05335b67572f715c580a968e"}}
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
-const program = Effect.gen(function* (_: Effect.Adapter) {
-    const images: Images.Images = yield* _(Images.Images);
+const program = Effect.gen(function* () {
+    const images: Images.Images = yield* Images.Images;
 
-    const buildStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* _(
-        images.build({
-            t: "mydockerimage:latest",
-            context: Stream.fromAsyncIterable(
-                tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
-                    entries: ["build-image.dockerfile"],
-                }),
-                () =>
-                    new Images.ImagesError({
-                        method: "buildStream",
-                        message: "error packing the build context",
-                    })
-            ),
-            dockerfile: "build-image.dockerfile",
-        })
-    );
+    const buildStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* images.build({
+        t: "mydockerimage:latest",
+        context: Stream.fromAsyncIterable(
+            tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
+                entries: ["build-image.dockerfile"],
+            }),
+            () =>
+                new Images.ImagesError({
+                    method: "buildStream",
+                    message: "error packing the build context",
+                })
+        ),
+        dockerfile: "build-image.dockerfile",
+    });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.toReadonlyArray)));
+    return yield* Stream.runCollect(buildStream).pipe(Effect.map(Chunk.toReadonlyArray));
 });
 
 program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);

@@ -1,4 +1,4 @@
-import { describe, it } from "@effect/vitest";
+import { describe, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -6,7 +6,7 @@ import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Swarm tests", () => {
     const testSwarmService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
 
     it("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", async () => {

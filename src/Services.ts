@@ -230,9 +230,9 @@ export interface Services {
  * @category Services
  */
 export const make: Effect.Effect<Services, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
-    function* (_: Effect.Adapter) {
-        const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(HttpClient.client.Client);
+    function* () {
+        const agent = yield* MobyConnectionAgent;
+        const defaultClient = yield* HttpClient.client.Client;
 
         const client = defaultClient.pipe(
             HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/services`)),

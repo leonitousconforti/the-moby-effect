@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -6,28 +6,28 @@ import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Configs tests", () => {
     const testConfigsService: Layer.Layer<MobyApi.Configs.Configs, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
     const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
 
-    beforeAll(async () =>
-        Effect.provide(
+    beforeAll(async () => {
+        await Effect.provide(
             Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
             testSwarmsService
-        ).pipe(Effect.runPromise)
-    );
+        ).pipe(Effect.runPromise);
+    });
 
-    afterAll(async () =>
-        Effect.provide(
+    afterAll(async () => {
+        await Effect.provide(
             Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
             testSwarmsService
-        ).pipe(Effect.runPromise)
-    );
+        ).pipe(Effect.runPromise);
+    });
 
     it("Should see no configs", async () => {
-        const configs: Readonly<MobyApi.Schemas.Config[]> = await Effect.runPromise(
+        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
                 testConfigsService
@@ -53,7 +53,7 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should see one config", async () => {
-        const configs: readonly MobyApi.Schemas.Config[] = await Effect.runPromise(
+        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
                 testConfigsService
@@ -64,7 +64,7 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should update a config", async () => {
-        const configs: readonly MobyApi.Schemas.Config[] = await Effect.runPromise(
+        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
                 testConfigsService
@@ -100,7 +100,7 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should see no configs with label testLabel=test", async () => {
-        const configs: readonly MobyApi.Schemas.Config[] = await Effect.runPromise(
+        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Configs.Configs, (configs) =>
                     configs.list({ filters: { label: ["testLabel=test"] } })
@@ -113,7 +113,7 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should delete a config", async () => {
-        const configs: readonly MobyApi.Schemas.Config[] = await Effect.runPromise(
+        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
                 testConfigsService

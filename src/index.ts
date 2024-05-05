@@ -97,6 +97,13 @@ export * as Requests from "./Requests.js"
 export * as Schemas from "./Schemas.js"
 
 /**
+ * Moby Schemas
+ *
+ * @since 1.0.0
+ */
+export * as Schemas2 from "./Schemas2.js"
+
+/**
  * Secrets service
  *
  * @since 1.0.0

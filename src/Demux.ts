@@ -105,9 +105,9 @@ export const isMultiplexedStreamSocketResponse = (response: HttpClient.response.
 export const responseToStreamingSocketOrFail = (
     response: HttpClient.response.ClientResponse
 ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never> =>
-    Effect.gen(function* (_) {
+    Effect.gen(function* () {
         const socket = (response as unknown as IExposeSocketOnEffectClientResponse).source.socket;
-        const effectSocket: Socket.Socket = yield* _(NodeSocket.fromNetSocket(Effect.sync(() => socket)));
+        const effectSocket: Socket.Socket = yield* NodeSocket.fromNetSocket(Effect.sync(() => socket));
 
         if (isRawStreamSocketResponse(response)) {
             return RawStreamSocket({ ...effectSocket, "content-type": "application/vnd.docker.raw-stream" });
@@ -117,9 +117,10 @@ export const responseToStreamingSocketOrFail = (
                 "content-type": "application/vnd.docker.multiplexed-stream",
             });
         } else {
-            return yield* _(
-                new Socket.SocketGenericError({ reason: "Open", error: "Response is not a streaming socket" })
-            );
+            return yield* new Socket.SocketGenericError({
+                reason: "Open",
+                error: "Response is not a streaming socket",
+            });
         }
     });
 

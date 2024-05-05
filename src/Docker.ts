@@ -32,10 +32,14 @@ export const pull = ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}): Effect.Effect<Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>, Images.ImagesError, Images.Images> =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const images: Images.Images = yield* _(Images.Images);
-        return yield* _(images.create({ fromImage: image, "X-Registry-Auth": auth, platform }));
+}): Effect.Effect<
+    Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>,
+    Images.ImagesError,
+    Images.Images | Scope.Scope
+> =>
+    Effect.gen(function* () {
+        const images: Images.Images = yield* Images.Images;
+        return yield* images.create({ fromImage: image, "X-Registry-Auth": auth, platform });
     });
 
 /**
@@ -95,9 +99,9 @@ export const build = ({
     Images.ImagesError,
     Images.Images | Scope.Scope
 > =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const images: Images.Images = yield* _(Images.Images);
-        return yield* _(images.build({ context, dockerfile, platform, t: tag, "X-Registry-Config": auth }));
+    Effect.gen(function* () {
+        const images: Images.Images = yield* Images.Images;
+        return yield* images.build({ context, dockerfile, platform, t: tag, "X-Registry-Config": auth });
     });
 
 /**
@@ -153,24 +157,23 @@ export const run = ({
     Containers.ContainersError | Images.ImagesError,
     Containers.Containers | Images.Images | Scope.Scope
 > =>
-    Effect.gen(function* (_: Effect.Adapter) {
-        const images: Images.Images = yield* _(Images.Images);
-        const containers: Containers.Containers = yield* _(Containers.Containers);
+    Effect.gen(function* () {
+        const images: Images.Images = yield* Images.Images;
+        const containers: Containers.Containers = yield* Containers.Containers;
 
         // Start pulling or building the image
         const buildStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> =
-            imageOptions.kind === "pull" ? yield* _(images.create(imageOptions)) : yield* _(images.build(imageOptions));
+            imageOptions.kind === "pull" ? yield* images.create(imageOptions) : yield* images.build(imageOptions);
 
         // Wait for image pull or build to complete
-        yield* _(Stream.runCollect(buildStream));
+        yield* Stream.runCollect(buildStream);
 
         // Create the container
-        const containerCreateResponse: Readonly<Schemas.ContainerCreateResponse> = yield* _(
-            containers.create(containerOptions)
-        );
+        const containerCreateResponse: Readonly<Schemas.ContainerCreateResponse> =
+            yield* containers.create(containerOptions);
 
         // Start the container
-        yield* _(containers.start({ id: containerCreateResponse.Id }));
+        yield* containers.start({ id: containerCreateResponse.Id });
 
         // Helper to wait until a container is dead or running
         const waitUntilContainerDeadOrRunning: Effect.Effect<void, Containers.ContainersError, never> = Function.pipe(
@@ -179,8 +182,10 @@ export const run = ({
             Effect.flatMap(({ State }) =>
                 Function.pipe(
                     Match.value(State?.Status),
-                    Match.when("running", (_s) => Effect.void),
-                    Match.when("created", (_s) => Effect.fail("Waiting")),
+                    // Match.when("running", (_s) => Effect.void),
+                    // Match.when("created", (_s) => Effect.fail("Waiting")),
+                    Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
+                    Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
                 ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
             )
@@ -202,8 +207,10 @@ export const run = ({
                 Function.pipe(
                     Match.value(State?.Health?.Status),
                     Match.when(undefined, (_s) => Effect.void),
-                    Match.when("healthy", (_s) => Effect.void),
-                    Match.when("starting", (_s) => Effect.fail("Waiting")),
+                    // Match.when("healthy", (_s) => Effect.void),
+                    // Match.when("starting", (_s) => Effect.fail("Waiting")),
+                    Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
+                    Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
                 ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
             )
@@ -215,9 +222,9 @@ export const run = ({
             )
         );
 
-        yield* _(waitUntilContainerDeadOrRunning);
-        yield* _(waitUntilContainerHealthy);
-        return yield* _(containers.inspect({ id: containerCreateResponse.Id }));
+        yield* waitUntilContainerDeadOrRunning;
+        yield* waitUntilContainerHealthy;
+        return yield* containers.inspect({ id: containerCreateResponse.Id });
     });
 
 /**
@@ -240,9 +247,9 @@ export const runScoped = ({
 > => {
     const acquire = run({ imageOptions, containerOptions });
     const release = (containerData: Schemas.ContainerInspectResponse) =>
-        Effect.gen(function* (_: Effect.Adapter) {
-            const images: Images.Images = yield* _(Images.Images);
-            const containers: Containers.Containers = yield* _(Containers.Containers);
+        Effect.gen(function* () {
+            const images: Images.Images = yield* Images.Images;
+            const containers: Containers.Containers = yield* Containers.Containers;
             const imageTag = imageOptions.kind === "pull" ? imageOptions.fromImage : imageOptions.t;
 
             if (!containerData.Id) {
@@ -253,9 +260,9 @@ export const runScoped = ({
                 return new Images.ImagesError({ method: "delete", message: "Image name is missing" });
             }
 
-            yield* _(containers.kill({ id: containerData.Id }));
-            yield* _(containers.delete({ id: containerData.Id, force: true }));
-            yield* _(images.delete({ name: imageTag }));
+            yield* containers.kill({ id: containerData.Id });
+            yield* containers.delete({ id: containerData.Id, force: true });
+            yield* images.delete({ name: imageTag });
             return Effect.void;
         }).pipe(
             Effect.catchTags({
@@ -282,10 +289,10 @@ export const runScoped = ({
 //     options1: Execs.ContainerExecOptions,
 //     options2: Omit<Schema.Schema.Encoded<typeof Schemas.ExecStartConfig>, "Detach"> & { Detach?: T }
 // ) =>
-//     Effect.gen(function* (_) {
-//         const execs: Execs.Execs = yield* _(Execs.Execs);
-//         const execCreateResponse: Schemas.IdResponse = yield* _(execs.container(options1));
-//         return yield* _(execs.start<T>({ id: execCreateResponse.Id, execStartConfig: options2 }));
+//     Effect.gen(function* () {
+//         const execs: Execs.Execs = yield* (Execs.Execs);
+//         const execCreateResponse: Schemas.IdResponse = yield* (execs.container(options1));
+//         return yield* (execs.start<T>({ id: execCreateResponse.Id, execStartConfig: options2 }));
 //     });
 
 /**

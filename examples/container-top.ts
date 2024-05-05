@@ -32,21 +32,19 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 //     ]
 //   ]
 // }
-const program = Effect.gen(function* (_: Effect.Adapter) {
-    const containers: Containers.Containers = yield* _(Containers.Containers);
+const program = Effect.gen(function* () {
+    const containers: Containers.Containers = yield* Containers.Containers;
 
-    const containerInspectResponse: Schemas.ContainerInspectResponse = yield* _(
-        DockerCommon.run({
-            imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
-            containerOptions: {
-                spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
-            },
-        })
-    );
+    const containerInspectResponse: Schemas.ContainerInspectResponse = yield* DockerCommon.run({
+        imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
+        containerOptions: {
+            spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
+        },
+    });
 
-    const data: unknown = yield* _(containers.top({ id: containerInspectResponse.Id!, ps_args: "aux" }));
-    yield* _(containers.kill({ id: containerInspectResponse.Id! }));
-    yield* _(containers.delete({ id: containerInspectResponse.Id! }));
+    const data: unknown = yield* containers.top({ id: containerInspectResponse.Id!, ps_args: "aux" });
+    yield* containers.kill({ id: containerInspectResponse.Id! });
+    yield* containers.delete({ id: containerInspectResponse.Id! });
     return data;
 });
 

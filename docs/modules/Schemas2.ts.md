@@ -1,10 +1,10 @@
 ---
-title: Schemas.ts
-nav_order: 15
+title: Schemas2.ts
+nav_order: 16
 parent: Modules
 ---
 
-## Schemas overview
+## Schemas2 overview
 
 Moby Schemas
 
@@ -32,6 +32,7 @@ Added in v1.0.0
   - [ContainerInspectResponse (class)](#containerinspectresponse-class)
   - [ContainerPruneResponse (class)](#containerpruneresponse-class)
   - [ContainerState (class)](#containerstate-class)
+  - [ContainerStatus (class)](#containerstatus-class)
   - [ContainerSummary (class)](#containersummary-class)
   - [ContainerTopResponse (class)](#containertopresponse-class)
   - [ContainerUpdateResponse (class)](#containerupdateresponse-class)
@@ -56,15 +57,13 @@ Added in v1.0.0
   - [ExecInspectResponse (class)](#execinspectresponse-class)
   - [ExecStartConfig (class)](#execstartconfig-class)
   - [FilesystemChange (class)](#filesystemchange-class)
-  - [GenericResources](#genericresources)
+  - [GenericResources (class)](#genericresources-class)
   - [GraphDriverData (class)](#graphdriverdata-class)
   - [Health (class)](#health-class)
   - [HealthConfig (class)](#healthconfig-class)
   - [HealthcheckResult (class)](#healthcheckresult-class)
-  - [HistoryResponseItem](#historyresponseitem)
+  - [HistoryResponseItem (class)](#historyresponseitem-class)
   - [HostConfig (class)](#hostconfig-class)
-  - [HostConfig_0 (class)](#hostconfig_0-class)
-  - [HostConfig_1 (class)](#hostconfig_1-class)
   - [IDResponse (class)](#idresponse-class)
   - [IPAM (class)](#ipam-class)
   - [IPAMConfig (class)](#ipamconfig-class)
@@ -73,7 +72,7 @@ Added in v1.0.0
   - [ImageID (class)](#imageid-class)
   - [ImageInspect (class)](#imageinspect-class)
   - [ImagePruneResponse (class)](#imagepruneresponse-class)
-  - [ImageSearchResponseItem](#imagesearchresponseitem)
+  - [ImageSearchResponseItem (class)](#imagesearchresponseitem-class)
   - [ImageSummary (class)](#imagesummary-class)
   - [IndexInfo (class)](#indexinfo-class)
   - [JoinTokens (class)](#jointokens-class)
@@ -97,7 +96,6 @@ Added in v1.0.0
   - [NodeStatus (class)](#nodestatus-class)
   - [OCIDescriptor (class)](#ocidescriptor-class)
   - [OCIPlatform (class)](#ociplatform-class)
-  - [ObjectVersion (class)](#objectversion-class)
   - [PeerNode (class)](#peernode-class)
   - [Platform (class)](#platform-class)
   - [Plugin (class)](#plugin-class)
@@ -109,7 +107,7 @@ Added in v1.0.0
   - [PluginsInfo (class)](#pluginsinfo-class)
   - [Port (class)](#port-class)
   - [PortBinding (class)](#portbinding-class)
-  - [PortMap](#portmap)
+  - [PortStatus (class)](#portstatus-class)
   - [ProcessConfig (class)](#processconfig-class)
   - [ProgressDetail (class)](#progressdetail-class)
   - [PushImageInfo (class)](#pushimageinfo-class)
@@ -130,8 +128,6 @@ Added in v1.0.0
   - [SwarmJoinRequest (class)](#swarmjoinrequest-class)
   - [SwarmSpec (class)](#swarmspec-class)
   - [SwarmUnlockRequest (class)](#swarmunlockrequest-class)
-  - [Swarm_0 (class)](#swarm_0-class)
-  - [Swarm_1 (class)](#swarm_1-class)
   - [SystemAuthResponse (class)](#systemauthresponse-class)
   - [SystemDataUsageResponse (class)](#systemdatausageresponse-class)
   - [SystemInfo (class)](#systeminfo-class)
@@ -139,8 +135,8 @@ Added in v1.0.0
   - [TLSInfo (class)](#tlsinfo-class)
   - [Task (class)](#task-class)
   - [TaskSpec (class)](#taskspec-class)
+  - [TaskStatus (class)](#taskstatus-class)
   - [ThrottleDevice (class)](#throttledevice-class)
-  - [Topology](#topology)
   - [UnlockKeyResponse (class)](#unlockkeyresponse-class)
   - [Volume (class)](#volume-class)
   - [VolumeCreateOptions (class)](#volumecreateoptions-class)
@@ -152,6 +148,8 @@ Added in v1.0.0
 # utils
 
 ## Address (class)
+
+Address represents an IPv4 or IPv6 IP address.
 
 **Signature**
 
@@ -172,6 +170,8 @@ export declare class AuthConfig
 Added in v1.45.0
 
 ## BuildCache (class)
+
+BuildCache contains information about a build cache record.
 
 **Signature**
 
@@ -321,6 +321,16 @@ export declare class ContainerState
 
 Added in v1.45.0
 
+## ContainerStatus (class)
+
+**Signature**
+
+```ts
+export declare class ContainerStatus
+```
+
+Added in v1.45.0
+
 ## ContainerSummary (class)
 
 **Signature**
@@ -393,6 +403,8 @@ Added in v1.45.0
 
 ## DeviceMapping (class)
 
+A device mapping between the host and container.
+
 **Signature**
 
 ```ts
@@ -402,6 +414,8 @@ export declare class DeviceMapping
 Added in v1.45.0
 
 ## DeviceRequest (class)
+
+A request for devices to be sent to device drivers.
 
 **Signature**
 
@@ -561,38 +575,23 @@ export declare class FilesystemChange
 
 Added in v1.45.0
 
-## GenericResources
+## GenericResources (class)
+
+User-defined resources can be either Integer resources (e.g, `SSD=3`) or
+string resources (e.g, `GPU=UUID1`).
 
 **Signature**
 
 ```ts
-export declare const GenericResources: Schema.$Array<
-  Schema.NullOr<
-    Schema.Struct<{
-      NamedResourceSpec: Schema.PropertySignature<
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: string | undefined } | null | undefined,
-        never,
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: string | undefined } | null | undefined,
-        never
-      >
-      DiscreteResourceSpec: Schema.PropertySignature<
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: number | undefined } | null | undefined,
-        never,
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: number | undefined } | null | undefined,
-        never
-      >
-    }>
-  >
->
+export declare class GenericResources
 ```
 
 Added in v1.45.0
 
 ## GraphDriverData (class)
+
+Information about the storage driver used to store the container's and
+image's filesystem.
 
 **Signature**
 
@@ -614,6 +613,8 @@ Added in v1.45.0
 
 ## HealthConfig (class)
 
+A test to perform to check that the container is healthy.
+
 **Signature**
 
 ```ts
@@ -624,6 +625,10 @@ Added in v1.45.0
 
 ## HealthcheckResult (class)
 
+HealthcheckResult stores information about a single run of a healthcheck
+probe. TODO: marked as x-nullable at the top level, what does that mean for
+consumers?
+
 **Signature**
 
 ```ts
@@ -632,23 +637,12 @@ export declare class HealthcheckResult
 
 Added in v1.45.0
 
-## HistoryResponseItem
+## HistoryResponseItem (class)
 
 **Signature**
 
 ```ts
-export declare const HistoryResponseItem: Schema.$Array<
-  Schema.NullOr<
-    Schema.Struct<{
-      Id: Schema.$String
-      Created: Schema.$Number
-      CreatedBy: Schema.$String
-      Tags: Schema.NullOr<Schema.$Array<Schema.$String>>
-      Size: Schema.$Number
-      Comment: Schema.$String
-    }>
-  >
->
+export declare class HistoryResponseItem
 ```
 
 Added in v1.45.0
@@ -659,26 +653,6 @@ Added in v1.45.0
 
 ```ts
 export declare class HostConfig
-```
-
-Added in v1.45.0
-
-## HostConfig_0 (class)
-
-**Signature**
-
-```ts
-export declare class HostConfig_0
-```
-
-Added in v1.45.0
-
-## HostConfig_1 (class)
-
-**Signature**
-
-```ts
-export declare class HostConfig_1
 ```
 
 Added in v1.45.0
@@ -735,6 +709,8 @@ Added in v1.45.0
 
 ## ImageID (class)
 
+Image ID or Digest
+
 **Signature**
 
 ```ts
@@ -763,22 +739,12 @@ export declare class ImagePruneResponse
 
 Added in v1.45.0
 
-## ImageSearchResponseItem
+## ImageSearchResponseItem (class)
 
 **Signature**
 
 ```ts
-export declare const ImageSearchResponseItem: Schema.$Array<
-  Schema.NullOr<
-    Schema.Struct<{
-      description: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-      is_official: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-      is_automated: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-      name: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-      star_count: Schema.PropertySignature<"?:", number | undefined, never, "?:", number | undefined, never>
-    }>
-  >
->
+export declare class ImageSearchResponseItem
 ```
 
 Added in v1.45.0
@@ -805,6 +771,8 @@ Added in v1.45.0
 
 ## JoinTokens (class)
 
+JoinTokens contains the tokens workers and managers need to join the swarm.
+
 **Signature**
 
 ```ts
@@ -814,6 +782,8 @@ export declare class JoinTokens
 Added in v1.45.0
 
 ## Limit (class)
+
+An object describing a limit on resources which can be requested by a task.
 
 **Signature**
 
@@ -844,6 +814,9 @@ export declare class Mount
 Added in v1.45.0
 
 ## MountPoint (class)
+
+MountPoint represents a mount point configuration inside the container. This
+is used for reporting the mountpoints in use by a container.
 
 **Signature**
 
@@ -1013,16 +986,6 @@ export declare class OCIPlatform
 
 Added in v1.45.0
 
-## ObjectVersion (class)
-
-**Signature**
-
-```ts
-export declare class ObjectVersion
-```
-
-Added in v1.45.0
-
 ## PeerNode (class)
 
 **Signature**
@@ -1125,6 +1088,8 @@ Added in v1.45.0
 
 ## PortBinding (class)
 
+PortBinding represents a binding between a host IP address and a host port.
+
 **Signature**
 
 ```ts
@@ -1133,15 +1098,12 @@ export declare class PortBinding
 
 Added in v1.45.0
 
-## PortMap
+## PortStatus (class)
 
 **Signature**
 
 ```ts
-export declare const PortMap: Schema.$Record<
-  Schema.$String,
-  Schema.NullOr<Schema.$Array<Schema.NullOr<typeof PortBinding>>>
->
+export declare class PortStatus
 ```
 
 Added in v1.45.0
@@ -1207,6 +1169,10 @@ export declare class Resources
 Added in v1.45.0
 
 ## RestartPolicy (class)
+
+The behavior to apply when the container exits. The default is not to
+restart. An ever increasing delay (double the previous delay, starting at
+100ms) is added before each restart to prevent flooding the server.
 
 **Signature**
 
@@ -1346,26 +1312,6 @@ export declare class SwarmUnlockRequest
 
 Added in v1.45.0
 
-## Swarm_0 (class)
-
-**Signature**
-
-```ts
-export declare class Swarm_0
-```
-
-Added in v1.45.0
-
-## Swarm_1 (class)
-
-**Signature**
-
-```ts
-export declare class Swarm_1
-```
-
-Added in v1.45.0
-
 ## SystemAuthResponse (class)
 
 **Signature**
@@ -1408,6 +1354,9 @@ Added in v1.45.0
 
 ## TLSInfo (class)
 
+Information about the issuer of leaf TLS certificates and the trusted root CA
+certificate
+
 **Signature**
 
 ```ts
@@ -1436,22 +1385,22 @@ export declare class TaskSpec
 
 Added in v1.45.0
 
+## TaskStatus (class)
+
+**Signature**
+
+```ts
+export declare class TaskStatus
+```
+
+Added in v1.45.0
+
 ## ThrottleDevice (class)
 
 **Signature**
 
 ```ts
 export declare class ThrottleDevice
-```
-
-Added in v1.45.0
-
-## Topology
-
-**Signature**
-
-```ts
-export declare const Topology: Schema.$Record<Schema.$String, Schema.$String>
 ```
 
 Added in v1.45.0

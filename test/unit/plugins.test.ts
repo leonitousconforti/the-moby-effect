@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -6,11 +6,11 @@ import * as MobyApi from "the-moby-effect/Moby";
 
 describe.skip("MobyApi Plugins tests", () => {
     const testPluginsService: Layer.Layer<MobyApi.Plugins.Plugins, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
 
     it("Should see no plugins", async () => {
-        const plugins: Readonly<MobyApi.Schemas.Plugin[]> = await Effect.runPromise(
+        const plugins: ReadonlyArray<MobyApi.Schemas.Plugin> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.list()),
                 testPluginsService
@@ -41,7 +41,7 @@ describe.skip("MobyApi Plugins tests", () => {
     });
 
     it("Should see one plugin", async () => {
-        const plugins: Readonly<MobyApi.Schemas.Plugin[]> = await Effect.runPromise(
+        const plugins: ReadonlyArray<MobyApi.Schemas.Plugin> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.list()),
                 testPluginsService
@@ -75,7 +75,7 @@ describe.skip("MobyApi Plugins tests", () => {
     });
 
     it("Should see no enabled plugins", async () => {
-        const plugins: Readonly<MobyApi.Schemas.Plugin[]> = await Effect.runPromise(
+        const plugins: ReadonlyArray<MobyApi.Schemas.Plugin> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.list({ filters: { enable: ["true"] } })),
                 testPluginsService

@@ -311,7 +311,9 @@ export interface Images {
    *   the option is not set, the host's native OS and Architecture are used
    *   for the imported image.
    */
-  readonly create: (options: ImageCreateOptions) => Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError>
+  readonly create: (
+    options: ImageCreateOptions
+  ) => Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError, Scope.Scope>
 
   /**
    * Inspect an image

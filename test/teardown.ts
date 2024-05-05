@@ -2,7 +2,7 @@ import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
-import * as MobyApi from "../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 import * as TestHelpers from "./unit/helpers.js";
 
 export default async function (_globalConfig: unknown, _projectConfig: unknown) {

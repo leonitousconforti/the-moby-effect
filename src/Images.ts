@@ -615,7 +615,9 @@ export interface Images {
      *   the option is not set, the host's native OS and Architecture are used
      *   for the imported image.
      */
-    readonly create: (options: ImageCreateOptions) => Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError>;
+    readonly create: (
+        options: ImageCreateOptions
+    ) => Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError, Scope.Scope>;
 
     /**
      * Inspect an image
@@ -750,9 +752,9 @@ export interface Images {
  * @category Services
  */
 export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
-    function* (_: Effect.Adapter) {
-        const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(HttpClient.client.Client);
+    function* () {
+        const agent = yield* MobyConnectionAgent;
+        const defaultClient = yield* HttpClient.client.Client;
 
         const client = defaultClient.pipe(
             HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/images`)),
@@ -870,7 +872,7 @@ export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClien
 
         const create_ = (
             options: ImageCreateOptions
-        ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError, never>, ImagesError, never> =>
+        ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError, never>, ImagesError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.post("/create"),
                 HttpClient.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
@@ -889,8 +891,7 @@ export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClien
                 Effect.map(Stream.flattenIterables),
                 Effect.map(Stream.flatMap(Schema.decode(Schema.parseJson(BuildInfo)))),
                 Effect.map(Stream.catchAll(streamHandler("create"))),
-                Effect.catchAll(responseHandler("create")),
-                Effect.scoped
+                Effect.catchAll(responseHandler("create"))
             );
 
         const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError> =>

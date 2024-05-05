@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -6,28 +6,28 @@ import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Secrets tests", () => {
     const testSecretsService: Layer.Layer<MobyApi.Secrets.Secrets, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
     const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
 
-    beforeAll(async () =>
-        Effect.provide(
+    beforeAll(async () => {
+        await Effect.provide(
             Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
             testSwarmsService
-        ).pipe(Effect.runPromise)
-    );
+        ).pipe(Effect.runPromise);
+    });
 
-    afterAll(async () =>
-        Effect.provide(
+    afterAll(async () => {
+        await Effect.provide(
             Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
             testSwarmsService
-        ).pipe(Effect.runPromise)
-    );
+        ).pipe(Effect.runPromise);
+    });
 
     it("Should see no secrets", async () => {
-        const secrets: Readonly<MobyApi.Schemas.Secret[]> = await Effect.runPromise(
+        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) => secrets.list()),
                 testSecretsService
@@ -54,7 +54,7 @@ describe("MobyApi Secrets tests", () => {
     });
 
     it("Should list and inspect the secret", async () => {
-        const secrets: Readonly<MobyApi.Schemas.Secret[]> = await Effect.runPromise(
+        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) => secrets.list()),
                 testSecretsService
@@ -80,7 +80,7 @@ describe("MobyApi Secrets tests", () => {
     });
 
     it("Should update the secret", async () => {
-        const secrets: Readonly<MobyApi.Schemas.Secret[]> = await Effect.runPromise(
+        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Secrets.Secrets, (_secrets) => _secrets.list()),
                 testSecretsService
@@ -102,7 +102,7 @@ describe("MobyApi Secrets tests", () => {
     });
 
     it("Should list secrets with the new label", async () => {
-        const secrets: Readonly<MobyApi.Schemas.Secret[]> = await Effect.runPromise(
+        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
             Effect.provide(
                 Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) =>
                     secrets.list({ filters: JSON.stringify({ label: ["testLabelUpdated=test"] }) })

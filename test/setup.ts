@@ -2,10 +2,11 @@ import * as ciInfo from "ci-info";
 import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
-import * as MobyApi from "../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
+import type { GlobalSetupContext } from "vitest/node";
 import * as TestHelpers from "./unit/helpers.js";
 
-export default async function (_globalConfig: unknown, _projectConfig: unknown) {
+export default async function ({ provide }: GlobalSetupContext) {
     await Effect.gen(function* (_: Effect.Adapter) {
         /**
          * If we are anywhere but CI and we aren't running on linux we will
@@ -41,14 +42,14 @@ export default async function (_globalConfig: unknown, _projectConfig: unknown) 
             switch (process.platform) {
                 case "linux":
                 case "darwin": {
-                    globalThis.__TEST_CONNECTION_OPTIONS = { connection: "socket", socketPath: "/var/run/docker.sock" };
+                    provide("__TEST_CONNECTION_OPTIONS", { connection: "socket", socketPath: "/var/run/docker.sock" });
                     return;
                 }
                 case "win32": {
-                    globalThis.__TEST_CONNECTION_OPTIONS = {
+                    provide("__TEST_CONNECTION_OPTIONS", {
                         connection: "socket",
                         socketPath: "//./pipe/docker_engine",
-                    };
+                    });
                     return;
                 }
                 default: {
@@ -71,9 +72,9 @@ export default async function (_globalConfig: unknown, _projectConfig: unknown) 
                     intermediate_layer
                 )
             );
-            globalThis.__DIND_VOLUME_ID = Option.some(dindVolumeId);
-            globalThis.__TEST_CONNECTION_OPTIONS = dindConnectionOptions;
-            globalThis.__DIND_CONTAINER_ID = Option.some(dindContainerId);
+            provide("__DIND_VOLUME_ID", Option.some(dindVolumeId));
+            provide("__TEST_CONNECTION_OPTIONS", dindConnectionOptions);
+            provide("__DIND_CONTAINER_ID", Option.some(dindContainerId));
             return;
         }
 
@@ -88,9 +89,9 @@ export default async function (_globalConfig: unknown, _projectConfig: unknown) 
             const [dindContainerId, dindVolumeId, dindConnectionOptions] = yield* _(
                 Effect.provide(TestHelpers.spawnDind({ kind: "http", tag: dind_image.value }), intermediate_layer)
             );
-            globalThis.__DIND_VOLUME_ID = Option.some(dindVolumeId);
-            globalThis.__TEST_CONNECTION_OPTIONS = dindConnectionOptions;
-            globalThis.__DIND_CONTAINER_ID = Option.some(dindContainerId);
+            provide("__DIND_VOLUME_ID", Option.some(dindVolumeId));
+            provide("__TEST_CONNECTION_OPTIONS", dindConnectionOptions);
+            provide("__DIND_CONTAINER_ID", Option.some(dindContainerId));
             return;
         }
 
@@ -101,5 +102,7 @@ export default async function (_globalConfig: unknown, _projectConfig: unknown) 
                 )
             )
         );
-    }).pipe(Effect.runPromise);
+    })
+        .pipe(Effect.scoped)
+        .pipe(Effect.runPromise);
 }

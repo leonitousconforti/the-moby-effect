@@ -150,7 +150,11 @@ export declare const pull: ({
   image: string
   auth?: string | undefined
   platform?: string | undefined
-}) => Effect.Effect<Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>, Images.ImagesError, Images.Images>
+}) => Effect.Effect<
+  Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>,
+  Images.ImagesError,
+  Images.Images | Scope.Scope
+>
 ```
 
 Added in v1.0.0
@@ -250,7 +254,17 @@ Implements the `docker search` command.
 ```ts
 export declare const search: (
   options: Images.ImageSearchOptions
-) => Effect.Effect<Schemas.ImageSearchResponseItem, Images.ImagesError, Images.Images>
+) => Effect.Effect<
+  readonly ({
+    readonly description?: string | undefined
+    readonly is_official?: boolean | undefined
+    readonly is_automated?: boolean | undefined
+    readonly name?: string | undefined
+    readonly star_count?: number | undefined
+  } | null)[],
+  Images.ImagesError,
+  Images.Images
+>
 ```
 
 Added in v1.0.0

@@ -29,6 +29,7 @@ Added in v1.0.0
   - [From "./Plugins.js"](#from-pluginsjs)
   - [From "./Requests.js"](#from-requestsjs)
   - [From "./Schemas.js"](#from-schemasjs)
+  - [From "./Schemas2.js"](#from-schemas2js)
   - [From "./Secrets.js"](#from-secretsjs)
   - [From "./Services.js"](#from-servicesjs)
   - [From "./Session.js"](#from-sessionjs)
@@ -205,6 +206,18 @@ Moby Schemas
 
 ```ts
 export * as Schemas from "./Schemas.js"
+```
+
+Added in v1.0.0
+
+## From "./Schemas2.js"
+
+Moby Schemas
+
+**Signature**
+
+```ts
+export * as Schemas2 from "./Schemas2.js"
 ```
 
 Added in v1.0.0

@@ -33,33 +33,28 @@ const dockerHubLogin = {
 // {"status":"Pull complete","progressDetail":{},"id":"c1ec31eb5944"}
 // {"status":"Digest: sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7"}
 // {"status":"Status: Downloaded newer image for confo014/hello-world:latest"}
-const program = Effect.gen(function* (_: Effect.Adapter) {
-    const images: Images.Images = yield* _(Images.Images);
-    const system: System.Systems = yield* _(System.Systems);
+const program = Effect.gen(function* () {
+    const images: Images.Images = yield* Images.Images;
+    const system: System.Systems = yield* System.Systems;
 
     // Get an identity token from docker hub
-    const authResponse: Schemas.SystemAuthResponse = yield* _(system.auth(dockerHubLogin));
-    yield* _(Console.log(authResponse));
+    const authResponse: Schemas.SystemAuthResponse = yield* system.auth(dockerHubLogin);
+    yield* Console.log(authResponse);
 
     if (authResponse.Status === "Login Succeeded" && !authResponse.IdentityToken) {
-        yield* _(
-            Console.warn(
-                "Login succeeded but no identity token was given, you must pass the bse64 encoded auth options directly using the X-Registry-Auth header"
-            )
+        yield* Console.warn(
+            "Login succeeded but no identity token was given, you must pass the bse64 encoded auth options directly using the X-Registry-Auth header"
         );
     }
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* _(
-        images.create({
-            fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
-            "X-Registry-Auth":
-                authResponse.IdentityToken || Buffer.from(JSON.stringify(dockerHubLogin)).toString("base64"),
-        })
-    );
+    const pullStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* images.create({
+        fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
+        "X-Registry-Auth": authResponse.IdentityToken || Buffer.from(JSON.stringify(dockerHubLogin)).toString("base64"),
+    });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* _(Stream.runCollect(pullStream).pipe(Effect.map(Chunk.toReadonlyArray)));
+    return yield* Stream.runCollect(pullStream).pipe(Effect.map(Chunk.toReadonlyArray));
 });
 
 program.pipe(Console.log).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

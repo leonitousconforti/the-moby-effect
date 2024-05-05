@@ -1,5 +1,6 @@
 import * as Effect from "effect/Effect";
 import * as Schedule from "effect/Schedule";
+import * as Scope from "effect/Scope";
 import * as MobyApi from "the-moby-effect/Moby";
 
 /**
@@ -10,12 +11,12 @@ import * as MobyApi from "the-moby-effect/Moby";
 export const spawnDind = (
     image: ({ kind: "ssh" } | { kind: "http" } | { kind: "https" } | { kind: "socket" }) & { tag: string }
 ): Effect.Effect<
-    MobyApi.Images.Images | MobyApi.Containers.Containers | MobyApi.Volumes.Volumes,
+    [dindContainerId: string, dindVolumeId: string, connectionOptions: MobyApi.MobyConnectionOptions],
     | MobyApi.Containers.ContainersError
     | MobyApi.Images.ImagesError
     | MobyApi.Volumes.VolumesError
     | MobyApi.System.SystemsError,
-    [dindContainerId: string, dindVolumeId: string, connectionOptions: MobyApi.MobyConnectionOptions]
+    MobyApi.Images.Images | MobyApi.Containers.Containers | MobyApi.Volumes.Volumes | Scope.Scope
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const volumes: MobyApi.Volumes.Volumes = yield* _(MobyApi.Volumes.Volumes);

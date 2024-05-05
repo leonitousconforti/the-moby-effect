@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -6,7 +6,7 @@ import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi System tests", () => {
     const testSystemService: Layer.Layer<MobyApi.System.Systems, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
 
     it("Should ping the docker daemon", async () => {
@@ -53,7 +53,7 @@ describe("MobyApi System tests", () => {
             Effect.provide(
                 Effect.flatMap(MobyApi.System.Systems, (systems) => systems.events()),
                 testSystemService
-            )
+            ).pipe(Effect.scoped)
         );
     });
 });

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -7,7 +7,7 @@ import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Images tests", () => {
     const testImagesService: Layer.Layer<MobyApi.Images.Images, never, never> = MobyApi.fromConnectionOptions(
-        globalThis.__TEST_CONNECTION_OPTIONS
+        inject("__TEST_CONNECTION_OPTIONS")
     ).pipe(Layer.orDie);
 
     // it("Should see no images", async () => {
@@ -47,7 +47,7 @@ describe("MobyApi Images tests", () => {
         await Effect.gen(function* (_: Effect.Adapter) {
             const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
 
-            const pullResponse: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
+            const pullResponse: Stream.Stream<MobyApi.Schemas.BuildInfo, MobyApi.Images.ImagesError, never> = yield* _(
                 images.create({
                     fromImage: "docker.io/library/alpine:latest",
                 })
@@ -56,6 +56,7 @@ describe("MobyApi Images tests", () => {
             yield* _(Stream.runCollect(pullResponse));
         })
             .pipe(Effect.provide(testImagesService))
+            .pipe(Effect.scoped)
             .pipe(Effect.runPromise);
     }, 30_000);
 
