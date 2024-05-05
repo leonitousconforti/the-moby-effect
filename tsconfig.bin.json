@@ -5,6 +5,7 @@
     "compilerOptions": {
         "noEmit": true,
         "rootDir": "bin",
+        "resolveJsonModule": true,
         "tsBuildInfoFile": ".tsbuildinfo/bin.tsbuildinfo"
     }
 }
