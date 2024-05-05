@@ -1,10 +1,13 @@
-import * as NodeRuntime from "@effect/platform-node/Runtime";
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Chunk from "effect/Chunk";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import * as MobyApi from "../src/index.js";
+import * as Images from "the-moby-effect/Images";
+import * as MobyApi from "the-moby-effect/Moby";
+import * as Schemas from "the-moby-effect/Schemas";
+import * as System from "the-moby-effect/System";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -31,11 +34,11 @@ const dockerHubLogin = {
 // {"status":"Digest: sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7"}
 // {"status":"Status: Downloaded newer image for confo014/hello-world:latest"}
 const program = Effect.gen(function* (_: Effect.Adapter) {
-    const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
-    const system: MobyApi.System.Systems = yield* _(MobyApi.System.Systems);
+    const images: Images.Images = yield* _(Images.Images);
+    const system: System.Systems = yield* _(System.Systems);
 
     // Get an identity token from docker hub
-    const authResponse: MobyApi.Schemas.SystemAuthResponse = yield* _(system.auth(dockerHubLogin));
+    const authResponse: Schemas.SystemAuthResponse = yield* _(system.auth(dockerHubLogin));
     yield* _(Console.log(authResponse));
 
     if (authResponse.Status === "Login Succeeded" && !authResponse.IdentityToken) {
@@ -47,7 +50,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     }
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
+    const pullStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* _(
         images.create({
             fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
             "X-Registry-Auth":

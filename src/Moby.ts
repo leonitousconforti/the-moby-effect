@@ -28,29 +28,27 @@ import * as System from "./System.js";
 import * as Tasks from "./Tasks.js";
 import * as Volumes from "./Volumes.js";
 
-// export * from "./Agent.js";
-// export * as Configs from "./Configs.js";
-// export * as Containers from "./Containers.js";
-// export * as DemuxHelpers from "./Demux.js";
-// export * as Distributions from "./Distribution.js";
-// export * as DockerCommon from "./Docker.js";
-// export * as Execs from "./Execs.js";
-// export * as Images from "./Images.js";
-// export * as Networks from "./Networks.js";
-// export * as Nodes from "./Nodes.js";
-// export * as Plugins from "./Plugins.js";
-// export * as Schemas from "./Schemas.js";
-// export * as Secrets from "./Secrets.js";
-// export * as Services from "./Services.js";
-// export * as Sessions from "./Session.js";
-// export * as Swarm from "./Swarm.js";
-// export * as System from "./System.js";
-// export * as Tasks from "./Tasks.js";
-// export * as Volumes from "./Volumes.js";
+export * from "./Agent.js";
+export * as Configs from "./Configs.js";
+export * as Containers from "./Containers.js";
+export * as DemuxHelpers from "./Demux.js";
+export * as Distributions from "./Distribution.js";
+export * as DockerCommon from "./Docker.js";
+export * as Execs from "./Execs.js";
+export * as Images from "./Images.js";
+export * as Networks from "./Networks.js";
+export * as Nodes from "./Nodes.js";
+export * as Plugins from "./Plugins.js";
+export * as Schemas from "./Schemas.js";
+export * as Secrets from "./Secrets.js";
+export * as Services from "./Services.js";
+export * as Sessions from "./Session.js";
+export * as Swarm from "./Swarm.js";
+export * as System from "./System.js";
+export * as Tasks from "./Tasks.js";
+export * as Volumes from "./Volumes.js";
 
 export type MobyApi = Layer.Layer<
-    never,
-    never,
     | Configs.Configs
     | Containers.Containers
     | Distributions.Distributions
@@ -65,7 +63,9 @@ export type MobyApi = Layer.Layer<
     | Swarm.Swarms
     | System.Systems
     | Tasks.Tasks
-    | Volumes.Volumes
+    | Volumes.Volumes,
+    never,
+    never
 >;
 
 const layer = Layer.mergeAll(

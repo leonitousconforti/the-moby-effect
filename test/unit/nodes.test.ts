@@ -1,12 +1,14 @@
+import { afterAll, beforeAll, describe, expect, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "../../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Nodes tests", () => {
-    const testNodesService: Layer.Layer<never, never, MobyApi.Nodes.Nodes> = MobyApi.fromConnectionOptions(
+    const testNodesService: Layer.Layer<MobyApi.Nodes.Nodes, never, never> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
-    const testSwarmsService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromConnectionOptions(
+    const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 

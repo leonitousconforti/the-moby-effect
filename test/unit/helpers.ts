@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect";
 import * as Schedule from "effect/Schedule";
-import * as MobyApi from "../../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker

@@ -1,28 +1,30 @@
+import { afterAll, beforeAll, describe, expect, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "../../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Volumes tests", () => {
-    const testVolumesService: Layer.Layer<never, never, MobyApi.Volumes.Volumes> = MobyApi.fromConnectionOptions(
+    const testVolumesService: Layer.Layer<MobyApi.Volumes.Volumes, never, never> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
-    const testSwarmsService: Layer.Layer<never, never, MobyApi.Swarm.Swarms> = MobyApi.fromConnectionOptions(
+    const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 
-    beforeAll(async () =>
-        Effect.provide(
+    beforeAll(async () => {
+        await Effect.provide(
             Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
             testSwarmsService
-        ).pipe(Effect.runPromise)
-    );
+        ).pipe(Effect.runPromise);
+    });
 
-    afterAll(async () =>
-        Effect.provide(
+    afterAll(async () => {
+        await Effect.provide(
             Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
             testSwarmsService
-        ).pipe(Effect.runPromise)
-    );
+        ).pipe(Effect.runPromise);
+    });
 
     it("Should see no volumes", async () => {
         const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
@@ -75,7 +77,7 @@ describe("MobyApi Volumes tests", () => {
         expect(testData.Driver).toBe("local");
         expect(testData.Mountpoint).toBe("/var/lib/docker/volumes/testVolume/_data");
         expect(testData.Labels).toBeNull();
-        expect(testData.Scope).toBe(MobyApi.Schemas.Volume_Scope.LOCAL);
+        expect(testData.Scope).toBe("local");
         expect(testData.Options).toBeNull();
     });
 

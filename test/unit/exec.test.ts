@@ -1,6 +1,8 @@
+import { describe, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "../../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 
 describe("MobyApi Exec tests", () => {
     const testExecsService: Layer.Layer<never, never, MobyApi.Execs.Execs> = MobyApi.fromConnectionOptions(

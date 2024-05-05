@@ -1,9 +1,11 @@
+import { describe, expect, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "../../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 
 describe.skip("MobyApi Plugins tests", () => {
-    const testPluginsService: Layer.Layer<never, never, MobyApi.Plugins.Plugins> = MobyApi.fromConnectionOptions(
+    const testPluginsService: Layer.Layer<MobyApi.Plugins.Plugins, never, never> = MobyApi.fromConnectionOptions(
         globalThis.__TEST_CONNECTION_OPTIONS
     ).pipe(Layer.orDie);
 

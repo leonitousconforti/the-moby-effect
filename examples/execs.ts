@@ -1,7 +1,7 @@
-import * as NodeRuntime from "@effect/platform-node/Runtime";
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Effect from "effect/Effect";
 
-import * as MobyApi from "../src/index.js";
+import * as MobyApi from "the-moby-effect/Moby";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
