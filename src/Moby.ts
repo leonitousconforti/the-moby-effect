@@ -28,25 +28,62 @@ import * as System from "./System.js";
 import * as Tasks from "./Tasks.js";
 import * as Volumes from "./Volumes.js";
 
-// export * from "./Agent.js";
-// export * as Configs from "./Configs.js";
-// export * as Containers from "./Containers.js";
-// export * as DemuxHelpers from "./Demux.js";
-// export * as Distributions from "./Distribution.js";
-// export * as DockerCommon from "./Docker.js";
-// export * as Execs from "./Execs.js";
-// export * as Images from "./Images.js";
-// export * as Networks from "./Networks.js";
-// export * as Nodes from "./Nodes.js";
-// export * as Plugins from "./Plugins.js";
-// export * as Schemas from "./Schemas.js";
-// export * as Secrets from "./Secrets.js";
-// export * as Services from "./Services.js";
-// export * as Sessions from "./Session.js";
-// export * as Swarm from "./Swarm.js";
-// export * as System from "./System.js";
-// export * as Tasks from "./Tasks.js";
-// export * as Volumes from "./Volumes.js";
+/** @since 1.0.0 */
+export * from "./Agent.js";
+
+/** @since 1.0.0 */
+export * as Configs from "./Configs.js";
+
+/** @since 1.0.0 */
+export * as Containers from "./Containers.js";
+
+/** @since 1.0.0 */
+export * as DemuxHelpers from "./Demux.js";
+
+/** @since 1.0.0 */
+export * as Distributions from "./Distribution.js";
+
+/** @since 1.0.0 */
+export * as DockerCommon from "./Docker.js";
+
+/** @since 1.0.0 */
+export * as Execs from "./Execs.js";
+
+/** @since 1.0.0 */
+export * as Images from "./Images.js";
+
+/** @since 1.0.0 */
+export * as Networks from "./Networks.js";
+
+/** @since 1.0.0 */
+export * as Nodes from "./Nodes.js";
+
+/** @since 1.0.0 */
+export * as Plugins from "./Plugins.js";
+
+/** @since 1.0.0 */
+export * as Schemas from "./Schemas.js";
+
+/** @since 1.0.0 */
+export * as Secrets from "./Secrets.js";
+
+/** @since 1.0.0 */
+export * as Services from "./Services.js";
+
+/** @since 1.0.0 */
+export * as Sessions from "./Session.js";
+
+/** @since 1.0.0 */
+export * as Swarm from "./Swarm.js";
+
+/** @since 1.0.0 */
+export * as System from "./System.js";
+
+/** @since 1.0.0 */
+export * as Tasks from "./Tasks.js";
+
+/** @since 1.0.0 */
+export * as Volumes from "./Volumes.js";
 
 /**
  * Merges all the layers into a single layer
