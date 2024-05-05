@@ -13,8 +13,8 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
 import {
     Swarm,
     SwarmInitRequest,
@@ -22,7 +22,7 @@ import {
     SwarmSpec,
     SwarmUnlockRequest,
     UnlockKeyResponse,
-} from "./schemas.js";
+} from "./Schemas.js";
 
 export class SwarmsError extends Data.TaggedError("SwarmsError")<{
     method: string;
@@ -113,10 +113,10 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const SwarmClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Swarm)));
         const StringClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.string))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.String))
         );
         const UnlockKeyResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(UnlockKeyResponse))
@@ -129,7 +129,7 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
             Function.pipe(HttpClient.request.get("/"), SwarmClient, Effect.catchAll(responseHandler("inspect")));
 
         const init_ = (
-            options: Schema.Schema.To<typeof SwarmInitRequest.struct>
+            options: Schema.Schema.Type<typeof SwarmInitRequest>
         ): Effect.Effect<Readonly<string>, SwarmsError> =>
             Function.pipe(
                 HttpClient.request.post("/init"),
@@ -139,7 +139,7 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
                 Effect.scoped
             );
 
-        const join_ = (options: Schema.Schema.To<typeof SwarmInitRequest.struct>): Effect.Effect<void, SwarmsError> =>
+        const join_ = (options: Schema.Schema.Type<typeof SwarmInitRequest.fields>): Effect.Effect<void, SwarmsError> =>
             Function.pipe(
                 HttpClient.request.post("/join"),
                 HttpClient.request.schemaBody(SwarmJoinRequest)(new SwarmJoinRequest(options)),
@@ -179,7 +179,7 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
             );
 
         const unlock_ = (
-            options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>
+            options: Schema.Schema.Type<typeof SwarmUnlockRequest.fields>
         ): Effect.Effect<void, SwarmsError> =>
             Function.pipe(
                 HttpClient.request.post("/unlock"),

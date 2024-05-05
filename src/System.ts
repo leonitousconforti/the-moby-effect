@@ -15,8 +15,8 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./Requests.js";
 import {
     AuthConfig,
     EventMessage,
@@ -24,7 +24,7 @@ import {
     SystemDataUsageResponse,
     SystemInfo,
     SystemVersion,
-} from "./schemas.js";
+} from "./Schemas.js";
 
 export class SystemsError extends Data.TaggedError("SystemsError")<{
     method: string;
@@ -154,7 +154,7 @@ const make: Effect.Effect<Systems, never, IMobyConnectionAgent | HttpClient.clie
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const SystemInfoClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(SystemInfo))
         );

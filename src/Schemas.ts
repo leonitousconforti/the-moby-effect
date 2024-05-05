@@ -1,5 +1,3 @@
-/* eslint-disable max-lines */
-
 import * as Schema from "@effect/schema/Schema";
 
 // A field can either be required or not required.
@@ -10,8 +8,8 @@ const NonRequiredField = <A, I, R>(
 ): Schema.PropertySignature<":", A, never, "?:", I, R> => Schema.optional(schema, { exact: true, ...options });
 
 // A field can either be marked "x-nullable: true"
-const NullableRequiredField = <A, I, R>(schema: Schema.Schema<A, I, R>): Schema.Schema<A | null, I | null, R> =>
-    RequiredField(Schema.NullOr(schema));
+// const NullableRequiredField = <A, I, R>(schema: Schema.Schema<A, I, R>): Schema.Schema<A | null, I | null, R> =>
+//     RequiredField(Schema.NullOr(schema));
 const NullableNonRequiredField = <A, I, R>(
     schema: Schema.Schema<A, I, R>,
     options?: { default: () => A }
@@ -936,7 +934,7 @@ export class EndpointPortConfig extends Schema.Class<EndpointPortConfig>("Endpoi
     }),
 }) {}
 
-export class DeleteResponse extends Schema.Class<DeleteResponse>("ImageDeleteResponseItem")({
+export class ImageDeleteResponseItem extends Schema.Class<ImageDeleteResponseItem>("ImageDeleteResponseItem")({
     /** The image ID of an image that was untagged */
     Untagged: NullabilityOmittedNonRequiredField(Schema.String),
 
@@ -3335,10 +3333,10 @@ export class Plugin extends Schema.Class<Plugin>("Plugin")({
     /** Settings that can be modified by users. */
     Settings: NonNullableRequiredField(
         Schema.Struct({
-            Mounts: NullabilityOmittedNonRequiredField(Schema.Array(PluginMount)),
-            Env: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
-            Args: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
-            Devices: NullabilityOmittedNonRequiredField(Schema.Array(PluginDevice)),
+            Mounts: NullabilityOmittedRequiredField(Schema.Array(PluginMount)),
+            Env: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+            Args: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+            Devices: NullabilityOmittedRequiredField(Schema.Array(PluginDevice)),
         })
     ),
 
@@ -3346,290 +3344,204 @@ export class Plugin extends Schema.Class<Plugin>("Plugin")({
     PluginReference: NonNullableNonRequiredField(Schema.String),
 
     /** The config of a plugin. */
-    Config: NonNullableNonRequiredField(
+    Config: NonNullableRequiredField(
         Schema.Struct({
             /** Docker Version used to create the plugin */
-            DockerVersion: Schema.optional(Schema.String),
-            Description: Schema.String,
-            Documentation: Schema.String,
+            DockerVersion: NonNullableNonRequiredField(Schema.String),
+            Description: NonNullableRequiredField(Schema.String),
+            Documentation: NonNullableRequiredField(Schema.String),
 
             /** The interface between Docker and the plugin */
-            Interface: Schema.NullOr(
+            Interface: NonNullableRequiredField(
                 Schema.Struct({
-                    Types: Schema.NullOr(Schema.Array(Schema.NullOr(PluginInterfaceType))),
-                    Socket: Schema.String,
+                    Types: NullabilityOmittedRequiredField(Schema.Array(PluginInterfaceType)),
+                    Socket: NonNullableRequiredField(Schema.String),
 
                     /** Protocol to use for clients connecting to the plugin. */
-                    ProtocolScheme: Schema.optional(Schema.Enums(Plugin_Config_Interface_ProtocolScheme)),
+                    ProtocolScheme: NullabilityOmittedNonRequiredField(Schema.String),
                 })
             ),
-            Entrypoint: Schema.NullOr(Schema.Array(Schema.String)),
-            WorkDir: Schema.String,
-            User: Schema.optional(
-                Schema.NullOr(
-                    Schema.Struct({ UID: Schema.optional(Schema.Number), GID: Schema.optional(Schema.Number) })
-                )
-            ),
-            Network: Schema.NullOr(Schema.Struct({ Type: Schema.String })),
-            Linux: Schema.NullOr(
+            Entrypoint: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+            WorkDir: NonNullableRequiredField(Schema.String),
+            User: NonNullableNonRequiredField(
                 Schema.Struct({
-                    Capabilities: Schema.NullOr(Schema.Array(Schema.String)),
-                    AllowAllDevices: Schema.Boolean,
-                    Devices: Schema.NullOr(Schema.Array(Schema.NullOr(PluginDevice))),
+                    UID: NullabilityOmittedNonRequiredField(Schema.Number),
+                    GID: NullabilityOmittedNonRequiredField(Schema.Number),
                 })
             ),
-            PropagatedMount: Schema.String,
-            IpcHost: Schema.Boolean,
-            PidHost: Schema.Boolean,
-            Mounts: Schema.NullOr(Schema.Array(Schema.NullOr(PluginMount))),
-            Env: Schema.NullOr(Schema.Array(Schema.NullOr(PluginEnvironment))),
-            Args: Schema.NullOr(
+            Network: NonNullableRequiredField(Schema.Struct({ Type: NonNullableRequiredField(Schema.String) })),
+            Linux: NonNullableRequiredField(
                 Schema.Struct({
-                    Name: Schema.String,
-                    Description: Schema.String,
-                    Settable: Schema.NullOr(Schema.Array(Schema.String)),
-                    Value: Schema.NullOr(Schema.Array(Schema.String)),
+                    Capabilities: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+                    AllowAllDevices: NonNullableRequiredField(Schema.Boolean),
+                    Devices: NullabilityOmittedRequiredField(Schema.Array(PluginDevice)),
                 })
             ),
-            rootfs: Schema.optional(
-                Schema.NullOr(
-                    Schema.Struct({
-                        type: Schema.optional(Schema.String),
-                        diff_ids: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-                    })
-                )
+            PropagatedMount: NonNullableRequiredField(Schema.String),
+            IpcHost: NonNullableRequiredField(Schema.Boolean),
+            PidHost: NonNullableRequiredField(Schema.Boolean),
+            Mounts: NullabilityOmittedRequiredField(Schema.Array(PluginMount)),
+            Env: NullabilityOmittedRequiredField(Schema.Array(PluginEnvironment)),
+            Args: NonNullableRequiredField(
+                Schema.Struct({
+                    Name: NonNullableRequiredField(Schema.String),
+                    Description: NonNullableRequiredField(Schema.String),
+                    Settable: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+                    Value: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+                })
+            ),
+            rootfs: NullabilityOmittedNonRequiredField(
+                Schema.Struct({
+                    type: NullabilityOmittedNonRequiredField(Schema.String),
+                    diff_ids: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+                })
             ),
         })
     ),
 }) {}
 
-export class ContainerInspectResponse extends Schema.Class<ContainerInspectResponse>("ContainerInspectResponse")({
-    /** The ID of the container */
-    Id: Schema.optional(Schema.String),
-
-    /** The time the container was created */
-    Created: Schema.optional(Schema.String),
-
-    /** The path to the command being run */
-    Path: Schema.optional(Schema.String),
-
-    /** The arguments to the command being run */
-    Args: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-    State: Schema.optional(Schema.NullOr(ContainerState)),
-
-    /** The container's image ID */
-    Image: Schema.optional(Schema.String),
-    ResolvConfPath: Schema.optional(Schema.String),
-    HostnamePath: Schema.optional(Schema.String),
-    HostsPath: Schema.optional(Schema.String),
-    LogPath: Schema.optional(Schema.String),
-    Name: Schema.optional(Schema.String),
-    RestartCount: Schema.optional(Schema.Number),
-    Driver: Schema.optional(Schema.String),
-    Platform: Schema.optional(Schema.String),
-    MountLabel: Schema.optional(Schema.String),
-    ProcessLabel: Schema.optional(Schema.String),
-    AppArmorProfile: Schema.optional(Schema.String),
-
-    /** IDs of exec instances that are running in the container. */
-    ExecIDs: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-    HostConfig: Schema.optional(Schema.NullOr(HostConfig)),
-    GraphDriver: Schema.optional(Schema.NullOr(GraphDriverData)),
-
-    /** The size of files that have been created or changed by this container. */
-    SizeRw: Schema.optional(Schema.Number),
-
-    /** The total size of all the files in this container. */
-    SizeRootFs: Schema.optional(Schema.Number),
-    Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(MountPoint)))),
-    Config: Schema.optional(Schema.NullOr(ContainerConfig)),
-    NetworkSettings: Schema.optional(Schema.NullOr(NetworkSettings)),
-}) {}
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-export class ContainerTopResponse extends Schema.Class<ContainerTopResponse>()({
+export class ContainerTopResponse extends Schema.Class<ContainerTopResponse>("ContainerTopResponse")({
     /** The ps column titles */
-    Titles: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    Titles: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * Each process running in the container, where each is process is an array
      * of values corresponding to the titles.
      */
-    Processes: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(Schema.Array(Schema.String))))),
+    Processes: NullabilityOmittedNonRequiredField(Schema.Array(Schema.Array(Schema.String))),
 }) {}
 
-export class ContainerUpdateResponse extends Schema.Class<ContainerUpdateResponse>()({
-    Warnings: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+export class ContainerUpdateResponse extends Schema.Class<ContainerUpdateResponse>("ContainerUpdateResponse")({
+    Warnings: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
-
-export class ContainerPruneResponse extends Schema.Class<ContainerPruneResponse>()({
+// u can do this !!!!!
+export class ContainerPruneResponse extends Schema.Class<ContainerPruneResponse>("ContainerPruneResponse")({
     /** Container IDs that were deleted */
-    ContainersDeleted: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    ContainersDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: Schema.optional(Schema.Number),
+    SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
-export class BuildPruneResponse extends Schema.Class<BuildPruneResponse>()({
-    CachesDeleted: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+export class BuildPruneResponse extends Schema.Class<BuildPruneResponse>("BuildPruneResponse")({
+    CachesDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: Schema.optional(Schema.Number),
+    SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
-export const HistoryResponseItem = Schema.Array(
-    Schema.NullOr(
-        Schema.Struct({
-            Id: Schema.String,
-            Created: Schema.Number,
-            CreatedBy: Schema.String,
-            Tags: Schema.NullOr(Schema.Array(Schema.String)),
-            Size: Schema.Number,
-            Comment: Schema.String,
-        })
-    )
-);
+export class HistoryResponseItem extends Schema.Class<HistoryResponseItem>("HistoryResponseItem")({
+    Id: NonNullableRequiredField(Schema.String),
+    Created: NonNullableRequiredField(Schema.Number),
+    CreatedBy: NonNullableRequiredField(Schema.String),
+    Tags: NullabilityOmittedRequiredField(Schema.Array(Schema.String)),
+    Size: NonNullableRequiredField(Schema.Number),
+    Comment: NonNullableRequiredField(Schema.String),
+}) {}
 
-export const ImageSearchResponseItem = Schema.Array(
-    Schema.NullOr(
-        Schema.Struct({
-            description: Schema.optional(Schema.String),
-            is_official: Schema.optional(Schema.Boolean),
-            is_automated: Schema.optional(Schema.Boolean),
-            name: Schema.optional(Schema.String),
-            star_count: Schema.optional(Schema.Number),
-        })
-    )
-);
+export class ImageSearchResponseItem extends Schema.Class<ImageSearchResponseItem>("ImageSearchResponseItem")({
+    description: NullabilityOmittedNonRequiredField(Schema.String),
+    is_official: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    is_automated: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    name: NullabilityOmittedNonRequiredField(Schema.String),
+    star_count: NullabilityOmittedNonRequiredField(Schema.Number),
+}) {}
 
-export class SystemAuthResponse extends Schema.Class<SystemAuthResponse>()({
+export class SystemAuthResponse extends Schema.Class<SystemAuthResponse>("SystemAuthResponse")({
     /** The status of the authentication */
-    Status: Schema.String,
+    Status: NonNullableRequiredField(Schema.String),
 
     /** An opaque token used to authenticate a user after a successful login */
-    IdentityToken: Schema.optional(Schema.String),
+    IdentityToken: NonNullableNonRequiredField(Schema.String),
 }) {}
 
-export class ExecConfig extends Schema.Class<ExecConfig>()({
+export class ExecConfig extends Schema.Class<ExecConfig>("ExecConfig")({
     /** Attach to `stdin` of the exec command. */
-    AttachStdin: Schema.optional(Schema.Boolean),
+    AttachStdin: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** Attach to `stdout` of the exec command. */
-    AttachStdout: Schema.optional(Schema.Boolean),
+    AttachStdout: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** Attach to `stderr` of the exec command. */
-    AttachStderr: Schema.optional(Schema.Boolean),
+    AttachStderr: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** Initial console size, as an `[height, width]` array. */
-    ConsoleSize: Schema.optional(Schema.NullOr(Schema.Array(Schema.Number))),
+    ConsoleSize: NullableNonRequiredField(Schema.Array(Schema.Number)),
 
     /**
      * Override the key sequence for detaching a container. Format is a single
      * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
      * `@`, `^`, `[`, `,` or `_`.
      */
-    DetachKeys: Schema.optional(Schema.String),
+    DetachKeys: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Allocate a pseudo-TTY. */
-    Tty: Schema.optional(Schema.Boolean),
+    Tty: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** A list of environment variables in the form `["VAR=value", ...]`. */
-    Env: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    Env: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Command to run, as a string or array of strings. */
-    Cmd: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    Cmd: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Runs the exec process with extended privileges. */
-    Privileged: Schema.optional(Schema.Boolean),
+    Privileged: NullabilityOmittedNonRequiredField(Schema.Boolean, { default: () => false }),
 
     /**
      * The user, and optionally, group to run the exec process inside the
      * container. Format is one of: `user`, `user:group`, `uid`, or `uid:gid`.
      */
-    User: Schema.optional(Schema.String),
+    User: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** The working directory for the exec process inside the container. */
-    WorkingDir: Schema.optional(Schema.String),
+    WorkingDir: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-export class ExecStartConfig extends Schema.Class<ExecStartConfig>()({
+export class ExecStartConfig extends Schema.Class<ExecStartConfig>("ExecStartConfig")({
+    Detach: NullabilityOmittedNonRequiredField(Schema.Boolean),
+
     /** Allocate a pseudo-TTY. */
-    Tty: Schema.optional(Schema.Boolean),
+    Tty: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** Initial console size, as an `[height, width]` array. */
-    ConsoleSize: Schema.optional(Schema.NullOr(Schema.Array(Schema.Number))),
+    ConsoleSize: NullableNonRequiredField(Schema.Array(Schema.Number)),
 }) {}
 
-export class VolumePruneResponse extends Schema.Class<VolumePruneResponse>()({
+export class VolumePruneResponse extends Schema.Class<VolumePruneResponse>("VolumePruneResponse")({
     /** Volumes that were deleted */
-    VolumesDeleted: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    VolumesDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: Schema.optional(Schema.Number),
+    SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
-export class NetworkCreateResponse extends Schema.Class<NetworkCreateResponse>()({
+export class NetworkCreateResponse extends Schema.Class<NetworkCreateResponse>("NetworkCreateResponse")({
     /** The ID of the created network. */
-    Id: Schema.optional(Schema.String),
-    Warning: Schema.optional(Schema.String),
+    Id: NullabilityOmittedNonRequiredField(Schema.String),
+    Warning: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-export class NetworkDisconnectRequest extends Schema.Class<NetworkDisconnectRequest>()({
+export class NetworkDisconnectRequest extends Schema.Class<NetworkDisconnectRequest>("NetworkDisconnectRequest")({
     /** The ID or name of the container to disconnect from the network. */
-    Container: Schema.optional(Schema.String),
+    Container: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Force the container to disconnect from the network. */
-    Force: Schema.optional(Schema.Boolean),
+    Force: NullabilityOmittedNonRequiredField(Schema.Boolean),
 }) {}
 
-export class NetworkPruneResponse extends Schema.Class<NetworkPruneResponse>()({
+export class NetworkPruneResponse extends Schema.Class<NetworkPruneResponse>("NetworkPruneResponse")({
     /** Networks that were deleted */
-    NetworksDeleted: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    NetworksDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
-export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>()({
+export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>("SwarmJoinRequest")({
     /**
      * Listen address used for inter-manager communication if the node gets
      * promoted to manager, as well as determining the networking interface used
      * for the VXLAN Tunnel Endpoint (VTEP).
      */
-    ListenAddr: Schema.optional(Schema.String),
-
+    ListenAddr: NullabilityOmittedNonRequiredField(Schema.String),
+    // null it !!!
     /**
      * Externally reachable address advertised to other nodes. This can either
      * be an address/port combination in the form `192.168.1.1:4567`, or an
@@ -3638,7 +3550,7 @@ export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>()({
      * `AdvertiseAddr` is not specified, it will be automatically detected when
      * possible.
      */
-    AdvertiseAddr: Schema.optional(Schema.String),
+    AdvertiseAddr: NullabilityOmittedNonRequiredField(Schema.String),
 
     /**
      * Address or interface to use for data path traffic (format:
@@ -3651,79 +3563,79 @@ export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>()({
      * running on this node. Using this parameter it is possible to separate the
      * container data traffic from the management traffic of the cluster.
      */
-    DataPathAddr: Schema.optional(Schema.String),
+    DataPathAddr: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Addresses of manager nodes already participating in the swarm. */
-    RemoteAddrs: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    RemoteAddrs: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Secret token for joining this swarm. */
-    JoinToken: Schema.optional(Schema.String),
+    JoinToken: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-export class UnlockKeyResponse extends Schema.Class<UnlockKeyResponse>()({
+export class UnlockKeyResponse extends Schema.Class<UnlockKeyResponse>("UnlockKeyResponse")({
     /** The swarm's unlock key. */
-    UnlockKey: Schema.optional(Schema.String),
+    UnlockKey: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-export class SwarmUnlockRequest extends Schema.Class<SwarmUnlockRequest>()({
+export class SwarmUnlockRequest extends Schema.Class<SwarmUnlockRequest>("SwarmUnlockRequest")({
     /** The swarm's unlock key. */
-    UnlockKey: Schema.optional(Schema.String),
+    UnlockKey: NullabilityOmittedNonRequiredField(Schema.String),
 }) {}
 
-export class FilesystemChange extends Schema.Class<FilesystemChange>()({
+export class FilesystemChange extends Schema.Class<FilesystemChange>("FilesystemChange")({
     /** Path to file or directory that has changed. */
-    Path: Schema.String,
-    Kind: Schema.NullOr(Schema.Enums(ChangeType)),
+    Path: NonNullableRequiredField(Schema.String),
+    Kind: NullabilityOmittedRequiredField(Schema.Union(Schema.Literal(0), Schema.Literal(1), Schema.Literal(2))),
 }) {}
 
-export class IPAM extends Schema.Class<IPAM>()({
+export class IPAM extends Schema.Class<IPAM>("IPAM")({
     /** Name of the IPAM driver to use. */
-    Driver: Schema.optional(Schema.String),
+    Driver: NullabilityOmittedNonRequiredField(Schema.String, { default: () => "default" }),
 
     /**
      * List of IPAM configuration options, specified as a map:
      *
      *     {"Subnet": <CIDR>, "IPRange": <CIDR>, "Gateway": <IP address>, "AuxAddress": <device_name:IP address>}
      */
-    Config: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(IPAMConfig)))),
+    Config: NullabilityOmittedNonRequiredField(Schema.Array(IPAMConfig)),
 
     /** Driver-specific options, specified as a map. */
-    Options: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    Options: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 }) {}
 
-export class BuildInfo extends Schema.Class<BuildInfo>()({
-    id: Schema.optional(Schema.String),
-    stream: Schema.optional(Schema.String),
-    error: Schema.optional(Schema.String),
-    errorDetail: Schema.optional(Schema.NullOr(ErrorDetail)),
-    status: Schema.optional(Schema.String),
-    progress: Schema.optional(Schema.String),
-    progressDetail: Schema.optional(Schema.NullOr(ProgressDetail)),
-    aux: Schema.optional(Schema.NullOr(ImageID)),
+export class BuildInfo extends Schema.Class<BuildInfo>("BuildInfo")({
+    id: NullabilityOmittedNonRequiredField(Schema.String),
+    stream: NullabilityOmittedNonRequiredField(Schema.String),
+    error: NullabilityOmittedNonRequiredField(Schema.String),
+    errorDetail: NullabilityOmittedNonRequiredField(ErrorDetail),
+    status: NullabilityOmittedNonRequiredField(Schema.String),
+    progress: NullabilityOmittedNonRequiredField(Schema.String),
+    progressDetail: NullabilityOmittedNonRequiredField(ProgressDetail),
+    aux: NullabilityOmittedNonRequiredField(ImageID),
 }) {}
 
-export class CreateImageInfo extends Schema.Class<CreateImageInfo>()({
-    id: Schema.optional(Schema.String),
-    error: Schema.optional(Schema.String),
-    errorDetail: Schema.optional(Schema.NullOr(ErrorDetail)),
-    status: Schema.optional(Schema.String),
-    progress: Schema.optional(Schema.String),
-    progressDetail: Schema.optional(Schema.NullOr(ProgressDetail)),
+export class CreateImageInfo extends Schema.Class<CreateImageInfo>("CreateImageInfo")({
+    id: NullabilityOmittedNonRequiredField(Schema.String),
+    error: NullabilityOmittedNonRequiredField(Schema.String),
+    errorDetail: NullabilityOmittedNonRequiredField(ErrorDetail),
+    status: NullabilityOmittedNonRequiredField(Schema.String),
+    progress: NullabilityOmittedNonRequiredField(Schema.String),
+    progressDetail: NullabilityOmittedNonRequiredField(ProgressDetail),
 }) {}
 
-export class PushImageInfo extends Schema.Class<PushImageInfo>()({
-    error: Schema.optional(Schema.String),
-    status: Schema.optional(Schema.String),
-    progress: Schema.optional(Schema.String),
-    progressDetail: Schema.optional(Schema.NullOr(ProgressDetail)),
+export class PushImageInfo extends Schema.Class<PushImageInfo>("PushImageInfo")({
+    error: NullabilityOmittedNonRequiredField(Schema.String),
+    status: NullabilityOmittedNonRequiredField(Schema.String),
+    progress: NullabilityOmittedNonRequiredField(Schema.String),
+    progressDetail: NullabilityOmittedNonRequiredField(ProgressDetail),
 }) {}
 
-export class SecretSpec extends Schema.Class<SecretSpec>()({
+export class SecretSpec extends Schema.Class<SecretSpec>("SecretSpec")({
     /** User-defined name of the secret. */
-    Name: Schema.optional(Schema.String),
+    Name: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** User-defined key/value metadata. */
-    Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
     /**
      * Base64-url-safe-encoded ([RFC
@@ -3733,85 +3645,99 @@ export class SecretSpec extends Schema.Class<SecretSpec>()({
      * This field is only used to _create_ a secret, and is not returned by
      * other endpoints.
      */
-    Data: Schema.optional(Schema.String),
-    Driver: Schema.optional(Schema.NullOr(Driver)),
-    Templating: Schema.optional(Schema.NullOr(Driver)),
+    Data: NullabilityOmittedNonRequiredField(Schema.String),
+    Driver: NullabilityOmittedNonRequiredField(Driver),
+    Templating: NullabilityOmittedNonRequiredField(Driver),
 }) {}
 
-export class ConfigSpec extends Schema.Class<ConfigSpec>()({
+export class ConfigSpec extends Schema.Class<ConfigSpec>("ConfigSpec")({
     /** User-defined name of the config. */
-    Name: Schema.optional(Schema.String),
+    Name: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** User-defined key/value metadata. */
-    Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
     /**
      * Base64-url-safe-encoded ([RFC
      * 4648](https://tools.ietf.org/html/rfc4648#section-5)) config data.
      */
-    Data: Schema.optional(Schema.String),
-    Templating: Schema.optional(Schema.NullOr(Driver)),
+    Data: NullabilityOmittedNonRequiredField(Schema.String),
+    Templating: NullabilityOmittedNonRequiredField(Driver),
 }) {}
 
-export class ContainerWaitResponse extends Schema.Class<ContainerWaitResponse>()({
+export class ContainerWaitResponse extends Schema.Class<ContainerWaitResponse>("ContainerWaitResponse")({
     /** Exit code of the container */
-    StatusCode: Schema.Number,
-    Error: Schema.optional(Schema.NullOr(ContainerWaitExitError)),
+    StatusCode: NonNullableRequiredField(Schema.Number),
+    Error: NullabilityOmittedNonRequiredField(ContainerWaitExitError),
 }) {}
 
-export class EventMessage extends Schema.Class<EventMessage>()({
+export class EventMessage extends Schema.Class<EventMessage>("EventMessage")({
     /** The type of object emitting the event */
-    Type: Schema.optional(Schema.Enums(EventMessage_Type)),
+    Type: NullabilityOmittedNonRequiredField(
+        Schema.Union(
+            Schema.Literal("builder"),
+            Schema.Literal("config"),
+            Schema.Literal("container"),
+            Schema.Literal("daemon"),
+            Schema.Literal("image"),
+            Schema.Literal("network"),
+            Schema.Literal("node"),
+            Schema.Literal("plugin"),
+            Schema.Literal("secret"),
+            Schema.Literal("service"),
+            Schema.Literal("volume")
+        )
+    ),
 
     /** The type of event */
-    Action: Schema.optional(Schema.String),
-    Actor: Schema.optional(Schema.NullOr(EventActor)),
+    Action: NullabilityOmittedNonRequiredField(Schema.String),
+    Actor: NullabilityOmittedNonRequiredField(EventActor),
 
     /**
      * Scope of the event. Engine events are `local` scope. Cluster (Swarm)
      * events are `swarm` scope.
      */
-    scope: Schema.optional(Schema.Enums(EventMessage_scope)),
+    scope: NullabilityOmittedNonRequiredField(Schema.Union(Schema.Literal("local"), Schema.Literal("Swarm"))),
 
     /** Timestamp of event */
-    time: Schema.optional(Schema.Number),
+    time: NullabilityOmittedNonRequiredField(Schema.Number),
 
     /** Timestamp of event, with nanosecond accuracy */
-    timeNano: Schema.optional(Schema.Number),
+    timeNano: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
-export class DistributionInspect extends Schema.Class<DistributionInspect>()({
-    Descriptor: Schema.NullOr(OCIDescriptor),
+export class DistributionInspect extends Schema.Class<DistributionInspect>("DistributionInspect")({
+    Descriptor: NullabilityOmittedRequiredField(OCIDescriptor),
 
     /** An array containing all platforms supported by the image. */
-    Platforms: Schema.NullOr(Schema.Array(Schema.NullOr(OCIPlatform))),
+    Platforms: NullabilityOmittedRequiredField(Schema.Array(OCIPlatform)),
 }) {}
 
-export class ImagePruneResponse extends Schema.Class<ImagePruneResponse>()({
+export class ImagePruneResponse extends Schema.Class<ImagePruneResponse>("ImagePruneResponse")({
     /** Images that were deleted */
-    ImagesDeleted: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(ImageDeleteResponseItem)))),
+    ImagesDeleted: NullabilityOmittedNonRequiredField(Schema.Array(ImageDeleteResponseItem)),
 
     /** Disk space reclaimed in bytes */
-    SpaceReclaimed: Schema.optional(Schema.Number),
+    SpaceReclaimed: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
-export class ExecInspectResponse extends Schema.Class<ExecInspectResponse>()({
-    CanRemove: Schema.optional(Schema.Boolean),
-    DetachKeys: Schema.optional(Schema.String),
-    ID: Schema.optional(Schema.String),
-    Running: Schema.optional(Schema.Boolean),
-    ExitCode: Schema.optional(Schema.Number),
-    ProcessConfig: Schema.optional(Schema.NullOr(ProcessConfig)),
-    OpenStdin: Schema.optional(Schema.Boolean),
-    OpenStderr: Schema.optional(Schema.Boolean),
-    OpenStdout: Schema.optional(Schema.Boolean),
-    ContainerID: Schema.optional(Schema.String),
+export class ExecInspectResponse extends Schema.Class<ExecInspectResponse>("ExecInspectResponse")({
+    CanRemove: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    DetachKeys: NullabilityOmittedNonRequiredField(Schema.String),
+    ID: NullabilityOmittedNonRequiredField(Schema.String),
+    Running: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    ExitCode: NullabilityOmittedNonRequiredField(Schema.Number),
+    ProcessConfig: NullabilityOmittedNonRequiredField(ProcessConfig),
+    OpenStdin: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    OpenStderr: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    OpenStdout: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    ContainerID: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** The system process ID for the exec process. */
-    Pid: Schema.optional(Schema.Number),
+    Pid: NullabilityOmittedNonRequiredField(Schema.Number),
 }) {}
 
-export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>()({
+export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitRequest")({
     /**
      * Listen address used for inter-manager communication, as well as
      * determining the networking interface used for the VXLAN Tunnel Endpoint
@@ -3820,7 +3746,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>()({
      * `eth0:4567`. If the port number is omitted, the default swarm listening
      * port is used.
      */
-    ListenAddr: Schema.optional(Schema.String),
+    ListenAddr: NullabilityOmittedNonRequiredField(Schema.String),
 
     /**
      * Externally reachable address advertised to other nodes. This can either
@@ -3830,7 +3756,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>()({
      * `AdvertiseAddr` is not specified, it will be automatically detected when
      * possible.
      */
-    AdvertiseAddr: Schema.optional(Schema.String),
+    AdvertiseAddr: NullabilityOmittedNonRequiredField(Schema.String),
 
     /**
      * Address or interface to use for data path traffic (format:
@@ -3843,35 +3769,333 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>()({
      * running on this node. Using this parameter it is possible to separate the
      * container data traffic from the management traffic of the cluster.
      */
-    DataPathAddr: Schema.optional(Schema.String),
+    DataPathAddr: NullabilityOmittedNonRequiredField(Schema.String),
 
     /**
      * DataPathPort specifies the data path port number for data traffic.
      * Acceptable port range is 1024 to 49151. if no port is set or is set to 0,
      * default port 4789 will be used.
      */
-    DataPathPort: Schema.optional(Schema.Number),
+    DataPathPort: NullabilityOmittedNonRequiredField(Schema.Number),
 
     /**
      * Default Address Pool specifies default subnet pools for global scope
      * networks.
      */
-    DefaultAddrPool: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    DefaultAddrPool: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Force creation of a new swarm. */
-    ForceNewCluster: Schema.optional(Schema.Boolean),
+    ForceNewCluster: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /**
      * SubnetSize specifies the subnet size of the networks created from the
      * default subnet pool.
      */
-    SubnetSize: Schema.optional(Schema.Number),
-    Spec: Schema.optional(Schema.NullOr(SwarmSpec)),
+    SubnetSize: NullabilityOmittedNonRequiredField(Schema.Number),
+    Spec: NullabilityOmittedNonRequiredField(SwarmSpec),
 }) {}
 
-export class HostConfig_0 extends Resources.extend<HostConfig_0>()({}) {}
+export class NetworkingConfig extends Schema.Class<NetworkingConfig>("NetworkingConfig")({
+    /** A mapping of network name to endpoint configuration for that network. */
+    EndpointsConfig: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, EndpointSettings)),
+}) {}
 
-export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
+export class ImageInspect extends Schema.Class<ImageInspect>("ImageInspect")({
+    /**
+     * ID is the content-addressable ID of an image.
+     *
+     * This identifier is a content-addressable digest calculated from the
+     * image's configuration (which includes the digests of layers used by the
+     * image).
+     *
+     * Note that this digest differs from the `RepoDigests` below, which holds
+     * digests of image manifests that reference the image.
+     */
+    Id: NonNullableNonRequiredField(Schema.String),
+
+    /**
+     * List of image names/tags in the local image cache that reference this
+     * image.
+     *
+     * Multiple image tags can refer to the same image, and this list may be
+     * empty if no tags reference the image, in which case the image is
+     * "untagged", in which case it can still be referenced by its ID.
+     */
+    RepoTags: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+
+    /**
+     * List of content-addressable digests of locally available image manifests
+     * that the image is referenced from. Multiple manifests can refer to the
+     * same image.
+     *
+     * These digests are usually only available if the image was either pulled
+     * from a registry, or if the image was pushed to a registry, which is when
+     * the manifest is generated and its digest calculated.
+     */
+    RepoDigests: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+
+    /**
+     * ID of the parent image.
+     *
+     * Depending on how the image was created, this field may be empty and is
+     * only set for images that were built/created locally. This field is empty
+     * if the image was pulled from an image registry.
+     */
+    Parent: NonNullableNonRequiredField(Schema.String),
+
+    /** Optional message that was set when committing or importing the image. */
+    Comment: NonNullableNonRequiredField(Schema.String),
+
+    /**
+     * Date and time at which the image was created, formatted in [RFC
+     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
+     */
+    Created: NullableNonRequiredField(Schema.String),
+
+    /**
+     * The ID of the container that was used to create the image.
+     *
+     * Depending on how the image was created, this field may be empty.
+     */
+    Container: NullabilityOmittedNonRequiredField(Schema.String),
+    ContainerConfig: NullabilityOmittedNonRequiredField(ContainerConfig),
+
+    /**
+     * The version of Docker that was used to build the image.
+     *
+     * Depending on how the image was created, this field may be empty.
+     */
+    DockerVersion: NonNullableNonRequiredField(Schema.String),
+
+    /**
+     * Name of the author that was specified when committing the image, or as
+     * specified through MAINTAINER (deprecated) in the Dockerfile.
+     */
+    Author: NonNullableNonRequiredField(Schema.String),
+    Config: NullabilityOmittedNonRequiredField(ContainerConfig),
+
+    /** Hardware CPU architecture that the image runs on. */
+    Architecture: NonNullableNonRequiredField(Schema.String),
+
+    /** CPU architecture variant (presently ARM-only). */
+    Variant: NullableNonRequiredField(Schema.String),
+
+    /** Operating System the image is built to run on. */
+    Os: NonNullableNonRequiredField(Schema.String),
+
+    /**
+     * Operating System version the image is built to run on (especially for
+     * Windows).
+     */
+    OsVersion: NullableNonRequiredField(Schema.String),
+
+    /** Total size of the image including all layers it is composed of. */
+    Size: NonNullableNonRequiredField(Schema.Number),
+
+    /**
+     * Total size of the image including all layers it is composed of.
+     *
+     * In versions of Docker before v1.10, this field was calculated from the
+     * image itself and all of its parent images. Images are now stored
+     * self-contained, and no longer use a parent-chain, making this field an
+     * equivalent of the Size field.> **Deprecated**: this field is kept for
+     * backward compatibility, but> Will be removed in API v1.44.
+     */
+    VirtualSize: NullabilityOmittedNonRequiredField(Schema.Number),
+    GraphDriver: NullabilityOmittedNonRequiredField(GraphDriverData),
+
+    /** Information about the image's RootFS, including the layer IDs. */
+    RootFS: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Type: NonNullableRequiredField(Schema.String),
+            Layers: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+        })
+    ),
+
+    /**
+     * Additional metadata of the image in the local cache. This information is
+     * local to the daemon, and not part of the image itself.
+     */
+    Metadata: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            /**
+             * Date and time at which the image was last tagged in [RFC
+             * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with
+             * nano-seconds.
+             *
+             * This information is only available if the image was tagged
+             * locally, and omitted otherwise.
+             */
+            LastTagTime: NullableNonRequiredField(Schema.String),
+        })
+    ),
+}) {}
+
+export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>("VolumeCreateOptions")({
+    /** The new volume's name. If not specified, Docker generates a name. */
+    Name: NonNullableNonRequiredField(Schema.String),
+
+    /** Name of the volume driver to use. */
+    Driver: NonNullableNonRequiredField(Schema.String),
+
+    /**
+     * A mapping of driver options and values. These options are passed directly
+     * to the driver and are driver specific.
+     */
+    DriverOpts: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+
+    /** User-defined key/value metadata. */
+    Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+    ClusterVolumeSpec: NullabilityOmittedNonRequiredField(ClusterVolumeSpec),
+}) {}
+
+export class Network extends Schema.Class<Network>("Network")({
+    Name: NullabilityOmittedNonRequiredField(Schema.String),
+    Id: NullabilityOmittedNonRequiredField(Schema.String),
+    Created: NullabilityOmittedNonRequiredField(Schema.String),
+    Scope: NullabilityOmittedNonRequiredField(Schema.String),
+    Driver: NullabilityOmittedNonRequiredField(Schema.String),
+    EnableIPv6: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    IPAM: NullabilityOmittedNonRequiredField(IPAM),
+    Internal: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    Attachable: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    Ingress: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    Containers: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, NetworkContainer)),
+    Options: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+    Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+}) {}
+
+export class ContainerSummary extends Schema.Class<ContainerSummary>("ContainerSummary")({
+    /** The ID of this container */
+    Id: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** The names that this container has been given */
+    Names: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+
+    /** The name of the image used when creating this container */
+    Image: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** The ID of the image that this container was created from */
+    ImageID: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** Command to run when starting the container */
+    Command: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** When the container was created */
+    Created: NullabilityOmittedNonRequiredField(Schema.Number),
+
+    /** The ports exposed by this container */
+    Ports: NullabilityOmittedNonRequiredField(Schema.Array(Port)),
+
+    /** The size of files that have been created or changed by this container */
+    SizeRw: NullabilityOmittedNonRequiredField(Schema.Number),
+
+    /** The total size of all the files in this container */
+    SizeRootFs: NullabilityOmittedNonRequiredField(Schema.Number),
+
+    /** User-defined key/value metadata. */
+    Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+
+    /** The state of this container (e.g. `Exited`) */
+    State: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** Additional human-readable status of this container (e.g. `Exit 0`) */
+    Status: NullabilityOmittedNonRequiredField(Schema.String),
+    HostConfig: NullabilityOmittedNonRequiredField(
+        Schema.Struct({ NetworkMode: NullabilityOmittedNonRequiredField(Schema.String) })
+    ),
+
+    /** A summary of the container's network settings */
+    NetworkSettings: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Networks: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, EndpointSettings)),
+        })
+    ),
+    Mounts: NullabilityOmittedNonRequiredField(Schema.Array(MountPoint)),
+}) {}
+
+export class Secret extends Schema.Class<Secret>("Secret")({
+    ID: NullabilityOmittedNonRequiredField(Schema.String),
+    Version: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Index: NullabilityOmittedNonRequiredField(Schema.Number),
+        })
+    ),
+    CreatedAt: NullabilityOmittedNonRequiredField(Schema.String),
+    UpdatedAt: NullabilityOmittedNonRequiredField(Schema.String),
+    Spec: NullabilityOmittedNonRequiredField(SecretSpec),
+}) {}
+
+export class Config extends Schema.Class<Config>("Config")({
+    ID: NullabilityOmittedNonRequiredField(Schema.String),
+    Version: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Index: NullabilityOmittedNonRequiredField(Schema.Number),
+        })
+    ),
+    CreatedAt: NullabilityOmittedNonRequiredField(Schema.String),
+    UpdatedAt: NullabilityOmittedNonRequiredField(Schema.String),
+    Spec: NullabilityOmittedNonRequiredField(ConfigSpec),
+}) {}
+
+export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("NetworkCreateRequest")({
+    /** The network's name. */
+    Name: NullabilityOmittedRequiredField(Schema.String),
+
+    /**
+     * Check for networks with duplicate names. Since Network is primarily keyed
+     * based on a random ID and not on the name, and network name is strictly a
+     * user-friendly alias to the network which is uniquely identified using ID,
+     * there is no guaranteed way to check for duplicates. CheckDuplicate is
+     * there to provide a best effort checking of any networks which has the
+     * same name but it is not guaranteed to catch all name collisions.
+     */
+    CheckDuplicate: NullabilityOmittedNonRequiredField(Schema.Boolean),
+
+    /** Name of the network driver plugin to use. */
+    Driver: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** Restrict external access to the network. */
+    Internal: NullabilityOmittedNonRequiredField(Schema.Boolean),
+
+    /**
+     * Globally scoped network is manually attachable by regular containers from
+     * workers in swarm mode.
+     */
+    Attachable: NullabilityOmittedNonRequiredField(Schema.Boolean),
+
+    /**
+     * Ingress network is the network which provides the routing-mesh in swarm
+     * mode.
+     */
+    Ingress: NullabilityOmittedNonRequiredField(Schema.Boolean),
+    IPAM: NullabilityOmittedNonRequiredField(IPAM),
+
+    /** Enable IPv6 on the network. */
+    EnableIPv6: NullabilityOmittedNonRequiredField(Schema.Boolean),
+
+    /** Network specific options to be used by the drivers. */
+    Options: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+
+    /** User-defined key/value metadata. */
+    Labels: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+}) {}
+
+export class NetworkConnectRequest extends Schema.Class<NetworkConnectRequest>("NetworkConnectRequest")({
+    /** The ID or name of the container to connect to the network. */
+    Container: NullabilityOmittedNonRequiredField(Schema.String),
+    EndpointConfig: NullabilityOmittedNonRequiredField(EndpointSettings),
+}) {}
+
+export class VolumeListResponse extends Schema.Class<VolumeListResponse>("VolumeListResponse")({
+    /** List of volumes */
+    Volumes: NullabilityOmittedNonRequiredField(Schema.Array(Volume)),
+
+    /** Warnings that occurred when fetching the list of volumes. */
+    Warnings: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+}) {}
+
+export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
     /**
      * A list of volume bindings for this container. Each volume binding is a
      * string in one of these forms:
@@ -3911,20 +4135,30 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      *   the source mount point must be set to `shared`. For slave volumes, the
      *   mount must be set to either `shared` or `slave`.
      */
-    Binds: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    Binds: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Path to a file where the container ID is written */
-    ContainerIDFile: Schema.optional(Schema.String),
+    ContainerIDFile: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** The logging configuration for this container */
-    LogConfig: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                Type: Schema.optional(Schema.Enums(HostConfig_1_LogConfig_Type)),
-                Config: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-            })
-        )
-    ),
+    LogConfig: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Type: NullabilityOmittedNonRequiredField(
+                Schema.Union(
+                    Schema.Literal("json-file"),
+                    Schema.Literal("syslog"),
+                    Schema.Literal("journald"),
+                    Schema.Literal("gelf"),
+                    Schema.Literal("fluentd"),
+                    Schema.Literal("awslogs"),
+                    Schema.Literal("splunk"),
+                    Schema.Literal("etwlogs"),
+                    Schema.Literal("none")
+                )
+            ),
+            Config: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
+        })
+    ), // im being brainwashed into nullification
 
     /**
      * Network mode to use for this container. Supported standard values are:
@@ -3932,48 +4166,54 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      * taken as a custom network's name to which this container should connect
      * to.
      */
-    NetworkMode: Schema.optional(Schema.String),
-    PortBindings: Schema.optional(Schema.NullOr(PortMap)),
-    RestartPolicy: Schema.optional(Schema.NullOr(RestartPolicy)),
+    NetworkMode: NullabilityOmittedNonRequiredField(Schema.String),
+    PortBindings: NullabilityOmittedNonRequiredField(
+        Schema.Record(Schema.String, Schema.NullOr(Schema.Array(PortBinding))) // 5 SQUIGGLYS LEF
+    ),
+    RestartPolicy: NullabilityOmittedNonRequiredField(RestartPolicy),
 
     /**
      * Automatically remove the container when the container's process exits.
      * This has no effect if `RestartPolicy` is set.
      */
-    AutoRemove: Schema.optional(Schema.Boolean),
+    AutoRemove: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** Driver that this container uses to mount volumes. */
-    VolumeDriver: Schema.optional(Schema.String),
+    VolumeDriver: NullabilityOmittedNonRequiredField(Schema.String),
 
     /**
      * A list of volumes to inherit from another container, specified in the
      * form `<container name>[:<ro|rw>]`.
      */
-    VolumesFrom: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    VolumesFrom: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** Specification for mounts to be added to the container. */
-    Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(Mount)))),
+    Mounts: NullabilityOmittedNonRequiredField(Schema.Array(Mount)),
 
     /** Initial console size, as an `[height, width]` array. */
-    ConsoleSize: Schema.optional(Schema.NullOr(Schema.Array(Schema.Number))),
+    ConsoleSize: NullableNonRequiredField(
+        Schema.Array(Schema.Number.pipe(Schema.greaterThanOrEqualTo(0)))
+            .pipe(Schema.maxItems(2))
+            .pipe(Schema.minItems(2))
+    ),
 
     /**
      * Arbitrary non-identifying metadata attached to container and provided to
      * the runtime when the container is started.
      */
-    Annotations: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    Annotations: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
     /**
      * A list of kernel capabilities to add to the container. Conflicts with
      * option 'Capabilities'.
      */
-    CapAdd: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    CapAdd: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * A list of kernel capabilities to drop from the container. Conflicts with
      * option 'Capabilities'.
      */
-    CapDrop: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    CapDrop: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * Cgroup namespace mode for the container. Possible values are:
@@ -3985,25 +4225,25 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      * `"private"` or `"host"`, depending on daemon version, kernel support and
      * configuration.
      */
-    CgroupnsMode: Schema.optional(Schema.Enums(HostConfig_1_CgroupnsMode)),
+    CgroupnsMode: NullabilityOmittedNonRequiredField(Schema.Union(Schema.Literal("private"), Schema.Literal("host"))),
 
     /** A list of DNS servers for the container to use. */
-    Dns: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    Dns: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** A list of DNS options. */
-    DnsOptions: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    DnsOptions: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** A list of DNS search domains. */
-    DnsSearch: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    DnsSearch: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * A list of hostnames/IP mappings to add to the container's `/etc/hosts`
      * file. Specified in the form `["hostname:IP"]`.
      */
-    ExtraHosts: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    ExtraHosts: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /** A list of additional groups that the container process will run as. */
-    GroupAdd: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    GroupAdd: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * IPC sharing mode for the container. Possible values are:
@@ -4019,19 +4259,19 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      * If not specified, daemon default is used, which can either be `"private"`
      * or `"shareable"`, depending on daemon version and configuration.
      */
-    IpcMode: Schema.optional(Schema.String),
+    IpcMode: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Cgroup to use for the container. */
-    Cgroup: Schema.optional(Schema.String),
+    Cgroup: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** A list of links for the container in the form `container_name:alias`. */
-    Links: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    Links: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * An integer value containing the score given to the container in order to
      * tune OOM killer preferences.
      */
-    OomScoreAdj: Schema.optional(Schema.Number),
+    OomScoreAdj: NullabilityOmittedNonRequiredField(Schema.Number),
 
     /**
      * Set the PID (Process) Namespace mode for the container. It can be either:
@@ -4039,10 +4279,10 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      * - `"container:<name|id>"`: joins another container's PID namespace
      * - `"host"`: use the host's PID namespace inside the container
      */
-    PidMode: Schema.optional(Schema.String),
+    PidMode: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Gives the container full access to the host. */
-    Privileged: Schema.optional(Schema.Boolean),
+    Privileged: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /**
      * Allocates an ephemeral host port for all of a container's exposed ports.
@@ -4055,22 +4295,22 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      * kernel. For example, on Linux the range is defined by
      * `/proc/sys/net/ipv4/ip_local_port_range`.
      */
-    PublishAllPorts: Schema.optional(Schema.Boolean),
+    PublishAllPorts: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /** Mount the container's root filesystem as read only. */
-    ReadonlyRootfs: Schema.optional(Schema.Boolean),
+    ReadonlyRootfs: NullabilityOmittedNonRequiredField(Schema.Boolean),
 
     /**
      * A list of string values to customize labels for MLS systems, such as
      * SELinux.
      */
-    SecurityOpt: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    SecurityOpt: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * Storage driver options for this container, in the form `{"size":
      * "120G"}`.
      */
-    StorageOpt: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    StorageOpt: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
     /**
      * A map of container directories which should be replaced by tmpfs mounts,
@@ -4078,19 +4318,19 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      *
      *     { "/run": "rw,noexec,nosuid,size=65536k" }
      */
-    Tmpfs: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    Tmpfs: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
     /** UTS namespace to use for the container. */
-    UTSMode: Schema.optional(Schema.String),
+    UTSMode: NullabilityOmittedNonRequiredField(Schema.String),
 
     /**
      * Sets the usernamespace mode for the container when usernamespace
      * remapping option is enabled.
      */
-    UsernsMode: Schema.optional(Schema.String),
+    UsernsMode: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Size of `/dev/shm` in bytes. If omitted, the system uses 64MB. */
-    ShmSize: Schema.optional(Schema.Number),
+    ShmSize: NullabilityOmittedNonRequiredField(Schema.Number), // me when someone tells me how i eat my toast:
 
     /**
      * A list of kernel parameters (sysctls) to set in the container. For
@@ -4098,402 +4338,138 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>()({
      *
      *     { "net.ipv4.ip_forward": "1" }
      */
-    Sysctls: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+    Sysctls: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
 
     /** Runtime to use with this container. */
-    Runtime: Schema.optional(Schema.String),
+    Runtime: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Isolation technology of the container. (Windows only) */
-    Isolation: Schema.optional(Schema.Enums(HostConfig_1_Isolation)),
+    Isolation: NullabilityOmittedNonRequiredField(
+        Schema.Union(Schema.Literal("default"), Schema.Literal("process"), Schema.Literal("hyperv"))
+    ),
 
     /**
      * The list of paths to be masked inside the container (this overrides the
      * default set of paths).
      */
-    MaskedPaths: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    MaskedPaths: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 
     /**
      * The list of paths to be set as read-only inside the container (this
      * overrides the default set of paths).
      */
-    ReadonlyPaths: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+    ReadonlyPaths: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
 
-export class HostConfig extends HostConfig_1.extend<HostConfig>()({}) {}
+export class ContainerInspectResponse extends Schema.Class<ContainerInspectResponse>("ContainerInspectResponse")({
+    /** The ID of the container */
+    Id: NullabilityOmittedNonRequiredField(Schema.String),
 
-export class NetworkingConfig extends Schema.Class<NetworkingConfig>()({
-    /** A mapping of network name to endpoint configuration for that network. */
-    EndpointsConfig: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(EndpointSettings)))),
+    /** The time the container was created */
+    Created: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** The path to the command being run */
+    Path: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** The arguments to the command being run */
+    Args: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+    State: NullabilityOmittedNonRequiredField(ContainerState),
+
+    /** The container's image ID */
+    Image: NullabilityOmittedNonRequiredField(Schema.String),
+    ResolvConfPath: NullabilityOmittedNonRequiredField(Schema.String),
+    HostnamePath: NullabilityOmittedNonRequiredField(Schema.String),
+    HostsPath: NullabilityOmittedNonRequiredField(Schema.String),
+    LogPath: NullabilityOmittedNonRequiredField(Schema.String),
+    Name: NullabilityOmittedNonRequiredField(Schema.String),
+    RestartCount: NullabilityOmittedNonRequiredField(Schema.Number),
+    Driver: NullabilityOmittedNonRequiredField(Schema.String),
+    Platform: NullabilityOmittedNonRequiredField(Schema.String),
+    MountLabel: NullabilityOmittedNonRequiredField(Schema.String),
+    ProcessLabel: NullabilityOmittedNonRequiredField(Schema.String),
+    AppArmorProfile: NullabilityOmittedNonRequiredField(Schema.String),
+
+    /** IDs of exec instances that are running in the container. */
+    ExecIDs: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
+    HostConfig: NullabilityOmittedNonRequiredField(HostConfig),
+    GraphDriver: NullabilityOmittedNonRequiredField(GraphDriverData),
+
+    /** The size of files that have been created or changed by this container. */
+    SizeRw: NullabilityOmittedNonRequiredField(Schema.Number),
+
+    /** The total size of all the files in this container. */
+    SizeRootFs: NullabilityOmittedNonRequiredField(Schema.Number),
+    Mounts: NullabilityOmittedNonRequiredField(Schema.Array(MountPoint)),
+    Config: NullabilityOmittedNonRequiredField(ContainerConfig),
+    NetworkSettings: NullabilityOmittedNonRequiredField(NetworkSettings),
 }) {}
 
-export class ImageInspect extends Schema.Class<ImageInspect>()({
-    /**
-     * ID is the content-addressable ID of an image.
-     *
-     * This identifier is a content-addressable digest calculated from the
-     * image's configuration (which includes the digests of layers used by the
-     * image).
-     *
-     * Note that this digest differs from the `RepoDigests` below, which holds
-     * digests of image manifests that reference the image.
-     */
-    Id: Schema.optional(Schema.String),
-
-    /**
-     * List of image names/tags in the local image cache that reference this
-     * image.
-     *
-     * Multiple image tags can refer to the same image, and this list may be
-     * empty if no tags reference the image, in which case the image is
-     * "untagged", in which case it can still be referenced by its ID.
-     */
-    RepoTags: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-
-    /**
-     * List of content-addressable digests of locally available image manifests
-     * that the image is referenced from. Multiple manifests can refer to the
-     * same image.
-     *
-     * These digests are usually only available if the image was either pulled
-     * from a registry, or if the image was pushed to a registry, which is when
-     * the manifest is generated and its digest calculated.
-     */
-    RepoDigests: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-
-    /**
-     * ID of the parent image.
-     *
-     * Depending on how the image was created, this field may be empty and is
-     * only set for images that were built/created locally. This field is empty
-     * if the image was pulled from an image registry.
-     */
-    Parent: Schema.optional(Schema.String),
-
-    /** Optional message that was set when committing or importing the image. */
-    Comment: Schema.optional(Schema.String),
-
-    /**
-     * Date and time at which the image was created, formatted in [RFC
-     * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with nano-seconds.
-     */
-    Created: Schema.optional(Schema.String),
-
-    /**
-     * The ID of the container that was used to create the image.
-     *
-     * Depending on how the image was created, this field may be empty.
-     */
-    Container: Schema.optional(Schema.String),
-    ContainerConfig: Schema.optional(Schema.NullOr(ContainerConfig)),
-
-    /**
-     * The version of Docker that was used to build the image.
-     *
-     * Depending on how the image was created, this field may be empty.
-     */
-    DockerVersion: Schema.optional(Schema.String),
-
-    /**
-     * Name of the author that was specified when committing the image, or as
-     * specified through MAINTAINER (deprecated) in the Dockerfile.
-     */
-    Author: Schema.optional(Schema.String),
-    Config: Schema.optional(Schema.NullOr(ContainerConfig)),
-
-    /** Hardware CPU architecture that the image runs on. */
-    Architecture: Schema.optional(Schema.String),
-
-    /** CPU architecture variant (presently ARM-only). */
-    Variant: Schema.optional(Schema.String),
-
-    /** Operating System the image is built to run on. */
-    Os: Schema.optional(Schema.String),
-
-    /**
-     * Operating System version the image is built to run on (especially for
-     * Windows).
-     */
-    OsVersion: Schema.optional(Schema.String),
-
-    /** Total size of the image including all layers it is composed of. */
-    Size: Schema.optional(Schema.Number),
-
-    /**
-     * Total size of the image including all layers it is composed of.
-     *
-     * In versions of Docker before v1.10, this field was calculated from the
-     * image itself and all of its parent images. Images are now stored
-     * self-contained, and no longer use a parent-chain, making this field an
-     * equivalent of the Size field.> **Deprecated**: this field is kept for
-     * backward compatibility, but> Will be removed in API v1.44.
-     */
-    VirtualSize: Schema.optional(Schema.Number),
-    GraphDriver: Schema.optional(Schema.NullOr(GraphDriverData)),
-
-    /** Information about the image's RootFS, including the layer IDs. */
-    RootFS: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                Type: Schema.String,
-                Layers: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-            })
-        )
+export class Service extends Schema.Class<Service>("Service")({
+    ID: NullabilityOmittedNonRequiredField(Schema.String),
+    Version: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Index: NullabilityOmittedNonRequiredField(Schema.Number),
+        })
     ),
-
-    /**
-     * Additional metadata of the image in the local cache. This information is
-     * local to the daemon, and not part of the image itself.
-     */
-    Metadata: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                /**
-                 * Date and time at which the image was last tagged in [RFC
-                 * 3339](https://www.ietf.org/rfc/rfc3339.txt) format with
-                 * nano-seconds.
-                 *
-                 * This information is only available if the image was tagged
-                 * locally, and omitted otherwise.
-                 */
-                LastTagTime: Schema.optional(Schema.String),
-            })
-        )
-    ),
-}) {}
-
-export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>()({
-    /** The new volume's name. If not specified, Docker generates a name. */
-    Name: Schema.optional(Schema.String),
-
-    /** Name of the volume driver to use. */
-    Driver: Schema.optional(Schema.String),
-
-    /**
-     * A mapping of driver options and values. These options are passed directly
-     * to the driver and are driver specific.
-     */
-    DriverOpts: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-
-    /** User-defined key/value metadata. */
-    Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-    ClusterVolumeSpec: Schema.optional(Schema.NullOr(ClusterVolumeSpec)),
-}) {}
-
-export class Network extends Schema.Class<Network>()({
-    Name: Schema.optional(Schema.String),
-    Id: Schema.optional(Schema.String),
-    Created: Schema.optional(Schema.String),
-    Scope: Schema.optional(Schema.String),
-    Driver: Schema.optional(Schema.String),
-    EnableIPv6: Schema.optional(Schema.Boolean),
-    IPAM: Schema.optional(Schema.NullOr(IPAM)),
-    Internal: Schema.optional(Schema.Boolean),
-    Attachable: Schema.optional(Schema.Boolean),
-    Ingress: Schema.optional(Schema.Boolean),
-    Containers: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkContainer)))),
-    Options: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-    Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-}) {}
-
-export class Swarm_0 extends ClusterInfo.extend<Swarm_0>()({}) {}
-
-export class Swarm_1 extends Schema.Class<Swarm_1>()({ JoinTokens: Schema.optional(Schema.NullOr(JoinTokens)) }) {}
-
-export class Swarm extends Swarm_1.extend<Swarm>()({}) {}
-
-export class ContainerSummary extends Schema.Class<ContainerSummary>()({
-    /** The ID of this container */
-    Id: Schema.optional(Schema.String),
-
-    /** The names that this container has been given */
-    Names: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-
-    /** The name of the image used when creating this container */
-    Image: Schema.optional(Schema.String),
-
-    /** The ID of the image that this container was created from */
-    ImageID: Schema.optional(Schema.String),
-
-    /** Command to run when starting the container */
-    Command: Schema.optional(Schema.String),
-
-    /** When the container was created */
-    Created: Schema.optional(Schema.Number),
-
-    /** The ports exposed by this container */
-    Ports: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(Port)))),
-
-    /** The size of files that have been created or changed by this container */
-    SizeRw: Schema.optional(Schema.Number),
-
-    /** The total size of all the files in this container */
-    SizeRootFs: Schema.optional(Schema.Number),
-
-    /** User-defined key/value metadata. */
-    Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-
-    /** The state of this container (e.g. `Exited`) */
-    State: Schema.optional(Schema.String),
-
-    /** Additional human-readable status of this container (e.g. `Exit 0`) */
-    Status: Schema.optional(Schema.String),
-    HostConfig: Schema.optional(Schema.NullOr(Schema.Struct({ NetworkMode: Schema.optional(Schema.String) }))),
-
-    /** A summary of the container's network settings */
-    NetworkSettings: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                Networks: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(EndpointSettings)))),
-            })
-        )
-    ),
-    Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(MountPoint)))),
-}) {}
-
-export class Secret extends Schema.Class<Secret>()({
-    ID: Schema.optional(Schema.String),
-    Version: Schema.optional(Schema.NullOr(ObjectVersion)),
-    CreatedAt: Schema.optional(Schema.String),
-    UpdatedAt: Schema.optional(Schema.String),
-    Spec: Schema.optional(Schema.NullOr(SecretSpec)),
-}) {}
-
-export class Config extends Schema.Class<Config>()({
-    ID: Schema.optional(Schema.String),
-    Version: Schema.optional(Schema.NullOr(ObjectVersion)),
-    CreatedAt: Schema.optional(Schema.String),
-    UpdatedAt: Schema.optional(Schema.String),
-    Spec: Schema.optional(Schema.NullOr(ConfigSpec)),
-}) {}
-
-export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>()({
-    /** The network's name. */
-    Name: Schema.String,
-
-    /**
-     * Check for networks with duplicate names. Since Network is primarily keyed
-     * based on a random ID and not on the name, and network name is strictly a
-     * user-friendly alias to the network which is uniquely identified using ID,
-     * there is no guaranteed way to check for duplicates. CheckDuplicate is
-     * there to provide a best effort checking of any networks which has the
-     * same name but it is not guaranteed to catch all name collisions.
-     */
-    CheckDuplicate: Schema.optional(Schema.Boolean),
-
-    /** Name of the network driver plugin to use. */
-    Driver: Schema.optional(Schema.String),
-
-    /** Restrict external access to the network. */
-    Internal: Schema.optional(Schema.Boolean),
-
-    /**
-     * Globally scoped network is manually attachable by regular containers from
-     * workers in swarm mode.
-     */
-    Attachable: Schema.optional(Schema.Boolean),
-
-    /**
-     * Ingress network is the network which provides the routing-mesh in swarm
-     * mode.
-     */
-    Ingress: Schema.optional(Schema.Boolean),
-    IPAM: Schema.optional(Schema.NullOr(IPAM)),
-
-    /** Enable IPv6 on the network. */
-    EnableIPv6: Schema.optional(Schema.Boolean),
-
-    /** Network specific options to be used by the drivers. */
-    Options: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-
-    /** User-defined key/value metadata. */
-    Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
-}) {}
-
-export class NetworkConnectRequest extends Schema.Class<NetworkConnectRequest>()({
-    /** The ID or name of the container to connect to the network. */
-    Container: Schema.optional(Schema.String),
-    EndpointConfig: Schema.optional(Schema.NullOr(EndpointSettings)),
-}) {}
-
-export class VolumeListResponse extends Schema.Class<VolumeListResponse>()({
-    /** List of volumes */
-    Volumes: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(Volume)))),
-
-    /** Warnings that occurred when fetching the list of volumes. */
-    Warnings: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
-}) {}
-
-export class Service extends Schema.Class<Service>()({
-    ID: Schema.optional(Schema.String),
-    Version: Schema.optional(Schema.NullOr(ObjectVersion)),
-    CreatedAt: Schema.optional(Schema.String),
-    UpdatedAt: Schema.optional(Schema.String),
-    Spec: Schema.optional(Schema.NullOr(ServiceSpec)),
-    Endpoint: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                Spec: Schema.optional(Schema.NullOr(EndpointSpec)),
-                Ports: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(EndpointPortConfig)))),
-                VirtualIPs: Schema.optional(
-                    Schema.NullOr(
-                        Schema.Array(
-                            Schema.NullOr(
-                                Schema.Struct({
-                                    NetworkID: Schema.optional(Schema.String),
-                                    Addr: Schema.optional(Schema.String),
-                                })
-                            )
-                        )
-                    )
-                ),
-            })
-        )
+    CreatedAt: NullabilityOmittedNonRequiredField(Schema.String),
+    UpdatedAt: NullabilityOmittedNonRequiredField(Schema.String),
+    Spec: NullabilityOmittedNonRequiredField(ServiceSpec),
+    Endpoint: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            Spec: NullabilityOmittedNonRequiredField(EndpointSpec),
+            Ports: NullabilityOmittedNonRequiredField(Schema.Array(EndpointPortConfig)),
+            VirtualIPs: NullabilityOmittedNonRequiredField(
+                Schema.Array(
+                    Schema.Struct({
+                        NetworkID: NullabilityOmittedNonRequiredField(Schema.String),
+                        Addr: NullabilityOmittedNonRequiredField(Schema.String),
+                    })
+                )
+            ),
+        })
     ),
 
     /** The status of a service update. */
-    UpdateStatus: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                State: Schema.optional(Schema.Enums(Service_UpdateStatus_State)),
-                StartedAt: Schema.optional(Schema.String),
-                CompletedAt: Schema.optional(Schema.String),
-                Message: Schema.optional(Schema.String),
-            })
-        )
+    UpdateStatus: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            State: NullabilityOmittedNonRequiredField(
+                Schema.Union(Schema.Literal("updating"), Schema.Literal("paused"), Schema.Literal("completed"))
+            ),
+            StartedAt: NullabilityOmittedNonRequiredField(Schema.String),
+            CompletedAt: NullabilityOmittedNonRequiredField(Schema.String),
+            Message: NullabilityOmittedNonRequiredField(Schema.String),
+        })
     ),
 
     /**
      * The status of the service's tasks. Provided only when requested as part
      * of a ServiceList operation.
      */
-    ServiceStatus: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                /**
-                 * The number of tasks for the service currently in the Running
-                 * state.
-                 */
-                RunningTasks: Schema.optional(Schema.Number),
+    ServiceStatus: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            /**
+             * The number of tasks for the service currently in the Running
+             * state.
+             */
+            RunningTasks: NullabilityOmittedNonRequiredField(Schema.Number),
 
-                /**
-                 * The number of tasks for the service desired to be running.
-                 * For replicated services, this is the replica count from the
-                 * service spec. For global services, this is computed by taking
-                 * count of all tasks for the service with a Desired State other
-                 * than Shutdown.
-                 */
-                DesiredTasks: Schema.optional(Schema.Number),
+            /**
+             * The number of tasks for the service desired to be running. For
+             * replicated services, this is the replica count from the service
+             * spec. For global services, this is computed by taking count of
+             * all tasks for the service with a Desired State other than
+             * Shutdown.
+             */
+            DesiredTasks: NullabilityOmittedNonRequiredField(Schema.Number),
 
-                /**
-                 * The number of tasks for a job that are in the Completed
-                 * state. This field must be cross-referenced with the service
-                 * type, as the value of 0 may mean the service is not in a job
-                 * mode, or it may mean the job-mode service has no tasks yet
-                 * Completed.
-                 */
-                CompletedTasks: Schema.optional(Schema.Number),
-            })
-        )
+            /**
+             * The number of tasks for a job that are in the Completed state.
+             * This field must be cross-referenced with the service type, as the
+             * value of 0 may mean the service is not in a job mode, or it may
+             * mean the job-mode service has no tasks yet Completed.
+             */
+            CompletedTasks: NullabilityOmittedNonRequiredField(Schema.Number),
+        })
     ),
 
     /**
@@ -4502,34 +4478,40 @@ export class Service extends Schema.Class<Service>()({
      * an ObjectVersion, but unlike the Service's version, does not need to be
      * sent with an update request.
      */
-    JobStatus: Schema.optional(
-        Schema.NullOr(
-            Schema.Struct({
-                JobIteration: Schema.optional(Schema.NullOr(ObjectVersion)),
+    JobStatus: NullabilityOmittedNonRequiredField(
+        Schema.Struct({
+            JobIteration: NullabilityOmittedNonRequiredField(
+                Schema.Struct({
+                    Index: NullabilityOmittedNonRequiredField(Schema.Number),
+                })
+            ),
 
-                /**
-                 * The last time, as observed by the server, that this job was
-                 * started.
-                 */
-                LastExecution: Schema.optional(Schema.String),
-            })
-        )
+            /**
+             * The last time, as observed by the server, that this job was
+             * started.
+             */
+            LastExecution: NullabilityOmittedNonRequiredField(Schema.String),
+        })
     ),
 }) {}
 
-export class SystemDataUsageResponse extends Schema.Class<SystemDataUsageResponse>()({
-    LayersSize: Schema.optional(Schema.Number),
-    Images: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(ImageSummary)))),
-    Containers: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(ContainerSummary)))),
-    Volumes: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(Volume)))),
-    BuildCache: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(BuildCache)))),
+export class SystemDataUsageResponse extends Schema.Class<SystemDataUsageResponse>("SystemDataUsageResponse")({
+    LayersSize: NullabilityOmittedNonRequiredField(Schema.Number),
+    Images: NullabilityOmittedNonRequiredField(Schema.Array(ImageSummary)),
+    Containers: NullabilityOmittedNonRequiredField(Schema.Array(ContainerSummary)),
+    Volumes: NullabilityOmittedNonRequiredField(Schema.Array(Volume)),
+    BuildCache: NullabilityOmittedNonRequiredField(Schema.Array(BuildCache)),
 }) {}
 
-export class ContainerUpdateSpec extends Resources.extend<ContainerUpdateSpec>()({
-    RestartPolicy: Schema.optional(RestartPolicy),
+export class ContainerUpdateSpec extends Resources.extend<ContainerUpdateSpec>("ContainerUpdateSpec")({
+    RestartPolicy: NullabilityOmittedNonRequiredField(RestartPolicy),
 }) {}
 
-export class ContainerCreateSpec extends ContainerConfig.extend<ContainerCreateSpec>()({
-    HostConfig: Schema.optional(HostConfig),
-    NetworkingConfig: Schema.optional(NetworkingConfig),
+export class ContainerCreateSpec extends ContainerConfig.extend<ContainerCreateSpec>("ContainerCreateSpec")({
+    HostConfig: NullabilityOmittedNonRequiredField(HostConfig),
+    NetworkingConfig: NullabilityOmittedNonRequiredField(NetworkingConfig),
+}) {}
+
+export class Swarm extends ClusterInfo.extend<Swarm>("Swarm")({
+    JoinTokens: NullabilityOmittedNonRequiredField(JoinTokens),
 }) {}

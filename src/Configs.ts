@@ -14,8 +14,8 @@ import {
     MobyHttpClientLive,
     getAgent,
 } from "./Agent.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
 import { Config, ConfigSpec, IDResponse } from "./Schemas.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
 
 export class ConfigsError extends Data.TaggedError("ConfigsError")<{
     method: string;

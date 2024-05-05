@@ -14,9 +14,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "./demux-helpers.js";
-import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
+} from "./Agent.js";
+import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "./Demux.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./Requests.js";
 import {
     ContainerCreateResponse,
     ContainerCreateSpec,
@@ -30,7 +30,7 @@ import {
     FilesystemChange,
     Health_Status,
     HostConfig_1_Isolation,
-} from "./schemas.js";
+} from "./Schemas.js";
 
 export class ContainersError extends Data.TaggedError("ContainersError")<{
     method: string;
@@ -708,7 +708,7 @@ const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.c
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const unknownClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.unknown))
         );
@@ -723,7 +723,7 @@ const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.c
         );
         const FilesystemChangesClient = client.pipe(
             HttpClient.client.mapEffect(
-                HttpClient.response.schemaBodyJson(Schema.nullable(Schema.array(FilesystemChange)))
+                HttpClient.response.schemaBodyJson(Schema.NullOr(Schema.Array(FilesystemChange)))
             )
         );
         const ContainerUpdateResponseClient = client.pipe(

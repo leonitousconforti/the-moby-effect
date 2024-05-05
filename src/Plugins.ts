@@ -1,3 +1,4 @@
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -13,9 +14,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
-import { Plugin, PluginPrivilege } from "./schemas.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
+import { Plugin, PluginPrivilege } from "./Schemas.js";
 
 export class PluginsError extends Data.TaggedError("PluginsError")<{
     method: string;
@@ -170,9 +171,7 @@ export interface Plugins {
      *   - `capability=<capability name>`
      *   - `enable=<true>|<false>`
      */
-    readonly list: (
-        options?: PluginListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<Plugin>>, PluginsError>;
+    readonly list: (options?: PluginListOptions | undefined) => Effect.Effect<Readonly<Array<Plugin>>, PluginsError>;
 
     /**
      * Get plugin privileges
@@ -282,122 +281,131 @@ export interface Plugins {
     readonly set: (options: PluginSetOptions) => Effect.Effect<void, PluginsError>;
 }
 
-const make: Effect.Effect<Plugins, never, IMobyConnectionAgent | NodeHttp.client.Client.Default> = Effect.gen(
+const make: Effect.Effect<Plugins, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/plugins`)),
-            NodeHttp.client.filterStatusOk
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/plugins`)),
+            HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-        const PluginClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Plugin)));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
+        const PluginClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Plugin)));
         const PluginsClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Plugin)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(Plugin)))
         );
         const PluginPrivilegesClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(PluginPrivilege)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(PluginPrivilege)))
         );
 
         const responseHandler = (method: string) =>
             responseErrorHandler((message) => new PluginsError({ method, message }));
 
-        const list_ = (
-            options?: PluginListOptions | undefined
-        ): Effect.Effect<Readonly<Array<Plugin>>, PluginsError> =>
+        const list_ = (options?: PluginListOptions | undefined): Effect.Effect<Readonly<Array<Plugin>>, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.get(""),
+                HttpClient.request.get(""),
                 addQueryParameter("filters", options?.filters),
                 PluginsClient,
-                Effect.catchAll(responseHandler("list"))
+                Effect.catchAll(responseHandler("list")),
+                Effect.scoped
             );
 
         const getPrivileges_ = (
             options: GetPluginPrivilegesOptions
         ): Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.get("/privileges"),
+                HttpClient.request.get("/privileges"),
                 addQueryParameter("remote", options.remote),
                 PluginPrivilegesClient,
-                Effect.catchAll(responseHandler("getPrivileges"))
+                Effect.catchAll(responseHandler("getPrivileges")),
+                Effect.scoped
             );
 
         const pull_ = (options: PluginPullOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/pull"),
-                NodeHttp.request.setHeader("X-Registry-Auth", ""),
+                HttpClient.request.post("/pull"),
+                HttpClient.request.setHeader("X-Registry-Auth", ""),
                 addQueryParameter("remote", options.remote),
                 addQueryParameter("name", options.name),
-                NodeHttp.request.schemaBody(Schema.array(PluginPrivilege))(options.body ?? []),
+                HttpClient.request.schemaBody(Schema.Array(PluginPrivilege))(options.body ?? []),
                 Effect.flatMap(voidClient),
-                Effect.catchAll(responseHandler("pull"))
+                Effect.catchAll(responseHandler("pull")),
+                Effect.scoped
             );
 
         const inspect_ = (options: PluginInspectOptions): Effect.Effect<Readonly<Plugin>, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.get("/{name}/json".replace("{name}", encodeURIComponent(options.name))),
                 PluginClient,
-                Effect.catchAll(responseHandler("inspect"))
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
             );
 
         const delete_ = (options: PluginDeleteOptions): Effect.Effect<Readonly<Plugin>, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.del("/{name}".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
                 PluginClient,
-                Effect.catchAll(responseHandler("delete"))
+                Effect.catchAll(responseHandler("delete")),
+                Effect.scoped
             );
 
         const enable_ = (options: PluginEnableOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/{name}/enable".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.post("/{name}/enable".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("timeout", options.timeout),
                 voidClient,
-                Effect.catchAll(responseHandler("enable"))
+                Effect.catchAll(responseHandler("enable")),
+                Effect.scoped
             );
 
         const disable_ = (options: PluginDisableOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/{name}/disable".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.post("/{name}/disable".replace("{name}", encodeURIComponent(options.name))),
                 addQueryParameter("force", options.force),
                 voidClient,
-                Effect.catchAll(responseHandler("disable"))
+                Effect.catchAll(responseHandler("disable")),
+                Effect.scoped
             );
 
         const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/{name}/upgrade".replace("{name}", encodeURIComponent(options.name))),
-                NodeHttp.request.setHeader("X-Registry-Auth", ""),
+                HttpClient.request.post("/{name}/upgrade".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.setHeader("X-Registry-Auth", ""),
                 addQueryParameter("remote", options.remote),
-                NodeHttp.request.schemaBody(Schema.array(PluginPrivilege))(options.body ?? []),
+                HttpClient.request.schemaBody(Schema.Array(PluginPrivilege))(options.body ?? []),
                 Effect.flatMap(voidClient),
-                Effect.catchAll(responseHandler("upgrade"))
+                Effect.catchAll(responseHandler("upgrade")),
+                Effect.scoped
             );
 
         const create_ = (options: PluginCreateOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/create"),
+                HttpClient.request.post("/create"),
                 addQueryParameter("name", options.name),
-                NodeHttp.request.streamBody(options.tarContext),
+                HttpClient.request.streamBody(options.tarContext),
                 voidClient,
-                Effect.catchAll(responseHandler("create"))
+                Effect.catchAll(responseHandler("create")),
+                Effect.scoped
             );
 
         const push_ = (options: PluginPushOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.post("/{name}/push".replace("{name}", encodeURIComponent(options.name))),
                 voidClient,
-                Effect.catchAll(responseHandler("push"))
+                Effect.catchAll(responseHandler("push")),
+                Effect.scoped
             );
 
         const set_ = (options: PluginSetOptions): Effect.Effect<void, PluginsError> =>
             Function.pipe(
-                NodeHttp.request.post("/{name}/set".replace("{name}", encodeURIComponent(options.name))),
-                NodeHttp.request.schemaBody(Schema.array(Schema.string))(options.body ?? []),
+                HttpClient.request.post("/{name}/set".replace("{name}", encodeURIComponent(options.name))),
+                HttpClient.request.schemaBody(Schema.Array(Schema.String))(options.body ?? []),
                 Effect.flatMap(voidClient),
-                Effect.catchAll(responseHandler("set"))
+                Effect.catchAll(responseHandler("set")),
+                Effect.scoped
             );
 
         return {

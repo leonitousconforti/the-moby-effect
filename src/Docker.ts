@@ -6,11 +6,11 @@ import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
-import * as Containers from "./containers.js";
-import * as Execs from "./execs.js";
-import * as Images from "./images.js";
-import * as Schemas from "./schemas.js";
-import * as System from "./system.js";
+import * as Containers from "./Containers.js";
+import * as Execs from "./Execs.js";
+import * as Images from "./Images.js";
+import * as Schemas from "./Schemas.js";
+import * as System from "./System.js";
 
 /**
  * Implements the `docker pull` command.
@@ -154,7 +154,7 @@ export const run = ({
             Effect.flatMap(({ State }) =>
                 Function.pipe(
                     Match.value(State?.Status),
-                    Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.unit),
+                    Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
                     Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
                 ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
@@ -176,8 +176,8 @@ export const run = ({
             Effect.flatMap(({ State }) =>
                 Function.pipe(
                     Match.value(State?.Health?.Status),
-                    Match.when(undefined, (_s) => Effect.unit),
-                    Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.unit),
+                    Match.when(undefined, (_s) => Effect.void),
+                    Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
                     Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
                 ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
@@ -228,7 +228,7 @@ export const runScoped = ({
             yield* _(containers.kill({ id: containerData.Id }));
             yield* _(containers.delete({ id: containerData.Id, force: true }));
             yield* _(images.delete({ name: imageTag }));
-            return Effect.unit;
+            return Effect.void;
         }).pipe(
             Effect.catchTags({
                 ContainersError: (error) =>

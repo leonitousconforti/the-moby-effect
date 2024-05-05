@@ -13,10 +13,10 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "./demux-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
-import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "./schemas.js";
+} from "./Agent.js";
+import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "./Demux.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
+import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "./Schemas.js";
 
 export class ExecsError extends Data.TaggedError("ExecsError")<{
     method: string;
@@ -98,7 +98,7 @@ const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient.client
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const IdResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(IdResponse))
         );
@@ -134,7 +134,7 @@ const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient.client
                 Effect.catchAll(responseHandler("start"))
             );
 
-            const detachedResponse: U = Effect.flatMap(response, () => Effect.unit) as U;
+            const detachedResponse: U = Effect.flatMap(response, () => Effect.void) as U;
             const streamingResponse: U = Function.pipe(
                 response,
                 Effect.flatMap(responseToStreamingSocketOrFail),

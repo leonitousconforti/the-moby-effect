@@ -1,3 +1,4 @@
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -12,9 +13,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
-import { IDResponse, Secret, SecretSpec } from "./schemas.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
+import { IDResponse, Secret, SecretSpec } from "./Schemas.js";
 
 export class SecretsError extends Data.TaggedError("SecretsError")<{
     method: string;
@@ -76,9 +77,7 @@ export interface Secrets {
      *   - `name=<secret name>`
      *   - `names=<secret name>`
      */
-    readonly list: (
-        options?: SecretListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<Secret>>, SecretsError>;
+    readonly list: (options?: SecretListOptions | undefined) => Effect.Effect<Readonly<Array<Secret>>, SecretsError>;
 
     /**
      * Create a secret
@@ -117,67 +116,72 @@ export interface Secrets {
     readonly update: (options: SecretUpdateOptions) => Effect.Effect<void, SecretsError>;
 }
 
-const make: Effect.Effect<Secrets, never, IMobyConnectionAgent | NodeHttp.client.Client.Default> = Effect.gen(
+const make: Effect.Effect<Secrets, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(NodeHttp.client.Client);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
         const client = defaultClient.pipe(
-            NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/secrets`)),
-            NodeHttp.client.filterStatusOk
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/secrets`)),
+            HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
-        const SecretClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Secret)));
-        const IDResponseClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(IDResponse)));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
+        const SecretClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Secret)));
+        const IDResponseClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(IDResponse))
+        );
         const SecretsClient = client.pipe(
-            NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Secret)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(Secret)))
         );
 
         const responseHandler = (method: string) =>
             responseErrorHandler((message) => new SecretsError({ method, message }));
 
-        const list_ = (
-            options?: SecretListOptions | undefined
-        ): Effect.Effect<Readonly<Array<Secret>>, SecretsError> =>
+        const list_ = (options?: SecretListOptions | undefined): Effect.Effect<Readonly<Array<Secret>>, SecretsError> =>
             Function.pipe(
-                NodeHttp.request.get(""),
+                HttpClient.request.get(""),
                 addQueryParameter("filters", options?.filters),
                 SecretsClient,
-                Effect.catchAll(responseHandler("list"))
+                Effect.catchAll(responseHandler("list")),
+                Effect.scoped
             );
 
         const create_ = (
             options: Schema.Schema.To<typeof SecretSpec.struct>
         ): Effect.Effect<Readonly<IDResponse>, SecretsError> =>
             Function.pipe(
-                NodeHttp.request.post("/create"),
-                NodeHttp.request.schemaBody(SecretSpec)(new SecretSpec(options)),
+                HttpClient.request.post("/create"),
+                HttpClient.request.schemaBody(SecretSpec)(new SecretSpec(options)),
                 Effect.flatMap(IDResponseClient),
-                Effect.catchAll(responseHandler("create"))
+                Effect.catchAll(responseHandler("create")),
+                Effect.scoped
             );
 
         const delete_ = (options: SecretDeleteOptions): Effect.Effect<void, SecretsError> =>
             Function.pipe(
-                NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 voidClient,
-                Effect.catchAll(responseHandler("delete"))
+                Effect.catchAll(responseHandler("delete")),
+                Effect.scoped
             );
 
         const inspect_ = (options: SecretInspectOptions): Effect.Effect<Readonly<Secret>, SecretsError> =>
             Function.pipe(
-                NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
                 SecretClient,
-                Effect.catchAll(responseHandler("inspect"))
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
             );
 
         const update_ = (options: SecretUpdateOptions): Effect.Effect<void, SecretsError> =>
             Function.pipe(
-                NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+                HttpClient.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("version", options.version),
-                NodeHttp.request.schemaBody(SecretSpec)(new SecretSpec(options.spec)),
+                HttpClient.request.schemaBody(SecretSpec)(new SecretSpec(options.spec)),
                 Effect.flatMap(voidClient),
-                Effect.catchAll(responseHandler("update"))
+                Effect.catchAll(responseHandler("update")),
+                Effect.scoped
             );
 
         return { list: list_, create: create_, delete: delete_, inspect: inspect_, update: update_ };

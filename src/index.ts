@@ -6,7 +6,7 @@
  * make requests. And while we don't need to keep track of the connection
  * options for anything yet, it wouldn't hurt to add them.
  */
-export * as agent-helpers from "./agent-helpers.js"
+export * as Agent from "./Agent.js"
 
 /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -19,34 +19,34 @@ export * as agent-helpers from "./agent-helpers.js"
      * - `name=<config name>`
      * - `names=<config name>`
      */
-export * as configs from "./configs.js"
+export * as Configs from "./Configs.js"
 
 /**
      * Return this number of most recently created containers, including
      * non-running ones.
      */
-export * as containers from "./containers.js"
+export * as Containers from "./Containers.js"
 
 /**
  * When the TTY setting is enabled in POST /containers/create, the stream is not
  * multiplexed. The data exchanged over the hijacked connection is simply the
  * raw data from the process PTY and client's stdin.
  */
-export * as demux-helpers from "./demux-helpers.js"
+export * as Demux from "./Demux.js"
 
 /**
      * Get image information from the registry
      *
      * @param name - Image name or id
      */
-export * as distribution from "./distribution.js"
+export * as Distribution from "./Distribution.js"
 
 /**
  * Implements the `docker pull` command.
  *
  * Note: it doesn't have all the flags that the images create endpoint exposes.
  */
-export * as docker-helpers from "./docker-helpers.js"
+export * as Docker from "./Docker.js"
 
 /**
      * Create an exec instance
@@ -54,13 +54,13 @@ export * as docker-helpers from "./docker-helpers.js"
      * @param execConfig - Exec configuration
      * @param id - ID or name of container
      */
-export * as execs from "./execs.js"
+export * as Execs from "./Execs.js"
 
 /**
      * Show all images. Only images from a final layer (no children) are shown
      * by default.
      */
-export * as images from "./images.js"
+export * as Images from "./Images.js"
 
 /**
  * From
@@ -87,7 +87,7 @@ export * as images from "./images.js"
  * - `ssh://me@example.com:22/var/run/docker.sock` -> SSH connection to
  *   example.com on port 22
  */
-export * as moby from "./moby.js"
+export * as Moby from "./Moby.js"
 
 /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
@@ -107,7 +107,7 @@ export * as moby from "./moby.js"
      * - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
      *   keyword returns all user-defined networks.
      */
-export * as networks from "./networks.js"
+export * as Networks from "./Networks.js"
 
 /**
      * Filters to process on the nodes list, encoded as JSON (a
@@ -122,7 +122,7 @@ export * as networks from "./networks.js"
      * - `node.label=<node label>`
      * - `role=`(`manager`|`worker`)`
      */
-export * as nodes from "./nodes.js"
+export * as Nodes from "./Nodes.js"
 
 /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -133,24 +133,19 @@ export * as nodes from "./nodes.js"
      * - `capability=<capability name>`
      * - `enable=<true>|<false>`
      */
-export * as plugins from "./plugins.js"
+export * as Plugins from "./Plugins.js"
 
 /**
  * Helper interface to expose the underlying socket from the effect NodeHttp
  * response. Useful for multiplexing the response stream.
  */
-export * as request-helpers from "./request-helpers.js"
+export * as Requests from "./Requests.js"
 
 /**
-     * The mount type:
-     *
-     * - `bind` a mount of a file or directory from the host into the container.
-     * - `volume` a docker volume with the given `Name`.
-     * - `tmpfs` a `tmpfs`.
-     * - `npipe` a named pipe from the host into the container.
-     * - `cluster` a Swarm cluster volume
-     */
-export * as schemas from "./schemas.js"
+ * MountPoint represents a mount point configuration inside the container. This
+ * is used for reporting the mountpoints in use by a container.
+ */
+export * as Schemas from "./Schemas.js"
 
 /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -163,7 +158,7 @@ export * as schemas from "./schemas.js"
      * - `name=<secret name>`
      * - `names=<secret name>`
      */
-export * as secrets from "./secrets.js"
+export * as Secrets from "./Secrets.js"
 
 /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -176,7 +171,7 @@ export * as secrets from "./secrets.js"
      * - `mode=["replicated"|"global"]`
      * - `name=<service name>`
      */
-export * as services from "./services.js"
+export * as Services from "./Services.js"
 
 /**
      * Start a new interactive session with a server. Session allows server to
@@ -188,13 +183,13 @@ export * as services from "./services.js"
      * with a `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
      * UPGRADED Connection: Upgrade Upgrade: h2c`
      */
-export * as session from "./session.js"
+export * as Session from "./Session.js"
 
 /**
      * Force leave swarm, even if this is the last manager or that it will break
      * the cluster.
      */
-export * as swarm from "./swarm.js"
+export * as Swarm from "./Swarm.js"
 
 /**
      * A JSON encoded value of filters (a `map[string][]string`) to process on
@@ -217,7 +212,7 @@ export * as swarm from "./swarm.js"
      *   `config`
      * - `volume=<string>` volume name
      */
-export * as system from "./system.js"
+export * as System from "./System.js"
 
 /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -232,7 +227,7 @@ export * as system from "./system.js"
      * - `node=<node id or name>`
      * - `service=<service name>`
      */
-export * as tasks from "./tasks.js"
+export * as Tasks from "./Tasks.js"
 
 /**
      * JSON encoded value of the filters (a `map[string][]string`) to process on
@@ -246,4 +241,4 @@ export * as tasks from "./tasks.js"
      *   presence of a `label` alone or a `label` and a value.
      * - `name=<volume-name>` Matches all or part of a volume name.
      */
-export * as volumes from "./volumes.js"
+export * as Volumes from "./Volumes.js"

@@ -15,8 +15,8 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./Requests.js";
 import {
     BuildInfo,
     BuildPruneResponse,
@@ -28,7 +28,7 @@ import {
     ImagePruneResponse,
     ImageSearchResponseItem,
     ImageSummary,
-} from "./schemas.js";
+} from "./Schemas.js";
 
 export class ImagesError extends Data.TaggedError("ImagesError")<{
     method: string;
@@ -723,7 +723,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const IdResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(IdResponse))
         );

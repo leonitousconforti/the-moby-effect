@@ -13,8 +13,8 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { IExposeSocketOnEffectClientResponse, responseErrorHandler } from "./request-helpers.js";
+} from "./Agent.js";
+import { IExposeSocketOnEffectClientResponse, responseErrorHandler } from "./Requests.js";
 
 export class SessionsError extends Data.TaggedError("SessionsError")<{
     method: string;

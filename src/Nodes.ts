@@ -12,9 +12,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
-import { Node, NodeSpec } from "./schemas.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
+import { Node, NodeSpec } from "./Schemas.js";
 
 export class NodesError extends Data.TaggedError("NodesError")<{
     method: string;
@@ -123,7 +123,7 @@ const make: Effect.Effect<Nodes, never, IMobyConnectionAgent | NodeHttp.client.C
         NodeHttp.client.filterStatusOk
     );
 
-    const voidClient = client.pipe(NodeHttp.client.transform(Effect.asUnit));
+    const voidClient = client.pipe(NodeHttp.client.transform(Effect.asVoid));
     const NodesClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Node))));
     const NodeClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Node)));
 

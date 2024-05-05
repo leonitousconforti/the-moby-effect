@@ -14,9 +14,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
-import { Service, ServiceCreateResponse, ServiceSpec, ServiceUpdateResponse } from "./schemas.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./Requests.js";
+import { Service, ServiceCreateResponse, ServiceSpec, ServiceUpdateResponse } from "./Schemas.js";
 
 export class ServicesError extends Data.TaggedError("ServicesError")<{
     method: string;
@@ -214,7 +214,7 @@ const make: Effect.Effect<Services, never, IMobyConnectionAgent | HttpClient.cli
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const ServicesClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(Service)))
         );

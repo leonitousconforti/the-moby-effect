@@ -13,9 +13,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler } from "./request-helpers.js";
-import { ClusterVolumeSpec, Volume, VolumeCreateOptions, VolumeListResponse, VolumePruneResponse } from "./schemas.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler } from "./Requests.js";
+import { ClusterVolumeSpec, Volume, VolumeCreateOptions, VolumeListResponse, VolumePruneResponse } from "./Schemas.js";
 
 export class VolumesError extends Data.TaggedError("VolumesError")<{
     method: string;
@@ -168,7 +168,7 @@ const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.clie
             HttpClient.client.filterStatusOk
         );
 
-        const voidClient = client.pipe(HttpClient.client.transform(Effect.asUnit));
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const VolumeClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Volume)));
         const VolumeListResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(VolumeListResponse))

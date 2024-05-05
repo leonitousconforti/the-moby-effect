@@ -10,7 +10,7 @@ import * as Function from "effect/Function";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { IExposeSocketOnEffectClientResponse } from "./request-helpers.js";
+import { IExposeSocketOnEffectClientResponse } from "./Requests.js";
 
 // Errors when multiplexing stdin and stdout
 export class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}

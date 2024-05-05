@@ -12,9 +12,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { responseErrorHandler } from "./request-helpers.js";
-import { DistributionInspect } from "./schemas.js";
+} from "./Agent.js";
+import { responseErrorHandler } from "./Requests.js";
+import { DistributionInspect } from "./Schemas.js";
 
 export class DistributionsError extends Data.TaggedError("DistributionsError")<{
     method: string;

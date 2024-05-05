@@ -14,9 +14,9 @@ import {
     MobyConnectionOptions,
     MobyHttpClientLive,
     getAgent,
-} from "./agent-helpers.js";
-import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./request-helpers.js";
-import { Task } from "./schemas.js";
+} from "./Agent.js";
+import { addQueryParameter, responseErrorHandler, streamErrorHandler } from "./Requests.js";
+import { Task } from "./Schemas.js";
 
 export class TasksError extends Data.TaggedError("TasksError")<{
     method: string;
