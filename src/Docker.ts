@@ -1,4 +1,9 @@
-import * as Schema from "@effect/schema/Schema";
+/**
+ * Docker helpers
+ *
+ * @since 1.0.0
+ */
+
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
@@ -7,7 +12,6 @@ import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
 import * as Containers from "./Containers.js";
-import * as Execs from "./Execs.js";
 import * as Images from "./Images.js";
 import * as Schemas from "./Schemas.js";
 import * as System from "./System.js";
@@ -25,7 +29,7 @@ export const pull = ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}): Effect.Effect<Images.Images, Images.ImagesError, Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo>> =>
+}): Effect.Effect<Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>, Images.ImagesError, Images.Images> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const images: Images.Images = yield* _(Images.Images);
         return yield* _(images.create({ fromImage: image, "X-Registry-Auth": auth, platform }));
@@ -46,9 +50,9 @@ export const pullScoped = ({
     auth?: string | undefined;
     platform?: string | undefined;
 }): Effect.Effect<
-    Scope.Scope | Images.Images,
+    Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>,
     Images.ImagesError,
-    Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo>
+    Scope.Scope | Images.Images
 > => {
     const acquire = pull({ image, auth, platform });
     const release = Images.Images.pipe(
@@ -66,18 +70,22 @@ export const pullScoped = ({
  * Note: It doesn't have all the flags that the images build endpoint exposes.
  */
 export const build = ({
-    tag,
     auth,
     context,
-    platform,
     dockerfile,
+    platform,
+    tag,
 }: {
     tag: string;
     auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
-    context: Stream.Stream<never, Images.ImagesError, Uint8Array>;
-}): Effect.Effect<Images.Images, Images.ImagesError, Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo>> =>
+    context: Stream.Stream<Uint8Array, Images.ImagesError, never>;
+}): Effect.Effect<
+    Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>,
+    Images.ImagesError,
+    Images.Images | Scope.Scope
+> =>
     Effect.gen(function* (_: Effect.Adapter) {
         const images: Images.Images = yield* _(Images.Images);
         return yield* _(images.build({ context, dockerfile, platform, t: tag, "X-Registry-Config": auth }));
@@ -90,21 +98,21 @@ export const build = ({
  * Note: It doesn't have all the flags that the images build endpoint exposes.
  */
 export const buildScoped = ({
-    tag,
     auth,
     context,
-    platform,
     dockerfile,
+    platform,
+    tag,
 }: {
     tag: string;
     auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
-    context: Stream.Stream<never, Images.ImagesError, Uint8Array>;
+    context: Stream.Stream<Uint8Array, Images.ImagesError, never>;
 }): Effect.Effect<
-    Scope.Scope | Images.Images,
+    Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>,
     Images.ImagesError,
-    Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo>
+    Scope.Scope | Images.Images
 > => {
     const acquire = build({ tag, auth, context, platform, dockerfile });
     const release = Images.Images.pipe(
@@ -118,22 +126,22 @@ export const buildScoped = ({
 
 /** Implements `docker run` command. */
 export const run = ({
-    imageOptions,
     containerOptions,
+    imageOptions,
 }: {
-    imageOptions: ({ kind: "pull" } & Images.ImageCreateOptions) | ({ kind: "build" } & Images.ImageBuildOptions);
     containerOptions: Containers.ContainerCreateOptions;
+    imageOptions: ({ kind: "pull" } & Images.ImageCreateOptions) | ({ kind: "build" } & Images.ImageBuildOptions);
 }): Effect.Effect<
-    Containers.Containers | Images.Images,
+    Schemas.ContainerInspectResponse,
     Containers.ContainersError | Images.ImagesError,
-    Schemas.ContainerInspectResponse
+    Containers.Containers | Images.Images | Scope.Scope
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const images: Images.Images = yield* _(Images.Images);
         const containers: Containers.Containers = yield* _(Containers.Containers);
 
         // Start pulling or building the image
-        const buildStream: Stream.Stream<never, Images.ImagesError, Schemas.BuildInfo> =
+        const buildStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> =
             imageOptions.kind === "pull" ? yield* _(images.create(imageOptions)) : yield* _(images.build(imageOptions));
 
         // Wait for image pull or build to complete
@@ -148,14 +156,14 @@ export const run = ({
         yield* _(containers.start({ id: containerCreateResponse.Id }));
 
         // Helper to wait until a container is dead or running
-        const waitUntilContainerDeadOrRunning: Effect.Effect<never, Containers.ContainersError, void> = Function.pipe(
+        const waitUntilContainerDeadOrRunning: Effect.Effect<void, Containers.ContainersError, never> = Function.pipe(
             containers.inspect({ id: containerCreateResponse.Id }),
             Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 Function.pipe(
                     Match.value(State?.Status),
-                    Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
-                    Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
+                    Match.when("running", (_s) => Effect.void),
+                    Match.when("created", (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
                 ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
             )
@@ -168,7 +176,7 @@ export const run = ({
         );
 
         // Helper for if the container has a healthcheck, wait for it to report healthy
-        const waitUntilContainerHealthy: Effect.Effect<never, Containers.ContainersError, void> = Function.pipe(
+        const waitUntilContainerHealthy: Effect.Effect<void, Containers.ContainersError, never> = Function.pipe(
             containers.inspect({ id: containerCreateResponse.Id }),
             Effect.tap(({ State }) =>
                 Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
@@ -177,8 +185,8 @@ export const run = ({
                 Function.pipe(
                     Match.value(State?.Health?.Status),
                     Match.when(undefined, (_s) => Effect.void),
-                    Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
-                    Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
+                    Match.when("healthy", (_s) => Effect.void),
+                    Match.when("starting", (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
                 ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
             )
@@ -200,15 +208,15 @@ export const run = ({
  * both the image and the container is removed.
  */
 export const runScoped = ({
-    imageOptions,
     containerOptions,
+    imageOptions,
 }: {
-    imageOptions: ({ kind: "pull" } & Images.ImageCreateOptions) | ({ kind: "build" } & Images.ImageBuildOptions);
     containerOptions: Containers.ContainerCreateOptions;
+    imageOptions: ({ kind: "pull" } & Images.ImageCreateOptions) | ({ kind: "build" } & Images.ImageBuildOptions);
 }): Effect.Effect<
-    Scope.Scope | Containers.Containers | Images.Images,
+    Schemas.ContainerInspectResponse,
     Containers.ContainersError | Images.ImagesError,
-    Schemas.ContainerInspectResponse
+    Scope.Scope | Containers.Containers | Images.Images
 > => {
     const acquire = run({ imageOptions, containerOptions });
     const release = (containerData: Schemas.ContainerInspectResponse) =>
@@ -250,15 +258,15 @@ export const runScoped = ({
 };
 
 /** Implements `docker exec` command. */
-export const exec = <T extends boolean | undefined>(
-    options1: Execs.ContainerExecOptions,
-    options2: Omit<Schema.Schema.To<typeof Schemas.ExecStartConfig.struct>, "Detach"> & { Detach?: T }
-) =>
-    Effect.gen(function* (_) {
-        const execs: Execs.Execs = yield* _(Execs.Execs);
-        const execCreateResponse: Schemas.IdResponse = yield* _(execs.container(options1));
-        return yield* _(execs.start<T>({ id: execCreateResponse.Id, execStartConfig: options2 }));
-    });
+// export const exec = <T extends boolean | undefined>(
+//     options1: Execs.ContainerExecOptions,
+//     options2: Omit<Schema.Schema.Encoded<typeof Schemas.ExecStartConfig>, "Detach"> & { Detach?: T }
+// ) =>
+//     Effect.gen(function* (_) {
+//         const execs: Execs.Execs = yield* _(Execs.Execs);
+//         const execCreateResponse: Schemas.IdResponse = yield* _(execs.container(options1));
+//         return yield* _(execs.start<T>({ id: execCreateResponse.Id, execStartConfig: options2 }));
+//     });
 
 /** Implements the `docker ps` command. */
 export const ps = (options?: Containers.ContainerListOptions | undefined) =>

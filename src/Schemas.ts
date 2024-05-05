@@ -1,20 +1,29 @@
+/**
+ * Moby Schemas
+ *
+ * @since 1.0.0
+ */
+
 import * as Schema from "@effect/schema/Schema";
 
 // A field can either be required or not required.
 const RequiredField = <A, I, R>(schema: Schema.Schema<A, I, R>): Schema.Schema<A, I, R> => schema;
-const NonRequiredField = <A, I, R>(
+const NonRequiredField = <A, I, R, O extends { default: () => A } | undefined>(
     schema: Schema.Schema<A, I, R>,
-    options?: { default: () => A }
-): Schema.PropertySignature<":", A, never, "?:", I, R> => Schema.optional(schema, { exact: true, ...options });
+    _options?: O // FIXME: not used
+) => Schema.optional(schema);
+// const NonRequiredField = <A, I, R>(
+//     schema: Schema.Schema<A, I, R>,
+//     options?: { default: () => A }
+// ): Schema.PropertySignature<":", A, never, "?:", I, R> => Schema.optional(schema, { exact: true, ...options });
 
 // A field can either be marked "x-nullable: true"
 // const NullableRequiredField = <A, I, R>(schema: Schema.Schema<A, I, R>): Schema.Schema<A | null, I | null, R> =>
 //     RequiredField(Schema.NullOr(schema));
-const NullableNonRequiredField = <A, I, R>(
+const NullableNonRequiredField = <A, I, R, O extends { default: () => A } | undefined>(
     schema: Schema.Schema<A, I, R>,
-    options?: { default: () => A }
-): Schema.PropertySignature<":", A | null, never, "?:", I | null, R> =>
-    NonRequiredField(Schema.NullOr(schema), options);
+    options?: O
+) => NonRequiredField(Schema.NullOr(schema), options);
 
 // Or, it might be marked "x-nullable: false"
 const NonNullableRequiredField = RequiredField;

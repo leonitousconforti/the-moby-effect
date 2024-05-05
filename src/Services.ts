@@ -1,3 +1,9 @@
+/**
+ * Services service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -10,6 +16,7 @@ import * as Stream from "effect/Stream";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -216,7 +223,7 @@ const make: Effect.Effect<Services, never, IMobyConnectionAgent | HttpClient.cli
 
         const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const ServicesClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(Service)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(Service)))
         );
         const ServiceCreateResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ServiceCreateResponse))
@@ -314,7 +321,7 @@ const make: Effect.Effect<Services, never, IMobyConnectionAgent | HttpClient.cli
 export const Services = Context.GenericTag<Services>("the-moby-effect/Services");
 export const layer = Layer.effect(Services, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

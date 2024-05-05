@@ -1,3 +1,9 @@
+/**
+ * Tasks service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -10,6 +16,7 @@ import * as Stream from "effect/Stream";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -32,18 +39,18 @@ export interface TaskListOptions {
      *
      * - `desired-state=(running | shutdown | accepted)`
      * - `id=<task id>`
-     * - `label=key` or `label="key=value"`
      * - `name=<task name>`
      * - `node=<node id or name>`
      * - `service=<service name>`
+     * - `label=key` or `label="key=value"`
      */
     readonly filters?: {
         "desired-state"?: ["running" | "shutdown" | "accepted"] | undefined;
         id?: [string] | undefined;
-        label?: string[] | undefined;
         name?: [string] | undefined;
         node?: [string] | undefined;
         service?: [string] | undefined;
+        label?: Array<string> | undefined;
     };
 }
 
@@ -85,10 +92,10 @@ export interface Tasks {
      *
      *   - `desired-state=(running | shutdown | accepted)`
      *   - `id=<task id>`
-     *   - `label=key` or `label="key=value"`
      *   - `name=<task name>`
      *   - `node=<node id or name>`
      *   - `service=<service name>`
+     *   - `label=key` or `label="key=value"`
      */
     readonly list: (options?: TaskListOptions | undefined) => Effect.Effect<Readonly<Array<Task>>, TasksError>;
 
@@ -126,7 +133,7 @@ const make: Effect.Effect<Tasks, never, IMobyConnectionAgent | HttpClient.client
         );
 
         const TasksClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(Task)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(Task)))
         );
         const TaskClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Task)));
 
@@ -176,7 +183,7 @@ const make: Effect.Effect<Tasks, never, IMobyConnectionAgent | HttpClient.client
 export const Tasks = Context.GenericTag<Tasks>("the-moby-effect/Tasks");
 export const layer = Layer.effect(Tasks, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

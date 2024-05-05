@@ -1,3 +1,9 @@
+/**
+ * Volumes service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -9,6 +15,7 @@ import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -36,9 +43,9 @@ export interface VolumeListOptions {
      * - `name=<volume-name>` Matches all or part of a volume name.
      */
     readonly filters?: {
-        label?: string[] | undefined;
         name?: [string] | undefined;
         driver?: [string] | undefined;
+        label?: Array<string> | undefined;
         dangling?: ["true" | "false" | "1" | "0"] | undefined;
     };
 }
@@ -62,7 +69,7 @@ export interface VolumeUpdateOptions {
      * The spec of the volume to update. Currently, only Availability may
      * change. All other fields must remain unchanged.
      */
-    readonly spec: Schema.Schema.To<typeof ClusterVolumeSpec.struct>;
+    readonly spec: Schema.Schema.Encoded<typeof ClusterVolumeSpec>;
     /**
      * The version number of the volume being updated. This is required to avoid
      * conflicting writes. Found in the volume's `ClusterVolume` field.
@@ -83,7 +90,7 @@ export interface VolumePruneOptions {
      * - `all` (`all=true`) - Consider all (local) volumes for pruning and not
      *   just anonymous volumes.
      */
-    readonly filters?: { label?: string[] | undefined; all?: ["true" | "false" | "1" | "0"] | undefined };
+    readonly filters?: { label?: Array<string> | undefined; all?: ["true" | "false" | "1" | "0"] | undefined };
 }
 
 export interface Volumes {
@@ -111,7 +118,7 @@ export interface Volumes {
      * @param volumeConfig - Volume configuration
      */
     readonly create: (
-        options: Schema.Schema.To<typeof VolumeCreateOptions.struct>
+        options: Schema.Schema.Encoded<typeof VolumeCreateOptions>
     ) => Effect.Effect<Readonly<Volume>, VolumesError>;
 
     /**
@@ -190,7 +197,7 @@ const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.clie
             );
 
         const create_ = (
-            options: Schema.Schema.To<typeof VolumeCreateOptions.struct>
+            options: Schema.Schema.Encoded<typeof VolumeCreateOptions>
         ): Effect.Effect<Readonly<Volume>, VolumesError> =>
             Function.pipe(
                 HttpClient.request.post("/create"),
@@ -243,7 +250,7 @@ const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.clie
 export const Volumes = Context.GenericTag<Volumes>("the-moby-effect/Volumes");
 export const layer = Layer.effect(Volumes, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

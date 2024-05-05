@@ -1,3 +1,9 @@
+/**
+ * Containers service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -10,6 +16,7 @@ import * as Stream from "effect/Stream";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -22,14 +29,14 @@ import {
     ContainerCreateSpec,
     ContainerInspectResponse,
     ContainerPruneResponse,
-    ContainerState_Status,
+    ContainerState,
     ContainerSummary,
     ContainerUpdateResponse,
     ContainerUpdateSpec,
     ContainerWaitResponse,
     FilesystemChange,
-    Health_Status,
-    HostConfig_1_Isolation,
+    Health,
+    HostConfig,
 } from "./Schemas.js";
 
 export class ContainersError extends Data.TaggedError("ContainersError")<{
@@ -40,13 +47,16 @@ export class ContainersError extends Data.TaggedError("ContainersError")<{
 export interface ContainerListOptions {
     /** Return all containers. By default, only running containers are shown. */
     readonly all?: boolean;
+
     /**
      * Return this number of most recently created containers, including
      * non-running ones.
      */
     readonly limit?: number;
+
     /** Return the size of container as fields `SizeRw` and `SizeRootFs`. */
     readonly size?: boolean;
+
     /**
      * Filters to process on the container list, encoded as JSON (a
      * `map[string][]string`). For example, `{"status": ["paused"]}` will only
@@ -71,21 +81,21 @@ export interface ContainerListOptions {
      * - `volume`=(`<volume name>` or `<mount point destination>`)
      */
     readonly filters?: {
-        ancestor?: string[] | undefined;
-        before?: string[] | undefined;
-        expose?: (`${number}/${string}` | `${number}-${number}/${string}`)[] | undefined;
-        exited?: number[] | undefined;
-        health?: Health_Status[] | undefined;
-        id?: string[] | undefined;
-        isolation?: HostConfig_1_Isolation[] | undefined;
+        ancestor?: Array<string> | undefined;
+        before?: Array<string> | undefined;
+        expose?: Array<`${number}/${string}` | `${number}-${number}/${string}`> | undefined;
+        exited?: Array<number> | undefined;
+        health?: Array<NonNullable<Schema.Schema.Encoded<typeof Health>["Status"]>> | undefined;
+        id?: Array<string> | undefined;
+        isolation?: Array<NonNullable<Schema.Schema.Encoded<typeof HostConfig>["Isolation"]>> | undefined;
         "is-task"?: ["true" | "false"] | undefined;
-        label?: string[] | undefined;
-        name?: string[] | undefined;
-        network?: string[] | undefined;
-        publish?: (`${number}/${string}` | `${number}-${number}/${string}`)[] | undefined;
-        since?: string[] | undefined;
-        status?: ContainerState_Status[] | undefined;
-        volume?: string[] | undefined;
+        label?: Array<string> | undefined;
+        name?: Array<string> | undefined;
+        network?: Array<string> | undefined;
+        publish?: Array<`${number}/${string}` | `${number}-${number}/${string}`> | undefined;
+        since?: Array<string> | undefined;
+        status?: Array<NonNullable<Schema.Schema.Encoded<typeof ContainerState>["Status"]>> | undefined;
+        volume?: Array<string> | undefined;
     };
 }
 
@@ -409,7 +419,7 @@ export interface Containers {
      */
     readonly list: (
         options?: ContainerListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<ContainerSummary>>, ContainersError>;
+    ) => Effect.Effect<Readonly<Array<ContainerSummary>>, ContainersError, never>;
 
     /**
      * Create a container
@@ -435,7 +445,9 @@ export interface Containers {
      *   requested
      * @param spec - Container to create
      */
-    readonly create: (options: ContainerCreateOptions) => Effect.Effect<ContainerCreateResponse, ContainersError>;
+    readonly create: (
+        options: ContainerCreateOptions
+    ) => Effect.Effect<ContainerCreateResponse, ContainersError, never>;
 
     /**
      * Inspect a container
@@ -444,7 +456,9 @@ export interface Containers {
      * @param size - Return the size of container as fields `SizeRw` and
      *   `SizeRootFs`
      */
-    readonly inspect: (options: ContainerInspectOptions) => Effect.Effect<ContainerInspectResponse, ContainersError>;
+    readonly inspect: (
+        options: ContainerInspectOptions
+    ) => Effect.Effect<ContainerInspectResponse, ContainersError, never>;
 
     /**
      * List processes running inside a container
@@ -452,7 +466,7 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param ps_args - The arguments to pass to `ps`. For example, `aux`
      */
-    readonly top: (options: ContainerTopOptions) => Effect.Effect<unknown, ContainersError>;
+    readonly top: (options: ContainerTopOptions) => Effect.Effect<unknown, ContainersError, never>;
 
     /**
      * Get container logs
@@ -469,7 +483,7 @@ export interface Containers {
      */
     readonly logs: (
         options: ContainerLogsOptions
-    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError>;
+    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, never>;
 
     /**
      * Get changes on a container’s filesystem
@@ -478,7 +492,7 @@ export interface Containers {
      */
     readonly changes: (
         options: ContainerChangesOptions
-    ) => Effect.Effect<Readonly<Array<FilesystemChange>>, ContainersError>;
+    ) => Effect.Effect<Readonly<Array<FilesystemChange>>, ContainersError, never>;
 
     /**
      * Export a container
@@ -487,7 +501,7 @@ export interface Containers {
      */
     readonly export: (
         options: ContainerExportOptions
-    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError>;
+    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, never>;
 
     /**
      * Get container stats based on resource usage
@@ -500,7 +514,7 @@ export interface Containers {
      */
     readonly stats: (
         options: ContainerStatsOptions
-    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError>;
+    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, never>;
 
     /**
      * Resize a container TTY
@@ -509,7 +523,7 @@ export interface Containers {
      * @param h - Height of the TTY session in characters
      * @param w - Width of the TTY session in characters
      */
-    readonly resize: (options: ContainerResizeOptions) => Effect.Effect<void, ContainersError>;
+    readonly resize: (options: ContainerResizeOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Start a container
@@ -519,7 +533,7 @@ export interface Containers {
      *   Format is a single character `[a-Z]` or `ctrl-<value>` where `<value>`
      *   is one of: `a-z`, `@`, `^`, `[`, `,` or `_`.
      */
-    readonly start: (options: ContainerStartOptions) => Effect.Effect<void, ContainersError>;
+    readonly start: (options: ContainerStartOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Stop a container
@@ -529,7 +543,7 @@ export interface Containers {
      *   (e.g. `SIGINT`).
      * @param t - Number of seconds to wait before killing the container
      */
-    readonly stop: (options: ContainerStopOptions) => Effect.Effect<void, ContainersError>;
+    readonly stop: (options: ContainerStopOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Restart a container
@@ -539,7 +553,7 @@ export interface Containers {
      *   (e.g. `SIGINT`).
      * @param t - Number of seconds to wait before killing the container
      */
-    readonly restart: (options: ContainerRestartOptions) => Effect.Effect<void, ContainersError>;
+    readonly restart: (options: ContainerRestartOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Kill a container
@@ -548,7 +562,7 @@ export interface Containers {
      * @param signal - Signal to send to the container as an integer or string
      *   (e.g. `SIGINT`).
      */
-    readonly kill: (options: ContainerKillOptions) => Effect.Effect<void, ContainersError>;
+    readonly kill: (options: ContainerKillOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Update a container
@@ -556,7 +570,9 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param spec -
      */
-    readonly update: (options: ContainerUpdateOptions) => Effect.Effect<ContainerUpdateResponse, ContainersError>;
+    readonly update: (
+        options: ContainerUpdateOptions
+    ) => Effect.Effect<ContainerUpdateResponse, ContainersError, never>;
 
     /**
      * Rename a container
@@ -564,21 +580,21 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param name - New name for the container
      */
-    readonly rename: (options: ContainerRenameOptions) => Effect.Effect<void, ContainersError>;
+    readonly rename: (options: ContainerRenameOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Pause a container
      *
      * @param id - ID or name of the container
      */
-    readonly pause: (options: ContainerPauseOptions) => Effect.Effect<void, ContainersError>;
+    readonly pause: (options: ContainerPauseOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Unpause a container
      *
      * @param id - ID or name of the container
      */
-    readonly unpause: (options: ContainerUnpauseOptions) => Effect.Effect<void, ContainersError>;
+    readonly unpause: (options: ContainerUnpauseOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Attach to a container
@@ -630,7 +646,7 @@ export interface Containers {
      *
      *   Defaults to `not-running` if omitted or empty.
      */
-    readonly wait: (options: ContainerWaitOptions) => Effect.Effect<ContainerWaitResponse, ContainersError>;
+    readonly wait: (options: ContainerWaitOptions) => Effect.Effect<ContainerWaitResponse, ContainersError, never>;
 
     /**
      * Remove a container
@@ -640,7 +656,7 @@ export interface Containers {
      * @param force - If the container is running, kill it before removing it.
      * @param link - Remove the specified link associated with the container.
      */
-    readonly delete: (options: ContainerDeleteOptions) => Effect.Effect<void, ContainersError>;
+    readonly delete: (options: ContainerDeleteOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Get an archive of a filesystem resource in a container
@@ -650,7 +666,7 @@ export interface Containers {
      */
     readonly archive: (
         options: ContainerArchiveOptions
-    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError>;
+    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, never>;
 
     /**
      * Get information about files in a container
@@ -658,7 +674,7 @@ export interface Containers {
      * @param id - ID or name of the container
      * @param path - Resource in the container’s filesystem to archive.
      */
-    readonly archiveInfo: (options: ContainerArchiveInfoOptions) => Effect.Effect<void, ContainersError>;
+    readonly archiveInfo: (options: ContainerArchiveInfoOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Extract an archive of files or folders to a directory in a container
@@ -675,7 +691,7 @@ export interface Containers {
      *   one of the following algorithms: `identity` (no compression), `gzip`,
      *   `bzip2`, or `xz`.
      */
-    readonly putArchive: (options: PutContainerArchiveOptions) => Effect.Effect<void, ContainersError>;
+    readonly putArchive: (options: PutContainerArchiveOptions) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Delete stopped containers
@@ -695,7 +711,7 @@ export interface Containers {
      */
     readonly prune: (
         options?: ContainerPruneOptions | undefined
-    ) => Effect.Effect<ContainerPruneResponse, ContainersError>;
+    ) => Effect.Effect<ContainerPruneResponse, ContainersError, never>;
 }
 
 const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
@@ -710,10 +726,10 @@ const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.c
 
         const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
         const unknownClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.unknown))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Unknown))
         );
         const ContainerSummariesClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(ContainerSummary)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(ContainerSummary)))
         );
         const ContainerCreateResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ContainerCreateResponse))
@@ -1011,8 +1027,8 @@ const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.c
                         options.stream,
                         (error) =>
                             new HttpClient.error.RequestError({
+                                error,
                                 reason: "Encode",
-                                error: error,
                                 request: {} as unknown as HttpClient.request.ClientRequest,
                             })
                     )
@@ -1063,11 +1079,15 @@ const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.c
     }
 );
 
-export const Containers = Context.GenericTag<Containers>("the-moby-effect/Containers");
+export const Containers: Context.Tag<Containers, Containers> =
+    Context.GenericTag<Containers>("@the-moby-effect/Containers");
+
 export const layer = Layer.effect(Containers, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Containers, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Containers, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

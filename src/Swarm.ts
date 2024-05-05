@@ -1,3 +1,9 @@
+/**
+ * Swarms service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -9,6 +15,7 @@ import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -56,13 +63,9 @@ export interface Swarms {
     /** Inspect swarm */
     readonly inspect: () => Effect.Effect<Readonly<Swarm>, SwarmsError>;
 
-    /**
-     * Initialize a new swarm
-     *
-     * @param body -
-     */
+    /** Initialize a new swarm */
     readonly init: (
-        options: Schema.Schema.To<typeof SwarmInitRequest.struct>
+        options: Schema.Schema.Encoded<typeof SwarmInitRequest>
     ) => Effect.Effect<Readonly<string>, SwarmsError>;
 
     /**
@@ -70,7 +73,7 @@ export interface Swarms {
      *
      * @param body -
      */
-    readonly join: (options: Schema.Schema.To<typeof SwarmInitRequest.struct>) => Effect.Effect<void, SwarmsError>;
+    readonly join: (options: Schema.Schema.Encoded<typeof SwarmInitRequest>) => Effect.Effect<void, SwarmsError>;
 
     /**
      * Leave a swarm
@@ -95,12 +98,8 @@ export interface Swarms {
     /** Get the unlock key */
     readonly unlockkey: () => Effect.Effect<UnlockKeyResponse, SwarmsError>;
 
-    /**
-     * Unlock a locked manager
-     *
-     * @param body -
-     */
-    readonly unlock: (options: Schema.Schema.To<typeof SwarmUnlockRequest.struct>) => Effect.Effect<void, SwarmsError>;
+    /** Unlock a locked manager */
+    readonly unlock: (options: Schema.Schema.Encoded<typeof SwarmUnlockRequest>) => Effect.Effect<void, SwarmsError>;
 }
 
 const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
@@ -126,7 +125,12 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
             responseErrorHandler((message) => new SwarmsError({ method, message }));
 
         const inspect_ = (): Effect.Effect<Readonly<Swarm>, SwarmsError> =>
-            Function.pipe(HttpClient.request.get("/"), SwarmClient, Effect.catchAll(responseHandler("inspect")));
+            Function.pipe(
+                HttpClient.request.get("/"),
+                SwarmClient,
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
+            );
 
         const init_ = (
             options: Schema.Schema.Type<typeof SwarmInitRequest>
@@ -139,7 +143,7 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
                 Effect.scoped
             );
 
-        const join_ = (options: Schema.Schema.Type<typeof SwarmInitRequest.fields>): Effect.Effect<void, SwarmsError> =>
+        const join_ = (options: Schema.Schema.Type<typeof SwarmInitRequest>): Effect.Effect<void, SwarmsError> =>
             Function.pipe(
                 HttpClient.request.post("/join"),
                 HttpClient.request.schemaBody(SwarmJoinRequest)(new SwarmJoinRequest(options)),
@@ -178,9 +182,7 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
                 Effect.scoped
             );
 
-        const unlock_ = (
-            options: Schema.Schema.Type<typeof SwarmUnlockRequest.fields>
-        ): Effect.Effect<void, SwarmsError> =>
+        const unlock_ = (options: Schema.Schema.Type<typeof SwarmUnlockRequest>): Effect.Effect<void, SwarmsError> =>
             Function.pipe(
                 HttpClient.request.post("/unlock"),
                 HttpClient.request.schemaBody(SwarmUnlockRequest)(new SwarmUnlockRequest(options)),
@@ -204,7 +206,7 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
 export const Swarms = Context.GenericTag<Swarms>("the-moby-effects");
 export const layer = Layer.effect(Swarms, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

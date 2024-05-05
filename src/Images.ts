@@ -1,3 +1,9 @@
+/**
+ * Images service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -11,6 +17,7 @@ import * as String from "effect/String";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -361,7 +368,7 @@ export interface ImagePruneOptions {
     readonly filters?: {
         dangling?: ["true" | "false"] | undefined;
         until?: [string] | undefined;
-        label?: string[] | undefined;
+        label?: Array<string> | undefined;
     };
 }
 
@@ -514,7 +521,9 @@ export interface Images {
      * @param target - Target build stage
      * @param outputs - BuildKit output configuration
      */
-    readonly build: (options: ImageBuildOptions) => Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError>;
+    readonly build: (
+        options: ImageBuildOptions
+    ) => Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError, Scope.Scope>;
 
     /**
      * Delete builder cache
@@ -731,7 +740,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ImageInspect))
         );
         const ImageSummariesClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(ImageSummary)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(ImageSummary)))
         );
         const BuildPruneResponseClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(BuildPruneResponse))
@@ -740,7 +749,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(HistoryResponseItem))
         );
         const ImageDeleteResponseItemsClient = client.pipe(
-            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.array(ImageDeleteResponseItem)))
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(ImageDeleteResponseItem)))
         );
         const ImageSearchResponseItemsClient = client.pipe(
             HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(ImageSearchResponseItem))
@@ -769,7 +778,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
 
         const build_ = (
             options: ImageBuildOptions
-        ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError> =>
+        ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError, never>, ImagesError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.post(`${agent.nodeRequestUrl}/build`),
                 HttpClient.request.setHeader("Content-type", ""),
@@ -804,12 +813,13 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
                         options.context,
                         (error) =>
                             new HttpClient.error.RequestError({
+                                error,
                                 reason: "Encode",
-                                error: error,
                                 request: {} as unknown as HttpClient.request.ClientRequest,
                             })
                     )
                 ),
+                client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.map(String.linesIterator)),
@@ -833,7 +843,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
 
         const create_ = (
             options: ImageCreateOptions
-        ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError>, ImagesError> =>
+        ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError, never>, ImagesError, never> =>
             Function.pipe(
                 HttpClient.request.post("/create"),
                 HttpClient.request.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
@@ -844,13 +854,13 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
                 addQueryParameter("message", options.message),
                 addQueryParameter("changes", options.changes),
                 addQueryParameter("platform", options.platform),
-                HttpClient.request.schemaBody(Schema.string)(options.inputImage ?? ""),
+                HttpClient.request.schemaBody(Schema.String)(options.inputImage ?? ""),
                 Effect.flatMap(client),
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.map(String.linesIterator)),
                 Effect.map(Stream.flattenIterables),
-                Effect.map(Stream.map(Schema.decode(Schema.parseJson(BuildInfo)))),
+                Effect.map(Stream.flatMap(Schema.decode(Schema.parseJson(BuildInfo)))),
                 Effect.map(Stream.catchAll(streamHandler("create"))),
                 Effect.catchAll(responseHandler("create")),
                 Effect.scoped
@@ -866,7 +876,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
 
         const history_ = (
             options: ImageHistoryOptions
-        ): Effect.Effect<Schema.Schema.To<typeof HistoryResponseItem>, ImagesError> =>
+        ): Effect.Effect<Schema.Schema.Encoded<typeof HistoryResponseItem>, ImagesError> =>
             Function.pipe(
                 HttpClient.request.get("/{name}/history".replace("{name}", encodeURIComponent(options.name))),
                 HistoryResponseItemsClient,
@@ -911,7 +921,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
 
         const search_ = (
             options: ImageSearchOptions
-        ): Effect.Effect<Schema.Schema.To<typeof ImageSearchResponseItem>, ImagesError> =>
+        ): Effect.Effect<Schema.Schema.Encoded<typeof ImageSearchResponseItem>, ImagesError> =>
             Function.pipe(
                 HttpClient.request.get("/search"),
                 addQueryParameter("term", options.term),
@@ -1003,7 +1013,7 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
 export const Images = Context.GenericTag<Images>("the-moby-effect/Images");
 export const layer = Layer.effect(Images, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

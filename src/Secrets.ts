@@ -1,3 +1,9 @@
+/**
+ * Secrets service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -9,6 +15,7 @@ import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -55,7 +62,7 @@ export interface SecretUpdateOptions {
      * updated. All other fields must remain unchanged from the [SecretInspect
      * endpoint](#operation/SecretInspect) response values.
      */
-    readonly spec: Schema.Schema.To<typeof SecretSpec.struct>;
+    readonly spec: Schema.Schema.Encoded<typeof SecretSpec>;
     /**
      * The version number of the secret object being updated. This is required
      * to avoid conflicting writes.
@@ -85,7 +92,7 @@ export interface Secrets {
      * @param body -
      */
     readonly create: (
-        options: Schema.Schema.To<typeof SecretSpec.struct>
+        options: Schema.Schema.Encoded<typeof SecretSpec>
     ) => Effect.Effect<Readonly<IDResponse>, SecretsError>;
 
     /**
@@ -148,7 +155,7 @@ const make: Effect.Effect<Secrets, never, IMobyConnectionAgent | HttpClient.clie
             );
 
         const create_ = (
-            options: Schema.Schema.To<typeof SecretSpec.struct>
+            options: Schema.Schema.Encoded<typeof SecretSpec>
         ): Effect.Effect<Readonly<IDResponse>, SecretsError> =>
             Function.pipe(
                 HttpClient.request.post("/create"),
@@ -191,7 +198,7 @@ const make: Effect.Effect<Secrets, never, IMobyConnectionAgent | HttpClient.clie
 export const Secrets = Context.GenericTag<Secrets>("the-moby-effect/Secrets");
 export const layer = Layer.effect(Secrets, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

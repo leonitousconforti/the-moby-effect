@@ -1,3 +1,10 @@
+/**
+ * Nodes service
+ *
+ * @since 1.0.0
+ */
+
+import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Data from "effect/Data";
@@ -8,6 +15,7 @@ import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -112,62 +120,69 @@ export interface Nodes {
     readonly update: (options: NodeUpdateOptions) => Effect.Effect<void, NodesError>;
 }
 
-const make: Effect.Effect<Nodes, never, IMobyConnectionAgent | NodeHttp.client.Client.Default> = Effect.gen(function* (
-    _: Effect.Adapter
-) {
-    const agent = yield* _(MobyConnectionAgent);
-    const defaultClient = yield* _(NodeHttp.client.Client);
+const make: Effect.Effect<Nodes, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+    function* (_: Effect.Adapter) {
+        const agent = yield* _(MobyConnectionAgent);
+        const defaultClient = yield* _(HttpClient.client.Client);
 
-    const client = defaultClient.pipe(
-        NodeHttp.client.mapRequest(NodeHttp.request.prependUrl(`${agent.nodeRequestUrl}/nodes`)),
-        NodeHttp.client.filterStatusOk
-    );
-
-    const voidClient = client.pipe(NodeHttp.client.transform(Effect.asVoid));
-    const NodesClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Schema.array(Node))));
-    const NodeClient = client.pipe(NodeHttp.client.mapEffect(NodeHttp.response.schemaBodyJson(Node)));
-
-    const responseHandler = (method: string) => responseErrorHandler((message) => new NodesError({ method, message }));
-
-    const list_ = (options?: NodeListOptions | undefined): Effect.Effect<Readonly<Array<Node>>, NodesError> =>
-        Function.pipe(
-            NodeHttp.request.get(""),
-            addQueryParameter("filters", options?.filters),
-            NodesClient,
-            Effect.catchAll(responseHandler("list"))
+        const client = defaultClient.pipe(
+            HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/nodes`)),
+            HttpClient.client.filterStatusOk
         );
 
-    const delete_ = (options: NodeDeleteOptions): Effect.Effect<void, NodesError> =>
-        Function.pipe(
-            NodeHttp.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
-            addQueryParameter("force", options.force),
-            voidClient,
-            Effect.catchAll(responseHandler("delete"))
+        const voidClient = client.pipe(HttpClient.client.transform(Effect.asVoid));
+        const NodesClient = client.pipe(
+            HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Schema.Array(Node)))
         );
+        const NodeClient = client.pipe(HttpClient.client.mapEffect(HttpClient.response.schemaBodyJson(Node)));
 
-    const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<Node>, NodesError> =>
-        Function.pipe(
-            NodeHttp.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
-            NodeClient,
-            Effect.catchAll(responseHandler("inspect"))
-        );
+        const responseHandler = (method: string) =>
+            responseErrorHandler((message) => new NodesError({ method, message }));
 
-    const update_ = (options: NodeUpdateOptions): Effect.Effect<void, NodesError> =>
-        Function.pipe(
-            NodeHttp.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
-            addQueryParameter("version", options.version),
-            NodeHttp.request.schemaBody(NodeSpec)(options.body),
-            Effect.flatMap(voidClient),
-            Effect.catchAll(responseHandler("update"))
-        );
+        const list_ = (options?: NodeListOptions | undefined): Effect.Effect<Readonly<Array<Node>>, NodesError> =>
+            Function.pipe(
+                HttpClient.request.get(""),
+                addQueryParameter("filters", options?.filters),
+                NodesClient,
+                Effect.catchAll(responseHandler("list")),
+                Effect.scoped
+            );
 
-    return { list: list_, delete: delete_, inspect: inspect_, update: update_ };
-});
+        const delete_ = (options: NodeDeleteOptions): Effect.Effect<void, NodesError> =>
+            Function.pipe(
+                HttpClient.request.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("force", options.force),
+                voidClient,
+                Effect.catchAll(responseHandler("delete")),
+                Effect.scoped
+            );
+
+        const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<Node>, NodesError> =>
+            Function.pipe(
+                HttpClient.request.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+                NodeClient,
+                Effect.catchAll(responseHandler("inspect")),
+                Effect.scoped
+            );
+
+        const update_ = (options: NodeUpdateOptions): Effect.Effect<void, NodesError> =>
+            Function.pipe(
+                HttpClient.request.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+                addQueryParameter("version", options.version),
+                HttpClient.request.schemaBody(NodeSpec)(options.body),
+                Effect.flatMap(voidClient),
+                Effect.catchAll(responseHandler("update")),
+                Effect.scoped
+            );
+
+        return { list: list_, delete: delete_, inspect: inspect_, update: update_ };
+    }
+);
 
 export const Nodes = Context.GenericTag<Nodes>("the-moby-effect/Nodes");
 export const layer = Layer.effect(Nodes, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

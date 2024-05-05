@@ -1,3 +1,9 @@
+/**
+ * Connection agents
+ *
+ * @since 1.0.0
+ */
+
 import * as http from "node:http";
 import * as https from "node:https";
 import * as net from "node:net";
@@ -12,7 +18,12 @@ import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Scope from "effect/Scope";
 
-/** How to connect to your moby/docker instance. */
+/**
+ * How to connect to your moby/docker instance.
+ *
+ * @since 1.0.0
+ * @category Connection
+ */
 export type MobyConnectionOptions =
     | { connection: "socket"; socketPath: string }
     | ({ connection: "ssh"; remoteSocketPath: string } & ssh2.ConnectConfig)
@@ -34,25 +45,55 @@ export type MobyConnectionOptions =
  * platform-node http methods, but it would be nice if it had a few other things
  * as well. The nodeRequestUrl is the url that the node http client will use to
  * make requests. And while we don't need to keep track of the connection
- * options for anything yet, it wouldn't hurt to add them.
+ * options for anything yet, it doesn't hurt to add them.
+ *
+ * @since 1.0.0
+ * @category Connection
  */
-export interface IMobyConnectionAgent extends NodeHttp.HttpAgent {
+export interface IMobyConnectionAgentImpl extends NodeHttp.HttpAgent {
     ssh: http.Agent;
     unix: http.Agent;
     nodeRequestUrl: string;
     connectionOptions: MobyConnectionOptions;
 }
 
-/** Context identifier for our moby connection agent. */
-export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnectionAgent> =
-    Context.GenericTag<IMobyConnectionAgent>("@the-moby-effect/MobyConnectionAgent");
-
-export const MobyHttpClientLive: Layer.Layer<HttpClient.client.Client.Default, never, IMobyConnectionAgent> =
-    NodeHttp.layerWithoutAgent.pipe(Layer.provide(Layer.effect(NodeHttp.HttpAgent, MobyConnectionAgent)));
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
+export interface IMobyConnectionAgent {
+    readonly _: unique symbol;
+}
 
 /**
- * An http agent that connect to remote docker instances over ssh.
+ * Context identifier for our moby connection agent.
  *
+ * @since 1.0.0
+ * @category Tags
+ */
+export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnectionAgentImpl> = Context.GenericTag<
+    IMobyConnectionAgent,
+    IMobyConnectionAgentImpl
+>("@the-moby-effect/MobyConnectionAgent");
+
+/**
+ * A layer that provides the http client with a connection agent that can be
+ * used to connect to a remote moby instance. This layer is used to eliminate
+ * the HttpClient dependency from the other module make functions, which is an
+ * undesirable dependency to have because then it relies on the consumer to
+ * apply the http agent to the HttpClient layer.
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const MobyHttpClientLive: Layer.Layer<HttpClient.client.Client.Default, never, IMobyConnectionAgent> =
+    Layer.provide(NodeHttp.layerWithoutAgent, Layer.effect(NodeHttp.HttpAgent, MobyConnectionAgent));
+
+/**
+ * An http agent that connect to remote moby instances over ssh.
+ *
+ * @since 1.0.0
+ * @category Connection
  * @example
  *     import http from "node:http";
  *
@@ -68,11 +109,11 @@ export const MobyHttpClientLive: Layer.Layer<HttpClient.client.Client.Default, n
  *         }
  *     ).end();
  */
-class SSHAgent extends http.Agent {
+export class SSHAgent extends http.Agent {
     // The ssh client that will be connecting to the server
     private readonly sshClient: ssh2.Client;
 
-    // How to connect to the remote server and where the docker socket is located.
+    // How to connect to the remote server and where the moby socket is located.
     private readonly connectConfig: ssh2.ConnectConfig & { remoteSocketPath: string };
 
     public constructor(
@@ -121,46 +162,48 @@ class SSHAgent extends http.Agent {
 
 /**
  * Given the moby connection options, it will construct a scoped effect that
- * provides an http connection agent that you should use to connect to your
- * docker instance.
+ * provides an http connection agent that you should use to connect to your moby
+ * instance.
+ *
+ * @since 1.0.0
+ * @category Connection
  */
 export const getAgent = (
     connectionOptions: MobyConnectionOptions
-): Effect.Effect<IMobyConnectionAgent, never, Scope.Scope> =>
-    Effect.map(
-        Effect.acquireRelease(
-            Effect.sync(() =>
-                Function.pipe(
-                    Match.value<MobyConnectionOptions>(connectionOptions),
-                    Match.when({ connection: "ssh" }, (options) => new SSHAgent(options)),
-                    Match.when(
-                        { connection: "socket" },
-                        (options) => new http.Agent({ socketPath: options.socketPath } as http.AgentOptions)
-                    ),
-                    Match.when(
-                        { connection: "http" },
-                        (options) => new http.Agent({ host: options.host, port: options.port })
-                    ),
-                    Match.when(
-                        { connection: "https" },
-                        (options) =>
-                            new https.Agent({
-                                ca: options.ca,
-                                key: options.key,
-                                cert: options.cert,
-                                host: options.host,
-                                port: options.port,
-                                passphrase: options.passphrase,
-                            })
-                    ),
-                    Match.exhaustive
-                )
-            ),
-            (agent) => Effect.sync(() => agent.destroy())
+): Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope> => {
+    // Acquire agent
+    const acquire = Function.pipe(
+        Match.value<MobyConnectionOptions>(connectionOptions),
+        Match.when({ connection: "ssh" }, (options) => new SSHAgent(options)),
+        Match.when(
+            { connection: "socket" },
+            (options) => new http.Agent({ socketPath: options.socketPath } as http.AgentOptions)
         ),
-        (agent: http.Agent | https.Agent | SSHAgent) => ({
+        Match.when({ connection: "http" }, (options) => new http.Agent({ host: options.host, port: options.port })),
+        Match.when(
+            { connection: "https" },
+            (options) =>
+                new https.Agent({
+                    ca: options.ca,
+                    key: options.key,
+                    cert: options.cert,
+                    host: options.host,
+                    port: options.port,
+                    passphrase: options.passphrase,
+                })
+        ),
+        Match.exhaustive,
+        Effect.succeed
+    );
+
+    // Release agent
+    const release = (agent: http.Agent | https.Agent | SSHAgent) => Effect.sync(() => agent.destroy());
+
+    // Adding additional properties to our agents and ensuring types
+    return Effect.acquireRelease(acquire, release).pipe(
+        Effect.map((agent: http.Agent | https.Agent | SSHAgent) => ({
             connectionOptions,
-            ssh: agent as SSHAgent,
+            ssh: agent as http.Agent,
             unix: agent as http.Agent,
             http: agent as http.Agent,
             https: agent as https.Agent,
@@ -171,5 +214,6 @@ export const getAgent = (
                       ? `http://0.0.0.0${connectionOptions.path ?? ""}`
                       : "http://0.0.0.0",
             [NodeHttp.HttpAgentTypeId]: NodeHttp.HttpAgentTypeId,
-        })
+        }))
     );
+};

@@ -1,3 +1,9 @@
+/**
+ * Systems service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -11,6 +17,7 @@ import * as String from "effect/String";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -87,7 +94,7 @@ export interface Systems {
      * @param authConfig - Authentication to check
      */
     readonly auth: (
-        options: Schema.Schema.From<typeof AuthConfig.struct>
+        options: Schema.Schema.Encoded<typeof AuthConfig>
     ) => Effect.Effect<SystemAuthResponse, SystemsError>;
 
     /** Get system information */
@@ -132,7 +139,7 @@ export interface Systems {
      */
     readonly events: (
         options?: SystemEventsOptions | undefined
-    ) => Effect.Effect<Stream.Stream<EventMessage, SystemsError>, SystemsError>;
+    ) => Effect.Effect<Stream.Stream<EventMessage, SystemsError>, SystemsError, Scope.Scope>;
 
     /**
      * Get data usage information
@@ -174,7 +181,7 @@ const make: Effect.Effect<Systems, never, IMobyConnectionAgent | HttpClient.clie
             streamErrorHandler((message) => new SystemsError({ method, message }));
 
         const auth_ = (
-            options: Schema.Schema.From<typeof AuthConfig.struct>
+            options: Schema.Schema.Encoded<typeof AuthConfig>
         ): Effect.Effect<SystemAuthResponse, SystemsError> =>
             Function.pipe(
                 HttpClient.request.post("/auth"),
@@ -219,7 +226,7 @@ const make: Effect.Effect<Systems, never, IMobyConnectionAgent | HttpClient.clie
 
         const events_ = (
             options?: SystemEventsOptions | undefined
-        ): Effect.Effect<Stream.Stream<EventMessage, SystemsError>, SystemsError> =>
+        ): Effect.Effect<Stream.Stream<EventMessage, SystemsError, never>, SystemsError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.get("/events"),
                 addQueryParameter("since", options?.since),
@@ -230,10 +237,9 @@ const make: Effect.Effect<Systems, never, IMobyConnectionAgent | HttpClient.clie
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.map(String.linesIterator)),
                 Effect.map(Stream.flattenIterables),
-                Effect.map(Stream.map(Schema.decode(Schema.parseJson(EventMessage)))),
+                Effect.map(Stream.flatMap(Schema.decode(Schema.parseJson(EventMessage)))),
                 Effect.map(Stream.catchAll(streamHandler("events"))),
-                Effect.catchAll(responseHandler("events")),
-                Effect.scoped
+                Effect.catchAll(responseHandler("events"))
             );
 
         const dataUsage_ = (
@@ -262,7 +268,7 @@ const make: Effect.Effect<Systems, never, IMobyConnectionAgent | HttpClient.clie
 export const Systems = Context.GenericTag<Systems>("the-moby-effect/Systems");
 export const layer = Layer.effect(Systems, make).pipe(Layer.provide(MobyHttpClientLive));
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
+export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
     layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
 
 export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>

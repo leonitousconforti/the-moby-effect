@@ -1,3 +1,9 @@
+/**
+ * Generic Moby helpers
+ *
+ * @since 1.0.0
+ */
+
 import * as Config from "effect/Config";
 import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
@@ -81,7 +87,7 @@ const layer = Layer.mergeAll(
 );
 
 /** Creates a MobyApi layer from the provided connection agent */
-export const fromAgent = (agent: Effect.Effect<AgentHelpers.IMobyConnectionAgent, never, Scope.Scope>): MobyApi =>
+export const fromAgent = (agent: Effect.Effect<AgentHelpers.IMobyConnectionAgentImpl, never, Scope.Scope>): MobyApi =>
     layer.pipe(Layer.provide(Layer.scoped(AgentHelpers.MobyConnectionAgent, agent)));
 
 /** Creates a MobyApi layer from the provided connection options */

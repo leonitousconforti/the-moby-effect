@@ -1,3 +1,9 @@
+/**
+ * Configs service
+ *
+ * @since 1.0.0
+ */
+
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
@@ -9,6 +15,7 @@ import * as Scope from "effect/Scope";
 
 import {
     IMobyConnectionAgent,
+    IMobyConnectionAgentImpl,
     MobyConnectionAgent,
     MobyConnectionOptions,
     MobyHttpClientLive,
@@ -17,11 +24,19 @@ import {
 import { addQueryParameter, responseErrorHandler } from "./Requests.js";
 import { Config, ConfigSpec, IDResponse } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class ConfigsError extends Data.TaggedError("ConfigsError")<{
     method: string;
     message: string;
 }> {}
 
+/**
+ * @since 1.0.0
+ * @category Configs
+ */
 export interface ConfigListOptions {
     /**
      * A JSON encoded value of the filters (a `map[string][]string`) to process
@@ -30,28 +45,40 @@ export interface ConfigListOptions {
      * Available filters:
      *
      * - `id=<config id>`
-     * - `label=<key> or label=<key>=value`
      * - `name=<config name>`
      * - `names=<config name>`
+     * - `label=<key> or label=<key>=value`
      */
     readonly filters?: {
         id?: [string] | undefined;
-        label?: string[] | undefined;
         name?: [string] | undefined;
         names?: [string] | undefined;
+        label?: Array<string> | undefined;
     };
 }
 
+/**
+ * @since 1.0.0
+ * @category Configs
+ */
 export interface ConfigDeleteOptions {
     /** ID of the config */
     readonly id: string;
 }
 
+/**
+ * @since 1.0.0
+ * @category Configs
+ */
 export interface ConfigInspectOptions {
     /** ID of the config */
     readonly id: string;
 }
 
+/**
+ * @since 1.0.0
+ * @category Configs
+ */
 export interface ConfigUpdateOptions {
     /** The ID or name of the config */
     readonly id: string;
@@ -68,6 +95,10 @@ export interface ConfigUpdateOptions {
     readonly version: number;
 }
 
+/**
+ * @since 1.0.0
+ * @category Configs
+ */
 export interface Configs {
     /**
      * List configs
@@ -78,19 +109,15 @@ export interface Configs {
      *   Available filters:
      *
      *   - `id=<config id>`
-     *   - `label=<key> or label=<key>=value`
      *   - `name=<config name>`
      *   - `names=<config name>`
+     *   - `label=<key> or label=<key>=value`
      */
     readonly list: (
         options?: ConfigListOptions | undefined
     ) => Effect.Effect<Readonly<Array<Config>>, ConfigsError, never>;
 
-    /**
-     * Create a config
-     *
-     * @param body -
-     */
+    /** Create a config */
     readonly create: (
         options: Schema.Schema.Encoded<typeof ConfigSpec>
     ) => Effect.Effect<Readonly<IDResponse>, ConfigsError, never>;
@@ -123,10 +150,14 @@ export interface Configs {
     readonly update: (options: ConfigUpdateOptions) => Effect.Effect<void, ConfigsError, never>;
 }
 
-const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
-    function* (_: Effect.Adapter) {
-        const agent = yield* _(MobyConnectionAgent);
-        const defaultClient = yield* _(HttpClient.client.Client);
+/**
+ * @since 1.0.0
+ * @category Configs
+ */
+export const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+    function* () {
+        const agent = yield* MobyConnectionAgent;
+        const defaultClient = yield* HttpClient.client.Client;
 
         const client = defaultClient.pipe(
             HttpClient.client.mapRequest(HttpClient.request.prependUrl(`${agent.nodeRequestUrl}/configs`)),
@@ -197,11 +228,40 @@ const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.clie
     }
 );
 
-export const Configs = Context.GenericTag<Configs>("the-moby-effect/Configs");
-export const layer = Layer.effect(Configs, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Configs service
+ *
+ * @since 1.0.0
+ * @category Configs
+ */
+export const Configs: Context.Tag<Configs, Configs> = Context.GenericTag<Configs>("@the-moby-effect/Configs");
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgent, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+/**
+ * Configs layer that depends on the MobyConnectionAgent
+ *
+ * @since 1.0.0
+ * @category Configs
+ */
+export const layer: Layer.Layer<Configs, never, IMobyConnectionAgent> = Layer.effect(Configs, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Configs
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Configs, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
+
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Configs
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Configs, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));
