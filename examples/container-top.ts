@@ -1,8 +1,11 @@
-import * as NodeRuntime from "@effect/platform-node/Runtime";
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
-import * as MobyApi from "../src/index.js";
+import * as Containers from "the-moby-effect/Containers";
+import * as DockerCommon from "the-moby-effect/Docker";
+import * as MobyApi from "the-moby-effect/Moby";
+import * as Schemas from "the-moby-effect/Schemas";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -30,10 +33,10 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 //   ]
 // }
 const program = Effect.gen(function* (_: Effect.Adapter) {
-    const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
+    const containers: Containers.Containers = yield* _(Containers.Containers);
 
-    const containerInspectResponse: MobyApi.Schemas.ContainerInspectResponse = yield* _(
-        MobyApi.DockerCommon.run({
+    const containerInspectResponse: Schemas.ContainerInspectResponse = yield* _(
+        DockerCommon.run({
             imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
             containerOptions: {
                 spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
@@ -47,4 +50,4 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     return data;
 });
 
-program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);

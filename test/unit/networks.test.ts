@@ -1,21 +1,13 @@
+import { describe, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as MobyApi from "the-moby-effect/Moby";
 
-import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
-
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testNetworksService: Layer.Layer<never, never, MobyApi.Networks.Networks> = undefined!;
-
-describe.each(testEngines)("MobyApi Networks tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testNetworksService] = await BeforeAll(
-            image,
-            MobyApi.Networks.fromConnectionOptions
-        );
-    }, 30_000);
+describe("MobyApi Networks tests", () => {
+    const testNetworksService: Layer.Layer<MobyApi.Networks.Networks, never, never> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
 
     it("Should list all the networks", async () => {
         await Effect.gen(function* (_: Effect.Adapter) {

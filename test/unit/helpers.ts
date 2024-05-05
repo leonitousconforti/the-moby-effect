@@ -1,65 +1,21 @@
 import * as Effect from "effect/Effect";
-import * as Layer from "effect/Layer";
 import * as Schedule from "effect/Schedule";
-
-import * as MobyApi from "../../src/index.js";
-
-/** Connects to the local docker daemon on this host. */
-const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
-    connection: "socket",
-    socketPath: "/var/run/docker.sock",
-});
-
-export const BEFORE_ALL_TIMEOUT = 30_000;
-export const AFTER_ALL_TIMEOUT = 30_000;
-
-// TODO: Update the engines once 25 comes out of RC
-export const testEngines = [
-    "docker.io/library/docker:20-dind",
-    "docker.io/library/docker:23-dind",
-    "docker.io/library/docker:24-dind",
-    "docker.io/library/docker:25-rc-dind",
-    "docker.io/library/docker:dind",
-];
+import * as MobyApi from "the-moby-effect/Moby";
 
 /**
  * This bootstraps the tests by using the api to start a docker-in-docker
  * container on the host so that we have something to test the api against
  * without needing to mess with the host docker install too much.
  */
-export const BeforeAll = <
-    T extends
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Configs.Configs>)
-        | ((
-              connectionOptions: MobyApi.MobyConnectionOptions
-          ) => Layer.Layer<never, never, MobyApi.Containers.Containers>)
-        | ((
-              connectionOptions: MobyApi.MobyConnectionOptions
-          ) => Layer.Layer<never, never, MobyApi.Distributions.Distributions>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Execs.Execs>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Images.Images>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Networks.Networks>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Nodes.Nodes>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Plugins.Plugins>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Secrets.Secrets>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Services.Services>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Sessions.Sessions>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Swarm.Swarms>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.System.Systems>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Tasks.Tasks>)
-        | ((connectionOptions: MobyApi.MobyConnectionOptions) => Layer.Layer<never, never, MobyApi.Volumes.Volumes>),
->(
-    image: string,
-    forService: T
-): Promise<
-    Readonly<
-        [
-            dindContainerId: string,
-            dindVolumeId: string,
-            testService: ReturnType<T>,
-            connectionOptions: MobyApi.MobyConnectionOptions,
-        ]
-    >
+export const spawnDind = (
+    image: ({ kind: "ssh" } | { kind: "http" } | { kind: "https" } | { kind: "socket" }) & { tag: string }
+): Effect.Effect<
+    MobyApi.Images.Images | MobyApi.Containers.Containers | MobyApi.Volumes.Volumes,
+    | MobyApi.Containers.ContainersError
+    | MobyApi.Images.ImagesError
+    | MobyApi.Volumes.VolumesError
+    | MobyApi.System.SystemsError,
+    [dindContainerId: string, dindVolumeId: string, connectionOptions: MobyApi.MobyConnectionOptions]
 > =>
     Effect.gen(function* (_: Effect.Adapter) {
         const volumes: MobyApi.Volumes.Volumes = yield* _(MobyApi.Volumes.Volumes);
@@ -67,16 +23,16 @@ export const BeforeAll = <
 
         const containerInspectResponse: Readonly<MobyApi.Schemas.ContainerInspectResponse> = yield* _(
             MobyApi.DockerCommon.run({
-                imageOptions: { kind: "pull", fromImage: image },
+                imageOptions: { kind: "pull", fromImage: image.tag },
                 containerOptions: {
                     spec: {
-                        Image: image,
+                        Image: image.tag,
                         Env: ["DOCKER_TLS_CERTDIR="],
                         Cmd: ["--tls=false"],
                         Volumes: { "/var/lib/docker": {} },
                         HostConfig: {
                             Privileged: true,
-                            PortBindings: { "2375/tcp": [{ HostPort: "0" }], "2376/tcp": [{ HostPort: "0" }] },
+                            PortBindings: { "2375/tcp": [{ HostPort: "0" }] },
                             Binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],
                         },
                     },
@@ -88,9 +44,11 @@ export const BeforeAll = <
             containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort!
         );
 
+        const testDindContainerHost = containerInspectResponse.NetworkSettings?.Gateway;
+
         const connectionOptions: MobyApi.MobyConnectionOptions = {
             connection: "http",
-            host: "localhost",
+            host: testDindContainerHost!,
             port: testDindContainerHttpPort,
         };
 
@@ -104,27 +62,15 @@ export const BeforeAll = <
             )
         );
 
-        yield* _(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Swarm.Swarms, (swarms) => swarms.init({ ListenAddr: "eth0" })),
-                MobyApi.Swarm.fromConnectionOptions(connectionOptions)
-            )
-        );
-
-        const testService = forService(connectionOptions) as ReturnType<T>;
-        return [containerInspectResponse.Id!, volumeCreateResponse.Name, testService, connectionOptions] as const;
-    })
-        .pipe(Effect.provide(localDocker))
-        .pipe(Effect.runPromise);
+        return [containerInspectResponse.Id!, volumeCreateResponse.Name, connectionOptions] as const;
+    });
 
 /** Cleans up the container that will be created in the setup helper. */
-export const AfterAll = (containerId: string, volumeName: string) =>
+export const destroyDind = (containerId: string, volumeName: string) =>
     Effect.gen(function* (_: Effect.Adapter) {
         const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
         yield* _(containers.delete({ id: containerId, force: true }));
 
         const volumes: MobyApi.Volumes.Volumes = yield* _(MobyApi.Volumes.Volumes);
         yield* _(volumes.delete({ name: volumeName, force: true }));
-    })
-        .pipe(Effect.provide(localDocker))
-        .pipe(Effect.runPromise);
+    });

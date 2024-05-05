@@ -1,13 +1,15 @@
-import url from "node:url";
-import tar from "tar-fs";
+import * as url from "node:url";
+import * as tar from "tar-fs";
 
-import * as NodeRuntime from "@effect/platform-node/Runtime";
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Chunk from "effect/Chunk";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import * as MobyApi from "../src/index.js";
+import * as Images from "the-moby-effect/Images";
+import * as MobyApi from "the-moby-effect/Moby";
+import * as Schemas from "the-moby-effect/Schemas";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -45,9 +47,9 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
 const program = Effect.gen(function* (_: Effect.Adapter) {
-    const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
+    const images: Images.Images = yield* _(Images.Images);
 
-    const buildStream: Stream.Stream<never, MobyApi.Images.ImagesError, MobyApi.Schemas.BuildInfo> = yield* _(
+    const buildStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* _(
         images.build({
             t: "mydockerimage:latest",
             context: Stream.fromAsyncIterable(
@@ -55,7 +57,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
                     entries: ["build-image.dockerfile"],
                 }),
                 () =>
-                    new MobyApi.Images.ImagesError({
+                    new Images.ImagesError({
                         method: "buildStream",
                         message: "error packing the build context",
                     })
@@ -68,4 +70,4 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
     return yield* _(Stream.runCollect(buildStream).pipe(Effect.map(Chunk.toReadonlyArray)));
 });
 
-program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);

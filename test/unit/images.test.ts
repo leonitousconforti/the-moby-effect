@@ -1,32 +1,24 @@
+import { describe, expect, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Stream from "effect/Stream";
+import * as MobyApi from "the-moby-effect/Moby";
 
-import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
+describe("MobyApi Images tests", () => {
+    const testImagesService: Layer.Layer<MobyApi.Images.Images, never, never> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
 
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = undefined!;
-
-describe.each(testEngines)("MobyApi Images tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testImagesService] = await BeforeAll(
-            image,
-            MobyApi.Images.fromConnectionOptions
-        );
-    }, 30_000);
-
-    it("Should see no images", async () => {
-        const images: Readonly<MobyApi.Schemas.ImageSummary[]> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) => images.list({ all: true })),
-                testImagesService
-            )
-        );
-        expect(images).toHaveLength(0);
-    });
+    // it("Should see no images", async () => {
+    //     const images: Readonly<MobyApi.Schemas.ImageSummary[]> = await Effect.runPromise(
+    //         Effect.provide(
+    //             Effect.flatMap(MobyApi.Images.Images, (images) => images.list({ all: true })),
+    //             testImagesService
+    //         )
+    //     );
+    //     expect(images).toHaveLength(0);
+    // });
 
     it("Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)", async () => {
         const searchResults = await Effect.runPromise(

@@ -2,281 +2,298 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
-  ssh-docker-engine-service-identifier: "ssh-docker-engine-service"
-  http-docker-engine-service-identifier: "http-docker-engine-service"
-  https-docker-engine-service-identifier: "https-docker-engine-service"
+  remote-docker-engine-service-count: 5
+  node-versions: "['16.x', '18.x', '20.x']"
+  docker-desktop-versions: "['v1', 'v2', 'v3']"
+  podman-desktop-versions: "['v1', 'v2', 'v3']"
+  os-variants: "['ubuntu-latest', 'macos-latest', 'windows-latest']"
+  docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
+  docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:dind']"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  compute-matricies:
+    runs-on: ubuntu-latest
+    outputs:
+      os-variants: ${{ steps.compute-matricies.outputs.os-variants }}
+      node-versions: ${{ steps.compute-matricies.outputs.node-versions }}
+      docker-engine-versions: ${{ steps.compute-matricies.outputs.docker-engine-versions }}
+      docker-desktop-versions: ${{ steps.compute-matricies.outputs.docker-desktop-versions }}
+      podman-desktop-versions: ${{ steps.compute-matricies.outputs.podman-desktop-versions }}
+      docker-engine-connection-variants: ${{ steps.compute-matricies.outputs.docker-engine-connection-variants }}
+      remote-docker-engine-service-indicies: ${{ steps.compute-matricies.outputs.remote-docker-engine-service-indicies }}
+      remote-docker-engine-service-identifiers: ${{ steps.compute-matricies.outputs.remote-docker-engine-service-identifiers }}
+    steps:
+      - id: compute-matricies
+        run: |
+          echo "os-variants=${{ env.os-variants }}" >> $GITHUB_OUTPUT
+          echo "node-versions=${{ env.node-versions }}" >> $GITHUB_OUTPUT
+          echo "docker-engine-versions=${{ env.docker-engine-versions }}" >> $GITHUB_OUTPUT
+          echo "docker-desktop-versions=${{ env.docker-desktop-versions }}" >> $GITHUB_OUTPUT
+          echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
+          echo "docker-engine-connection-variants=${{ env.docker-engine-connection-variants }}" >> $GITHUB_OUTPUT
+
+          output1="["
+          for ((i=0; i<${{ env.remote-docker-engine-service-count }}; i++)); do
+            if [ $i -eq $((${{ env.remote-docker-engine-service-count }}-1)) ]; then
+              output1+="'$i'"
+            else
+              output1+="'$i', "
+            fi
+          done
+          output1+="]"
+          echo "remote-docker-engine-service-indicies=$output1" >> $GITHUB_OUTPUT
+
+          output2="["
+          for ((i=1; i<=${{ env.remote-docker-engine-service-count }}; i++)); do
+            uuid=$(uuidgen)
+            if [ $i -eq ${{ env.remote-docker-engine-service-count }} ]; then
+              output2+="'$uuid'"
+            else
+              output2+="'$uuid', "
+            fi
+          done
+          output2+="]"
+          echo "remote-docker-engine-service-identifiers=$output2" >> $GITHUB_OUTPUT
+
   update-pnpm-caches:
     runs-on: ${{ matrix.os }}
+    needs: [compute-matricies]
     defaults:
       run:
         shell: bash
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: "Install pnpm"
-      shell: bash
-      run: npm install pnpm@8 -g
-    - name: "Get pnpm store"
-      shell: bash
-      run: |
-        echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-    - uses: actions/cache@v4
-      with:
-        path: ${{ env.STORE_PATH }}
-        restore-keys: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
-        key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-    - run: python3 -m pip install setuptools
-    - run: pnpm install
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: "Install pnpm"
+        shell: bash
+        run: npm install pnpm@8 -g
+      - name: "Get pnpm store"
+        id: get-store-path
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
+          restore-keys: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
+          key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+      - run: python3 -m pip install setuptools
+      - run: pnpm install
 
   docker-build:
     runs-on: ubuntu-latest
+    needs: [compute-matricies]
     strategy:
       matrix:
-        dockerfile: ["ssh", "http", "https", "socket"]
+        dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: docker/setup-qemu-action@v3
-    - uses: docker/setup-buildx-action@v3
-    - uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - uses: docker/metadata-action@v5
-      id: meta
-      with:
-        images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-    - uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
-        outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.dockerfile }}-dind-docker-image
-        path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-        if-no-files-found: error
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
+          outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.dockerfile }}-dind-docker-image
+          path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
+          if-no-files-found: error
+
+  docs-generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+  typescript-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16.x'
+      - run: npm install
+      - run: npm run build
+      - run: npm test
 
   docker-publish:
     runs-on: ubuntu-latest
-    needs: [docker-build]
+    needs: [docker-build, compute-matricies]
     if: ${{ contains(github.event.head_commit.modified, 'test/data/agent-http.dockerfile') || contains(github.event.head_commit.modified, 'test/data/agent-https.dockerfile') || contains(github.event.head_commit.modified, 'test/data/agent-socket.dockerfile') || contains(github.event.head_commit.modified, 'test/data/agent-ssh.dockerfile') }}
     environment: "Docker release"
     strategy:
       matrix:
-        dockerfile: ["ssh", "http", "https", "socket"]
+        dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     permissions:
       contents: read
       packages: write
     steps:
-    - uses: actions/checkout@v4
-    - uses: docker/setup-qemu-action@v3
-    - uses: docker/setup-buildx-action@v3
-    - uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - uses: docker/metadata-action@v5
-      id: meta
-      with:
-        images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-    - uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: true
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
-        platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
-  ssh-docker-engine-service:
-    needs: [update-pnpm-caches, docker-build]
+  remote-docker-engine-services:
+    needs: [docker-build, update-pnpm-caches, compute-matricies, docs-generate, typescript-build]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-      with:
-        path: /tmp
-        name: ssh-dind-docker-image
-    - uses: docker/metadata-action@v5
-      id: meta
-      with:
-        images: ghcr.io/${{ github.repository }}/ssh-dind
-    - run: docker load --input /tmp/ssh-dind-docker-image.tar
-    - run: docker image ls -a
-    - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-    - uses: ./.github/actions/workflow-level-service/expose
-      with:
-        service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  http-docker-engine-service:
-    needs: [update-pnpm-caches, docker-build]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-      with:
-        path: /tmp
-        name: http-dind-docker-image
-    - uses: docker/metadata-action@v5
-      id: meta
-      with:
-        images: ghcr.io/${{ github.repository }}/http-dind
-    - run: docker load --input /tmp/http-dind-docker-image.tar
-    - run: docker image ls -a
-    - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-    - uses: ./.github/actions/workflow-level-service/expose
-      with:
-        service-identifier: ${{ env.http-docker-engine-service-identifier }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  https-docker-engine-service:
-    needs: [update-pnpm-caches, docker-build]
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/download-artifact@v4
-      with:
-        path: /tmp
-        name: https-dind-docker-image
-    - uses: docker/metadata-action@v5
-      id: meta
-      with:
-        images: ghcr.io/${{ github.repository }}/https-dind
-    - run: docker load --input /tmp/https-dind-docker-image.tar
-    - run: docker image ls -a
-    - run: docker run --rm --privileged --detach --ulimit nproc=-1 --ulimit core=-1 --pids-limit -1 --oom-score-adj -500 ${{ steps.meta.outputs.tags }}
-    - uses: ./.github/actions/workflow-level-service/expose
-      with:
-        service-identifier: ${{ env.https-docker-engine-service-identifier }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: /tmp
+          pattern: "*-dind-docker-image"
+      - run: docker load --input /tmp/ssh-dind-docker-image/ssh-dind-docker-image.tar
+      - run: docker load --input /tmp/http-dind-docker-image/http-dind-docker-image.tar
+      - run: docker load --input /tmp/https-dind-docker-image/https-dind-docker-image.tar
+      - run: docker load --input /tmp/socket-dind-docker-image/socket-dind-docker-image.tar
+      - run: docker image ls -a
+      - uses: ./.github/actions/workflow-level-service/expose
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          service-subnet: 192.168.${{ matrix.index }}.0
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
 
   remote-docker-engine-services-online:
-    needs: [docker-build, update-pnpm-caches]
+    needs: [docker-build, update-pnpm-caches, compute-matricies]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/actions/workflow-level-service/connect
-      with:
-        service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-    - uses: ./.github/actions/workflow-level-service/connect
-      with:
-        service-identifier: ${{ env.http-docker-engine-service-identifier }}
-    - uses: ./.github/actions/workflow-level-service/connect
-      with:
-        service-identifier: ${{ env.https-docker-engine-service-identifier }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
 
   remote-docker-engine-tests:
-    needs: [remote-docker-engine-services-online]
+    needs: [remote-docker-engine-services-online, compute-matricies]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        remote-docker-engine: [ssh, http, https]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        remote-docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
+        docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-    - name: "Install pnpm"
-      shell: bash
-      run: npm install pnpm@8 -g
-    - name: "Get pnpm store"
-      shell: bash
-      run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-    - name: "Restore pnpm store"
-      uses: actions/cache/restore@v4
-      with:
-        fail-on-cache-miss: true
-        path: ${{ env.STORE_PATH }}
-        key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-    - name: "Install dependencies with pnpm"
-      shell: bash
-      run: pnpm install
+      - uses: actions/checkout@v4
+      - name: "Choose service at random"
+        id: random-service
+        shell: bash
+        run: |
+          RANDOM_INDEX=$(( RANDOM % ${{ env.remote-docker-engine-service-count }} ))
+          echo "random_index=$RANDOM_INDEX" >> $GITHUB_OUTPUT
+      - uses: ./.github/actions/workflow-level-service/connect
+        with:
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', steps.random-service.outputs.random_index)] }}
+      - name: "Run tests"
+        shell: bash
+        run: pnpm build
+        env:
+          THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
+          THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
 
   stop-services:
-    if: always()
+    if: ${{ always() }}
+    needs: [remote-docker-engine-tests, compute-matricies]
     runs-on: ubuntu-latest
-    needs: [remote-docker-engine-tests]
+    strategy:
+      matrix:
+        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: ./.github/actions/workflow-level-service/stop
-      with:
-        service-identifier: ${{ env.ssh-docker-engine-service-identifier }}
-    - uses: ./.github/actions/workflow-level-service/stop
-      with:
-        service-identifier: ${{ env.http-docker-engine-service-identifier }}
-    - uses: ./.github/actions/workflow-level-service/stop
-      with:
-        service-identifier: ${{ env.https-docker-engine-service-identifier }}
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/workflow-level-service/stop
+        with:
+          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
 
   local-docker-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, stop-services, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+    needs: [remote-docker-engine-tests, remote-docker-engine-services, compute-matricies]
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        docker-desktop: [v1, v2, v3, v4, v5, v6]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        docker-desktop: ${{ fromJSON(needs.compute-matricies.outputs.docker-desktop-versions) }}
     steps:
-    - uses: actions/checkout@v4
-    - if: ${{ runner.os != 'macOS' }}
-      run: sleep 10s
-    - if: ${{ runner.os == 'macOS' }}
-      run: sleep 10
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-docker-desktop
+        with:
+          docker-version: ${{ matrix.docker-desktop }}
 
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, stop-services, http-docker-engine-service, https-docker-engine-service, ssh-docker-engine-service]
+    needs: [remote-docker-engine-tests, remote-docker-engine-services, compute-matricies]
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
       matrix:
-        node-version: [16.x, 18.x, 20.x]
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        podman-desktop: [v1, v2, v3, v4, v5, v6]
+        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
+        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        podman-desktop: ${{ fromJSON(needs.compute-matricies.outputs.podman-desktop-versions) }}
     steps:
-    - uses: actions/checkout@v4
-    - if: ${{ runner.os != 'macOS' }}
-      run: sleep 10s
-    - if: ${{ runner.os == 'macOS' }}
-      run: sleep 10
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/install-podman-desktop
+        with:
+          podman-version: ${{ matrix.podman-desktop }}
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
@@ -285,13 +302,4 @@ jobs:
     needs: [local-podman-desktop-tests, local-docker-desktop-tests]
     steps:
       - run: exit 1
-        if: >-
-          ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
-
-  publish-official-release:
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main'}}
-    environment: "NPM official-release"
-    needs: [local-docker-desktop-tests, remote-docker-engine-tests, local-podman-desktop-tests]
-    steps:
-    - run: echo "Publishing artifacts"
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}

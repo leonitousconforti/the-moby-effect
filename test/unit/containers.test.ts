@@ -1,25 +1,16 @@
+import { describe, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Stream from "effect/Stream";
+import * as MobyApi from "the-moby-effect/Moby";
 
-import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
-
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let dindConnectionOptions: MobyApi.MobyConnectionOptions = undefined!;
-let testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = undefined!;
-let testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> = undefined!;
-
-describe.each(testEngines)("MobyApi Containers tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testContainersService, dindConnectionOptions] = await BeforeAll(
-            image,
-            MobyApi.Containers.fromConnectionOptions
-        );
-        testImagesService = MobyApi.Images.fromConnectionOptions(dindConnectionOptions);
-    }, 30_000);
+describe("MobyApi Containers tests", () => {
+    const testImagesService: Layer.Layer<never, never, MobyApi.Images.Images> = MobyApi.fromConnectionOptions(
+        globalThis.__TEST_CONNECTION_OPTIONS
+    ).pipe(Layer.orDie);
+    const testContainersService: Layer.Layer<never, never, MobyApi.Containers.Containers> =
+        MobyApi.fromConnectionOptions(globalThis.__TEST_CONNECTION_OPTIONS).pipe(Layer.orDie);
 
     it("Should create, list, pause, unpause, top, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)", async () => {
         await Effect.gen(function* (_: Effect.Adapter) {

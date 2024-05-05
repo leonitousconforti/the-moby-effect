@@ -1,21 +1,12 @@
+import { describe, expect, it } from "@effect/vitest";
+
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as MobyApi from "the-moby-effect/Moby";
 
-import * as MobyApi from "../../src/index.js";
-import { AfterAll, BeforeAll, testEngines } from "./helpers.js";
-
-let dindContainerId: string = undefined!;
-let dindStorageVolumeName: string = undefined!;
-let testDistributionsService: Layer.Layer<never, never, MobyApi.Distributions.Distributions> = undefined!;
-
-describe.each(testEngines)("MobyApi Distribution tests", (image) => {
-    afterAll(async () => await AfterAll(dindContainerId, dindStorageVolumeName), 30_000);
-    beforeAll(async () => {
-        [dindContainerId, dindStorageVolumeName, testDistributionsService] = await BeforeAll(
-            image,
-            MobyApi.Distributions.fromConnectionOptions
-        );
-    }, 30_000);
+describe("MobyApi Distribution tests", () => {
+    const testDistributionsService: Layer.Layer<never, never, MobyApi.Distributions.Distributions> =
+        MobyApi.fromConnectionOptions(globalThis.__TEST_CONNECTION_OPTIONS).pipe(Layer.orDie);
 
     it("Should inspect an image", async () => {
         const testData: Readonly<MobyApi.Schemas.DistributionInspect> = await Effect.runPromise(

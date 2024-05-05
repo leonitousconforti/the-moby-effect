@@ -1,8 +1,11 @@
-import * as NodeRuntime from "@effect/platform-node/Runtime";
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
-import * as MobyApi from "../src/index.js";
+import * as Containers from "the-moby-effect/Containers";
+import * as DemuxHelpers from "the-moby-effect/Demux";
+import * as DockerCommon from "the-moby-effect/Docker";
+import * as MobyApi from "the-moby-effect/Moby";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -10,10 +13,10 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 });
 
 const program = Effect.gen(function* (_: Effect.Adapter) {
-    const containers: MobyApi.Containers.Containers = yield* _(MobyApi.Containers.Containers);
+    const containers: Containers.Containers = yield* _(Containers.Containers);
 
     const { Id: containerId } = yield* _(
-        MobyApi.DockerCommon.runScoped({
+        DockerCommon.runScoped({
             imageOptions: { kind: "pull", fromImage: "docker.io/library/alpine:latest" },
             containerOptions: {
                 spec: {
@@ -40,7 +43,7 @@ const program = Effect.gen(function* (_: Effect.Adapter) {
         })
     );
 
-    yield* _(MobyApi.DemuxHelpers.demuxSocketFromStdinToStdoutAndStderr(socket));
+    yield* _(DemuxHelpers.demuxSocketFromStdinToStdoutAndStderr(socket));
     yield* _(Console.log("Disconnected from container"));
 });
 
