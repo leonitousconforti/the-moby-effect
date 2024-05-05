@@ -14,19 +14,156 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Errors](#errors)
+  - [NodesError (class)](#nodeserror-class)
+- [Layers](#layers)
+  - [fromAgent](#fromagent)
+  - [fromConnectionOptions](#fromconnectionoptions)
+  - [layer](#layer)
+- [Services](#services)
+  - [make](#make)
+- [Tags](#tags)
+  - [Nodes](#nodes)
+  - [Nodes (interface)](#nodes-interface)
 - [utils](#utils)
   - [NodeDeleteOptions (interface)](#nodedeleteoptions-interface)
   - [NodeInspectOptions (interface)](#nodeinspectoptions-interface)
   - [NodeListOptions (interface)](#nodelistoptions-interface)
   - [NodeUpdateOptions (interface)](#nodeupdateoptions-interface)
-  - [Nodes](#nodes)
-  - [Nodes (interface)](#nodes-interface)
-  - [NodesError (class)](#nodeserror-class)
-  - [fromAgent](#fromagent)
-  - [fromConnectionOptions](#fromconnectionoptions)
-  - [layer](#layer)
 
 ---
+
+# Errors
+
+## NodesError (class)
+
+**Signature**
+
+```ts
+export declare class NodesError
+```
+
+Added in v1.0.0
+
+# Layers
+
+## fromAgent
+
+Constructs a layer from an agent effect
+
+**Signature**
+
+```ts
+export declare const fromAgent: (
+  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+) => Layer.Layer<Nodes, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## fromConnectionOptions
+
+Constructs a layer from agent connection options
+
+**Signature**
+
+```ts
+export declare const fromConnectionOptions: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Nodes, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## layer
+
+Configs layer that depends on the MobyConnectionAgent
+
+**Signature**
+
+```ts
+export declare const layer: Layer.Layer<Nodes, never, IMobyConnectionAgent>
+```
+
+Added in v1.0.0
+
+# Services
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: Effect.Effect<Nodes, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
+```
+
+Added in v1.0.0
+
+# Tags
+
+## Nodes
+
+Nodes service
+
+**Signature**
+
+```ts
+export declare const Nodes: Context.Tag<Nodes, Nodes>
+```
+
+Added in v1.0.0
+
+## Nodes (interface)
+
+**Signature**
+
+```ts
+export interface Nodes {
+  /**
+   * List nodes
+   *
+   * @param filters - Filters to process on the nodes list, encoded as JSON (a
+   *   `map[string][]string`).
+   *
+   *   Available filters:
+   *
+   *   - `id=<node id>`
+   *   - `label=<engine label>`
+   *   - `membership=`(`accepted`|`pending`)`
+   *   - `name=<node name>`
+   *   - `node.label=<node label>`
+   *   - `role=`(`manager`|`worker`)`
+   */
+  readonly list: (options?: NodeListOptions | undefined) => Effect.Effect<Readonly<Array<Node>>, NodesError>
+
+  /**
+   * Delete a node
+   *
+   * @param id - The ID or name of the node
+   * @param force - Force remove a node from the swarm
+   */
+  readonly delete: (options: NodeDeleteOptions) => Effect.Effect<void, NodesError>
+
+  /**
+   * Inspect a node
+   *
+   * @param id - The ID or name of the node
+   */
+  readonly inspect: (options: NodeInspectOptions) => Effect.Effect<Readonly<Node>, NodesError>
+
+  /**
+   * Update a node
+   *
+   * @param id - The ID of the node
+   * @param body -
+   * @param version - The version number of the node object being updated.
+   *   This is required to avoid conflicting writes.
+   */
+  readonly update: (options: NodeUpdateOptions) => Effect.Effect<void, NodesError>
+}
+```
+
+Added in v1.0.0
 
 # utils
 
@@ -108,99 +245,3 @@ export interface NodeUpdateOptions {
 ```
 
 Added in v1.0.0
-
-## Nodes
-
-**Signature**
-
-```ts
-export declare const Nodes: Context.Tag<Nodes, Nodes>
-```
-
-## Nodes (interface)
-
-**Signature**
-
-```ts
-export interface Nodes {
-  /**
-   * List nodes
-   *
-   * @param filters - Filters to process on the nodes list, encoded as JSON (a
-   *   `map[string][]string`).
-   *
-   *   Available filters:
-   *
-   *   - `id=<node id>`
-   *   - `label=<engine label>`
-   *   - `membership=`(`accepted`|`pending`)`
-   *   - `name=<node name>`
-   *   - `node.label=<node label>`
-   *   - `role=`(`manager`|`worker`)`
-   */
-  readonly list: (options?: NodeListOptions | undefined) => Effect.Effect<Readonly<Array<Node>>, NodesError>
-
-  /**
-   * Delete a node
-   *
-   * @param id - The ID or name of the node
-   * @param force - Force remove a node from the swarm
-   */
-  readonly delete: (options: NodeDeleteOptions) => Effect.Effect<void, NodesError>
-
-  /**
-   * Inspect a node
-   *
-   * @param id - The ID or name of the node
-   */
-  readonly inspect: (options: NodeInspectOptions) => Effect.Effect<Readonly<Node>, NodesError>
-
-  /**
-   * Update a node
-   *
-   * @param id - The ID of the node
-   * @param body -
-   * @param version - The version number of the node object being updated.
-   *   This is required to avoid conflicting writes.
-   */
-  readonly update: (options: NodeUpdateOptions) => Effect.Effect<void, NodesError>
-}
-```
-
-Added in v1.0.0
-
-## NodesError (class)
-
-**Signature**
-
-```ts
-export declare class NodesError
-```
-
-## fromAgent
-
-**Signature**
-
-```ts
-export declare const fromAgent: (
-  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
-) => Layer.Layer<Nodes, never, never>
-```
-
-## fromConnectionOptions
-
-**Signature**
-
-```ts
-export declare const fromConnectionOptions: (
-  connectionOptions: MobyConnectionOptions
-) => Layer.Layer<Nodes, never, never>
-```
-
-## layer
-
-**Signature**
-
-```ts
-export declare const layer: Layer.Layer<Nodes, never, IMobyConnectionAgent>
-```

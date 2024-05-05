@@ -31,6 +31,10 @@ import {
     UnlockKeyResponse,
 } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class SwarmsError extends Data.TaggedError("SwarmsError")<{
     method: string;
     message: string;
@@ -61,7 +65,10 @@ export interface SwarmUpdateOptions {
     readonly rotateManagerUnlockKey?: boolean;
 }
 
-/** @since 1.0.0 */
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
 export interface Swarms {
     /** Inspect swarm */
     readonly inspect: () => Effect.Effect<Readonly<Swarm>, SwarmsError>;
@@ -105,7 +112,11 @@ export interface Swarms {
     readonly unlock: (options: Schema.Schema.Encoded<typeof SwarmUnlockRequest>) => Effect.Effect<void, SwarmsError>;
 }
 
-const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+/**
+ * @since 1.0.0
+ * @category Services
+ */
+export const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
@@ -206,11 +217,40 @@ const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.clien
     }
 );
 
-export const Swarms = Context.GenericTag<Swarms>("the-moby-effects");
-export const layer = Layer.effect(Swarms, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Swarms service
+ *
+ * @since 1.0.0
+ * @category Tags
+ */
+export const Swarms: Context.Tag<Swarms, Swarms> = Context.GenericTag<Swarms>("@the-moby-effect/Swarms");
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+/**
+ * Configs layer that depends on the MobyConnectionAgent
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layer: Layer.Layer<Swarms, never, IMobyConnectionAgent> = Layer.effect(Swarms, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Swarms, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
+
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Swarms, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

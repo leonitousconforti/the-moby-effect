@@ -14,43 +14,19 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [MobyApi (type alias)](#mobyapi-type-alias)
+- [Constructors](#constructors)
   - [fromAgent](#fromagent)
   - [fromConnectionOptions](#fromconnectionoptions)
   - [fromDockerHostEnvironmentVariable](#fromdockerhostenvironmentvariable)
   - [fromPlatformDefault](#fromplatformdefault)
   - [fromUrl](#fromurl)
+- [Layers](#layers)
+  - [MobyApi (type alias)](#mobyapi-type-alias)
+  - [layer](#layer)
 
 ---
 
-# utils
-
-## MobyApi (type alias)
-
-**Signature**
-
-```ts
-export type MobyApi = Layer.Layer<
-  never,
-  never,
-  | Configs.Configs
-  | Containers.Containers
-  | Distributions.Distributions
-  | Execs.Execs
-  | Images.Images
-  | Networks.Networks
-  | Nodes.Nodes
-  | Plugins.Plugins
-  | Secrets.Secrets
-  | Services.Services
-  | Sessions.Sessions
-  | Swarm.Swarms
-  | System.Systems
-  | Tasks.Tasks
-  | Volumes.Volumes
->
-```
+# Constructors
 
 ## fromAgent
 
@@ -64,6 +40,8 @@ export declare const fromAgent: (
 ) => MobyApi
 ```
 
+Added in v1.0.0
+
 ## fromConnectionOptions
 
 Creates a MobyApi layer from the provided connection options
@@ -74,16 +52,16 @@ Creates a MobyApi layer from the provided connection options
 export declare const fromConnectionOptions: (connectionOptions: AgentHelpers.MobyConnectionOptions) => MobyApi
 ```
 
+Added in v1.0.0
+
 ## fromDockerHostEnvironmentVariable
 
-Creates a MobyApi layer from the DOCKER_HOST environment variable as a url
+Creates a MobyApi layer from the DOCKER_HOST environment variable as a url.
 
 **Signature**
 
 ```ts
 export declare const fromDockerHostEnvironmentVariable: Layer.Layer<
-  never,
-  ConfigError.ConfigError,
   | Volumes.Volumes
   | Tasks.Tasks
   | System.Systems
@@ -98,9 +76,13 @@ export declare const fromDockerHostEnvironmentVariable: Layer.Layer<
   | Containers.Containers
   | Distributions.Distributions
   | Execs.Execs
-  | Images.Images
+  | Images.Images,
+  ConfigError.ConfigError,
+  never
 >
 ```
+
+Added in v1.0.0
 
 ## fromPlatformDefault
 
@@ -115,6 +97,8 @@ export declare const fromPlatformDefault: () => Layer.Layer<
   Layer.Layer.Context<MobyApi>
 >
 ```
+
+Added in v1.0.0
 
 ## fromUrl
 
@@ -153,3 +137,67 @@ export declare const fromUrl: (
   Layer.Layer.Context<MobyApi> | never
 >
 ```
+
+Added in v1.0.0
+
+# Layers
+
+## MobyApi (type alias)
+
+Merges all the layers into a single layer
+
+**Signature**
+
+```ts
+export type MobyApi = Layer.Layer<
+  | Configs.Configs
+  | Containers.Containers
+  | Distributions.Distributions
+  | Execs.Execs
+  | Images.Images
+  | Networks.Networks
+  | Nodes.Nodes
+  | Plugins.Plugins
+  | Secrets.Secrets
+  | Services.Services
+  | Sessions.Sessions
+  | Swarm.Swarms
+  | System.Systems
+  | Tasks.Tasks
+  | Volumes.Volumes,
+  never,
+  never
+>
+```
+
+Added in v1.0.0
+
+## layer
+
+Merges all the layers into a single layer
+
+**Signature**
+
+```ts
+export declare const layer: Layer.Layer<
+  | Volumes.Volumes
+  | Tasks.Tasks
+  | System.Systems
+  | Swarm.Swarms
+  | Sessions.Sessions
+  | Services.Services
+  | Secrets.Secrets
+  | Plugins.Plugins
+  | Nodes.Nodes
+  | Networks.Networks
+  | Configs.Configs
+  | Containers.Containers
+  | Distributions.Distributions
+  | Execs.Execs
+  | Images.Images,
+  never,
+  AgentHelpers.IMobyConnectionAgent
+>
+```
+
+Added in v1.0.0

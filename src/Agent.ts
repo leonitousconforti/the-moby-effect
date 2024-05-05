@@ -131,6 +131,8 @@ export class SSHAgent extends http.Agent {
      * forwardOurStreamLocal request which is an OpenSSH extension that opens a
      * connection to the unix domain socket at socketPath on the remote server
      * and forwards traffic.
+     *
+     * @since 1.0.0
      */
     protected createConnection(
         _options: http.ClientRequestArgs,

@@ -42,7 +42,7 @@ export interface DistributionInspectOptions {
  * Distributions service
  *
  * @since 1.0.0
- * @category Distributions
+ * @category Tags
  */
 export interface Distributions {
     /**
@@ -57,7 +57,7 @@ export interface Distributions {
 
 /**
  * @since 1.0.0
- * @category Distributions
+ * @category Services
  */
 export const make: Effect.Effect<Distributions, never, IMobyConnectionAgent | HttpClient.client.Client.Default> =
     Effect.gen(function* (_: Effect.Adapter) {
@@ -90,24 +90,30 @@ export const make: Effect.Effect<Distributions, never, IMobyConnectionAgent | Ht
     });
 
 /**
+ * Distributions service
+ *
  * @since 1.0.0
- * @category Distributions
+ * @category Tags
  */
 export const Distributions: Context.Tag<Distributions, Distributions> = Context.GenericTag<Distributions>(
     "@the-moby-effect/Distributions"
 );
 
 /**
+ * Distributions layer that depends on the MobyConnectionAgent
+ *
  * @since 1.0.0
- * @category Distributions
+ * @category Layers
  */
 export const layer: Layer.Layer<Distributions, never, IMobyConnectionAgent> = Layer.effect(Distributions, make).pipe(
     Layer.provide(MobyHttpClientLive)
 );
 
 /**
+ * Constructs a layer from an agent effect
+ *
  * @since 1.0.0
- * @category Distributions
+ * @category Layers
  */
 export const fromAgent = (
     agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
@@ -115,8 +121,10 @@ export const fromAgent = (
     layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
 
 /**
+ * Constructs a layer from agent connection options
+ *
  * @since 1.0.0
- * @category Distributions
+ * @category Layers
  */
 export const fromConnectionOptions = (
     connectionOptions: MobyConnectionOptions

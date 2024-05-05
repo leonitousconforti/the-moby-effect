@@ -20,6 +20,9 @@ import * as System from "./System.js";
  * Implements the `docker pull` command.
  *
  * Note: it doesn't have all the flags that the images create endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
  */
 export const pull = ({
     auth,
@@ -40,6 +43,9 @@ export const pull = ({
  * closed, the pulled image is removed.
  *
  * Note: it doesn't have all the flags that the images create endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
  */
 export const pullScoped = ({
     auth,
@@ -68,6 +74,9 @@ export const pullScoped = ({
  * Implements the `docker build` command.
  *
  * Note: It doesn't have all the flags that the images build endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
  */
 export const build = ({
     auth,
@@ -96,6 +105,9 @@ export const build = ({
  * closed, the built image is removed.
  *
  * Note: It doesn't have all the flags that the images build endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
  */
 export const buildScoped = ({
     auth,
@@ -124,7 +136,12 @@ export const buildScoped = ({
     return Effect.acquireRelease(acquire, () => release);
 };
 
-/** Implements `docker run` command. */
+/**
+ * Implements `docker run` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const run = ({
     containerOptions,
     imageOptions,
@@ -206,6 +223,9 @@ export const run = ({
 /**
  * Implements `docker run` command as a scoped effect. When the scope is closed,
  * both the image and the container is removed.
+ *
+ * @since 1.0.0
+ * @category Docker
  */
 export const runScoped = ({
     containerOptions,
@@ -268,24 +288,54 @@ export const runScoped = ({
 //         return yield* _(execs.start<T>({ id: execCreateResponse.Id, execStartConfig: options2 }));
 //     });
 
-/** Implements the `docker ps` command. */
+/**
+ * Implements the `docker ps` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const ps = (options?: Containers.ContainerListOptions | undefined) =>
     Effect.flatMap(Containers.Containers, (containers) => containers.list(options));
 
-/** Implements the `docker push` command. */
+/**
+ * Implements the `docker push` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const push = (options: Images.ImagePushOptions) =>
     Effect.flatMap(Images.Images, (images) => images.push(options));
 
-/** Implements the `docker images` command. */
+/**
+ * Implements the `docker images` command. *
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const images = (options?: Images.ImageListOptions | undefined) =>
     Effect.flatMap(Images.Images, (images) => images.list(options));
 
-/** Implements the `docker search` command. */
+/**
+ * Implements the `docker search` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const search = (options: Images.ImageSearchOptions) =>
     Effect.flatMap(Images.Images, (images) => images.search(options));
 
-/** Implements the `docker version` command. */
+/**
+ * Implements the `docker version` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const version = Effect.flatMap(System.Systems, (systems) => systems.version());
 
-/** Implements the `docker info` command. */
+/**
+ * Implements the `docker info` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
 export const info = Effect.flatMap(System.Systems, (systems) => systems.info());

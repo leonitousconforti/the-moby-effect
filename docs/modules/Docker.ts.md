@@ -14,7 +14,7 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [Docker](#docker)
   - [build](#build)
   - [buildScoped](#buildscoped)
   - [images](#images)
@@ -30,7 +30,7 @@ Added in v1.0.0
 
 ---
 
-# utils
+# Docker
 
 ## build
 
@@ -59,6 +59,8 @@ export declare const build: ({
   Images.Images | Scope.Scope
 >
 ```
+
+Added in v1.0.0
 
 ## buildScoped
 
@@ -89,9 +91,11 @@ export declare const buildScoped: ({
 >
 ```
 
+Added in v1.0.0
+
 ## images
 
-Implements the `docker images` command.
+Implements the `docker images` command. \*
 
 **Signature**
 
@@ -100,6 +104,8 @@ export declare const images: (
   options?: Images.ImageListOptions | undefined
 ) => Effect.Effect<readonly Schemas.ImageSummary[], Images.ImagesError, Images.Images>
 ```
+
+Added in v1.0.0
 
 ## info
 
@@ -110,6 +116,8 @@ Implements the `docker info` command.
 ```ts
 export declare const info: Effect.Effect<Readonly<Schemas.SystemInfo>, System.SystemsError, System.Systems>
 ```
+
+Added in v1.0.0
 
 ## ps
 
@@ -122,6 +130,8 @@ export declare const ps: (
   options?: Containers.ContainerListOptions | undefined
 ) => Effect.Effect<readonly Schemas.ContainerSummary[], Containers.ContainersError, Containers.Containers>
 ```
+
+Added in v1.0.0
 
 ## pull
 
@@ -142,6 +152,8 @@ export declare const pull: ({
   platform?: string | undefined
 }) => Effect.Effect<Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never>, Images.ImagesError, Images.Images>
 ```
+
+Added in v1.0.0
 
 ## pullScoped
 
@@ -168,6 +180,8 @@ export declare const pullScoped: ({
 >
 ```
 
+Added in v1.0.0
+
 ## push
 
 Implements the `docker push` command.
@@ -179,6 +193,8 @@ export declare const push: (
   options: Images.ImagePushOptions
 ) => Effect.Effect<Stream.Stream<string, Images.ImagesError, never>, Images.ImagesError, Images.Images>
 ```
+
+Added in v1.0.0
 
 ## run
 
@@ -199,6 +215,8 @@ export declare const run: ({
   Containers.Containers | Images.Images | Scope.Scope
 >
 ```
+
+Added in v1.0.0
 
 ## runScoped
 
@@ -221,6 +239,8 @@ export declare const runScoped: ({
 >
 ```
 
+Added in v1.0.0
+
 ## search
 
 Implements the `docker search` command.
@@ -233,6 +253,8 @@ export declare const search: (
 ) => Effect.Effect<Schemas.ImageSearchResponseItem, Images.ImagesError, Images.Images>
 ```
 
+Added in v1.0.0
+
 ## version
 
 Implements the `docker version` command.
@@ -242,3 +264,5 @@ Implements the `docker version` command.
 ```ts
 export declare const version: Effect.Effect<Readonly<Schemas.SystemVersion>, System.SystemsError, System.Systems>
 ```
+
+Added in v1.0.0

@@ -25,6 +25,10 @@ import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFa
 import { addQueryParameter, responseErrorHandler } from "./Requests.js";
 import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class ExecsError extends Data.TaggedError("ExecsError")<{
     method: string;
     message: string;
@@ -61,6 +65,10 @@ export interface ExecInspectOptions {
     readonly id: string;
 }
 
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
 export interface Execs {
     /**
      * Create an exec instance
@@ -99,7 +107,11 @@ export interface Execs {
     readonly inspect: (options: ExecInspectOptions) => Effect.Effect<ExecInspectResponse, ExecsError>;
 }
 
-const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+/**
+ * @since 1.0.0
+ * @category Services
+ */
+export const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
@@ -177,11 +189,40 @@ const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient.client
     }
 );
 
-export const Execs = Context.GenericTag<Execs>("the-moby-effect/Execs");
-export const layer = Layer.effect(Execs, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Execs service
+ *
+ * @since 1.0.0
+ * @category Tags
+ */
+export const Execs: Context.Tag<Execs, Execs> = Context.GenericTag<Execs>("@the-moby-effect/Execs");
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+/**
+ * Configs layer that depends on the MobyConnectionAgent
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layer: Layer.Layer<Execs, never, IMobyConnectionAgent> = Layer.effect(Execs, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Execs, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
+
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Execs, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

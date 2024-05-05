@@ -33,6 +33,7 @@ const NonNullableNonRequiredField = NonRequiredField;
 const NullabilityOmittedRequiredField = NonNullableRequiredField;
 const NullabilityOmittedNonRequiredField = NonNullableNonRequiredField;
 
+/** @since 1.45.0 */
 export class Port extends Schema.Class<Port>("Port")({
     Type: NullabilityOmittedRequiredField(
         Schema.Union(Schema.Literal("tcp"), Schema.Literal("udp"), Schema.Literal("sctp"))
@@ -696,6 +697,7 @@ export class IDResponse extends Schema.Class<IDResponse>("IDResponse")({
 }) {}
 
 // TODO: This also has x-nullable at the top level, what does that mean for consumers
+/** @since 1.45.0 */
 export class EndpointIPAMConfig extends Schema.Class<EndpointIPAMConfig>("EndpointIPAMConfig")({
     IPv4Address: NullabilityOmittedNonRequiredField(Schema.String),
     IPv6Address: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1147,6 +1149,7 @@ export class PluginsInfo extends Schema.Class<PluginsInfo>("PluginsInfo")({
 }) {}
 
 // FIXME: has top level nullability: true
+/** @since 1.45.0 */
 export class IndexInfo extends Schema.Class<IndexInfo>("IndexInfo")({
     /** Name of the registry, such as "docker.io". */
     Name: NullabilityOmittedNonRequiredField(Schema.String),
@@ -1457,6 +1460,7 @@ export class Resources extends Schema.Class<Resources>("Resources")({
 }) {}
 
 // FIXME: This has top level nullability: true
+/** @since 1.45.0 */
 export class RegistryServiceConfig extends Schema.Class<RegistryServiceConfig>("RegistryServiceConfig")({
     /**
      * List of IP ranges to which nondistributable artifacts can be pushed,
@@ -2148,6 +2152,7 @@ export class TaskSpec extends Schema.Class<TaskSpec>("TaskSpec")({
 }) {}
 
 // FIXME: has top level nullability: true
+/** @since 1.45.0 */
 export class ClusterInfo extends Schema.Class<ClusterInfo>("ClusterInfo")({
     /** The ID of the swarm. */
     ID: NullabilityOmittedNonRequiredField(Schema.String),
@@ -2918,6 +2923,7 @@ export class NodeStatus extends Schema.Class<NodeStatus>("NodeStatus")({
 }) {}
 
 // FIXME: has top level nullability: true
+/** @since 1.45.0 */
 export class ManagerStatus extends Schema.Class<ManagerStatus>("ManagerStatus")({
     Leader: NullabilityOmittedNonRequiredField(Schema.Boolean, { default: () => false }),
     Reachability: NullabilityOmittedNonRequiredField(
@@ -3192,6 +3198,7 @@ export class ServiceSpec extends Schema.Class<ServiceSpec>("ServiceSpec")({
 }) {}
 
 // FIXME: has top level nullability: true
+/** @since 1.45.0 */
 export class Health extends Schema.Class<Health>("Health")({
     /**
      * Status is one of `none`, `starting`, `healthy` or `unhealthy`
@@ -3218,6 +3225,7 @@ export class Health extends Schema.Class<Health>("Health")({
 }) {}
 
 // FIXME: has top level nullability: true
+/** @since 1.45.0 */
 export class ContainerState extends Schema.Class<ContainerState>("ContainerState")({
     /**
      * String representation of the container state. Can be one of "created",
@@ -3530,7 +3538,8 @@ export class ContainerTopResponse extends Schema.Class<ContainerTopResponse>("Co
 export class ContainerUpdateResponse extends Schema.Class<ContainerUpdateResponse>("ContainerUpdateResponse")({
     Warnings: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
 }) {}
-// u can do this !!!!!
+
+/** @since 1.45.0 */
 export class ContainerPruneResponse extends Schema.Class<ContainerPruneResponse>("ContainerPruneResponse")({
     /** Container IDs that were deleted */
     ContainersDeleted: NullabilityOmittedNonRequiredField(Schema.Array(Schema.String)),
@@ -3668,7 +3677,7 @@ export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>("SwarmJoinR
      * for the VXLAN Tunnel Endpoint (VTEP).
      */
     ListenAddr: NullabilityOmittedNonRequiredField(Schema.String),
-    // null it !!!
+
     /**
      * Externally reachable address advertised to other nodes. This can either
      * be an address/port combination in the form `192.168.1.1:4567`, or an
@@ -4311,7 +4320,7 @@ export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
             ),
             Config: NullabilityOmittedNonRequiredField(Schema.Record(Schema.String, Schema.String)),
         })
-    ), // im being brainwashed into nullification
+    ),
 
     /**
      * Network mode to use for this container. Supported standard values are:
@@ -4321,7 +4330,7 @@ export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
      */
     NetworkMode: NullabilityOmittedNonRequiredField(Schema.String),
     PortBindings: NullabilityOmittedNonRequiredField(
-        Schema.Record(Schema.String, Schema.NullOr(Schema.Array(PortBinding))) // 5 SQUIGGLYS LEF
+        Schema.Record(Schema.String, Schema.NullOr(Schema.Array(PortBinding)))
     ),
     RestartPolicy: NullabilityOmittedNonRequiredField(RestartPolicy),
 
@@ -4483,7 +4492,7 @@ export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
     UsernsMode: NullabilityOmittedNonRequiredField(Schema.String),
 
     /** Size of `/dev/shm` in bytes. If omitted, the system uses 64MB. */
-    ShmSize: NullabilityOmittedNonRequiredField(Schema.Number), // me when someone tells me how i eat my toast:
+    ShmSize: NullabilityOmittedNonRequiredField(Schema.Number),
 
     /**
      * A list of kernel parameters (sysctls) to set in the container. For

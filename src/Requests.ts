@@ -18,7 +18,7 @@ import * as Stream from "effect/Stream";
  * Helper interface to expose the underlying socket from the effect HttpClient
  * response. Useful for multiplexing the response stream.
  *
- * La la la coding coding coding
+ * @internal
  */
 export interface IExposeSocketOnEffectClientResponse extends HttpClient.response.ClientResponse {
     source: {
@@ -26,6 +26,7 @@ export interface IExposeSocketOnEffectClientResponse extends HttpClient.response
     };
 }
 
+/** @internal */
 export const addQueryParameter = (
     key: string,
     value: unknown | Array<unknown> | undefined
@@ -34,6 +35,7 @@ export const addQueryParameter = (
         ? Function.identity
         : HttpClient.request.setUrlParam(key, String(value));
 
+/** @internal */
 export const responseErrorHandler =
     <E>(toError: (message: string) => E) =>
     (
@@ -70,6 +72,7 @@ export const responseErrorHandler =
             })
         );
 
+/** @internal */
 export const streamErrorHandler =
     <E>(toError: (message: string) => E) =>
     (error: HttpClient.error.ResponseError | ParseResult.ParseError): Stream.Stream<never, E, never> =>

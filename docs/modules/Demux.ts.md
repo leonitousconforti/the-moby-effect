@@ -14,25 +14,29 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [Brands](#brands)
   - [MultiplexedStreamSocket](#multiplexedstreamsocket)
-  - [MultiplexedStreamSocket (type alias)](#multiplexedstreamsocket-type-alias)
   - [RawStreamSocket](#rawstreamsocket)
-  - [RawStreamSocket (type alias)](#rawstreamsocket-type-alias)
-  - [StderrError (class)](#stderrerror-class)
-  - [StdinError (class)](#stdinerror-class)
-  - [StdoutError (class)](#stdouterror-class)
+- [Demux](#demux)
   - [demuxMultiplexedSocket](#demuxmultiplexedsocket)
   - [demuxRawSocket](#demuxrawsocket)
   - [demuxSocket](#demuxsocket)
   - [demuxSocketFromStdinToStdoutAndStderr](#demuxsocketfromstdintostdoutandstderr)
+  - [responseToStreamingSocketOrFail](#responsetostreamingsocketorfail)
+- [Errors](#errors)
+  - [StderrError (class)](#stderrerror-class)
+  - [StdinError (class)](#stdinerror-class)
+  - [StdoutError (class)](#stdouterror-class)
+- [Predicates](#predicates)
   - [isMultiplexedStreamSocketResponse](#ismultiplexedstreamsocketresponse)
   - [isRawStreamSocketResponse](#israwstreamsocketresponse)
-  - [responseToStreamingSocketOrFail](#responsetostreamingsocketorfail)
+- [Types](#types)
+  - [MultiplexedStreamSocket (type alias)](#multiplexedstreamsocket-type-alias)
+  - [RawStreamSocket (type alias)](#rawstreamsocket-type-alias)
 
 ---
 
-# utils
+# Brands
 
 ## MultiplexedStreamSocket
 
@@ -42,21 +46,7 @@ Added in v1.0.0
 export declare const MultiplexedStreamSocket: Brand.Brand.Constructor<MultiplexedStreamSocket>
 ```
 
-## MultiplexedStreamSocket (type alias)
-
-When the TTY setting is disabled in POST /containers/create, the HTTP
-Content-Type header is set to application/vnd.docker.multiplexed-stream and
-the stream over the hijacked connected is multiplexed to separate out stdout
-and stderr. The stream consists of a series of frames, each containing a
-header and a payload.
-
-**Signature**
-
-```ts
-export type MultiplexedStreamSocket = Socket.Socket & {
-  "content-type": "application/vnd.docker.multiplexed-stream"
-} & Brand.Brand<"MultiplexedStreamSocket">
-```
+Added in v1.0.0
 
 ## RawStreamSocket
 
@@ -66,43 +56,9 @@ export type MultiplexedStreamSocket = Socket.Socket & {
 export declare const RawStreamSocket: Brand.Brand.Constructor<RawStreamSocket>
 ```
 
-## RawStreamSocket (type alias)
+Added in v1.0.0
 
-When the TTY setting is enabled in POST /containers/create, the stream is not
-multiplexed. The data exchanged over the hijacked connection is simply the
-raw data from the process PTY and client's stdin.
-
-**Signature**
-
-```ts
-export type RawStreamSocket = Socket.Socket & {
-  "content-type": "application/vnd.docker.raw-stream"
-} & Brand.Brand<"RawStreamSocket">
-```
-
-## StderrError (class)
-
-**Signature**
-
-```ts
-export declare class StderrError
-```
-
-## StdinError (class)
-
-**Signature**
-
-```ts
-export declare class StdinError
-```
-
-## StdoutError (class)
-
-**Signature**
-
-```ts
-export declare class StdoutError
-```
+# Demux
 
 ## demuxMultiplexedSocket
 
@@ -128,6 +84,8 @@ export declare const demuxMultiplexedSocket: (<E1, E2, E3>(
   ) => Effect.Effect<void, Socket.SocketError | E1 | E2 | E3, never>)
 ```
 
+Added in v1.0.0
+
 ## demuxRawSocket
 
 Demux a raw socket. When given a raw socket of the remote process's pty,
@@ -149,6 +107,8 @@ export declare const demuxRawSocket: (<E1, E2>(
     sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
   ) => Effect.Effect<void, Socket.SocketError | E1 | E2, never>)
 ```
+
+Added in v1.0.0
 
 ## demuxSocket
 
@@ -185,6 +145,8 @@ export declare const demuxSocket: {
 }
 ```
 
+Added in v1.0.0
+
 ## demuxSocketFromStdinToStdoutAndStderr
 
 Demux either a raw stream socket or a multiplexed stream socket from stdin to
@@ -200,21 +162,7 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: (
 ) => Effect.Effect<void, Socket.SocketError | StdinError | StdoutError | StderrError, never>
 ```
 
-## isMultiplexedStreamSocketResponse
-
-**Signature**
-
-```ts
-export declare const isMultiplexedStreamSocketResponse: (response: HttpClient.response.ClientResponse) => boolean
-```
-
-## isRawStreamSocketResponse
-
-**Signature**
-
-```ts
-export declare const isRawStreamSocketResponse: (response: HttpClient.response.ClientResponse) => boolean
-```
+Added in v1.0.0
 
 ## responseToStreamingSocketOrFail
 
@@ -229,3 +177,95 @@ export declare const responseToStreamingSocketOrFail: (
   response: HttpClient.response.ClientResponse
 ) => Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never>
 ```
+
+Added in v1.0.0
+
+# Errors
+
+## StderrError (class)
+
+**Signature**
+
+```ts
+export declare class StderrError
+```
+
+Added in v1.0.0
+
+## StdinError (class)
+
+**Signature**
+
+```ts
+export declare class StdinError
+```
+
+Added in v1.0.0
+
+## StdoutError (class)
+
+**Signature**
+
+```ts
+export declare class StdoutError
+```
+
+Added in v1.0.0
+
+# Predicates
+
+## isMultiplexedStreamSocketResponse
+
+**Signature**
+
+```ts
+export declare const isMultiplexedStreamSocketResponse: (response: HttpClient.response.ClientResponse) => boolean
+```
+
+Added in v1.0.0
+
+## isRawStreamSocketResponse
+
+**Signature**
+
+```ts
+export declare const isRawStreamSocketResponse: (response: HttpClient.response.ClientResponse) => boolean
+```
+
+Added in v1.0.0
+
+# Types
+
+## MultiplexedStreamSocket (type alias)
+
+When the TTY setting is disabled in POST /containers/create, the HTTP
+Content-Type header is set to application/vnd.docker.multiplexed-stream and
+the stream over the hijacked connected is multiplexed to separate out stdout
+and stderr. The stream consists of a series of frames, each containing a
+header and a payload.
+
+**Signature**
+
+```ts
+export type MultiplexedStreamSocket = Socket.Socket & {
+  "content-type": "application/vnd.docker.multiplexed-stream"
+} & Brand.Brand<"MultiplexedStreamSocket">
+```
+
+Added in v1.0.0
+
+## RawStreamSocket (type alias)
+
+When the TTY setting is enabled in POST /containers/create, the stream is not
+multiplexed. The data exchanged over the hijacked connection is simply the
+raw data from the process PTY and client's stdin.
+
+**Signature**
+
+```ts
+export type RawStreamSocket = Socket.Socket & {
+  "content-type": "application/vnd.docker.raw-stream"
+} & Brand.Brand<"RawStreamSocket">
+```
+
+Added in v1.0.0

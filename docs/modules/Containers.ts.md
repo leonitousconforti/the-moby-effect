@@ -14,15 +14,17 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Containers](#containers)
-  - [Containers](#containers-1)
-  - [Containers (interface)](#containers-interface)
+- [Errors](#errors)
+  - [ContainersError (class)](#containerserror-class)
+- [Layers](#layers)
   - [fromAgent](#fromagent)
   - [fromConnectionOptions](#fromconnectionoptions)
   - [layer](#layer)
+- [Services](#services)
   - [make](#make)
-- [Errors](#errors)
-  - [ContainersError (class)](#containerserror-class)
+- [Tags](#tags)
+  - [Containers](#containers)
+  - [Containers (interface)](#containers-interface)
 - [utils](#utils)
   - [ContainerArchiveInfoOptions (interface)](#containerarchiveinfooptions-interface)
   - [ContainerArchiveOptions (interface)](#containerarchiveoptions-interface)
@@ -52,7 +54,73 @@ Added in v1.0.0
 
 ---
 
-# Containers
+# Errors
+
+## ContainersError (class)
+
+**Signature**
+
+```ts
+export declare class ContainersError
+```
+
+Added in v1.0.0
+
+# Layers
+
+## fromAgent
+
+Constructs a layer from an agent effect
+
+**Signature**
+
+```ts
+export declare const fromAgent: (
+  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+) => Layer.Layer<Containers, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## fromConnectionOptions
+
+Constructs a layer from agent connection options
+
+**Signature**
+
+```ts
+export declare const fromConnectionOptions: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Containers, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## layer
+
+Containers layer that depends on a Moby connection agent
+
+**Signature**
+
+```ts
+export declare const layer: Layer.Layer<Containers, never, IMobyConnectionAgent>
+```
+
+Added in v1.0.0
+
+# Services
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
+```
+
+Added in v1.0.0
+
+# Tags
 
 ## Containers
 
@@ -395,68 +463,6 @@ export interface Containers {
     options?: ContainerPruneOptions | undefined
   ) => Effect.Effect<ContainerPruneResponse, ContainersError, never>
 }
-```
-
-Added in v1.0.0
-
-## fromAgent
-
-Constructs a layer from an agent effect
-
-**Signature**
-
-```ts
-export declare const fromAgent: (
-  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
-) => Layer.Layer<Containers, never, Scope.Scope>
-```
-
-Added in v1.0.0
-
-## fromConnectionOptions
-
-Constructs a layer from agent connection options
-
-**Signature**
-
-```ts
-export declare const fromConnectionOptions: (
-  connectionOptions: MobyConnectionOptions
-) => Layer.Layer<Containers, never, Scope.Scope>
-```
-
-Added in v1.0.0
-
-## layer
-
-Containers layer that depends on a Moby connection agent
-
-**Signature**
-
-```ts
-export declare const layer: Layer.Layer<Containers, never, IMobyConnectionAgent>
-```
-
-Added in v1.0.0
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
-```
-
-Added in v1.0.0
-
-# Errors
-
-## ContainersError (class)
-
-**Signature**
-
-```ts
-export declare class ContainersError
 ```
 
 Added in v1.0.0

@@ -28,26 +28,32 @@ import * as System from "./System.js";
 import * as Tasks from "./Tasks.js";
 import * as Volumes from "./Volumes.js";
 
-export * from "./Agent.js";
-export * as Configs from "./Configs.js";
-export * as Containers from "./Containers.js";
-export * as DemuxHelpers from "./Demux.js";
-export * as Distributions from "./Distribution.js";
-export * as DockerCommon from "./Docker.js";
-export * as Execs from "./Execs.js";
-export * as Images from "./Images.js";
-export * as Networks from "./Networks.js";
-export * as Nodes from "./Nodes.js";
-export * as Plugins from "./Plugins.js";
-export * as Schemas from "./Schemas.js";
-export * as Secrets from "./Secrets.js";
-export * as Services from "./Services.js";
-export * as Sessions from "./Session.js";
-export * as Swarm from "./Swarm.js";
-export * as System from "./System.js";
-export * as Tasks from "./Tasks.js";
-export * as Volumes from "./Volumes.js";
+// export * from "./Agent.js";
+// export * as Configs from "./Configs.js";
+// export * as Containers from "./Containers.js";
+// export * as DemuxHelpers from "./Demux.js";
+// export * as Distributions from "./Distribution.js";
+// export * as DockerCommon from "./Docker.js";
+// export * as Execs from "./Execs.js";
+// export * as Images from "./Images.js";
+// export * as Networks from "./Networks.js";
+// export * as Nodes from "./Nodes.js";
+// export * as Plugins from "./Plugins.js";
+// export * as Schemas from "./Schemas.js";
+// export * as Secrets from "./Secrets.js";
+// export * as Services from "./Services.js";
+// export * as Sessions from "./Session.js";
+// export * as Swarm from "./Swarm.js";
+// export * as System from "./System.js";
+// export * as Tasks from "./Tasks.js";
+// export * as Volumes from "./Volumes.js";
 
+/**
+ * Merges all the layers into a single layer
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
 export type MobyApi = Layer.Layer<
     | Configs.Configs
     | Containers.Containers
@@ -68,7 +74,13 @@ export type MobyApi = Layer.Layer<
     never
 >;
 
-const layer = Layer.mergeAll(
+/**
+ * Merges all the layers into a single layer
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layer = Layer.mergeAll(
     Configs.layer,
     Containers.layer,
     Distributions.layer,
@@ -86,11 +98,21 @@ const layer = Layer.mergeAll(
     Volumes.layer
 );
 
-/** Creates a MobyApi layer from the provided connection agent */
+/**
+ * Creates a MobyApi layer from the provided connection agent
+ *
+ * @since 1.0.0
+ * @category Constructors
+ */
 export const fromAgent = (agent: Effect.Effect<AgentHelpers.IMobyConnectionAgentImpl, never, Scope.Scope>): MobyApi =>
     layer.pipe(Layer.provide(Layer.scoped(AgentHelpers.MobyConnectionAgent, agent)));
 
-/** Creates a MobyApi layer from the provided connection options */
+/**
+ * Creates a MobyApi layer from the provided connection options
+ *
+ * @since 1.0.0
+ * @category Constructors
+ */
 export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnectionOptions): MobyApi =>
     fromAgent(AgentHelpers.getAgent(connectionOptions));
 
@@ -118,6 +140,9 @@ export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnec
  *   all requests
  * - `ssh://me@example.com:22/var/run/docker.sock` -> SSH connection to
  *   example.com on port 22
+ *
+ * @since 1.0.0
+ * @category Constructors
  */
 export const fromUrl = (
     dockerHost: string
@@ -172,7 +197,12 @@ export const fromUrl = (
     return Layer.fail(ConfigError.InvalidData([""], `Unsupported protocol ${url.protocol}`));
 };
 
-/** Creates a MobyApi layer from the DOCKER_HOST environment variable as a url */
+/**
+ * Creates a MobyApi layer from the DOCKER_HOST environment variable as a url.
+ *
+ * @since 1.0.0
+ * @category Constructors
+ */
 export const fromDockerHostEnvironmentVariable: Layer.Layer<
     Layer.Layer.Success<MobyApi>,
     Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
@@ -183,7 +213,12 @@ export const fromDockerHostEnvironmentVariable: Layer.Layer<
     .pipe(Effect.map(fromUrl))
     .pipe(Layer.unwrapEffect);
 
-/** Creates a MobyApi layer from the platform default socket location. */
+/**
+ * Creates a MobyApi layer from the platform default socket location.
+ *
+ * @since 1.0.0
+ * @category Constructors
+ */
 export const fromPlatformDefault = (): Layer.Layer<
     Layer.Layer.Success<MobyApi>,
     Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,

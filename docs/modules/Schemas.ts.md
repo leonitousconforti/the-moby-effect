@@ -209,6 +209,8 @@ Added in v1.45.0
 export declare class ClusterInfo
 ```
 
+Added in v1.45.0
+
 ## ClusterVolume (class)
 
 **Signature**
@@ -307,6 +309,8 @@ Added in v1.45.0
 export declare class ContainerPruneResponse
 ```
 
+Added in v1.45.0
+
 ## ContainerState (class)
 
 **Signature**
@@ -314,6 +318,8 @@ export declare class ContainerPruneResponse
 ```ts
 export declare class ContainerState
 ```
+
+Added in v1.45.0
 
 ## ContainerStatus (class)
 
@@ -446,6 +452,8 @@ Added in v1.45.0
 ```ts
 export declare class EndpointIPAMConfig
 ```
+
+Added in v1.45.0
 
 ## EndpointPortConfig (class)
 
@@ -617,6 +625,8 @@ Added in v1.45.0
 export declare class Health
 ```
 
+Added in v1.45.0
+
 ## HealthConfig (class)
 
 A test to perform to check that the container is healthy.
@@ -773,6 +783,8 @@ Added in v1.45.0
 export declare class IndexInfo
 ```
 
+Added in v1.45.0
+
 ## JoinTokens (class)
 
 JoinTokens contains the tokens workers and managers need to join the swarm.
@@ -804,6 +816,8 @@ Added in v1.45.0
 ```ts
 export declare class ManagerStatus
 ```
+
+Added in v1.45.0
 
 ## Mount (class)
 
@@ -1086,6 +1100,8 @@ Added in v1.45.0
 export declare class Port
 ```
 
+Added in v1.45.0
+
 ## PortBinding (class)
 
 PortBinding represents a binding between a host IP address and a host port.
@@ -1145,6 +1161,8 @@ Added in v1.45.0
 ```ts
 export declare class RegistryServiceConfig
 ```
+
+Added in v1.45.0
 
 ## ResourceObject (class)
 

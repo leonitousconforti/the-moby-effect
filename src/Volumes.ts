@@ -24,6 +24,10 @@ import {
 import { addQueryParameter, responseErrorHandler } from "./Requests.js";
 import { ClusterVolumeSpec, Volume, VolumeCreateOptions, VolumeListResponse, VolumePruneResponse } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class VolumesError extends Data.TaggedError("VolumesError")<{
     method: string;
     message: string;
@@ -98,7 +102,10 @@ export interface VolumePruneOptions {
     readonly filters?: { label?: Array<string> | undefined; all?: ["true" | "false" | "1" | "0"] | undefined };
 }
 
-/** @since 1.0.0 */
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
 export interface Volumes {
     /**
      * List volumes
@@ -171,7 +178,11 @@ export interface Volumes {
     readonly prune: (options: VolumePruneOptions) => Effect.Effect<VolumePruneResponse, VolumesError>;
 }
 
-const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+/**
+ * @since 1.0.0
+ * @category Services
+ */
+export const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
@@ -253,11 +264,40 @@ const make: Effect.Effect<Volumes, never, IMobyConnectionAgent | HttpClient.clie
     }
 );
 
-export const Volumes = Context.GenericTag<Volumes>("the-moby-effect/Volumes");
-export const layer = Layer.effect(Volumes, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Volumes service
+ *
+ * @since 1.0.0
+ * @category Tags
+ */
+export const Volumes: Context.Tag<Volumes, Volumes> = Context.GenericTag<Volumes>("@the-moby-effect/Volumes");
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+/**
+ * Configs layer that depends on the MobyConnectionAgent
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layer: Layer.Layer<Volumes, never, IMobyConnectionAgent> = Layer.effect(Volumes, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Volumes, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
+
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Volumes, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

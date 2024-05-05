@@ -25,6 +25,10 @@ import {
 import { addQueryParameter, responseErrorHandler } from "./Requests.js";
 import { Plugin, PluginPrivilege } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class PluginsError extends Data.TaggedError("PluginsError")<{
     method: string;
     message: string;
@@ -177,7 +181,10 @@ export interface PluginSetOptions {
     readonly body?: Array<string>;
 }
 
-/** @since 1.0.0 */
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
 export interface Plugins {
     /**
      * List plugins
@@ -300,7 +307,11 @@ export interface Plugins {
     readonly set: (options: PluginSetOptions) => Effect.Effect<void, PluginsError>;
 }
 
-const make: Effect.Effect<Plugins, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+/**
+ * @since 1.0.0
+ * @category Services
+ */
+export const make: Effect.Effect<Plugins, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
@@ -443,11 +454,40 @@ const make: Effect.Effect<Plugins, never, IMobyConnectionAgent | HttpClient.clie
     }
 );
 
-export const Plugins = Context.GenericTag<Plugins>("the-moby-effect/Plugins");
-export const layer = Layer.effect(Plugins, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Plugins service
+ *
+ * @since 1.0.0
+ * @category Tags
+ */
+export const Plugins: Context.Tag<Plugins, Plugins> = Context.GenericTag<Plugins>("@the-moby-effect/Plugins");
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+/**
+ * Configs layer that depends on the MobyConnectionAgent
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layer: Layer.Layer<Plugins, never, IMobyConnectionAgent> = Layer.effect(Plugins, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Plugins, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
+
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Plugins, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

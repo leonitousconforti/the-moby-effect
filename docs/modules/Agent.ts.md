@@ -131,6 +131,8 @@ protected createConnection(
     ): void
 ```
 
+Added in v1.0.0
+
 ## getAgent
 
 Given the moby connection options, it will construct a scoped effect that

@@ -18,25 +18,49 @@ import * as Stream from "effect/Stream";
 
 import { IExposeSocketOnEffectClientResponse } from "./Requests.js";
 
-// Errors when multiplexing stdin and stdout
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class StdoutError extends Data.TaggedError("StdoutError")<{ message: string }> {}
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class StderrError extends Data.TaggedError("StderrError")<{ message: string }> {}
 
 /**
  * When the TTY setting is enabled in POST /containers/create, the stream is not
  * multiplexed. The data exchanged over the hijacked connection is simply the
  * raw data from the process PTY and client's stdin.
+ *
+ * @since 1.0.0
+ * @category Types
  */
 export type RawStreamSocket = Socket.Socket & {
     "content-type": "application/vnd.docker.raw-stream";
 } & Brand.Brand<"RawStreamSocket">;
 
+/**
+ * @since 1.0.0
+ * @category Brands
+ */
 export const RawStreamSocket = Brand.refined<RawStreamSocket>(
     (socket) => socket["content-type"] === "application/vnd.docker.raw-stream",
     () => Brand.error(`Expected a raw stream socket`)
 );
 
+/**
+ * @since 1.0.0
+ * @category Predicates
+ */
 export const isRawStreamSocketResponse = (response: HttpClient.response.ClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.raw-stream";
 
@@ -46,16 +70,27 @@ export const isRawStreamSocketResponse = (response: HttpClient.response.ClientRe
  * the stream over the hijacked connected is multiplexed to separate out stdout
  * and stderr. The stream consists of a series of frames, each containing a
  * header and a payload.
+ *
+ * @since 1.0.0
+ * @category Types
  */
 export type MultiplexedStreamSocket = Socket.Socket & {
     "content-type": "application/vnd.docker.multiplexed-stream";
 } & Brand.Brand<"MultiplexedStreamSocket">;
 
+/**
+ * @since 1.0.0
+ * @category Brands
+ */
 export const MultiplexedStreamSocket = Brand.refined<MultiplexedStreamSocket>(
     (socket) => socket["content-type"] === "application/vnd.docker.multiplexed-stream",
     () => Brand.error(`Expected a multiplexed stream socket`)
 );
 
+/**
+ * @since 1.0.0
+ * @category Predicates
+ */
 export const isMultiplexedStreamSocketResponse = (response: HttpClient.response.ClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.multiplexed-stream";
 
@@ -63,6 +98,9 @@ export const isMultiplexedStreamSocketResponse = (response: HttpClient.response.
  * Transforms an http response into a multiplexed stream socket or a raw stream
  * socket. If the response is neither a multiplexed stream socket nor a raw,
  * then an error will be returned.
+ *
+ * @since 1.0.0
+ * @category Demux
  */
 export const responseToStreamingSocketOrFail = (
     response: HttpClient.response.ClientResponse
@@ -85,7 +123,11 @@ export const responseToStreamingSocketOrFail = (
         }
     });
 
-// Multiplexed stream socket header types
+/**
+ * Multiplexed stream socket header types.
+ *
+ * @internal
+ */
 export enum MultiplexedStreamSocketHeaderType {
     Stdin = 0,
     Stdout = 1,
@@ -99,14 +141,13 @@ export enum MultiplexedStreamSocketHeaderType {
  *
  * {@link demuxSocket}
  *
+ * @since 1.0.0
+ * @category Demux
  * @see https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerAttach
  */
 export const demuxRawSocket = Function.dual<
     <E1, E2>(
         source: Stream.Stream<Uint8Array, E1, never>,
-        // Sink<out R, out E, in In, out L, out Z>
-        // Sink<out A, in In = unknown, out L = never, out E = never, out R = never>
-        // sink: Sink.Sink<never, E2, string | Uint8Array, never, void>
         sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
     ) => (socket: RawStreamSocket) => Effect.Effect<void, E1 | E2 | Socket.SocketError, never>,
     <E1, E2>(
@@ -131,6 +172,8 @@ export const demuxRawSocket = Function.dual<
  *
  * {@link demuxSocket}
  *
+ * @since 1.0.0
+ * @category Demux
  * @see https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerAttach
  */
 export const demuxMultiplexedSocket = Function.dual<
@@ -199,6 +242,9 @@ export const demuxMultiplexedSocket = Function.dual<
  * will only be one sink that combines the containers stdout and stderr. if the
  * socket is a multiplexed stream, then there will be two sinks, one for stdout
  * and one for stderr.
+ *
+ * @since 1.0.0
+ * @category Demux
  */
 export const demuxSocket: {
     <E1, E2>(
@@ -245,6 +291,9 @@ export const demuxSocket: {
  * stdout and stderr. If given a raw stream socket, then stdout and stderr will
  * be combined on the same sink. If given a multiplexed stream socket, then
  * stdout and stderr will be forwarded to different sinks.
+ *
+ * @since 1.0.0
+ * @category Demux
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
     socket: RawStreamSocket | MultiplexedStreamSocket

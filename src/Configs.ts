@@ -85,7 +85,7 @@ export interface ConfigUpdateOptions {
 
 /**
  * @since 1.0.0
- * @category Configs
+ * @category Tags
  */
 export interface Configs {
     /**
@@ -140,7 +140,7 @@ export interface Configs {
 
 /**
  * @since 1.0.0
- * @category Configs
+ * @category Services
  */
 export const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* () {
@@ -220,7 +220,7 @@ export const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClie
  * Configs service
  *
  * @since 1.0.0
- * @category Configs
+ * @category Tags
  */
 export const Configs: Context.Tag<Configs, Configs> = Context.GenericTag<Configs>("@the-moby-effect/Configs");
 
@@ -228,7 +228,7 @@ export const Configs: Context.Tag<Configs, Configs> = Context.GenericTag<Configs
  * Configs layer that depends on the MobyConnectionAgent
  *
  * @since 1.0.0
- * @category Configs
+ * @category Layers
  */
 export const layer: Layer.Layer<Configs, never, IMobyConnectionAgent> = Layer.effect(Configs, make).pipe(
     Layer.provide(MobyHttpClientLive)
@@ -238,7 +238,7 @@ export const layer: Layer.Layer<Configs, never, IMobyConnectionAgent> = Layer.ef
  * Constructs a layer from an agent effect
  *
  * @since 1.0.0
- * @category Configs
+ * @category Layers
  */
 export const fromAgent = (
     agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
@@ -248,7 +248,7 @@ export const fromAgent = (
  * Constructs a layer from agent connection options
  *
  * @since 1.0.0
- * @category Configs
+ * @category Layers
  */
 export const fromConnectionOptions = (
     connectionOptions: MobyConnectionOptions

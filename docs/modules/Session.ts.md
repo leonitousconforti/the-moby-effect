@@ -14,25 +14,99 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [Sessions](#sessions)
-  - [Sessions (interface)](#sessions-interface)
+- [Errors](#errors)
   - [SessionsError (class)](#sessionserror-class)
+- [Layers](#layers)
   - [fromAgent](#fromagent)
   - [fromConnectionOptions](#fromconnectionoptions)
   - [layer](#layer)
+- [Services](#services)
+  - [make](#make)
+- [Tags](#tags)
+  - [Sessions](#sessions)
+  - [Sessions (interface)](#sessions-interface)
 
 ---
 
-# utils
+# Errors
+
+## SessionsError (class)
+
+**Signature**
+
+```ts
+export declare class SessionsError
+```
+
+Added in v1.0.0
+
+# Layers
+
+## fromAgent
+
+Constructs a layer from an agent effect
+
+**Signature**
+
+```ts
+export declare const fromAgent: (
+  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+) => Layer.Layer<Sessions, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## fromConnectionOptions
+
+Constructs a layer from agent connection options
+
+**Signature**
+
+```ts
+export declare const fromConnectionOptions: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Sessions, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## layer
+
+Configs layer that depends on the MobyConnectionAgent
+
+**Signature**
+
+```ts
+export declare const layer: Layer.Layer<Sessions, never, IMobyConnectionAgent>
+```
+
+Added in v1.0.0
+
+# Services
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: Effect.Effect<Sessions, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
+```
+
+Added in v1.0.0
+
+# Tags
 
 ## Sessions
+
+Sessions service
 
 **Signature**
 
 ```ts
 export declare const Sessions: Context.Tag<Sessions, Sessions>
 ```
+
+Added in v1.0.0
 
 ## Sessions (interface)
 
@@ -55,39 +129,3 @@ export interface Sessions {
 ```
 
 Added in v1.0.0
-
-## SessionsError (class)
-
-**Signature**
-
-```ts
-export declare class SessionsError
-```
-
-## fromAgent
-
-**Signature**
-
-```ts
-export declare const fromAgent: (
-  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
-) => Layer.Layer<Sessions, never, never>
-```
-
-## fromConnectionOptions
-
-**Signature**
-
-```ts
-export declare const fromConnectionOptions: (
-  connectionOptions: MobyConnectionOptions
-) => Layer.Layer<Sessions, never, never>
-```
-
-## layer
-
-**Signature**
-
-```ts
-export declare const layer: Layer.Layer<Sessions, never, IMobyConnectionAgent>
-```

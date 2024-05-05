@@ -14,66 +14,102 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
-  - [SwarmLeaveOptions (interface)](#swarmleaveoptions-interface)
-  - [SwarmUpdateOptions (interface)](#swarmupdateoptions-interface)
-  - [Swarms](#swarms)
-  - [Swarms (interface)](#swarms-interface)
+- [Errors](#errors)
   - [SwarmsError (class)](#swarmserror-class)
+- [Layers](#layers)
   - [fromAgent](#fromagent)
   - [fromConnectionOptions](#fromconnectionoptions)
   - [layer](#layer)
+- [Services](#services)
+  - [make](#make)
+- [Tags](#tags)
+  - [Swarms](#swarms)
+  - [Swarms (interface)](#swarms-interface)
+- [utils](#utils)
+  - [SwarmLeaveOptions (interface)](#swarmleaveoptions-interface)
+  - [SwarmUpdateOptions (interface)](#swarmupdateoptions-interface)
 
 ---
 
-# utils
+# Errors
 
-## SwarmLeaveOptions (interface)
-
-**Signature**
-
-```ts
-export interface SwarmLeaveOptions {
-  /**
-   * Force leave swarm, even if this is the last manager or that it will break
-   * the cluster.
-   */
-  readonly force?: boolean
-}
-```
-
-Added in v1.0.0
-
-## SwarmUpdateOptions (interface)
+## SwarmsError (class)
 
 **Signature**
 
 ```ts
-export interface SwarmUpdateOptions {
-  readonly body: SwarmSpec
-  /**
-   * The version number of the swarm object being updated. This is required to
-   * avoid conflicting writes.
-   */
-  readonly version: number
-  /** Rotate the worker join token. */
-  readonly rotateWorkerToken?: boolean
-  /** Rotate the manager join token. */
-  readonly rotateManagerToken?: boolean
-  /** Rotate the manager unlock key. */
-  readonly rotateManagerUnlockKey?: boolean
-}
+export declare class SwarmsError
 ```
 
 Added in v1.0.0
+
+# Layers
+
+## fromAgent
+
+Constructs a layer from an agent effect
+
+**Signature**
+
+```ts
+export declare const fromAgent: (
+  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+) => Layer.Layer<Swarms, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## fromConnectionOptions
+
+Constructs a layer from agent connection options
+
+**Signature**
+
+```ts
+export declare const fromConnectionOptions: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Swarms, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## layer
+
+Configs layer that depends on the MobyConnectionAgent
+
+**Signature**
+
+```ts
+export declare const layer: Layer.Layer<Swarms, never, IMobyConnectionAgent>
+```
+
+Added in v1.0.0
+
+# Services
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: Effect.Effect<Swarms, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
+```
+
+Added in v1.0.0
+
+# Tags
 
 ## Swarms
+
+Swarms service
 
 **Signature**
 
 ```ts
 export declare const Swarms: Context.Tag<Swarms, Swarms>
 ```
+
+Added in v1.0.0
 
 ## Swarms (interface)
 
@@ -126,38 +162,43 @@ export interface Swarms {
 
 Added in v1.0.0
 
-## SwarmsError (class)
+# utils
+
+## SwarmLeaveOptions (interface)
 
 **Signature**
 
 ```ts
-export declare class SwarmsError
+export interface SwarmLeaveOptions {
+  /**
+   * Force leave swarm, even if this is the last manager or that it will break
+   * the cluster.
+   */
+  readonly force?: boolean
+}
 ```
 
-## fromAgent
+Added in v1.0.0
+
+## SwarmUpdateOptions (interface)
 
 **Signature**
 
 ```ts
-export declare const fromAgent: (
-  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
-) => Layer.Layer<Swarms, never, never>
+export interface SwarmUpdateOptions {
+  readonly body: SwarmSpec
+  /**
+   * The version number of the swarm object being updated. This is required to
+   * avoid conflicting writes.
+   */
+  readonly version: number
+  /** Rotate the worker join token. */
+  readonly rotateWorkerToken?: boolean
+  /** Rotate the manager join token. */
+  readonly rotateManagerToken?: boolean
+  /** Rotate the manager unlock key. */
+  readonly rotateManagerUnlockKey?: boolean
+}
 ```
 
-## fromConnectionOptions
-
-**Signature**
-
-```ts
-export declare const fromConnectionOptions: (
-  connectionOptions: MobyConnectionOptions
-) => Layer.Layer<Swarms, never, never>
-```
-
-## layer
-
-**Signature**
-
-```ts
-export declare const layer: Layer.Layer<Swarms, never, IMobyConnectionAgent>
-```
+Added in v1.0.0

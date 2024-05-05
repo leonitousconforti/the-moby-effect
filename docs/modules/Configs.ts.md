@@ -14,15 +14,17 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Configs](#configs)
-  - [Configs](#configs-1)
-  - [Configs (interface)](#configs-interface)
+- [Errors](#errors)
+  - [ConfigsError (class)](#configserror-class)
+- [Layers](#layers)
   - [fromAgent](#fromagent)
   - [fromConnectionOptions](#fromconnectionoptions)
   - [layer](#layer)
+- [Services](#services)
   - [make](#make)
-- [Errors](#errors)
-  - [ConfigsError (class)](#configserror-class)
+- [Tags](#tags)
+  - [Configs](#configs)
+  - [Configs (interface)](#configs-interface)
 - [utils](#utils)
   - [ConfigDeleteOptions (interface)](#configdeleteoptions-interface)
   - [ConfigInspectOptions (interface)](#configinspectoptions-interface)
@@ -31,7 +33,73 @@ Added in v1.0.0
 
 ---
 
-# Configs
+# Errors
+
+## ConfigsError (class)
+
+**Signature**
+
+```ts
+export declare class ConfigsError
+```
+
+Added in v1.0.0
+
+# Layers
+
+## fromAgent
+
+Constructs a layer from an agent effect
+
+**Signature**
+
+```ts
+export declare const fromAgent: (
+  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+) => Layer.Layer<Configs, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## fromConnectionOptions
+
+Constructs a layer from agent connection options
+
+**Signature**
+
+```ts
+export declare const fromConnectionOptions: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Configs, never, Scope.Scope>
+```
+
+Added in v1.0.0
+
+## layer
+
+Configs layer that depends on the MobyConnectionAgent
+
+**Signature**
+
+```ts
+export declare const layer: Layer.Layer<Configs, never, IMobyConnectionAgent>
+```
+
+Added in v1.0.0
+
+# Services
+
+## make
+
+**Signature**
+
+```ts
+export declare const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
+```
+
+Added in v1.0.0
+
+# Tags
 
 ## Configs
 
@@ -100,68 +168,6 @@ export interface Configs {
    */
   readonly update: (options: ConfigUpdateOptions) => Effect.Effect<void, ConfigsError, never>
 }
-```
-
-Added in v1.0.0
-
-## fromAgent
-
-Constructs a layer from an agent effect
-
-**Signature**
-
-```ts
-export declare const fromAgent: (
-  agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
-) => Layer.Layer<Configs, never, Scope.Scope>
-```
-
-Added in v1.0.0
-
-## fromConnectionOptions
-
-Constructs a layer from agent connection options
-
-**Signature**
-
-```ts
-export declare const fromConnectionOptions: (
-  connectionOptions: MobyConnectionOptions
-) => Layer.Layer<Configs, never, Scope.Scope>
-```
-
-Added in v1.0.0
-
-## layer
-
-Configs layer that depends on the MobyConnectionAgent
-
-**Signature**
-
-```ts
-export declare const layer: Layer.Layer<Configs, never, IMobyConnectionAgent>
-```
-
-Added in v1.0.0
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<Configs, never, IMobyConnectionAgent | HttpClient.client.Client.Default>
-```
-
-Added in v1.0.0
-
-# Errors
-
-## ConfigsError (class)
-
-**Signature**
-
-```ts
-export declare class ConfigsError
 ```
 
 Added in v1.0.0

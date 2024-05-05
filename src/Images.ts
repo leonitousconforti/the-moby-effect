@@ -37,6 +37,10 @@ import {
     ImageSummary,
 } from "./Schemas.js";
 
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
 export class ImagesError extends Data.TaggedError("ImagesError")<{
     method: string;
     message: string;
@@ -423,7 +427,10 @@ export interface ImageLoadOptions {
     readonly quiet?: boolean;
 }
 
-/** @since 1.0.0 */
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
 export interface Images {
     /**
      * List Images
@@ -738,7 +745,11 @@ export interface Images {
     readonly load: (options: ImageLoadOptions) => Effect.Effect<void, ImagesError>;
 }
 
-const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
+/**
+ * @since 1.0.0
+ * @category Services
+ */
+export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.client.Client.Default> = Effect.gen(
     function* (_: Effect.Adapter) {
         const agent = yield* _(MobyConnectionAgent);
         const defaultClient = yield* _(HttpClient.client.Client);
@@ -1026,11 +1037,40 @@ const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClient.clien
     }
 );
 
-export const Images = Context.GenericTag<Images>("the-moby-effect/Images");
-export const layer = Layer.effect(Images, make).pipe(Layer.provide(MobyHttpClientLive));
+/**
+ * Images service
+ *
+ * @since 1.0.0
+ * @category Tags
+ */
+export const Images: Context.Tag<Images, Images> = Context.GenericTag<Images>("@the-moby-effect/Images");
 
-export const fromAgent = (agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>) =>
-    layer.pipe(Layer.provide(Layer.scoped(MobyConnectionAgent, agent)));
+/**
+ * Configs layer that depends on the MobyConnectionAgent
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layer: Layer.Layer<Images, never, IMobyConnectionAgent> = Layer.effect(Images, make).pipe(
+    Layer.provide(MobyHttpClientLive)
+);
 
-export const fromConnectionOptions = (connectionOptions: MobyConnectionOptions) =>
-    fromAgent(getAgent(connectionOptions));
+/**
+ * Constructs a layer from an agent effect
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromAgent = (
+    agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
+): Layer.Layer<Images, never, Scope.Scope> => layer.pipe(Layer.provide(Layer.effect(MobyConnectionAgent, agent)));
+
+/**
+ * Constructs a layer from agent connection options
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const fromConnectionOptions = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<Images, never, Scope.Scope> => fromAgent(getAgent(connectionOptions));

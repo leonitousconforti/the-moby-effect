@@ -416,7 +416,7 @@ export interface ContainerPruneOptions {
 
 /**
  * @since 1.0.0
- * @category Containers
+ * @category Tags
  */
 export interface Containers {
     /**
@@ -749,7 +749,7 @@ export interface Containers {
 
 /**
  * @since 1.0.0
- * @category Containers
+ * @category Services
  */
 export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpClient.client.Client.Default> =
     Effect.gen(function* (_: Effect.Adapter) {
@@ -1119,7 +1119,7 @@ export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpC
  * Containers service
  *
  * @since 1.0.0
- * @category Containers
+ * @category Tags
  */
 export const Containers: Context.Tag<Containers, Containers> =
     Context.GenericTag<Containers>("@the-moby-effect/Containers");
@@ -1128,7 +1128,7 @@ export const Containers: Context.Tag<Containers, Containers> =
  * Containers layer that depends on a Moby connection agent
  *
  * @since 1.0.0
- * @category Containers
+ * @category Layers
  */
 export const layer: Layer.Layer<Containers, never, IMobyConnectionAgent> = Layer.effect(Containers, make).pipe(
     Layer.provide(MobyHttpClientLive)
@@ -1138,7 +1138,7 @@ export const layer: Layer.Layer<Containers, never, IMobyConnectionAgent> = Layer
  * Constructs a layer from an agent effect
  *
  * @since 1.0.0
- * @category Containers
+ * @category Layers
  */
 export const fromAgent = (
     agent: Effect.Effect<IMobyConnectionAgentImpl, never, Scope.Scope>
@@ -1148,7 +1148,7 @@ export const fromAgent = (
  * Constructs a layer from agent connection options
  *
  * @since 1.0.0
- * @category Containers
+ * @category Layers
  */
 export const fromConnectionOptions = (
     connectionOptions: MobyConnectionOptions
