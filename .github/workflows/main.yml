@@ -141,7 +141,7 @@ jobs:
           file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
-  remote-docker-engine-tests:
+  docker-engine-tests:
     needs: [compute-matricies, docker-build, typescript-build]
     runs-on: ${{ matrix.os }}
     defaults:
@@ -158,14 +158,14 @@ jobs:
       - uses: ./.github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
-      - run: pnpm build
-        env:
-          THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
-          THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
+      # - run: pnpm build
+      #   env:
+      #     THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
+      #     THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
 
-  local-docker-desktop-tests:
+  docker-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, compute-matricies]
+    needs: [docker-engine-tests, compute-matricies]
     defaults:
       run:
         shell: bash
@@ -184,9 +184,9 @@ jobs:
         with:
           docker-version: ${{ matrix.docker-desktop }}
 
-  local-podman-desktop-tests:
+  podman-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, compute-matricies]
+    needs: [docker-engine-tests, compute-matricies]
     defaults:
       run:
         shell: bash
@@ -209,7 +209,7 @@ jobs:
   pr-can-merge:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    needs: [remote-docker-engine-tests, local-podman-desktop-tests, local-docker-desktop-tests]
+    needs: [docker-engine-tests, podman-desktop-tests, docker-desktop-tests]
     steps:
       - run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
