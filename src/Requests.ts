@@ -64,7 +64,7 @@ export const responseErrorHandler =
                         Effect.flatMap((text) =>
                             Effect.fail(
                                 toError(
-                                    `response error ${responseError.reason}, statusCode=${responseError.response.status} message=${text}`
+                                    `response error ${responseError.reason}, statusCode=${responseError.response.status} url=${responseError.methodAndUrl} message=${text}`
                                 )
                             )
                         )
