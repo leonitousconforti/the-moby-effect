@@ -155,6 +155,9 @@ jobs:
         docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
+        with:
+          node-version: ${{ matrix.node-version }}
       - run: pnpm build
         env:
           THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
@@ -174,6 +177,9 @@ jobs:
         docker-desktop: ${{ fromJSON(needs.compute-matricies.outputs.docker-desktop-versions) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
+        with:
+          node-version: ${{ matrix.node-version }}
       - uses: ./.github/actions/install-docker-desktop
         with:
           docker-version: ${{ matrix.docker-desktop }}
@@ -192,6 +198,9 @@ jobs:
         podman-desktop: ${{ fromJSON(needs.compute-matricies.outputs.podman-desktop-versions) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: ./.github/actions/common-setup
+        with:
+          node-version: ${{ matrix.node-version }}
       - uses: ./.github/actions/install-podman-desktop
         with:
           podman-version: ${{ matrix.podman-desktop }}
