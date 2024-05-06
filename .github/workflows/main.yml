@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 env:
-  node-versions: "['16.x', '18.x', '20.x']"
+  node-versions: "['18.x', '20.x', '22.x']"
   docker-desktop-versions: "['v1', 'v2', 'v3']"
   podman-desktop-versions: "['v1', 'v2', 'v3']"
   os-variants: "['ubuntu-latest', 'macos-14', 'macos-13', 'windows-latest']"
