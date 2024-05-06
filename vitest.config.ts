@@ -8,7 +8,7 @@ export default defineConfig({
         globals: true,
         pool: "forks",
         fileParallelism: false,
-        globalSetup: "./test/setup.ts",
+        globalSetup: "./test/vitest.ts",
         include: ["./test/unit/*.test.ts"],
         reporters: ["default"],
         coverage: {
@@ -21,6 +21,3 @@ export default defineConfig({
         },
     },
 });
-
-// "globalSetup": "<rootDir>/dist/test/setup.js",
-// "globalTeardown": "<rootDir>/dist/test/teardown.js",

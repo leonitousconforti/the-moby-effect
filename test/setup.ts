@@ -1,13 +1,19 @@
+import type { GlobalSetupContext } from "vitest/node";
+
 import * as ciInfo from "ci-info";
 import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
+import * as Tuple from "effect/Tuple";
 import * as MobyApi from "the-moby-effect/Moby";
-import type { GlobalSetupContext } from "vitest/node";
 import * as TestHelpers from "./unit/helpers.js";
 
-export default async function ({ provide }: GlobalSetupContext) {
-    await Effect.gen(function* (_: Effect.Adapter) {
+export const setup = async function ({
+    provide,
+}: GlobalSetupContext): Promise<
+    [dindConnectionOptions: MobyApi.MobyConnectionOptions, dindContainerId: string, dindVolumeId: string] | undefined
+> {
+    return await Effect.gen(function* (_: Effect.Adapter) {
         /**
          * If we are anywhere but CI and we aren't running on linux we will
          * refuse to run the test suite because we might not be able to spawn a
@@ -80,10 +86,8 @@ export default async function ({ provide }: GlobalSetupContext) {
                     intermediate_layer
                 )
             );
-            provide("__DIND_VOLUME_ID", Option.some(dindVolumeId));
             provide("__TEST_CONNECTION_OPTIONS", dindConnectionOptions);
-            provide("__DIND_CONTAINER_ID", Option.some(dindContainerId));
-            return;
+            return Tuple.make(dindConnectionOptions, dindContainerId, dindVolumeId);
         }
 
         // If we reach this point, we have not provided a testing host or a dind image
@@ -97,4 +101,4 @@ export default async function ({ provide }: GlobalSetupContext) {
     })
         .pipe(Effect.scoped)
         .pipe(Effect.runPromise);
-}
+};
