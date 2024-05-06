@@ -20,8 +20,6 @@ Moby API client and CLI client built using [effect-ts](http://effect.website). I
 
 - Version negotiating: either install a specific version for the moby api that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
 
-- CommonJS: I understand this might be a deal breaker to some, but this is a ESM only package
-
 ## Todo/Future :bulb:
 - Add more examples
 - Finish implementing all common docker commands
