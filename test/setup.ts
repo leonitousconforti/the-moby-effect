@@ -6,7 +6,7 @@ import * as Effect from "effect/Effect";
 import * as Option from "effect/Option";
 import * as Tuple from "effect/Tuple";
 import * as MobyApi from "the-moby-effect/Moby";
-import * as TestHelpers from "./unit/helpers.js";
+import * as TestHelpers from "./helpers.js";
 
 export const setup = async function ({
     provide,

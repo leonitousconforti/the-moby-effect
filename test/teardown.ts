@@ -3,7 +3,7 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as MobyApi from "the-moby-effect/Moby";
-import * as TestHelpers from "./unit/helpers.js";
+import * as TestHelpers from "./helpers.js";
 
 export const teardown = async function (dindContainerId?: string | undefined, dindVolumeId?: string | undefined) {
     await Effect.gen(function* () {
