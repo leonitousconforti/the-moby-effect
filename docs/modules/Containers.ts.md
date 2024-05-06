@@ -235,7 +235,7 @@ export interface Containers {
    */
   readonly logs: (
     options: ContainerLogsOptions
-  ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, never>
+  ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, Scope.Scope>
 
   /**
    * Get changes on a container’s filesystem
@@ -253,7 +253,7 @@ export interface Containers {
    */
   readonly export: (
     options: ContainerExportOptions
-  ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, never>
+  ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, Scope.Scope>
 
   /**
    * Get container stats based on resource usage
@@ -266,7 +266,7 @@ export interface Containers {
    */
   readonly stats: (
     options: ContainerStatsOptions
-  ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, never>
+  ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, Scope.Scope>
 
   /**
    * Resize a container TTY
@@ -416,7 +416,7 @@ export interface Containers {
    */
   readonly archive: (
     options: ContainerArchiveOptions
-  ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, never>
+  ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, Scope.Scope>
 
   /**
    * Get information about files in a container
