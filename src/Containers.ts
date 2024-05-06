@@ -516,7 +516,7 @@ export interface Containers {
      */
     readonly logs: (
         options: ContainerLogsOptions
-    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, never>;
+    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, Scope.Scope>;
 
     /**
      * Get changes on a container’s filesystem
@@ -534,7 +534,7 @@ export interface Containers {
      */
     readonly export: (
         options: ContainerExportOptions
-    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, never>;
+    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, Scope.Scope>;
 
     /**
      * Get container stats based on resource usage
@@ -547,7 +547,7 @@ export interface Containers {
      */
     readonly stats: (
         options: ContainerStatsOptions
-    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, never>;
+    ) => Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, Scope.Scope>;
 
     /**
      * Resize a container TTY
@@ -699,7 +699,7 @@ export interface Containers {
      */
     readonly archive: (
         options: ContainerArchiveOptions
-    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, never>;
+    ) => Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, Scope.Scope>;
 
     /**
      * Get information about files in a container
@@ -841,7 +841,7 @@ export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpC
 
         const logs_ = (
             options: ContainerLogsOptions
-        ): Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError> =>
+        ): Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("follow", options.follow),
@@ -855,8 +855,7 @@ export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpC
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.catchAll(streamHandler("logs"))),
-                Effect.catchAll(responseHandler("logs")),
-                Effect.scoped
+                Effect.catchAll(responseHandler("logs"))
             );
 
         const changes_ = (
@@ -872,19 +871,18 @@ export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpC
 
         const export_ = (
             options: ContainerExportOptions
-        ): Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError> =>
+        ): Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.get("/{id}/export".replace("{id}", encodeURIComponent(options.id))),
                 client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.catchAll(streamHandler("export"))),
-                Effect.catchAll(responseHandler("export")),
-                Effect.scoped
+                Effect.catchAll(responseHandler("export"))
             );
 
         const stats_ = (
             options: ContainerStatsOptions
-        ): Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError> =>
+        ): Effect.Effect<Stream.Stream<string, ContainersError>, ContainersError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.get("/{id}/stats".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("stream", options.stream),
@@ -893,8 +891,7 @@ export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpC
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.catchAll(streamHandler("stats"))),
-                Effect.catchAll(responseHandler("stats")),
-                Effect.scoped
+                Effect.catchAll(responseHandler("stats"))
             );
 
         const resize_ = (options: ContainerResizeOptions): Effect.Effect<void, ContainersError> =>
@@ -1033,15 +1030,14 @@ export const make: Effect.Effect<Containers, never, IMobyConnectionAgent | HttpC
 
         const archive_ = (
             options: ContainerArchiveOptions
-        ): Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError> =>
+        ): Effect.Effect<Stream.Stream<Uint8Array, ContainersError>, ContainersError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.get("/{id}/archive".replace("{id}", encodeURIComponent(options.id))),
                 addQueryParameter("path", options.path),
                 client,
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.catchAll(streamHandler("archive"))),
-                Effect.catchAll(responseHandler("archive")),
-                Effect.scoped
+                Effect.catchAll(responseHandler("archive"))
             );
 
         const archiveInfo_ = (options: ContainerArchiveInfoOptions): Effect.Effect<void, ContainersError> =>
