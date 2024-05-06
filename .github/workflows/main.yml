@@ -19,6 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Yes this job is really needed as you can't access the global env var outside of a job step
+  # and I want to use those global env vars to setup things like the matricies for other jobs.
   compute-matricies:
     runs-on: ubuntu-latest
     outputs:
@@ -38,6 +40,7 @@ jobs:
           echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
           echo "docker-engine-connection-variants=${{ env.docker-engine-connection-variants }}" >> $GITHUB_OUTPUT
 
+  # Creates pnpm caches for all os/node-version combinations
   update-pnpm-caches:
     runs-on: ${{ matrix.os }}
     needs: [compute-matricies]
@@ -50,25 +53,11 @@ jobs:
         node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
-      - name: "Install pnpm"
-        shell: bash
-        run: npm install pnpm@8 -g
-      - name: "Get pnpm store"
-        id: get-store-path
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
-      - uses: actions/cache@v4
-        with:
-          path: ${{ steps.get-store-path.outputs.STORE_PATH }}
-          restore-keys: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
-          key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-      # - run: python3 -m pip install setuptools
-      - run: pnpm install
 
+  # Builds the docker images for all the different connection variants
   docker-build:
     runs-on: ubuntu-latest
     needs: [compute-matricies]
@@ -104,17 +93,19 @@ jobs:
           path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
           if-no-files-found: error
 
+  # Builds and lints the typescript code
   typescript-build:
     runs-on: ubuntu-latest
     needs: [update-pnpm-caches]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: ./github/actions/common-setup
         with:
-          node-version: '18.x'
-      - run: npm install
-      - run: npm run build
+          node-version: 18.x
+      - run: pnpm build
+      # - run: pnpm lint FIXME: enable linting
 
+  # Publishes the docker images to ghcr.io (only if they have been modified in this push/pull_request)
   docker-publish:
     runs-on: ubuntu-latest
     needs: [docker-build, compute-matricies]
