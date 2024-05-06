@@ -10,7 +10,7 @@ describe("MobyApi Exec tests", () => {
     ).pipe(Layer.orDie);
 
     it("Should do something", async () => {
-        await Effect.gen(function* (_: Effect.Adapter) {})
+        await Effect.gen(function* () {})
             .pipe(Effect.provide(testExecsService))
             .pipe(Effect.runPromise);
     });

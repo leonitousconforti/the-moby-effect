@@ -10,9 +10,9 @@ describe("MobyApi Networks tests", () => {
     ).pipe(Layer.orDie);
 
     it("Should list all the networks", async () => {
-        await Effect.gen(function* (_: Effect.Adapter) {
-            const networks: MobyApi.Networks.Networks = yield* _(MobyApi.Networks.Networks);
-            yield* _(networks.list());
+        await Effect.gen(function* () {
+            const networks: MobyApi.Networks.Networks = yield* MobyApi.Networks.Networks;
+            yield* networks.list();
         })
             .pipe(Effect.provide(testNetworksService))
             .pipe(Effect.runPromise);

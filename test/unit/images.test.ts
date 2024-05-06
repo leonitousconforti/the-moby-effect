@@ -44,16 +44,15 @@ describe("MobyApi Images tests", () => {
     });
 
     it("Should pull an image", async () => {
-        await Effect.gen(function* (_: Effect.Adapter) {
-            const images: MobyApi.Images.Images = yield* _(MobyApi.Images.Images);
+        await Effect.gen(function* () {
+            const images: MobyApi.Images.Images = yield* MobyApi.Images.Images;
 
-            const pullResponse: Stream.Stream<MobyApi.Schemas.BuildInfo, MobyApi.Images.ImagesError, never> = yield* _(
-                images.create({
+            const pullResponse: Stream.Stream<MobyApi.Schemas.BuildInfo, MobyApi.Images.ImagesError, never> =
+                yield* images.create({
                     fromImage: "docker.io/library/alpine:latest",
-                })
-            );
+                });
 
-            yield* _(Stream.runCollect(pullResponse));
+            yield* Stream.runCollect(pullResponse);
         })
             .pipe(Effect.provide(testImagesService))
             .pipe(Effect.scoped)

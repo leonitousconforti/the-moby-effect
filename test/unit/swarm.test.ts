@@ -10,7 +10,7 @@ describe("MobyApi Swarm tests", () => {
     ).pipe(Layer.orDie);
 
     it("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", async () => {
-        await Effect.gen(function* (_: Effect.Adapter) {
+        await Effect.gen(function* () {
             // const swarm: MobyApi.Swarm.Swarms = yield* _(MobyApi.Swarm.Swarms);
             // yield* _(swarm.leave({ force: true }));
             // yield* _(swarm.join({ ListenAddr: "eth0" }));
