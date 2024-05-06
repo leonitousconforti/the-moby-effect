@@ -2,7 +2,6 @@ import * as url from "node:url";
 import * as tar from "tar-fs";
 
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as Chunk from "effect/Chunk";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
@@ -65,7 +64,7 @@ const program = Effect.gen(function* () {
     });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* Stream.runCollect(buildStream).pipe(Effect.map(Chunk.toReadonlyArray));
+    return yield* Stream.runForEach(buildStream, Console.log);
 });
 
-program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);
+program.pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);
