@@ -150,7 +150,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   remote-docker-engine-tests:
-    needs: [compute-matricies]
+    needs: [compute-matricies, docker-build, typescript-build]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
