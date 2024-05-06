@@ -17,7 +17,7 @@ export default async function ({ provide }: GlobalSetupContext) {
          */
         if (!ciInfo.isCI && process.platform !== "linux") {
             return yield* _(
-                Effect.fail(
+                Effect.die(
                     new Error(
                         "You are not running in a CI environment and you are not developing in a linux environment. This makes it very difficult to test as I cannot start a DIND container so I would have to run tests against your local docker install, which I am not going to do. Please let the tests run in a CI environment (open a pr and let the tests run there) or in a linux environment (reopen this repository in its devcontainer)."
                     )
@@ -25,8 +25,8 @@ export default async function ({ provide }: GlobalSetupContext) {
             );
         }
 
-        const testing_host: Option.Option<string> = yield* _(
-            Config.string("THE_MOBY_EFFECT_TESTING_URL").pipe(Config.option)
+        const connection_method: Option.Option<"socket" | "http" | "https" | "ssh"> = yield* _(
+            Config.literal("socket", "http", "https", "ssh")("THE_MOBY_EFFECT_CONNECTION_METHOD").pipe(Config.option)
         );
         const dind_image: Option.Option<string> = yield* _(
             Config.string("THE_MOBY_EFFECT_DIND_IMAGE").pipe(Config.option)
@@ -38,7 +38,7 @@ export default async function ({ provide }: GlobalSetupContext) {
          * spawn a dind container there because the platform of the runner is
          * not constrained in CI.
          */
-        if (ciInfo.isCI && Option.isNone(testing_host)) {
+        if (ciInfo.isCI && Option.isNone(connection_method)) {
             switch (process.platform) {
                 case "linux":
                 case "darwin": {
@@ -60,15 +60,23 @@ export default async function ({ provide }: GlobalSetupContext) {
 
         /**
          * If we are in a development environment and we have not provided a
-         * testing host, we can just connect to the local docker host and spawn
-         * a dind container there (we already made sure we are on linux above)
-         * but we will need to build the dind image first.
+         * connection method, we can just connect to the local docker host and
+         * spawn a dind container there (we already made sure we are on linux
+         * above) but we will need to build the dind image first.
+         *
+         * Or If we are in a development environment or a CI environment and we
+         * have provided a connection method and a dind image, we can connect to
+         * the remote docker host and spawn a dind container there (we will
+         * assume the remote host is a linux machine)
          */
-        if (!ciInfo.isCI && Option.isNone(testing_host)) {
+        if (!ciInfo.isCI || (Option.isSome(connection_method) && Option.isSome(dind_image))) {
             const intermediate_layer = MobyApi.fromPlatformDefault();
             const [dindContainerId, dindVolumeId, dindConnectionOptions] = yield* _(
                 Effect.provide(
-                    TestHelpers.spawnDind({ kind: "socket", tag: "docker.io/library/docker:24-dind" }),
+                    TestHelpers.spawnDind({
+                        kind: Option.getOrElse(connection_method, () => "socket"),
+                        tag: Option.getOrElse(dind_image, () => "docker.io/library/docker:26-dind"),
+                    }),
                     intermediate_layer
                 )
             );
@@ -78,25 +86,9 @@ export default async function ({ provide }: GlobalSetupContext) {
             return;
         }
 
-        /**
-         * If we are in a development environment or a CI environment and we
-         * have provided a testing host and a dind image, we can connect to the
-         * remote docker host and spawn a dind container there (we will assume
-         * the remote host is a linux machine)
-         */
-        if (Option.isSome(testing_host) && Option.isSome(dind_image)) {
-            const intermediate_layer = MobyApi.fromUrl(testing_host.value);
-            const [dindContainerId, dindVolumeId, dindConnectionOptions] = yield* _(
-                Effect.provide(TestHelpers.spawnDind({ kind: "http", tag: dind_image.value }), intermediate_layer)
-            );
-            provide("__DIND_VOLUME_ID", Option.some(dindVolumeId));
-            provide("__TEST_CONNECTION_OPTIONS", dindConnectionOptions);
-            provide("__DIND_CONTAINER_ID", Option.some(dindContainerId));
-            return;
-        }
-
+        // If we reach this point, we have not provided a testing host or a dind image
         yield* _(
-            Effect.fail(
+            Effect.die(
                 new Error(
                     "You are trying to run tests against a remote docker engine but you have not provided a testing host or a dind image. Please provide both."
                 )
