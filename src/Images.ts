@@ -810,8 +810,8 @@ export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClien
         ): Effect.Effect<Stream.Stream<BuildInfo, ImagesError, never>, ImagesError, Scope.Scope> =>
             Function.pipe(
                 HttpClient.request.post(`${agent.nodeRequestUrl}/build`),
-                HttpClient.request.setHeader("Content-type", ""),
-                HttpClient.request.setHeader("X-Registry-Config", ""),
+                HttpClient.request.setHeader("Content-type", options["Content-type"] ?? "application/x-tar"),
+                HttpClient.request.setHeader("X-Registry-Config", options["X-Registry-Config"] ?? ""),
                 addQueryParameter("dockerfile", options.dockerfile),
                 addQueryParameter("t", options.t),
                 addQueryParameter("extrahosts", options.extrahosts),
@@ -837,6 +837,7 @@ export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClien
                 addQueryParameter("platform", options.platform),
                 addQueryParameter("target", options.target),
                 addQueryParameter("outputs", options.outputs),
+                addQueryParameter("version", "1"),
                 HttpClient.request.streamBody(
                     Stream.mapError(
                         options.context,
@@ -848,7 +849,7 @@ export const make: Effect.Effect<Images, never, IMobyConnectionAgent | HttpClien
                             })
                     )
                 ),
-                client,
+                defaultClient.pipe(HttpClient.client.filterStatusOk),
                 Effect.map((response) => response.stream),
                 Effect.map(Stream.decodeText("utf8")),
                 Effect.map(Stream.map(String.linesIterator)),
