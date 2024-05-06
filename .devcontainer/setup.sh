@@ -8,6 +8,10 @@ SHELL="$(which bash)" pnpm setup
 source /home/vscode/.bashrc
 pnpm config set store-dir $PNPM_HOME/store
 
+echo "📦 Installing global dependencies..."
+npm uninstall -g pnpm
+npm install -g @devcontainers/cli npm-check-updates pnpm
+
 echo "📦 Installing repo dependencies..."
 pnpm install
 
