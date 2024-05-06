@@ -28,6 +28,7 @@
         "dnsrr",
         "docgen",
         "Domainname",
+        "dprint",
         "endport",
         "etwlogs",
         "extrahosts",
