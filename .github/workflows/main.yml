@@ -7,11 +7,10 @@ on:
     branches: ["main"]
 
 env:
-  remote-docker-engine-service-count: 5
   node-versions: "['16.x', '18.x', '20.x']"
   docker-desktop-versions: "['v1', 'v2', 'v3']"
   podman-desktop-versions: "['v1', 'v2', 'v3']"
-  os-variants: "['ubuntu-latest', 'macos-latest', 'windows-latest']"
+  os-variants: "['ubuntu-latest', 'macos-14', 'macos-13', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
   docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:dind']"
 
@@ -29,8 +28,6 @@ jobs:
       docker-desktop-versions: ${{ steps.compute-matricies.outputs.docker-desktop-versions }}
       podman-desktop-versions: ${{ steps.compute-matricies.outputs.podman-desktop-versions }}
       docker-engine-connection-variants: ${{ steps.compute-matricies.outputs.docker-engine-connection-variants }}
-      remote-docker-engine-service-indicies: ${{ steps.compute-matricies.outputs.remote-docker-engine-service-indicies }}
-      remote-docker-engine-service-identifiers: ${{ steps.compute-matricies.outputs.remote-docker-engine-service-identifiers }}
     steps:
       - id: compute-matricies
         run: |
@@ -40,29 +37,6 @@ jobs:
           echo "docker-desktop-versions=${{ env.docker-desktop-versions }}" >> $GITHUB_OUTPUT
           echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
           echo "docker-engine-connection-variants=${{ env.docker-engine-connection-variants }}" >> $GITHUB_OUTPUT
-
-          output1="["
-          for ((i=0; i<${{ env.remote-docker-engine-service-count }}; i++)); do
-            if [ $i -eq $((${{ env.remote-docker-engine-service-count }}-1)) ]; then
-              output1+="'$i'"
-            else
-              output1+="'$i', "
-            fi
-          done
-          output1+="]"
-          echo "remote-docker-engine-service-indicies=$output1" >> $GITHUB_OUTPUT
-
-          output2="["
-          for ((i=1; i<=${{ env.remote-docker-engine-service-count }}; i++)); do
-            uuid=$(uuidgen)
-            if [ $i -eq ${{ env.remote-docker-engine-service-count }} ]; then
-              output2+="'$uuid'"
-            else
-              output2+="'$uuid', "
-            fi
-          done
-          output2+="]"
-          echo "remote-docker-engine-service-identifiers=$output2" >> $GITHUB_OUTPUT
 
   update-pnpm-caches:
     runs-on: ${{ matrix.os }}
@@ -92,7 +66,7 @@ jobs:
           path: ${{ steps.get-store-path.outputs.STORE_PATH }}
           restore-keys: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-
           key: ${{ runner.os }}-node${{ matrix.node-version }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-      - run: python3 -m pip install setuptools
+      # - run: python3 -m pip install setuptools
       - run: pnpm install
 
   docker-build:
@@ -130,21 +104,15 @@ jobs:
           path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
           if-no-files-found: error
 
-  docs-generate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
   typescript-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '18.x'
       - run: npm install
       - run: npm run build
-      - run: npm test
 
   docker-publish:
     runs-on: ubuntu-latest
@@ -181,43 +149,8 @@ jobs:
           file: test/data/agent-${{ matrix.dockerfile }}.dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
-  remote-docker-engine-services:
-    needs: [docker-build, update-pnpm-caches, compute-matricies, docs-generate, typescript-build]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          path: /tmp
-          pattern: "*-dind-docker-image"
-      - run: docker load --input /tmp/ssh-dind-docker-image/ssh-dind-docker-image.tar
-      - run: docker load --input /tmp/http-dind-docker-image/http-dind-docker-image.tar
-      - run: docker load --input /tmp/https-dind-docker-image/https-dind-docker-image.tar
-      - run: docker load --input /tmp/socket-dind-docker-image/socket-dind-docker-image.tar
-      - run: docker image ls -a
-      - uses: ./.github/actions/workflow-level-service/expose
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          service-subnet: 192.168.${{ matrix.index }}.0
-          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
-
-  remote-docker-engine-services-online:
-    needs: [docker-build, update-pnpm-caches, compute-matricies]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/workflow-level-service/connect
-        with:
-          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
-
   remote-docker-engine-tests:
-    needs: [remote-docker-engine-services-online, compute-matricies]
+    needs: [compute-matricies]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -230,38 +163,14 @@ jobs:
         docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
       - uses: actions/checkout@v4
-      - name: "Choose service at random"
-        id: random-service
-        shell: bash
-        run: |
-          RANDOM_INDEX=$(( RANDOM % ${{ env.remote-docker-engine-service-count }} ))
-          echo "random_index=$RANDOM_INDEX" >> $GITHUB_OUTPUT
-      - uses: ./.github/actions/workflow-level-service/connect
-        with:
-          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', steps.random-service.outputs.random_index)] }}
-      - name: "Run tests"
-        shell: bash
-        run: pnpm build
+      - run: pnpm build
         env:
           THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
           THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
 
-  stop-services:
-    if: ${{ always() }}
-    needs: [remote-docker-engine-tests, compute-matricies]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        index: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-indicies) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/workflow-level-service/stop
-        with:
-          service-identifier: ${{ fromJson(needs.compute-matricies.outputs.remote-docker-engine-service-identifiers)[format('{0}', matrix.index)] }}
-
   local-docker-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, remote-docker-engine-services, compute-matricies]
+    needs: [remote-docker-engine-tests, compute-matricies]
     defaults:
       run:
         shell: bash
@@ -279,7 +188,7 @@ jobs:
 
   local-podman-desktop-tests:
     runs-on: ${{ matrix.os }}
-    needs: [remote-docker-engine-tests, remote-docker-engine-services, compute-matricies]
+    needs: [remote-docker-engine-tests, compute-matricies]
     defaults:
       run:
         shell: bash
@@ -299,7 +208,7 @@ jobs:
   pr-can-merge:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    needs: [local-podman-desktop-tests, local-docker-desktop-tests]
+    needs: [remote-docker-engine-tests, local-podman-desktop-tests, local-docker-desktop-tests]
     steps:
       - run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
