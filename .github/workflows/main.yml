@@ -12,7 +12,7 @@ env:
   podman-desktop-versions: "['v1', 'v2', 'v3']"
   os-variants: "['ubuntu-latest', 'macos-14', 'macos-13', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
-  docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:dind']"
+  docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:dind']"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -102,8 +102,9 @@ jobs:
       - uses: ./.github/actions/common-setup
         with:
           node-version: 18.x
+      - run: pnpm check
       - run: pnpm build
-      # - run: pnpm lint FIXME: enable linting
+      - run: pnpm lint
 
   # Publishes the docker images to ghcr.io (only if they have been modified in this push/pull_request)
   docker-publish:
@@ -151,17 +152,17 @@ jobs:
       matrix:
         os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
         node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
-        remote-docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
+        docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
         docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
-      # - run: pnpm build
-      #   env:
-      #     THE_MOBY_EFFECT_TESTING_URL: "unix:///var/run/docker.sock"
-      #     THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.remote-docker-engine-version }}"
+      - run: pnpm test
+        env:
+          THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.docker-engine-version }}"
+          THE_MOBY_EFFECT_CONNECTION_METHOD: "${{ matrix.docker-engine-connection-variant }}"
 
   docker-desktop-tests:
     runs-on: ${{ matrix.os }}
