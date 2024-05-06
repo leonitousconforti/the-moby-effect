@@ -22,7 +22,8 @@
                 "streetsidesoftware.code-spell-checker",
                 "eamodio.gitlens",
                 "mutantdino.resourcemonitor",
-                "GitHub.vscode-github-actions"
+                "GitHub.vscode-github-actions",
+                "yoavbls.pretty-ts-errors"
             ],
             "settings": {
                 "cSpell.enabled": true,
@@ -38,7 +39,8 @@
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": "always",
                     "source.addMissingImports": "always"
-                }
+                },
+                "files.associations": { "*.json": "jsonc" }
             }
         }
     },
