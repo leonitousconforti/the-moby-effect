@@ -13,7 +13,7 @@ export const setup = async function ({
 }: GlobalSetupContext): Promise<
     [dindConnectionOptions: MobyApi.MobyConnectionOptions, dindContainerId: string, dindVolumeId: string] | undefined
 > {
-    return await Effect.gen(function* (_: Effect.Adapter) {
+    return await Effect.gen(function* () {
         /**
          * If we are anywhere but CI and we aren't running on linux we will
          * refuse to run the test suite because we might not be able to spawn a
@@ -22,20 +22,21 @@ export const setup = async function ({
          * against the users host docker install.
          */
         if (!ciInfo.isCI && process.platform !== "linux") {
-            return yield* _(
-                Effect.die(
-                    new Error(
-                        "You are not running in a CI environment and you are not developing in a linux environment. This makes it very difficult to test as I cannot start a DIND container so I would have to run tests against your local docker install, which I am not going to do. Please let the tests run in a CI environment (open a pr and let the tests run there) or in a linux environment (reopen this repository in its devcontainer)."
-                    )
+            return yield* Effect.die(
+                new Error(
+                    "You are not running in a CI environment and you are not developing in a linux environment. This makes it very difficult to test as I cannot start a DIND container so I would have to run tests against your local docker install, which I am not going to do. Please let the tests run in a CI environment (open a pr and let the tests run there) or in a linux environment (reopen this repository in its devcontainer)."
                 )
             );
         }
 
-        const connection_method: Option.Option<"socket" | "http" | "https" | "ssh"> = yield* _(
-            Config.literal("socket", "http", "https", "ssh")("THE_MOBY_EFFECT_CONNECTION_METHOD").pipe(Config.option)
-        );
-        const dind_image: Option.Option<string> = yield* _(
-            Config.string("THE_MOBY_EFFECT_DIND_IMAGE").pipe(Config.option)
+        const connection_method: Option.Option<"socket" | "http" | "https" | "ssh"> = yield* Config.literal(
+            "socket",
+            "http",
+            "https",
+            "ssh"
+        )("THE_MOBY_EFFECT_CONNECTION_METHOD").pipe(Config.option);
+        const dind_image: Option.Option<string> = yield* Config.string("THE_MOBY_EFFECT_DIND_IMAGE").pipe(
+            Config.option
         );
 
         /**
@@ -59,7 +60,7 @@ export const setup = async function ({
                     return;
                 }
                 default: {
-                    return yield* _(Effect.fail(new Error("Unknown platform")));
+                    return yield* Effect.fail(new Error("Unknown platform"));
                 }
             }
         }
@@ -77,25 +78,21 @@ export const setup = async function ({
          */
         if (!ciInfo.isCI || (Option.isSome(connection_method) && Option.isSome(dind_image))) {
             const intermediate_layer = MobyApi.fromPlatformDefault();
-            const [dindContainerId, dindVolumeId, dindConnectionOptions] = yield* _(
-                Effect.provide(
-                    TestHelpers.spawnDind({
-                        kind: Option.getOrElse(connection_method, () => "socket"),
-                        tag: Option.getOrElse(dind_image, () => "docker.io/library/docker:26-dind"),
-                    }),
-                    intermediate_layer
-                )
+            const [dindContainerId, dindVolumeId, dindConnectionOptions] = yield* Effect.provide(
+                TestHelpers.spawnDind({
+                    kind: Option.getOrElse(connection_method, () => "socket"),
+                    tag: Option.getOrElse(dind_image, () => "docker.io/library/docker:26-dind"),
+                }),
+                intermediate_layer
             );
             provide("__TEST_CONNECTION_OPTIONS", dindConnectionOptions);
             return Tuple.make(dindConnectionOptions, dindContainerId, dindVolumeId);
         }
 
         // If we reach this point, we have not provided a testing host or a dind image
-        yield* _(
-            Effect.die(
-                new Error(
-                    "You are trying to run tests against a remote docker engine but you have not provided a testing host or a dind image. Please provide both."
-                )
+        yield* Effect.die(
+            new Error(
+                "You are trying to run tests against a remote docker engine but you have not provided a testing host or a dind image. Please provide both."
             )
         );
     })
