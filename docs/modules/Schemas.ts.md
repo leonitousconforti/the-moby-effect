@@ -63,8 +63,6 @@ Added in v1.0.0
   - [HealthcheckResult (class)](#healthcheckresult-class)
   - [HistoryResponseItem](#historyresponseitem)
   - [HostConfig (class)](#hostconfig-class)
-  - [HostConfig_0 (class)](#hostconfig_0-class)
-  - [HostConfig_1 (class)](#hostconfig_1-class)
   - [IDResponse (class)](#idresponse-class)
   - [IPAM (class)](#ipam-class)
   - [IPAMConfig (class)](#ipamconfig-class)
@@ -130,8 +128,6 @@ Added in v1.0.0
   - [SwarmJoinRequest (class)](#swarmjoinrequest-class)
   - [SwarmSpec (class)](#swarmspec-class)
   - [SwarmUnlockRequest (class)](#swarmunlockrequest-class)
-  - [Swarm_0 (class)](#swarm_0-class)
-  - [Swarm_1 (class)](#swarm_1-class)
   - [SystemAuthResponse (class)](#systemauthresponse-class)
   - [SystemDataUsageResponse (class)](#systemdatausageresponse-class)
   - [SystemInfo (class)](#systeminfo-class)
@@ -659,26 +655,6 @@ Added in v1.45.0
 
 ```ts
 export declare class HostConfig
-```
-
-Added in v1.45.0
-
-## HostConfig_0 (class)
-
-**Signature**
-
-```ts
-export declare class HostConfig_0
-```
-
-Added in v1.45.0
-
-## HostConfig_1 (class)
-
-**Signature**
-
-```ts
-export declare class HostConfig_1
 ```
 
 Added in v1.45.0
@@ -1342,26 +1318,6 @@ Added in v1.45.0
 
 ```ts
 export declare class SwarmUnlockRequest
-```
-
-Added in v1.45.0
-
-## Swarm_0 (class)
-
-**Signature**
-
-```ts
-export declare class Swarm_0
-```
-
-Added in v1.45.0
-
-## Swarm_1 (class)
-
-**Signature**
-
-```ts
-export declare class Swarm_1
 ```
 
 Added in v1.45.0

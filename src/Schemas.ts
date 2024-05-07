@@ -2525,10 +2525,7 @@ export enum HostConfig_1_Isolation {
 }
 
 /** @since 1.45.0 */
-export class HostConfig_0 extends Resources.extend<HostConfig_0>("HostConfig_0")({}) {}
-
-/** @since 1.45.0 */
-export class HostConfig_1 extends Schema.Class<HostConfig_1>("HostConfig_1")({
+export class HostConfig extends Resources.extend<HostConfig>("HostConfig")({
     /**
      * A list of volume bindings for this container. Each volume binding is a
      * string in one of these forms:
@@ -2775,9 +2772,6 @@ export class HostConfig_1 extends Schema.Class<HostConfig_1>("HostConfig_1")({
      */
     ReadonlyPaths: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
 }) {}
-
-/** @since 1.45.0 */
-export class HostConfig extends HostConfig_1.extend<HostConfig>("HostConfig")({}) {}
 
 /** @since 1.45.0 */
 export class NetworkingConfig extends Schema.Class<NetworkingConfig>("NetworkingConfig")({
@@ -3072,15 +3066,9 @@ export class NodeDescription extends Schema.Class<NodeDescription>("NodeDescript
 }) {}
 
 /** @since 1.45.0 */
-export class Swarm_0 extends ClusterInfo.extend<Swarm_0>("Swarm_0")({}) {}
-
-/** @since 1.45.0 */
-export class Swarm_1 extends Schema.Class<Swarm_1>("Swarm_1")({
+export class Swarm extends ClusterInfo.extend<Swarm>("Swarm")({
     JoinTokens: Schema.optional(Schema.NullOr(JoinTokens)),
 }) {}
-
-/** @since 1.45.0 */
-export class Swarm extends Swarm_1.extend<Swarm>("Swarm")({}) {}
 
 /** @since 1.45.0 */
 export enum TaskSpec_ContainerSpec_Isolation {
