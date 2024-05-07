@@ -33,7 +33,7 @@ export const spawnDind = (
                     buildargs: JSON.stringify({ DIND_IMAGE: image.tag }),
                     dockerfile: `agent-${image.kind}.dockerfile`,
                     context: Stream.fromAsyncIterable(
-                        tar.pack(url.fileURLToPath(new URL("../data", import.meta.url)), {
+                        tar.pack(url.fileURLToPath(new URL("./data", import.meta.url)), {
                             entries: [`agent-${image.kind}.dockerfile`],
                         }),
                         () =>
