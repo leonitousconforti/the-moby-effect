@@ -1495,10 +1495,10 @@ export class Resources extends Schema.Class<Resources>("Resources")({
      * An integer value representing this container's relative CPU weight versus
      * other containers.
      */
-    CpuShares: Schema.optional(Schema.Number),
+    CpuShares: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** Memory limit in bytes. */
-    Memory: Schema.optional(Schema.Number),
+    Memory: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * Path to `cgroups` under which the container's `cgroup` is created. If the
@@ -1506,10 +1506,10 @@ export class Resources extends Schema.Class<Resources>("Resources")({
      * `cgroups` path of the init process. Cgroups are created if they do not
      * already exist.
      */
-    CgroupParent: Schema.optional(Schema.String),
+    CgroupParent: Schema.optional(Schema.NullOr(Schema.String)),
 
     /** Block IO weight (relative weight). */
-    BlkioWeight: Schema.optional(Schema.Number),
+    BlkioWeight: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * Block IO weight (relative device weight) in the form:
@@ -1555,31 +1555,31 @@ export class Resources extends Schema.Class<Resources>("Resources")({
     BlkioDeviceWriteIOps: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice)))),
 
     /** The length of a CPU period in microseconds. */
-    CpuPeriod: Schema.optional(Schema.Number),
+    CpuPeriod: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** Microseconds of CPU time that the container can get in a CPU period. */
-    CpuQuota: Schema.optional(Schema.Number),
+    CpuQuota: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * The length of a CPU real-time period in microseconds. Set to 0 to
      * allocate no time allocated to real-time tasks.
      */
-    CpuRealtimePeriod: Schema.optional(Schema.Number),
+    CpuRealtimePeriod: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * The length of a CPU real-time runtime in microseconds. Set to 0 to
      * allocate no time allocated to real-time tasks.
      */
-    CpuRealtimeRuntime: Schema.optional(Schema.Number),
+    CpuRealtimeRuntime: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** CPUs in which to allow execution (e.g., `0-3`, `0,1`). */
-    CpusetCpus: Schema.optional(Schema.String),
+    CpusetCpus: Schema.optional(Schema.NullOr(Schema.String)),
 
     /**
      * Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only
      * effective on NUMA systems.
      */
-    CpusetMems: Schema.optional(Schema.String),
+    CpusetMems: Schema.optional(Schema.NullOr(Schema.String)),
 
     /** A list of devices to add to the container. */
     Devices: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(DeviceMapping)))),
@@ -1597,38 +1597,38 @@ export class Resources extends Schema.Class<Resources>("Resources")({
      *
      * This field is omitted when empty.
      */
-    KernelMemoryTCP: Schema.optional(Schema.Number),
+    KernelMemoryTCP: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** Memory soft limit in bytes. */
-    MemoryReservation: Schema.optional(Schema.Number),
+    MemoryReservation: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** Total memory limit (memory + swap). Set as `-1` to enable unlimited swap. */
-    MemorySwap: Schema.optional(Schema.Number),
+    MemorySwap: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * Tune a container's memory swappiness behavior. Accepts an integer between
      * 0 and 100.
      */
-    MemorySwappiness: Schema.optional(Schema.Number),
+    MemorySwappiness: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** CPU quota in units of 10<sup>-9</sup> CPUs. */
-    NanoCpus: Schema.optional(Schema.Number),
+    NanoCpus: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** Disable OOM Killer for the container. */
-    OomKillDisable: Schema.optional(Schema.Boolean),
+    OomKillDisable: Schema.optional(Schema.NullOr(Schema.Boolean)),
 
     /**
      * Run an init inside the container that forwards signals and reaps
      * processes. This field is omitted if empty, and the default (as configured
      * on the daemon) is used.
      */
-    Init: Schema.optional(Schema.Boolean),
+    Init: Schema.optional(Schema.NullOr(Schema.Boolean)),
 
     /**
      * Tune a container's PIDs limit. Set `0` or `-1` for unlimited, or `null`
      * to not change.
      */
-    PidsLimit: Schema.optional(Schema.Number),
+    PidsLimit: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * A list of resource limits to set in the container. For example:
@@ -1661,7 +1661,7 @@ export class Resources extends Schema.Class<Resources>("Resources")({
      * mutually exclusive. The order of precedence is `CPUCount` first, then
      * `CPUShares`, and `CPUPercent` last.
      */
-    CpuCount: Schema.optional(Schema.Number),
+    CpuCount: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * The usable percentage of the available CPUs (Windows only).
@@ -1670,16 +1670,16 @@ export class Resources extends Schema.Class<Resources>("Resources")({
      * mutually exclusive. The order of precedence is `CPUCount` first, then
      * `CPUShares`, and `CPUPercent` last.
      */
-    CpuPercent: Schema.optional(Schema.Number),
+    CpuPercent: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /** Maximum IOps for the container system drive (Windows only) */
-    IOMaximumIOps: Schema.optional(Schema.Number),
+    IOMaximumIOps: Schema.optional(Schema.NullOr(Schema.Number)),
 
     /**
      * Maximum IO in bytes per second for the container system drive (Windows
      * only).
      */
-    IOMaximumBandwidth: Schema.optional(Schema.Number),
+    IOMaximumBandwidth: Schema.optional(Schema.NullOr(Schema.Number)),
 }) {}
 
 /** @since 1.45.0 */
