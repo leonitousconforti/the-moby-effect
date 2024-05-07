@@ -88,7 +88,9 @@ export interface Execs {
         options: ExecStartOptions & {
             execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T };
         }
-    ) => Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError>;
+    ) => T extends true
+        ? Effect.Effect<void, ExecsError, never>
+        : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
 
     /**
      * Resize an exec instance
@@ -145,8 +147,12 @@ export const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient
             options: ExecStartOptions & {
                 execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T };
             }
-        ): Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError> => {
-            type U = Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError>;
+        ): T extends true
+            ? Effect.Effect<void, ExecsError, never>
+            : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope> => {
+            type U = T extends true
+                ? Effect.Effect<void, ExecsError, never>
+                : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
 
             const response = Function.pipe(
                 HttpClient.request.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
@@ -157,14 +163,13 @@ export const make: Effect.Effect<Execs, never, IMobyConnectionAgent | HttpClient
                 Effect.catchAll(responseHandler("start"))
             );
 
-            const detachedResponse: U = Effect.flatMap(response, () => Effect.void) as U;
-            const streamingResponse: U = Function.pipe(
-                response,
-                Effect.flatMap(responseToStreamingSocketOrFail),
-                Effect.catchTag("SocketError", () => new ExecsError({ method: "start", message: "socket error" }))
-            ) as U;
-
-            return options.execStartConfig.Detach ? detachedResponse : streamingResponse;
+            return options.execStartConfig.Detach
+                ? (Effect.asVoid(response).pipe(Effect.scoped) as U)
+                : (Function.pipe(
+                      response,
+                      Effect.flatMap(responseToStreamingSocketOrFail),
+                      Effect.catchTag("SocketError", () => new ExecsError({ method: "start", message: "socket error" }))
+                  ) as U);
         };
 
         const resize_ = (options: ExecResizeOptions): Effect.Effect<void, ExecsError> =>

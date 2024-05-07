@@ -137,7 +137,9 @@ export interface Execs {
     options: ExecStartOptions & {
       execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T }
     }
-  ) => Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError>
+  ) => T extends true
+    ? Effect.Effect<void, ExecsError, never>
+    : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>
 
   /**
    * Resize an exec instance
