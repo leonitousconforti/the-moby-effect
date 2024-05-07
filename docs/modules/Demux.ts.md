@@ -71,17 +71,19 @@ the correct sink.
 **Signature**
 
 ```ts
-export declare const demuxMultiplexedSocket: (<E1, E2, E3>(
+export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3>(
   source: Stream.Stream<Uint8Array, E1, never>,
-  sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-  sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-) => (socket: MultiplexedStreamSocket) => Effect.Effect<void, Socket.SocketError | E1 | E2 | E3, never>) &
-  (<E1, E2, E3>(
+  sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+  sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+) => (
+  socket: MultiplexedStreamSocket
+) => Effect.Effect<readonly [stdout: A1, stderr: A2], Socket.SocketError | E1 | E2 | E3, never>) &
+  (<A1, A2, E1, E2, E3>(
     socket: MultiplexedStreamSocket,
     source: Stream.Stream<Uint8Array, E1, never>,
-    sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-    sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-  ) => Effect.Effect<void, Socket.SocketError | E1 | E2 | E3, never>)
+    sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+    sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+  ) => Effect.Effect<readonly [stdout: A1, stderr: A2], Socket.SocketError | E1 | E2 | E3, never>)
 ```
 
 Added in v1.0.0
@@ -97,15 +99,15 @@ combined on the same sink.
 **Signature**
 
 ```ts
-export declare const demuxRawSocket: (<E1, E2>(
+export declare const demuxRawSocket: (<A, E1, E2>(
   source: Stream.Stream<Uint8Array, E1, never>,
-  sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-) => (socket: RawStreamSocket) => Effect.Effect<void, Socket.SocketError | E1 | E2, never>) &
-  (<E1, E2>(
+  sink: Sink.Sink<A, string | Uint8Array, never, E2, never>
+) => (socket: RawStreamSocket) => Effect.Effect<A, Socket.SocketError | E1 | E2, never>) &
+  (<A, E1, E2>(
     socket: RawStreamSocket,
     source: Stream.Stream<Uint8Array, E1, never>,
-    sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-  ) => Effect.Effect<void, Socket.SocketError | E1 | E2, never>)
+    sink: Sink.Sink<A, string | Uint8Array, never, E2, never>
+  ) => Effect.Effect<A, Socket.SocketError | E1 | E2, never>)
 ```
 
 Added in v1.0.0
@@ -122,26 +124,28 @@ and one for stderr.
 
 ```ts
 export declare const demuxSocket: {
-  <E1, E2>(
+  <A1, E1, E2>(
     socket: RawStreamSocket,
     source: Stream.Stream<Uint8Array, E1, never>,
-    sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-  ): Effect.Effect<void, Socket.SocketError | E1 | E2, never>
-  <E1, E2>(
+    sink: Sink.Sink<A1, string | Uint8Array, never, E2, never>
+  ): Effect.Effect<A1, Socket.SocketError | E1 | E2, never>
+  <A1, E1, E2>(
     source: Stream.Stream<Uint8Array, E1, never>,
-    sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-  ): (socket: RawStreamSocket) => Effect.Effect<void, Socket.SocketError | E1 | E2, never>
-  <E1, E2, E3>(
+    sink: Sink.Sink<A1, string | Uint8Array, never, E2, never>
+  ): (socket: RawStreamSocket) => Effect.Effect<A1, Socket.SocketError | E1 | E2, never>
+  <A1, A2, E1, E2, E3>(
     socket: MultiplexedStreamSocket,
     source: Stream.Stream<Uint8Array, E1, never>,
-    sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-    sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-  ): Effect.Effect<void, Socket.SocketError | E1 | E2 | E3, never>
-  <E1, E2, E3>(
+    sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+    sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+  ): Effect.Effect<readonly [stdout: A1, stderr: A2], Socket.SocketError | E1 | E2 | E3, never>
+  <A1, A2, E1, E2, E3>(
     source: Stream.Stream<Uint8Array, E1, never>,
-    sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-    sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-  ): (socket: MultiplexedStreamSocket) => Effect.Effect<void, Socket.SocketError | E1 | E2 | E3, never>
+    sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+    sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+  ): (
+    socket: MultiplexedStreamSocket
+  ) => Effect.Effect<readonly [stdout: A1, stderr: A2], Socket.SocketError | E1 | E2 | E3, never>
 }
 ```
 

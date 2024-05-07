@@ -15,6 +15,7 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
+import * as Tuple from "effect/Tuple";
 
 import { IExposeSocketOnEffectClientResponse } from "./Requests.js";
 
@@ -147,22 +148,22 @@ export enum MultiplexedStreamSocketHeaderType {
  * @see https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerAttach
  */
 export const demuxRawSocket = Function.dual<
-    <E1, E2>(
+    <A, E1, E2>(
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-    ) => (socket: RawStreamSocket) => Effect.Effect<void, E1 | E2 | Socket.SocketError, never>,
-    <E1, E2>(
+        sink: Sink.Sink<A, string | Uint8Array, never, E2, never>
+    ) => (socket: RawStreamSocket) => Effect.Effect<A, E1 | E2 | Socket.SocketError, never>,
+    <A, E1, E2>(
         socket: RawStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-    ) => Effect.Effect<void, E1 | E2 | Socket.SocketError, never>
+        sink: Sink.Sink<A, string | Uint8Array, never, E2, never>
+    ) => Effect.Effect<A, E1 | E2 | Socket.SocketError, never>
 >(
     3,
-    <E1, E2>(
+    <A, E1, E2>(
         socket: RawStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-    ): Effect.Effect<void, E1 | E2 | Socket.SocketError, never> =>
+        sink: Sink.Sink<A, string | Uint8Array, never, E2, never>
+    ): Effect.Effect<A, E1 | E2 | Socket.SocketError, never> =>
         Function.pipe(source, Stream.pipeThroughChannel(Socket.toChannel(socket)), Stream.run(sink))
 );
 
@@ -178,25 +179,27 @@ export const demuxRawSocket = Function.dual<
  * @see https://docs.docker.com/engine/api/v1.43/#tag/Container/operation/ContainerAttach
  */
 export const demuxMultiplexedSocket = Function.dual<
-    <E1, E2, E3>(
+    <A1, A2, E1, E2, E3>(
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-        sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-    ) => (socket: MultiplexedStreamSocket) => Effect.Effect<void, E1 | E2 | E3 | Socket.SocketError, never>,
-    <E1, E2, E3>(
+        sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+        sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+    ) => (
+        socket: MultiplexedStreamSocket
+    ) => Effect.Effect<readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never>,
+    <A1, A2, E1, E2, E3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-        sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-    ) => Effect.Effect<void, E1 | E2 | E3 | Socket.SocketError, never>
+        sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+        sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+    ) => Effect.Effect<readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never>
 >(
     4,
-    <E1, E2, E3>(
+    <A1, A2, E1, E2, E3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-        sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-    ): Effect.Effect<void, E1 | E2 | E3 | Socket.SocketError, never> =>
+        sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+        sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+    ): Effect.Effect<readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never> =>
         Function.pipe(
             source,
             Stream.pipeThroughChannel(Socket.toChannel(socket)),
@@ -221,16 +224,18 @@ export const demuxMultiplexedSocket = Function.dual<
                     type === MultiplexedStreamSocketHeaderType.Stderr
             ),
             Stream.partition(({ type }) => type === MultiplexedStreamSocketHeaderType.Stderr),
-            Effect.map(([stdout, stderr]) => [
-                stdout.pipe(
-                    Stream.map(({ contents }) => contents),
-                    Stream.run(sink1)
-                ),
-                stderr.pipe(
-                    Stream.map(({ contents }) => contents),
-                    Stream.run(sink2)
-                ),
-            ]),
+            Effect.map(
+                Tuple.mapBoth({
+                    onFirst: Function.compose(
+                        Stream.map(({ contents }) => contents),
+                        Stream.run(sink1)
+                    ),
+                    onSecond: Function.compose(
+                        Stream.map(({ contents }) => contents),
+                        Stream.run(sink2)
+                    ),
+                })
+            ),
             Effect.map(Effect.all),
             Effect.flatten,
             Effect.scoped
@@ -248,34 +253,36 @@ export const demuxMultiplexedSocket = Function.dual<
  * @category Demux
  */
 export const demuxSocket: {
-    <E1, E2>(
+    <A1, E1, E2>(
         socket: RawStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-    ): Effect.Effect<void, E1 | E2 | Socket.SocketError, never>;
-    <E1, E2>(
+        sink: Sink.Sink<A1, string | Uint8Array, never, E2, never>
+    ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, never>;
+    <A1, E1, E2>(
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink: Sink.Sink<void, string | Uint8Array, never, E2, never>
-    ): (socket: RawStreamSocket) => Effect.Effect<void, E1 | E2 | Socket.SocketError, never>;
-    <E1, E2, E3>(
+        sink: Sink.Sink<A1, string | Uint8Array, never, E2, never>
+    ): (socket: RawStreamSocket) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, never>;
+    <A1, A2, E1, E2, E3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-        sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-    ): Effect.Effect<void, E1 | E2 | E3 | Socket.SocketError, never>;
-    <E1, E2, E3>(
+        sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+        sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+    ): Effect.Effect<readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never>;
+    <A1, A2, E1, E2, E3>(
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-        sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-    ): (socket: MultiplexedStreamSocket) => Effect.Effect<void, E1 | E2 | E3 | Socket.SocketError, never>;
+        sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+        sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+    ): (
+        socket: MultiplexedStreamSocket
+    ) => Effect.Effect<readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never>;
 } = Function.dual(
     (arguments_) => arguments_[0][Socket.TypeId],
-    <E1, E2, E3>(
+    <A1, A2, E1, E2, E3>(
         socket: RawStreamSocket | MultiplexedStreamSocket,
         source: Stream.Stream<Uint8Array, E1, never>,
-        sink1: Sink.Sink<void, string | Uint8Array, never, E2, never>,
-        sink2: Sink.Sink<void, string | Uint8Array, never, E3, never>
-    ): Effect.Effect<void, E1 | E2 | E3 | Socket.SocketError, never> => {
+        sink1: Sink.Sink<A1, string | Uint8Array, never, E2, never>,
+        sink2: Sink.Sink<A2, string | Uint8Array, never, E3, never>
+    ): Effect.Effect<A1 | readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never> => {
         switch (socket["content-type"]) {
             case "application/vnd.docker.raw-stream": {
                 return demuxRawSocket(socket, source, sink1);
