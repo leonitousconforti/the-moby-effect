@@ -562,24 +562,18 @@ Added in v1.45.0
 **Signature**
 
 ```ts
-export declare const GenericResources: Schema.$Array<
+export declare const GenericResources: Schema.Array$<
   Schema.NullOr<
     Schema.Struct<{
-      NamedResourceSpec: Schema.PropertySignature<
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: string | undefined } | null | undefined,
-        never,
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: string | undefined } | null | undefined,
-        never
+      NamedResourceSpec: Schema.optional<
+        Schema.NullOr<
+          Schema.Struct<{ Kind: Schema.optional<typeof Schema.String>; Value: Schema.optional<typeof Schema.String> }>
+        >
       >
-      DiscreteResourceSpec: Schema.PropertySignature<
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: number | undefined } | null | undefined,
-        never,
-        "?:",
-        { readonly Kind?: string | undefined; readonly Value?: number | undefined } | null | undefined,
-        never
+      DiscreteResourceSpec: Schema.optional<
+        Schema.NullOr<
+          Schema.Struct<{ Kind: Schema.optional<typeof Schema.String>; Value: Schema.optional<typeof Schema.Number> }>
+        >
       >
     }>
   >
@@ -633,15 +627,15 @@ Added in v1.45.0
 **Signature**
 
 ```ts
-export declare const HistoryResponseItem: Schema.$Array<
+export declare const HistoryResponseItem: Schema.Array$<
   Schema.NullOr<
     Schema.Struct<{
-      Id: Schema.$String
-      Created: Schema.$Number
-      CreatedBy: Schema.$String
-      Tags: Schema.NullOr<Schema.$Array<Schema.$String>>
-      Size: Schema.$Number
-      Comment: Schema.$String
+      Id: typeof Schema.String
+      Created: typeof Schema.Number
+      CreatedBy: typeof Schema.String
+      Tags: Schema.NullOr<Schema.Array$<typeof Schema.String>>
+      Size: typeof Schema.Number
+      Comment: typeof Schema.String
     }>
   >
 >
@@ -744,14 +738,14 @@ Added in v1.45.0
 **Signature**
 
 ```ts
-export declare const ImageSearchResponseItem: Schema.$Array<
+export declare const ImageSearchResponseItem: Schema.Array$<
   Schema.NullOr<
     Schema.Struct<{
-      description: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-      is_official: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-      is_automated: Schema.PropertySignature<"?:", boolean | undefined, never, "?:", boolean | undefined, never>
-      name: Schema.PropertySignature<"?:", string | undefined, never, "?:", string | undefined, never>
-      star_count: Schema.PropertySignature<"?:", number | undefined, never, "?:", number | undefined, never>
+      description: Schema.optional<typeof Schema.String>
+      is_official: Schema.optional<typeof Schema.Boolean>
+      is_automated: Schema.optional<typeof Schema.Boolean>
+      name: Schema.optional<typeof Schema.String>
+      star_count: Schema.optional<typeof Schema.Number>
     }>
   >
 >
@@ -1114,9 +1108,9 @@ Added in v1.45.0
 **Signature**
 
 ```ts
-export declare const PortMap: Schema.$Record<
-  Schema.$String,
-  Schema.NullOr<Schema.$Array<Schema.NullOr<typeof PortBinding>>>
+export declare const PortMap: Schema.Record$<
+  typeof Schema.String,
+  Schema.NullOr<Schema.Array$<Schema.NullOr<typeof PortBinding>>>
 >
 ```
 
@@ -1407,7 +1401,7 @@ Added in v1.45.0
 **Signature**
 
 ```ts
-export declare const Topology: Schema.$Record<Schema.$String, Schema.$String>
+export declare const Topology: Schema.Record$<typeof Schema.String, typeof Schema.String>
 ```
 
 Added in v1.45.0
