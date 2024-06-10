@@ -24,7 +24,7 @@
         "stripInternal": true,
         "noImplicitAny": true,
         "noImplicitThis": true,
-        "noUncheckedIndexedAccess": false,
+        "noUncheckedIndexedAccess": true,
         "strictNullChecks": true,
         "target": "ES2022",
         "module": "NodeNext",
