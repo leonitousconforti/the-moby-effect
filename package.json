@@ -106,5 +106,10 @@
         "access": "public",
         "directory": "dist",
         "provenance": true
+    },
+    "pnpm": {
+        "patchedDependencies": {
+            "@effect/build-utils@0.7.7": "patches/@effect__build-utils@0.7.7.patch"
+        }
     }
 }
