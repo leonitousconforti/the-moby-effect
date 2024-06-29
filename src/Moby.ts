@@ -4,86 +4,77 @@
  * @since 1.0.0
  */
 
+import * as os from "node:os";
+
+import * as Path from "@effect/platform/Path";
 import * as Config from "effect/Config";
 import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as Redacted from "effect/Redacted";
 import * as Scope from "effect/Scope";
-import * as Secret from "effect/Secret";
 
 import * as AgentHelpers from "./Agent.js";
-import * as Configs from "./Configs.js";
-import * as Containers from "./Containers.js";
-import * as Distributions from "./Distribution.js";
-import * as Execs from "./Execs.js";
-import * as Images from "./Images.js";
-import * as Networks from "./Networks.js";
-import * as Nodes from "./Nodes.js";
-import * as Plugins from "./Plugins.js";
-import * as Secrets from "./Secrets.js";
-import * as Services from "./Services.js";
-import * as Sessions from "./Session.js";
-import * as Swarm from "./Swarm.js";
-import * as System from "./System.js";
-import * as Tasks from "./Tasks.js";
-import * as Volumes from "./Volumes.js";
+import * as Configs from "./moby/Configs.js";
+import * as Containers from "./moby/Containers.js";
+import * as Distributions from "./moby/Distribution.js";
+import * as Execs from "./moby/Execs.js";
+import * as Images from "./moby/Images.js";
+import * as Networks from "./moby/Networks.js";
+import * as Nodes from "./moby/Nodes.js";
+import * as Plugins from "./moby/Plugins.js";
+import * as Secrets from "./moby/Secrets.js";
+import * as Services from "./moby/Services.js";
+import * as Sessions from "./moby/Session.js";
+import * as Swarm from "./moby/Swarm.js";
+import * as System from "./moby/System.js";
+import * as Tasks from "./moby/Tasks.js";
+import * as Volumes from "./moby/Volumes.js";
 
 /** @since 1.0.0 */
-export * from "./Agent.js";
+export * as Configs from "./moby/Configs.js";
 
 /** @since 1.0.0 */
-export * as Configs from "./Configs.js";
+export * as Containers from "./moby/Containers.js";
 
 /** @since 1.0.0 */
-export * as Containers from "./Containers.js";
+export * as Distribution from "./moby/Distribution.js";
 
 /** @since 1.0.0 */
-export * as DemuxHelpers from "./Demux.js";
+export * as Execs from "./moby/Execs.js";
 
 /** @since 1.0.0 */
-export * as Distributions from "./Distribution.js";
+export * as Images from "./moby/Images.js";
 
 /** @since 1.0.0 */
-export * as DockerCommon from "./Docker.js";
+export * as Networks from "./moby/Networks.js";
 
 /** @since 1.0.0 */
-export * as Execs from "./Execs.js";
+export * as Nodes from "./moby/Nodes.js";
 
 /** @since 1.0.0 */
-export * as Images from "./Images.js";
+export * as Plugins from "./moby/Plugins.js";
 
 /** @since 1.0.0 */
-export * as Networks from "./Networks.js";
+export * as Secrets from "./moby/Secrets.js";
 
 /** @since 1.0.0 */
-export * as Nodes from "./Nodes.js";
+export * as Services from "./moby/Services.js";
 
 /** @since 1.0.0 */
-export * as Plugins from "./Plugins.js";
+export * as Session from "./moby/Session.js";
 
 /** @since 1.0.0 */
-export * as Schemas from "./Schemas.js";
+export * as Swarm from "./moby/Swarm.js";
 
 /** @since 1.0.0 */
-export * as Secrets from "./Secrets.js";
+export * as System from "./moby/System.js";
 
 /** @since 1.0.0 */
-export * as Services from "./Services.js";
+export * as Tasks from "./moby/Tasks.js";
 
 /** @since 1.0.0 */
-export * as Sessions from "./Session.js";
-
-/** @since 1.0.0 */
-export * as Swarm from "./Swarm.js";
-
-/** @since 1.0.0 */
-export * as System from "./System.js";
-
-/** @since 1.0.0 */
-export * as Tasks from "./Tasks.js";
-
-/** @since 1.0.0 */
-export * as Volumes from "./Volumes.js";
+export * as Volumes from "./moby/Volumes.js";
 
 /**
  * Merges all the layers into a single layer
@@ -244,19 +235,19 @@ export const fromDockerHostEnvironmentVariable: Layer.Layer<
     Layer.Layer.Success<MobyApi>,
     Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
     Layer.Layer.Context<MobyApi>
-> = Config.secret("DOCKER_HOST")
-    .pipe(Config.withDefault(Secret.fromString("unix:///var/run/docker.sock")))
-    .pipe(Config.map(Secret.value))
+> = Config.redacted("DOCKER_HOST")
+    .pipe(Config.withDefault(Redacted.make("unix:///var/run/docker.sock")))
+    .pipe(Config.map(Redacted.value))
     .pipe(Effect.map(fromUrl))
     .pipe(Layer.unwrapEffect);
 
 /**
- * Creates a MobyApi layer from the platform default socket location.
+ * Creates a MobyApi layer from the platform default system socket location.
  *
  * @since 1.0.0
  * @category Constructors
  */
-export const fromPlatformDefault = (): Layer.Layer<
+export const fromPlatformSystemSocketDefault = (): Layer.Layer<
     Layer.Layer.Success<MobyApi>,
     Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
     Layer.Layer.Context<MobyApi>
@@ -274,3 +265,22 @@ export const fromPlatformDefault = (): Layer.Layer<
         }
     }
 };
+
+/**
+ * Creates a MobyApi layer from the platform default system socket location.
+ *
+ * @since 1.0.0
+ * @category Constructors
+ */
+export const fromUserSocketDefault = (): Layer.Layer<
+    Layer.Layer.Success<MobyApi>,
+    Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
+    Layer.Layer.Context<MobyApi> | Path.Path
+> =>
+    Effect.gen(function* () {
+        const path = yield* Path.Path;
+        return fromConnectionOptions({
+            connection: "socket",
+            socketPath: path.join(os.homedir(), ".docker", "run", "docker.sock"),
+        });
+    }).pipe(Layer.unwrapEffect);

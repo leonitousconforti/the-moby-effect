@@ -1,12 +1,12 @@
 ---
 title: Demux.ts
-nav_order: 4
+nav_order: 2
 parent: Modules
 ---
 
 ## Demux overview
 
-Demux helpers
+Demux utilities for hijacked docker streams.
 
 Added in v1.0.0
 
@@ -178,7 +178,7 @@ then an error will be returned.
 
 ```ts
 export declare const responseToStreamingSocketOrFail: (
-  response: HttpClient.response.ClientResponse
+  response: HttpClientResponse.HttpClientResponse
 ) => Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never>
 ```
 
@@ -223,7 +223,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isMultiplexedStreamSocketResponse: (response: HttpClient.response.ClientResponse) => boolean
+export declare const isMultiplexedStreamSocketResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
 ```
 
 Added in v1.0.0
@@ -233,7 +233,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isRawStreamSocketResponse: (response: HttpClient.response.ClientResponse) => boolean
+export declare const isRawStreamSocketResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
 ```
 
 Added in v1.0.0

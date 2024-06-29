@@ -6,7 +6,7 @@ parent: Modules
 
 ## Agent overview
 
-Connection agents
+Http, https, ssh, and unix socket connection agents.
 
 Added in v1.0.0
 
@@ -43,10 +43,9 @@ options for anything yet, it doesn't hurt to add them.
 
 ```ts
 export interface IMobyConnectionAgentImpl extends NodeHttp.HttpAgent {
-  ssh: http.Agent
-  unix: http.Agent
   nodeRequestUrl: string
   connectionOptions: MobyConnectionOptions
+  agent: http.Agent | https.Agent | SSHAgent
 }
 ```
 
@@ -54,7 +53,12 @@ Added in v1.0.0
 
 ## MobyConnectionOptions (type alias)
 
-How to connect to your moby/docker instance.
+Connection options for how to connect to your moby/docker instance. Can be a
+unix socket on the current machine. Can be an ssh connection to a remote
+machine with a remote user, remote machine, remote port, and remote socket
+path. Can be an http connection to a remote machine with a host, port, and
+path. Or it can be an https connection to a remote machine with a host, port,
+path, cert, ca, key, and passphrase.
 
 **Signature**
 
@@ -162,7 +166,7 @@ apply the http agent to the HttpClient layer.
 **Signature**
 
 ```ts
-export declare const MobyHttpClientLive: Layer.Layer<HttpClient.client.Client.Default, never, IMobyConnectionAgent>
+export declare const MobyHttpClientLive: Layer.Layer<HttpClient.HttpClient.Default, never, IMobyConnectionAgent>
 ```
 
 Added in v1.0.0

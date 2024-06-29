@@ -6,7 +6,6 @@ import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import * as Images from "the-moby-effect/Images";
 import * as MobyApi from "the-moby-effect/Moby";
 import * as Schemas from "the-moby-effect/Schemas";
 
@@ -46,21 +45,17 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
 const program = Effect.gen(function* () {
-    const images: Images.Images = yield* Images.Images;
+    const images: MobyApi.Images.ImagesImpl = yield* MobyApi.Images.Images;
 
-    const buildStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* images.build({
+    const buildStream: Stream.Stream<Schemas.BuildInfo, MobyApi.Images.ImagesError, never> = images.build({
         t: "mydockerimage:latest",
+        dockerfile: "build-image.dockerfile",
         context: Stream.fromAsyncIterable(
             tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
                 entries: ["build-image.dockerfile"],
             }),
-            () =>
-                new Images.ImagesError({
-                    method: "buildStream",
-                    message: "error packing the build context",
-                })
+            () => new MobyApi.Images.ImagesError({ method: "buildStream", error: {} })
         ),
-        dockerfile: "build-image.dockerfile",
     });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time

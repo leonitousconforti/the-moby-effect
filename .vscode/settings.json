@@ -44,6 +44,7 @@
         "hyperv",
         "IPAM",
         "janedoe",
+        "jsonmessage",
         "kmem",
         "leonitous",
         "leonitousconforti",
@@ -72,6 +73,7 @@
         "packagejson",
         "Pids",
         "privs",
+        "Refail",
         "resolv",
         "rize",
         "rootfs",
@@ -99,6 +101,7 @@
         "userns",
         "VTEP",
         "VXLAN",
-        "WORKDIR"
+        "WORKDIR",
+        "Yieldable"
     ]
 }

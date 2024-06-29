@@ -3,10 +3,10 @@ import * as path from "node:url";
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Effect from "effect/Effect";
 
-import * as Containers from "the-moby-effect/Containers";
 import * as DockerCommon from "the-moby-effect/Docker";
 import * as MobyApi from "the-moby-effect/Moby";
 import * as Schemas from "the-moby-effect/Schemas";
+import * as Containers from "the-moby-effect/moby/Containers";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -17,7 +17,7 @@ const testDocument: string = path.fileURLToPath(new URL("container-with-volume.t
 
 // Recommended reading: https://blog.logrocket.com/docker-volumes-vs-bind-mounts/
 const program = Effect.gen(function* () {
-    const containers: Containers.Containers = yield* Containers.Containers;
+    const containers: Containers.ContainersImpl = yield* Containers.Containers;
 
     const containerInspectResponse: Schemas.ContainerInspectResponse = yield* DockerCommon.run({
         imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },

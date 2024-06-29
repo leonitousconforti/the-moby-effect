@@ -1,6 +1,6 @@
 ---
 title: Moby.ts
-nav_order: 10
+nav_order: 5
 parent: Modules
 ---
 
@@ -18,31 +18,28 @@ Added in v1.0.0
   - [fromAgent](#fromagent)
   - [fromConnectionOptions](#fromconnectionoptions)
   - [fromDockerHostEnvironmentVariable](#fromdockerhostenvironmentvariable)
-  - [fromPlatformDefault](#fromplatformdefault)
+  - [fromPlatformSystemSocketDefault](#fromplatformsystemsocketdefault)
   - [fromUrl](#fromurl)
+  - [fromUserSocketDefault](#fromusersocketdefault)
 - [Layers](#layers)
   - [MobyApi (type alias)](#mobyapi-type-alias)
   - [layer](#layer)
 - [exports](#exports)
-  - [From "./Agent.js"](#from-agentjs)
-  - [From "./Configs.js"](#from-configsjs)
-  - [From "./Containers.js"](#from-containersjs)
-  - [From "./Demux.js"](#from-demuxjs)
-  - [From "./Distribution.js"](#from-distributionjs)
-  - [From "./Docker.js"](#from-dockerjs)
-  - [From "./Execs.js"](#from-execsjs)
-  - [From "./Images.js"](#from-imagesjs)
-  - [From "./Networks.js"](#from-networksjs)
-  - [From "./Nodes.js"](#from-nodesjs)
-  - [From "./Plugins.js"](#from-pluginsjs)
-  - [From "./Schemas.js"](#from-schemasjs)
-  - [From "./Secrets.js"](#from-secretsjs)
-  - [From "./Services.js"](#from-servicesjs)
-  - [From "./Session.js"](#from-sessionjs)
-  - [From "./Swarm.js"](#from-swarmjs)
-  - [From "./System.js"](#from-systemjs)
-  - [From "./Tasks.js"](#from-tasksjs)
-  - [From "./Volumes.js"](#from-volumesjs)
+  - [From "./moby/Configs.js"](#from-mobyconfigsjs)
+  - [From "./moby/Containers.js"](#from-mobycontainersjs)
+  - [From "./moby/Distribution.js"](#from-mobydistributionjs)
+  - [From "./moby/Execs.js"](#from-mobyexecsjs)
+  - [From "./moby/Images.js"](#from-mobyimagesjs)
+  - [From "./moby/Networks.js"](#from-mobynetworksjs)
+  - [From "./moby/Nodes.js"](#from-mobynodesjs)
+  - [From "./moby/Plugins.js"](#from-mobypluginsjs)
+  - [From "./moby/Secrets.js"](#from-mobysecretsjs)
+  - [From "./moby/Services.js"](#from-mobyservicesjs)
+  - [From "./moby/Session.js"](#from-mobysessionjs)
+  - [From "./moby/Swarm.js"](#from-mobyswarmjs)
+  - [From "./moby/System.js"](#from-mobysystemjs)
+  - [From "./moby/Tasks.js"](#from-mobytasksjs)
+  - [From "./moby/Volumes.js"](#from-mobyvolumesjs)
 
 ---
 
@@ -82,21 +79,21 @@ Creates a MobyApi layer from the DOCKER_HOST environment variable as a url.
 
 ```ts
 export declare const fromDockerHostEnvironmentVariable: Layer.Layer<
-  | Volumes.Volumes
-  | Tasks.Tasks
-  | System.Systems
-  | Swarm.Swarms
-  | Sessions.Sessions
-  | Services.Services
-  | Secrets.Secrets
-  | Plugins.Plugins
-  | Nodes.Nodes
-  | Networks.Networks
   | Configs.Configs
   | Containers.Containers
   | Distributions.Distributions
   | Execs.Execs
-  | Images.Images,
+  | Images.Images
+  | Networks.Networks
+  | Nodes.Nodes
+  | Plugins.Plugins
+  | Secrets.Secrets
+  | Services.Services
+  | Sessions.Sessions
+  | Swarm.Swarms
+  | System.Systems
+  | Tasks.Tasks
+  | Volumes.Volumes,
   ConfigError.ConfigError,
   never
 >
@@ -104,14 +101,14 @@ export declare const fromDockerHostEnvironmentVariable: Layer.Layer<
 
 Added in v1.0.0
 
-## fromPlatformDefault
+## fromPlatformSystemSocketDefault
 
-Creates a MobyApi layer from the platform default socket location.
+Creates a MobyApi layer from the platform default system socket location.
 
 **Signature**
 
 ```ts
-export declare const fromPlatformDefault: () => Layer.Layer<
+export declare const fromPlatformSystemSocketDefault: () => Layer.Layer<
   Layer.Layer.Success<MobyApi>,
   Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
   Layer.Layer.Context<MobyApi>
@@ -160,6 +157,22 @@ export declare const fromUrl: (
 
 Added in v1.0.0
 
+## fromUserSocketDefault
+
+Creates a MobyApi layer from the platform default system socket location.
+
+**Signature**
+
+```ts
+export declare const fromUserSocketDefault: () => Layer.Layer<
+  Layer.Layer.Success<MobyApi>,
+  Layer.Layer.Error<MobyApi> | ConfigError.ConfigError,
+  Layer.Layer.Context<MobyApi> | Path.Path
+>
+```
+
+Added in v1.0.0
+
 # Layers
 
 ## MobyApi (type alias)
@@ -200,21 +213,21 @@ Merges all the layers into a single layer
 
 ```ts
 export declare const layer: Layer.Layer<
-  | Volumes.Volumes
-  | Tasks.Tasks
-  | System.Systems
-  | Swarm.Swarms
-  | Sessions.Sessions
-  | Services.Services
-  | Secrets.Secrets
-  | Plugins.Plugins
-  | Nodes.Nodes
-  | Networks.Networks
   | Configs.Configs
   | Containers.Containers
   | Distributions.Distributions
   | Execs.Execs
-  | Images.Images,
+  | Images.Images
+  | Networks.Networks
+  | Nodes.Nodes
+  | Plugins.Plugins
+  | Secrets.Secrets
+  | Services.Services
+  | Sessions.Sessions
+  | Swarm.Swarms
+  | System.Systems
+  | Tasks.Tasks
+  | Volumes.Volumes,
   never,
   AgentHelpers.IMobyConnectionAgent
 >
@@ -224,230 +237,182 @@ Added in v1.0.0
 
 # exports
 
-## From "./Agent.js"
+## From "./moby/Configs.js"
 
-Re-exports all named exports from the "./Agent.js" module.
+Re-exports all named exports from the "./moby/Configs.js" module as `Configs`.
 
 **Signature**
 
 ```ts
-export * from "./Agent.js"
+export * as Configs from "./moby/Configs.js"
 ```
 
 Added in v1.0.0
 
-## From "./Configs.js"
+## From "./moby/Containers.js"
 
-Re-exports all named exports from the "./Configs.js" module as `Configs`.
+Re-exports all named exports from the "./moby/Containers.js" module as `Containers`.
 
 **Signature**
 
 ```ts
-export * as Configs from "./Configs.js"
+export * as Containers from "./moby/Containers.js"
 ```
 
 Added in v1.0.0
 
-## From "./Containers.js"
+## From "./moby/Distribution.js"
 
-Re-exports all named exports from the "./Containers.js" module as `Containers`.
+Re-exports all named exports from the "./moby/Distribution.js" module as `Distribution`.
 
 **Signature**
 
 ```ts
-export * as Containers from "./Containers.js"
+export * as Distribution from "./moby/Distribution.js"
 ```
 
 Added in v1.0.0
 
-## From "./Demux.js"
+## From "./moby/Execs.js"
 
-Re-exports all named exports from the "./Demux.js" module as `DemuxHelpers`.
+Re-exports all named exports from the "./moby/Execs.js" module as `Execs`.
 
 **Signature**
 
 ```ts
-export * as DemuxHelpers from "./Demux.js"
+export * as Execs from "./moby/Execs.js"
 ```
 
 Added in v1.0.0
 
-## From "./Distribution.js"
+## From "./moby/Images.js"
 
-Re-exports all named exports from the "./Distribution.js" module as `Distributions`.
+Re-exports all named exports from the "./moby/Images.js" module as `Images`.
 
 **Signature**
 
 ```ts
-export * as Distributions from "./Distribution.js"
+export * as Images from "./moby/Images.js"
 ```
 
 Added in v1.0.0
 
-## From "./Docker.js"
+## From "./moby/Networks.js"
 
-Re-exports all named exports from the "./Docker.js" module as `DockerCommon`.
+Re-exports all named exports from the "./moby/Networks.js" module as `Networks`.
 
 **Signature**
 
 ```ts
-export * as DockerCommon from "./Docker.js"
+export * as Networks from "./moby/Networks.js"
 ```
 
 Added in v1.0.0
 
-## From "./Execs.js"
+## From "./moby/Nodes.js"
 
-Re-exports all named exports from the "./Execs.js" module as `Execs`.
+Re-exports all named exports from the "./moby/Nodes.js" module as `Nodes`.
 
 **Signature**
 
 ```ts
-export * as Execs from "./Execs.js"
+export * as Nodes from "./moby/Nodes.js"
 ```
 
 Added in v1.0.0
 
-## From "./Images.js"
+## From "./moby/Plugins.js"
 
-Re-exports all named exports from the "./Images.js" module as `Images`.
+Re-exports all named exports from the "./moby/Plugins.js" module as `Plugins`.
 
 **Signature**
 
 ```ts
-export * as Images from "./Images.js"
+export * as Plugins from "./moby/Plugins.js"
 ```
 
 Added in v1.0.0
 
-## From "./Networks.js"
+## From "./moby/Secrets.js"
 
-Re-exports all named exports from the "./Networks.js" module as `Networks`.
+Re-exports all named exports from the "./moby/Secrets.js" module as `Secrets`.
 
 **Signature**
 
 ```ts
-export * as Networks from "./Networks.js"
+export * as Secrets from "./moby/Secrets.js"
 ```
 
 Added in v1.0.0
 
-## From "./Nodes.js"
+## From "./moby/Services.js"
 
-Re-exports all named exports from the "./Nodes.js" module as `Nodes`.
+Re-exports all named exports from the "./moby/Services.js" module as `Services`.
 
 **Signature**
 
 ```ts
-export * as Nodes from "./Nodes.js"
+export * as Services from "./moby/Services.js"
 ```
 
 Added in v1.0.0
 
-## From "./Plugins.js"
+## From "./moby/Session.js"
 
-Re-exports all named exports from the "./Plugins.js" module as `Plugins`.
+Re-exports all named exports from the "./moby/Session.js" module as `Session`.
 
 **Signature**
 
 ```ts
-export * as Plugins from "./Plugins.js"
+export * as Session from "./moby/Session.js"
 ```
 
 Added in v1.0.0
 
-## From "./Schemas.js"
+## From "./moby/Swarm.js"
 
-Re-exports all named exports from the "./Schemas.js" module as `Schemas`.
+Re-exports all named exports from the "./moby/Swarm.js" module as `Swarm`.
 
 **Signature**
 
 ```ts
-export * as Schemas from "./Schemas.js"
+export * as Swarm from "./moby/Swarm.js"
 ```
 
 Added in v1.0.0
 
-## From "./Secrets.js"
+## From "./moby/System.js"
 
-Re-exports all named exports from the "./Secrets.js" module as `Secrets`.
+Re-exports all named exports from the "./moby/System.js" module as `System`.
 
 **Signature**
 
 ```ts
-export * as Secrets from "./Secrets.js"
+export * as System from "./moby/System.js"
 ```
 
 Added in v1.0.0
 
-## From "./Services.js"
+## From "./moby/Tasks.js"
 
-Re-exports all named exports from the "./Services.js" module as `Services`.
+Re-exports all named exports from the "./moby/Tasks.js" module as `Tasks`.
 
 **Signature**
 
 ```ts
-export * as Services from "./Services.js"
+export * as Tasks from "./moby/Tasks.js"
 ```
 
 Added in v1.0.0
 
-## From "./Session.js"
+## From "./moby/Volumes.js"
 
-Re-exports all named exports from the "./Session.js" module as `Sessions`.
-
-**Signature**
-
-```ts
-export * as Sessions from "./Session.js"
-```
-
-Added in v1.0.0
-
-## From "./Swarm.js"
-
-Re-exports all named exports from the "./Swarm.js" module as `Swarm`.
+Re-exports all named exports from the "./moby/Volumes.js" module as `Volumes`.
 
 **Signature**
 
 ```ts
-export * as Swarm from "./Swarm.js"
-```
-
-Added in v1.0.0
-
-## From "./System.js"
-
-Re-exports all named exports from the "./System.js" module as `System`.
-
-**Signature**
-
-```ts
-export * as System from "./System.js"
-```
-
-Added in v1.0.0
-
-## From "./Tasks.js"
-
-Re-exports all named exports from the "./Tasks.js" module as `Tasks`.
-
-**Signature**
-
-```ts
-export * as Tasks from "./Tasks.js"
-```
-
-Added in v1.0.0
-
-## From "./Volumes.js"
-
-Re-exports all named exports from the "./Volumes.js" module as `Volumes`.
-
-**Signature**
-
-```ts
-export * as Volumes from "./Volumes.js"
+export * as Volumes from "./moby/Volumes.js"
 ```
 
 Added in v1.0.0

@@ -2,10 +2,10 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
-import * as Containers from "the-moby-effect/Containers";
 import * as DemuxHelpers from "the-moby-effect/Demux";
 import * as DockerCommon from "the-moby-effect/Docker";
 import * as MobyApi from "the-moby-effect/Moby";
+import * as Containers from "the-moby-effect/moby/Containers";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -13,7 +13,7 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 });
 
 const program = Effect.gen(function* () {
-    const containers: Containers.Containers = yield* Containers.Containers;
+    const containers: Containers.ContainersImpl = yield* Containers.Containers;
 
     const { Id: containerId } = yield* DockerCommon.runScoped({
         imageOptions: { kind: "pull", fromImage: "docker.io/library/alpine:latest" },

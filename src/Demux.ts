@@ -1,5 +1,5 @@
 /**
- * Demux helpers
+ * Demux utilities for hijacked docker streams.
  *
  * @since 1.0.0
  */
@@ -7,7 +7,7 @@
 import * as NodeSink from "@effect/platform-node/NodeSink";
 import * as NodeSocket from "@effect/platform-node/NodeSocket";
 import * as NodeStream from "@effect/platform-node/NodeStream";
-import * as HttpClient from "@effect/platform/HttpClient";
+import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as Brand from "effect/Brand";
 import * as Data from "effect/Data";
@@ -62,7 +62,7 @@ export const RawStreamSocket = Brand.refined<RawStreamSocket>(
  * @since 1.0.0
  * @category Predicates
  */
-export const isRawStreamSocketResponse = (response: HttpClient.response.ClientResponse) =>
+export const isRawStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.raw-stream";
 
 /**
@@ -92,7 +92,7 @@ export const MultiplexedStreamSocket = Brand.refined<MultiplexedStreamSocket>(
  * @since 1.0.0
  * @category Predicates
  */
-export const isMultiplexedStreamSocketResponse = (response: HttpClient.response.ClientResponse) =>
+export const isMultiplexedStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
     response.headers["content-type"] === "application/vnd.docker.multiplexed-stream";
 
 /**
@@ -104,11 +104,11 @@ export const isMultiplexedStreamSocketResponse = (response: HttpClient.response.
  * @category Demux
  */
 export const responseToStreamingSocketOrFail = (
-    response: HttpClient.response.ClientResponse
+    response: HttpClientResponse.HttpClientResponse
 ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never> =>
     Effect.gen(function* () {
         const socket = (response as unknown as IExposeSocketOnEffectClientResponse).source.socket;
-        const effectSocket: Socket.Socket = yield* NodeSocket.fromNetSocket(Effect.sync(() => socket));
+        const effectSocket: Socket.Socket = yield* NodeSocket.fromDuplex(Effect.sync(() => socket));
 
         if (isRawStreamSocketResponse(response)) {
             return RawStreamSocket({ ...effectSocket, "content-type": "application/vnd.docker.raw-stream" });
@@ -119,7 +119,7 @@ export const responseToStreamingSocketOrFail = (
             });
         } else {
             return yield* new Socket.SocketGenericError({
-                reason: "Open",
+                reason: "Read",
                 error: "Response is not a streaming socket",
             });
         }
@@ -286,7 +286,7 @@ export const demuxSocket: {
         socket: RawStreamSocket | MultiplexedStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, never>,
         sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2: Sink.Sink<A2, string, never, E3, never>
+        sink2: Sink.Sink<A2, string, never, E3, never> | undefined
     ): Effect.Effect<A1 | readonly [stdout: A1, stderr: A2], E1 | E2 | E3 | Socket.SocketError, never> => {
         switch (socket["content-type"]) {
             case "application/vnd.docker.raw-stream": {

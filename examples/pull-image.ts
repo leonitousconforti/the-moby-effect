@@ -4,9 +4,9 @@ import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import * as Images from "the-moby-effect/Images";
 import * as MobyApi from "the-moby-effect/Moby";
 import * as Schemas from "the-moby-effect/Schemas";
+import * as Images from "the-moby-effect/moby/Images";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
@@ -25,10 +25,10 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"status":"Digest: sha256:c79d06dfdfd3d3eb04cafd0dc2bacab0992ebc243e083cabe208bac4dd7759e0"}
 // {"status":"Status: Downloaded newer image for hello-world:latest"}
 const program = Effect.gen(function* () {
-    const images: Images.Images = yield* Images.Images;
+    const images: Images.ImagesImpl = yield* Images.Images;
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = yield* images.create({
+    const pullStream: Stream.Stream<Schemas.BuildInfo, Images.ImagesError, never> = images.create({
         fromImage: "docker.io/library/hello-world:latest",
     });
 

@@ -1,5 +1,5 @@
 /**
- * Connection agents
+ * Http, https, ssh, and unix socket connection agents.
  *
  * @since 1.0.0
  */
@@ -19,7 +19,12 @@ import * as Match from "effect/Match";
 import * as Scope from "effect/Scope";
 
 /**
- * How to connect to your moby/docker instance.
+ * Connection options for how to connect to your moby/docker instance. Can be a
+ * unix socket on the current machine. Can be an ssh connection to a remote
+ * machine with a remote user, remote machine, remote port, and remote socket
+ * path. Can be an http connection to a remote machine with a host, port, and
+ * path. Or it can be an https connection to a remote machine with a host, port,
+ * path, cert, ca, key, and passphrase.
  *
  * @since 1.0.0
  * @category Connection
@@ -51,10 +56,9 @@ export type MobyConnectionOptions =
  * @category Connection
  */
 export interface IMobyConnectionAgentImpl extends NodeHttp.HttpAgent {
-    ssh: http.Agent;
-    unix: http.Agent;
     nodeRequestUrl: string;
     connectionOptions: MobyConnectionOptions;
+    agent: http.Agent | https.Agent | SSHAgent;
 }
 
 /**
@@ -86,7 +90,7 @@ export const MobyConnectionAgent: Context.Tag<IMobyConnectionAgent, IMobyConnect
  * @since 1.0.0
  * @category Layers
  */
-export const MobyHttpClientLive: Layer.Layer<HttpClient.client.Client.Default, never, IMobyConnectionAgent> =
+export const MobyHttpClientLive: Layer.Layer<HttpClient.HttpClient.Default, never, IMobyConnectionAgent> =
     Layer.provide(NodeHttp.layerWithoutAgent, Layer.effect(NodeHttp.HttpAgent, MobyConnectionAgent));
 
 /**
@@ -199,14 +203,14 @@ export const getAgent = (
     );
 
     // Release agent
-    const release = (agent: http.Agent | https.Agent | SSHAgent) => Effect.sync(() => agent.destroy());
+    const release = (agent: http.Agent | https.Agent | SSHAgent): Effect.Effect<void> =>
+        Effect.sync(() => agent.destroy());
 
     // Adding additional properties to our agents and ensuring types
     return Effect.acquireRelease(acquire, release).pipe(
         Effect.map((agent: http.Agent | https.Agent | SSHAgent) => ({
+            agent,
             connectionOptions,
-            ssh: agent as http.Agent,
-            unix: agent as http.Agent,
             http: agent as http.Agent,
             https: agent as https.Agent,
             nodeRequestUrl:
