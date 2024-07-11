@@ -77,7 +77,7 @@ jobs:
         id: meta
         with:
           images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-      - uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: false
@@ -131,7 +131,7 @@ jobs:
         id: meta
         with:
           images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-      - uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v6
         with:
           context: .
           push: true
