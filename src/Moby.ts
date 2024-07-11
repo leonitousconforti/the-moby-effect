@@ -15,66 +15,66 @@ import * as Redacted from "effect/Redacted";
 import * as Scope from "effect/Scope";
 
 import * as AgentHelpers from "./Agent.js";
-import * as Configs from "./moby/Configs.js";
-import * as Containers from "./moby/Containers.js";
-import * as Distributions from "./moby/Distribution.js";
-import * as Execs from "./moby/Execs.js";
-import * as Images from "./moby/Images.js";
-import * as Networks from "./moby/Networks.js";
-import * as Nodes from "./moby/Nodes.js";
-import * as Plugins from "./moby/Plugins.js";
-import * as Secrets from "./moby/Secrets.js";
-import * as Services from "./moby/Services.js";
-import * as Sessions from "./moby/Session.js";
-import * as Swarm from "./moby/Swarm.js";
-import * as System from "./moby/System.js";
-import * as Tasks from "./moby/Tasks.js";
-import * as Volumes from "./moby/Volumes.js";
+import * as Configs from "./endpoints/Configs.js";
+import * as Containers from "./endpoints/Containers.js";
+import * as Distributions from "./endpoints/Distribution.js";
+import * as Execs from "./endpoints/Execs.js";
+import * as Images from "./endpoints/Images.js";
+import * as Networks from "./endpoints/Networks.js";
+import * as Nodes from "./endpoints/Nodes.js";
+import * as Plugins from "./endpoints/Plugins.js";
+import * as Secrets from "./endpoints/Secrets.js";
+import * as Services from "./endpoints/Services.js";
+import * as Sessions from "./endpoints/Session.js";
+import * as Swarm from "./endpoints/Swarm.js";
+import * as System from "./endpoints/System.js";
+import * as Tasks from "./endpoints/Tasks.js";
+import * as Volumes from "./endpoints/Volumes.js";
 
 /** @since 1.0.0 */
-export * as Configs from "./moby/Configs.js";
+export * as Configs from "./endpoints/Configs.js";
 
 /** @since 1.0.0 */
-export * as Containers from "./moby/Containers.js";
+export * as Containers from "./endpoints/Containers.js";
 
 /** @since 1.0.0 */
-export * as Distribution from "./moby/Distribution.js";
+export * as Distribution from "./endpoints/Distribution.js";
 
 /** @since 1.0.0 */
-export * as Execs from "./moby/Execs.js";
+export * as Execs from "./endpoints/Execs.js";
 
 /** @since 1.0.0 */
-export * as Images from "./moby/Images.js";
+export * as Images from "./endpoints/Images.js";
 
 /** @since 1.0.0 */
-export * as Networks from "./moby/Networks.js";
+export * as Networks from "./endpoints/Networks.js";
 
 /** @since 1.0.0 */
-export * as Nodes from "./moby/Nodes.js";
+export * as Nodes from "./endpoints/Nodes.js";
 
 /** @since 1.0.0 */
-export * as Plugins from "./moby/Plugins.js";
+export * as Plugins from "./endpoints/Plugins.js";
 
 /** @since 1.0.0 */
-export * as Secrets from "./moby/Secrets.js";
+export * as Secrets from "./endpoints/Secrets.js";
 
 /** @since 1.0.0 */
-export * as Services from "./moby/Services.js";
+export * as Services from "./endpoints/Services.js";
 
 /** @since 1.0.0 */
-export * as Session from "./moby/Session.js";
+export * as Session from "./endpoints/Session.js";
 
 /** @since 1.0.0 */
-export * as Swarm from "./moby/Swarm.js";
+export * as Swarm from "./endpoints/Swarm.js";
 
 /** @since 1.0.0 */
-export * as System from "./moby/System.js";
+export * as System from "./endpoints/System.js";
 
 /** @since 1.0.0 */
-export * as Tasks from "./moby/Tasks.js";
+export * as Tasks from "./endpoints/Tasks.js";
 
 /** @since 1.0.0 */
-export * as Volumes from "./moby/Volumes.js";
+export * as Volumes from "./endpoints/Volumes.js";
 
 /**
  * Merges all the layers into a single layer

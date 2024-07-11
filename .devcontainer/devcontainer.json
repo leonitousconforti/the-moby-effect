@@ -46,5 +46,7 @@
         }
     },
 
+    "privileged": true,
+    "runArgs": ["--cap-add=NET_ADMIN"],
     "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/.devcontainer/setup.sh'"
 }

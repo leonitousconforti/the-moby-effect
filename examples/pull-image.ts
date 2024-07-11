@@ -6,7 +6,7 @@ import * as Stream from "effect/Stream";
 
 import * as MobyApi from "the-moby-effect/Moby";
 import * as Schemas from "the-moby-effect/Schemas";
-import * as Images from "the-moby-effect/moby/Images";
+import * as Images from "the-moby-effect/endpoints/Images";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",

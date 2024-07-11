@@ -5,7 +5,7 @@ import * as Effect from "effect/Effect";
 import * as DemuxHelpers from "the-moby-effect/Demux";
 import * as DockerCommon from "the-moby-effect/Docker";
 import * as MobyApi from "the-moby-effect/Moby";
-import * as Containers from "the-moby-effect/moby/Containers";
+import * as Containers from "the-moby-effect/endpoints/Containers";
 
 const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
     connection: "socket",
