@@ -132,8 +132,8 @@ importers:
         specifier: 2.0.0
         version: 2.0.0(eslint@8.57.0)
       fast-check:
-        specifier: 3.19.0
-        version: 3.19.0
+        specifier: 3.20.0
+        version: 3.20.0
       prettier:
         specifier: 3.3.2
         version: 3.3.2
@@ -1562,8 +1562,8 @@ packages:
     resolution: {integrity: sha512-zCnTtlxNoAiDc3gqY2aYAWFx7XWWiasuF2K8Me5WbN8otHKTUKBwjPtNpRs/rbUZm7KxWAaNj7P1a/p52GbVug==}
     engines: {node: '>=0.10.0'}
 
-  fast-check@3.19.0:
-    resolution: {integrity: sha512-CO2JX/8/PT9bDGO1iXa5h5ey1skaKI1dvecERyhH4pp3PGjwd3KIjMAXEg79Ps9nclsdt4oPbfqiAnLU0EwrAQ==}
+  fast-check@3.20.0:
+    resolution: {integrity: sha512-pZIjqLpOZgdSLecec4GKC3Zq5702MZ34upMKxojnNVSWA0K64V3pXOBT1Wdsrc3AphLtzRBbsi8bRWF4TUGmUg==}
     engines: {node: '>=8.0.0'}
 
   fast-decode-uri-component@1.0.1:
@@ -3333,7 +3333,7 @@ snapshots:
   '@effect/schema@0.68.23(effect@3.5.3)':
     dependencies:
       effect: 3.5.3
-      fast-check: 3.19.0
+      fast-check: 3.20.0
 
   '@effect/typeclass@0.24.46(effect@3.5.3)':
     dependencies:
@@ -4592,7 +4592,7 @@ snapshots:
     dependencies:
       is-extendable: 0.1.1
 
-  fast-check@3.19.0:
+  fast-check@3.20.0:
     dependencies:
       pure-rand: 6.1.0
 
