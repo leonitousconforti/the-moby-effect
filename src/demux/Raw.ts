@@ -134,6 +134,9 @@ export const demuxRawSockets = <
     E1 | E2 | E3 | Socket.SocketError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
 > => {
+    type S4 = Stream.Stream<string | Uint8Array, E1, R1>;
+    type S5 = Sink.Sink<A1, string, string, E2, R2>;
+    type S6 = Sink.Sink<A2, string, string, E3, R3>;
     type StdinEffect = Effect.Effect<void, E1 | Socket.SocketError, Exclude<R1, Scope.Scope>>;
     type StdoutEffect = Effect.Effect<A1, E2 | Socket.SocketError, Exclude<R2, Scope.Scope>>;
     type StderrEffect = Effect.Effect<A2, E3 | Socket.SocketError, Exclude<R3, Scope.Scope>>;
@@ -141,15 +144,15 @@ export const demuxRawSockets = <
     const { stderr, stdin, stdout } = streams;
 
     const runStdin: StdinEffect = Predicate.isNotUndefined(stdin)
-        ? demuxRawSocket(stdin[1], stdin[0] as Stream.Stream<string | Uint8Array, E1, R1>, Sink.drain)
+        ? demuxRawSocket(stdin[1], stdin[0] as S4, Sink.drain)
         : Effect.void;
 
     const runStdout: StdoutEffect = Predicate.isNotUndefined(stdout)
-        ? demuxRawSocket(stdout[0], Stream.never, stdout[1] as Sink.Sink<A1, string, string, E2, R2>)
+        ? demuxRawSocket(stdout[0], Stream.never, stdout[1] as S5)
         : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
 
     const runStderr: StderrEffect = stderr
-        ? demuxRawSocket(stderr[0], Stream.never, stderr[1] as Sink.Sink<A2, string, string, E3, R3>)
+        ? demuxRawSocket(stderr[0], Stream.never, stderr[1] as S6)
         : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
 
     return Effect.map(
