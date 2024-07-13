@@ -18,7 +18,13 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { ClusterVolumeSpec, Volume, VolumeCreateOptions, VolumeListResponse, VolumePruneResponse } from "../Schemas.js";
+import {
+    ClusterVolumeSpec,
+    Volume,
+    VolumeCreateOptions,
+    VolumeListResponse,
+    VolumePruneResponse,
+} from "../schemas/MobySchemas.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

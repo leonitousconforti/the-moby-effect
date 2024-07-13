@@ -12,7 +12,7 @@ export type Int64Brand = number & Brand.Brand<"Int64">;
  * @since 1.0.0
  * @category Branded constructors
  */
-export const Int64Brand = Brand.nominal<Int64Brand>();
+export const Int64Brand: Brand.Brand.Constructor<Int64Brand> = Brand.nominal<Int64Brand>();
 
 /**
  * @since 1.0.0

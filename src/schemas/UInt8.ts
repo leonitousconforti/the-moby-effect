@@ -12,7 +12,7 @@ export type UInt8Brand = number & Brand.Brand<"UInt8">;
  * @since 1.0.0
  * @category Branded constructors
  */
-export const UInt8Brand = Brand.nominal<UInt8Brand>();
+export const UInt8Brand: Brand.Brand.Constructor<UInt8Brand> = Brand.nominal<UInt8Brand>();
 
 /**
  * @since 1.0.0

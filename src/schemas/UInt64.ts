@@ -12,7 +12,7 @@ export type UInt64Brand = number & Brand.Brand<"UInt64">;
  * @since 1.0.0
  * @category Branded constructors
  */
-export const UInt64Brand = Brand.nominal<UInt64Brand>();
+export const UInt64Brand: Brand.Brand.Constructor<UInt64Brand> = Brand.nominal<UInt64Brand>();
 
 /**
  * @since 1.0.0

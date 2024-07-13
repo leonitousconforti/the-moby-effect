@@ -12,7 +12,7 @@ export type Int16Brand = number & Brand.Brand<"Int16">;
  * @since 1.0.0
  * @category Branded constructors
  */
-export const Int16Brand = Brand.nominal<Int16Brand>();
+export const Int16Brand: Brand.Brand.Constructor<Int16Brand> = Brand.nominal<Int16Brand>();
 
 /**
  * @since 1.0.0
