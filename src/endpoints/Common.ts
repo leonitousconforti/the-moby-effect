@@ -17,8 +17,6 @@ import * as Option from "effect/Option";
  *
  * FIXME: This is kinda a hack, and it will only work when using the NodeJS
  * agent layer, can we find a different way?
- *
- * @internal
  */
 export interface IExposeSocketOnEffectClientResponse extends HttpClientResponse.HttpClientResponse {
     source: {
@@ -30,8 +28,6 @@ export interface IExposeSocketOnEffectClientResponse extends HttpClientResponse.
  * Takes a key and an optional value and returns a function that either adds the
  * key and value to the query parameters of a request if the value was a Some or
  * does nothing if its a None.
- *
- * @internal
  */
 export const maybeAddQueryParameter = (
     key: string,
@@ -46,8 +42,6 @@ export const maybeAddQueryParameter = (
  * Takes a key and an optional value and returns a function that either adds the
  * key and value to the headers of a request if the value was a Some or does
  * nothing if its a None.
- *
- * @internal
  */
 export const maybeAddHeader = (
     key: string,

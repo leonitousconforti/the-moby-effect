@@ -129,7 +129,6 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
 /**
  * @since 1.0.0
  * @category Connection
- * @internal
  */
 export const getNodeRequestUrl = MobyConnectionOptions.$match({
     ssh: () => "http://0.0.0.0" as const,

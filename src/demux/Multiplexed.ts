@@ -13,6 +13,7 @@ import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Predicate from "effect/Predicate";
+import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
@@ -20,7 +21,6 @@ import * as Tuple from "effect/Tuple";
 /**
  * @since 1.0.0
  * @category Types
- * @internal
  */
 export enum MultiplexedStreamSocketHeaderType {
     Stdin = 0,
@@ -31,7 +31,6 @@ export enum MultiplexedStreamSocketHeaderType {
 /**
  * @since 1.0.0
  * @category Types
- * @internal
  */
 export interface $MultiplexedStreamSocketSchema
     extends Schema.Tuple<
@@ -44,7 +43,6 @@ export interface $MultiplexedStreamSocketSchema
 /**
  * @since 1.0.0
  * @category Schemas
- * @internal
  */
 export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Schema.Tuple(
     Schema.Enums(MultiplexedStreamSocketHeaderType),
@@ -54,7 +52,6 @@ export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Sch
 /**
  * @since 1.0.0
  * @category Types
- * @internal
  */
 export const MultiplexedStreamSocketContentType = "application/vnd.docker.multiplexed-stream" as const;
 
@@ -94,7 +91,6 @@ export const isMultiplexedStreamSocketResponse = (response: HttpClientResponse.H
 /**
  * @since 1.0.0
  * @category Demux
- * @internal
  */
 export const demuxMultiplexedSocketFolderSink: Sink.Sink<
     readonly [MultiplexedStreamSocketHeaderType, Uint8Array],
@@ -155,48 +151,46 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
  * advance by up to bufferSize elements further than the slower one. The default
  * bufferSize is 16.
  *
- * {@link demuxSocket}
- *
  * @since 1.0.0
  * @category Demux
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
 export const demuxMultiplexedSocket = Function.dual<
-    <A1, A2, E1, E2, E3>(
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2: Sink.Sink<A2, string, never, E3, never>,
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ) => (
         socket: MultiplexedStreamSocket
     ) => Effect.Effect<
         readonly [stdout: A1, stderr: A2],
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        never
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >,
-    <A1, A2, E1, E2, E3>(
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2: Sink.Sink<A2, string, never, E3, never>,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ) => Effect.Effect<
         readonly [stdout: A1, stderr: A2],
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        never
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >
 >(
     (arguments_) => arguments_[0][Socket.TypeId] !== undefined,
-    <A1, A2, E1, E2, E3>(
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2: Sink.Sink<A2, string, never, E3, never>,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ): Effect.Effect<
         readonly [stdout: A1, stderr: A2],
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        never
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     > =>
         Function.pipe(
             source,

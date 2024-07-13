@@ -1068,7 +1068,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const attachWebsocket_ = (
         options: ContainerAttachWebsocketOptions
-    ): Effect.Effect<void, ContainersError, Scope.Scope> =>
+    ): Effect.Effect<RawStreamSocket, ContainersError, Scope.Scope> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/attach/ws`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),

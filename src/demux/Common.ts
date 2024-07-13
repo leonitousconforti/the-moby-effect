@@ -11,8 +11,10 @@ import * as Console from "effect/Console";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
+import * as Tuple from "effect/Tuple";
 
 import { IExposeSocketOnEffectClientResponse } from "../endpoints/Common.js";
 import {
@@ -21,7 +23,13 @@ import {
     MultiplexedStreamSocket,
     MultiplexedStreamSocketContentType,
 } from "./Multiplexed.js";
-import { demuxRawSocket, isRawStreamSocketResponse, RawStreamSocket, RawStreamSocketContentType } from "./Raw.js";
+import {
+    demuxRawSocket,
+    demuxRawSockets,
+    isRawStreamSocketResponse,
+    RawStreamSocket,
+    RawStreamSocketContentType,
+} from "./Raw.js";
 
 /**
  * @since 1.0.0
@@ -80,56 +88,58 @@ export const responseToStreamingSocketOrFail = (
  * @category Demux
  */
 export const demuxSocket: {
-    <A1, E1, E2>(
+    <A1, E1, E2, R1, R2>(
         socket: RawStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink: Sink.Sink<A1, string, never, E2, never>
-    ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, never>;
-    <A1, E1, E2>(
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink: Sink.Sink<A1, string, never, E2, never>
-    ): (socket: RawStreamSocket) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, never>;
-    <A1, A2, E1, E2, E3>(
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink: Sink.Sink<A1, string, string, E2, R2>
+    ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>;
+    <A1, E1, E2, R1, R2>(
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink: Sink.Sink<A1, string, string, E2, R2>
+    ): (
+        socket: RawStreamSocket
+    ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>;
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2: Sink.Sink<A2, string, never, E3, never>,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ): Effect.Effect<
         readonly [stdout: A1, stderr: A2],
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        never
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
-    <A1, A2, E1, E2, E3>(
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2: Sink.Sink<A2, string, never, E3, never>,
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ): (
         socket: MultiplexedStreamSocket
     ) => Effect.Effect<
         readonly [stdout: A1, stderr: A2],
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        never
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
 } = Function.dual(
     (arguments_) => arguments_[0][Socket.TypeId] !== undefined,
-    <A1, A2, E1, E2, E3>(
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: RawStreamSocket | MultiplexedStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, never>,
-        sink1: Sink.Sink<A1, string, never, E2, never>,
-        sink2?: Sink.Sink<A2, string, never, E3, never>,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2?: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ): Effect.Effect<
         A1 | readonly [stdout: A1, stderr: A2],
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        never
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     > => {
         switch (socket["content-type"]) {
-            case "application/vnd.docker.raw-stream": {
+            case RawStreamSocketContentType: {
                 return demuxRawSocket(socket, source, sink1);
             }
-            case "application/vnd.docker.multiplexed-stream": {
+            case MultiplexedStreamSocketContentType: {
                 return demuxMultiplexedSocket(socket, source, sink1, sink2!, options);
             }
         }
@@ -146,7 +156,10 @@ export const demuxSocket: {
  * @category Demux
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
-    socket: RawStreamSocket | MultiplexedStreamSocket
+    streams:
+        | RawStreamSocket
+        | MultiplexedStreamSocket
+        | { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket }
 ): Effect.Effect<void, Socket.SocketError | ParseResult.ParseError | StdinError | StdoutError | StderrError, never> =>
     Effect.flatMap(
         Effect.all(
@@ -157,27 +170,35 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
             { concurrency: 2 }
         ),
         ({ NodeSinkLazy, NodeStreamLazy }) => {
-            const stdin = NodeStreamLazy.fromReadable(
+            const stdinStream = NodeStreamLazy.fromReadable(
                 () => process.stdin,
                 (error: unknown) => new StdinError({ message: `stdin is not readable: ${error}` })
             );
-            const stdout = NodeSinkLazy.fromWritable(
+            const stdoutSink = NodeSinkLazy.fromWritable(
                 () => process.stdout,
                 (error: unknown) => new StdoutError({ message: `stdout is not writable: ${error}` }),
                 { endOnDone: false }
             );
-            const stderr = NodeSinkLazy.fromWritable(
+            const stderrSink = NodeSinkLazy.fromWritable(
                 () => process.stderr,
                 (error: unknown) => new StderrError({ message: `stderr is not writable: ${error}` }),
                 { endOnDone: false }
             );
 
-            switch (socket["content-type"]) {
-                case "application/vnd.docker.raw-stream": {
-                    return demuxRawSocket(socket, stdin, stdout);
+            if ("stdin" in streams && "stdout" in streams && "stderr" in streams) {
+                return demuxRawSockets({
+                    stdin: Tuple.make(stdinStream, streams.stdin),
+                    stdout: Tuple.make(streams.stdout, stdoutSink),
+                    stderr: Tuple.make(streams.stderr, stderrSink),
+                });
+            }
+
+            switch (streams["content-type"]) {
+                case RawStreamSocketContentType: {
+                    return demuxRawSocket(streams, stdinStream, stdoutSink);
                 }
-                case "application/vnd.docker.multiplexed-stream": {
-                    return demuxMultiplexedSocket(socket, stdin, stdout, stderr);
+                case MultiplexedStreamSocketContentType: {
+                    return demuxMultiplexedSocket(streams, stdinStream, stdoutSink, stderrSink);
                 }
             }
         }
@@ -191,18 +212,25 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
  * @category Demux
  */
 export const demuxSocketNoInputToConsole = (
-    socket: RawStreamSocket | MultiplexedStreamSocket
+    streams: RawStreamSocket | MultiplexedStreamSocket | { stdout: RawStreamSocket; stderr: RawStreamSocket }
 ): Effect.Effect<void, Socket.SocketError | ParseResult.ParseError, never> => {
-    const source = Stream.never;
-    const sink1 = Sink.forEach(Console.log);
-    const sink2 = Sink.forEach(Console.error);
+    const stdinStream = Stream.never;
+    const stdoutSink = Sink.forEach(Console.log);
+    const stderrSink = Sink.forEach(Console.error);
 
-    switch (socket["content-type"]) {
-        case "application/vnd.docker.raw-stream": {
-            return demuxRawSocket(socket, source, sink1);
+    if ("stdout" in streams && "stderr" in streams) {
+        return demuxRawSockets({
+            stdout: Tuple.make(streams.stdout, stdoutSink),
+            stderr: Tuple.make(streams.stderr, stderrSink),
+        });
+    }
+
+    switch (streams["content-type"]) {
+        case RawStreamSocketContentType: {
+            return demuxRawSocket(streams, stdinStream, stdoutSink);
         }
-        case "application/vnd.docker.multiplexed-stream": {
-            return demuxMultiplexedSocket(socket, source, sink1, sink2);
+        case MultiplexedStreamSocketContentType: {
+            return demuxMultiplexedSocket(streams, stdinStream, stdoutSink, stderrSink);
         }
     }
 };
