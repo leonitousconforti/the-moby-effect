@@ -21,7 +21,7 @@ export const Int64Brand: Brand.Brand.Constructor<Int64Brand> = Brand.nominal<Int
 export interface $Int64 extends Schema.Annotable<$Int64, Int64Brand, Brand.Brand.Unbranded<Int64Brand>, never> {}
 
 /**
- * 8bit signed integer.
+ * 64bit signed integer.
  *
  * @since 1.0.0
  * @category Schemas

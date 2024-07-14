@@ -21,7 +21,7 @@ export const Int16Brand: Brand.Brand.Constructor<Int16Brand> = Brand.nominal<Int
 export interface $Int16 extends Schema.Annotable<$Int16, Int16Brand, Brand.Brand.Unbranded<Int16Brand>, never> {}
 
 /**
- * 8bit signed integer.
+ * 16bit signed integer.
  *
  * @since 1.0.0
  * @category Schemas
