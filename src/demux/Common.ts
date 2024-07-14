@@ -206,6 +206,41 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
 
 /**
  * Demux either a raw stream socket or a multiplexed stream socket. It will send
+ * the input stream to the container and will log all output to the console.
+ *
+ * @since 1.0.0
+ * @category Demux
+ */
+export const demuxSocketWithInputToConsole = <E, R>(
+    input: Stream.Stream<string | Uint8Array, E, R>,
+    streams:
+        | RawStreamSocket
+        | MultiplexedStreamSocket
+        | { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket }
+): Effect.Effect<void, E | Socket.SocketError | ParseResult.ParseError, Exclude<R, Scope.Scope>> => {
+    const stdoutSink = Sink.forEach<string, void, never, never>(Console.log);
+    const stderrSink = Sink.forEach<string, void, never, never>(Console.error);
+
+    if ("stdout" in streams && "stderr" in streams && "stdin" in streams) {
+        return demuxRawSockets({
+            stdin: Tuple.make(input, streams.stdin),
+            stdout: Tuple.make(streams.stdout, stdoutSink),
+            stderr: Tuple.make(streams.stderr, stderrSink),
+        });
+    }
+
+    switch (streams["content-type"]) {
+        case RawStreamSocketContentType: {
+            return demuxRawSocket(streams, input, stdoutSink);
+        }
+        case MultiplexedStreamSocketContentType: {
+            return demuxMultiplexedSocket(streams, input, stdoutSink, stderrSink);
+        }
+    }
+};
+
+/**
+ * Demux either a raw stream socket or a multiplexed stream socket. It will send
  * no input to the container and will log all output to the console.
  *
  * @since 1.0.0
@@ -215,8 +250,8 @@ export const demuxSocketNoInputToConsole = (
     streams: RawStreamSocket | MultiplexedStreamSocket | { stdout: RawStreamSocket; stderr: RawStreamSocket }
 ): Effect.Effect<void, Socket.SocketError | ParseResult.ParseError, never> => {
     const stdinStream = Stream.never;
-    const stdoutSink = Sink.forEach(Console.log);
-    const stderrSink = Sink.forEach(Console.error);
+    const stdoutSink = Sink.forEach<string, void, never, never>(Console.log);
+    const stderrSink = Sink.forEach<string, void, never, never>(Console.error);
 
     if ("stdout" in streams && "stderr" in streams) {
         return demuxRawSockets({
