@@ -22,7 +22,11 @@ import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
-import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "../demux/index.js";
+import {
+    BidirectionalRawStreamSocket,
+    MultiplexedStreamSocket,
+    responseToStreamingSocketOrFail,
+} from "../demux/index.js";
 import {
     ContainerCreateResponse,
     ContainerCreateSpec,
@@ -742,7 +746,7 @@ export interface ContainersImpl {
      */
     readonly attach: (
         options: ContainerAttachOptions
-    ) => Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope>;
+    ) => Effect.Effect<BidirectionalRawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope>;
 
     /**
      * Attach to a container via a websocket
@@ -1052,7 +1056,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const attach_ = (
         options: ContainerAttachOptions
-    ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
+    ): Effect.Effect<BidirectionalRawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/attach`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
@@ -1068,7 +1072,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const attachWebsocket_ = (
         options: ContainerAttachWebsocketOptions
-    ): Effect.Effect<RawStreamSocket, ContainersError, Scope.Scope> =>
+    ): Effect.Effect<BidirectionalRawStreamSocket, ContainersError, Scope.Scope> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/attach/ws`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),

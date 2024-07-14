@@ -4,9 +4,10 @@
  * @since 1.0.0
  */
 
+import type * as Common from "./Common.js";
+
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
-import * as Brand from "effect/Brand";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Predicate from "effect/Predicate";
@@ -24,6 +25,54 @@ import { IExposeSocketOnEffectClientResponse } from "../endpoints/Common.js";
 export const RawStreamSocketContentType = "application/vnd.docker.raw-stream" as const;
 
 /**
+ * @since 1.0.0
+ * @category Type ids
+ */
+export const BidirectionalRawStreamSocketTypeId: unique symbol = Symbol.for(
+    "the-moby-effect/demux/BidirectionalRawStreamSocket"
+);
+
+/**
+ * @since 1.0.0
+ * @category Type ids
+ */
+export type BidirectionalRawStreamSocketTypeId = typeof BidirectionalRawStreamSocketTypeId;
+
+/**
+ * When the TTY setting is enabled in POST /containers/create, the stream is not
+ * multiplexed. The data exchanged over the hijacked connection is simply the
+ * raw data from the process PTY and client's stdin.
+ *
+ * @since 1.0.0
+ * @category Branded Types
+ */
+export type BidirectionalRawStreamSocket = Socket.Socket & {
+    readonly "content-type": typeof RawStreamSocketContentType;
+    readonly [BidirectionalRawStreamSocketTypeId]: typeof BidirectionalRawStreamSocketTypeId;
+};
+
+/**
+ * @since 1.0.0
+ * @category Predicates
+ */
+export const isBidirectionalRawStreamSocket = (u: unknown): u is BidirectionalRawStreamSocket =>
+    Predicate.hasProperty(u, BidirectionalRawStreamSocketTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Type ids
+ */
+export const UnidirectionalRawStreamSocketTypeId: unique symbol = Symbol.for(
+    "the-moby-effect/demux/UnidirectionalRawStreamSocketTypeId"
+);
+
+/**
+ * @since 1.0.0
+ * @category Type ids
+ */
+export type UnidirectionalRawStreamSocketTypeId = typeof UnidirectionalRawStreamSocketTypeId;
+
+/**
  * When the TTY setting is enabled in POST /containers/create, the stream is not
  * multiplexed. The data exchanged over the hijacked connection is simply the
  * raw data from the process PTY and client's stdin.
@@ -31,21 +80,48 @@ export const RawStreamSocketContentType = "application/vnd.docker.raw-stream" as
  * @since 1.0.0
  * @category Types
  */
-export type RawStreamSocket = Socket.Socket & {
-    "content-type": typeof RawStreamSocketContentType;
-} & Brand.Brand<"RawStreamSocket">;
+export type UnidirectionalRawStreamSocket = Socket.Socket & {
+    readonly "content-type": typeof RawStreamSocketContentType;
+    readonly [UnidirectionalRawStreamSocketTypeId]: typeof UnidirectionalRawStreamSocketTypeId;
+};
 
 /**
  * @since 1.0.0
- * @category Brands
+ * @category Predicates
  */
-export const RawStreamSocket = Brand.refined<RawStreamSocket>(
-    (socket) => socket["content-type"] === RawStreamSocketContentType,
-    (socket) =>
-        Brand.error(
-            `Expected a raw stream socket with content type "${RawStreamSocketContentType}", but this socket has content type ${socket["content-type"]}`
-        )
-);
+export const isUnidirectionalRawStreamSocket = (u: unknown): u is UnidirectionalRawStreamSocket =>
+    Predicate.hasProperty(u, UnidirectionalRawStreamSocketTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Casting
+ */
+export const downcastBidirectionalToUnidirectional = ({
+    [BidirectionalRawStreamSocketTypeId]: _,
+    ...rest
+}: BidirectionalRawStreamSocket): UnidirectionalRawStreamSocket => ({
+    ...rest,
+    [UnidirectionalRawStreamSocketTypeId]: UnidirectionalRawStreamSocketTypeId,
+});
+
+/**
+ * @since 1.0.0
+ * @category Casting
+ */
+export const upcastUnidirectionalToBidirectional = ({
+    [UnidirectionalRawStreamSocketTypeId]: _,
+    ...rest
+}: UnidirectionalRawStreamSocket): BidirectionalRawStreamSocket => ({
+    ...rest,
+    [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId,
+});
+
+/**
+ * @since 1.0.0
+ * @category Predicates
+ */
+export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
+    response.headers["content-type"] === RawStreamSocketContentType;
 
 /**
  * Transforms an http response into a raw stream socket. If the response is not
@@ -54,15 +130,23 @@ export const RawStreamSocket = Brand.refined<RawStreamSocket>(
  * @since 1.0.0
  * @category Predicates
  */
-export const responseToRawStreamSocketOrFail = (
-    response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<RawStreamSocket, Socket.SocketError, never> =>
+export const responseToRawStreamSocketOrFail = <
+    SourceIsUnidirectional extends true | false | undefined,
+    A extends SourceIsUnidirectional extends true ? UnidirectionalRawStreamSocket : BidirectionalRawStreamSocket,
+>(
+    response: HttpClientResponse.HttpClientResponse,
+    options?: { sourceIsUnidirectional?: SourceIsUnidirectional | undefined } | undefined
+): Effect.Effect<A, Socket.SocketError, never> =>
     Effect.gen(function* () {
-        if (isRawStreamSocketResponse(response)) {
-            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-            const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
-            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-            return RawStreamSocket({ ...effectSocket, "content-type": RawStreamSocketContentType });
+        const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
+        const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
+        const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
+        const basic = { ...effectSocket, "content-type": RawStreamSocketContentType };
+
+        if (responseIsRawStreamSocketResponse(response)) {
+            return options?.sourceIsUnidirectional
+                ? ({ ...basic, [UnidirectionalRawStreamSocketTypeId]: UnidirectionalRawStreamSocketTypeId } as A)
+                : ({ ...basic, [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId } as A);
         } else {
             return yield* new Socket.SocketGenericError({
                 reason: "Read",
@@ -70,13 +154,6 @@ export const responseToRawStreamSocketOrFail = (
             });
         }
     });
-
-/**
- * @since 1.0.0
- * @category Predicates
- */
-export const isRawStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
-    response.headers["content-type"] === RawStreamSocketContentType;
 
 /**
  * Demux a raw socket. When given a raw socket of the remote process's pty,
@@ -89,22 +166,22 @@ export const isRawStreamSocketResponse = (response: HttpClientResponse.HttpClien
  * @category Demux
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
-export const demuxRawSocket = Function.dual<
+export const demuxBidirectionalRawSocket = Function.dual<
     <A1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>
     ) => (
-        socket: RawStreamSocket
+        socket: BidirectionalRawStreamSocket
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>,
     <A1, E1, E2, R1, R2>(
-        socket: RawStreamSocket,
+        socket: BidirectionalRawStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
 >(
     3,
     <A1, E1, E2, R1, R2>(
-        socket: RawStreamSocket,
+        socket: BidirectionalRawStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>
     ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
@@ -127,25 +204,22 @@ export const demuxRawSocket = Function.dual<
  * @category Demux
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttachWebsocket
  */
-export const demuxRawSockets = <
-    O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, RawStreamSocket],
-    O2 extends readonly [RawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-    O3 extends readonly [RawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-    A1 = O2 extends [RawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : undefined,
-    A2 = O3 extends [RawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : undefined,
-    E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, RawStreamSocket] ? E : never,
-    E2 = O2 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
-    E3 = O3 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
-    R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, RawStreamSocket] ? R : never,
-    R2 = O2 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
-    R3 = O3 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
-    A = A1 extends undefined | void
-        ? A2 extends undefined | void
-            ? void
-            : readonly [stdout: undefined, stderr: A2]
-        : A2 extends undefined | void
-          ? readonly [stdout: A1, stderr: undefined]
-          : readonly [stdout: A1, stderr: A2],
+export const demuxUnidirectionalRawSockets = <
+    O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, UnidirectionalRawStreamSocket],
+    O2 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
+    O3 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
+    A1 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
+        ? A
+        : undefined,
+    A2 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
+        ? A
+        : undefined,
+    E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, UnidirectionalRawStreamSocket] ? E : never,
+    E2 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
+    E3 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
+    R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, UnidirectionalRawStreamSocket] ? R : never,
+    R2 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
+    R3 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
 >(
     streams:
         | { stdin: O1; stdout?: never; stderr?: never }
@@ -156,10 +230,11 @@ export const demuxRawSockets = <
         | { stdin?: never; stdout: O2; stderr: O3 }
         | { stdin: O1; stdout: O2; stderr: O3 }
 ): Effect.Effect<
-    A,
+    Common.CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | Socket.SocketError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
 > => {
+    type A = Common.CompressedDemuxOutput<A1, A2>;
     type S1 = Stream.Stream<string | Uint8Array, E1, R1>;
     type S2 = Sink.Sink<A1, string, string, E2, R2>;
     type S3 = Sink.Sink<A2, string, string, E3, R3>;
@@ -170,15 +245,15 @@ export const demuxRawSockets = <
     const { stderr, stdin, stdout } = streams;
 
     const runStdin: StdinEffect = Predicate.isNotUndefined(stdin)
-        ? demuxRawSocket(stdin[1], stdin[0] as S1, Sink.drain)
+        ? demuxBidirectionalRawSocket(upcastUnidirectionalToBidirectional(stdin[1]), stdin[0] as S1, Sink.drain)
         : Effect.void;
 
     const runStdout: StdoutEffect = Predicate.isNotUndefined(stdout)
-        ? demuxRawSocket(stdout[0], Stream.never, stdout[1] as S2)
+        ? demuxBidirectionalRawSocket(upcastUnidirectionalToBidirectional(stdout[0]), Stream.never, stdout[1] as S2)
         : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
 
     const runStderr: StderrEffect = stderr
-        ? demuxRawSocket(stderr[0], Stream.never, stderr[1] as S3)
+        ? demuxBidirectionalRawSocket(upcastUnidirectionalToBidirectional(stderr[0]), Stream.never, stderr[1] as S3)
         : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
 
     return Effect.map(
@@ -194,7 +269,7 @@ export const demuxRawSockets = <
             if (Predicate.isUndefined(ranStderr) && Predicate.isUndefined(ranStdout)) {
                 return void 0 as A;
             } else {
-                return Tuple.make(ranStdout, ranStderr) as A;
+                return Tuple.make(ranStdout, ranStderr) as unknown as A;
             }
         }
     );

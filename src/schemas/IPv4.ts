@@ -9,15 +9,22 @@ import * as Brand from "effect/Brand";
 import * as Function from "effect/Function";
 
 /**
- * @internal
+ * @since 1.0.0
+ * @category Regular expressions
  * @see https://github.com/nodejs/node/blob/e08a654fae0ecc91678819e0b62a2e014bad3339/lib/internal/net.js#L16-L18
  */
 export const IPv4Segment = "(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])";
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category Regular expressions
+ */
 export const IPv4String = `(?:${IPv4Segment}\\.){3}${IPv4Segment}`;
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category Regular expressions
+ */
 export const IPv4Regex = new RegExp(`^${IPv4String}$`);
 
 /**

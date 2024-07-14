@@ -10,12 +10,16 @@ import * as Function from "effect/Function";
 import * as IPv4 from "./IPv4.js";
 
 /**
- * @internal
+ * @since 1.0.0
+ * @category Regular expressions
  * @see https://github.com/nodejs/node/blob/e08a654fae0ecc91678819e0b62a2e014bad3339/lib/internal/net.js#L21-L31
  */
 export const IPv6Segment = "(?:[0-9a-fA-F]{1,4})";
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category Regular expressions
+ */
 export const IPv6Regex = new RegExp(
     "^(?:" +
         `(?:${IPv6Segment}:){7}(?:${IPv6Segment}|:)|` +

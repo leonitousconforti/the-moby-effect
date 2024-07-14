@@ -21,7 +21,11 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
-import { MultiplexedStreamSocket, RawStreamSocket, responseToStreamingSocketOrFail } from "../demux/index.js";
+import {
+    BidirectionalRawStreamSocket,
+    MultiplexedStreamSocket,
+    responseToStreamingSocketOrFail,
+} from "../demux/index.js";
 import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "../Schemas.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
@@ -124,7 +128,7 @@ export interface Execs {
         }
     ) => T extends true
         ? Effect.Effect<void, ExecsError, never>
-        : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
+        : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope>;
 
     /**
      * Resize an exec instance
@@ -172,10 +176,10 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
         }
     ): T extends true
         ? Effect.Effect<void, ExecsError, never>
-        : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope> => {
+        : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope> => {
         type U = T extends true
             ? Effect.Effect<void, ExecsError, never>
-            : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
+            : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope>;
 
         const response = Function.pipe(
             HttpClientRequest.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),

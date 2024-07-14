@@ -4,11 +4,12 @@
  * @since 1.0.0
  */
 
+import type * as Common from "./Common.js";
+
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Brand from "effect/Brand";
 import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -58,6 +59,25 @@ export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Sch
 export const MultiplexedStreamSocketContentType = "application/vnd.docker.multiplexed-stream" as const;
 
 /**
+ * @since 1.0.0
+ * @category Type ids
+ */
+export const MultiplexedStreamSocketTypeId: unique symbol = Symbol.for("the-moby-effect/demux/MultiplexedStreamSocket");
+
+/**
+ * @since 1.0.0
+ * @category Type ids
+ */
+export type MultiplexedStreamSocketTypeId = typeof MultiplexedStreamSocketTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Predicates
+ */
+export const isMultiplexedStreamSocket = (u: unknown): u is MultiplexedStreamSocket =>
+    Predicate.hasProperty(u, MultiplexedStreamSocketTypeId);
+
+/**
  * When the TTY setting is disabled in POST /containers/create, the HTTP
  * Content-Type header is set to application/vnd.docker.multiplexed-stream and
  * the stream over the hijacked connected is multiplexed to separate out stdout
@@ -68,26 +88,15 @@ export const MultiplexedStreamSocketContentType = "application/vnd.docker.multip
  * @category Types
  */
 export type MultiplexedStreamSocket = Socket.Socket & {
-    "content-type": typeof MultiplexedStreamSocketContentType;
-} & Brand.Brand<"MultiplexedStreamSocket">;
-
-/**
- * @since 1.0.0
- * @category Brands
- */
-export const MultiplexedStreamSocket = Brand.refined<MultiplexedStreamSocket>(
-    (socket) => socket["content-type"] === MultiplexedStreamSocketContentType,
-    (socket) =>
-        Brand.error(
-            `Expected a multiplexed stream socket with content type "${MultiplexedStreamSocketContentType}", but this socket has content type ${socket["content-type"]}`
-        )
-);
+    readonly "content-type": typeof MultiplexedStreamSocketContentType;
+    readonly [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId;
+};
 
 /**
  * @since 1.0.0
  * @category Predicates
  */
-export const isMultiplexedStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
+export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
     response.headers["content-type"] === MultiplexedStreamSocketContentType;
 
 /**
@@ -101,11 +110,15 @@ export const responseToMultiplexedStreamSocketOrFail = (
     response: HttpClientResponse.HttpClientResponse
 ): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
     Effect.gen(function* () {
-        if (isMultiplexedStreamSocketResponse(response)) {
+        if (responseIsMultiplexedStreamSocketResponse(response)) {
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
             const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
             const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-            return MultiplexedStreamSocket({ ...effectSocket, "content-type": MultiplexedStreamSocketContentType });
+            return {
+                ...effectSocket,
+                "content-type": MultiplexedStreamSocketContentType,
+                [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
+            };
         } else {
             return yield* new Socket.SocketGenericError({
                 reason: "Read",
@@ -190,7 +203,7 @@ export const demuxMultiplexedSocket = Function.dual<
     ) => (
         socket: MultiplexedStreamSocket
     ) => Effect.Effect<
-        readonly [stdout: A1, stderr: A2],
+        Common.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >,
@@ -201,7 +214,7 @@ export const demuxMultiplexedSocket = Function.dual<
         sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ) => Effect.Effect<
-        readonly [stdout: A1, stderr: A2],
+        Common.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >
@@ -214,7 +227,7 @@ export const demuxMultiplexedSocket = Function.dual<
         sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ): Effect.Effect<
-        readonly [stdout: A1, stderr: A2],
+        Common.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     > =>
@@ -223,6 +236,11 @@ export const demuxMultiplexedSocket = Function.dual<
             Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
             Stream.mapConcat(Function.identity),
             Stream.aggregate(demuxMultiplexedSocketFolderSink),
+            Stream.filter(
+                ([messageType]) =>
+                    messageType === MultiplexedStreamSocketHeaderType.Stdout ||
+                    messageType === MultiplexedStreamSocketHeaderType.Stderr
+            ),
             Stream.partition(([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stderr, options),
             Effect.map(
                 Tuple.mapBoth({
@@ -232,6 +250,13 @@ export const demuxMultiplexedSocket = Function.dual<
             ),
             Effect.map(Effect.allWith({ concurrency: 2 })),
             Effect.flatten,
+            Effect.map(([ranStdout, ranStderr]) => {
+                if (Predicate.isUndefined(ranStderr) && Predicate.isUndefined(ranStdout)) {
+                    return void 0 as Common.CompressedDemuxOutput<A1, A2>;
+                } else {
+                    return Tuple.make(ranStdout, ranStderr) as unknown as Common.CompressedDemuxOutput<A1, A2>;
+                }
+            }),
             Effect.scoped
         )
 );
