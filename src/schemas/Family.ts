@@ -1,3 +1,9 @@
+/**
+ * IPv4 or IPv6 family schema.
+ *
+ * @since 1.0.0
+ */
+
 import * as Schema from "@effect/schema/Schema";
 import * as IPv4 from "./IPv4.js";
 import * as IPv6 from "./IPv6.js";

@@ -1,7 +1,13 @@
+export * as Address from "./Address.js";
+export * as Family from "./Family.js";
 export * as Int16 from "./Int16.js";
 export * as Int32 from "./Int32.js";
 export * as Int64 from "./Int64.js";
 export * as Int8 from "./Int8.js";
+export * as IPv4 from "./IPv4.js";
+export * as IPv6 from "./IPv6.js";
+export * as Mac from "./Mac.js";
+export * as Port from "./Port.js";
 export * as UInt16 from "./UInt16.js";
 export * as UInt32 from "./UInt32.js";
 export * as UInt64 from "./UInt64.js";
