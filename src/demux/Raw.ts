@@ -15,6 +15,8 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
+import { IExposeSocketOnEffectClientResponse } from "../endpoints/Common.js";
+
 /**
  * @since 1.0.0
  * @category Types
@@ -44,6 +46,30 @@ export const RawStreamSocket = Brand.refined<RawStreamSocket>(
             `Expected a raw stream socket with content type "${RawStreamSocketContentType}", but this socket has content type ${socket["content-type"]}`
         )
 );
+
+/**
+ * Transforms an http response into a raw stream socket. If the response is not
+ * a raw stream socket, then an error will be returned.
+ *
+ * @since 1.0.0
+ * @category Predicates
+ */
+export const responseToRawStreamSocketOrFail = (
+    response: HttpClientResponse.HttpClientResponse
+): Effect.Effect<RawStreamSocket, Socket.SocketError, never> =>
+    Effect.gen(function* () {
+        if (isRawStreamSocketResponse(response)) {
+            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
+            const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
+            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
+            return RawStreamSocket({ ...effectSocket, "content-type": RawStreamSocketContentType });
+        } else {
+            return yield* new Socket.SocketGenericError({
+                reason: "Read",
+                error: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
+            });
+        }
+    });
 
 /**
  * @since 1.0.0

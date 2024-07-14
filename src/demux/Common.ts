@@ -55,7 +55,7 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * then an error will be returned.
  *
  * @since 1.0.0
- * @category Demux
+ * @category Predicates
  */
 export const responseToStreamingSocketOrFail = (
     response: HttpClientResponse.HttpClientResponse

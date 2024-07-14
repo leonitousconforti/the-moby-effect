@@ -18,6 +18,8 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
+import { IExposeSocketOnEffectClientResponse } from "../endpoints/Common.js";
+
 /**
  * @since 1.0.0
  * @category Types
@@ -87,6 +89,30 @@ export const MultiplexedStreamSocket = Brand.refined<MultiplexedStreamSocket>(
  */
 export const isMultiplexedStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
     response.headers["content-type"] === MultiplexedStreamSocketContentType;
+
+/**
+ * Transforms an http response into a multiplexed stream socket. If the response
+ * is not a multiplexed stream socket, then an error will be returned.
+ *
+ * @since 1.0.0
+ * @category Predicates
+ */
+export const responseToMultiplexedStreamSocketOrFail = (
+    response: HttpClientResponse.HttpClientResponse
+): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
+    Effect.gen(function* () {
+        if (isMultiplexedStreamSocketResponse(response)) {
+            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
+            const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
+            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
+            return MultiplexedStreamSocket({ ...effectSocket, "content-type": MultiplexedStreamSocketContentType });
+        } else {
+            return yield* new Socket.SocketGenericError({
+                reason: "Read",
+                error: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
+            });
+        }
+    });
 
 /**
  * @since 1.0.0
