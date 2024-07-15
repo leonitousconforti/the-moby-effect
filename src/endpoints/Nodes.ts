@@ -20,7 +20,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { Node, NodeSpec } from "../Schemas.js";
+import { Node, NodeSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

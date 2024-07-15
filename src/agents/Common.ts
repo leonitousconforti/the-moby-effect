@@ -7,6 +7,7 @@
 import type ssh2 from "ssh2";
 
 import * as Data from "effect/Data";
+import * as Match from "effect/Match";
 
 /**
  * @since 1.0.0
@@ -37,7 +38,19 @@ export type SocketConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions
  * @since 1.0.0
  * @category Connection Types
  */
+export type SocketConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "socket">;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
 export type HttpConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "http">;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type HttpConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "http">;
 
 /**
  * @since 1.0.0
@@ -49,7 +62,19 @@ export type HttpsConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions,
  * @since 1.0.0
  * @category Connection Types
  */
+export type HttpsConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "https">;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
 export type SshConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "ssh">;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "ssh">;
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a
@@ -128,11 +153,22 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
 
 /**
  * @since 1.0.0
- * @category Connection
+ * @category Helpers
  */
-export const getNodeRequestUrl = MobyConnectionOptions.$match({
+export const getNodeRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
     ssh: () => "http://0.0.0.0" as const,
     socket: () => "http://0.0.0.0" as const,
     http: (options) => `http://0.0.0.0${options.path ?? ""}` as const,
     https: (options) => `https://0.0.0.0${options.path ?? ""}` as const,
+});
+
+/**
+ * @since 1.0.0
+ * @category Helpers
+ */
+export const getWebRequestUrl: (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => string = Match.typeTags<HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged>()({
+    http: (options) => `http://0.0.0.0${options.path ?? ""}`,
+    https: (options) => `https://0.0.0.0${options.path ?? ""}`,
 });

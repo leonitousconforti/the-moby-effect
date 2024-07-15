@@ -26,7 +26,7 @@ import {
     Spec as SwarmSpec,
     UnlockRequest as SwarmUnlockRequest,
     SwarmUnlockKeyResponse as UnlockKeyResponse,
-} from "../Schemas.js";
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

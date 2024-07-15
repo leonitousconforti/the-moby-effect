@@ -40,7 +40,7 @@ import {
     FilesystemChange,
     Health,
     HostConfig,
-} from "../schemas/MobySchemas.js";
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

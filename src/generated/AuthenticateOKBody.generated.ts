@@ -1,11 +1,9 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
 
 export class AuthenticateOKBody extends Schema.Class<AuthenticateOKBody>("AuthenticateOKBody")(
     {
-        IdentityToken: Schema.String,
-        Status: Schema.String,
+        IdentityToken: Schema.NullOr(Schema.String),
+        Status: Schema.NullOr(Schema.String),
     },
     {
         identifier: "AuthenticateOKBody",

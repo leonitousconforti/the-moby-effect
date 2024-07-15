@@ -28,7 +28,7 @@ import {
     SystemDataUsageResponse,
     SystemInfo,
     SystemVersion,
-} from "../Schemas.js";
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

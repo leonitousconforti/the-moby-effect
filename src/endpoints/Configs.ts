@@ -20,7 +20,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { Config, ConfigSpec, IDResponse } from "../schemas/MobySchemas.js";
+import { Config, ConfigSpec, IDResponse } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

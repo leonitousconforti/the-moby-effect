@@ -21,7 +21,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { Plugin, PluginPrivilege } from "../Schemas.js";
+import { Plugin, PluginPrivilege } from "../generated/index.js";
 import { maybeAddHeader, maybeAddQueryParameter } from "./Common.js";
 
 /**

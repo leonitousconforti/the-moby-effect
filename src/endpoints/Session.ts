@@ -17,7 +17,7 @@ import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
-import { IExposeSocketOnEffectClientResponse } from "./Common.js";
+import { IExposeSocketOnEffectClientResponseHack } from "./Common.js";
 
 /**
  * @since 1.0.0
@@ -82,7 +82,7 @@ export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Defa
             HttpClientRequest.setHeader("Upgrade", "h2c"),
             HttpClientRequest.setHeader("Connection", "Upgrade"),
             client,
-            Effect.map((response) => (response as IExposeSocketOnEffectClientResponse).source.socket),
+            Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
             Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
             Effect.mapError((error) => new SessionsError({ method: "session", error }))
         );

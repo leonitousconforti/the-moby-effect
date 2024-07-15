@@ -1,16 +1,14 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
 
 export class AuthConfig extends Schema.Class<AuthConfig>("AuthConfig")(
     {
-        Username: Schema.String,
-        Password: Schema.String,
-        Auth: Schema.String,
-        Email: Schema.String,
-        ServerAddress: Schema.String,
-        IdentityToken: Schema.String,
-        RegistryToken: Schema.String,
+        username: Schema.optional(Schema.String, { nullable: true }),
+        password: Schema.optional(Schema.String, { nullable: true }),
+        auth: Schema.optional(Schema.String, { nullable: true }),
+        email: Schema.optional(Schema.String, { nullable: true }),
+        serveraddress: Schema.optional(Schema.String, { nullable: true }),
+        identitytoken: Schema.optional(Schema.String, { nullable: true }),
+        registrytoken: Schema.optional(Schema.String, { nullable: true }),
     },
     {
         identifier: "AuthConfig",

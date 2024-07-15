@@ -16,7 +16,7 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponse } from "../endpoints/Common.js";
+import { IExposeSocketOnEffectClientResponseHack } from "../endpoints/Common.js";
 
 /**
  * @since 1.0.0
@@ -139,7 +139,7 @@ export const responseToRawStreamSocketOrFail = <
 ): Effect.Effect<A, Socket.SocketError, never> =>
     Effect.gen(function* () {
         const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-        const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
+        const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
         const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
         const basic = { ...effectSocket, "content-type": RawStreamSocketContentType };
 
@@ -208,18 +208,18 @@ export const demuxUnidirectionalRawSockets = <
     O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, UnidirectionalRawStreamSocket],
     O2 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
     O3 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-    A1 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
-        ? A
-        : undefined,
-    A2 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
-        ? A
-        : undefined,
     E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, UnidirectionalRawStreamSocket] ? E : never,
     E2 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
     E3 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
     R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, UnidirectionalRawStreamSocket] ? R : never,
     R2 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
     R3 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
+    A1 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
+        ? A
+        : undefined,
+    A2 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
+        ? A
+        : undefined,
 >(
     streams:
         | { stdin: O1; stdout?: never; stderr?: never }

@@ -19,7 +19,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { Task } from "../Schemas.js";
+import { Task } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

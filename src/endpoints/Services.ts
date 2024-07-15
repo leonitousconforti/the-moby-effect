@@ -20,7 +20,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { Service, ServiceCreateResponse, ServiceSpec, ServiceUpdateResponse } from "../Schemas.js";
+import { Service, ServiceCreateResponse, ServiceSpec, ServiceUpdateResponse } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

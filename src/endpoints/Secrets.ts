@@ -19,7 +19,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { IDResponse, Secret, SecretSpec } from "../Schemas.js";
+import { IDResponse, Secret, SecretSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

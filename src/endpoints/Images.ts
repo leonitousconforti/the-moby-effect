@@ -21,6 +21,7 @@ import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 
+import agent from "undici/types/agent.js";
 import {
     BuildInfo,
     BuildPruneResponse,
@@ -32,9 +33,8 @@ import {
     ImagePruneResponse,
     ImageSearchResponseItem,
     ImageSummary,
-} from "../Schemas.js";
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
-import agent from "undici/types/agent.js";
 
 /**
  * @since 1.0.0

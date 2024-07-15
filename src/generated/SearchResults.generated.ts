@@ -4,9 +4,9 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class SearchResults extends Schema.Class<SearchResults>("SearchResults")(
     {
-        Query: Schema.String,
-        NumResults: Schema.NullOr(MobySchemas.Int64),
-        Results: Schema.Array(MobySchemasGenerated.SearchResult),
+        query: Schema.NullOr(Schema.String),
+        num_results: Schema.NullOr(MobySchemas.Int64),
+        results: Schema.NullOr(Schema.Array(MobySchemasGenerated.SearchResult)),
     },
     {
         identifier: "SearchResults",

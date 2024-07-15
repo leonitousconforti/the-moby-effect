@@ -4,14 +4,14 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class Descriptor extends Schema.Class<Descriptor>("Descriptor")(
     {
-        MediaType: Schema.String,
-        Digest: Schema.String,
-        Size: Schema.NullOr(MobySchemas.Int64),
-        URLs: Schema.Array(Schema.String),
-        Annotations: Schema.Record(Schema.String, Schema.String),
-        Data: Schema.Array(MobySchemas.UInt8),
-        Platform: Schema.NullOr(MobySchemasGenerated.Platform),
-        ArtifactType: Schema.String,
+        mediaType: Schema.NullOr(Schema.String),
+        digest: Schema.NullOr(Schema.String),
+        size: Schema.NullOr(MobySchemas.Int64),
+        urls: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        annotations: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        data: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        platform: Schema.optional(MobySchemasGenerated.Platform, { nullable: true }),
+        artifactType: Schema.optional(Schema.String, { nullable: true }),
     },
     {
         identifier: "Descriptor",

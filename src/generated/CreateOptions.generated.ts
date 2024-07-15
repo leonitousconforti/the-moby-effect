@@ -1,0 +1,16 @@
+import * as Schema from "@effect/schema/Schema";
+import * as MobySchemasGenerated from "./index.js";
+
+export class CreateOptions extends Schema.Class<CreateOptions>("CreateOptions")(
+    {
+        ClusterVolumeSpec: Schema.optional(MobySchemasGenerated.ClusterVolumeSpec, { nullable: true }),
+        Driver: Schema.optional(Schema.String, { nullable: true }),
+        DriverOpts: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Labels: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Name: Schema.optional(Schema.String, { nullable: true }),
+    },
+    {
+        identifier: "CreateOptions",
+        title: "volume.CreateOptions",
+    }
+) {}

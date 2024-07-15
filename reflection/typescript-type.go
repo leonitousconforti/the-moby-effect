@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 )
 
 type TSType struct {
@@ -68,41 +70,52 @@ func tsType(t reflect.Type) TSType {
 	case reflect.Array:
 		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), false}
 	case reflect.Slice:
-		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), false}
+		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), true}
 	case reflect.Map:
-		if t.Elem() == EmptyStruct {
-			// return TSType{fmt.Sprintf("Schema.Record(%s, EmptyStruct)", tsType(t.Key()).Name), false}
-			panic(fmt.Errorf("cannot convert type %s", t))
-		}
-		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), false}
+		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), true}
 	case reflect.Ptr:
 		ptr := tsType(t.Elem())
 		ptr.Nullable = true
 		return ptr
 	case reflect.Struct:
 		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", t.Name()), false}
-    // case reflect.Interface:
-    //     return TSType{"Schema.Object", false}
+	case reflect.Interface:
+		return TSType{"Schema.Object", false}
 	default:
 		panic(fmt.Errorf("cannot convert type %s", t))
 	}
 }
 
 func (t *TSModelType) Write(w io.Writer) {
-	fmt.Fprintln(w, "import * as Schema from \"@effect/schema/Schema\";")
-	fmt.Fprintln(w, "import * as MobySchemas from \"../schemas/index.js\";")
-    fmt.Fprintln(w, "import * as MobySchemasGenerated from \"./index.js\";")
-	fmt.Fprintln(w)
-	fmt.Fprintf(w, "export class %s extends Schema.Class<%s>(\"%s\")(\n    {\n", t.Name, t.Name, t.Name)
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintf("export class %s extends Schema.Class<%s>(\"%s\")(\n", t.Name, t.Name, t.Name))
+	buffer.WriteString(fmt.Sprintln("    {"))
 	for _, p := range t.Properties {
-		if p.IsOpt {
-			fmt.Fprintf(w, "        %s: Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable)
+		if p.IsOpt && p.Type.Nullable {
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
+		} else if p.IsOpt {
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
-			fmt.Fprintf(w, "        %s: Schema.NullOr(%s),\n", p.Name, p.Type.Name)
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {
-			fmt.Fprintf(w, "        %s: %s,\n", p.Name, p.Type.Name)
+			buffer.WriteString(fmt.Sprintf("        \"%s\": %s,\n", p.Name, p.Type.Name))
 		}
 	}
-	fmt.Fprintf(w, "    },\n    {\n        identifier: \"%s\",\n        title: \"%s\",\n    }\n) {}", t.Name, t.SourceName)
-	fmt.Fprintln(w)
+	buffer.WriteString(fmt.Sprintln("    },"))
+	buffer.WriteString(fmt.Sprintln("    {"))
+	buffer.WriteString(fmt.Sprintf("        identifier: \"%s\",\n", t.Name))
+	buffer.WriteString(fmt.Sprintf("        title: \"%s\",\n", t.SourceName))
+	buffer.WriteString(fmt.Sprintln("    }"))
+	buffer.WriteString(fmt.Sprintln(") {}"))
+
+	outString := buffer.String()
+	fmt.Fprintf(w, "import * as Schema from \"@effect/schema/Schema\";\n")
+	if strings.Contains(outString, "MobySchemas.") {
+		fmt.Fprintf(w, "import * as MobySchemas from \"../schemas/index.js\";\n")
+	}
+	if strings.Contains(outString, "MobySchemasGenerated.") {
+		fmt.Fprintf(w, "import * as MobySchemasGenerated from \"./index.js\";\n")
+	}
+	fmt.Fprintf(w, "\n")
+	fmt.Fprint(w, outString)
 }

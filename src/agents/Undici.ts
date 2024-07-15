@@ -112,6 +112,7 @@ export const makeUndiciHttpClientLayer = (
             const oldClient = Context.get(context, HttpClient.HttpClient);
             const requestUrl = AgentCommon.getNodeRequestUrl(connectionOptions);
             const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));
-            return Context.make(HttpClient.HttpClient, newClient);
+            const newContext = Context.make(HttpClient.HttpClient, newClient);
+            return newContext;
         })
     );

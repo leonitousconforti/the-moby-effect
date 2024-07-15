@@ -26,7 +26,7 @@ import {
     MultiplexedStreamSocket,
     responseToStreamingSocketOrFail,
 } from "../demux/index.js";
-import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "../Schemas.js";
+import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
