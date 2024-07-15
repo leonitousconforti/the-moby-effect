@@ -71,20 +71,18 @@ func tsType(t reflect.Type) TSType {
 		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), false}
 	case reflect.Map:
 		if t.Elem() == EmptyStruct {
-			return TSType{fmt.Sprintf("Schema.Record(%s, EmptyStruct)", tsType(t.Key()).Name), false}
+			// return TSType{fmt.Sprintf("Schema.Record(%s, EmptyStruct)", tsType(t.Key()).Name), false}
+			panic(fmt.Errorf("cannot convert type %s", t))
 		}
 		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), false}
 	case reflect.Ptr:
-		a := tsType(t.Elem())
-		a.Nullable = true
-		return a
+		ptr := tsType(t.Elem())
+		ptr.Nullable = true
+		return ptr
 	case reflect.Struct:
-		if m, ok := reflectedTypes[typeToKey(t)]; ok {
-			return TSType{fmt.Sprintf("MobySchemas.%s", m.Name), false}
-		}
-		return TSType{fmt.Sprintf("MobySchemas.%s", t.Name()), false}
-	case reflect.Interface:
-		return TSType{"object", false}
+		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", t.Name()), false}
+    // case reflect.Interface:
+    //     return TSType{"Schema.Object", false}
 	default:
 		panic(fmt.Errorf("cannot convert type %s", t))
 	}
@@ -92,11 +90,19 @@ func tsType(t reflect.Type) TSType {
 
 func (t *TSModelType) Write(w io.Writer) {
 	fmt.Fprintln(w, "import * as Schema from \"@effect/schema/Schema\";")
-    fmt.Fprintln(w, "import * as MobySchemas from \"./MobySchemas.js\";")
-    fmt.Fprintln(w)
-	fmt.Fprintf(w, "export class %s extends Schema.Class<%s>(\"%s\")({\n", t.Name, t.Name, t.Name)
+	fmt.Fprintln(w, "import * as MobySchemas from \"../schemas/index.js\";")
+    fmt.Fprintln(w, "import * as MobySchemasGenerated from \"./index.js\";")
+	fmt.Fprintln(w)
+	fmt.Fprintf(w, "export class %s extends Schema.Class<%s>(\"%s\")(\n    {\n", t.Name, t.Name, t.Name)
 	for _, p := range t.Properties {
-        fmt.Fprintf(w, "    %s: %s,\n", p.Name, p.Type.Name)
+		if p.IsOpt {
+			fmt.Fprintf(w, "        %s: Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable)
+		} else if p.Type.Nullable {
+			fmt.Fprintf(w, "        %s: Schema.NullOr(%s),\n", p.Name, p.Type.Name)
+		} else {
+			fmt.Fprintf(w, "        %s: %s,\n", p.Name, p.Type.Name)
+		}
 	}
-	fmt.Fprintln(w, "}) {}")
+	fmt.Fprintf(w, "    },\n    {\n        identifier: \"%s\",\n        title: \"%s\",\n    }\n) {}", t.Name, t.SourceName)
+	fmt.Fprintln(w)
 }
