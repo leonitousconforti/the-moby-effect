@@ -34,11 +34,14 @@
         "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
         "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
         "build-esm": "tsc -b tsconfig.build.json",
+        "build-reflection": "(cd reflection/ && go build)",
+        "build-schemas": "(cd src && rm -rf ./generated && mkdir -p generated && ../reflection/reflection)",
         "check": "tsc -b tsconfig.json",
         "clean": "rimraf .tsbuildinfo docs build dist coverage",
         "codegen": "build-utils prepare-v2",
         "coverage": "vitest --coverage",
         "lint": "eslint .",
+        "schemagen": "pnpm build-reflection && pnpm build-schemas",
         "test": "vitest"
     },
     "devDependencies": {
