@@ -1,12 +1,12 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemasGenerated from "./index.js";
 
-export class UpdateOptions extends Schema.Class<UpdateOptions>("UpdateOptions")(
+export class VolumeUpdateOptions extends Schema.Class<VolumeUpdateOptions>("VolumeUpdateOptions")(
     {
         Spec: Schema.optional(MobySchemasGenerated.ClusterVolumeSpec, { nullable: true }),
     },
     {
-        identifier: "UpdateOptions",
+        identifier: "VolumeUpdateOptions",
         title: "volume.UpdateOptions",
     }
 ) {}

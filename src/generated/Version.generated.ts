@@ -3,7 +3,7 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class Version extends Schema.Class<Version>("Version")(
     {
-        Index: Schema.optional(MobySchemas.UInt64, { nullable: true }),
+        Index: Schema.optional(MobySchemas.UInt64),
     },
     {
         identifier: "Version",

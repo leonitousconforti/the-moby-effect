@@ -3,10 +3,10 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class zoneTrans extends Schema.Class<zoneTrans>("zoneTrans")(
     {
-        when: Schema.NullOr(MobySchemas.Int64),
-        index: Schema.NullOr(MobySchemas.UInt8),
-        isstd: Schema.NullOr(Schema.Boolean),
-        isutc: Schema.NullOr(Schema.Boolean),
+        when: MobySchemas.Int64,
+        index: MobySchemas.UInt8,
+        isstd: Schema.Boolean,
+        isutc: Schema.Boolean,
     },
     {
         identifier: "zoneTrans",

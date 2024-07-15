@@ -32,24 +32,24 @@ var EmptyStruct = reflect.TypeOf(struct{}{})
 
 // TSInboxTypesMap is a map from Go type kind to TS type.
 var TSInboxTypesMap = map[reflect.Kind]TSType{
-	reflect.Float32: {"Schema.Number", true},
-	reflect.Float64: {"Schema.Number", true},
+	reflect.Float32: {"Schema.Number", false},
+	reflect.Float64: {"Schema.Number", false},
 	reflect.String:  {"Schema.String", false},
-	reflect.Bool:    {"Schema.Boolean", true},
+	reflect.Bool:    {"Schema.Boolean", false},
 
 	// In practice most clients are 64bit so in go Int will be too
-	reflect.Int:   {"MobySchemas.Int64", true},
-	reflect.Int8:  {"MobySchemas.Int8", true},
-	reflect.Int16: {"MobySchemas.Int16", true},
-	reflect.Int32: {"MobySchemas.Int32", true},
-	reflect.Int64: {"MobySchemas.Int64", true},
+	reflect.Int:   {"MobySchemas.Int64", false},
+	reflect.Int8:  {"MobySchemas.Int8", false},
+	reflect.Int16: {"MobySchemas.Int16", false},
+	reflect.Int32: {"MobySchemas.Int32", false},
+	reflect.Int64: {"MobySchemas.Int64", false},
 
 	// In practice most clients are 64bit so in go Uint will be too.
-	reflect.Uint:   {"MobySchemas.UInt64", true},
-	reflect.Uint8:  {"MobySchemas.UInt8", true},
-	reflect.Uint16: {"MobySchemas.UInt16", true},
-	reflect.Uint32: {"MobySchemas.UInt32", true},
-	reflect.Uint64: {"MobySchemas.UInt64", true},
+	reflect.Uint:   {"MobySchemas.UInt64", false},
+	reflect.Uint8:  {"MobySchemas.UInt8", false},
+	reflect.Uint16: {"MobySchemas.UInt16", false},
+	reflect.Uint32: {"MobySchemas.UInt32", false},
+	reflect.Uint64: {"MobySchemas.UInt64", false},
 }
 
 func NewModel(name, sourceName string) *TSModelType {

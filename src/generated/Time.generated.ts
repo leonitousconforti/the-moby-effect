@@ -4,8 +4,8 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class Time extends Schema.Class<Time>("Time")(
     {
-        wall: Schema.NullOr(MobySchemas.UInt64),
-        ext: Schema.NullOr(MobySchemas.Int64),
+        wall: MobySchemas.UInt64,
+        ext: MobySchemas.Int64,
         loc: Schema.NullOr(MobySchemasGenerated.Location),
     },
     {
