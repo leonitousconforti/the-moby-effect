@@ -12,9 +12,8 @@ import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Redacted from "effect/Redacted";
-import * as Scope from "effect/Scope";
 
-import * as AgentHelpers from "./Agent.js";
+import * as AgentCommon from "./agents/index.js";
 import * as Configs from "./endpoints/Configs.js";
 import * as Containers from "./endpoints/Containers.js";
 import * as Distributions from "./endpoints/Distribution.js";
@@ -127,22 +126,13 @@ export const layer = Layer.mergeAll(
 );
 
 /**
- * Creates a MobyApi layer from the provided connection agent
- *
- * @since 1.0.0
- * @category Constructors
- */
-export const fromAgent = (agent: Effect.Effect<AgentHelpers.IMobyConnectionAgentImpl, never, Scope.Scope>): MobyApi =>
-    layer.pipe(Layer.provide(Layer.scoped(AgentHelpers.MobyConnectionAgent, agent)));
-
-/**
  * Creates a MobyApi layer from the provided connection options
  *
  * @since 1.0.0
  * @category Constructors
  */
-export const fromConnectionOptions = (connectionOptions: AgentHelpers.MobyConnectionOptions): MobyApi =>
-    fromAgent(AgentHelpers.getAgent(connectionOptions));
+export const fromConnectionOptions = (connectionOptions: AgentCommon.MobyConnectionOptions): MobyApi =>
+    Layer.provide(layer, AgentCommon.makeUndiciHttpClientLayer(connectionOptions));
 
 /**
  * From
@@ -182,43 +172,50 @@ export const fromUrl = (
     const url: URL = new URL(dockerHost);
 
     if (url.protocol === "unix:") {
-        return fromConnectionOptions({ connection: "socket", socketPath: url.pathname });
+        return fromConnectionOptions(AgentCommon.SocketConnectionOptions({ socketPath: url.pathname }));
     }
 
     if (url.protocol === "ssh:") {
-        return fromConnectionOptions({
-            connection: "ssh",
-            host: url.hostname,
-            username: url.username,
-            password: url.password,
-            remoteSocketPath: url.pathname,
-            port: url.port ? Number.parseInt(url.port) : 22,
-        });
+        return fromConnectionOptions(
+            AgentCommon.SshConnectionOptions({
+                host: url.hostname,
+                username: url.username,
+                password: url.password,
+                remoteSocketPath: url.pathname,
+                port: url.port ? Number.parseInt(url.port) : 22,
+            })
+        );
     }
 
     if (url.protocol === "http:") {
-        return fromConnectionOptions({
-            connection: "http",
-            host: url.hostname ?? "127.0.0.1",
-            port: url.port ? Number.parseInt(url.port) : 2375,
-            path: url.pathname,
-        });
+        return fromConnectionOptions(
+            AgentCommon.HttpConnectionOptions({
+                host: url.hostname ?? "127.0.0.1",
+                port: url.port ? Number.parseInt(url.port) : 2375,
+                path: url.pathname,
+            })
+        );
     }
 
     if (url.protocol === "https:") {
-        return fromConnectionOptions({
-            connection: "https",
-            host: url.hostname ?? "127.0.0.1",
-            port: url.port ? Number.parseInt(url.port) : 2376,
-            path: url.pathname,
-        });
+        return fromConnectionOptions(
+            AgentCommon.HttpConnectionOptions({
+                host: url.hostname ?? "127.0.0.1",
+                port: url.port ? Number.parseInt(url.port) : 2376,
+                path: url.pathname,
+            })
+        );
     }
 
     if (url.protocol === "tcp:") {
         const path: string = url.pathname;
         const host: string = url.hostname ?? "127.0.0.0.1";
         const port: number = url.port ? Number.parseInt(url.port) : 2375;
-        return fromConnectionOptions({ connection: port === 2376 ? "https" : "http", host, port, path });
+        if (port === 2376) {
+            return fromConnectionOptions(AgentCommon.HttpsConnectionOptions({ host, port, path }));
+        } else {
+            return fromConnectionOptions(AgentCommon.HttpConnectionOptions({ host, port, path }));
+        }
     }
 
     // Any other protocols are not supported
@@ -255,10 +252,10 @@ export const fromPlatformSystemSocketDefault = (): Layer.Layer<
     switch (process.platform) {
         case "linux":
         case "darwin": {
-            return fromConnectionOptions({ connection: "socket", socketPath: "/var/run/docker.sock" });
+            return fromConnectionOptions(AgentCommon.SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }));
         }
         case "win32": {
-            return fromConnectionOptions({ connection: "socket", socketPath: "//./pipe/docker_engine" });
+            return fromConnectionOptions(AgentCommon.SocketConnectionOptions({ socketPath: "//./pipe/docker_engine" }));
         }
         default: {
             return Layer.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`));
@@ -279,8 +276,9 @@ export const fromUserSocketDefault = (): Layer.Layer<
 > =>
     Effect.gen(function* () {
         const path = yield* Path.Path;
-        return fromConnectionOptions({
-            connection: "socket",
-            socketPath: path.join(os.homedir(), ".docker", "run", "docker.sock"),
-        });
+        return fromConnectionOptions(
+            AgentCommon.SocketConnectionOptions({
+                socketPath: path.join(os.homedir(), ".docker", "run", "docker.sock"),
+            })
+        );
     }).pipe(Layer.unwrapEffect);

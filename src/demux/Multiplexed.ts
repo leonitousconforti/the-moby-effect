@@ -19,7 +19,7 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponse } from "../endpoints/Common.js";
+import { IExposeSocketOnEffectClientResponseHack } from "../endpoints/Common.js";
 
 /**
  * @since 1.0.0
@@ -112,7 +112,7 @@ export const responseToMultiplexedStreamSocketOrFail = (
     Effect.gen(function* () {
         if (responseIsMultiplexedStreamSocketResponse(response)) {
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-            const socket = (response as IExposeSocketOnEffectClientResponse).source.socket;
+            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
             const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
             return {
                 ...effectSocket,

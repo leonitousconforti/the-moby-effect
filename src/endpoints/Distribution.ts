@@ -18,7 +18,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 
-import { DistributionInspect } from "../schemas/MobySchemas.js";
+import { DistributionInspect } from "../generated/index.js";
 
 /**
  * @since 1.0.0

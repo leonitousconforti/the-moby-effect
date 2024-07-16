@@ -20,7 +20,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { Service, ServiceCreateResponse, ServiceSpec, ServiceUpdateResponse } from "../Schemas.js";
+import { ServiceCreateResponse, ServiceUpdateResponse, SwarmService, SwarmServiceSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -82,7 +82,7 @@ export interface ServiceListOptions {
  * @category Params
  */
 export interface ServiceCreateOptions {
-    readonly body: ServiceSpec;
+    readonly body: SwarmServiceSpec;
     /**
      * A base64url-encoded auth configuration for pulling from private
      * registries.
@@ -120,7 +120,7 @@ export interface ServiceInspectOptions {
 export interface ServiceUpdateOptions {
     /** ID or name of service. */
     readonly id: string;
-    readonly body: ServiceSpec;
+    readonly body: SwarmServiceSpec;
     /**
      * The version number of the service object being updated. This is required
      * to avoid conflicting writes. This version number should be the value as
@@ -198,7 +198,7 @@ export interface ServicesImpl {
      */
     readonly list: (
         options?: ServiceListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<Service>>, ServicesError, never>;
+    ) => Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never>;
 
     /**
      * Create a service
@@ -227,7 +227,7 @@ export interface ServicesImpl {
      * @param id - ID or name of service.
      * @param insertDefaults - Fill empty fields with default values.
      */
-    readonly inspect: (options: ServiceInspectOptions) => Effect.Effect<Readonly<Service>, ServicesError, never>;
+    readonly inspect: (options: ServiceInspectOptions) => Effect.Effect<Readonly<SwarmService>, ServicesError, never>;
 
     /**
      * Update a service
@@ -284,18 +284,20 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
     );
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const ServicesClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(Service))));
+    const ServicesClient = client.pipe(
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmService)))
+    );
     const ServiceCreateResponseClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ServiceCreateResponse))
     );
-    const ServiceClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Service)));
+    const ServiceClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmService)));
     const ServiceUpdateResponseClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ServiceUpdateResponse))
     );
 
     const list_ = (
         options?: ServiceListOptions | undefined
-    ): Effect.Effect<Readonly<Array<Service>>, ServicesError, never> =>
+    ): Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never> =>
         Function.pipe(
             HttpClientRequest.get(""),
             maybeAddQueryParameter(
@@ -314,7 +316,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         Function.pipe(
             HttpClientRequest.post("/create"),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
-            HttpClientRequest.schemaBody(ServiceSpec)(options.body),
+            HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
             Effect.flatMap(ServiceCreateResponseClient),
             Effect.mapError((error) => new ServicesError({ method: "create", error })),
             Effect.scoped
@@ -328,7 +330,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             Effect.scoped
         );
 
-    const inspect_ = (options: ServiceInspectOptions): Effect.Effect<Readonly<Service>, ServicesError, never> =>
+    const inspect_ = (options: ServiceInspectOptions): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
         Function.pipe(
             HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("insertDefaults", Option.fromNullable(options.insertDefaults)),
@@ -346,7 +348,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             maybeAddQueryParameter("version", Option.some(options.version)),
             maybeAddQueryParameter("registryAuthFrom", Option.fromNullable(options.registryAuthFrom)),
             maybeAddQueryParameter("rollback", Option.fromNullable(options.rollback)),
-            HttpClientRequest.schemaBody(ServiceSpec)(options.body),
+            HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
             Effect.flatMap(ServiceUpdateResponseClient),
             Effect.mapError((error) => new ServicesError({ method: "update", error })),
             Effect.scoped

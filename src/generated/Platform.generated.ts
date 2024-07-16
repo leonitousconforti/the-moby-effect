@@ -1,14 +1,12 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
 
 export class Platform extends Schema.Class<Platform>("Platform")(
     {
-        Architecture: Schema.String,
-        OS: Schema.String,
-        OSVersion: Schema.String,
-        OSFeatures: Schema.Array(Schema.String),
-        Variant: Schema.String,
+        architecture: Schema.String,
+        os: Schema.String,
+        "os.version": Schema.optional(Schema.String),
+        "os.features": Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        variant: Schema.optional(Schema.String),
     },
     {
         identifier: "Platform",

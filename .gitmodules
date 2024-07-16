@@ -1,0 +1,20 @@
+[submodule "moby-27.0-branch-max-api-1.46"]
+	path = submodules/moby-27.0-branch-max-api-1.46
+	url = https://github.com/moby/moby.git
+	branch = 27.0
+[submodule "moby-26.0-branch-max-api-1.45"]
+	path = submodules/moby-26.0-branch-max-api-1.45
+	url = https://github.com/moby/moby.git
+	branch = 26.0
+[submodule "moby-25.0-branch-max-api-1.44"]
+	path = submodules/moby-25.0-branch-max-api-1.44
+	url = https://github.com/moby/moby.git
+	branch = 25.0
+[submodule "moby-24.0-branch-max-api-1.43"]
+	path = submodules/moby-24.0-branch-max-api-1.43
+	url = https://github.com/moby/moby.git
+	branch = 24.0
+[submodule "moby-23.0-branch-max-api-1.42"]
+	path = submodules/moby-23.0-branch-max-api-1.42
+	url = https://github.com/moby/moby.git
+	branch = 23.0

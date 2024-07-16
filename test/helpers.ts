@@ -90,9 +90,9 @@ export const spawnDind = (
 /** Cleans up the container that will be created in the setup helper. */
 export const destroyDind = (containerId: string, volumeName: string) =>
     Effect.gen(function* () {
-        const containers: MobyApi.Containers.Containers = yield* MobyApi.Containers.Containers;
+        const containers: MobyApi.Containers.ContainersImpl = yield* MobyApi.Containers.Containers;
         yield* containers.delete({ id: containerId, force: true });
 
-        const volumes: MobyApi.Volumes.Volumes = yield* MobyApi.Volumes.Volumes;
+        const volumes: MobyApi.Volumes.VolumesImpl = yield* MobyApi.Volumes.Volumes;
         yield* volumes.delete({ name: volumeName, force: true });
     });

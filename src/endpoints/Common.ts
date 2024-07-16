@@ -13,12 +13,10 @@ import * as Option from "effect/Option";
 
 /**
  * Helper interface to expose the underlying socket from the effect HttpClient
- * response. Useful for multiplexing the response stream.
- *
- * FIXME: This is kinda a hack, and it will only work when using the NodeJS
- * agent layer, can we find a different way?
+ * response. Useful for multiplexing the response stream. This is a hack, and it
+ * will only work when using the NodeJS layer.
  */
-export interface IExposeSocketOnEffectClientResponse extends HttpClientResponse.HttpClientResponse {
+export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
     source: {
         socket: net.Socket;
     };

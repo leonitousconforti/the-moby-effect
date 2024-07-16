@@ -37,10 +37,10 @@ import {
     ContainerUpdateResponse,
     ContainerUpdateSpec,
     ContainerWaitResponse,
-    FilesystemChange,
+    ContainerFilesystemChange as FilesystemChange,
     Health,
-    HostConfig,
-} from "../schemas/MobySchemas.js";
+    ContainerHostConfig as HostConfig,
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**

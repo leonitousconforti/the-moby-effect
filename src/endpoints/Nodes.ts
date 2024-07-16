@@ -20,7 +20,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { Node, NodeSpec } from "../Schemas.js";
+import { SwarmNode, SwarmNodeSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -94,7 +94,7 @@ export interface NodeInspectOptions {
  * @category Params
  */
 export interface NodeUpdateOptions {
-    readonly body: NodeSpec;
+    readonly body: SwarmNodeSpec;
     /** The ID of the node */
     readonly id: string;
     /**
@@ -110,7 +110,9 @@ export interface NodeUpdateOptions {
  */
 export interface NodesImpl {
     /** List nodes */
-    readonly list: (options?: NodeListOptions | undefined) => Effect.Effect<Readonly<Array<Node>>, NodesError, never>;
+    readonly list: (
+        options?: NodeListOptions | undefined
+    ) => Effect.Effect<Readonly<Array<SwarmNode>>, NodesError, never>;
 
     /**
      * Delete a node
@@ -125,7 +127,7 @@ export interface NodesImpl {
      *
      * @param id - The ID or name of the node
      */
-    readonly inspect: (options: NodeInspectOptions) => Effect.Effect<Readonly<Node>, NodesError, never>;
+    readonly inspect: (options: NodeInspectOptions) => Effect.Effect<Readonly<SwarmNode>, NodesError, never>;
 
     /**
      * Update a node
@@ -151,10 +153,12 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
     );
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const NodesClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(Node))));
-    const NodeClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Node)));
+    const NodesClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))));
+    const NodeClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmNode)));
 
-    const list_ = (options?: NodeListOptions | undefined): Effect.Effect<Readonly<Array<Node>>, NodesError, never> =>
+    const list_ = (
+        options?: NodeListOptions | undefined
+    ): Effect.Effect<Readonly<Array<SwarmNode>>, NodesError, never> =>
         Function.pipe(
             HttpClientRequest.get(""),
             maybeAddQueryParameter(
@@ -175,7 +179,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
             Effect.scoped
         );
 
-    const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<Node>, NodesError, never> =>
+    const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
         Function.pipe(
             HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             NodeClient,
@@ -187,7 +191,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
         Function.pipe(
             HttpClientRequest.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBody(NodeSpec)(options.body),
+            HttpClientRequest.schemaBody(SwarmNodeSpec)(options.body),
             Effect.flatMap(voidClient),
             Effect.mapError((error) => new NodesError({ method: "update", error })),
             Effect.scoped

@@ -23,18 +23,17 @@ import * as String from "effect/String";
 
 import {
     BuildInfo,
-    BuildPruneResponse,
+    BuildCachePruneReport as BuildPruneResponse,
     ContainerConfig,
-    HistoryResponseItem,
-    IdResponse,
-    ImageDeleteResponseItem,
-    ImageInspect,
-    ImagePruneResponse,
-    ImageSearchResponseItem,
-    ImageSummary,
-} from "../Schemas.js";
+    IDResponse,
+    ImageDeleteResponse as ImageDeleteResponseItem,
+    ImageHistoryResponseItem,
+    ImageInspectResponse as ImageInspect,
+    ImagesPruneResponse as ImagePruneResponse,
+    RegistrySearchResponse as ImageSearchResponseItem,
+    ImagesListResponse as ImageSummary,
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
-import agent from "undici/types/agent.js";
 
 /**
  * @since 1.0.0
@@ -695,7 +694,7 @@ export interface ImagesImpl {
      */
     readonly history: (
         options: ImageHistoryOptions
-    ) => Effect.Effect<Schema.Schema.Type<typeof HistoryResponseItem>, ImagesError>;
+    ) => Effect.Effect<Schema.Schema.Type<typeof ImageHistoryResponseItem>, ImagesError>;
 
     /**
      * Push an image
@@ -784,7 +783,7 @@ export interface ImagesImpl {
      * @param pause - Whether to pause the container before committing
      * @param changes - `Dockerfile` instructions to apply while committing
      */
-    readonly commit: (options: ImageCommitOptions) => Effect.Effect<Readonly<IdResponse>, ImagesError>;
+    readonly commit: (options: ImageCommitOptions) => Effect.Effect<Readonly<IDResponse>, ImagesError>;
 
     /**
      * Export an image
@@ -816,13 +815,14 @@ export interface ImagesImpl {
 export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
+    const buildClient = defaultClient.pipe(HttpClient.filterStatusOk);
     const client = defaultClient.pipe(
         HttpClient.mapRequest(HttpClientRequest.prependUrl("/images")),
         HttpClient.filterStatusOk
     );
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IdResponse)));
+    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
     const ImageInspectClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImageInspect)));
     const ImageSummariesClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSummary)))
@@ -831,7 +831,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(BuildPruneResponse))
     );
     const HistoryResponseItemsClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(HistoryResponseItem))
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImageHistoryResponseItem))
     );
     const ImageDeleteResponseItemsClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem)))
@@ -857,7 +857,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const build_ = (options: ImageBuildOptions): Stream.Stream<BuildInfo, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`${agent.nodeRequestUrl}/build`),
+            HttpClientRequest.post(`/build`),
             HttpClientRequest.setHeader("Content-type", options["Content-type"] ?? "application/x-tar"),
             HttpClientRequest.setHeader("X-Registry-Config", options["X-Registry-Config"] ?? ""),
             maybeAddQueryParameter("dockerfile", Option.fromNullable(options.dockerfile)),
@@ -887,7 +887,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("outputs", Option.fromNullable(options.outputs)),
             maybeAddQueryParameter("version", Option.some("1")),
             HttpClientRequest.streamBody(options.context),
-            defaultClient.pipe(HttpClient.filterStatusOk),
+            buildClient,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
@@ -942,7 +942,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const history_ = (
         options: ImageHistoryOptions
-    ): Effect.Effect<Schema.Schema.Encoded<typeof HistoryResponseItem>, ImagesError> =>
+    ): Effect.Effect<Schema.Schema.Encoded<typeof ImageHistoryResponseItem>, ImagesError> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}/history`),
             HistoryResponseItemsClient,
@@ -1011,7 +1011,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             Effect.scoped
         );
 
-    const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IdResponse>, ImagesError> =>
+    const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError> =>
         Function.pipe(
             HttpClientRequest.post("/commit"),
             maybeAddQueryParameter("container", Option.fromNullable(options.container)),
