@@ -66,19 +66,31 @@ func tsType(t reflect.Type) TSType {
 		return def
 	}
 
+	if t == EmptyStruct {
+		return TSType{"Schema.Object", false}
+	}
+
 	switch t.Kind() {
-	case reflect.Array:
-		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), false}
 	case reflect.Slice:
 		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), true}
 	case reflect.Map:
 		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), true}
+	case reflect.Array:
+		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsType(t.Elem()).Name, t.Len()), false}
 	case reflect.Ptr:
 		ptr := tsType(t.Elem())
 		ptr.Nullable = true
 		return ptr
 	case reflect.Struct:
-		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", t.Name()), false}
+		var name string
+		k := typeToKey(t)
+		n, ok := typesToDisambiguate[k]
+		if ok {
+			name = n
+		} else {
+			name = t.Name()
+		}
+		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), false}
 	case reflect.Interface:
 		return TSType{"Schema.Object", false}
 	default:
@@ -86,7 +98,25 @@ func tsType(t reflect.Type) TSType {
 	}
 }
 
-func (t *TSModelType) Write(w io.Writer) {
+func (t *TSModelType) WriteInlineStruct() string {
+	var buffer bytes.Buffer
+	buffer.WriteString(fmt.Sprintln("Schema.Struct({"))
+	for _, p := range t.Properties {
+		if p.IsOpt && p.Type.Nullable {
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
+		} else if p.IsOpt {
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
+		} else if p.Type.Nullable {
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
+		} else {
+			buffer.WriteString(fmt.Sprintf("    \"%s\": %s,\n", p.Name, p.Type.Name))
+		}
+	}
+	buffer.WriteString(fmt.Sprintln("})"))
+	return buffer.String()
+}
+
+func (t *TSModelType) WriteClass(w io.Writer) {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf("export class %s extends Schema.Class<%s>(\"%s\")(\n", t.Name, t.Name, t.Name))
 	buffer.WriteString(fmt.Sprintln("    {"))

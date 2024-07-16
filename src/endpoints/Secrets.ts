@@ -19,7 +19,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { IDResponse, Secret, SecretSpec } from "../generated/index.js";
+import { IDResponse, SwarmSecret, SwarmSecretSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -104,7 +104,7 @@ export interface SecretUpdateOptions {
      * updated. All other fields must remain unchanged from the [SecretInspect
      * endpoint](#operation/SecretInspect) response values.
      */
-    readonly spec: SecretSpec;
+    readonly spec: SwarmSecretSpec;
     /**
      * The version number of the secret object being updated. This is required
      * to avoid conflicting writes.
@@ -132,14 +132,14 @@ export interface SecretsImpl {
      */
     readonly list: (
         options?: SecretListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<Secret>>, SecretsError, never>;
+    ) => Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never>;
 
     /**
      * Create a secret
      *
      * @param body -
      */
-    readonly create: (options: SecretSpec) => Effect.Effect<Readonly<IDResponse>, SecretsError, never>;
+    readonly create: (options: SwarmSecretSpec) => Effect.Effect<Readonly<IDResponse>, SecretsError, never>;
 
     /**
      * Delete a secret
@@ -153,7 +153,7 @@ export interface SecretsImpl {
      *
      * @param id - ID of the secret
      */
-    readonly inspect: (options: SecretInspectOptions) => Effect.Effect<Readonly<Secret>, SecretsError, never>;
+    readonly inspect: (options: SecretInspectOptions) => Effect.Effect<Readonly<SwarmSecret>, SecretsError, never>;
 
     /**
      * Update a Secret
@@ -182,13 +182,15 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
     );
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const SecretClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Secret)));
+    const SecretClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmSecret)));
     const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
-    const SecretsClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(Secret))));
+    const SecretsClient = client.pipe(
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmSecret)))
+    );
 
     const list_ = (
         options?: SecretListOptions | undefined
-    ): Effect.Effect<Readonly<Array<Secret>>, SecretsError, never> =>
+    ): Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.get(""),
             maybeAddQueryParameter(
@@ -200,10 +202,10 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
             Effect.scoped
         );
 
-    const create_ = (options: SecretSpec): Effect.Effect<Readonly<IDResponse>, SecretsError, never> =>
+    const create_ = (options: SwarmSecretSpec): Effect.Effect<Readonly<IDResponse>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/create"),
-            HttpClientRequest.schemaBody(SecretSpec)(options),
+            HttpClientRequest.schemaBody(SwarmSecretSpec)(options),
             Effect.flatMap(IdResponseClient),
             Effect.mapError((error) => new SecretsError({ method: "create", error })),
             Effect.scoped
@@ -217,7 +219,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
             Effect.scoped
         );
 
-    const inspect_ = (options: SecretInspectOptions): Effect.Effect<Readonly<Secret>, SecretsError, never> =>
+    const inspect_ = (options: SecretInspectOptions): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
             SecretClient,
@@ -229,7 +231,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/update`),
             maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBody(SecretSpec)(options.spec),
+            HttpClientRequest.schemaBody(SwarmSecretSpec)(options.spec),
             Effect.flatMap(voidClient),
             Effect.mapError((error) => new SecretsError({ method: "update", error })),
             Effect.scoped

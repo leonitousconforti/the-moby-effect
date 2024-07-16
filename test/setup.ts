@@ -29,7 +29,7 @@ export const setup = async function ({
             );
         }
 
-        const connection_method: Option.Option<"socket" | "http" | "https" | "ssh"> = yield* Config.literal(
+        const connection_method = yield* Config.literal(
             "socket",
             "http",
             "https",

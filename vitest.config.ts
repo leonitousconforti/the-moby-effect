@@ -9,7 +9,7 @@ export default defineConfig({
         pool: "forks",
         fileParallelism: false,
         globalSetup: "./test/vitest.ts",
-        include: ["./test/unit/*.test.ts"],
+        include: ["./test/*.test.ts"],
         reporters: ["default"],
         coverage: {
             provider: "v8",

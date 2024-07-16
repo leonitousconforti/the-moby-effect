@@ -37,9 +37,9 @@ import {
     ContainerUpdateResponse,
     ContainerUpdateSpec,
     ContainerWaitResponse,
-    FilesystemChange,
+    ContainerFilesystemChange as FilesystemChange,
     Health,
-    HostConfig,
+    ContainerHostConfig as HostConfig,
 } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 

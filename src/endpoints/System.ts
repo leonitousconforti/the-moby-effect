@@ -22,12 +22,12 @@ import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 
 import {
-    AuthConfig,
     EventMessage,
-    SystemAuthResponse,
-    SystemDataUsageResponse,
-    SystemInfo,
-    SystemVersion,
+    RegistryAuthConfig,
+    AuthResponse as SystemAuthResponse,
+    SystemInfoResponse,
+    DiskUsage as UsageData,
+    SystemVersionResponse as VersionResponse,
 } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
@@ -124,14 +124,14 @@ export interface SystemsImpl {
      * @param authConfig - Authentication to check
      */
     readonly auth: (
-        options: Schema.Schema.Encoded<typeof AuthConfig>
+        options: Schema.Schema.Encoded<typeof RegistryAuthConfig>
     ) => Effect.Effect<SystemAuthResponse, SystemsError, never>;
 
     /** Get system information */
-    readonly info: () => Effect.Effect<Readonly<SystemInfo>, SystemsError, never>;
+    readonly info: () => Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, never>;
 
     /** Get version */
-    readonly version: () => Effect.Effect<Readonly<SystemVersion>, SystemsError, never>;
+    readonly version: () => Effect.Effect<Readonly<VersionResponse>, SystemsError, never>;
 
     /** Ping */
     readonly ping: () => Effect.Effect<"OK", SystemsError, never>;
@@ -174,9 +174,7 @@ export interface SystemsImpl {
      *
      * @param type - Object types, for which to compute and return data.
      */
-    readonly dataUsage: (
-        options?: SystemDataUsageOptions | undefined
-    ) => Effect.Effect<SystemDataUsageResponse, SystemsError, never>;
+    readonly dataUsage: (options?: SystemDataUsageOptions | undefined) => Effect.Effect<UsageData, SystemsError, never>;
 }
 
 /**
@@ -187,27 +185,27 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
     const defaultClient = yield* HttpClient.HttpClient;
 
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
-    const SystemInfoClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemInfo)));
+    const SystemInfoClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemInfoResponse)));
     const SystemAuthResponseClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemAuthResponse))
     );
-    const SystemVersionClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemVersion)));
+    const SystemVersionClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(VersionResponse)));
     const SystemDataUsageResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemDataUsageResponse))
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(UsageData))
     );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L324-L339
-    const auth_ = (options: AuthConfig): Effect.Effect<Readonly<SystemAuthResponse>, SystemsError, never> =>
+    const auth_ = (options: RegistryAuthConfig): Effect.Effect<Readonly<SystemAuthResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/auth"),
-            HttpClientRequest.schemaBody(AuthConfig)(options),
+            HttpClientRequest.schemaBody(RegistryAuthConfig)(options),
             Effect.flatMap(SystemAuthResponseClient),
             Effect.mapError((error) => new SystemsError({ method: "auth", error })),
             Effect.scoped
         );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L60-L110
-    const info_ = (): Effect.Effect<Readonly<SystemInfo>, SystemsError, never> =>
+    const info_ = (): Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/info"),
             SystemInfoClient,
@@ -216,7 +214,7 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
         );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L112-L119
-    const version_ = (): Effect.Effect<Readonly<SystemVersion>, SystemsError, never> =>
+    const version_ = (): Effect.Effect<Readonly<VersionResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/version"),
             SystemVersionClient,
@@ -264,9 +262,7 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
         );
 
     // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L117-L213
-    const dataUsage_ = (
-        options?: SystemDataUsageOptions | undefined
-    ): Effect.Effect<SystemDataUsageResponse, SystemsError, never> =>
+    const dataUsage_ = (options?: SystemDataUsageOptions | undefined): Effect.Effect<UsageData, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/system/df"),
             maybeAddQueryParameter("type", Option.fromNullable(options?.type)),

@@ -19,7 +19,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { Task } from "../generated/index.js";
+import { SwarmTask } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -136,14 +136,16 @@ export interface TasksImpl {
      *   - `service=<service name>`
      *   - `label=key` or `label="key=value"`
      */
-    readonly list: (options?: TaskListOptions | undefined) => Effect.Effect<Readonly<Array<Task>>, TasksError, never>;
+    readonly list: (
+        options?: TaskListOptions | undefined
+    ) => Effect.Effect<Readonly<Array<SwarmTask>>, TasksError, never>;
 
     /**
      * Inspect a task
      *
      * @param id - ID of the task
      */
-    readonly inspect: (options: TaskInspectOptions) => Effect.Effect<Readonly<Task>, TasksError, never>;
+    readonly inspect: (options: TaskInspectOptions) => Effect.Effect<Readonly<SwarmTask>, TasksError, never>;
 
     /**
      * Get task logs
@@ -173,10 +175,14 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
         HttpClient.filterStatusOk
     );
 
-    const TasksClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(Task))));
-    const TaskClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Task)));
+    const TaskClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmTask)));
+    const TasksClient = client.pipe(
+        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmTask)))
+    );
 
-    const list_ = (options?: TaskListOptions | undefined): Effect.Effect<Readonly<Array<Task>>, TasksError, never> =>
+    const list_ = (
+        options?: TaskListOptions | undefined
+    ): Effect.Effect<Readonly<Array<SwarmTask>>, TasksError, never> =>
         Function.pipe(
             HttpClientRequest.get(""),
             maybeAddQueryParameter(
@@ -188,7 +194,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
             Effect.scoped
         );
 
-    const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<Task>, TasksError, never> =>
+    const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
             TaskClient,

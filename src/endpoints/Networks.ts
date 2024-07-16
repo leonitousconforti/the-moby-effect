@@ -20,7 +20,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
 import {
-    Network,
+    SwarmNetwork as Network,
     NetworkConnectRequest,
     NetworkCreateRequest,
     NetworkCreateResponse,
@@ -292,7 +292,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
         Function.pipe(
             HttpClientRequest.post("/{id}/disconnect".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.schemaBody(NetworkDisconnectRequest)(
-                options.container ?? new NetworkDisconnectRequest({})
+                options.container ?? new NetworkDisconnectRequest({} as any)
             ),
             Effect.flatMap(voidClient),
             Effect.mapError((error) => new NetworksError({ method: "disconnect", error })),

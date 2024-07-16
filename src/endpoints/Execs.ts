@@ -26,7 +26,7 @@ import {
     MultiplexedStreamSocket,
     responseToStreamingSocketOrFail,
 } from "../demux/index.js";
-import { ExecConfig, ExecInspectResponse, ExecStartConfig, IdResponse } from "../generated/index.js";
+import { ContainerExecStartConfig, ExecConfig, ExecInspectResponse, IDResponse } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -76,7 +76,7 @@ export interface ContainerExecOptions {
  * @category Params
  */
 export interface ExecStartOptions {
-    readonly execStartConfig: Schema.Schema.Type<typeof ExecStartConfig>;
+    readonly execStartConfig: Schema.Schema.Type<typeof ContainerExecStartConfig>;
     /** Exec instance ID */
     readonly id: string;
 }
@@ -114,7 +114,7 @@ export interface Execs {
      * @param execConfig - Exec configuration
      * @param id - ID or name of container
      */
-    readonly container: (options: ContainerExecOptions) => Effect.Effect<Readonly<IdResponse>, ExecsError, never>;
+    readonly container: (options: ContainerExecOptions) => Effect.Effect<Readonly<IDResponse>, ExecsError, never>;
 
     /**
      * Start an exec instance
@@ -124,7 +124,7 @@ export interface Execs {
      */
     readonly start: <T extends boolean | undefined>(
         options: ExecStartOptions & {
-            execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T };
+            execStartConfig: Omit<Schema.Schema.Type<typeof ContainerExecStartConfig>, "Detach"> & { Detach?: T };
         }
     ) => T extends true
         ? Effect.Effect<void, ExecsError, never>
@@ -156,12 +156,12 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
 
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IdResponse)));
+    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
     const ExecInspectResponseClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ExecInspectResponse))
     );
 
-    const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IdResponse>, ExecsError, never> =>
+    const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
@@ -172,7 +172,7 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
 
     const start_ = <T extends boolean | undefined>(
         options: ExecStartOptions & {
-            execStartConfig: Omit<Schema.Schema.Type<typeof ExecStartConfig>, "Detach"> & { Detach?: T };
+            execStartConfig: Omit<Schema.Schema.Type<typeof ContainerExecStartConfig>, "Detach"> & { Detach?: T };
         }
     ): T extends true
         ? Effect.Effect<void, ExecsError, never>
@@ -183,7 +183,9 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
 
         const response = Function.pipe(
             HttpClientRequest.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
-            HttpClientRequest.schemaBody(ExecStartConfig)(Schema.decodeSync(ExecStartConfig)(options.execStartConfig)),
+            HttpClientRequest.schemaBody(ContainerExecStartConfig)(
+                Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
+            ),
             Effect.flatMap(client),
             Effect.mapError((error) => new ExecsError({ method: "start", error }))
         );
