@@ -1,5 +1,3 @@
-TODO: REFACTOR THIS INTO ONE FILE ONCE THEY ARE ALL IMPLEMENTED AND TESTED, IT WILL BE PRETTY SMALL
-
 Implements all the common docker cli commands except for login and logout because I don't want to have to deal with credential helpers
 
 ```
