@@ -11,9 +11,9 @@
       "integrity": "sha256:503f23cd692325b3cbb8c20a0ecfabb3444b0c786b363e0c82572bd7d71dc099"
     },
     "ghcr.io/devcontainers/features/git:1": {
-      "version": "1.3.0",
-      "resolved": "ghcr.io/devcontainers/features/git@sha256:aa0f267b6f10c7a1ba2545d6beb5d3d8576b584d5017dce4ba2d61d409f342f9",
-      "integrity": "sha256:aa0f267b6f10c7a1ba2545d6beb5d3d8576b584d5017dce4ba2d61d409f342f9"
+      "version": "1.3.1",
+      "resolved": "ghcr.io/devcontainers/features/git@sha256:6d953e8cf47eea1629bc95fab6e3831df4809ee8412916c41c00cd2d3f8e3601",
+      "integrity": "sha256:6d953e8cf47eea1629bc95fab6e3831df4809ee8412916c41c00cd2d3f8e3601"
     },
     "ghcr.io/devcontainers/features/github-cli:1": {
       "version": "1.0.12",
