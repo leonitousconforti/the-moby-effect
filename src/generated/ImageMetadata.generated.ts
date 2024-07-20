@@ -7,6 +7,6 @@ export class ImageMetadata extends Schema.Class<ImageMetadata>("ImageMetadata")(
     },
     {
         identifier: "ImageMetadata",
-        title: "types.ImageMetadata",
+        title: "image.Metadata",
     }
 ) {}

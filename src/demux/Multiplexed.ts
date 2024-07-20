@@ -4,8 +4,6 @@
  * @since 1.0.0
  */
 
-import type * as Common from "./Common.js";
-
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as ParseResult from "@effect/schema/ParseResult";
@@ -19,7 +17,8 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponseHack } from "../endpoints/Common.js";
+import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
+import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
 /**
  * @since 1.0.0
@@ -122,7 +121,7 @@ export const responseToMultiplexedStreamSocketOrFail = (
         } else {
             return yield* new Socket.SocketGenericError({
                 reason: "Read",
-                error: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
+                cause: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
             });
         }
     });
@@ -203,7 +202,7 @@ export const demuxMultiplexedSocket = Function.dual<
     ) => (
         socket: MultiplexedStreamSocket
     ) => Effect.Effect<
-        Common.CompressedDemuxOutput<A1, A2>,
+        CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >,
@@ -214,7 +213,7 @@ export const demuxMultiplexedSocket = Function.dual<
         sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ) => Effect.Effect<
-        Common.CompressedDemuxOutput<A1, A2>,
+        CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >
@@ -227,7 +226,7 @@ export const demuxMultiplexedSocket = Function.dual<
         sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined } | undefined
     ): Effect.Effect<
-        Common.CompressedDemuxOutput<A1, A2>,
+        CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     > =>
@@ -250,13 +249,7 @@ export const demuxMultiplexedSocket = Function.dual<
             ),
             Effect.map(Effect.allWith({ concurrency: 2 })),
             Effect.flatten,
-            Effect.map(([ranStdout, ranStderr]) => {
-                if (Predicate.isUndefined(ranStderr) && Predicate.isUndefined(ranStdout)) {
-                    return void 0 as Common.CompressedDemuxOutput<A1, A2>;
-                } else {
-                    return Tuple.make(ranStdout, ranStderr) as unknown as Common.CompressedDemuxOutput<A1, A2>;
-                }
-            }),
+            Effect.map(compressDemuxOutput),
             Effect.scoped
         )
 );

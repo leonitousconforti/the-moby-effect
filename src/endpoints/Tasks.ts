@@ -44,12 +44,12 @@ export const isTasksError = (u: unknown): u is TasksError => Predicate.hasProper
  * @since 1.0.0
  * @category Errors
  */
-export class TasksError extends PlatformError.RefailError(TasksErrorTypeId, "TasksError")<{
+export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "TasksError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -190,7 +190,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             TasksClient,
-            Effect.mapError((error) => new TasksError({ method: "list", error })),
+            Effect.mapError((cause) => new TasksError({ method: "list", cause })),
             Effect.scoped
         );
 
@@ -198,7 +198,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
             TaskClient,
-            Effect.mapError((error) => new TasksError({ method: "inspect", error })),
+            Effect.mapError((cause) => new TasksError({ method: "inspect", cause })),
             Effect.scoped
         );
 
@@ -215,7 +215,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapError((error) => new TasksError({ method: "logs", error }))
+            Stream.mapError((cause) => new TasksError({ method: "logs", cause }))
         );
 
     return { list: list_, inspect: inspect_, logs: logs_ };

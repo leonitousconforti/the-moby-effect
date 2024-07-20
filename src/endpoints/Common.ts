@@ -4,28 +4,18 @@
  * @since 1.0.0
  */
 
-import type * as net from "node:net";
-
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
-
-/**
- * Helper interface to expose the underlying socket from the effect HttpClient
- * response. Useful for multiplexing the response stream. This is a hack, and it
- * will only work when using the NodeJS layer.
- */
-export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
-    source: {
-        socket: net.Socket;
-    };
-}
 
 /**
  * Takes a key and an optional value and returns a function that either adds the
  * key and value to the query parameters of a request if the value was a Some or
  * does nothing if its a None.
+ *
+ * @since 1.0.0
+ * @category Request Helpers
+ * @internal
  */
 export const maybeAddQueryParameter = (
     key: string,
@@ -40,6 +30,10 @@ export const maybeAddQueryParameter = (
  * Takes a key and an optional value and returns a function that either adds the
  * key and value to the headers of a request if the value was a Some or does
  * nothing if its a None.
+ *
+ * @since 1.0.0
+ * @category Request Helpers
+ * @internal
  */
 export const maybeAddHeader = (
     key: string,
@@ -49,3 +43,16 @@ export const maybeAddHeader = (
         onNone: Function.constant(Function.identity),
         onSome: (val: string) => HttpClientRequest.setHeader(key, val),
     })(value);
+
+/**
+ * For a given set of filters, returns a function that adds the filters to the
+ * http request as a query parameter.
+ *
+ * @since 1.0.0
+ * @category Request Helpers
+ * @internal
+ */
+export const maybeAddFilters = (
+    filters?: unknown | undefined
+): ((self: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest) =>
+    maybeAddQueryParameter("filters", Function.pipe(filters, Option.fromNullable, Option.map(JSON.stringify)));

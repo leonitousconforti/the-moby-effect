@@ -20,7 +20,12 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { ServiceCreateResponse, ServiceUpdateResponse, SwarmService, SwarmServiceSpec } from "../generated/index.js";
+import {
+    SwarmService,
+    SwarmServiceCreateResponse,
+    SwarmServiceSpec,
+    SwarmServiceUpdateResponse,
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -45,12 +50,12 @@ export const isServicesError = (u: unknown): u is ServicesError => Predicate.has
  * @since 1.0.0
  * @category Errors
  */
-export class ServicesError extends PlatformError.RefailError(ServicesErrorTypeId, "ServicesError")<{
+export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId, "ServicesError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -212,7 +217,7 @@ export interface ServicesImpl {
      */
     readonly create: (
         options: ServiceCreateOptions
-    ) => Effect.Effect<Readonly<ServiceCreateResponse>, ServicesError, never>;
+    ) => Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never>;
 
     /**
      * Delete a service
@@ -253,7 +258,7 @@ export interface ServicesImpl {
      */
     readonly update: (
         options: ServiceUpdateOptions
-    ) => Effect.Effect<Readonly<ServiceUpdateResponse>, ServicesError, never>;
+    ) => Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never>;
 
     /**
      * Get service logs
@@ -288,11 +293,11 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmService)))
     );
     const ServiceCreateResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ServiceCreateResponse))
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmServiceCreateResponse))
     );
     const ServiceClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmService)));
     const ServiceUpdateResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ServiceUpdateResponse))
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmServiceUpdateResponse))
     );
 
     const list_ = (
@@ -306,19 +311,19 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             ),
             maybeAddQueryParameter("status", Option.fromNullable(options?.status)),
             ServicesClient,
-            Effect.mapError((error) => new ServicesError({ method: "list", error })),
+            Effect.mapError((cause) => new ServicesError({ method: "list", cause })),
             Effect.scoped
         );
 
     const create_ = (
         options: ServiceCreateOptions
-    ): Effect.Effect<Readonly<ServiceCreateResponse>, ServicesError, never> =>
+    ): Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/create"),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
             HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
             Effect.flatMap(ServiceCreateResponseClient),
-            Effect.mapError((error) => new ServicesError({ method: "create", error })),
+            Effect.mapError((cause) => new ServicesError({ method: "create", cause })),
             Effect.scoped
         );
 
@@ -326,7 +331,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         Function.pipe(
             HttpClientRequest.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
             voidClient,
-            Effect.mapError((error) => new ServicesError({ method: "delete", error })),
+            Effect.mapError((cause) => new ServicesError({ method: "delete", cause })),
             Effect.scoped
         );
 
@@ -335,13 +340,13 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("insertDefaults", Option.fromNullable(options.insertDefaults)),
             ServiceClient,
-            Effect.mapError((error) => new ServicesError({ method: "inspect", error })),
+            Effect.mapError((cause) => new ServicesError({ method: "inspect", cause })),
             Effect.scoped
         );
 
     const update_ = (
         options: ServiceUpdateOptions
-    ): Effect.Effect<Readonly<ServiceUpdateResponse>, ServicesError, never> =>
+    ): Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
@@ -350,7 +355,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             maybeAddQueryParameter("rollback", Option.fromNullable(options.rollback)),
             HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
             Effect.flatMap(ServiceUpdateResponseClient),
-            Effect.mapError((error) => new ServicesError({ method: "update", error })),
+            Effect.mapError((cause) => new ServicesError({ method: "update", cause })),
             Effect.scoped
         );
 
@@ -367,7 +372,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapError((error) => new ServicesError({ method: "logs", error }))
+            Stream.mapError((cause) => new ServicesError({ method: "logs", cause }))
         );
 
     return {

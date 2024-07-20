@@ -44,12 +44,12 @@ export const isSecretsError = (u: unknown): u is SecretsError => Predicate.hasPr
  * @since 1.0.0
  * @category Errors
  */
-export class SecretsError extends PlatformError.RefailError(SecretsErrorTypeId, "SecretsError")<{
+export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, "SecretsError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -198,7 +198,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             SecretsClient,
-            Effect.mapError((error) => new SecretsError({ method: "list", error })),
+            Effect.mapError((cause) => new SecretsError({ method: "list", cause })),
             Effect.scoped
         );
 
@@ -207,7 +207,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.post("/create"),
             HttpClientRequest.schemaBody(SwarmSecretSpec)(options),
             Effect.flatMap(IdResponseClient),
-            Effect.mapError((error) => new SecretsError({ method: "create", error })),
+            Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
             Effect.scoped
         );
 
@@ -215,7 +215,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.del(`/${encodeURIComponent(options.id)}`),
             voidClient,
-            Effect.mapError((error) => new SecretsError({ method: "delete", error })),
+            Effect.mapError((cause) => new SecretsError({ method: "delete", cause })),
             Effect.scoped
         );
 
@@ -223,7 +223,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
             SecretClient,
-            Effect.mapError((error) => new SecretsError({ method: "inspect", error })),
+            Effect.mapError((cause) => new SecretsError({ method: "inspect", cause })),
             Effect.scoped
         );
 
@@ -233,7 +233,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(SwarmSecretSpec)(options.spec),
             Effect.flatMap(voidClient),
-            Effect.mapError((error) => new SecretsError({ method: "update", error })),
+            Effect.mapError((cause) => new SecretsError({ method: "update", cause })),
             Effect.scoped
         );
 

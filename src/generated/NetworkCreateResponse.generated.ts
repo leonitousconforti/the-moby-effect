@@ -7,6 +7,6 @@ export class NetworkCreateResponse extends Schema.Class<NetworkCreateResponse>("
     },
     {
         identifier: "NetworkCreateResponse",
-        title: "types.NetworkCreateResponse",
+        title: "network.CreateResponse",
     }
 ) {}

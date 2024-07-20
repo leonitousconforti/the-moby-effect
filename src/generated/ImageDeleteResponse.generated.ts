@@ -7,6 +7,6 @@ export class ImageDeleteResponse extends Schema.Class<ImageDeleteResponse>("Imag
     },
     {
         identifier: "ImageDeleteResponse",
-        title: "types.ImageDeleteResponseItem",
+        title: "image.DeleteResponse",
     }
 ) {}

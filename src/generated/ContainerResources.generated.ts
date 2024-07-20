@@ -30,7 +30,7 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         MemorySwappiness: Schema.NullOr(MobySchemas.Int64),
         OomKillDisable: Schema.NullOr(Schema.Boolean),
         PidsLimit: Schema.NullOr(MobySchemas.Int64),
-        Ulimits: Schema.NullOr(Schema.Array(MobySchemasGenerated.Ulimit)),
+        Ulimits: Schema.NullOr(Schema.Array(MobySchemasGenerated.ContainerUlimit)),
         CpuCount: MobySchemas.Int64,
         CpuPercent: MobySchemas.Int64,
         IOMaximumIOps: MobySchemas.UInt64,

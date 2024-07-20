@@ -33,7 +33,7 @@ export type AddressEncoded = Schema.Schema.Encoded<$Address>;
  * @category Schemas
  * @example
  *     import * as Schema from "@effect/schema/Schema";
- *     import { Address } from "the-wireguard-effect/InternetSchemas";
+ *     import { Address } from "the-moby-effect/schemas/index.js";
  *
  *     const decodeAddress = Schema.decodeSync(Address);
  *

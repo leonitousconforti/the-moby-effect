@@ -93,6 +93,10 @@ func tsType(t reflect.Type) TSType {
 		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), false}
 	case reflect.Interface:
 		return TSType{"Schema.Object", false}
+	case reflect.Func:
+		return TSType{"Schema.Never", false}
+	case reflect.Uintptr:
+		return TSType{"Schema.Never", false}
 	default:
 		panic(fmt.Errorf("cannot convert type %s", t))
 	}

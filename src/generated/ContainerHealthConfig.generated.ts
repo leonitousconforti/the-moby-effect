@@ -7,10 +7,11 @@ export class ContainerHealthConfig extends Schema.Class<ContainerHealthConfig>("
         Interval: Schema.optional(MobySchemas.Int64),
         Timeout: Schema.optional(MobySchemas.Int64),
         StartPeriod: Schema.optional(MobySchemas.Int64),
+        StartInterval: Schema.optional(MobySchemas.Int64),
         Retries: Schema.optional(MobySchemas.Int64),
     },
     {
         identifier: "ContainerHealthConfig",
-        title: "container.HealthConfig",
+        title: "v1.HealthcheckConfig",
     }
 ) {}

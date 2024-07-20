@@ -6,19 +6,21 @@ export class ContainerStatsResponse extends Schema.Class<ContainerStatsResponse>
     {
         read: MobySchemasGenerated.Time,
         preread: MobySchemasGenerated.Time,
-        pids_stats: Schema.optional(MobySchemasGenerated.PidsStats),
-        blkio_stats: Schema.optional(MobySchemasGenerated.BlkioStats),
+        pids_stats: Schema.optional(MobySchemasGenerated.ContainerPidsStats),
+        blkio_stats: Schema.optional(MobySchemasGenerated.ContainerBlkioStats),
         num_procs: MobySchemas.UInt32,
-        storage_stats: Schema.optional(MobySchemasGenerated.StorageStats),
-        cpu_stats: Schema.optional(MobySchemasGenerated.CPUStats),
-        precpu_stats: Schema.optional(MobySchemasGenerated.CPUStats),
-        memory_stats: Schema.optional(MobySchemasGenerated.MemoryStats),
+        storage_stats: Schema.optional(MobySchemasGenerated.ContainerStorageStats),
+        cpu_stats: Schema.optional(MobySchemasGenerated.ContainerCPUStats),
+        precpu_stats: Schema.optional(MobySchemasGenerated.ContainerCPUStats),
+        memory_stats: Schema.optional(MobySchemasGenerated.ContainerMemoryStats),
         name: Schema.optional(Schema.String),
         id: Schema.optional(Schema.String),
-        networks: Schema.optional(Schema.Record(Schema.String, MobySchemasGenerated.NetworkStats), { nullable: true }),
+        networks: Schema.optional(Schema.Record(Schema.String, MobySchemasGenerated.ContainerNetworkStats), {
+            nullable: true,
+        }),
     },
     {
         identifier: "ContainerStatsResponse",
-        title: "types.StatsJSON",
+        title: "container.StatsResponse",
     }
 ) {}

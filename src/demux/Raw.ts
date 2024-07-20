@@ -4,8 +4,6 @@
  * @since 1.0.0
  */
 
-import type * as Common from "./Common.js";
-
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
@@ -16,7 +14,8 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponseHack } from "../endpoints/Common.js";
+import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
+import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
 /**
  * @since 1.0.0
@@ -130,30 +129,98 @@ export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.H
  * @since 1.0.0
  * @category Predicates
  */
-export const responseToRawStreamSocketOrFail = <
-    SourceIsUnidirectional extends true | false | undefined,
-    A extends SourceIsUnidirectional extends true ? UnidirectionalRawStreamSocket : BidirectionalRawStreamSocket,
+export const responseToRawStreamSocketOrFail = Function.dual<
+    <
+        SourceIsKnownUnidirectional extends true | undefined = undefined,
+        SourceIsKnownBidirectional extends true | undefined = undefined,
+    >(
+        options?:
+            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+            | undefined
+    ) => (
+        response: HttpClientResponse.HttpClientResponse
+    ) => Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : SourceIsKnownBidirectional extends true
+              ? BidirectionalRawStreamSocket
+              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+        Socket.SocketError,
+        never
+    >,
+    <
+        SourceIsKnownUnidirectional extends true | undefined = undefined,
+        SourceIsKnownBidirectional extends true | undefined = undefined,
+    >(
+        response: HttpClientResponse.HttpClientResponse,
+        options?:
+            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+            | undefined
+    ) => Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : SourceIsKnownBidirectional extends true
+              ? BidirectionalRawStreamSocket
+              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+        Socket.SocketError,
+        never
+    >
 >(
-    response: HttpClientResponse.HttpClientResponse,
-    options?: { sourceIsUnidirectional?: SourceIsUnidirectional | undefined } | undefined
-): Effect.Effect<A, Socket.SocketError, never> =>
-    Effect.gen(function* () {
-        const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-        const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
-        const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-        const basic = { ...effectSocket, "content-type": RawStreamSocketContentType };
+    (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
+    <
+        SourceIsKnownUnidirectional extends true | undefined = undefined,
+        SourceIsKnownBidirectional extends true | undefined = undefined,
+    >(
+        response: HttpClientResponse.HttpClientResponse,
+        options?:
+            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+            | undefined
+    ): Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : SourceIsKnownBidirectional extends true
+              ? BidirectionalRawStreamSocket
+              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+        Socket.SocketError,
+        never
+    > =>
+        Effect.gen(function* () {
+            type Ret = SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : SourceIsKnownBidirectional extends true
+                  ? BidirectionalRawStreamSocket
+                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket;
 
-        if (responseIsRawStreamSocketResponse(response)) {
-            return options?.sourceIsUnidirectional
-                ? ({ ...basic, [UnidirectionalRawStreamSocketTypeId]: UnidirectionalRawStreamSocketTypeId } as A)
-                : ({ ...basic, [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId } as A);
-        } else {
-            return yield* new Socket.SocketGenericError({
-                reason: "Read",
-                error: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
-            });
-        }
-    });
+            if (!responseIsRawStreamSocketResponse(response)) {
+                return yield* new Socket.SocketGenericError({
+                    reason: "Read",
+                    cause: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
+                });
+            }
+
+            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
+            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
+            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
+
+            const bidirectional: BidirectionalRawStreamSocket = {
+                ...effectSocket,
+                "content-type": RawStreamSocketContentType,
+                [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId,
+            };
+
+            const sourceIsKnownUnidirectional =
+                Predicate.isNotUndefined(options) &&
+                Predicate.hasProperty(options, "sourceIsKnownUnidirectional") &&
+                options.sourceIsKnownUnidirectional === true;
+
+            return sourceIsKnownUnidirectional
+                ? (downcastBidirectionalToUnidirectional(bidirectional) as Ret)
+                : (bidirectional as Ret);
+        })
+);
 
 /**
  * Demux a raw socket. When given a raw socket of the remote process's pty,
@@ -230,11 +297,10 @@ export const demuxUnidirectionalRawSockets = <
         | { stdin?: never; stdout: O2; stderr: O3 }
         | { stdin: O1; stdout: O2; stderr: O3 }
 ): Effect.Effect<
-    Common.CompressedDemuxOutput<A1, A2>,
+    CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | Socket.SocketError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
 > => {
-    type A = Common.CompressedDemuxOutput<A1, A2>;
     type S1 = Stream.Stream<string | Uint8Array, E1, R1>;
     type S2 = Sink.Sink<A1, string, string, E2, R2>;
     type S3 = Sink.Sink<A2, string, string, E3, R3>;
@@ -257,20 +323,7 @@ export const demuxUnidirectionalRawSockets = <
         : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
 
     return Effect.map(
-        Effect.all(
-            {
-                ranStdin: runStdin,
-                ranStdout: runStdout,
-                ranStderr: runStderr,
-            },
-            { concurrency: 3 }
-        ),
-        ({ ranStderr, ranStdout }) => {
-            if (Predicate.isUndefined(ranStderr) && Predicate.isUndefined(ranStdout)) {
-                return void 0 as A;
-            } else {
-                return Tuple.make(ranStdout, ranStderr) as unknown as A;
-            }
-        }
+        Effect.all({ ranStdin: runStdin, ranStdout: runStdout, ranStderr: runStderr }, { concurrency: 3 }),
+        ({ ranStderr, ranStdout }) => compressDemuxOutput(Tuple.make(ranStdout, ranStderr))
     );
 };

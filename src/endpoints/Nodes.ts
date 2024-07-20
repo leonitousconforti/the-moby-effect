@@ -45,12 +45,12 @@ export const isNodesError = (u: unknown): u is NodesError => Predicate.hasProper
  * @since 1.0.0
  * @category Errors
  */
-export class NodesError extends PlatformError.RefailError(NodesErrorTypeId, "NodesError")<{
+export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "NodesError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -166,7 +166,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             NodesClient,
-            Effect.mapError((error) => new NodesError({ method: "list", error })),
+            Effect.mapError((cause) => new NodesError({ method: "list", cause })),
             Effect.scoped
         );
 
@@ -175,7 +175,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
             HttpClientRequest.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             voidClient,
-            Effect.mapError((error) => new NodesError({ method: "delete", error })),
+            Effect.mapError((cause) => new NodesError({ method: "delete", cause })),
             Effect.scoped
         );
 
@@ -183,7 +183,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
         Function.pipe(
             HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             NodeClient,
-            Effect.mapError((error) => new NodesError({ method: "inspect", error })),
+            Effect.mapError((cause) => new NodesError({ method: "inspect", cause })),
             Effect.scoped
         );
 
@@ -193,7 +193,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(SwarmNodeSpec)(options.body),
             Effect.flatMap(voidClient),
-            Effect.mapError((error) => new NodesError({ method: "update", error })),
+            Effect.mapError((cause) => new NodesError({ method: "update", cause })),
             Effect.scoped
         );
 

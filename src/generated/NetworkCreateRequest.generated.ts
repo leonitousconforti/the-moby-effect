@@ -3,10 +3,9 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("NetworkCreateRequest")(
     {
-        CheckDuplicate: Schema.Boolean,
         Driver: Schema.String,
         Scope: Schema.String,
-        EnableIPv6: Schema.Boolean,
+        EnableIPv6: Schema.optional(Schema.Boolean, { nullable: true }),
         IPAM: Schema.NullOr(MobySchemasGenerated.NetworkIPAM),
         Internal: Schema.Boolean,
         Attachable: Schema.Boolean,
@@ -16,9 +15,10 @@ export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("Ne
         Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Name: Schema.String,
+        CheckDuplicate: Schema.optional(Schema.Boolean, { nullable: true }),
     },
     {
         identifier: "NetworkCreateRequest",
-        title: "types.NetworkCreateRequest",
+        title: "network.CreateRequest",
     }
 ) {}

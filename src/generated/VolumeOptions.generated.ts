@@ -5,6 +5,7 @@ export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
     {
         NoCopy: Schema.optional(Schema.Boolean),
         Labels: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Subpath: Schema.optional(Schema.String),
         DriverConfig: Schema.optional(MobySchemasGenerated.Driver, { nullable: true }),
     },
     {

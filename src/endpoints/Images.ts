@@ -5,12 +5,9 @@
  */
 
 import * as PlatformError from "@effect/platform/Error";
-import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -22,18 +19,17 @@ import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 
 import {
-    BuildInfo,
-    BuildCachePruneReport as BuildPruneResponse,
     ContainerConfig,
     IDResponse,
     ImageDeleteResponse as ImageDeleteResponseItem,
     ImageHistoryResponseItem,
     ImageInspectResponse as ImageInspect,
-    ImagesPruneResponse as ImagePruneResponse,
+    ImagePruneResponse,
     RegistrySearchResponse as ImageSearchResponseItem,
-    ImagesListResponse as ImageSummary,
+    ImageSummary,
+    JSONMessage,
 } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./Common.js";
+import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
  * @since 1.0.0
@@ -57,12 +53,13 @@ export const isDistributionsError = (u: unknown): u is ImagesError => Predicate.
  * @since 1.0.0
  * @category Errors
  */
-export class ImagesError extends PlatformError.RefailError(ImagesErrorTypeId, "ImagesError")<{
+export class ImagesError extends PlatformError.TypeIdError(ImagesErrorTypeId, "ImagesError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: unknown;
+    // cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -89,23 +86,23 @@ export interface ImageListOptions {
      * - `since`=(`<image-name>[:<tag>]`, `<image id>` or `<image@digest>`)
      * - `until=<timestamp>`
      */
-    readonly filters?: string;
+    readonly filters?: string | undefined;
     /** Compute and show shared size as a `SharedSize` field on each image. */
-    readonly "shared-size"?: boolean;
+    readonly "shared-size"?: boolean | undefined;
     /** Show digest information as a `RepoDigests` field on each image. */
-    readonly digests?: boolean;
+    readonly digests?: boolean | undefined;
 }
 
 /**
  * @since 1.0.0
  * @category Params
  */
-export interface ImageBuildOptions {
+export interface ImageBuildOptions<E1> {
     /**
      * A tar archive compressed with one of the following algorithms: identity
      * (no compression), gzip, bzip2, xz.
      */
-    readonly context: Stream.Stream<Uint8Array, ImagesError, never>;
+    readonly context: Stream.Stream<Uint8Array, E1, never>;
     /**
      * Path within the build context to the `Dockerfile`. This is ignored if
      * `remote` is specified and points to an external `Dockerfile`.
@@ -485,9 +482,9 @@ export interface ImageGetAllOptions {
  * @since 1.0.0
  * @category Params
  */
-export interface ImageLoadOptions {
+export interface ImageLoadOptions<E1> {
     /** Tar archive containing images */
-    readonly imagesTarball: Stream.Stream<Uint8Array, ImagesError, never>;
+    readonly imagesTarball: Stream.Stream<Uint8Array, E1, never>;
     /** Suppress progress details during load. */
     readonly quiet?: boolean;
 }
@@ -521,7 +518,7 @@ export interface ImagesImpl {
      */
     readonly list: (
         options?: ImageListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<ImageSummary>>, ImagesError>;
+    ) => Effect.Effect<ReadonlyArray<ImageSummary>, ImagesError, never>;
 
     /**
      * Build an image
@@ -609,7 +606,7 @@ export interface ImagesImpl {
      * @param target - Target build stage
      * @param outputs - BuildKit output configuration
      */
-    readonly build: (options: ImageBuildOptions) => Stream.Stream<BuildInfo, ImagesError, never>;
+    readonly build: <E1>(options: ImageBuildOptions<E1>) => Stream.Stream<JSONMessage, ImagesError, never>;
 
     /**
      * Delete builder cache
@@ -633,7 +630,7 @@ export interface ImagesImpl {
      *   - `shared`
      *   - `private`
      */
-    readonly buildPrune: (options: BuildPruneOptions) => Effect.Effect<BuildPruneResponse, ImagesError>;
+    readonly buildPrune: (options: BuildPruneOptions) => Effect.Effect<ImagePruneResponse, ImagesError>;
 
     /**
      * Create an image
@@ -678,7 +675,7 @@ export interface ImagesImpl {
      *   the option is not set, the host's native OS and Architecture are used
      *   for the imported image.
      */
-    readonly create: (options: ImageCreateOptions) => Stream.Stream<BuildInfo, ImagesError, never>;
+    readonly create: (options: ImageCreateOptions) => Stream.Stream<JSONMessage, ImagesError, never>;
 
     /**
      * Inspect an image
@@ -692,9 +689,7 @@ export interface ImagesImpl {
      *
      * @param name - Image name or ID
      */
-    readonly history: (
-        options: ImageHistoryOptions
-    ) => Effect.Effect<Schema.Schema.Type<typeof ImageHistoryResponseItem>, ImagesError>;
+    readonly history: (options: ImageHistoryOptions) => Effect.Effect<ImageHistoryResponseItem, ImagesError, never>;
 
     /**
      * Push an image
@@ -805,7 +800,7 @@ export interface ImagesImpl {
      * @param imagesTarball - Tar archive containing images
      * @param quiet - Suppress progress details during load.
      */
-    readonly load: (options: ImageLoadOptions) => Effect.Effect<void, ImagesError>;
+    readonly load: <E1>(options: ImageLoadOptions<E1>) => Effect.Effect<void, ImagesError>;
 }
 
 /**
@@ -814,21 +809,17 @@ export interface ImagesImpl {
  */
 export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
-
     const buildClient = defaultClient.pipe(HttpClient.filterStatusOk);
     const client = defaultClient.pipe(
         HttpClient.mapRequest(HttpClientRequest.prependUrl("/images")),
         HttpClient.filterStatusOk
     );
-
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
+
     const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
     const ImageInspectClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImageInspect)));
     const ImageSummariesClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSummary)))
-    );
-    const BuildPruneResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(BuildPruneResponse))
+        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ImageSummary)))
     );
     const HistoryResponseItemsClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImageHistoryResponseItem))
@@ -843,7 +834,9 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImagePruneResponse))
     );
 
-    const list_ = (options?: ImageListOptions | undefined): Effect.Effect<Readonly<Array<ImageSummary>>, ImagesError> =>
+    const list_ = (
+        options?: ImageListOptions | undefined
+    ): Effect.Effect<ReadonlyArray<ImageSummary>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get("/json"),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
@@ -851,11 +844,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("shared-size", Option.fromNullable(options?.["shared-size"])),
             maybeAddQueryParameter("digests", Option.fromNullable(options?.digests)),
             ImageSummariesClient,
-            Effect.mapError((error) => new ImagesError({ method: "list", error })),
-            Effect.scoped
+            Effect.mapError((cause) => new ImagesError({ method: "list", cause }))
         );
 
-    const build_ = (options: ImageBuildOptions): Stream.Stream<BuildInfo, ImagesError, never> =>
+    const build_ = <E1>(options: ImageBuildOptions<E1>): Stream.Stream<JSONMessage, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/build`),
             HttpClientRequest.setHeader("Content-type", options["Content-type"] ?? "application/x-tar"),
@@ -892,26 +884,24 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
             Stream.flattenIterables,
-            Stream.map(Schema.decode(Schema.parseJson(BuildInfo))),
-            Stream.flattenEffect(),
-            Stream.mapError((error) => new ImagesError({ method: "build", error }))
+            Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage)), { unordered: false }),
+            Stream.mapError((cause) => new ImagesError({ method: "build", cause }))
         );
 
-    const buildPrune_ = (options?: BuildPruneOptions | undefined): Effect.Effect<BuildPruneResponse, ImagesError> =>
+    const buildPrune_ = (
+        options?: BuildPruneOptions | undefined
+    ): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/build/prune"),
             maybeAddQueryParameter("keep-storage", Option.fromNullable(options?.["keep-storage"])),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            BuildPruneResponseClient,
-            Effect.mapError((error) => new ImagesError({ method: "buildPrune", error })),
-            Effect.scoped
+            maybeAddFilters(options?.filters),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(ImagePruneResponse),
+            Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause }))
         );
 
-    const create_ = (options: ImageCreateOptions): Stream.Stream<BuildInfo, ImagesError, never> =>
+    const create_ = (options: ImageCreateOptions): Stream.Stream<JSONMessage, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/create"),
             HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
@@ -928,25 +918,23 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
             Stream.flattenIterables,
-            Stream.flatMap(Schema.decode(Schema.parseJson(BuildInfo))),
-            Stream.mapError((error) => new ImagesError({ method: "create", error }))
+            Stream.flatMap(Schema.decode(Schema.parseJson(JSONMessage))),
+            Stream.mapError((cause) => new ImagesError({ method: "create", cause }))
         );
 
-    const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError> =>
+    const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
             ImageInspectClient,
-            Effect.mapError((error) => new ImagesError({ method: "inspect", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "inspect", cause })),
             Effect.scoped
         );
 
-    const history_ = (
-        options: ImageHistoryOptions
-    ): Effect.Effect<Schema.Schema.Encoded<typeof ImageHistoryResponseItem>, ImagesError> =>
+    const history_ = (options: ImageHistoryOptions): Effect.Effect<ImageHistoryResponseItem, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}/history`),
             HistoryResponseItemsClient,
-            Effect.mapError((error) => new ImagesError({ method: "history", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "history", cause })),
             Effect.scoped
         );
 
@@ -958,34 +946,32 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapError((error) => new ImagesError({ method: "push", error }))
+            Stream.mapError((cause) => new ImagesError({ method: "push", cause }))
         );
 
-    const tag_ = (options: ImageTagOptions): Effect.Effect<void, ImagesError> =>
+    const tag_ = (options: ImageTagOptions): Effect.Effect<void, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.name)}/tag`),
             maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
             maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
             voidClient,
-            Effect.mapError((error) => new ImagesError({ method: "tag", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "tag", cause })),
             Effect.scoped
         );
 
     const delete_ = (
         options: ImageDeleteOptions
-    ): Effect.Effect<Readonly<Array<ImageDeleteResponseItem>>, ImagesError> =>
+    ): Effect.Effect<ReadonlyArray<ImageDeleteResponseItem>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             maybeAddQueryParameter("noprune", Option.fromNullable(options.noprune)),
             ImageDeleteResponseItemsClient,
-            Effect.mapError((error) => new ImagesError({ method: "delete", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "delete", cause })),
             Effect.scoped
         );
 
-    const search_ = (
-        options: ImageSearchOptions
-    ): Effect.Effect<Schema.Schema.Encoded<typeof ImageSearchResponseItem>, ImagesError> =>
+    const search_ = (options: ImageSearchOptions): Effect.Effect<ImageSearchResponseItem, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get("/search"),
             maybeAddQueryParameter("term", Option.some(options.term)),
@@ -995,11 +981,11 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
                 Function.pipe(options.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             ImageSearchResponseItemsClient,
-            Effect.mapError((error) => new ImagesError({ method: "search", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "search", cause })),
             Effect.scoped
         );
 
-    const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<ImagePruneResponse, ImagesError> =>
+    const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/prune"),
             maybeAddQueryParameter(
@@ -1007,11 +993,11 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             ImagePruneResponseClient,
-            Effect.mapError((error) => new ImagesError({ method: "prune", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "prune", cause })),
             Effect.scoped
         );
 
-    const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError> =>
+    const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/commit"),
             maybeAddQueryParameter("container", Option.fromNullable(options.container)),
@@ -1023,7 +1009,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
             HttpClientRequest.schemaBody(ContainerConfig)(options.containerConfig),
             Effect.flatMap(IdResponseClient),
-            Effect.mapError((error) => new ImagesError({ method: "commit", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "commit", cause })),
             Effect.scoped
         );
 
@@ -1033,7 +1019,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapError((error) => new ImagesError({ method: "get", error }))
+            Stream.mapError((cause) => new ImagesError({ method: "get", cause }))
         );
 
     const getall_ = (options?: ImageGetAllOptions | undefined): Stream.Stream<string, ImagesError, never> =>
@@ -1043,16 +1029,16 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapError((error) => new ImagesError({ method: "getall", error }))
+            Stream.mapError((cause) => new ImagesError({ method: "getall", cause }))
         );
 
-    const load_ = (options: ImageLoadOptions): Effect.Effect<void, ImagesError> =>
+    const load_ = <E1>(options: ImageLoadOptions<E1>): Effect.Effect<void, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/load"),
             maybeAddQueryParameter("quiet", Option.fromNullable(options?.quiet)),
             HttpClientRequest.streamBody(options.imagesTarball),
             voidClient,
-            Effect.mapError((error) => new ImagesError({ method: "load", error })),
+            Effect.mapError((cause) => new ImagesError({ method: "load", cause })),
             Effect.scoped
         );
 

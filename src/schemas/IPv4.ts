@@ -92,7 +92,7 @@ export type IPv4Encoded = Schema.Schema.Encoded<$IPv4>;
  * @category Schemas
  * @example
  *     import * as Schema from "@effect/schema/Schema";
- *     import { IPv4 } from "the-wireguard-effect/InternetSchemas";
+ *     import { IPv4 } from "the-moby-effect/schemas/index.js";
  *
  *     const decodeIPv4 = Schema.decodeSync(IPv4);
  *     assert.deepEqual(decodeIPv4("1.1.1.1"), {

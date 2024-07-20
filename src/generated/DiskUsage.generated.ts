@@ -5,8 +5,8 @@ import * as MobySchemasGenerated from "./index.js";
 export class DiskUsage extends Schema.Class<DiskUsage>("DiskUsage")(
     {
         LayersSize: MobySchemas.Int64,
-        Images: Schema.NullOr(Schema.Array(MobySchemasGenerated.ImagesListResponse)),
-        Containers: Schema.NullOr(Schema.Array(MobySchemasGenerated.ContainerListResponse)),
+        Images: Schema.NullOr(Schema.Array(MobySchemasGenerated.ImageSummary)),
+        Containers: Schema.NullOr(Schema.Array(MobySchemasGenerated.ContainerInspectResponse)),
         Volumes: Schema.NullOr(Schema.Array(MobySchemasGenerated.Volume)),
         BuildCache: Schema.NullOr(Schema.Array(MobySchemasGenerated.BuildCache)),
         BuilderSize: Schema.optional(MobySchemas.Int64),

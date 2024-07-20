@@ -23,7 +23,7 @@ import {
     Volume,
     VolumeCreateOptions,
     VolumeListResponse,
-    VolumesPruneResponse,
+    VolumePruneResponse,
 } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
@@ -49,12 +49,12 @@ export const isVolumesError = (u: unknown): u is VolumesError => Predicate.hasPr
  * @since 1.0.0
  * @category Errors
  */
-export class VolumesError extends PlatformError.RefailError(VolumesErrorTypeId, "VolumesError")<{
+export class VolumesError extends PlatformError.TypeIdError(VolumesErrorTypeId, "VolumesError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -85,7 +85,7 @@ export interface VolumeDeleteOptions {
     /** Volume name or ID */
     readonly name: string;
     /** Force the removal of the volume */
-    readonly force?: boolean;
+    readonly force?: boolean | undefined;
 }
 
 /** @since 1.0.0 */
@@ -187,18 +187,15 @@ export interface VolumesImpl {
     /**
      * Delete unused volumes
      *
-     * @param filters - Filters to process on the prune list, encoded as JSON (a
-     *   `map[string][]string`).
+     * Available filters:
      *
-     *   Available filters:
-     *
-     *   - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
-     *       `label!=<key>=<value>`) Prune volumes with (or without, in case
-     *       `label!=...` is used) the specified labels.
-     *   - `all` (`all=true`) - Consider all (local) volumes for pruning and not
-     *       just anonymous volumes.
+     * - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
+     *   `label!=<key>=<value>`) Prune volumes with (or without, in case
+     *   `label!=...` is used) the specified labels.
+     * - `all` (`all=true`) - Consider all (local) volumes for pruning and not
+     *   just anonymous volumes.
      */
-    readonly prune: (options: VolumePruneOptions) => Effect.Effect<VolumesPruneResponse, VolumesError, never>;
+    readonly prune: (options: VolumePruneOptions) => Effect.Effect<VolumePruneResponse, VolumesError, never>;
 }
 
 /**
@@ -219,7 +216,7 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
         HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(VolumeListResponse))
     );
     const VolumePruneResponseClient = client.pipe(
-        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(VolumesPruneResponse))
+        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(VolumePruneResponse))
     );
 
     const list_ = (options?: VolumeListOptions | undefined): Effect.Effect<VolumeListResponse, VolumesError> =>
@@ -230,7 +227,7 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             VolumeListResponseClient,
-            Effect.mapError((error) => new VolumesError({ method: "list", error }))
+            Effect.mapError((cause) => new VolumesError({ method: "list", cause }))
         );
 
     const create_ = (options: VolumeCreateOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
@@ -238,7 +235,7 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.post("/create"),
             HttpClientRequest.schemaBody(VolumeCreateOptions)(options),
             Effect.flatMap(VolumeClient),
-            Effect.mapError((error) => new VolumesError({ method: "create", error }))
+            Effect.mapError((cause) => new VolumesError({ method: "create", cause }))
         );
 
     const delete_ = (options: VolumeDeleteOptions): Effect.Effect<void, VolumesError, never> =>
@@ -246,7 +243,7 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.del(`/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             voidClient,
-            Effect.mapError((error) => new VolumesError({ method: "delete", error })),
+            Effect.mapError((cause) => new VolumesError({ method: "delete", cause })),
             Effect.scoped
         );
 
@@ -254,7 +251,7 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}`),
             VolumeClient,
-            Effect.mapError((error) => new VolumesError({ method: "inspect", error }))
+            Effect.mapError((cause) => new VolumesError({ method: "inspect", cause }))
         );
 
     const update_ = (options: VolumeUpdateOptions): Effect.Effect<void, VolumesError, never> =>
@@ -263,13 +260,13 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(ClusterVolumeSpec)(options.spec),
             Effect.flatMap(voidClient),
-            Effect.mapError((error) => new VolumesError({ method: "update", error })),
+            Effect.mapError((cause) => new VolumesError({ method: "update", cause })),
             Effect.scoped
         );
 
     const prune_ = (
         options?: VolumePruneOptions | undefined
-    ): Effect.Effect<VolumesPruneResponse, VolumesError, never> =>
+    ): Effect.Effect<VolumePruneResponse, VolumesError, never> =>
         Function.pipe(
             HttpClientRequest.post("/prune"),
             maybeAddQueryParameter(
@@ -277,7 +274,7 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             VolumePruneResponseClient,
-            Effect.mapError((error) => new VolumesError({ method: "prune", error }))
+            Effect.mapError((cause) => new VolumesError({ method: "prune", cause }))
         );
 
     return {

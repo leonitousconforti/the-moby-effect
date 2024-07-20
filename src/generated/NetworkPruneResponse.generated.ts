@@ -6,6 +6,6 @@ export class NetworkPruneResponse extends Schema.Class<NetworkPruneResponse>("Ne
     },
     {
         identifier: "NetworkPruneResponse",
-        title: "types.NetworksPruneReport",
+        title: "network.PruneReport",
     }
 ) {}

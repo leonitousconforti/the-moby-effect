@@ -21,12 +21,15 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
+import { responseToStreamingSocketOrFail } from "../demux/Common.js";
+import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
+import { BidirectionalRawStreamSocket } from "../demux/Raw.js";
 import {
-    BidirectionalRawStreamSocket,
-    MultiplexedStreamSocket,
-    responseToStreamingSocketOrFail,
-} from "../demux/index.js";
-import { ContainerExecStartConfig, ExecConfig, ExecInspectResponse, IDResponse } from "../generated/index.js";
+    ContainerExecOptions as ContainerExecStartConfig,
+    ContainerExecOptions as ExecConfig,
+    ContainerExecInspect as ExecInspectResponse,
+    IDResponse,
+} from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -51,12 +54,12 @@ export const isDistributionsError = (u: unknown): u is ExecsError => Predicate.h
  * @since 1.0.0
  * @category Errors
  */
-export class ExecsError extends PlatformError.RefailError(ExecsErrorTypeId, "ExecsError")<{
+export class ExecsError extends PlatformError.TypeIdError(ExecsErrorTypeId, "ExecsError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | Socket.SocketError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | Socket.SocketError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -166,7 +169,7 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
             HttpClientRequest.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
             Effect.flatMap(IdResponseClient),
-            Effect.mapError((error) => new ExecsError({ method: "container", error })),
+            Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
             Effect.scoped
         );
 
@@ -187,12 +190,12 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
                 Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
             ),
             Effect.flatMap(client),
-            Effect.mapError((error) => new ExecsError({ method: "start", error }))
+            Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
         );
 
         const toStreamingSock = Function.compose(
             responseToStreamingSocketOrFail,
-            Effect.mapError((error) => new ExecsError({ method: "start", error }))
+            Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
         );
 
         return options.execStartConfig.Detach
@@ -206,7 +209,7 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
             maybeAddQueryParameter("h", Option.fromNullable(options.h)),
             maybeAddQueryParameter("w", Option.fromNullable(options.w)),
             voidClient,
-            Effect.mapError((error) => new ExecsError({ method: "resize", error })),
+            Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
             Effect.scoped
         );
 
@@ -214,7 +217,7 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
         Function.pipe(
             HttpClientRequest.get(`/exec/${encodeURIComponent(options.id)}/json`),
             ExecInspectResponseClient,
-            Effect.mapError((error) => new ExecsError({ method: "inspect", error })),
+            Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),
             Effect.scoped
         );
 

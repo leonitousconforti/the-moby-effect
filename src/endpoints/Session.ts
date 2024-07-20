@@ -17,7 +17,7 @@ import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
-import { IExposeSocketOnEffectClientResponseHack } from "./Common.js";
+import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 
 /**
  * @since 1.0.0
@@ -41,12 +41,12 @@ export const isSessionsError = (u: unknown): u is SessionsError => Predicate.has
  * @since 1.0.0
  * @category Errors
  */
-export class SessionsError extends PlatformError.RefailError(SessionsErrorTypeId, "SessionsError")<{
+export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId, "SessionsError")<{
     method: string;
-    error: HttpClientError.HttpClientError;
+    cause: HttpClientError.HttpClientError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -84,7 +84,7 @@ export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Defa
             client,
             Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
             Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
-            Effect.mapError((error) => new SessionsError({ method: "session", error }))
+            Effect.mapError((cause) => new SessionsError({ method: "session", cause }))
         );
 
     return { session: session_ };

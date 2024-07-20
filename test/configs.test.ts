@@ -2,44 +2,46 @@ import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vites
 
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "the-moby-effect/Moby";
+import * as MobyAgent from "the-moby-effect/Agent";
+import * as Moby from "the-moby-effect/Moby";
+import * as Configs from "the-moby-effect/endpoints/Configs";
+import * as Swarm from "the-moby-effect/endpoints/Swarm";
 
 describe("MobyApi Configs tests", () => {
-    const testConfigsService: Layer.Layer<MobyApi.Configs.Configs, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
-    const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const testConfigsService: Layer.Layer<Configs.Configs, never, never> = Moby.layer
+        .pipe(Layer.provide(MobyAgent.makeNodeHttpClientLayer(inject("__TEST_CONNECTION_OPTIONS"))))
+        .pipe(Layer.orDie);
+    const testSwarmsService: Layer.Layer<Swarm.Swarms, never, never> = Moby.layer
+        .pipe(Layer.provide(MobyAgent.makeNodeHttpClientLayer(inject("__TEST_CONNECTION_OPTIONS"))))
+        .pipe(Layer.orDie);
+    const testServices = Layer.mergeAll(testConfigsService, testSwarmsService);
 
     beforeAll(async () => {
         await Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
+            Effect.flatMap(Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
             testSwarmsService
         ).pipe(Effect.runPromise);
     });
 
     afterAll(async () => {
         await Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
+            Effect.flatMap(Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
             testSwarmsService
         ).pipe(Effect.runPromise);
     });
 
-    it("Should see no configs", async () => {
-        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
-                testConfigsService
-            )
-        );
-        expect(configs).toHaveLength(0);
-    });
+    it.effect("Should see no configs", () =>
+        Effect.gen(function* () {
+            const configs = yield* Configs.Configs;
+            const list = yield* configs.list();
+            expect(list).toHaveLength(0);
+        }).pipe(Effect.provide(testConfigsService))
+    );
 
     it("Should create a config", async () => {
-        const configCreateResponse: Readonly<MobyApi.Schemas.IDResponse> = await Effect.runPromise(
+        const configCreateResponse = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) =>
+                Effect.flatMap(Configs.Configs, (configs) =>
                     configs.create({
                         Name: "testConfig",
                         Data: Buffer.from("aaahhhhh").toString("base64"),
@@ -53,9 +55,9 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should see one config", async () => {
-        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
+        const configs = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
+                Effect.flatMap(Configs.Configs, (configs) => configs.list()),
                 testConfigsService
             )
         );
@@ -64,19 +66,19 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should update a config", async () => {
-        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
+        const configs = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
+                Effect.flatMap(Configs.Configs, (configs) => configs.list()),
                 testConfigsService
             )
         );
         expect(configs).toBeInstanceOf(Array);
         expect(configs).toHaveLength(1);
 
-        const id: string = configs[0]!.ID!;
-        const configInspectResponse: Readonly<MobyApi.Schemas.Config> = await Effect.runPromise(
+        const id: string = configs[0]!.ID;
+        const configInspectResponse = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.inspect({ id })),
+                Effect.flatMap(Configs.Configs, (configs) => configs.inspect({ id })),
                 testConfigsService
             )
         );
@@ -87,7 +89,7 @@ describe("MobyApi Configs tests", () => {
 
         await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) =>
+                Effect.flatMap(Configs.Configs, (configs) =>
                     configs.update({
                         id,
                         version: configInspectResponse.Version!.Index!,
@@ -100,11 +102,9 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should see no configs with label testLabel=test", async () => {
-        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
+        const configs = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) =>
-                    configs.list({ filters: { label: ["testLabel=test"] } })
-                ),
+                Effect.flatMap(Configs.Configs, (configs) => configs.list({ filters: { label: ["testLabel=test"] } })),
                 testConfigsService
             )
         );
@@ -113,19 +113,19 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should delete a config", async () => {
-        const configs: ReadonlyArray<MobyApi.Schemas.Config> = await Effect.runPromise(
+        const configs = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
+                Effect.flatMap(Configs.Configs, (configs) => configs.list()),
                 testConfigsService
             )
         );
         expect(configs).toBeInstanceOf(Array);
         expect(configs).toHaveLength(1);
 
-        const id: string = configs[0]!.ID!;
+        const id: string = configs[0]!.ID;
         await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.delete({ id })),
+                Effect.flatMap(Configs.Configs, (configs) => configs.delete({ id })),
                 testConfigsService
             )
         );
@@ -134,7 +134,7 @@ describe("MobyApi Configs tests", () => {
     it("Should see no configs", async () => {
         const configs = await Effect.runPromise(
             Effect.provide(
-                Effect.flatMap(MobyApi.Configs.Configs, (configs) => configs.list()),
+                Effect.flatMap(Configs.Configs, (configs) => configs.list()),
                 testConfigsService
             )
         );

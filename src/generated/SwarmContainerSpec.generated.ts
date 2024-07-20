@@ -30,7 +30,8 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         Sysctls: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
         CapabilityAdd: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
         CapabilityDrop: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
-        Ulimits: Schema.optional(Schema.Array(MobySchemasGenerated.Ulimit), { nullable: true }),
+        Ulimits: Schema.optional(Schema.Array(MobySchemasGenerated.ContainerUlimit), { nullable: true }),
+        OomScoreAdj: Schema.optional(MobySchemas.Int64),
     },
     {
         identifier: "SwarmContainerSpec",

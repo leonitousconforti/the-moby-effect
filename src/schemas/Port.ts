@@ -33,10 +33,7 @@ export interface $Port extends Schema.Annotable<$Port, PortBrand, Brand.Brand.Un
  * @category Schemas
  * @example
  *     import * as Schema from "@effect/schema/Schema";
- *     import { Port, PortBrand } from "the-wireguard-effect/InternetSchemas";
- *
- *     const port: PortBrand = PortBrand(8080);
- *     assert.strictEqual(port, 8080);
+ *     import { Port } from "the-moby-effect/schemas/index.js";
  *
  *     const decodePort = Schema.decodeSync(Port);
  *     assert.strictEqual(decodePort(8080), 8080);

@@ -22,26 +22,25 @@ import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
+import { responseToStreamingSocketOrFail } from "../demux/Common.js";
+import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import {
     BidirectionalRawStreamSocket,
-    MultiplexedStreamSocket,
-    responseToStreamingSocketOrFail,
-} from "../demux/index.js";
+    responseToRawStreamSocketOrFail,
+    UnidirectionalRawStreamSocket,
+} from "../demux/Raw.js";
 import {
+    ContainerChange,
+    ContainerConfig,
     ContainerCreateResponse,
-    ContainerCreateSpec,
     ContainerInspectResponse,
     ContainerPruneResponse,
-    ContainerState,
-    ContainerSummary,
+    ContainerStatsResponse,
+    ContainerTopResponse,
     ContainerUpdateResponse,
-    ContainerUpdateSpec,
     ContainerWaitResponse,
-    ContainerFilesystemChange as FilesystemChange,
-    Health,
-    ContainerHostConfig as HostConfig,
 } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./Common.js";
+import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
  * @since 1.0.0
@@ -65,12 +64,12 @@ export const isContainersError = (u: unknown): u is ContainersError => Predicate
  * @since 1.0.0
  * @category Errors
  */
-export class ContainersError extends PlatformError.RefailError(ContainersErrorTypeId, "ContainersError")<{
+export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTypeId, "ContainersError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | Socket.SocketError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | Socket.SocketError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -80,22 +79,18 @@ export class ContainersError extends PlatformError.RefailError(ContainersErrorTy
  */
 export interface ContainerListOptions {
     /** Return all containers. By default, only running containers are shown. */
-    readonly all?: boolean;
+    readonly all?: boolean | undefined;
 
     /**
      * Return this number of most recently created containers, including
      * non-running ones.
      */
-    readonly limit?: number;
+    readonly limit?: number | undefined;
 
     /** Return the size of container as fields `SizeRw` and `SizeRootFs`. */
-    readonly size?: boolean;
+    readonly size?: boolean | undefined;
 
     /**
-     * Filters to process on the container list, encoded as JSON (a
-     * `map[string][]string`). For example, `{"status": ["paused"]}` will only
-     * return paused containers.
-     *
      * Available filters:
      *
      * - `ancestor`=(`<image-name>[:<tag>]`, `<image id>`, or `<image@digest>`)
@@ -114,23 +109,25 @@ export interface ContainerListOptions {
      * - `status=`(`created`|`restarting`|`running`|`removing`|`paused`|`exited`|`dead`)
      * - `volume`=(`<volume name>` or `<mount point destination>`)
      */
-    readonly filters?: {
-        ancestor?: Array<string> | undefined;
-        before?: Array<string> | undefined;
-        expose?: Array<`${number}/${string}` | `${number}-${number}/${string}`> | undefined;
-        exited?: Array<number> | undefined;
-        health?: Array<NonNullable<Schema.Schema.Encoded<typeof Health>["Status"]>> | undefined;
-        id?: Array<string> | undefined;
-        isolation?: Array<NonNullable<Schema.Schema.Encoded<typeof HostConfig>["Isolation"]>> | undefined;
-        "is-task"?: ["true" | "false"] | undefined;
-        label?: Array<string> | undefined;
-        name?: Array<string> | undefined;
-        network?: Array<string> | undefined;
-        publish?: Array<`${number}/${string}` | `${number}-${number}/${string}`> | undefined;
-        since?: Array<string> | undefined;
-        status?: Array<NonNullable<Schema.Schema.Encoded<typeof ContainerState>["Status"]>> | undefined;
-        volume?: Array<string> | undefined;
-    };
+    readonly filters?:
+        | {
+              ancestor?: string | undefined;
+              before?: string | undefined;
+              expose?: `${number}/${string}` | `${number}-${number}/${string}` | undefined;
+              exited?: number | undefined;
+              health?: "starting" | "healthy" | "unhealthy" | "none" | undefined;
+              id?: string | undefined;
+              isolation?: "default" | "process" | "hyperv" | undefined;
+              "is-task"?: true | false | undefined;
+              label?: Record<string, string> | undefined;
+              name?: string | undefined;
+              network?: string | undefined;
+              publish?: `${number}/${string}` | `${number}-${number}/${string}` | undefined;
+              since?: string | undefined;
+              status?: "created" | "restarting" | "running" | "removing" | "paused" | "exited" | "dead" | undefined;
+              volume?: string | undefined;
+          }
+        | undefined;
 }
 
 /**
@@ -142,7 +139,7 @@ export interface ContainerCreateOptions {
      * Assign the specified name to the container. Must match
      * `/?[a-zA-Z0-9][a-zA-Z0-9_.-]+`.
      */
-    readonly name?: string;
+    readonly name?: string | undefined;
     /**
      * Platform in the format `os[/arch[/variant]]` used for image lookup.
      *
@@ -161,9 +158,9 @@ export interface ContainerCreateOptions {
      * the detected host platform (linux/amd64) and no specific platform was
      * requested
      */
-    readonly platform?: string;
+    readonly platform?: string | undefined;
     /** Container to create */
-    readonly spec: Schema.Schema.Type<typeof ContainerCreateSpec>;
+    readonly spec: ContainerConfig;
 }
 
 /**
@@ -174,7 +171,7 @@ export interface ContainerInspectOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Return the size of container as fields `SizeRw` and `SizeRootFs` */
-    readonly size?: boolean;
+    readonly size?: boolean | undefined;
 }
 
 /**
@@ -185,7 +182,7 @@ export interface ContainerTopOptions {
     /** ID or name of the container */
     readonly id: string;
     /** The arguments to pass to `ps`. For example, `aux` */
-    readonly ps_args?: string;
+    readonly ps_args?: string | undefined;
 }
 
 /**
@@ -196,22 +193,22 @@ export interface ContainerLogsOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Keep connection after returning logs. */
-    readonly follow?: boolean;
+    readonly follow?: boolean | undefined;
     /** Return logs from `stdout` */
-    readonly stdout?: boolean;
+    readonly stdout?: boolean | undefined;
     /** Return logs from `stderr` */
-    readonly stderr?: boolean;
+    readonly stderr?: boolean | undefined;
     /** Only return logs since this time, as a UNIX timestamp */
-    readonly since?: number;
+    readonly since?: number | undefined;
     /** Only return logs before this time, as a UNIX timestamp */
-    readonly until?: number;
+    readonly until?: number | undefined;
     /** Add timestamps to every log line */
-    readonly timestamps?: boolean;
+    readonly timestamps?: boolean | undefined;
     /**
      * Only return this number of log lines from the end of the logs. Specify as
      * an integer or `all` to output all log lines.
      */
-    readonly tail?: string;
+    readonly tail?: string | undefined;
 }
 
 /**
@@ -243,12 +240,12 @@ export interface ContainerStatsOptions {
      * Stream the output. If false, the stats will be output once and then it
      * will disconnect.
      */
-    readonly stream?: boolean;
+    readonly stream?: boolean | undefined;
     /**
      * Only get a single stat instead of waiting for 2 cycles. Must be used with
      * `stream=false`.
      */
-    readonly "one-shot"?: boolean;
+    readonly "one-shot"?: boolean | undefined;
 }
 
 /**
@@ -259,9 +256,9 @@ export interface ContainerResizeOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Height of the TTY session in characters */
-    readonly h?: number;
+    readonly h?: number | undefined;
     /** Width of the TTY session in characters */
-    readonly w?: number;
+    readonly w?: number | undefined;
 }
 
 /**
@@ -276,7 +273,7 @@ export interface ContainerStartOptions {
      * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
      * `@`, `^`, `[`, `,` or `_`.
      */
-    readonly detachKeys?: string;
+    readonly detachKeys?: string | undefined;
 }
 
 /**
@@ -287,9 +284,9 @@ export interface ContainerStopOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Signal to send to the container as an integer or string (e.g. `SIGINT`). */
-    readonly signal?: string;
+    readonly signal?: string | undefined;
     /** Number of seconds to wait before killing the container */
-    readonly t?: number;
+    readonly t?: number | undefined;
 }
 
 /**
@@ -300,9 +297,9 @@ export interface ContainerRestartOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Signal to send to the container as an integer or string (e.g. `SIGINT`). */
-    readonly signal?: string;
+    readonly signal?: string | undefined;
     /** Number of seconds to wait before killing the container */
-    readonly t?: number;
+    readonly t?: number | undefined;
 }
 
 /**
@@ -313,7 +310,7 @@ export interface ContainerKillOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Signal to send to the container as an integer or string (e.g. `SIGINT`). */
-    readonly signal?: string;
+    readonly signal?: string | undefined;
 }
 
 /**
@@ -323,7 +320,7 @@ export interface ContainerKillOptions {
 export interface ContainerUpdateOptions {
     /** ID or name of the container */
     readonly id: string;
-    readonly spec: Schema.Schema.Encoded<typeof ContainerUpdateSpec>;
+    readonly spec: ContainerConfig;
 }
 
 /**
@@ -367,7 +364,7 @@ export interface ContainerAttachOptions {
      * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
      * `@`, `^`, `[`, `,` or `_`.
      */
-    readonly detachKeys?: string;
+    readonly detachKeys?: string | undefined;
     /**
      * Replay previous logs from the container.
      *
@@ -377,15 +374,15 @@ export interface ContainerAttachOptions {
      * If `stream` is also enabled, once all the previous output has been
      * returned, it will seamlessly transition into streaming current output.
      */
-    readonly logs?: boolean;
+    readonly logs?: boolean | undefined;
     /** Stream attached streams from the time the request was made onwards. */
-    readonly stream?: boolean;
+    readonly stream?: boolean | undefined;
     /** Attach to `stdin` */
-    readonly stdin?: boolean;
+    readonly stdin?: boolean | undefined;
     /** Attach to `stdout` */
-    readonly stdout?: boolean;
+    readonly stdout?: boolean | undefined;
     /** Attach to `stderr` */
-    readonly stderr?: boolean;
+    readonly stderr?: boolean | undefined;
 }
 
 /**
@@ -400,17 +397,17 @@ export interface ContainerAttachWebsocketOptions {
      * character `[a-Z]` or `ctrl-<value>` where `<value>` is one of: `a-z`,
      * `@`, `^`, `[`, `,`, or `_`.
      */
-    readonly detachKeys?: string;
+    readonly detachKeys?: string | undefined;
     /** Return logs */
-    readonly logs?: boolean;
+    readonly logs?: boolean | undefined;
     /** Return stream */
-    readonly stream?: boolean;
+    readonly stream?: boolean | undefined;
     /** Attach to `stdin` */
-    readonly stdin?: boolean;
+    readonly stdin?: boolean | undefined;
     /** Attach to `stdout` */
-    readonly stdout?: boolean;
+    readonly stdout?: boolean | undefined;
     /** Attach to `stderr` */
-    readonly stderr?: boolean;
+    readonly stderr?: boolean | undefined;
 }
 
 /**
@@ -425,7 +422,7 @@ export interface ContainerWaitOptions {
      *
      * Defaults to `not-running` if omitted or empty.
      */
-    readonly condition?: string;
+    readonly condition?: string | undefined;
 }
 
 /**
@@ -436,11 +433,11 @@ export interface ContainerDeleteOptions {
     /** ID or name of the container */
     readonly id: string;
     /** Remove anonymous volumes associated with the container. */
-    readonly v?: boolean;
+    readonly v?: boolean | undefined;
     /** If the container is running, kill it before removing it. */
-    readonly force?: boolean;
+    readonly force?: boolean | undefined;
     /** Remove the specified link associated with the container. */
-    readonly link?: boolean;
+    readonly link?: boolean | undefined;
 }
 
 /**
@@ -469,7 +466,7 @@ export interface ContainerArchiveInfoOptions {
  * @since 1.0.0
  * @category Params
  */
-export interface PutContainerArchiveOptions {
+export interface PutContainerArchiveOptions<E1> {
     /** ID or name of the container */
     readonly id: string;
     /**
@@ -482,15 +479,15 @@ export interface PutContainerArchiveOptions {
      * content would cause an existing directory to be replaced with a
      * non-directory and vice versa.
      */
-    readonly noOverwriteDirNonDir?: string;
+    readonly noOverwriteDirNonDir?: string | undefined;
     /** If `1`, `true`, then it will copy UID/GID maps to the dest file or dir */
-    readonly copyUIDGID?: string;
+    readonly copyUIDGID?: string | undefined;
     /**
      * The input stream must be a tar archive compressed with one of the
      * following algorithms: `identity` (no compression), `gzip`, `bzip2`, or
      * `xz`.
      */
-    readonly stream: Stream.Stream<Uint8Array, ContainersError, never>;
+    readonly stream: Stream.Stream<Uint8Array, E1, never>;
 }
 
 /**
@@ -499,9 +496,6 @@ export interface PutContainerArchiveOptions {
  */
 export interface ContainerPruneOptions {
     /**
-     * Filters to process on the prune list, encoded as JSON (a
-     * `map[string][]string`).
-     *
      * Available filters:
      *
      * - `until=<timestamp>` Prune containers created before this timestamp. The
@@ -512,7 +506,12 @@ export interface ContainerPruneOptions {
      *   `label!=<key>=<value>`) Prune containers with (or without, in case
      *   `label!=...` is used) the specified labels.
      */
-    readonly filters?: string;
+    readonly filters?:
+        | {
+              until?: string;
+              label?: Record<string, string> | string | undefined;
+          }
+        | undefined;
 }
 
 /**
@@ -529,9 +528,7 @@ export interface ContainersImpl {
      *   including non-running ones.
      * @param size - Return the size of container as fields `SizeRw` and
      *   `SizeRootFs`.
-     * @param filters - Filters to process on the container list, encoded as
-     *   JSON (a `map[string][]string`). For example, `{"status": ["paused"]}`
-     *   will only return paused containers.
+     * @param filters - Filters to process on the container list
      *
      *   Available filters:
      *
@@ -553,7 +550,7 @@ export interface ContainersImpl {
      */
     readonly list: (
         options?: ContainerListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<ContainerSummary>>, ContainersError, never>;
+    ) => Effect.Effect<ReadonlyArray<ContainerInspectResponse>, ContainersError, never>;
 
     /**
      * Create a container
@@ -600,7 +597,7 @@ export interface ContainersImpl {
      * @param id - ID or name of the container
      * @param ps_args - The arguments to pass to `ps`. For example, `aux`
      */
-    readonly top: (options: ContainerTopOptions) => Effect.Effect<unknown, ContainersError, never>;
+    readonly top: (options: ContainerTopOptions) => Effect.Effect<ContainerTopResponse, ContainersError, never>;
 
     /**
      * Get container logs
@@ -624,7 +621,7 @@ export interface ContainersImpl {
      */
     readonly changes: (
         options: ContainerChangesOptions
-    ) => Effect.Effect<Readonly<Array<FilesystemChange>>, ContainersError, never>;
+    ) => Effect.Effect<ReadonlyArray<ContainerChange>, ContainersError, never>;
 
     /**
      * Export a container
@@ -642,7 +639,7 @@ export interface ContainersImpl {
      * @param one-shot - Only get a single stat instead of waiting for 2 cycles.
      *   Must be used with `stream=false`.
      */
-    readonly stats: (options: ContainerStatsOptions) => Stream.Stream<unknown, ContainersError, never>;
+    readonly stats: (options: ContainerStatsOptions) => Stream.Stream<ContainerStatsResponse, ContainersError, never>;
 
     /**
      * Resize a container TTY
@@ -817,15 +814,12 @@ export interface ContainersImpl {
      *   one of the following algorithms: `identity` (no compression), `gzip`,
      *   `bzip2`, or `xz`.
      */
-    readonly putArchive: (options: PutContainerArchiveOptions) => Effect.Effect<void, ContainersError, never>;
+    readonly putArchive: <E1>(options: PutContainerArchiveOptions<E1>) => Effect.Effect<void, ContainersError, never>;
 
     /**
      * Delete stopped containers
      *
-     * @param filters - Filters to process on the prune list, encoded as JSON (a
-     *   `map[string][]string`).
-     *
-     *   Available filters:
+     * @param filters - Filters to process on the prune list. Available filters:
      *
      *   - `until=<timestamp>` Prune containers created before this timestamp. The
      *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or
@@ -845,52 +839,25 @@ export interface ContainersImpl {
  * @category Services
  */
 export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-
-    const client = defaultClient.pipe(
+    const contextClient = yield* HttpClient.HttpClient;
+    const client = contextClient.pipe(
         HttpClient.mapRequest(HttpClientRequest.prependUrl("/containers")),
         HttpClient.filterStatusOk
     );
-
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const unknownClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Unknown)));
-    const ContainerSummariesClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ContainerSummary)))
-    );
-    const ContainerCreateResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ContainerCreateResponse))
-    );
-    const ContainerInspectResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ContainerInspectResponse))
-    );
-    const FilesystemChangesClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.NullOr(Schema.Array(FilesystemChange))))
-    );
-    const ContainerUpdateResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ContainerUpdateResponse))
-    );
-    const ContainerWaitResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ContainerWaitResponse))
-    );
-    const ContainerPruneResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ContainerPruneResponse))
-    );
 
     const list_ = (
         options?: ContainerListOptions | undefined
-    ): Effect.Effect<Readonly<Array<ContainerSummary>>, ContainersError, never> =>
+    ): Effect.Effect<ReadonlyArray<ContainerInspectResponse>, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get("/json"),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
             maybeAddQueryParameter("limit", Option.fromNullable(options?.limit)),
             maybeAddQueryParameter("size", Option.fromNullable(options?.size)),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            ContainerSummariesClient,
-            Effect.mapError((error) => new ContainersError({ method: "list", error })),
-            Effect.scoped
+            maybeAddFilters(options?.filters),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerInspectResponse)),
+            Effect.mapError((cause) => new ContainersError({ method: "list", cause }))
         );
 
     const create_ = (options: ContainerCreateOptions): Effect.Effect<ContainerCreateResponse, ContainersError, never> =>
@@ -898,11 +865,10 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             HttpClientRequest.post("/create"),
             maybeAddQueryParameter("name", Option.fromNullable(options.name)),
             maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
-            // FIXME: !!!!
-            HttpClientRequest.schemaBody(ContainerCreateSpec)(Schema.decodeSync(ContainerCreateSpec)(options.spec)),
-            Effect.flatMap(ContainerCreateResponseClient),
-            Effect.mapError((error) => new ContainersError({ method: "create", error })),
-            Effect.scoped
+            HttpClientRequest.schemaBody(ContainerConfig)(options.spec),
+            Effect.flatMap(client),
+            HttpClientResponse.schemaBodyJsonScoped(ContainerCreateResponse),
+            Effect.mapError((cause) => new ContainersError({ method: "create", cause }))
         );
 
     const inspect_ = (
@@ -911,17 +877,19 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/json`),
             maybeAddQueryParameter("size", Option.fromNullable(options.size)),
-            ContainerInspectResponseClient,
-            Effect.mapError((error) => new ContainersError({ method: "inspect", error })),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(ContainerInspectResponse),
+            Effect.mapError((cause) => new ContainersError({ method: "inspect", cause })),
             Effect.scoped
         );
 
-    const top_ = (options: ContainerTopOptions): Effect.Effect<unknown, ContainersError, never> =>
+    const top_ = (options: ContainerTopOptions): Effect.Effect<ContainerTopResponse, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/top`),
             maybeAddQueryParameter("ps_args", Option.fromNullable(options.ps_args)),
-            unknownClient,
-            Effect.mapError((error) => new ContainersError({ method: "top", error })),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(ContainerTopResponse),
+            Effect.mapError((cause) => new ContainersError({ method: "top", cause })),
             Effect.scoped
         );
 
@@ -938,17 +906,17 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapError((error) => new ContainersError({ method: "logs", error }))
+            Stream.mapError((cause) => new ContainersError({ method: "logs", cause }))
         );
 
     const changes_ = (
         options: ContainerChangesOptions
-    ): Effect.Effect<ReadonlyArray<FilesystemChange>, ContainersError> =>
+    ): Effect.Effect<ReadonlyArray<ContainerChange>, ContainersError> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/changes`),
-            FilesystemChangesClient,
-            Effect.map((response) => response ?? []),
-            Effect.mapError((error) => new ContainersError({ method: "changes", error })),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerChange)),
+            Effect.mapError((cause) => new ContainersError({ method: "changes", cause })),
             Effect.scoped
         );
 
@@ -957,10 +925,10 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/export`),
             client,
             HttpClientResponse.stream,
-            Stream.mapError((error) => new ContainersError({ method: "export", error }))
+            Stream.mapError((cause) => new ContainersError({ method: "export", cause }))
         );
 
-    const stats_ = (options: ContainerStatsOptions): Stream.Stream<unknown, ContainersError, never> =>
+    const stats_ = (options: ContainerStatsOptions): Stream.Stream<ContainerStatsResponse, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/stats`),
             maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
@@ -968,8 +936,8 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
-            Stream.mapEffect(Schema.decode(Schema.parseJson(Schema.Unknown))),
-            Stream.mapError((error) => new ContainersError({ method: "stats", error }))
+            Stream.mapEffect(Schema.decode(Schema.parseJson(ContainerStatsResponse))),
+            Stream.mapError((cause) => new ContainersError({ method: "stats", cause }))
         );
 
     const resize_ = (options: ContainerResizeOptions): Effect.Effect<void, ContainersError, never> =>
@@ -978,7 +946,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("h", Option.fromNullable(options.h)),
             maybeAddQueryParameter("w", Option.fromNullable(options.w)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "resize", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "resize", cause })),
             Effect.scoped
         );
 
@@ -987,7 +955,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/start`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "start", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "start", cause })),
             Effect.scoped
         );
 
@@ -997,7 +965,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
             maybeAddQueryParameter("t", Option.fromNullable(options.t)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "stop", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "stop", cause })),
             Effect.scoped
         );
 
@@ -1007,7 +975,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
             maybeAddQueryParameter("t", Option.fromNullable(options.t)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "restart", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "restart", cause })),
             Effect.scoped
         );
 
@@ -1016,16 +984,17 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/kill`),
             maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "kill", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "kill", cause })),
             Effect.scoped
         );
 
     const update_ = (options: ContainerUpdateOptions): Effect.Effect<ContainerUpdateResponse, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/update`),
-            HttpClientRequest.schemaBody(ContainerUpdateSpec)(new ContainerUpdateSpec(options.spec)),
-            Effect.flatMap(ContainerUpdateResponseClient),
-            Effect.mapError((error) => new ContainersError({ method: "update", error })),
+            HttpClientRequest.schemaBody(ContainerConfig)(options.spec),
+            Effect.flatMap(client),
+            HttpClientResponse.schemaBodyJsonScoped(ContainerUpdateResponse),
+            Effect.mapError((cause) => new ContainersError({ method: "update", cause })),
             Effect.scoped
         );
 
@@ -1034,7 +1003,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/rename`),
             maybeAddQueryParameter("name", Option.fromNullable(options.name)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "rename", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "rename", cause })),
             Effect.scoped
         );
 
@@ -1042,7 +1011,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/pause`),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "pause", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "pause", cause })),
             Effect.scoped
         );
 
@@ -1050,7 +1019,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/unpause`),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "unpause", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "unpause", cause })),
             Effect.scoped
         );
 
@@ -1066,14 +1035,16 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
             maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
             client,
-            Effect.flatMap(responseToStreamingSocketOrFail),
-            Effect.mapError((error) => new ContainersError({ method: "attach", error }))
+            Effect.flatMap(responseToStreamingSocketOrFail()),
+            (x) => x,
+            Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
         );
 
     const attachWebsocket_ = (
         options: ContainerAttachWebsocketOptions
-    ): Effect.Effect<BidirectionalRawStreamSocket, ContainersError, Scope.Scope> =>
+    ): Effect.Effect<UnidirectionalRawStreamSocket, ContainersError, Scope.Scope> =>
         Function.pipe(
+            // FIXME: needs to be a websocket
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/attach/ws`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
             maybeAddQueryParameter("logs", Option.fromNullable(options.logs)),
@@ -1081,17 +1052,18 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("stdin", Option.fromNullable(options.stdin)),
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
             maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-            voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "attachWebsocket", error }))
+            client,
+            Effect.flatMap(responseToRawStreamSocketOrFail({ sourceIsKnownUnidirectional: true })),
+            Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))
         );
 
     const wait_ = (options: ContainerWaitOptions): Effect.Effect<ContainerWaitResponse, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/wait`),
             maybeAddQueryParameter("condition", Option.fromNullable(options.condition)),
-            ContainerWaitResponseClient,
-            Effect.mapError((error) => new ContainersError({ method: "wait", error })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(ContainerWaitResponse),
+            Effect.mapError((cause) => new ContainersError({ method: "wait", cause }))
         );
 
     const delete_ = (options: ContainerDeleteOptions): Effect.Effect<void, ContainersError, never> =>
@@ -1101,7 +1073,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             maybeAddQueryParameter("link", Option.fromNullable(options.link)),
             voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "delete", error })),
+            Effect.mapError((cause) => new ContainersError({ method: "delete", cause })),
             Effect.scoped
         );
 
@@ -1111,27 +1083,27 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("path", Option.some(options.path)),
             client,
             HttpClientResponse.stream,
-            Stream.mapError((error) => new ContainersError({ method: "archive", error }))
+            Stream.mapError((cause) => new ContainersError({ method: "archive", cause }))
         );
 
     const archiveInfo_ = (options: ContainerArchiveInfoOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.head(`/${encodeURIComponent(options.id)}/archive`),
             maybeAddQueryParameter("path", Option.some(options.path)),
-            voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "archiveInfo", error })),
+            client,
+            Effect.mapError((cause) => new ContainersError({ method: "archiveInfo", cause })),
             Effect.scoped
         );
 
-    const putArchive_ = (options: PutContainerArchiveOptions): Effect.Effect<void, ContainersError, never> =>
+    const putArchive_ = <E1>(options: PutContainerArchiveOptions<E1>): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.put(`/${encodeURIComponent(options.id)}/archive`),
             maybeAddQueryParameter("path", Option.some(options.path)),
             maybeAddQueryParameter("noOverwriteDirNonDir", Option.fromNullable(options.noOverwriteDirNonDir)),
             maybeAddQueryParameter("copyUIDGID", Option.fromNullable(options.copyUIDGID)),
             HttpClientRequest.streamBody(options.stream),
-            voidClient,
-            Effect.mapError((error) => new ContainersError({ method: "putArchive", error })),
+            client,
+            Effect.mapError((cause) => new ContainersError({ method: "putArchive", cause })),
             Effect.scoped
         );
 
@@ -1140,13 +1112,10 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
     ): Effect.Effect<ContainerPruneResponse, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.post("/prune"),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            ContainerPruneResponseClient,
-            Effect.mapError((error) => new ContainersError({ method: "prune", error })),
-            Effect.scoped
+            maybeAddFilters(options?.filters),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(ContainerPruneResponse),
+            Effect.mapError((cause) => new ContainersError({ method: "prune", cause }))
         );
 
     return {

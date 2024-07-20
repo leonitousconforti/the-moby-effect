@@ -98,7 +98,7 @@ export type IPv6Encoded = Schema.Schema.Encoded<$IPv6>;
  * @category Schemas
  * @example
  *     import * as Schema from "@effect/schema/Schema";
- *     import { IPv6 } from "the-wireguard-effect/InternetSchemas";
+ *     import { IPv6 } from "the-moby-effect/schemas/index.js";
  *
  *     const decodeIPv6 = Schema.decodeSync(IPv6);
  *     assert.deepEqual(decodeIPv6("2001:0db8:85a3:0000:0000:8a2e:0370:7334"), {

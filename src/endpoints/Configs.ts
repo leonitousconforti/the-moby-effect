@@ -2,7 +2,6 @@
  * Configs service
  *
  * @since 1.0.0
- * @see https://docs.docker.com/engine/api/v1.45/#tag/Config
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -19,9 +18,10 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
+import * as Tuple from "effect/Tuple";
 
-import { IDResponse, SwarmConfig, SwarmConfigSpec } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./Common.js";
+import { SwarmConfig, SwarmConfigCreateResponse, SwarmConfigSpec } from "../generated/index.js";
+import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
  * @since 1.0.0
@@ -45,12 +45,12 @@ export const isConfigsError = (u: unknown): u is ConfigsError => Predicate.hasPr
  * @since 1.0.0
  * @category Errors
  */
-export class ConfigsError extends PlatformError.RefailError(ConfigsErrorTypeId, "ConfigsError")<{
+export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, "ConfigsError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -60,10 +60,10 @@ export class ConfigsError extends PlatformError.RefailError(ConfigsErrorTypeId, 
  */
 export interface ConfigListOptions {
     readonly filters?: {
-        name?: [string] | undefined;
-        id?: Array<string> | undefined;
-        names?: Array<string> | undefined;
-        label?: Record<string, string> | undefined;
+        name?: string | undefined;
+        id?: string | undefined;
+        names?: string | undefined;
+        label?: Record<string, string> | Array<string> | undefined;
     };
 }
 
@@ -111,7 +111,9 @@ export interface ConfigsImpl {
     readonly list: (
         options?: ConfigListOptions | undefined
     ) => Effect.Effect<ReadonlyArray<SwarmConfig>, ConfigsError, never>;
-    readonly create: (options: SwarmConfigSpec) => Effect.Effect<Readonly<IDResponse>, ConfigsError, never>;
+    readonly create: (
+        options: SwarmConfigSpec
+    ) => Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never>;
     readonly delete: (options: ConfigDeleteOptions) => Effect.Effect<void, ConfigsError, never>;
     readonly inspect: (options: ConfigInspectOptions) => Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never>;
 
@@ -134,21 +136,10 @@ export interface ConfigsImpl {
  * @category Services
  */
 export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-
-    const client = defaultClient.pipe(
+    const contextClient = yield* HttpClient.HttpClient;
+    const client = contextClient.pipe(
         HttpClient.mapRequest(HttpClientRequest.appendUrl("/configs")),
         HttpClient.filterStatusOk
-    );
-    const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const ConfigClient = client.pipe(
-        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmConfig))
-    );
-    const IdResponseClient = client.pipe(
-        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(IDResponse))
-    );
-    const ConfigsClient = client.pipe(
-        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmConfig)))
     );
 
     const list_ = (
@@ -156,35 +147,38 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
     ): Effect.Effect<ReadonlyArray<SwarmConfig>, ConfigsError, never> =>
         Function.pipe(
             HttpClientRequest.get(""),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            ConfigsClient,
-            Effect.mapError((error) => new ConfigsError({ method: "list", error }))
+            maybeAddFilters(options?.filters),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmConfig)),
+            Effect.mapError((cause) => new ConfigsError({ method: "list", cause }))
         );
 
-    const create_ = (options: SwarmConfigSpec): Effect.Effect<Readonly<IDResponse>, ConfigsError, never> =>
+    const create_ = (
+        options: Schema.Schema.Encoded<typeof SwarmConfigSpec>
+    ): Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
-            HttpClientRequest.schemaBody(SwarmConfigSpec)(options),
-            Effect.flatMap(IdResponseClient),
-            Effect.mapError((error) => new ConfigsError({ method: "create", error }))
+            Schema.decode(SwarmConfigSpec)(options),
+            Effect.map((body) => Tuple.make(HttpClientRequest.post("/create"), body)),
+            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBody(SwarmConfigSpec))),
+            Effect.flatMap(client),
+            HttpClientResponse.schemaBodyJsonScoped(SwarmConfigCreateResponse),
+            Effect.mapError((cause) => new ConfigsError({ method: "create", cause }))
         );
 
     const delete_ = (options: ConfigDeleteOptions): Effect.Effect<void, ConfigsError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/${encodeURIComponent(options.id)}`),
-            voidClient,
-            Effect.mapError((error) => new ConfigsError({ method: "delete", error })),
+            client,
+            Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
             Effect.scoped
         );
 
     const inspect_ = (options: ConfigInspectOptions): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
-            ConfigClient,
-            Effect.mapError((error) => new ConfigsError({ method: "inspect", error }))
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(SwarmConfig),
+            Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause }))
         );
 
     const update_ = (options: ConfigUpdateOptions): Effect.Effect<void, ConfigsError, never> =>
@@ -192,8 +186,8 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.post(`/${encodeURIComponent(options.id)}/update`),
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(SwarmConfigSpec)(options.spec),
-            Effect.flatMap(voidClient),
-            Effect.mapError((error) => new ConfigsError({ method: "update", error })),
+            Effect.flatMap(client),
+            Effect.mapError((cause) => new ConfigsError({ method: "update", cause })),
             Effect.scoped
         );
 

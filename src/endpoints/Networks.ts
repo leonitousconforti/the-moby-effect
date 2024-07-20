@@ -21,10 +21,10 @@ import * as Predicate from "effect/Predicate";
 
 import {
     SwarmNetwork as Network,
-    NetworkConnectRequest,
+    NetworkConnectOptions as NetworkConnectRequest,
     NetworkCreateRequest,
     NetworkCreateResponse,
-    NetworkDisconnectRequest,
+    NetworkDisconnectOptions as NetworkDisconnectRequest,
     NetworkPruneResponse,
 } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
@@ -51,12 +51,12 @@ export const isNetworksError = (u: unknown): u is NetworksError => Predicate.has
  * @since 1.0.0
  * @category Errors
  */
-export class NetworksError extends PlatformError.RefailError(NetworksErrorTypeId, "NetworksError")<{
+export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId, "NetworksError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -248,7 +248,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             NetworksClient,
-            Effect.mapError((error) => new NetworksError({ method: "list", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "list", cause })),
             Effect.scoped
         );
 
@@ -256,7 +256,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
         Function.pipe(
             HttpClientRequest.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
             voidClient,
-            Effect.mapError((error) => new NetworksError({ method: "delete", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "delete", cause })),
             Effect.scoped
         );
 
@@ -266,7 +266,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
             maybeAddQueryParameter("verbose", Option.fromNullable(options.verbose)),
             maybeAddQueryParameter("scope", Option.fromNullable(options.scope)),
             NetworkClient,
-            Effect.mapError((error) => new NetworksError({ method: "inspect", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "inspect", cause })),
             Effect.scoped
         );
 
@@ -275,7 +275,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
             HttpClientRequest.post("/create"),
             HttpClientRequest.schemaBody(NetworkCreateRequest)(options),
             Effect.flatMap(NetworkCreateResponseClient),
-            Effect.mapError((error) => new NetworksError({ method: "create", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "create", cause })),
             Effect.scoped
         );
 
@@ -284,7 +284,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
             HttpClientRequest.post("/{id}/connect".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.schemaBody(NetworkConnectRequest)(options.container),
             Effect.flatMap(voidClient),
-            Effect.mapError((error) => new NetworksError({ method: "connect", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "connect", cause })),
             Effect.scoped
         );
 
@@ -295,7 +295,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
                 options.container ?? new NetworkDisconnectRequest({} as any)
             ),
             Effect.flatMap(voidClient),
-            Effect.mapError((error) => new NetworksError({ method: "disconnect", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "disconnect", cause })),
             Effect.scoped
         );
 
@@ -307,7 +307,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             NetworkPruneResponseClient,
-            Effect.mapError((error) => new NetworksError({ method: "prune", error })),
+            Effect.mapError((cause) => new NetworksError({ method: "prune", cause })),
             Effect.scoped
         );
 

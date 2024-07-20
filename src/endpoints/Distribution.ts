@@ -18,7 +18,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 
-import { DistributionInspect } from "../generated/index.js";
+import { RegistryDistributionInspect } from "../generated/index.js";
 
 /**
  * @since 1.0.0
@@ -43,12 +43,12 @@ export const isDistributionsError = (u: unknown): u is DistributionsError =>
  * @since 1.0.0
  * @category Errors
  */
-export class DistributionsError extends PlatformError.RefailError(DistributionsErrorTypeId, "DistributionsError")<{
+export class DistributionsError extends PlatformError.TypeIdError(DistributionsErrorTypeId, "DistributionsError")<{
     method: string;
-    error: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return `${this.method}: ${super.message}`;
+        return this.method;
     }
 }
 
@@ -70,7 +70,7 @@ export interface DistributionsImpl {
     /** Get image information from the registry */
     readonly inspect: (
         options: DistributionInspectOptions
-    ) => Effect.Effect<Readonly<DistributionInspect>, DistributionsError, never>;
+    ) => Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never>;
 }
 
 /**
@@ -78,23 +78,20 @@ export interface DistributionsImpl {
  * @category Services
  */
 export const make: Effect.Effect<DistributionsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-
-    const client = defaultClient.pipe(
+    const contextClient = yield* HttpClient.HttpClient;
+    const client = contextClient.pipe(
         HttpClient.mapRequest(HttpClientRequest.prependUrl("/distribution")),
         HttpClient.filterStatusOk
-    );
-    const DistributionInspectResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(DistributionInspect))
     );
 
     const inspect_ = (
         options: DistributionInspectOptions
-    ): Effect.Effect<Readonly<DistributionInspect>, DistributionsError, never> =>
+    ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
-            DistributionInspectResponseClient,
-            Effect.mapError((error) => new DistributionsError({ method: "inspect", error })),
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(RegistryDistributionInspect),
+            Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),
             Effect.scoped
         );
 
