@@ -1,4 +1,11 @@
 /**
+ * Convenance utilities for Docker input and output streams.
+ *
+ * @since 1.0.0
+ */
+export * as Convey from "./Convey.js"
+
+/**
  * Demux utilities for different types of docker streams.
  *
  * @since 1.0.0
