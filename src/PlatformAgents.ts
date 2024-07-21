@@ -4,12 +4,11 @@
  * @since 1.0.0
  */
 
-import * as os from "node:os";
-
 import * as Path from "@effect/platform/Path";
 import * as Config from "effect/Config";
 import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Redacted from "effect/Redacted";
 
 import * as AgentCommon from "./platforms/Common.js";
@@ -159,8 +158,17 @@ export const connectionOptionsFromPlatformSystemSocketDefault = (): Effect.Effec
  * @category Constructors
  */
 export const fromUserSocketDefault = (): Effect.Effect<AgentCommon.MobyConnectionOptions, never, Path.Path> =>
-    Effect.map(Path.Path, (path) =>
-        AgentCommon.SocketConnectionOptions({
-            socketPath: path.join(os.homedir(), ".docker", "run", "docker.sock"),
-        })
+    Function.pipe(
+        Effect.all(
+            {
+                pathLazy: Path.Path,
+                osLazy: Effect.promise(() => import("node:os")),
+            },
+            { concurrency: 2 }
+        ),
+        Effect.map(({ osLazy, pathLazy }) =>
+            AgentCommon.SocketConnectionOptions({
+                socketPath: pathLazy.join(osLazy.homedir(), ".docker", "run", "docker.sock"),
+            })
+        )
     );
