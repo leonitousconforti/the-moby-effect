@@ -77,7 +77,7 @@ func tsType(t reflect.Type) TSType {
 		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), true}
 	case reflect.Array:
 		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsType(t.Elem()).Name, t.Len()), false}
-	case reflect.Ptr:
+	case reflect.Pointer:
 		ptr := tsType(t.Elem())
 		ptr.Nullable = true
 		return ptr
@@ -90,7 +90,7 @@ func tsType(t reflect.Type) TSType {
 		} else {
 			name = t.Name()
 		}
-		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), false}
+		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), true}
 	case reflect.Interface:
 		return TSType{"Schema.Object", false}
 	case reflect.Func:
