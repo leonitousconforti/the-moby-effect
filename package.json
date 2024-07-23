@@ -52,7 +52,7 @@
         "@effect/build-utils": "0.7.7",
         "@effect/cli": "0.38.2",
         "@effect/docgen": "0.4.3",
-        "@effect/eslint-plugin": "0.1.2",
+        "@effect/eslint-plugin": "0.2.0",
         "@effect/experimental": "0.19.3",
         "@effect/language-service": "0.1.0",
         "@effect/platform": "0.59.2",

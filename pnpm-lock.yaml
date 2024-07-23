@@ -48,8 +48,8 @@ importers:
         specifier: 0.4.3
         version: 0.4.3(tsx@4.16.2)(typescript@5.5.3)
       '@effect/eslint-plugin':
-        specifier: 0.1.2
-        version: 0.1.2
+        specifier: 0.2.0
+        version: 0.2.0
       '@effect/experimental':
         specifier: 0.19.3
         version: 0.19.3(@effect/platform-node@0.54.3(@effect/platform@0.59.2(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6))(effect@3.5.6))(@effect/platform@0.59.2(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6))(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)(ws@8.18.0)
@@ -293,11 +293,11 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@dprint/formatter@0.2.1':
-    resolution: {integrity: sha512-GCzgRt2o4mhZLy8L47k2A+q9EMG/jWhzZebE29EqKsxmjDrSfv2VisEj/Q+39OOf04jTkEfB/TRO+IZSyxHdYg==}
+  '@dprint/formatter@0.4.1':
+    resolution: {integrity: sha512-IB/GXdlMOvi0UhQQ9mcY15Fxcrc2JPadmo6tqefCNV0bptFq7YBpggzpqYXldBXDa04CbKJ+rDwO2eNRPE2+/g==}
 
-  '@dprint/typescript@0.85.1':
-    resolution: {integrity: sha512-rPwwm/RrFIolz6xHa8Kzpshuwpe+xu/XcEw9iUmRF2tnyIwxxaW7XoFKaQ+GfPju81cKpH4vJeq7/2IizKvyjg==}
+  '@dprint/typescript@0.91.4':
+    resolution: {integrity: sha512-je/T8JF07xehOVS7rx6Xo7T8Aa1Sd/p/+e/b/J2RE8yJHu09O+L0aHBSvec+usjR8/QwCu23AuDLl47zFSey5Q==}
 
   '@effect/build-utils@0.7.7':
     resolution: {integrity: sha512-jx38gmnwZcbkYJhV+XlLxwO/sJcQF4RQTA5/RTHXgTLdpB4AYAMhcZE7lmFLbkyREysVVp9i9BaYklm8ESXaOg==}
@@ -321,8 +321,8 @@ packages:
       tsx: ^4.1.0
       typescript: ^5.2.2
 
-  '@effect/eslint-plugin@0.1.2':
-    resolution: {integrity: sha512-spBoeM9kF0rTM1JP8dfaubVUqUrkfijIUKqE6bh4gDw9qMYweT1HV9iXLzF5Dsj589wwVfk6sx5uqO09C4+w2w==}
+  '@effect/eslint-plugin@0.2.0':
+    resolution: {integrity: sha512-PC/hEDGctYGYIjZyhM6kbD4FyHxLgoYNoQNjGkCXcFEzi71vQc3PJKe2JnCgzcUDvr/Nc2qgTVU4ONYwjHzQGA==}
 
   '@effect/experimental@0.19.3':
     resolution: {integrity: sha512-nm+ZAzOnENylbw3H9fxNkm/JM8IO61q+CSWDeEScTz5pVDkxlUbuHBURbDL4Bh+VqyYoYJf+i8qWSO5/7fx1Hw==}
@@ -1332,10 +1332,6 @@ packages:
   diff-sequences@29.6.3:
     resolution: {integrity: sha512-EjePK1srD3P08o2j4f0ExnylqRs5B9tJjcp9t1krH2qRi8CCdsYfwe9JgSLurFBWwq4uOlipzfk5fHNvwFKr8Q==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
-
-  diff@5.2.0:
-    resolution: {integrity: sha512-uIFDxqpRZGZ6ThOk84hEfqWoHx2devRFvpTZcTHur85vImfaxUbTW9Ryh4CpCuDnToOP1CEtXKIgytHBPVff5A==}
-    engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
@@ -3211,9 +3207,9 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@dprint/formatter@0.2.1': {}
+  '@dprint/formatter@0.4.1': {}
 
-  '@dprint/typescript@0.85.1': {}
+  '@dprint/typescript@0.91.4': {}
 
   '@effect/build-utils@0.7.7(patch_hash=42kuthnwfb3mlmwujslfsbh6re)': {}
 
@@ -3237,11 +3233,11 @@ snapshots:
       tsx: 4.16.2
       typescript: 5.5.3
 
-  '@effect/eslint-plugin@0.1.2':
+  '@effect/eslint-plugin@0.2.0':
     dependencies:
-      '@dprint/formatter': 0.2.1
-      '@dprint/typescript': 0.85.1
-      diff: 5.2.0
+      '@dprint/formatter': 0.4.1
+      '@dprint/typescript': 0.91.4
+      prettier-linter-helpers: 1.0.0
 
   '@effect/experimental@0.19.3(@effect/platform-node@0.54.3(@effect/platform@0.59.2(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6))(effect@3.5.6))(@effect/platform@0.59.2(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6))(@effect/schema@0.68.26(effect@3.5.6))(effect@3.5.6)(ws@8.18.0)':
     dependencies:
@@ -4202,8 +4198,6 @@ snapshots:
   diacritics-map@0.1.0: {}
 
   diff-sequences@29.6.3: {}
-
-  diff@5.2.0: {}
 
   dir-glob@3.0.1:
     dependencies:
