@@ -8,7 +8,7 @@ export class ImageHistoryResponseItem extends Schema.Class<ImageHistoryResponseI
         CreatedBy: Schema.String,
         Id: Schema.String,
         Size: MobySchemas.Int64,
-        Tags: Schema.Array(Schema.String),
+        Tags: Schema.NullOr(Schema.Array(Schema.String)),
     },
     {
         identifier: "ImageHistoryResponseItem",

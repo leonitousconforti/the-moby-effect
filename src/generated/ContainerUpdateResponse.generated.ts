@@ -2,7 +2,7 @@ import * as Schema from "@effect/schema/Schema";
 
 export class ContainerUpdateResponse extends Schema.Class<ContainerUpdateResponse>("ContainerUpdateResponse")(
     {
-        Warnings: Schema.Array(Schema.String),
+        Warnings: Schema.NullOr(Schema.Array(Schema.String)),
     },
     {
         identifier: "ContainerUpdateResponse",
