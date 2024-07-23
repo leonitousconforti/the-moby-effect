@@ -5,9 +5,11 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmPlacement extends Schema.Class<SwarmPlacement>("SwarmPlacement")(
     {
         Constraints: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
-        Preferences: Schema.optional(Schema.Array(MobySchemasGenerated.SwarmPlacementPreference), { nullable: true }),
+        Preferences: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmPlacementPreference)), {
+            nullable: true,
+        }),
         MaxReplicas: Schema.optional(MobySchemas.UInt64),
-        Platforms: Schema.optional(Schema.Array(MobySchemasGenerated.SwarmPlatform), { nullable: true }),
+        Platforms: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmPlatform)), { nullable: true }),
     },
     {
         identifier: "SwarmPlacement",

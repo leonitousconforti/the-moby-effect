@@ -9,7 +9,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
         DataPathAddr: Schema.String,
         DataPathPort: MobySchemas.UInt32,
         ForceNewCluster: Schema.Boolean,
-        Spec: MobySchemasGenerated.SwarmSpec,
+        Spec: Schema.NullOr(MobySchemasGenerated.SwarmSpec),
         AutoLockManagers: Schema.Boolean,
         Availability: Schema.String,
         DefaultAddrPool: Schema.NullOr(Schema.Array(Schema.String)),

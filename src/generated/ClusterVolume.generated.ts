@@ -11,21 +11,21 @@ export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")(
         ID: Schema.String,
 
         // https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/swarm/common.go#L18-L23
-        Version: Schema.optional(MobySchemasGenerated.SwarmVersion),
-        CreatedAt: Schema.optional(MobySchemasGenerated.Time),
-        UpdatedAt: Schema.optional(MobySchemasGenerated.Time),
+        ...MobySchemasGenerated.SwarmMeta.fields,
 
         /**
          * Spec is the cluster-specific options from which this volume is
          * derived.
          */
-        Spec: MobySchemasGenerated.ClusterVolumeSpec,
+        Spec: Schema.NullOr(MobySchemasGenerated.ClusterVolumeSpec),
 
         /**
          * PublishStatus contains the status of the volume as it pertains to its
          * publishing on Nodes.
          */
-        PublishStatus: Schema.optional(Schema.Array(MobySchemasGenerated.VolumePublishStatus), { nullable: true }),
+        PublishStatus: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumePublishStatus)), {
+            nullable: true,
+        }),
 
         /** Info is information about the global status of the volume. */
         Info: Schema.optional(MobySchemasGenerated.VolumeInfo, { nullable: true }),

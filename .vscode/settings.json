@@ -5,6 +5,7 @@
         "Annotable",
         "awslogs",
         "basictypes",
+        "behaviour",
         "Blkio",
         "buildargs",
         "cachefrom",
@@ -50,6 +51,7 @@
         "IPAM",
         "janedoe",
         "jsonmessage",
+        "kernelmode",
         "kmem",
         "leonitous",
         "leonitousconforti",
@@ -77,6 +79,7 @@
         "openapi",
         "operatingsystem",
         "packagejson",
+        "percpu",
         "Pids",
         "privs",
         "Refail",
@@ -109,6 +112,7 @@
         "ulong",
         "undici",
         "unlockkey",
+        "usermode",
         "usernamespace",
         "userns",
         "ushort",
@@ -116,5 +120,11 @@
         "VXLAN",
         "WORKDIR",
         "Yieldable"
-    ]
+    ],
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/*.code-search": true,
+        "submodules/**": true
+    }
 }

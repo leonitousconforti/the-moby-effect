@@ -36,7 +36,7 @@ export class BuildCache extends Schema.Class<BuildCache>("BuildCache")(
         Size: MobySchemas.Int64,
 
         /** CreatedAt is the date and time at which the build cache was created. */
-        CreatedAt: MobySchemasGenerated.Time,
+        CreatedAt: Schema.NullOr(MobySchemasGenerated.Time),
 
         /**
          * LastUsedAt is the date and time at which the build cache was last

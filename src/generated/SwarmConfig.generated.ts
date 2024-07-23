@@ -4,10 +4,10 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmConfig extends Schema.Class<SwarmConfig>("SwarmConfig")(
     {
         ID: Schema.String,
-        Version: Schema.optional(MobySchemasGenerated.SwarmVersion),
-        CreatedAt: Schema.optional(MobySchemasGenerated.Time),
-        UpdatedAt: Schema.optional(MobySchemasGenerated.Time),
-        Spec: MobySchemasGenerated.SwarmConfigSpec,
+        Version: Schema.optional(MobySchemasGenerated.SwarmVersion, { nullable: true }),
+        CreatedAt: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
+        UpdatedAt: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
+        Spec: Schema.NullOr(MobySchemasGenerated.SwarmConfigSpec),
     },
     {
         identifier: "SwarmConfig",

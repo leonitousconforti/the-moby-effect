@@ -3,7 +3,7 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class ImageMetadata extends Schema.Class<ImageMetadata>("ImageMetadata")(
     {
-        LastTagTime: Schema.optional(MobySchemasGenerated.Time),
+        LastTagTime: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
     },
     {
         identifier: "ImageMetadata",

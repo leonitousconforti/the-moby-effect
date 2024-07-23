@@ -8,5 +8,7 @@ export class Driver extends Schema.Class<Driver>("Driver")(
     {
         identifier: "Driver",
         title: "mount.Driver",
+        documentation:
+            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/mount/mount.go#L103-L107",
     }
 ) {}

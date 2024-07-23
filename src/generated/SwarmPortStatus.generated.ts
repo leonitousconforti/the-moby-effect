@@ -3,7 +3,7 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class SwarmPortStatus extends Schema.Class<SwarmPortStatus>("SwarmPortStatus")(
     {
-        Ports: Schema.optional(Schema.Array(MobySchemasGenerated.SwarmPortConfig), { nullable: true }),
+        Ports: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmPortConfig)), { nullable: true }),
     },
     {
         identifier: "SwarmPortStatus",

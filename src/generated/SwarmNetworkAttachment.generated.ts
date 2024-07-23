@@ -3,7 +3,7 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class SwarmNetworkAttachment extends Schema.Class<SwarmNetworkAttachment>("SwarmNetworkAttachment")(
     {
-        Network: Schema.optional(MobySchemasGenerated.SwarmNetwork),
+        Network: Schema.optional(MobySchemasGenerated.SwarmNetwork, { nullable: true }),
         Addresses: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
     },
     {

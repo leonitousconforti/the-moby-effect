@@ -4,11 +4,11 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmNetwork extends Schema.Class<SwarmNetwork>("SwarmNetwork")(
     {
         ID: Schema.String,
-        Version: Schema.optional(MobySchemasGenerated.SwarmVersion),
-        CreatedAt: Schema.optional(MobySchemasGenerated.Time),
-        UpdatedAt: Schema.optional(MobySchemasGenerated.Time),
-        Spec: Schema.optional(MobySchemasGenerated.SwarmNetworkSpec),
-        DriverState: Schema.optional(MobySchemasGenerated.SwarmDriver),
+        Version: Schema.optional(MobySchemasGenerated.SwarmVersion, { nullable: true }),
+        CreatedAt: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
+        UpdatedAt: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
+        Spec: Schema.optional(MobySchemasGenerated.SwarmNetworkSpec, { nullable: true }),
+        DriverState: Schema.optional(MobySchemasGenerated.SwarmDriver, { nullable: true }),
         IPAMOptions: Schema.optional(MobySchemasGenerated.SwarmIPAMOptions, { nullable: true }),
     },
     {

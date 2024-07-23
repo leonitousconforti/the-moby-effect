@@ -5,8 +5,8 @@ export class RegistryDistributionInspect extends Schema.Class<RegistryDistributi
     "RegistryDistributionInspect"
 )(
     {
-        Descriptor: MobySchemasGenerated.Descriptor,
-        Platforms: Schema.NullOr(Schema.Array(MobySchemasGenerated.Platform)),
+        Descriptor: Schema.NullOr(MobySchemasGenerated.Descriptor),
+        Platforms: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.Platform))),
     },
     {
         identifier: "RegistryDistributionInspect",

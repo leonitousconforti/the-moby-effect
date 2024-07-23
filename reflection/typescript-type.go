@@ -60,6 +60,14 @@ func NewModel(name, sourceName string) *TSModelType {
 	return &s
 }
 
+func tsTypeToString(t TSType) string {
+	if t.Nullable {
+		return fmt.Sprintf("Schema.NullOr(%s)", t.Name)
+	} else {
+		return t.Name
+	}
+}
+
 func tsType(t reflect.Type) TSType {
 	def, found := TSInboxTypesMap[t.Kind()]
 	if found {
@@ -72,11 +80,11 @@ func tsType(t reflect.Type) TSType {
 
 	switch t.Kind() {
 	case reflect.Slice:
-		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), true}
+		return TSType{fmt.Sprintf("Schema.Array(%s)", tsTypeToString(tsType(t.Elem()))), true}
 	case reflect.Map:
-		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), true}
+		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsTypeToString(tsType(t.Key())), tsTypeToString(tsType(t.Elem()))), true}
 	case reflect.Array:
-		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsType(t.Elem()).Name, t.Len()), false}
+		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsTypeToString(tsType(t.Elem())), t.Len()), false}
 	case reflect.Pointer:
 		ptr := tsType(t.Elem())
 		ptr.Nullable = true

@@ -3,8 +3,8 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class SwarmIPAMOptions extends Schema.Class<SwarmIPAMOptions>("SwarmIPAMOptions")(
     {
-        Driver: Schema.optional(MobySchemasGenerated.SwarmDriver),
-        Configs: Schema.optional(Schema.Array(MobySchemasGenerated.SwarmIPAMConfig), { nullable: true }),
+        Driver: Schema.optional(MobySchemasGenerated.SwarmDriver, { nullable: true }),
+        Configs: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmIPAMConfig)), { nullable: true }),
     },
     {
         identifier: "SwarmIPAMOptions",

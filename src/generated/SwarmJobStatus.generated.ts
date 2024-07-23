@@ -3,8 +3,8 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class SwarmJobStatus extends Schema.Class<SwarmJobStatus>("SwarmJobStatus")(
     {
-        JobIteration: MobySchemasGenerated.SwarmVersion,
-        LastExecution: Schema.optional(MobySchemasGenerated.Time),
+        JobIteration: Schema.NullOr(MobySchemasGenerated.SwarmVersion),
+        LastExecution: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
     },
     {
         identifier: "SwarmJobStatus",

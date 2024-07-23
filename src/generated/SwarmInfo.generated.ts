@@ -9,7 +9,7 @@ export class SwarmInfo extends Schema.Class<SwarmInfo>("SwarmInfo")(
         LocalNodeState: Schema.String,
         ControlAvailable: Schema.Boolean,
         Error: Schema.String,
-        RemoteManagers: Schema.NullOr(Schema.Array(MobySchemasGenerated.SwarmPeer)),
+        RemoteManagers: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmPeer))),
         Nodes: Schema.optional(MobySchemas.Int64),
         Managers: Schema.optional(MobySchemas.Int64),
         Cluster: Schema.optional(MobySchemasGenerated.SwarmClusterInfo, { nullable: true }),

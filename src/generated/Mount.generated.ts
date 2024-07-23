@@ -3,11 +3,12 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class Mount extends Schema.Class<Mount>("Mount")(
     {
-        Type: Schema.optional(Schema.String),
+        Type: Schema.optional(Schema.Literal("bind", "volume", "tmpfs", "npipe", "cluster")),
         Source: Schema.optional(Schema.String),
         Target: Schema.optional(Schema.String),
         ReadOnly: Schema.optional(Schema.Boolean),
-        Consistency: Schema.optional(Schema.String),
+        Consistency: Schema.optional(Schema.Literal("consistent", "cached", "delegated", "default")),
+
         BindOptions: Schema.optional(MobySchemasGenerated.BindOptions, { nullable: true }),
         VolumeOptions: Schema.optional(MobySchemasGenerated.VolumeOptions, { nullable: true }),
         TmpfsOptions: Schema.optional(MobySchemasGenerated.TmpfsOptions, { nullable: true }),
@@ -16,5 +17,7 @@ export class Mount extends Schema.Class<Mount>("Mount")(
     {
         identifier: "Mount",
         title: "mount.Mount",
+        documentation:
+            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/mount/mount.go#L24-L39",
     }
 ) {}
