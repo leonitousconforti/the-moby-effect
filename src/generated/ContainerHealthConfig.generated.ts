@@ -10,7 +10,7 @@ export class ContainerHealthConfig extends Schema.Class<ContainerHealthConfig>("
         // {"NONE"} : disable healthcheck
         // {"CMD", args...} : exec arguments directly
         // {"CMD-SHELL", command} : run command with system's default shell
-        Test: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        Test: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
 
         /** Interval is the time to wait between checks. */
         Interval: Schema.optional(MobySchemas.Int64),

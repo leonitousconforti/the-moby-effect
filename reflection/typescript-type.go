@@ -82,7 +82,7 @@ func tsType(t reflect.Type) TSType {
 	case reflect.Slice:
 		return TSType{fmt.Sprintf("Schema.Array(%s)", tsTypeToString(tsType(t.Elem()))), true}
 	case reflect.Map:
-		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsTypeToString(tsType(t.Key())), tsTypeToString(tsType(t.Elem()))), true}
+		return TSType{fmt.Sprintf("Schema.Record({ key: %s, value: %s })", tsTypeToString(tsType(t.Key())), tsTypeToString(tsType(t.Elem()))), true}
 	case reflect.Array:
 		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsTypeToString(tsType(t.Elem())), t.Len()), false}
 	case reflect.Pointer:
@@ -115,9 +115,9 @@ func (t *TSModelType) WriteInlineStruct() string {
 	buffer.WriteString(fmt.Sprintln("Schema.Struct({"))
 	for _, p := range t.Properties {
 		if p.IsOpt && p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {
@@ -134,9 +134,9 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	buffer.WriteString(fmt.Sprintln("    {"))
 	for _, p := range t.Properties {
 		if p.IsOpt && p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {

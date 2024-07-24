@@ -5,7 +5,7 @@ export class NetworkEndpointIPAMConfig extends Schema.Class<NetworkEndpointIPAMC
     {
         IPv4Address: Schema.optional(MobySchemas.IPv4),
         IPv6Address: Schema.optional(MobySchemas.IPv6),
-        LinkLocalIPs: Schema.optional(Schema.Array(MobySchemas.Address), { nullable: true }),
+        LinkLocalIPs: Schema.optionalWith(Schema.Array(MobySchemas.Address), { nullable: true }),
     },
     {
         identifier: "NetworkEndpointIPAMConfig",

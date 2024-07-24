@@ -5,7 +5,7 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmCAConfig extends Schema.Class<SwarmCAConfig>("SwarmCAConfig")(
     {
         NodeCertExpiry: Schema.optional(MobySchemas.Int64),
-        ExternalCAs: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmExternalCA)), {
+        ExternalCAs: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmExternalCA)), {
             nullable: true,
         }),
         SigningCACert: Schema.optional(Schema.String),

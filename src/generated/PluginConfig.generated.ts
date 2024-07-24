@@ -16,9 +16,9 @@ export class PluginConfig extends Schema.Class<PluginConfig>("PluginConfig")(
         Network: Schema.NullOr(MobySchemasGenerated.PluginConfigNetwork),
         PidHost: Schema.Boolean,
         PropagatedMount: Schema.String,
-        User: Schema.optional(MobySchemasGenerated.PluginConfigUser, { nullable: true }),
+        User: Schema.optionalWith(MobySchemasGenerated.PluginConfigUser, { nullable: true }),
         WorkDir: Schema.String,
-        rootfs: Schema.optional(MobySchemasGenerated.PluginConfigRootfs, { nullable: true }),
+        rootfs: Schema.optionalWith(MobySchemasGenerated.PluginConfigRootfs, { nullable: true }),
     },
     {
         identifier: "PluginConfig",

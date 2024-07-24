@@ -10,10 +10,16 @@ export class Descriptor extends Schema.Class<Descriptor>("Descriptor")(
         digest: Schema.String.pipe(Schema.pattern(/^[a-z0-9]+(?:[.+_-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$/)),
 
         size: MobySchemas.Int64,
-        urls: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
-        annotations: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
-        data: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
-        platform: Schema.optional(MobySchemasGenerated.Platform, { nullable: true }),
+        urls: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        annotations: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
+        data: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        platform: Schema.optionalWith(MobySchemasGenerated.Platform, { nullable: true }),
         artifactType: Schema.optional(Schema.String),
     },
     {

@@ -30,7 +30,13 @@ export class VolumeTopology extends Schema.Class<VolumeTopology>("VolumeTopology
         // Each string MUST be 63 characters or less and begin and end with an
         // alphanumeric character with '-', '_', '.', or alphanumerics in
         // between.
-        Segments: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Segments: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
     },
     {
         identifier: "VolumeTopology",

@@ -8,7 +8,7 @@ export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("
                 Name: Schema.String,
             })
         ),
-        Components: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.ComponentVersion)), {
+        Components: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.ComponentVersion)), {
             nullable: true,
         }),
         Version: Schema.String,

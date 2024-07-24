@@ -4,9 +4,15 @@ import * as MobySchemasGenerated from "./index.js";
 export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
     {
         NoCopy: Schema.optional(Schema.Boolean),
-        Labels: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Labels: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
         Subpath: Schema.optional(Schema.String),
-        DriverConfig: Schema.optional(MobySchemasGenerated.Driver, { nullable: true }),
+        DriverConfig: Schema.optionalWith(MobySchemasGenerated.Driver, { nullable: true }),
     },
     {
         identifier: "VolumeOptions",

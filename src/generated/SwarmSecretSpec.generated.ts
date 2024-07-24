@@ -5,10 +5,15 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmSecretSpec extends Schema.Class<SwarmSecretSpec>("SwarmSecretSpec")(
     {
         Name: Schema.optional(Schema.String),
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
-        Data: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
-        Driver: Schema.optional(MobySchemasGenerated.SwarmDriver, { nullable: true }),
-        Templating: Schema.optional(MobySchemasGenerated.SwarmDriver, { nullable: true }),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
+        Data: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        Driver: Schema.optionalWith(MobySchemasGenerated.SwarmDriver, { nullable: true }),
+        Templating: Schema.optionalWith(MobySchemasGenerated.SwarmDriver, { nullable: true }),
     },
     {
         identifier: "SwarmSecretSpec",

@@ -6,7 +6,7 @@ export class VolumeTypeMount extends Schema.Class<VolumeTypeMount>("VolumeTypeMo
         FsType: Schema.optional(Schema.String),
 
         /** MountFlags defines flags to pass when mounting the volume. */
-        MountFlags: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        MountFlags: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },
     {
         identifier: "VolumeTypeMount",

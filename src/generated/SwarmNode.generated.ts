@@ -4,13 +4,13 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmNode extends Schema.Class<SwarmNode>("SwarmNode")(
     {
         ID: Schema.String,
-        Version: Schema.optional(MobySchemasGenerated.SwarmVersion, { nullable: true }),
-        CreatedAt: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
-        UpdatedAt: Schema.optional(MobySchemasGenerated.Time, { nullable: true }),
-        Spec: Schema.optional(MobySchemasGenerated.SwarmNodeSpec, { nullable: true }),
-        Description: Schema.optional(MobySchemasGenerated.SwarmNodeDescription, { nullable: true }),
-        Status: Schema.optional(MobySchemasGenerated.SwarmNodeStatus, { nullable: true }),
-        ManagerStatus: Schema.optional(MobySchemasGenerated.SwarmManagerStatus, { nullable: true }),
+        Version: Schema.optionalWith(MobySchemasGenerated.SwarmVersion, { nullable: true }),
+        CreatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
+        UpdatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
+        Spec: Schema.optionalWith(MobySchemasGenerated.SwarmNodeSpec, { nullable: true }),
+        Description: Schema.optionalWith(MobySchemasGenerated.SwarmNodeDescription, { nullable: true }),
+        Status: Schema.optionalWith(MobySchemasGenerated.SwarmNodeStatus, { nullable: true }),
+        ManagerStatus: Schema.optionalWith(MobySchemasGenerated.SwarmManagerStatus, { nullable: true }),
     },
     {
         identifier: "SwarmNode",

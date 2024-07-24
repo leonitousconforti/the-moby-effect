@@ -94,11 +94,11 @@ export interface $PortSet extends Schema.Record$<$PortWithMaybeProtocol, typeof 
  * @category Schemas
  * @see https://github.com/docker/go-connections/blob/5df8d2b30ca886f2d94740ce3c54abd58a5bb2c9/nat/nat.go#L23
  */
-export const PortSet: $PortSet = Schema.Record(
-    PortWithMaybeProtocol,
+export const PortSet: $PortSet = Schema.Record({
+    key: PortWithMaybeProtocol,
     // FIXME: What is this type?
-    Schema.Object
-).annotations({
+    value: Schema.Object,
+}).annotations({
     identifier: "PortSet",
     title: "A set of OS ports",
     description: "A set of operating system ports",
@@ -143,7 +143,10 @@ export interface $PortMap extends Schema.Record$<typeof PortWithMaybeProtocol, $
  * @category Schemas
  * @see https://github.com/docker/go-connections/blob/5df8d2b30ca886f2d94740ce3c54abd58a5bb2c9/nat/nat.go#L20
  */
-export const PortMap: $PortMap = Schema.Record(PortWithMaybeProtocol, PortBinding).annotations({
+export const PortMap: $PortMap = Schema.Record({
+    key: PortWithMaybeProtocol,
+    value: PortBinding,
+}).annotations({
     identifier: "PortMap",
     title: "nat.PortMap",
     description: "Port mapping between the exposed port (container) and the host",

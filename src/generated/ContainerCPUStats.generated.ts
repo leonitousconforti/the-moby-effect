@@ -14,7 +14,7 @@ export class ContainerCPUStats extends Schema.Class<ContainerCPUStats>("Containe
         online_cpus: Schema.optional(MobySchemas.UInt32),
 
         /** Throttling Data. Linux only. */
-        throttling_data: Schema.optional(MobySchemasGenerated.ContainerThrottlingData, { nullable: true }),
+        throttling_data: Schema.optionalWith(MobySchemasGenerated.ContainerThrottlingData, { nullable: true }),
     },
     {
         identifier: "ContainerCPUStats",

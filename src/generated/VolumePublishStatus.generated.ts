@@ -14,7 +14,13 @@ export class VolumePublishStatus extends Schema.Class<VolumePublishStatus>("Volu
          * PublishContext is the PublishContext returned by the CSI plugin when
          * a volume is published.
          */
-        PublishContext: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        PublishContext: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
     },
     {
         identifier: "VolumePublishStatus",

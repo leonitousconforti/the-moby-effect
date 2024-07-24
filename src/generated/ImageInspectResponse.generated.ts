@@ -11,7 +11,7 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Comment: Schema.String,
         Created: Schema.optional(Schema.String),
         Container: Schema.optional(Schema.String),
-        ContainerConfig: Schema.optional(MobySchemasGenerated.ContainerConfig, { nullable: true }),
+        ContainerConfig: Schema.optionalWith(MobySchemasGenerated.ContainerConfig, { nullable: true }),
         DockerVersion: Schema.String,
         Author: Schema.String,
         Config: Schema.NullOr(MobySchemasGenerated.ContainerConfig),

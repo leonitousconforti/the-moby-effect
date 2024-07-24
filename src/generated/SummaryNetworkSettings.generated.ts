@@ -4,7 +4,10 @@ import * as MobySchemasGenerated from "./index.js";
 export class SummaryNetworkSettings extends Schema.Class<SummaryNetworkSettings>("SummaryNetworkSettings")(
     {
         Networks: Schema.NullOr(
-            Schema.Record(Schema.String, Schema.NullOr(MobySchemasGenerated.NetworkEndpointSettings))
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.NullOr(MobySchemasGenerated.NetworkEndpointSettings),
+            })
         ),
     },
     {

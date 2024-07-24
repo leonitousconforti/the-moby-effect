@@ -6,8 +6,11 @@ export class ContainerStatsResponse extends Schema.Class<ContainerStatsResponse>
         ...MobySchemasGenerated.ContainerStats.fields,
         name: Schema.optional(Schema.String),
         id: Schema.optional(Schema.String),
-        networks: Schema.optional(
-            Schema.Record(Schema.String, Schema.NullOr(MobySchemasGenerated.ContainerNetworkStats)),
+        networks: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.NullOr(MobySchemasGenerated.ContainerNetworkStats),
+            }),
             { nullable: true }
         ),
     },

@@ -5,8 +5,8 @@ export class SwarmPrivileges extends Schema.Class<SwarmPrivileges>("SwarmPrivile
     {
         CredentialSpec: Schema.NullOr(MobySchemasGenerated.SwarmCredentialSpec),
         SELinuxContext: Schema.NullOr(MobySchemasGenerated.SwarmSELinuxContext),
-        Seccomp: Schema.optional(MobySchemasGenerated.SwarmSeccompOpts, { nullable: true }),
-        AppArmor: Schema.optional(MobySchemasGenerated.SwarmAppArmorOpts, { nullable: true }),
+        Seccomp: Schema.optionalWith(MobySchemasGenerated.SwarmSeccompOpts, { nullable: true }),
+        AppArmor: Schema.optionalWith(MobySchemasGenerated.SwarmAppArmorOpts, { nullable: true }),
         NoNewPrivileges: Schema.Boolean,
     },
     {

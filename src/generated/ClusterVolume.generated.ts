@@ -23,12 +23,12 @@ export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")(
          * PublishStatus contains the status of the volume as it pertains to its
          * publishing on Nodes.
          */
-        PublishStatus: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumePublishStatus)), {
+        PublishStatus: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumePublishStatus)), {
             nullable: true,
         }),
 
         /** Info is information about the global status of the volume. */
-        Info: Schema.optional(MobySchemasGenerated.VolumeInfo, { nullable: true }),
+        Info: Schema.optionalWith(MobySchemasGenerated.VolumeInfo, { nullable: true }),
     },
     {
         identifier: "ClusterVolume",

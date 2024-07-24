@@ -16,13 +16,31 @@ export class NetworkSummary extends Schema.Class<NetworkSummary>("NetworkSummary
         ConfigFrom: Schema.NullOr(MobySchemasGenerated.NetworkConfigReference),
         ConfigOnly: Schema.Boolean,
         Containers: Schema.NullOr(
-            Schema.Record(Schema.String, Schema.NullOr(MobySchemasGenerated.NetworkEndpointResource))
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.NullOr(MobySchemasGenerated.NetworkEndpointResource),
+            })
         ),
-        Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
-        Peers: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.NetworkPeerInfo)), { nullable: true }),
-        Services: Schema.optional(
-            Schema.Record(Schema.String, Schema.NullOr(MobySchemasGenerated.NetworkServiceInfo)),
+        Options: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
+        Peers: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.NetworkPeerInfo)), {
+            nullable: true,
+        }),
+        Services: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.NullOr(MobySchemasGenerated.NetworkServiceInfo),
+            }),
             { nullable: true }
         ),
     },

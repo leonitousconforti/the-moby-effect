@@ -15,7 +15,7 @@ export class BuildCache extends Schema.Class<BuildCache>("BuildCache")(
         Parent: Schema.optional(Schema.String),
 
         /** Parents is the list of parent build cache record IDs. */
-        " Parents": Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        " Parents": Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
 
         /** Type is the cache record type. */
         Type: Schema.String,

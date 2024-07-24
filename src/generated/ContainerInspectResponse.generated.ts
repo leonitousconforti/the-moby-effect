@@ -13,12 +13,23 @@ export class ContainerInspectResponse extends Schema.Class<ContainerInspectRespo
         Ports: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.Port))),
         SizeRw: Schema.optional(MobySchemas.Int64),
         SizeRootFs: Schema.optional(MobySchemas.Int64),
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
         State: Schema.String,
         Status: Schema.String,
         HostConfig: Schema.Struct({
             NetworkMode: Schema.optional(Schema.String),
-            Annotations: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+            Annotations: Schema.optionalWith(
+                Schema.Record({
+                    key: Schema.String,
+                    value: Schema.String,
+                }),
+                { nullable: true }
+            ),
         }),
         NetworkSettings: Schema.NullOr(MobySchemasGenerated.SummaryNetworkSettings),
         Mounts: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.MountPoint))),

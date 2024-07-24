@@ -16,10 +16,10 @@ export class VolumeAccessMode extends Schema.Class<VolumeAccessMode>("VolumeAcce
         Sharing: Schema.optional(Schema.Literal("none", "readonly", "onewriter", "all")),
 
         /** MountVolume defines options for using this volume as a Mount-type */
-        MountVolume: Schema.optional(MobySchemasGenerated.VolumeTypeMount, { nullable: true }),
+        MountVolume: Schema.optionalWith(MobySchemasGenerated.VolumeTypeMount, { nullable: true }),
 
         /** BlockVolume defines options for using this volume as a Block-type */
-        BlockVolume: Schema.optional(MobySchemasGenerated.VolumeTypeBlock, { nullable: true }),
+        BlockVolume: Schema.optionalWith(MobySchemasGenerated.VolumeTypeBlock, { nullable: true }),
     },
     {
         identifier: "VolumeAccessMode",

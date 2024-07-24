@@ -12,7 +12,7 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         Images: MobySchemas.Int64,
         Driver: Schema.String,
         DriverStatus: Schema.NullOr(Schema.Array(Schema.Array(Schema.String).pipe(Schema.itemsCount(2)))),
-        SystemStatus: Schema.optional(Schema.Array(Schema.Array(Schema.String).pipe(Schema.itemsCount(2))), {
+        SystemStatus: Schema.optionalWith(Schema.Array(Schema.Array(Schema.String).pipe(Schema.itemsCount(2))), {
             nullable: true,
         }),
         Plugins: Schema.NullOr(MobySchemasGenerated.SystemPluginsInfo),
@@ -56,7 +56,10 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         ExperimentalBuild: Schema.Boolean,
         ServerVersion: Schema.String,
         Runtimes: Schema.NullOr(
-            Schema.Record(Schema.String, Schema.NullOr(MobySchemasGenerated.SystemRuntimeWithStatus))
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.NullOr(MobySchemasGenerated.SystemRuntimeWithStatus),
+            })
         ),
         DefaultRuntime: Schema.String,
         Swarm: Schema.NullOr(MobySchemasGenerated.SwarmInfo),
@@ -68,12 +71,12 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         InitCommit: Schema.NullOr(MobySchemasGenerated.SystemCommit),
         SecurityOptions: Schema.NullOr(Schema.Array(Schema.String)),
         ProductLicense: Schema.optional(Schema.String),
-        DefaultAddressPools: Schema.optional(
+        DefaultAddressPools: Schema.optionalWith(
             Schema.Array(Schema.NullOr(MobySchemasGenerated.SystemNetworkAddressPool)),
             { nullable: true }
         ),
         CDISpecDirs: Schema.NullOr(Schema.Array(Schema.String)),
-        Containerd: Schema.optional(MobySchemasGenerated.SystemContainerdInfo, { nullable: true }),
+        Containerd: Schema.optionalWith(MobySchemasGenerated.SystemContainerdInfo, { nullable: true }),
         ExecutionDriver: Schema.optional(Schema.String),
         Warnings: Schema.NullOr(Schema.Array(Schema.String)),
     },

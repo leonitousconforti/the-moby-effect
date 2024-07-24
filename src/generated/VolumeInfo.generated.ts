@@ -14,7 +14,13 @@ export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
          * VolumeContext is the context originating from the CSI storage plugin
          * when the Volume is created.
          */
-        VolumeContext: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        VolumeContext: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
 
         /**
          * VolumeID is the ID of the Volume as seen by the CSI storage plugin.
@@ -28,7 +34,7 @@ export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
          * AccessibleTopology is the topology this volume is actually accessible
          * from.
          */
-        AccessibleTopology: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
+        AccessibleTopology: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
             nullable: true,
         }),
     },

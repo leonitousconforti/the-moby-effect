@@ -39,7 +39,13 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
          * Arbitrary non-identifying metadata attached to container and provided
          * to the runtime
          */
-        Annotations: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Annotations: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
 
         // Applicable to UNIX platforms
         /** List of kernel capabilities to add to the container */
@@ -97,10 +103,22 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         SecurityOpt: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** Storage driver options per container. */
-        StorageOpt: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        StorageOpt: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
 
         /** List of tmpfs (mounts) used for the container */
-        Tmpfs: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Tmpfs: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
 
         /** UTS namespace to use for the container */
         UTSMode: Schema.String,
@@ -112,7 +130,13 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         ShmSize: MobySchemas.Int64,
 
         /** List of Namespaced sysctls used for the container */
-        Sysctls: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Sysctls: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
 
         /** Runtime to use with this container */
         Runtime: Schema.optional(Schema.String),
@@ -125,7 +149,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         ...MobySchemasGenerated.ContainerResources.fields,
 
         /** Mounts specs used by the container */
-        Mounts: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.Mount)), { nullable: true }),
+        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.Mount)), { nullable: true }),
 
         /**
          * MaskedPaths is the list of paths to be masked inside the container
@@ -143,7 +167,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
          * Run a custom init inside the container, if null, use the daemon's
          * configured settings
          */
-        Init: Schema.optional(Schema.Boolean, { nullable: true }),
+        Init: Schema.optionalWith(Schema.Boolean, { nullable: true }),
     },
     {
         identifier: "ContainerHostConfig",

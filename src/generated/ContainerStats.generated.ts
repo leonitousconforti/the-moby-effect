@@ -9,17 +9,17 @@ export class ContainerStats extends Schema.Class<ContainerStats>("ContainerStats
         preread: Schema.NullOr(MobySchemasGenerated.Time),
 
         // Linux specific stats, not populated on Windows.
-        pids_stats: Schema.optional(MobySchemasGenerated.ContainerPidsStats, { nullable: true }),
-        blkio_stats: Schema.optional(MobySchemasGenerated.ContainerBlkioStats, { nullable: true }),
+        pids_stats: Schema.optionalWith(MobySchemasGenerated.ContainerPidsStats, { nullable: true }),
+        blkio_stats: Schema.optionalWith(MobySchemasGenerated.ContainerBlkioStats, { nullable: true }),
 
         // Windows specific stats, not populated on Linux.
         num_procs: MobySchemas.UInt32,
-        storage_stats: Schema.optional(MobySchemasGenerated.ContainerStorageStats, { nullable: true }),
+        storage_stats: Schema.optionalWith(MobySchemasGenerated.ContainerStorageStats, { nullable: true }),
 
         // Shared stats
-        cpu_stats: Schema.optional(MobySchemasGenerated.ContainerCPUStats, { nullable: true }),
-        precpu_stats: Schema.optional(MobySchemasGenerated.ContainerCPUStats, { nullable: true }),
-        memory_stats: Schema.optional(MobySchemasGenerated.ContainerMemoryStats, { nullable: true }),
+        cpu_stats: Schema.optionalWith(MobySchemasGenerated.ContainerCPUStats, { nullable: true }),
+        precpu_stats: Schema.optionalWith(MobySchemasGenerated.ContainerCPUStats, { nullable: true }),
+        memory_stats: Schema.optionalWith(MobySchemasGenerated.ContainerMemoryStats, { nullable: true }),
     },
     {
         identifier: "ContainerStats",

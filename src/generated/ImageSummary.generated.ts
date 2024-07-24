@@ -6,7 +6,12 @@ export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
         Containers: MobySchemas.Int64,
         Created: MobySchemas.Int64,
         Id: Schema.String,
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
         ParentId: Schema.String,
         RepoDigests: Schema.NullOr(Schema.Array(Schema.String)),
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),

@@ -26,7 +26,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         AttachStderr: Schema.Boolean,
 
         /** List of exposed ports */
-        ExposedPorts: Schema.optional(MobySchemas.PortSchemas.PortSet, { nullable: true }),
+        ExposedPorts: Schema.optionalWith(MobySchemas.PortSchemas.PortSet, { nullable: true }),
 
         /**
          * Attach standard streams to a tty, including stdin if it is not
@@ -47,7 +47,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         Cmd: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** Healthcheck describes how to check the container is healthy */
-        Healthcheck: Schema.optional(MobySchemasGenerated.ContainerHealthConfig, { nullable: true }),
+        Healthcheck: Schema.optionalWith(MobySchemasGenerated.ContainerHealthConfig, { nullable: true }),
 
         /**
          * True if command is already escaped (meaning treat as a command line)
@@ -62,7 +62,12 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         Image: Schema.String,
 
         /** List of volumes (mounts) used for the container */
-        Volumes: Schema.NullOr(Schema.Record(Schema.String, Schema.Object)),
+        Volumes: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.Object,
+            })
+        ),
 
         /** Current directory (PWD) in the command will be launched */
         WorkingDir: Schema.String,
@@ -83,16 +88,21 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         OnBuild: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** List of labels set to this container */
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
 
         /** Signal to stop a container */
         StopSignal: Schema.optional(Schema.String),
 
         /** Timeout (in seconds) to stop a container */
-        StopTimeout: Schema.optional(MobySchemas.Int64, { nullable: true }),
+        StopTimeout: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
 
         /** Shell for shell-form of RUN, CMD, ENTRYPOINT */
-        Shell: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        Shell: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },
     {
         identifier: "ContainerConfig",

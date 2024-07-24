@@ -4,7 +4,13 @@ export class ComponentVersion extends Schema.Class<ComponentVersion>("ComponentV
     {
         Name: Schema.String,
         Version: Schema.String,
-        Details: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Details: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
     },
     {
         identifier: "ComponentVersion",

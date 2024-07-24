@@ -4,8 +4,8 @@ import * as MobySchemas from "../schemas/index.js";
 export class SwarmTLSInfo extends Schema.Class<SwarmTLSInfo>("SwarmTLSInfo")(
     {
         TrustRoot: Schema.optional(Schema.String),
-        CertIssuerSubject: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
-        CertIssuerPublicKey: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        CertIssuerSubject: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        CertIssuerPublicKey: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
     },
     {
         identifier: "SwarmTLSInfo",

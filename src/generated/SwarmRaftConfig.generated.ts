@@ -4,7 +4,7 @@ import * as MobySchemas from "../schemas/index.js";
 export class SwarmRaftConfig extends Schema.Class<SwarmRaftConfig>("SwarmRaftConfig")(
     {
         SnapshotInterval: Schema.optional(MobySchemas.UInt64),
-        KeepOldSnapshots: Schema.optional(MobySchemas.UInt64, { nullable: true }),
+        KeepOldSnapshots: Schema.optionalWith(MobySchemas.UInt64, { nullable: true }),
         LogEntriesForSlowFollowers: Schema.optional(MobySchemas.UInt64),
         ElectionTick: MobySchemas.Int64,
         HeartbeatTick: MobySchemas.Int64,

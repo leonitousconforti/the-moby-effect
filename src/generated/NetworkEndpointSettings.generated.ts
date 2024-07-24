@@ -8,7 +8,12 @@ export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSetting
         Links: Schema.NullOr(Schema.Array(Schema.String)),
         Aliases: Schema.NullOr(Schema.Array(Schema.String)),
         MacAddress: MobySchemas.MacAddress,
-        DriverOpts: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        DriverOpts: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
         NetworkID: Schema.String,
         EndpointID: Schema.String,
         Gateway: Schema.String,

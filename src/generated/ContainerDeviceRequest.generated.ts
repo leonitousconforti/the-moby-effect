@@ -16,7 +16,12 @@ export class ContainerDeviceRequest extends Schema.Class<ContainerDeviceRequest>
         Capabilities: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.Array(Schema.String)))),
 
         /** Options to pass onto the device driver */
-        Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Options: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
     },
     {
         identifier: "ContainerDeviceRequest",

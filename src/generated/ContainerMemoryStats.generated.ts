@@ -5,7 +5,13 @@ export class ContainerMemoryStats extends Schema.Class<ContainerMemoryStats>("Co
     {
         usage: Schema.optional(MobySchemas.UInt64),
         max_usage: Schema.optional(MobySchemas.UInt64),
-        stats: Schema.optional(Schema.Record(Schema.String, MobySchemas.UInt64), { nullable: true }),
+        stats: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: MobySchemas.UInt64,
+            }),
+            { nullable: true }
+        ),
         failcnt: Schema.optional(MobySchemas.UInt64),
         limit: Schema.optional(MobySchemas.UInt64),
         commitbytes: Schema.optional(MobySchemas.UInt64),

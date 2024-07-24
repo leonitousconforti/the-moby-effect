@@ -7,7 +7,10 @@ export class RegistryServiceConfig extends Schema.Class<RegistryServiceConfig>("
         AllowNondistributableArtifactsHostnames: Schema.NullOr(Schema.Array(Schema.String)),
         InsecureRegistryCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.NetIPNet))),
         IndexConfigs: Schema.NullOr(
-            Schema.Record(Schema.String, Schema.NullOr(MobySchemasGenerated.RegistryIndexInfo))
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.NullOr(MobySchemasGenerated.RegistryIndexInfo),
+            })
         ),
         Mirrors: Schema.NullOr(Schema.Array(Schema.String)),
     },

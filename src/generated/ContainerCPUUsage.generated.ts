@@ -15,7 +15,7 @@ export class ContainerCPUUsage extends Schema.Class<ContainerCPUUsage>("Containe
          *
          * Units: nanoseconds.
          */
-        percpu_usage: Schema.optional(Schema.Array(MobySchemas.UInt64), { nullable: true }),
+        percpu_usage: Schema.optionalWith(Schema.Array(MobySchemas.UInt64), { nullable: true }),
 
         /**
          * Linux: time spent by tasks of the cgroup in kernel mode, units

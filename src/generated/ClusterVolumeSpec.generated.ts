@@ -14,7 +14,7 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
         Group: Schema.optional(Schema.String),
 
         /** AccessMode defines how the volume is used by tasks. */
-        AccessMode: Schema.optional(MobySchemasGenerated.VolumeAccessMode, { nullable: true }),
+        AccessMode: Schema.optionalWith(MobySchemasGenerated.VolumeAccessMode, { nullable: true }),
 
         /**
          * AccessibilityRequirements specifies where in the cluster a volume
@@ -28,19 +28,23 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
          * VOLUME_ACCESSIBILITY_CONSTRAINTS, then Swarm kit will assume the
          * entire cluster is a valid target for the volume.
          */
-        AccessibilityRequirements: Schema.optional(MobySchemasGenerated.VolumeTopologyRequirement, { nullable: true }),
+        AccessibilityRequirements: Schema.optionalWith(MobySchemasGenerated.VolumeTopologyRequirement, {
+            nullable: true,
+        }),
 
         /**
          * CapacityRange defines the desired capacity that the volume should be
          * created with. If nil, the plugin will decide the capacity.
          */
-        CapacityRange: Schema.optional(MobySchemasGenerated.VolumeCapacityRange, { nullable: true }),
+        CapacityRange: Schema.optionalWith(MobySchemasGenerated.VolumeCapacityRange, { nullable: true }),
 
         /**
          * Secrets defines Swarm Secrets that are passed to the CSI storage
          * plugin when operating on this volume.
          */
-        Secrets: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeSecret)), { nullable: true }),
+        Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeSecret)), {
+            nullable: true,
+        }),
 
         /**
          * Availability is the Volume's desired availability. Analogous to Node

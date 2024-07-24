@@ -64,7 +64,7 @@ export class VolumeTopologyRequirement extends Schema.Class<VolumeTopologyRequir
         // then the provisioned volume MUST be accessible from the "region"
         // "R1" and the "zone" "Z2" and the SP may select the second zone
         // independently, e.g. "R1/Z4".
-        Requisite: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
+        Requisite: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
             nullable: true,
         }),
 
@@ -142,7 +142,7 @@ export class VolumeTopologyRequirement extends Schema.Class<VolumeTopologyRequir
         // combination of "Z3" and other possibilities from the list of
         // requisite. If that's not possible, it should fall back  to a
         // combination of other possibilities from the list of requisite.
-        Preferred: Schema.optional(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
+        Preferred: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
             nullable: true,
         }),
     },

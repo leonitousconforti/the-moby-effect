@@ -4,7 +4,7 @@ import * as MobySchemasGenerated from "./index.js";
 
 export class ContainerWaitResponse extends Schema.Class<ContainerWaitResponse>("ContainerWaitResponse")(
     {
-        Error: Schema.optional(MobySchemasGenerated.ContainerWaitExitError, { nullable: true }),
+        Error: Schema.optionalWith(MobySchemasGenerated.ContainerWaitExitError, { nullable: true }),
         StatusCode: MobySchemas.Int64,
     },
     {

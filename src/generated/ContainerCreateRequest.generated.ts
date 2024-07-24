@@ -4,8 +4,8 @@ import * as MobySchemasGenerated from "./index.js";
 export class ContainerCreateRequest extends Schema.Class<ContainerCreateRequest>("ContainerCreateRequest")(
     {
         ...MobySchemasGenerated.ContainerConfig.fields,
-        HostConfig: Schema.optional(MobySchemasGenerated.ContainerHostConfig, { nullable: true }),
-        NetworkingConfig: Schema.optional(MobySchemasGenerated.NetworkNetworkingConfig, { nullable: true }),
+        HostConfig: Schema.optionalWith(MobySchemasGenerated.ContainerHostConfig, { nullable: true }),
+        NetworkingConfig: Schema.optionalWith(MobySchemasGenerated.NetworkNetworkingConfig, { nullable: true }),
     },
     {
         identifier: "ContainerCreateRequest",

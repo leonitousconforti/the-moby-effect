@@ -6,7 +6,9 @@ export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("Co
         User: Schema.String,
         Privileged: Schema.Boolean,
         Tty: Schema.Boolean,
-        ConsoleSize: Schema.optional(Schema.Array(MobySchemas.UInt64).pipe(Schema.itemsCount(2)), { nullable: true }),
+        ConsoleSize: Schema.optionalWith(Schema.Array(MobySchemas.UInt64).pipe(Schema.itemsCount(2)), {
+            nullable: true,
+        }),
         AttachStdin: Schema.Boolean,
         AttachStderr: Schema.Boolean,
         AttachStdout: Schema.Boolean,
