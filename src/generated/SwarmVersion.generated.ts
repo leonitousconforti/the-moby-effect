@@ -8,5 +8,7 @@ export class SwarmVersion extends Schema.Class<SwarmVersion>("SwarmVersion")(
     {
         identifier: "SwarmVersion",
         title: "swarm.Version",
+        documentation:
+            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/swarm/common.go#L8-L11",
     }
 ) {}

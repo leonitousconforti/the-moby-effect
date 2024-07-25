@@ -12,5 +12,7 @@ export class ContainerExecInspect extends Schema.Class<ContainerExecInspect>("Co
     {
         identifier: "ContainerExecInspect",
         title: "container.ExecInspect",
+        documentation:
+            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/container/exec.go#L36-L43",
     }
 ) {}

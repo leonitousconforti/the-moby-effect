@@ -5,7 +5,7 @@ export class PluginConfigLinux extends Schema.Class<PluginConfigLinux>("PluginCo
     {
         AllowAllDevices: Schema.Boolean,
         Capabilities: Schema.NullOr(Schema.Array(Schema.String)),
-        Devices: Schema.NullOr(Schema.Array(MobySchemasGenerated.PluginDevice)),
+        Devices: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.PluginDevice))),
     },
     {
         identifier: "PluginConfigLinux",

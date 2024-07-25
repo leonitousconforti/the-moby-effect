@@ -4,7 +4,7 @@ export class PluginPrivilege extends Schema.Class<PluginPrivilege>("PluginPrivil
     {
         name: Schema.optional(Schema.String),
         description: Schema.optional(Schema.String),
-        value: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        value: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },
     {
         identifier: "PluginPrivilege",

@@ -60,6 +60,14 @@ func NewModel(name, sourceName string) *TSModelType {
 	return &s
 }
 
+func tsTypeToString(t TSType) string {
+	if t.Nullable {
+		return fmt.Sprintf("Schema.NullOr(%s)", t.Name)
+	} else {
+		return t.Name
+	}
+}
+
 func tsType(t reflect.Type) TSType {
 	def, found := TSInboxTypesMap[t.Kind()]
 	if found {
@@ -72,12 +80,12 @@ func tsType(t reflect.Type) TSType {
 
 	switch t.Kind() {
 	case reflect.Slice:
-		return TSType{fmt.Sprintf("Schema.Array(%s)", tsType(t.Elem()).Name), true}
+		return TSType{fmt.Sprintf("Schema.Array(%s)", tsTypeToString(tsType(t.Elem()))), true}
 	case reflect.Map:
-		return TSType{fmt.Sprintf("Schema.Record(%s, %s)", tsType(t.Key()).Name, tsType(t.Elem()).Name), true}
+		return TSType{fmt.Sprintf("Schema.Record({ key: %s, value: %s })", tsTypeToString(tsType(t.Key())), tsTypeToString(tsType(t.Elem()))), true}
 	case reflect.Array:
-		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsType(t.Elem()).Name, t.Len()), false}
-	case reflect.Ptr:
+		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsTypeToString(tsType(t.Elem())), t.Len()), false}
+	case reflect.Pointer:
 		ptr := tsType(t.Elem())
 		ptr.Nullable = true
 		return ptr
@@ -90,7 +98,7 @@ func tsType(t reflect.Type) TSType {
 		} else {
 			name = t.Name()
 		}
-		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), false}
+		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), true}
 	case reflect.Interface:
 		return TSType{"Schema.Object", false}
 	case reflect.Func:
@@ -107,9 +115,9 @@ func (t *TSModelType) WriteInlineStruct() string {
 	buffer.WriteString(fmt.Sprintln("Schema.Struct({"))
 	for _, p := range t.Properties {
 		if p.IsOpt && p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {
@@ -126,9 +134,9 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	buffer.WriteString(fmt.Sprintln("    {"))
 	for _, p := range t.Properties {
 		if p.IsOpt && p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {

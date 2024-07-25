@@ -2,9 +2,9 @@ import * as Schema from "@effect/schema/Schema";
 
 export class SwarmDNSConfig extends Schema.Class<SwarmDNSConfig>("SwarmDNSConfig")(
     {
-        Nameservers: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
-        Search: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
-        Options: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
+        Nameservers: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        Search: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        Options: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },
     {
         identifier: "SwarmDNSConfig",

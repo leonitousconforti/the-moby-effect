@@ -11,5 +11,7 @@ export class zoneTrans extends Schema.Class<zoneTrans>("zoneTrans")(
     {
         identifier: "zoneTrans",
         title: "time.zoneTrans",
+        documentation:
+            "https://github.com/golang/go/blob/3959d54c0bd5c92fe0a5e33fedb0595723efc23b/src/time/zoneinfo.go#L56-L61",
     }
 ) {}

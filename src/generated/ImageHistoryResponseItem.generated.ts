@@ -13,5 +13,7 @@ export class ImageHistoryResponseItem extends Schema.Class<ImageHistoryResponseI
     {
         identifier: "ImageHistoryResponseItem",
         title: "image.HistoryResponseItem",
+        documentation:
+            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/image/image_history.go#L9-L36",
     }
 ) {}
