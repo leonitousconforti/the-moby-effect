@@ -193,7 +193,7 @@ export const buildScoped = <E1>({
  */
 export const run = (
     containerOptions: Containers.ContainerCreateOptions
-): Effect.Effect<GeneratedSchemas.ContainerListResponseItem, Containers.ContainersError, Containers.Containers> =>
+): Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers> =>
     Effect.gen(function* () {
         const containers = yield* Containers.Containers;
 
@@ -212,7 +212,9 @@ export const run = (
                     // Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
                     // Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
-                ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
+                ).pipe(
+                    Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", cause: new Error(s) }))
+                )
             )
         ).pipe(
             Effect.retry(
@@ -237,7 +239,9 @@ export const run = (
                     // Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
                     // Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
-                ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
+                ).pipe(
+                    Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", cause: new Error(s) }))
+                )
             )
         ).pipe(
             Effect.retry(
@@ -262,12 +266,12 @@ export const run = (
 export const runScoped = (
     containerOptions: Containers.ContainerCreateOptions
 ): Effect.Effect<
-    GeneratedSchemas.ContainerListResponseItem,
+    GeneratedSchemas.ContainerInspectResponse,
     Containers.ContainersError,
     Scope.Scope | Containers.Containers
 > => {
     const acquire = run(containerOptions);
-    const release = (containerData: GeneratedSchemas.ContainerListResponseItem) =>
+    const release = (containerData: GeneratedSchemas.ContainerInspectResponse) =>
         Effect.gen(function* () {
             const containers = yield* Containers.Containers;
             yield* containers.kill({ id: containerData.Id });

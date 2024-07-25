@@ -4,5 +4,26 @@
  * @since 1.0.0
  */
 
-export { followProgressInConsole, waitForProgressToComplete } from "./convey/Sinks.js";
-export { packBuildContextIntoTarballStream } from "./convey/Streams.js";
+import * as sinksInternal from "./convey/Sinks.js";
+import * as streamsInternal from "./convey/Streams.js";
+
+/**
+ * Tracks the progress stream in the console and returns the result.
+ *
+ * @since 1.0.0
+ */
+export const followProgressInConsole = sinksInternal.followProgressInConsole;
+
+/**
+ * Waits for the progress stream to complete and returns the result.
+ *
+ * @since 1.0.0
+ */
+export const waitForProgressToComplete = sinksInternal.waitForProgressToComplete;
+
+/**
+ * Packs the context into a tarball stream to use with the build endpoint.
+ *
+ * @since 1.0.0
+ */
+export const packBuildContextIntoTarballStream = streamsInternal.packBuildContextIntoTarballStream;

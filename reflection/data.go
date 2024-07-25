@@ -97,6 +97,7 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(container.UpdateConfig{})):           "ContainerUpdateConfig",
 	typeToKey(reflect.TypeOf(container.WaitExitError{})):          "ContainerWaitExitError",
 	typeToKey(reflect.TypeOf(container.WaitResponse{})):           "ContainerWaitResponse",
+	typeToKey(reflect.TypeOf(types.ContainerJSON{})):              "ContainerInspectResponse",
 
 	// Image renames
 	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/image
@@ -256,6 +257,7 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(swarm.UpdateStatus{})):                 "SwarmUpdateStatus",
 	typeToKey(reflect.TypeOf(swarm.Version{})):                      "SwarmVersion",
 	typeToKey(reflect.TypeOf(swarm.VolumeAttachment{})):             "SwarmVolumeAttachment",
+    typeToKey(reflect.TypeOf(types.SecretCreateResponse{})):         "SwarmSecretCreateResponse",
 
 	// System renames
 	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/system
@@ -358,6 +360,7 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(archive.Change{}),
 	reflect.TypeOf(container.ExecInspect{}),
 	reflect.TypeOf(jsonmessage.JSONMessage{}),
+    reflect.TypeOf(types.ContainerJSON{}),
 
 	// Distribution API
 	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/distribution
@@ -455,6 +458,7 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(swarm.Spec{}),
 	reflect.TypeOf(swarm.UnlockRequest{}),
 	reflect.TypeOf(types.SwarmUnlockKeyResponse{}),
+    reflect.TypeOf(types.SecretCreateResponse{}),
 
 	// System API
 	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/system

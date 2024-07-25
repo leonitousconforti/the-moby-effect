@@ -1,12 +1,6 @@
 {
     "$schema": "./node_modules/@effect/docgen/schema.json",
-    "exclude": [
-        "src/internal/**/*.ts",
-        "src/generated/**/*.ts",
-        "src/schemas/index.ts",
-        "src/Agent.ts",
-        "src/Demux.ts"
-    ],
+    "exclude": ["src/internal/**/*.ts", "src/generated/**/*.ts", "src/schemas/index.ts"],
     "projectHomepage": "https://github.com/leonitousconforti/the-moby-effect",
     "examplesCompilerOptions": {
         "noEmit": true,

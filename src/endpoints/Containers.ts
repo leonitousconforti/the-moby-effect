@@ -33,6 +33,7 @@ import {
     ContainerChange,
     ContainerConfig,
     ContainerCreateResponse,
+    ContainerInspectResponse,
     ContainerListResponseItem,
     ContainerPruneResponse,
     ContainerStatsResponse,
@@ -66,7 +67,12 @@ export const isContainersError = (u: unknown): u is ContainersError => Predicate
  */
 export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTypeId, "ContainersError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | Socket.SocketError;
+    cause:
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpBody.HttpBodyError
+        | Socket.SocketError
+        | Error;
 }> {
     get message() {
         return this.method;
@@ -589,7 +595,7 @@ export interface ContainersImpl {
      */
     readonly inspect: (
         options: ContainerInspectOptions
-    ) => Effect.Effect<ContainerListResponseItem, ContainersError, never>;
+    ) => Effect.Effect<ContainerInspectResponse, ContainersError, never>;
 
     /**
      * List processes running inside a container
@@ -873,12 +879,12 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const inspect_ = (
         options: ContainerInspectOptions
-    ): Effect.Effect<ContainerListResponseItem, ContainersError, never> =>
+    ): Effect.Effect<ContainerInspectResponse, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/json`),
             maybeAddQueryParameter("size", Option.fromNullable(options.size)),
             client,
-            HttpClientResponse.schemaBodyJsonScoped(ContainerListResponseItem),
+            HttpClientResponse.schemaBodyJsonScoped(ContainerInspectResponse),
             Effect.mapError((cause) => new ContainersError({ method: "inspect", cause })),
             Effect.scoped
         );

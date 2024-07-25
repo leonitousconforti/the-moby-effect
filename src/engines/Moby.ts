@@ -117,4 +117,4 @@ export const layerWeb = (
     Layer.Layer.Success<MobyLayer>,
     Layer.Layer.Error<MobyLayer> | ConfigError.ConfigError,
     Layer.Layer.Context<MobyLayer>
-> => layer.pipe(Layer.provide(PlatformAgents.makeBrowserHttpClientLayer(connectionOptions)));
+> => layer.pipe(Layer.provide(PlatformAgents.makeWebHttpClientLayer(connectionOptions)));
