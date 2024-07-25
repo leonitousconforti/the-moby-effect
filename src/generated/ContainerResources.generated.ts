@@ -1,6 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerDeviceMapping from "./ContainerDeviceMapping.generated.js";
+import * as ContainerDeviceRequest from "./ContainerDeviceRequest.generated.js";
+import * as ContainerUlimit from "./ContainerUlimit.generated.js";
+import * as ThrottleDevice from "./ThrottleDevice.generated.js";
+import * as WeightDevice from "./WeightDevice.generated.js";
 
 export class ContainerResources extends Schema.Class<ContainerResources>("ContainerResources")(
     {
@@ -21,11 +25,11 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         /** Block IO weight (relative weight vs. other containers) */
         BlkioWeight: MobySchemas.UInt16,
 
-        BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.WeightDevice))),
-        BlkioDeviceReadBps: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ThrottleDevice))),
-        BlkioDeviceWriteBps: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ThrottleDevice))),
-        BlkioDeviceReadIOps: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ThrottleDevice))),
-        BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ThrottleDevice))),
+        BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(WeightDevice.WeightDevice))),
+        BlkioDeviceReadBps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
+        BlkioDeviceWriteBps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
+        BlkioDeviceReadIOps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
+        BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
 
         /** CPU CFS (Completely Fair Scheduler) period */
         CpuPeriod: MobySchemas.Int64,
@@ -46,13 +50,13 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         CpusetMems: Schema.String,
 
         /** List of devices to map inside the container */
-        Devices: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerDeviceMapping))),
+        Devices: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceMapping.ContainerDeviceMapping))),
 
         /** List of rule to be added to the device cgroup */
         DeviceCgroupRules: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** List of device requests for device drivers */
-        DeviceRequests: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerDeviceRequest))),
+        DeviceRequests: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceRequest.ContainerDeviceRequest))),
 
         /**
          * KernelMemory specifies the kernel memory limit (in bytes) for the
@@ -82,7 +86,7 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         PidsLimit: Schema.NullOr(MobySchemas.Int64),
 
         /** List of ulimits to be set in the container */
-        Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerUlimit))),
+        Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerUlimit.ContainerUlimit))),
 
         // Applicable to Windows
         /** Cpu count */

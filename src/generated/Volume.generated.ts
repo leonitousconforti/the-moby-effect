@@ -1,9 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ClusterVolume from "./ClusterVolume.generated.js";
+import * as VolumeUsageData from "./VolumeUsageData.generated.js";
 
 export class Volume extends Schema.Class<Volume>("Volume")(
     {
-        ClusterVolume: Schema.optionalWith(MobySchemasGenerated.ClusterVolume, { nullable: true }),
+        ClusterVolume: Schema.optionalWith(ClusterVolume.ClusterVolume, { nullable: true }),
         CreatedAt: Schema.optional(Schema.String),
         Driver: Schema.String,
         Labels: Schema.NullOr(
@@ -28,7 +29,7 @@ export class Volume extends Schema.Class<Volume>("Volume")(
             }),
             { nullable: true }
         ),
-        UsageData: Schema.optionalWith(MobySchemasGenerated.VolumeUsageData, { nullable: true }),
+        UsageData: Schema.optionalWith(VolumeUsageData.VolumeUsageData, { nullable: true }),
     },
     {
         identifier: "Volume",

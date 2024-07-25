@@ -19,7 +19,7 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { IDResponse, SwarmSecret, SwarmSecretSpec } from "../generated/index.js";
+import { SwarmSecret, SwarmSecretCreateResponse, SwarmSecretSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -139,7 +139,9 @@ export interface SecretsImpl {
      *
      * @param body -
      */
-    readonly create: (options: SwarmSecretSpec) => Effect.Effect<Readonly<IDResponse>, SecretsError, never>;
+    readonly create: (
+        options: SwarmSecretSpec
+    ) => Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never>;
 
     /**
      * Delete a secret
@@ -183,7 +185,9 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const SecretClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmSecret)));
-    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
+    const SwarmSecretCreateClient = client.pipe(
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmSecretCreateResponse))
+    );
     const SecretsClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmSecret)))
     );
@@ -202,11 +206,13 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
             Effect.scoped
         );
 
-    const create_ = (options: SwarmSecretSpec): Effect.Effect<Readonly<IDResponse>, SecretsError, never> =>
+    const create_ = (
+        options: SwarmSecretSpec
+    ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/create"),
             HttpClientRequest.schemaBody(SwarmSecretSpec)(options),
-            Effect.flatMap(IdResponseClient),
+            Effect.flatMap(SwarmSecretCreateClient),
             Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
             Effect.scoped
         );

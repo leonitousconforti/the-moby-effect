@@ -13,5 +13,7 @@ export class RegistryAuthConfig extends Schema.Class<RegistryAuthConfig>("Regist
     {
         identifier: "RegistryAuthConfig",
         title: "registry.AuthConfig",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/registry/authconfig.go#L15-L34",
     }
 ) {}

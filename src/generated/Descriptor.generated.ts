@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as Platform from "./Platform.generated.js";
 
 export class Descriptor extends Schema.Class<Descriptor>("Descriptor")(
     {
@@ -19,13 +19,13 @@ export class Descriptor extends Schema.Class<Descriptor>("Descriptor")(
             { nullable: true }
         ),
         data: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
-        platform: Schema.optionalWith(MobySchemasGenerated.Platform, { nullable: true }),
+        platform: Schema.optionalWith(Platform.Platform, { nullable: true }),
         artifactType: Schema.optional(Schema.String),
     },
     {
         identifier: "Descriptor",
         title: "v1.Descriptor",
-        description:
+        documentation:
             "https://github.com/opencontainers/image-spec/blob/39ab2d54cfa8fe1bee1ff20001264986d92ab85a/specs-go/v1/descriptor.go#L19-L50",
     }
 ) {}

@@ -193,7 +193,7 @@ export const buildScoped = <E1>({
  */
 export const run = (
     containerOptions: Containers.ContainerCreateOptions
-): Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers> =>
+): Effect.Effect<GeneratedSchemas.ContainerListResponseItem, Containers.ContainersError, Containers.Containers> =>
     Effect.gen(function* () {
         const containers = yield* Containers.Containers;
 
@@ -262,12 +262,12 @@ export const run = (
 export const runScoped = (
     containerOptions: Containers.ContainerCreateOptions
 ): Effect.Effect<
-    GeneratedSchemas.ContainerInspectResponse,
+    GeneratedSchemas.ContainerListResponseItem,
     Containers.ContainersError,
     Scope.Scope | Containers.Containers
 > => {
     const acquire = run(containerOptions);
-    const release = (containerData: GeneratedSchemas.ContainerInspectResponse) =>
+    const release = (containerData: GeneratedSchemas.ContainerListResponseItem) =>
         Effect.gen(function* () {
             const containers = yield* Containers.Containers;
             yield* containers.kill({ id: containerData.Id });
@@ -301,7 +301,7 @@ export const runScoped = (
 export const ps = (
     options?: Containers.ContainerListOptions | undefined
 ): Effect.Effect<
-    ReadonlyArray<GeneratedSchemas.ContainerInspectResponse>,
+    ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
     Containers.ContainersError,
     Containers.Containers
 > => Effect.flatMap(Containers.Containers, (containers) => containers.list(options));

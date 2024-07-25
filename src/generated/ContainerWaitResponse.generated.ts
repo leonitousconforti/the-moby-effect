@@ -1,10 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerWaitExitError from "./ContainerWaitExitError.generated.js";
 
 export class ContainerWaitResponse extends Schema.Class<ContainerWaitResponse>("ContainerWaitResponse")(
     {
-        Error: Schema.optionalWith(MobySchemasGenerated.ContainerWaitExitError, { nullable: true }),
+        Error: Schema.optionalWith(ContainerWaitExitError.ContainerWaitExitError, { nullable: true }),
         StatusCode: MobySchemas.Int64,
     },
     {

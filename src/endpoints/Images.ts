@@ -689,7 +689,9 @@ export interface ImagesImpl {
      *
      * @param name - Image name or ID
      */
-    readonly history: (options: ImageHistoryOptions) => Effect.Effect<ImageHistoryResponseItem, ImagesError, never>;
+    readonly history: (
+        options: ImageHistoryOptions
+    ) => Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never>;
 
     /**
      * Push an image
@@ -822,7 +824,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ImageSummary)))
     );
     const HistoryResponseItemsClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImageHistoryResponseItem))
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageHistoryResponseItem)))
     );
     const ImageDeleteResponseItemsClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem)))
@@ -896,7 +898,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("keep-storage", Option.fromNullable(options?.["keep-storage"])),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
             maybeAddFilters(options?.filters),
-            client,
+            buildClient,
             HttpClientResponse.schemaBodyJsonScoped(ImagePruneResponse),
             Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause }))
         );
@@ -930,7 +932,9 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             Effect.scoped
         );
 
-    const history_ = (options: ImageHistoryOptions): Effect.Effect<ImageHistoryResponseItem, ImagesError, never> =>
+    const history_ = (
+        options: ImageHistoryOptions
+    ): Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}/history`),
             HistoryResponseItemsClient,

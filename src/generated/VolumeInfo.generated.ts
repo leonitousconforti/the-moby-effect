@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as VolumeTopology from "./VolumeTopology.generated.js";
 
 export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
     {
@@ -34,7 +34,7 @@ export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
          * AccessibleTopology is the topology this volume is actually accessible
          * from.
          */
-        AccessibleTopology: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeTopology)), {
+        AccessibleTopology: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumeTopology.VolumeTopology)), {
             nullable: true,
         }),
     },

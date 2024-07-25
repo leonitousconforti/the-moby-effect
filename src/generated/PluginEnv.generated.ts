@@ -10,5 +10,7 @@ export class PluginEnv extends Schema.Class<PluginEnv>("PluginEnv")(
     {
         identifier: "PluginEnv",
         title: "types.PluginEnv",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/plugin_env.go#L6-L25",
     }
 ) {}

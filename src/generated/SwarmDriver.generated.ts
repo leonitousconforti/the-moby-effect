@@ -14,5 +14,7 @@ export class SwarmDriver extends Schema.Class<SwarmDriver>("SwarmDriver")(
     {
         identifier: "SwarmDriver",
         title: "swarm.Driver",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/common.go#L31-L35",
     }
 ) {}

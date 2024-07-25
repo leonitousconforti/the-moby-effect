@@ -33,7 +33,7 @@ import {
     ContainerChange,
     ContainerConfig,
     ContainerCreateResponse,
-    ContainerInspectResponse,
+    ContainerListResponseItem,
     ContainerPruneResponse,
     ContainerStatsResponse,
     ContainerTopResponse,
@@ -550,7 +550,7 @@ export interface ContainersImpl {
      */
     readonly list: (
         options?: ContainerListOptions | undefined
-    ) => Effect.Effect<ReadonlyArray<ContainerInspectResponse>, ContainersError, never>;
+    ) => Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, never>;
 
     /**
      * Create a container
@@ -589,7 +589,7 @@ export interface ContainersImpl {
      */
     readonly inspect: (
         options: ContainerInspectOptions
-    ) => Effect.Effect<ContainerInspectResponse, ContainersError, never>;
+    ) => Effect.Effect<ContainerListResponseItem, ContainersError, never>;
 
     /**
      * List processes running inside a container
@@ -848,7 +848,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const list_ = (
         options?: ContainerListOptions | undefined
-    ): Effect.Effect<ReadonlyArray<ContainerInspectResponse>, ContainersError, never> =>
+    ): Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get("/json"),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
@@ -856,7 +856,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("size", Option.fromNullable(options?.size)),
             maybeAddFilters(options?.filters),
             client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerInspectResponse)),
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerListResponseItem)),
             Effect.mapError((cause) => new ContainersError({ method: "list", cause }))
         );
 
@@ -873,12 +873,12 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const inspect_ = (
         options: ContainerInspectOptions
-    ): Effect.Effect<ContainerInspectResponse, ContainersError, never> =>
+    ): Effect.Effect<ContainerListResponseItem, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.id)}/json`),
             maybeAddQueryParameter("size", Option.fromNullable(options.size)),
             client,
-            HttpClientResponse.schemaBodyJsonScoped(ContainerInspectResponse),
+            HttpClientResponse.schemaBodyJsonScoped(ContainerListResponseItem),
             Effect.mapError((cause) => new ContainersError({ method: "inspect", cause })),
             Effect.scoped
         );

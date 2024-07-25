@@ -25,7 +25,7 @@ var typesToDisambiguate = map[string]string{
 	// Types renames
 	// https://pkg.go.dev/github.com/docker/docker@v27+incompatible/api/types
 	typeToKey(reflect.TypeOf(types.Version{})):               "SystemVersionResponse",
-	typeToKey(reflect.TypeOf(types.Container{})):             "ContainerInspectResponse",
+	typeToKey(reflect.TypeOf(types.Container{})):             "ContainerListResponseItem",
 	typeToKey(reflect.TypeOf(types.ConfigCreateResponse{})):  "SwarmConfigCreateResponse",
 	typeToKey(reflect.TypeOf(types.BuildCachePruneReport{})): "ImagePruneResponse",
 

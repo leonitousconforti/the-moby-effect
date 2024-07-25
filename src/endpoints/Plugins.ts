@@ -299,7 +299,7 @@ export interface PluginsImpl {
      * @param force - Disable the plugin before removing. This may result in
      *   issues if the plugin is in use by a container.
      */
-    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<Readonly<Plugin>, PluginsError, never>;
+    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<void, PluginsError, never>;
 
     /**
      * Enable a plugin
@@ -425,11 +425,11 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
             Effect.scoped
         );
 
-    const delete_ = (options: PluginDeleteOptions): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
+    const delete_ = (options: PluginDeleteOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            PluginClient,
+            voidClient,
             Effect.mapError((cause) => new PluginsError({ method: "delete", cause })),
             Effect.scoped
         );

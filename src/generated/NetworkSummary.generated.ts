@@ -1,24 +1,29 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as NetworkConfigReference from "./NetworkConfigReference.generated.js";
+import * as NetworkEndpointResource from "./NetworkEndpointResource.generated.js";
+import * as NetworkIPAM from "./NetworkIPAM.generated.js";
+import * as NetworkPeerInfo from "./NetworkPeerInfo.generated.js";
+import * as NetworkServiceInfo from "./NetworkServiceInfo.generated.js";
+import * as Time from "./Time.generated.js";
 
 export class NetworkSummary extends Schema.Class<NetworkSummary>("NetworkSummary")(
     {
         Name: Schema.String,
         Id: Schema.String,
-        Created: Schema.NullOr(MobySchemasGenerated.Time),
+        Created: Schema.NullOr(Time.Time),
         Scope: Schema.String,
         Driver: Schema.String,
         EnableIPv6: Schema.Boolean,
-        IPAM: Schema.NullOr(MobySchemasGenerated.NetworkIPAM),
+        IPAM: Schema.NullOr(NetworkIPAM.NetworkIPAM),
         Internal: Schema.Boolean,
         Attachable: Schema.Boolean,
         Ingress: Schema.Boolean,
-        ConfigFrom: Schema.NullOr(MobySchemasGenerated.NetworkConfigReference),
+        ConfigFrom: Schema.NullOr(NetworkConfigReference.NetworkConfigReference),
         ConfigOnly: Schema.Boolean,
         Containers: Schema.NullOr(
             Schema.Record({
                 key: Schema.String,
-                value: Schema.NullOr(MobySchemasGenerated.NetworkEndpointResource),
+                value: Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource),
             })
         ),
         Options: Schema.NullOr(
@@ -33,13 +38,13 @@ export class NetworkSummary extends Schema.Class<NetworkSummary>("NetworkSummary
                 value: Schema.String,
             })
         ),
-        Peers: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.NetworkPeerInfo)), {
+        Peers: Schema.optionalWith(Schema.Array(Schema.NullOr(NetworkPeerInfo.NetworkPeerInfo)), {
             nullable: true,
         }),
         Services: Schema.optionalWith(
             Schema.Record({
                 key: Schema.String,
-                value: Schema.NullOr(MobySchemasGenerated.NetworkServiceInfo),
+                value: Schema.NullOr(NetworkServiceInfo.NetworkServiceInfo),
             }),
             { nullable: true }
         ),
@@ -47,5 +52,7 @@ export class NetworkSummary extends Schema.Class<NetworkSummary>("NetworkSummary
     {
         identifier: "NetworkSummary",
         title: "network.Inspect",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/network/network.go#L72-L91",
     }
 ) {}

@@ -1,6 +1,9 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerConfig from "./ContainerConfig.generated.js";
+import * as GraphDriverData from "./GraphDriverData.generated.js";
+import * as ImageMetadata from "./ImageMetadata.generated.js";
+import * as RootFS from "./RootFS.generated.js";
 
 export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("ImageInspectResponse")(
     {
@@ -11,19 +14,19 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Comment: Schema.String,
         Created: Schema.optional(Schema.String),
         Container: Schema.optional(Schema.String),
-        ContainerConfig: Schema.optionalWith(MobySchemasGenerated.ContainerConfig, { nullable: true }),
+        ContainerConfig: Schema.optionalWith(ContainerConfig.ContainerConfig, { nullable: true }),
         DockerVersion: Schema.String,
         Author: Schema.String,
-        Config: Schema.NullOr(MobySchemasGenerated.ContainerConfig),
+        Config: Schema.NullOr(ContainerConfig.ContainerConfig),
         Architecture: Schema.String,
         Variant: Schema.optional(Schema.String),
         Os: Schema.String,
         OsVersion: Schema.optional(Schema.String),
         Size: MobySchemas.Int64,
         VirtualSize: Schema.optional(MobySchemas.Int64),
-        GraphDriver: Schema.NullOr(MobySchemasGenerated.GraphDriverData),
-        RootFS: Schema.NullOr(MobySchemasGenerated.RootFS),
-        Metadata: Schema.NullOr(MobySchemasGenerated.ImageMetadata),
+        GraphDriver: Schema.NullOr(GraphDriverData.GraphDriverData),
+        RootFS: Schema.NullOr(RootFS.RootFS),
+        Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),
     },
     {
         identifier: "ImageInspectResponse",

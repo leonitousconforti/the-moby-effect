@@ -1,15 +1,16 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerNetworkStats from "./ContainerNetworkStats.generated.js";
+import * as ContainerStats from "./ContainerStats.generated.js";
 
 export class ContainerStatsResponse extends Schema.Class<ContainerStatsResponse>("ContainerStatsResponse")(
     {
-        ...MobySchemasGenerated.ContainerStats.fields,
+        ...ContainerStats.ContainerStats.fields,
         name: Schema.optional(Schema.String),
         id: Schema.optional(Schema.String),
         networks: Schema.optionalWith(
             Schema.Record({
                 key: Schema.String,
-                value: Schema.NullOr(MobySchemasGenerated.ContainerNetworkStats),
+                value: Schema.NullOr(ContainerNetworkStats.ContainerNetworkStats),
             }),
             { nullable: true }
         ),

@@ -20,12 +20,12 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
 import {
-    SwarmNetwork as Network,
     NetworkConnectOptions as NetworkConnectRequest,
     NetworkCreateRequest,
     NetworkCreateResponse,
     NetworkDisconnectOptions as NetworkDisconnectRequest,
     NetworkPruneResponse,
+    NetworkSummary,
 } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
@@ -158,7 +158,9 @@ export interface Networks {
      *   - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
      *       keyword returns all user-defined networks.
      */
-    readonly list: (options?: NetworkListOptions | undefined) => Effect.Effect<Readonly<Array<Network>>, NetworksError>;
+    readonly list: (
+        options?: NetworkListOptions | undefined
+    ) => Effect.Effect<Readonly<Array<NetworkSummary>>, NetworksError>;
 
     /**
      * Remove a network
@@ -174,7 +176,7 @@ export interface Networks {
      * @param verbose - Detailed inspect output for troubleshooting
      * @param scope - Filter the network by scope (swarm, global, or local)
      */
-    readonly inspect: (options: NetworkInspectOptions) => Effect.Effect<Readonly<Network>, NetworksError>;
+    readonly inspect: (options: NetworkInspectOptions) => Effect.Effect<Readonly<NetworkSummary>, NetworksError>;
 
     /**
      * Create a network
@@ -231,8 +233,10 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
     );
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const NetworksClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(Network))));
-    const NetworkClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Network)));
+    const NetworksClient = client.pipe(
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(NetworkSummary)))
+    );
+    const NetworkClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(NetworkSummary)));
     const NetworkCreateResponseClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(NetworkCreateResponse))
     );
@@ -240,7 +244,9 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(NetworkPruneResponse))
     );
 
-    const list_ = (options?: NetworkListOptions | undefined): Effect.Effect<Readonly<Array<Network>>, NetworksError> =>
+    const list_ = (
+        options?: NetworkListOptions | undefined
+    ): Effect.Effect<Readonly<Array<NetworkSummary>>, NetworksError> =>
         Function.pipe(
             HttpClientRequest.get(""),
             maybeAddQueryParameter(
@@ -260,7 +266,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
             Effect.scoped
         );
 
-    const inspect_ = (options: NetworkInspectOptions): Effect.Effect<Readonly<Network>, NetworksError> =>
+    const inspect_ = (options: NetworkInspectOptions): Effect.Effect<Readonly<NetworkSummary>, NetworksError> =>
         Function.pipe(
             HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("verbose", Option.fromNullable(options.verbose)),

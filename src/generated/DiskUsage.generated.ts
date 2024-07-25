@@ -1,14 +1,17 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as BuildCache from "./BuildCache.generated.js";
+import * as ContainerListResponseItem from "./ContainerListResponseItem.generated.js";
+import * as ImageSummary from "./ImageSummary.generated.js";
+import * as Volume from "./Volume.generated.js";
 
 export class DiskUsage extends Schema.Class<DiskUsage>("DiskUsage")(
     {
         LayersSize: MobySchemas.Int64,
-        Images: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ImageSummary))),
-        Containers: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerInspectResponse))),
-        Volumes: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.Volume))),
-        BuildCache: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.BuildCache))),
+        Images: Schema.NullOr(Schema.Array(Schema.NullOr(ImageSummary.ImageSummary))),
+        Containers: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerListResponseItem.ContainerListResponseItem))),
+        Volumes: Schema.NullOr(Schema.Array(Schema.NullOr(Volume.Volume))),
+        BuildCache: Schema.NullOr(Schema.Array(Schema.NullOr(BuildCache.BuildCache))),
         BuilderSize: Schema.optional(MobySchemas.Int64),
     },
     {

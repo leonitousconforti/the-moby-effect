@@ -267,6 +267,7 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.get("/system/df"),
             maybeAddQueryParameter("type", Option.fromNullable(options?.type)),
             SystemDataUsageResponseClient,
+            (x) => x,
             Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause })),
             Effect.scoped
         );

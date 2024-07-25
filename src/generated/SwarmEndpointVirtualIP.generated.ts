@@ -8,5 +8,7 @@ export class SwarmEndpointVirtualIP extends Schema.Class<SwarmEndpointVirtualIP>
     {
         identifier: "SwarmEndpointVirtualIP",
         title: "swarm.EndpointVirtualIP",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/network.go#L68-L73",
     }
 ) {}

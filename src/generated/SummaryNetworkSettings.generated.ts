@@ -1,12 +1,12 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as NetworkEndpointSettings from "./NetworkEndpointSettings.generated.js";
 
 export class SummaryNetworkSettings extends Schema.Class<SummaryNetworkSettings>("SummaryNetworkSettings")(
     {
         Networks: Schema.NullOr(
             Schema.Record({
                 key: Schema.String,
-                value: Schema.NullOr(MobySchemasGenerated.NetworkEndpointSettings),
+                value: Schema.NullOr(NetworkEndpointSettings.NetworkEndpointSettings),
             })
         ),
     },

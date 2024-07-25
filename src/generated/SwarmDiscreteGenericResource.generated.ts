@@ -11,5 +11,7 @@ export class SwarmDiscreteGenericResource extends Schema.Class<SwarmDiscreteGene
     {
         identifier: "SwarmDiscreteGenericResource",
         title: "swarm.DiscreteGenericResource",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/task.go#L130-L137",
     }
 ) {}

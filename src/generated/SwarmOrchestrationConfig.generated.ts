@@ -8,5 +8,7 @@ export class SwarmOrchestrationConfig extends Schema.Class<SwarmOrchestrationCon
     {
         identifier: "SwarmOrchestrationConfig",
         title: "swarm.OrchestrationConfig",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/swarm.go#L46-L51",
     }
 ) {}

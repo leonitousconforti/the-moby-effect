@@ -9,5 +9,7 @@ export class SwarmIPAMConfig extends Schema.Class<SwarmIPAMConfig>("SwarmIPAMCon
     {
         identifier: "SwarmIPAMConfig",
         title: "swarm.IPAMConfig",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/network.go#L116-L121",
     }
 ) {}
