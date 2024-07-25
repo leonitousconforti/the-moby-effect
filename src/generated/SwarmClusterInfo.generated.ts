@@ -5,11 +5,11 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmClusterInfo extends Schema.Class<SwarmClusterInfo>("SwarmClusterInfo")(
     {
         ID: Schema.String,
-        Version: Schema.optional(MobySchemasGenerated.SwarmVersion),
-        CreatedAt: Schema.optional(MobySchemasGenerated.Time),
-        UpdatedAt: Schema.optional(MobySchemasGenerated.Time),
-        Spec: MobySchemasGenerated.SwarmSpec,
-        TLSInfo: MobySchemasGenerated.SwarmTLSInfo,
+        Version: Schema.optionalWith(MobySchemasGenerated.SwarmVersion, { nullable: true }),
+        CreatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
+        UpdatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
+        Spec: Schema.NullOr(MobySchemasGenerated.SwarmSpec),
+        TLSInfo: Schema.NullOr(MobySchemasGenerated.SwarmTLSInfo),
         RootRotationInProgress: Schema.Boolean,
         DefaultAddrPool: Schema.NullOr(Schema.Array(Schema.String)),
         SubnetSize: MobySchemas.UInt32,

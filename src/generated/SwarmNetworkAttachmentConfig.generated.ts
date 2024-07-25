@@ -5,8 +5,14 @@ export class SwarmNetworkAttachmentConfig extends Schema.Class<SwarmNetworkAttac
 )(
     {
         Target: Schema.optional(Schema.String),
-        Aliases: Schema.optional(Schema.Array(Schema.String), { nullable: true }),
-        DriverOpts: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Aliases: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        DriverOpts: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
     },
     {
         identifier: "SwarmNetworkAttachmentConfig",

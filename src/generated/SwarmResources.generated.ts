@@ -6,7 +6,9 @@ export class SwarmResources extends Schema.Class<SwarmResources>("SwarmResources
     {
         NanoCPUs: Schema.optional(MobySchemas.Int64),
         MemoryBytes: Schema.optional(MobySchemas.Int64),
-        GenericResources: Schema.optional(Schema.Array(MobySchemasGenerated.SwarmGenericResource), { nullable: true }),
+        GenericResources: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmGenericResource)), {
+            nullable: true,
+        }),
     },
     {
         identifier: "SwarmResources",

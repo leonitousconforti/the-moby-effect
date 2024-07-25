@@ -4,7 +4,13 @@ export class SwarmExternalCA extends Schema.Class<SwarmExternalCA>("SwarmExterna
     {
         Protocol: Schema.String,
         URL: Schema.String,
-        Options: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        Options: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
         CACert: Schema.String,
     },
     {

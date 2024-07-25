@@ -4,7 +4,7 @@ import * as MobySchemas from "../schemas/index.js";
 export class SwarmSeccompOpts extends Schema.Class<SwarmSeccompOpts>("SwarmSeccompOpts")(
     {
         Mode: Schema.optional(Schema.String),
-        Profile: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        Profile: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
     },
     {
         identifier: "SwarmSeccompOpts",

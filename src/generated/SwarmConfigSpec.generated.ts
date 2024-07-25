@@ -5,9 +5,14 @@ import * as MobySchemasGenerated from "./index.js";
 export class SwarmConfigSpec extends Schema.Class<SwarmConfigSpec>("SwarmConfigSpec")(
     {
         Name: Schema.optional(Schema.String),
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
-        Data: Schema.optional(Schema.Array(MobySchemas.UInt8), { nullable: true }),
-        Templating: Schema.optional(MobySchemasGenerated.SwarmDriver, { nullable: true }),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
+        Data: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        Templating: Schema.optionalWith(MobySchemasGenerated.SwarmDriver, { nullable: true }),
     },
     {
         identifier: "SwarmConfigSpec",

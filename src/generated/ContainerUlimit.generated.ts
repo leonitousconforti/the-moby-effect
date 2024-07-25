@@ -10,5 +10,7 @@ export class ContainerUlimit extends Schema.Class<ContainerUlimit>("ContainerUli
     {
         identifier: "ContainerUlimit",
         title: "units.Ulimit",
+        documentation:
+            "https://github.com/docker/go-units/blob/16e18b2861ca6fd622e7042ffeb9a3ebe8a9dff9/ulimit.go#L9-L14",
     }
 ) {}

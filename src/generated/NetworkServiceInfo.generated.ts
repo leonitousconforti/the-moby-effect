@@ -7,7 +7,7 @@ export class NetworkServiceInfo extends Schema.Class<NetworkServiceInfo>("Networ
         VIP: Schema.String,
         Ports: Schema.NullOr(Schema.Array(Schema.String)),
         LocalLBIndex: MobySchemas.Int64,
-        Tasks: Schema.NullOr(Schema.Array(MobySchemasGenerated.NetworkTask)),
+        Tasks: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.NetworkTask))),
     },
     {
         identifier: "NetworkServiceInfo",

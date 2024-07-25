@@ -3,7 +3,7 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmReplicatedService extends Schema.Class<SwarmReplicatedService>("SwarmReplicatedService")(
     {
-        Replicas: Schema.optional(MobySchemas.UInt64, { nullable: true }),
+        Replicas: Schema.optionalWith(MobySchemas.UInt64, { nullable: true }),
     },
     {
         identifier: "SwarmReplicatedService",

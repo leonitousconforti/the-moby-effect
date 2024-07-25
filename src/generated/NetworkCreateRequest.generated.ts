@@ -5,17 +5,27 @@ export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("Ne
     {
         Driver: Schema.String,
         Scope: Schema.String,
-        EnableIPv6: Schema.optional(Schema.Boolean, { nullable: true }),
+        EnableIPv6: Schema.optionalWith(Schema.Boolean, { nullable: true }),
         IPAM: Schema.NullOr(MobySchemasGenerated.NetworkIPAM),
         Internal: Schema.Boolean,
         Attachable: Schema.Boolean,
         Ingress: Schema.Boolean,
         ConfigOnly: Schema.Boolean,
         ConfigFrom: Schema.NullOr(MobySchemasGenerated.NetworkConfigReference),
-        Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Options: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
+        Labels: Schema.NullOr(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            })
+        ),
         Name: Schema.String,
-        CheckDuplicate: Schema.optional(Schema.Boolean, { nullable: true }),
+        CheckDuplicate: Schema.optionalWith(Schema.Boolean, { nullable: true }),
     },
     {
         identifier: "NetworkCreateRequest",

@@ -50,17 +50,17 @@
         "@babel/plugin-transform-export-namespace-from": "7.24.7",
         "@babel/plugin-transform-modules-commonjs": "7.24.8",
         "@effect/build-utils": "0.7.7",
-        "@effect/cli": "0.39.0",
+        "@effect/cli": "0.39.1",
         "@effect/docgen": "0.4.3",
         "@effect/eslint-plugin": "0.2.0",
-        "@effect/experimental": "0.20.1",
+        "@effect/experimental": "0.20.2",
         "@effect/language-service": "0.1.0",
-        "@effect/platform": "0.60.0",
-        "@effect/platform-browser": "0.39.0",
-        "@effect/platform-node": "0.55.0",
+        "@effect/platform": "0.60.1",
+        "@effect/platform-browser": "0.39.1",
+        "@effect/platform-node": "0.55.1",
         "@effect/printer": "0.33.50",
         "@effect/printer-ansi": "0.33.50",
-        "@effect/schema": "0.69.0",
+        "@effect/schema": "0.69.1",
         "@effect/typeclass": "0.24.50",
         "@effect/vitest": "0.6.11",
         "@rollup/wasm-node": "4.19.0",
@@ -95,16 +95,16 @@
         "ws": "8.18.0"
     },
     "peerDependencies": {
-        "@effect/experimental": "0.20.1",
-        "@effect/platform": "0.60.0",
-        "@effect/schema": "0.69.0",
+        "@effect/experimental": "0.20.2",
+        "@effect/platform": "0.60.1",
+        "@effect/schema": "0.69.1",
         "effect": "3.5.7"
     },
     "optionalDependencies": {
-        "@effect/platform-browser": "0.39.0",
-        "@effect/platform-node": "0.55.0",
+        "@effect/platform-browser": "0.39.1",
+        "@effect/platform-node": "0.55.1",
         "ssh2": "^1.15.0",
-        "undici": "^6.19.2"
+        "undici": "^6.19.4"
     },
     "engines": {
         "node": ">=18.0.0"

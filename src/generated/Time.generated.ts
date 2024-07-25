@@ -11,5 +11,7 @@ export class Time extends Schema.Class<Time>("Time")(
     {
         identifier: "Time",
         title: "time.Time",
+        documentation:
+            "https://github.com/golang/go/blob/3959d54c0bd5c92fe0a5e33fedb0595723efc23b/src/time/time.go#L98-L160",
     }
 ) {}

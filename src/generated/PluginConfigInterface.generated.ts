@@ -5,7 +5,7 @@ export class PluginConfigInterface extends Schema.Class<PluginConfigInterface>("
     {
         ProtocolScheme: Schema.optional(Schema.String),
         Socket: Schema.String,
-        Types: Schema.NullOr(Schema.Array(MobySchemasGenerated.PluginInterfaceType)),
+        Types: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.PluginInterfaceType))),
     },
     {
         identifier: "PluginConfigInterface",

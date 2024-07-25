@@ -7,7 +7,7 @@ export class SwarmNodeCSIInfo extends Schema.Class<SwarmNodeCSIInfo>("SwarmNodeC
         PluginName: Schema.optional(Schema.String),
         NodeID: Schema.optional(Schema.String),
         MaxVolumesPerNode: Schema.optional(MobySchemas.Int64),
-        AccessibleTopology: Schema.optional(MobySchemasGenerated.SwarmTopology, { nullable: true }),
+        AccessibleTopology: Schema.optionalWith(MobySchemasGenerated.SwarmTopology, { nullable: true }),
     },
     {
         identifier: "SwarmNodeCSIInfo",

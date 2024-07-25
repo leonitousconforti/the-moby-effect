@@ -5,7 +5,13 @@ export class NetworkIPAMConfig extends Schema.Class<NetworkIPAMConfig>("NetworkI
         Subnet: Schema.optional(Schema.String),
         IPRange: Schema.optional(Schema.String),
         Gateway: Schema.optional(Schema.String),
-        AuxiliaryAddresses: Schema.optional(Schema.Record(Schema.String, Schema.String), { nullable: true }),
+        AuxiliaryAddresses: Schema.optionalWith(
+            Schema.Record({
+                key: Schema.String,
+                value: Schema.String,
+            }),
+            { nullable: true }
+        ),
     },
     {
         identifier: "NetworkIPAMConfig",
