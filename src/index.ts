@@ -17,7 +17,7 @@ export * as Demux from "./Demux.js"
  *
  * @since 1.0.0
  */
-export * as Docker from "./Docker.js"
+export * as DockerEngine from "./DockerEngine.js"
 
 /**
  * Http, https, ssh, and unix socket connection agents for all platforms.
@@ -31,4 +31,11 @@ export * as PlatformAgents from "./PlatformAgents.js"
  *
  * @since 1.0.0
  */
-export * as Podman from "./Podman.js"
+export * as PodmanEngine from "./PodmanEngine.js"
+
+/**
+ * Moby schemas
+ *
+ * @since 1.0.0
+ */
+export * as Schemas from "./Schemas.js"

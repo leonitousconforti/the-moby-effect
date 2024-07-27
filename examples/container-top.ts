@@ -2,15 +2,17 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
-import * as DockerCommon from "the-moby-effect/Docker";
-import * as MobyApi from "the-moby-effect/Moby";
-import * as Schemas from "the-moby-effect/Schemas";
+import * as Convey from "the-moby-effect/Convey";
+import * as DockerEngine from "the-moby-effect/Docker";
 import * as Containers from "the-moby-effect/endpoints/Containers";
+import * as PlatformAgents from "the-moby-effect/PlatformAgents";
+import * as Schemas from "the-moby-effect/Schemas";
 
-const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
-    connection: "socket",
-    socketPath: "/var/run/docker.sock",
-});
+const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
+    PlatformAgents.SocketConnectionOptions({
+        socketPath: "/var/run/docker.sock",
+    })
+);
 
 // {
 //   Titles: [
@@ -35,17 +37,20 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 const program = Effect.gen(function* () {
     const containers: Containers.ContainersImpl = yield* Containers.Containers;
 
-    const containerInspectResponse: Schemas.ContainerInspectResponse = yield* DockerCommon.run({
-        imageOptions: { kind: "pull", fromImage: "ubuntu:latest" },
-        containerOptions: {
-            spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
-        },
+    // Pull the image, will be removed when the scope is closed
+    const pullStream = DockerEngine.pull({ image: "ubuntu:latest" });
+    yield* Convey.followProgressInConsole(pullStream);
+
+    const containerInspectResponse: Schemas.ContainerInspectResponse = yield* DockerEngine.runScoped({
+        spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
     });
 
-    const data: unknown = yield* containers.top({ id: containerInspectResponse.Id!, ps_args: "aux" });
-    yield* containers.kill({ id: containerInspectResponse.Id! });
-    yield* containers.delete({ id: containerInspectResponse.Id! });
-    return data;
+    const data: Schemas.ContainerTopResponse = yield* containers.top({
+        id: containerInspectResponse.Id!,
+        ps_args: "aux",
+    });
+
+    yield* Console.log(data);
 });
 
-program.pipe(Effect.tap(Console.log)).pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);
+program.pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);

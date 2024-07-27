@@ -12,7 +12,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -136,7 +135,7 @@ export interface NetworkPruneOptions {
  * @since 1.0.0
  * @category Tags
  */
-export interface Networks {
+export interface NetworksImpl {
     /**
      * List networks
      *
@@ -224,7 +223,7 @@ export interface Networks {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
     const client = defaultClient.pipe(
@@ -334,7 +333,7 @@ export const make: Effect.Effect<Networks, never, HttpClient.HttpClient.Default>
  * @since 1.0.0
  * @category Tags
  */
-export const Networks: Context.Tag<Networks, Networks> = Context.GenericTag<Networks>("@the-moby-effect/moby/Networks");
+export class Networks extends Effect.Tag("@the-moby-effect/endpoints/Networks")<Networks, NetworksImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

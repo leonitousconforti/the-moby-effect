@@ -6,6 +6,7 @@
 
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as ConfigError from "effect/ConfigError";
+import * as Context from "effect/Context";
 import * as Layer from "effect/Layer";
 
 import * as PlatformAgents from "../PlatformAgents.js";
@@ -31,7 +32,7 @@ import * as Volumes from "../endpoints/Volumes.js";
  * @since 1.0.0
  * @category Layers
  */
-export type MobyLayer = Layer.Layer<
+export type MobyLayerWithoutPlatformLayerConstructor = Layer.Layer<
     | Configs.Configs
     | Containers.Containers
     | Distributions.Distributions
@@ -43,7 +44,7 @@ export type MobyLayer = Layer.Layer<
     | Secrets.Secrets
     | Services.Services
     | Sessions.Sessions
-    | Swarm.Swarms
+    | Swarm.Swarm
     | System.Systems
     | Tasks.Tasks
     | Volumes.Volumes,
@@ -52,16 +53,60 @@ export type MobyLayer = Layer.Layer<
 >;
 
 /**
+ * @since 1.0.0
+ * @category Layers
+ */
+export type MobyLayerWithoutHttpClient = Layer.Layer<
+    Layer.Layer.Success<MobyLayerWithoutPlatformLayerConstructor>,
+    Layer.Layer.Error<MobyLayerWithoutPlatformLayerConstructor>,
+    Layer.Layer.Context<MobyLayerWithoutPlatformLayerConstructor> | HttpClient.HttpClient.Default
+>;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export type MobyLayer<E1 = never> = Layer.Layer<
+    Layer.Layer.Success<MobyLayerWithoutPlatformLayerConstructor> | MobyLayerConstructor,
+    Layer.Layer.Error<MobyLayerWithoutPlatformLayerConstructor> | E1,
+    Layer.Layer.Context<MobyLayerWithoutPlatformLayerConstructor>
+>;
+
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
+export interface MobyLayerConstructor {
+    readonly _: unique symbol;
+}
+
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
+export type MobyLayerConstructorImpl<E1 = never> = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+) => MobyLayer<E1>;
+
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
+export const PlatformLayerConstructor = <E1 = never>(): Context.Tag<
+    MobyLayerConstructor,
+    MobyLayerConstructorImpl<E1>
+> =>
+    Context.GenericTag<MobyLayerConstructor, MobyLayerConstructorImpl<E1>>(
+        "@the-moby-effect/engines/Moby/PlatformLayerConstructor"
+    );
+
+/**
  * Merges all the layers into a single layer
  *
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<
-    Layer.Layer.Success<MobyLayer>,
-    Layer.Layer.Error<MobyLayer>,
-    Layer.Layer.Context<MobyLayer> | HttpClient.HttpClient.Default
-> = Layer.mergeAll(
+export const layerWithoutHttpCLient: MobyLayerWithoutHttpClient = Layer.mergeAll(
     Configs.layer,
     Containers.layer,
     Distributions.layer,
@@ -81,40 +126,70 @@ export const layer: Layer.Layer<
 
 /**
  * @since 1.0.0
- * @category Layer
+ * @category Layers
  */
-export const layerNodeJS = (connectionOptions: PlatformAgents.MobyConnectionOptions): MobyLayer =>
-    layer.pipe(Layer.provide(PlatformAgents.makeNodeHttpClientLayer(connectionOptions)));
-
-/**
- * @since 1.0.0
- * @category Layer
- */
-export const layerBun = (connectionOptions: PlatformAgents.MobyConnectionOptions): MobyLayer =>
-    layer.pipe(Layer.provide(PlatformAgents.makeBunHttpClientLayer(connectionOptions)));
-
-/**
- * @since 1.0.0
- * @category Layer
- */
-export const layerDeno = (connectionOptions: PlatformAgents.MobyConnectionOptions): MobyLayer =>
-    layer.pipe(Layer.provide(PlatformAgents.makeDenoHttpClientLayer(connectionOptions)));
-
-/**
- * @since 1.0.0
- * @category Layer
- */
-export const layerUndici = (connectionOptions: PlatformAgents.MobyConnectionOptions): MobyLayer =>
-    layer.pipe(Layer.provide(PlatformAgents.makeUndiciHttpClientLayer(connectionOptions)));
-
-/**
- * @since 1.0.0
- * @category Layer
- */
-export const layerWeb = (
+export const layerNodeJS: MobyLayerConstructorImpl = (
     connectionOptions: PlatformAgents.MobyConnectionOptions
-): Layer.Layer<
-    Layer.Layer.Success<MobyLayer>,
-    Layer.Layer.Error<MobyLayer> | ConfigError.ConfigError,
-    Layer.Layer.Context<MobyLayer>
-> => layer.pipe(Layer.provide(PlatformAgents.makeWebHttpClientLayer(connectionOptions)));
+): MobyLayer => {
+    const platformLayerConstructor = PlatformAgents.makeNodeHttpClientLayer;
+    const platformHttpLayer = platformLayerConstructor(connectionOptions);
+    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerNodeJS);
+    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
+    return Layer.provide(outLater, platformHttpLayer);
+};
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerBun: MobyLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): MobyLayer => {
+    const platformLayerConstructor = PlatformAgents.makeBunHttpClientLayer;
+    const platformHttpLayer = platformLayerConstructor(connectionOptions);
+    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerBun);
+    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
+    return Layer.provide(outLater, platformHttpLayer);
+};
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerDeno: MobyLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): MobyLayer => {
+    const platformLayerConstructor = PlatformAgents.makeDenoHttpClientLayer;
+    const platformHttpLayer = platformLayerConstructor(connectionOptions);
+    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerDeno);
+    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
+    return Layer.provide(outLater, platformHttpLayer);
+};
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerUndici: MobyLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): MobyLayer => {
+    const platformLayerConstructor = PlatformAgents.makeUndiciHttpClientLayer;
+    const platformHttpLayer = platformLayerConstructor(connectionOptions);
+    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerUndici);
+    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
+    return Layer.provide(outLater, platformHttpLayer);
+};
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerWeb: MobyLayerConstructorImpl<ConfigError.ConfigError> = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): MobyLayer<ConfigError.ConfigError> => {
+    const platformLayerConstructor = PlatformAgents.makeWebHttpClientLayer;
+    const platformHttpLayer = platformLayerConstructor(connectionOptions);
+    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor<ConfigError.ConfigError>(), layerWeb);
+    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
+    return Layer.provide(outLater, platformHttpLayer);
+};

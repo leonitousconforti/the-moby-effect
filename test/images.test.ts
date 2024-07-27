@@ -1,37 +1,41 @@
-import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as Path from "@effect/platform/Path";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
+import * as ManagedRuntime from "effect/ManagedRuntime";
+import * as Match from "effect/Match";
 import * as Stream from "effect/Stream";
-import * as MobyApi from "the-moby-effect/Moby";
+
+import * as Images from "the-moby-effect/endpoints/Images";
+import * as DindEngine from "the-moby-effect/engines/Dind";
 
 describe("MobyApi Images tests", () => {
-    const testImagesService: Layer.Layer<MobyApi.Images.Images, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const makePlatformDindLayer = Function.pipe(
+        Match.value(inject("__PLATFORM_VARIANT")),
+        Match.when("bun", () => DindEngine.layerBun),
+        Match.when("deno", () => DindEngine.layerDeno),
+        Match.when("node", () => DindEngine.layerNodeJS),
+        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.exhaustive
+    );
 
-    // it("Should see no images", async () => {
-    //     const images: Readonly<MobyApi.Schemas.ImageSummary[]> = await Effect.runPromise(
-    //         Effect.provide(
-    //             Effect.flatMap(MobyApi.Images.Images, (images) => images.list({ all: true })),
-    //             testImagesService
-    //         )
-    //     );
-    //     expect(images).toHaveLength(0);
-    // });
+    const testServices: DindEngine.DindLayer = makePlatformDindLayer({
+        exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+        connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
+    });
+
+    const testRuntime = ManagedRuntime.make(Layer.provide(testServices, Path.layer));
+    afterAll(() => testRuntime.dispose().then(() => {}));
 
     it("Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)", async () => {
-        const searchResults = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) =>
-                    images.search({
-                        term: "alpine",
-                        limit: 1,
-                        filters: JSON.stringify({ "is-official": ["true"] }),
-                    })
-                ),
-                testImagesService
-            )
+        const searchResults = await testRuntime.runPromise(
+            Images.Images.search({
+                term: "alpine",
+                limit: 1,
+                filters: JSON.stringify({ "is-official": ["true"] }),
+            })
         );
         expect(searchResults).toBeInstanceOf(Array);
         expect(searchResults).toHaveLength(1);
@@ -45,28 +49,14 @@ describe("MobyApi Images tests", () => {
 
     it("Should pull an image", async () => {
         await Effect.gen(function* () {
-            const images: MobyApi.Images.Images = yield* MobyApi.Images.Images;
-
-            const pullResponse: Stream.Stream<MobyApi.Schemas.BuildInfo, MobyApi.Images.ImagesError, never> =
-                yield* images.create({
-                    fromImage: "docker.io/library/alpine:latest",
-                });
-
+            const pullResponse = yield* Images.Images.create({ fromImage: "docker.io/library/alpine:latest" });
             yield* Stream.runCollect(pullResponse);
-        })
-            .pipe(Effect.provide(testImagesService))
-            .pipe(Effect.scoped)
-            .pipe(Effect.runPromise);
+        }).pipe(testRuntime.runPromise);
     }, 30_000);
 
     it("Should inspect an image", async () => {
-        const inspectResponse: Readonly<MobyApi.Schemas.ImageInspect> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) =>
-                    images.inspect({ name: "docker.io/library/alpine:latest" })
-                ),
-                testImagesService
-            )
+        const inspectResponse = await testRuntime.runPromise(
+            Images.Images.inspect({ name: "docker.io/library/alpine:latest" })
         );
         expect(inspectResponse.Id).toBeDefined();
         expect(inspectResponse.RepoDigests).toBeDefined();
@@ -75,40 +65,25 @@ describe("MobyApi Images tests", () => {
     });
 
     it("Should tag an image", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) =>
-                    images.tag({
-                        name: "docker.io/library/alpine:latest",
-                        repo: "docker.io/person/their-image",
-                        tag: "test",
-                    })
-                ),
-                testImagesService
-            )
+        await testRuntime.runPromise(
+            Images.Images.tag({
+                name: "docker.io/library/alpine:latest",
+                repo: "docker.io/person/their-image",
+                tag: "test",
+            })
         );
     });
 
     it("Should get the history of an image", async () => {
-        const historyResponse = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) =>
-                    images.history({ name: "docker.io/library/alpine:latest" })
-                ),
-                testImagesService
-            )
+        const historyResponse = await testRuntime.runPromise(
+            Images.Images.history({ name: "docker.io/library/alpine:latest" })
         );
         expect(historyResponse).toBeInstanceOf(Array);
     });
 
     it("Should prune all images", async () => {
-        const pruneResponse: Readonly<MobyApi.Schemas.ImagePruneResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Images.Images, (images) => images.prune({ filters: { dangling: ["true"] } })),
-                testImagesService
-            )
-        );
-        expect(pruneResponse.ImagesDeleted).toBeDefined();
+        const pruneResponse = await testRuntime.runPromise(Images.Images.prune({ filters: { dangling: ["true"] } }));
+        expect(pruneResponse.CachesDeleted).toBeDefined();
         expect(pruneResponse.SpaceReclaimed).toBeDefined();
     });
 });

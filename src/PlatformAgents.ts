@@ -239,7 +239,11 @@ export const connectionOptionsFromPlatformSystemSocketDefault = (): Effect.Effec
  * @since 1.0.0
  * @category Constructors
  */
-export const fromUserSocketDefault = (): Effect.Effect<CommonInternal.MobyConnectionOptions, never, Path.Path> =>
+export const connectionOptionsFromUserSocketDefault = (): Effect.Effect<
+    CommonInternal.MobyConnectionOptions,
+    never,
+    Path.Path
+> =>
     Function.pipe(
         Effect.all(
             {

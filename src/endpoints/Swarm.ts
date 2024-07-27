@@ -12,7 +12,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -20,7 +19,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
 import {
-    Swarm,
+    Swarm as SwarmData,
     SwarmInitRequest,
     SwarmJoinRequest,
     SwarmSpec,
@@ -95,9 +94,9 @@ export interface SwarmUpdateOptions {
  * @since 1.0.0
  * @category Tags
  */
-export interface Swarms {
+export interface SwarmImpl {
     /** Inspect swarm */
-    readonly inspect: () => Effect.Effect<Readonly<Swarm>, SwarmsError, never>;
+    readonly inspect: () => Effect.Effect<Readonly<SwarmData>, SwarmsError, never>;
 
     /** Initialize a new swarm */
     readonly init: (
@@ -144,7 +143,7 @@ export interface Swarms {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<Swarms, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
     const client = defaultClient.pipe(
@@ -153,7 +152,7 @@ export const make: Effect.Effect<Swarms, never, HttpClient.HttpClient.Default> =
     );
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const SwarmClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Swarm)));
+    const SwarmClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmData)));
     const StringClient = client.pipe(
         HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Schema.String))
     );
@@ -161,7 +160,7 @@ export const make: Effect.Effect<Swarms, never, HttpClient.HttpClient.Default> =
         HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmUnlockKeyResponse))
     );
 
-    const inspect_ = (): Effect.Effect<Readonly<Swarm>, SwarmsError, never> =>
+    const inspect_ = (): Effect.Effect<Readonly<SwarmData>, SwarmsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/"),
             SwarmClient,
@@ -242,7 +241,7 @@ export const make: Effect.Effect<Swarms, never, HttpClient.HttpClient.Default> =
  * @since 1.0.0
  * @category Tags
  */
-export const Swarms: Context.Tag<Swarms, Swarms> = Context.GenericTag<Swarms>("@the-moby-effect/moby/Swarms");
+export class Swarm extends Effect.Tag("@the-moby-effect/endpoints/Swarm")<Swarm, SwarmImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent
@@ -250,4 +249,4 @@ export const Swarms: Context.Tag<Swarms, Swarms> = Context.GenericTag<Swarms>("@
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Swarms, never, HttpClient.HttpClient.Default> = Layer.effect(Swarms, make);
+export const layer: Layer.Layer<Swarm, never, HttpClient.HttpClient.Default> = Layer.effect(Swarm, make);

@@ -12,7 +12,6 @@ import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -99,23 +98,15 @@ export const make: Effect.Effect<DistributionsImpl, never, HttpClient.HttpClient
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Distributions {
-    readonly _: unique symbol;
-}
-
-/**
  * Distributions service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Distributions: Context.Tag<Distributions, DistributionsImpl> = Context.GenericTag<
+export class Distributions extends Effect.Tag("@the-moby-effect/endpoints/Distributions")<
     Distributions,
     DistributionsImpl
->("@the-moby-effect/moby/Distributions");
+>() {}
 
 /**
  * Distributions layer that depends on the MobyConnectionAgent

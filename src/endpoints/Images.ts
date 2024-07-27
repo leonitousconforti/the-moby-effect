@@ -9,7 +9,6 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -164,7 +163,7 @@ export interface ImageBuildOptions<E1> {
      * [Read more about the buildargs
      * instruction.](https://docs.docker.com/engine/reference/builder/#arg)
      */
-    readonly buildargs?: string | undefined;
+    readonly buildArgs?: Record<string, string | undefined> | undefined;
     /**
      * Size of `/dev/shm` in bytes. The size must be greater than 0. If omitted
      * the system uses 64MB.
@@ -813,7 +812,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
     const defaultClient = yield* HttpClient.HttpClient;
     const buildClient = defaultClient.pipe(HttpClient.filterStatusOk);
     const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/images")),
+        // HttpClient.mapRequest(HttpClientRequest.appendUrl("/images")),
         HttpClient.filterStatusOk
     );
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
@@ -871,7 +870,8 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("cpuperiod", Option.fromNullable(options.cpuperiod)),
             maybeAddQueryParameter("cpuquota", Option.fromNullable(options.cpuquota))
         ).pipe(
-            maybeAddQueryParameter("buildargs", Option.fromNullable(options.buildargs)),
+            // FIXME: aaaahhhhhh
+            maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
             maybeAddQueryParameter("shmsize", Option.fromNullable(options.shmsize)),
             maybeAddQueryParameter("squash", Option.fromNullable(options.squash)),
             maybeAddQueryParameter("labels", Option.fromNullable(options.labels)),
@@ -905,7 +905,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const create_ = (options: ImageCreateOptions): Stream.Stream<JSONMessage, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
+            HttpClientRequest.post("/images/create"),
             HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
             maybeAddQueryParameter("fromImage", Option.fromNullable(options.fromImage)),
             maybeAddQueryParameter("fromSrc", Option.fromNullable(options.fromSrc)),
@@ -920,7 +920,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
             Stream.flattenIterables,
-            Stream.flatMap(Schema.decode(Schema.parseJson(JSONMessage))),
+            Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
             Stream.mapError((cause) => new ImagesError({ method: "create", cause }))
         );
 
@@ -967,7 +967,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         options: ImageDeleteOptions
     ): Effect.Effect<ReadonlyArray<ImageDeleteResponseItem>, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.del(`/${encodeURIComponent(options.name)}`),
+            HttpClientRequest.del(`/images/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             maybeAddQueryParameter("noprune", Option.fromNullable(options.noprune)),
             ImageDeleteResponseItemsClient,
@@ -1066,22 +1066,12 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 });
 
 /**
- * @since 1.0.0
- * @category Errors
- */
-export interface Images {
-    readonly _: unique symbol;
-}
-
-/**
  * Images service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Images: Context.Tag<Images, ImagesImpl> = Context.GenericTag<Images, ImagesImpl>(
-    "@the-moby-effect/moby/Images"
-);
+export class Images extends Effect.Tag("@the-moby-effect/endpoints/Images")<Images, ImagesImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

@@ -11,7 +11,6 @@ import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -288,22 +287,12 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Volumes {
-    readonly _: unique symbol;
-}
-
-/**
  * Volumes service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Volumes: Context.Tag<Volumes, VolumesImpl> = Context.GenericTag<Volumes, VolumesImpl>(
-    "@the-moby-effect/moby/Volumes"
-);
+export class Volumes extends Effect.Tag("@the-moby-effect/endpoints/Volumes")<Volumes, VolumesImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

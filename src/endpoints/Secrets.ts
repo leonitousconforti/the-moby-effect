@@ -12,7 +12,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -253,22 +252,12 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Secrets {
-    readonly _: unique symbol;
-}
-
-/**
  * Secrets service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Secrets: Context.Tag<Secrets, SecretsImpl> = Context.GenericTag<Secrets, SecretsImpl>(
-    "@the-moby-effect/moby/Secrets"
-);
+export class Secrets extends Effect.Tag("@the-moby-effect/endpoints/Secrets")<Secrets, SecretsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent
