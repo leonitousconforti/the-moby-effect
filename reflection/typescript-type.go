@@ -117,7 +117,7 @@ func (t *TSModelType) WriteInlineStruct() string {
 		if p.IsOpt && p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s),\n", p.Name, p.Type.Name))
+			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {
@@ -136,7 +136,7 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 		if p.IsOpt && p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s),\n", p.Name, p.Type.Name))
+			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
 		} else {

@@ -1,12 +1,12 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as Location from "./Location.generated.js";
 
 export class Time extends Schema.Class<Time>("Time")(
     {
         wall: MobySchemas.UInt64,
         ext: MobySchemas.Int64,
-        loc: Schema.NullOr(MobySchemasGenerated.Location),
+        loc: Schema.NullOr(Location.Location),
     },
     {
         identifier: "Time",

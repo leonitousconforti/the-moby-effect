@@ -1,21 +1,18 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as SwarmAnnotations from "./SwarmAnnotations.generated.js";
+import * as SwarmDriver from "./SwarmDriver.generated.js";
 
 export class SwarmConfigSpec extends Schema.Class<SwarmConfigSpec>("SwarmConfigSpec")(
     {
-        Name: Schema.optional(Schema.String),
-        Labels: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            })
-        ),
+        ...SwarmAnnotations.SwarmAnnotations.fields,
         Data: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
-        Templating: Schema.optionalWith(MobySchemasGenerated.SwarmDriver, { nullable: true }),
+        Templating: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
     },
     {
         identifier: "SwarmConfigSpec",
         title: "swarm.ConfigSpec",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/config.go#L12-L20",
     }
 ) {}

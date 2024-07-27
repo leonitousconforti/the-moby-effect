@@ -1,40 +1,41 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as SwarmAnnotations from "./SwarmAnnotations.generated.js";
+import * as SwarmGenericResource from "./SwarmGenericResource.generated.js";
+import * as SwarmMeta from "./SwarmMeta.generated.js";
+import * as SwarmNetworkAttachment from "./SwarmNetworkAttachment.generated.js";
+import * as SwarmTaskSpec from "./SwarmTaskSpec.generated.js";
+import * as SwarmTaskStatus from "./SwarmTaskStatus.generated.js";
+import * as SwarmVersion from "./SwarmVersion.generated.js";
+import * as SwarmVolumeAttachment from "./SwarmVolumeAttachment.generated.js";
 
 export class SwarmTask extends Schema.Class<SwarmTask>("SwarmTask")(
     {
         ID: Schema.String,
-        Version: Schema.optionalWith(MobySchemasGenerated.SwarmVersion, { nullable: true }),
-        CreatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
-        UpdatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
-        Name: Schema.optional(Schema.String),
-        Labels: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            })
-        ),
-        Spec: Schema.optionalWith(MobySchemasGenerated.SwarmTaskSpec, { nullable: true }),
+        ...SwarmMeta.SwarmMeta.fields,
+        ...SwarmAnnotations.SwarmAnnotations.fields,
+        Spec: Schema.optionalWith(SwarmTaskSpec.SwarmTaskSpec, { nullable: true }),
         ServiceID: Schema.optional(Schema.String),
         Slot: Schema.optional(MobySchemas.Int64),
         NodeID: Schema.optional(Schema.String),
-        Status: Schema.optionalWith(MobySchemasGenerated.SwarmTaskStatus, { nullable: true }),
+        Status: Schema.optionalWith(SwarmTaskStatus.SwarmTaskStatus, { nullable: true }),
         DesiredState: Schema.optional(Schema.String),
         NetworksAttachments: Schema.optionalWith(
-            Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmNetworkAttachment)),
+            Schema.Array(Schema.NullOr(SwarmNetworkAttachment.SwarmNetworkAttachment)),
             {
                 nullable: true,
             }
         ),
-        GenericResources: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmGenericResource)), {
+        GenericResources: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmGenericResource.SwarmGenericResource)), {
             nullable: true,
         }),
-        JobIteration: Schema.optionalWith(MobySchemasGenerated.SwarmVersion, { nullable: true }),
-        Volumes: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.SwarmVolumeAttachment))),
+        JobIteration: Schema.optionalWith(SwarmVersion.SwarmVersion, { nullable: true }),
+        Volumes: Schema.NullOr(Schema.Array(Schema.NullOr(SwarmVolumeAttachment.SwarmVolumeAttachment))),
     },
     {
         identifier: "SwarmTask",
         title: "swarm.Task",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/task.go#L45-L70",
     }
 ) {}

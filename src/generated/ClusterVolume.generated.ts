@@ -1,5 +1,8 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ClusterVolumeSpec from "./ClusterVolumeSpec.generated.js";
+import * as SwarmMeta from "./SwarmMeta.generated.js";
+import * as VolumeInfo from "./VolumeInfo.generated.js";
+import * as VolumePublishStatus from "./VolumePublishStatus.generated.js";
 
 export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")(
     {
@@ -11,24 +14,24 @@ export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")(
         ID: Schema.String,
 
         // https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/swarm/common.go#L18-L23
-        ...MobySchemasGenerated.SwarmMeta.fields,
+        ...SwarmMeta.SwarmMeta.fields,
 
         /**
          * Spec is the cluster-specific options from which this volume is
          * derived.
          */
-        Spec: Schema.NullOr(MobySchemasGenerated.ClusterVolumeSpec),
+        Spec: Schema.NullOr(ClusterVolumeSpec.ClusterVolumeSpec),
 
         /**
          * PublishStatus contains the status of the volume as it pertains to its
          * publishing on Nodes.
          */
-        PublishStatus: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumePublishStatus)), {
+        PublishStatus: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumePublishStatus.VolumePublishStatus)), {
             nullable: true,
         }),
 
         /** Info is information about the global status of the volume. */
-        Info: Schema.optionalWith(MobySchemasGenerated.VolumeInfo, { nullable: true }),
+        Info: Schema.optionalWith(VolumeInfo.VolumeInfo, { nullable: true }),
     },
     {
         identifier: "ClusterVolume",

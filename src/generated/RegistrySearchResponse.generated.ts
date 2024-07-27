@@ -12,5 +12,7 @@ export class RegistrySearchResponse extends Schema.Class<RegistrySearchResponse>
     {
         identifier: "RegistrySearchResponse",
         title: "registry.SearchResult",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/registry/search.go#L23-L37",
     }
 ) {}

@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerHealthConfig from "./ContainerHealthConfig.generated.js";
 
 export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerConfig")(
     {
@@ -47,7 +47,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         Cmd: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** Healthcheck describes how to check the container is healthy */
-        Healthcheck: Schema.optionalWith(MobySchemasGenerated.ContainerHealthConfig, { nullable: true }),
+        Healthcheck: Schema.optionalWith(ContainerHealthConfig.ContainerHealthConfig, { nullable: true }),
 
         /**
          * True if command is already escaped (meaning treat as a command line)

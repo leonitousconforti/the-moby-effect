@@ -13,7 +13,6 @@ import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -21,6 +20,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
+import * as Tuple from "effect/Tuple";
 
 import { responseToStreamingSocketOrFail } from "../demux/Common.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
@@ -34,6 +34,7 @@ import {
     ContainerConfig,
     ContainerCreateResponse,
     ContainerInspectResponse,
+    ContainerListResponseItem,
     ContainerPruneResponse,
     ContainerStatsResponse,
     ContainerTopResponse,
@@ -66,7 +67,12 @@ export const isContainersError = (u: unknown): u is ContainersError => Predicate
  */
 export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTypeId, "ContainersError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | Socket.SocketError;
+    cause:
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpBody.HttpBodyError
+        | Socket.SocketError
+        | Error;
 }> {
     get message() {
         return this.method;
@@ -160,7 +166,7 @@ export interface ContainerCreateOptions {
      */
     readonly platform?: string | undefined;
     /** Container to create */
-    readonly spec: ContainerConfig;
+    readonly spec: Schema.Schema.Encoded<typeof ContainerConfig>;
 }
 
 /**
@@ -550,7 +556,7 @@ export interface ContainersImpl {
      */
     readonly list: (
         options?: ContainerListOptions | undefined
-    ) => Effect.Effect<ReadonlyArray<ContainerInspectResponse>, ContainersError, never>;
+    ) => Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, never>;
 
     /**
      * Create a container
@@ -841,14 +847,14 @@ export interface ContainersImpl {
 export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const contextClient = yield* HttpClient.HttpClient;
     const client = contextClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/containers")),
+        // HttpClient.mapRequest(HttpClientRequest.prependUrl("/containers")),
         HttpClient.filterStatusOk
     );
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
 
     const list_ = (
         options?: ContainerListOptions | undefined
-    ): Effect.Effect<ReadonlyArray<ContainerInspectResponse>, ContainersError, never> =>
+    ): Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, never> =>
         Function.pipe(
             HttpClientRequest.get("/json"),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
@@ -856,16 +862,17 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("size", Option.fromNullable(options?.size)),
             maybeAddFilters(options?.filters),
             client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerInspectResponse)),
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerListResponseItem)),
             Effect.mapError((cause) => new ContainersError({ method: "list", cause }))
         );
 
     const create_ = (options: ContainerCreateOptions): Effect.Effect<ContainerCreateResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
-            maybeAddQueryParameter("name", Option.fromNullable(options.name)),
-            maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
-            HttpClientRequest.schemaBody(ContainerConfig)(options.spec),
+            Schema.decode(ContainerConfig)(options.spec),
+            Effect.map((body) => Tuple.make(HttpClientRequest.post("/containers/create"), body)),
+            Effect.map(Tuple.mapFirst(maybeAddQueryParameter("name", Option.fromNullable(options.name)))),
+            Effect.map(Tuple.mapFirst(maybeAddQueryParameter("platform", Option.fromNullable(options.platform)))),
+            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBody(ContainerConfig))),
             Effect.flatMap(client),
             HttpClientResponse.schemaBodyJsonScoped(ContainerCreateResponse),
             Effect.mapError((cause) => new ContainersError({ method: "create", cause }))
@@ -875,7 +882,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         options: ContainerInspectOptions
     ): Effect.Effect<ContainerInspectResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/json`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/json`),
             maybeAddQueryParameter("size", Option.fromNullable(options.size)),
             client,
             HttpClientResponse.schemaBodyJsonScoped(ContainerInspectResponse),
@@ -952,7 +959,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const start_ = (options: ContainerStartOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/start`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/start`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
             voidClient,
             Effect.mapError((cause) => new ContainersError({ method: "start", cause })),
@@ -981,7 +988,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const kill_ = (options: ContainerKillOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/kill`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/kill`),
             maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
             voidClient,
             Effect.mapError((cause) => new ContainersError({ method: "kill", cause })),
@@ -1027,7 +1034,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         options: ContainerAttachOptions
     ): Effect.Effect<BidirectionalRawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/attach`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/attach`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
             maybeAddQueryParameter("logs", Option.fromNullable(options.logs)),
             maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
@@ -1035,8 +1042,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
             maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
             client,
-            Effect.flatMap(responseToStreamingSocketOrFail()),
-            (x) => x,
+            Effect.flatMap((response) => responseToStreamingSocketOrFail(response)),
             Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
         );
 
@@ -1068,7 +1074,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const delete_ = (options: ContainerDeleteOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.del(`/${encodeURIComponent(options.id)}`),
+            HttpClientRequest.del(`/containers/${encodeURIComponent(options.id)}`),
             maybeAddQueryParameter("v", Option.fromNullable(options.v)),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             maybeAddQueryParameter("link", Option.fromNullable(options.link)),
@@ -1148,22 +1154,12 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Containers {
-    readonly _: unique symbol;
-}
-
-/**
  * Containers service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Containers: Context.Tag<Containers, ContainersImpl> = Context.GenericTag<Containers, ContainersImpl>(
-    "@the-moby-effect/Containers"
-);
+export class Containers extends Effect.Tag("@the-moby-effect/endpoints/Containers")<Containers, ContainersImpl>() {}
 
 /**
  * Containers layer that depends on a Moby connection agent

@@ -13,7 +13,6 @@ import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -110,7 +109,7 @@ export interface ExecInspectOptions {
  * @since 1.0.0
  * @category Tags
  */
-export interface Execs {
+export interface ExecsImpl {
     /**
      * Create an exec instance
      *
@@ -154,7 +153,7 @@ export interface Execs {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
@@ -235,7 +234,7 @@ export const make: Effect.Effect<Execs, never, HttpClient.HttpClient.Default> = 
  * @since 1.0.0
  * @category Tags
  */
-export const Execs: Context.Tag<Execs, Execs> = Context.GenericTag<Execs>("@the-moby-effect/moby/Execs");
+export class Execs extends Effect.Tag("@the-moby-effect/endpoints/Execs")<Execs, ExecsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

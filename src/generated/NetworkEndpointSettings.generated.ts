@@ -1,10 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as NetworkEndpointIPAMConfig from "./NetworkEndpointIPAMConfig.generated.js";
 
 export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSettings>("NetworkEndpointSettings")(
     {
-        IPAMConfig: Schema.NullOr(MobySchemasGenerated.NetworkEndpointIPAMConfig),
+        IPAMConfig: Schema.NullOr(NetworkEndpointIPAMConfig.NetworkEndpointIPAMConfig),
         Links: Schema.NullOr(Schema.Array(Schema.String)),
         Aliases: Schema.NullOr(Schema.Array(Schema.String)),
         MacAddress: MobySchemas.MacAddress,

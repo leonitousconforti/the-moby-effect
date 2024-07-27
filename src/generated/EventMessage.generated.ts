@@ -1,6 +1,6 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as EventActor from "./EventActor.generated.js";
 
 export class EventMessage extends Schema.Class<EventMessage>("EventMessage")(
     {
@@ -69,7 +69,7 @@ export class EventMessage extends Schema.Class<EventMessage>("EventMessage")(
             "health_status: healthy",
             "health_status: unhealthy"
         ),
-        Actor: Schema.NullOr(MobySchemasGenerated.EventActor),
+        Actor: Schema.NullOr(EventActor.EventActor),
         scope: Schema.optional(Schema.String),
         time: Schema.optional(MobySchemas.Int64),
         timeNano: Schema.optional(MobySchemas.Int64),

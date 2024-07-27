@@ -1,5 +1,5 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as Driver from "./Driver.generated.js";
 
 export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
     {
@@ -12,7 +12,7 @@ export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
             { nullable: true }
         ),
         Subpath: Schema.optional(Schema.String),
-        DriverConfig: Schema.optionalWith(MobySchemasGenerated.Driver, { nullable: true }),
+        DriverConfig: Schema.optionalWith(Driver.Driver, { nullable: true }),
     },
     {
         identifier: "VolumeOptions",

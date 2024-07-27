@@ -13,7 +13,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -299,7 +298,7 @@ export interface PluginsImpl {
      * @param force - Disable the plugin before removing. This may result in
      *   issues if the plugin is in use by a container.
      */
-    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<Readonly<Plugin>, PluginsError, never>;
+    readonly delete: (options: PluginDeleteOptions) => Effect.Effect<void, PluginsError, never>;
 
     /**
      * Enable a plugin
@@ -425,11 +424,11 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
             Effect.scoped
         );
 
-    const delete_ = (options: PluginDeleteOptions): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
+    const delete_ = (options: PluginDeleteOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            PluginClient,
+            voidClient,
             Effect.mapError((cause) => new PluginsError({ method: "delete", cause })),
             Effect.scoped
         );
@@ -506,22 +505,12 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Plugins {
-    readonly _: unique symbol;
-}
-
-/**
  * Plugins service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Plugins: Context.Tag<Plugins, PluginsImpl> = Context.GenericTag<Plugins, PluginsImpl>(
-    "@the-moby-effect/moby/Plugins"
-);
+export class Plugins extends Effect.Tag("@the-moby-effect/endpoints/Plugins")<Plugins, PluginsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

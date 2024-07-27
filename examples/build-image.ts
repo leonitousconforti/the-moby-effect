@@ -1,18 +1,20 @@
 import * as url from "node:url";
-import * as tar from "tar-fs";
 
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import * as MobyApi from "the-moby-effect/Moby";
+import * as Convey from "the-moby-effect/Convey";
+import * as DockerEngine from "the-moby-effect/Docker";
+import * as Images from "the-moby-effect/endpoints/Images";
+import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Schemas from "the-moby-effect/Schemas";
 
-const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
-    connection: "socket",
-    socketPath: "/var/run/docker.sock",
-});
+const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
+    PlatformAgents.SocketConnectionOptions({
+        socketPath: "/var/run/docker.sock",
+    })
+);
 
 // {"stream":"Step 1/1 : FROM ubuntu:latest"}
 // {"stream":"\n"}
@@ -45,21 +47,17 @@ const localDocker: MobyApi.MobyApi = MobyApi.fromConnectionOptions({
 // {"stream":"Successfully built b6548eacb063\n"}
 // {"stream":"Successfully tagged mydockerimage:latest\n"}
 const program = Effect.gen(function* () {
-    const images: MobyApi.Images.ImagesImpl = yield* MobyApi.Images.Images;
+    const images: Images.ImagesImpl = yield* Images.Images;
 
-    const buildStream: Stream.Stream<Schemas.BuildInfo, MobyApi.Images.ImagesError, never> = images.build({
+    const cwd = url.fileURLToPath(new URL(".", import.meta.url));
+    const buildContext = Convey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]);
+    const buildStream: Stream.Stream<Schemas.JSONMessage, Images.ImagesError, never> = images.build({
         t: "mydockerimage:latest",
         dockerfile: "build-image.dockerfile",
-        context: Stream.fromAsyncIterable(
-            tar.pack(url.fileURLToPath(new URL(".", import.meta.url)), {
-                entries: ["build-image.dockerfile"],
-            }),
-            () => new MobyApi.Images.ImagesError({ method: "buildStream", error: {} })
-        ),
+        context: buildContext,
     });
 
-    // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* Stream.runForEach(buildStream, Console.log);
+    return yield* Convey.followProgressInConsole(buildStream);
 });
 
 program.pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);

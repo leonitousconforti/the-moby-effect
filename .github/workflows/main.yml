@@ -8,10 +8,9 @@ on:
 
 env:
   node-versions: "['18.x', '20.x', '22.x']"
-  docker-desktop-versions: "['v1', 'v2', 'v3']"
-  podman-desktop-versions: "['v1', 'v2', 'v3']"
   os-variants: "['ubuntu-latest', 'macos-14', 'macos-13', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
+  platform-variants: "['node', 'bun', 'deno', 'node-undici', 'bun-undici', 'deno-undici']"
   docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:dind']"
 
 concurrency:
@@ -26,18 +25,16 @@ jobs:
     outputs:
       os-variants: ${{ steps.compute-matricies.outputs.os-variants }}
       node-versions: ${{ steps.compute-matricies.outputs.node-versions }}
+      platform-variants: ${{ steps.compute-matricies.outputs.platform-variants }}
       docker-engine-versions: ${{ steps.compute-matricies.outputs.docker-engine-versions }}
-      docker-desktop-versions: ${{ steps.compute-matricies.outputs.docker-desktop-versions }}
-      podman-desktop-versions: ${{ steps.compute-matricies.outputs.podman-desktop-versions }}
       docker-engine-connection-variants: ${{ steps.compute-matricies.outputs.docker-engine-connection-variants }}
     steps:
       - id: compute-matricies
         run: |
           echo "os-variants=${{ env.os-variants }}" >> $GITHUB_OUTPUT
           echo "node-versions=${{ env.node-versions }}" >> $GITHUB_OUTPUT
+          echo "platform-variants=${{ env.platform-variants }}" >> $GITHUB_OUTPUT
           echo "docker-engine-versions=${{ env.docker-engine-versions }}" >> $GITHUB_OUTPUT
-          echo "docker-desktop-versions=${{ env.docker-desktop-versions }}" >> $GITHUB_OUTPUT
-          echo "podman-desktop-versions=${{ env.podman-desktop-versions }}" >> $GITHUB_OUTPUT
           echo "docker-engine-connection-variants=${{ env.docker-engine-connection-variants }}" >> $GITHUB_OUTPUT
 
   # Creates pnpm caches for all os/node-version combinations
@@ -164,53 +161,11 @@ jobs:
           THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.docker-engine-version }}"
           THE_MOBY_EFFECT_CONNECTION_METHOD: "${{ matrix.docker-engine-connection-variant }}"
 
-  docker-desktop-tests:
-    runs-on: ${{ matrix.os }}
-    needs: [docker-engine-tests, compute-matricies]
-    defaults:
-      run:
-        shell: bash
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
-        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
-        docker-desktop: ${{ fromJSON(needs.compute-matricies.outputs.docker-desktop-versions) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/common-setup
-        with:
-          node-version: ${{ matrix.node-version }}
-      - uses: ./.github/actions/install-docker-desktop
-        with:
-          docker-version: ${{ matrix.docker-desktop }}
-
-  podman-desktop-tests:
-    runs-on: ${{ matrix.os }}
-    needs: [docker-engine-tests, compute-matricies]
-    defaults:
-      run:
-        shell: bash
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
-        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
-        podman-desktop: ${{ fromJSON(needs.compute-matricies.outputs.podman-desktop-versions) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/common-setup
-        with:
-          node-version: ${{ matrix.node-version }}
-      - uses: ./.github/actions/install-podman-desktop
-        with:
-          podman-version: ${{ matrix.podman-desktop }}
-
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    needs: [docker-engine-tests, podman-desktop-tests, docker-desktop-tests]
+    needs: [docker-engine-tests]
     steps:
       - run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}

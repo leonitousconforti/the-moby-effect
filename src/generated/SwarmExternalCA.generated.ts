@@ -16,5 +16,7 @@ export class SwarmExternalCA extends Schema.Class<SwarmExternalCA>("SwarmExterna
     {
         identifier: "SwarmExternalCA",
         title: "swarm.ExternalCA",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/swarm.go#L135-L150",
     }
 ) {}

@@ -10,7 +10,6 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Socket from "@effect/platform/Socket";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -91,22 +90,12 @@ export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Defa
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Sessions {
-    readonly _: unique symbol;
-}
-
-/**
  * Sessions service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Sessions: Context.Tag<Sessions, SessionsImpl> = Context.GenericTag<Sessions, SessionsImpl>(
-    "@the-moby-effect/moby/Sessions"
-);
+export class Sessions extends Effect.Tag("@the-moby-effect/endpoints/Session")<Sessions, SessionsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

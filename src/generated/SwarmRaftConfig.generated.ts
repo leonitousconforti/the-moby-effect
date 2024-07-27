@@ -12,5 +12,7 @@ export class SwarmRaftConfig extends Schema.Class<SwarmRaftConfig>("SwarmRaftCon
     {
         identifier: "SwarmRaftConfig",
         title: "swarm.RaftConfig",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/swarm.go#L72-L100",
     }
 ) {}

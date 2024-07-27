@@ -20,7 +20,7 @@ import { MobyConnectionOptions, getWebRequestUrl } from "./Common.js";
  * @since 1.0.0
  * @category Connection
  */
-export const makeBrowserHttpClientLayer = (
+export const makeWebHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient.Default, ConfigError.ConfigError, never> =>
     Effect.gen(function* () {

@@ -12,7 +12,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -201,22 +200,12 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Configs {
-    readonly _: unique symbol;
-}
-
-/**
  * Configs service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Configs: Context.Tag<Configs, ConfigsImpl> = Context.GenericTag<Configs, ConfigsImpl>(
-    "@the-moby-effect/moby/Configs"
-);
+export class Configs extends Effect.Tag("@the-moby-effect/endpoints/Configs")<Configs, ConfigsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

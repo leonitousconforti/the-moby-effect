@@ -12,14 +12,13 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 
-import { IDResponse, SwarmSecret, SwarmSecretSpec } from "../generated/index.js";
+import { SwarmSecret, SwarmSecretCreateResponse, SwarmSecretSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -139,7 +138,9 @@ export interface SecretsImpl {
      *
      * @param body -
      */
-    readonly create: (options: SwarmSecretSpec) => Effect.Effect<Readonly<IDResponse>, SecretsError, never>;
+    readonly create: (
+        options: SwarmSecretSpec
+    ) => Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never>;
 
     /**
      * Delete a secret
@@ -183,7 +184,9 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const SecretClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmSecret)));
-    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
+    const SwarmSecretCreateClient = client.pipe(
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmSecretCreateResponse))
+    );
     const SecretsClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmSecret)))
     );
@@ -202,11 +205,13 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
             Effect.scoped
         );
 
-    const create_ = (options: SwarmSecretSpec): Effect.Effect<Readonly<IDResponse>, SecretsError, never> =>
+    const create_ = (
+        options: SwarmSecretSpec
+    ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/create"),
             HttpClientRequest.schemaBody(SwarmSecretSpec)(options),
-            Effect.flatMap(IdResponseClient),
+            Effect.flatMap(SwarmSecretCreateClient),
             Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
             Effect.scoped
         );
@@ -247,22 +252,12 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Secrets {
-    readonly _: unique symbol;
-}
-
-/**
  * Secrets service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Secrets: Context.Tag<Secrets, SecretsImpl> = Context.GenericTag<Secrets, SecretsImpl>(
-    "@the-moby-effect/moby/Secrets"
-);
+export class Secrets extends Effect.Tag("@the-moby-effect/endpoints/Secrets")<Secrets, SecretsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

@@ -1,11 +1,13 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerConfig from "./ContainerConfig.generated.js";
+import * as ContainerHostConfig from "./ContainerHostConfig.generated.js";
+import * as NetworkNetworkingConfig from "./NetworkNetworkingConfig.generated.js";
 
 export class ContainerCreateRequest extends Schema.Class<ContainerCreateRequest>("ContainerCreateRequest")(
     {
-        ...MobySchemasGenerated.ContainerConfig.fields,
-        HostConfig: Schema.optionalWith(MobySchemasGenerated.ContainerHostConfig, { nullable: true }),
-        NetworkingConfig: Schema.optionalWith(MobySchemasGenerated.NetworkNetworkingConfig, { nullable: true }),
+        ...ContainerConfig.ContainerConfig.fields,
+        HostConfig: Schema.optionalWith(ContainerHostConfig.ContainerHostConfig, { nullable: true }),
+        NetworkingConfig: Schema.optionalWith(NetworkNetworkingConfig.NetworkNetworkingConfig, { nullable: true }),
     },
     {
         identifier: "ContainerCreateRequest",

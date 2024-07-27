@@ -1,22 +1,26 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerBlkioStatEntry from "./ContainerBlkioStatEntry.generated.js";
 
 export class ContainerBlkioStats extends Schema.Class<ContainerBlkioStats>("ContainerBlkioStats")(
     {
         io_service_bytes_recursive: Schema.NullOr(
-            Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))
+            Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))
         ),
-        io_serviced_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))),
-        io_queue_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))),
+        io_serviced_recursive: Schema.NullOr(
+            Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))
+        ),
+        io_queue_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))),
         io_service_time_recursive: Schema.NullOr(
-            Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))
+            Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))
         ),
         io_wait_time_recursive: Schema.NullOr(
-            Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))
+            Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))
         ),
-        io_merged_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))),
-        io_time_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))),
-        sectors_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(MobySchemasGenerated.ContainerBlkioStatEntry))),
+        io_merged_recursive: Schema.NullOr(
+            Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))
+        ),
+        io_time_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))),
+        sectors_recursive: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerBlkioStatEntry.ContainerBlkioStatEntry))),
     },
     {
         identifier: "ContainerBlkioStats",

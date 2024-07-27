@@ -1,5 +1,8 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as VolumeAccessMode from "./VolumeAccessMode.generated.js";
+import * as VolumeCapacityRange from "./VolumeCapacityRange.generated.js";
+import * as VolumeSecret from "./VolumeSecret.generated.js";
+import * as VolumeTopologyRequirement from "./VolumeTopologyRequirement.generated.js";
 
 export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterVolumeSpec")(
     {
@@ -14,7 +17,7 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
         Group: Schema.optional(Schema.String),
 
         /** AccessMode defines how the volume is used by tasks. */
-        AccessMode: Schema.optionalWith(MobySchemasGenerated.VolumeAccessMode, { nullable: true }),
+        AccessMode: Schema.optionalWith(VolumeAccessMode.VolumeAccessMode, { nullable: true }),
 
         /**
          * AccessibilityRequirements specifies where in the cluster a volume
@@ -28,7 +31,7 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
          * VOLUME_ACCESSIBILITY_CONSTRAINTS, then Swarm kit will assume the
          * entire cluster is a valid target for the volume.
          */
-        AccessibilityRequirements: Schema.optionalWith(MobySchemasGenerated.VolumeTopologyRequirement, {
+        AccessibilityRequirements: Schema.optionalWith(VolumeTopologyRequirement.VolumeTopologyRequirement, {
             nullable: true,
         }),
 
@@ -36,13 +39,13 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
          * CapacityRange defines the desired capacity that the volume should be
          * created with. If nil, the plugin will decide the capacity.
          */
-        CapacityRange: Schema.optionalWith(MobySchemasGenerated.VolumeCapacityRange, { nullable: true }),
+        CapacityRange: Schema.optionalWith(VolumeCapacityRange.VolumeCapacityRange, { nullable: true }),
 
         /**
          * Secrets defines Swarm Secrets that are passed to the CSI storage
          * plugin when operating on this volume.
          */
-        Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.VolumeSecret)), {
+        Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumeSecret.VolumeSecret)), {
             nullable: true,
         }),
 

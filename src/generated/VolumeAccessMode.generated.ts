@@ -1,5 +1,6 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as VolumeTypeBlock from "./VolumeTypeBlock.generated.js";
+import * as VolumeTypeMount from "./VolumeTypeMount.generated.js";
 
 export class VolumeAccessMode extends Schema.Class<VolumeAccessMode>("VolumeAccessMode")(
     {
@@ -16,10 +17,10 @@ export class VolumeAccessMode extends Schema.Class<VolumeAccessMode>("VolumeAcce
         Sharing: Schema.optional(Schema.Literal("none", "readonly", "onewriter", "all")),
 
         /** MountVolume defines options for using this volume as a Mount-type */
-        MountVolume: Schema.optionalWith(MobySchemasGenerated.VolumeTypeMount, { nullable: true }),
+        MountVolume: Schema.optionalWith(VolumeTypeMount.VolumeTypeMount, { nullable: true }),
 
         /** BlockVolume defines options for using this volume as a Block-type */
-        BlockVolume: Schema.optionalWith(MobySchemasGenerated.VolumeTypeBlock, { nullable: true }),
+        BlockVolume: Schema.optionalWith(VolumeTypeBlock.VolumeTypeBlock, { nullable: true }),
     },
     {
         identifier: "VolumeAccessMode",

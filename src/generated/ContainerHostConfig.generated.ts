@@ -1,6 +1,9 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as MobySchemasGenerated from "./index.js";
+import * as ContainerLogConfig from "./ContainerLogConfig.generated.js";
+import * as ContainerResources from "./ContainerResources.generated.js";
+import * as ContainerRestartPolicy from "./ContainerRestartPolicy.generated.js";
+import * as Mount from "./Mount.generated.js";
 
 export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("ContainerHostConfig")(
     {
@@ -12,7 +15,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         ContainerIDFile: Schema.String,
 
         /** Configuration of the logs for this container */
-        LogConfig: Schema.NullOr(MobySchemasGenerated.ContainerLogConfig),
+        LogConfig: Schema.NullOr(ContainerLogConfig.ContainerLogConfig),
 
         /** Network mode to use for the container */
         NetworkMode: Schema.Literal("default", "none", "host", "bridge", "nat"),
@@ -21,7 +24,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         PortBindings: Schema.NullOr(MobySchemas.PortSchemas.PortMap),
 
         /** Restart policy to be used for the container */
-        RestartPolicy: Schema.NullOr(MobySchemasGenerated.ContainerRestartPolicy),
+        RestartPolicy: Schema.NullOr(ContainerRestartPolicy.ContainerRestartPolicy),
 
         /** Automatically remove container when it exits */
         AutoRemove: Schema.Boolean,
@@ -146,10 +149,10 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         Isolation: Schema.Literal("default", "process", "hyperv", ""),
 
         // Contains container's resources (cgroups, ulimits)
-        ...MobySchemasGenerated.ContainerResources.fields,
+        ...ContainerResources.ContainerResources.fields,
 
         /** Mounts specs used by the container */
-        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.Mount)), { nullable: true }),
+        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(Mount.Mount)), { nullable: true }),
 
         /**
          * MaskedPaths is the list of paths to be masked inside the container

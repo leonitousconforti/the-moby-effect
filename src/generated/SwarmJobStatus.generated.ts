@@ -1,13 +1,16 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as SwarmVersion from "./SwarmVersion.generated.js";
+import * as Time from "./Time.generated.js";
 
 export class SwarmJobStatus extends Schema.Class<SwarmJobStatus>("SwarmJobStatus")(
     {
-        JobIteration: Schema.NullOr(MobySchemasGenerated.SwarmVersion),
-        LastExecution: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
+        JobIteration: Schema.NullOr(SwarmVersion.SwarmVersion),
+        LastExecution: Schema.optionalWith(Time.Time, { nullable: true }),
     },
     {
         identifier: "SwarmJobStatus",
         title: "swarm.JobStatus",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/service.go#L186-L202",
     }
 ) {}

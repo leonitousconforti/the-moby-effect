@@ -12,7 +12,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -267,6 +266,7 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.get("/system/df"),
             maybeAddQueryParameter("type", Option.fromNullable(options?.type)),
             SystemDataUsageResponseClient,
+            (x) => x,
             Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause })),
             Effect.scoped
         );
@@ -283,22 +283,12 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Systems {
-    readonly _: unique symbol;
-}
-
-/**
  * Systems service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Systems: Context.Tag<Systems, SystemsImpl> = Context.GenericTag<Systems, SystemsImpl>(
-    "@the-moby-effect/moby/Systems"
-);
+export class Systems extends Effect.Tag("@the-moby-effect/endpoints/System")<Systems, SystemsImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

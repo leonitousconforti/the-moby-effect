@@ -1,9 +1,9 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ClusterVolumeSpec from "./ClusterVolumeSpec.generated.js";
 
 export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>("VolumeCreateOptions")(
     {
-        ClusterVolumeSpec: Schema.optionalWith(MobySchemasGenerated.ClusterVolumeSpec, { nullable: true }),
+        ClusterVolumeSpec: Schema.optionalWith(ClusterVolumeSpec.ClusterVolumeSpec, { nullable: true }),
         Driver: Schema.optional(Schema.String),
         DriverOpts: Schema.optionalWith(
             Schema.Record({
@@ -24,5 +24,7 @@ export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>("Volu
     {
         identifier: "VolumeCreateOptions",
         title: "volume.CreateOptions",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/volume/create_options.go#L6-L29",
     }
 ) {}

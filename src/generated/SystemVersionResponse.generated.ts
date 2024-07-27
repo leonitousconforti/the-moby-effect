@@ -1,5 +1,5 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as ComponentVersion from "./ComponentVersion.generated.js";
 
 export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("SystemVersionResponse")(
     {
@@ -8,7 +8,7 @@ export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("
                 Name: Schema.String,
             })
         ),
-        Components: Schema.optionalWith(Schema.Array(Schema.NullOr(MobySchemasGenerated.ComponentVersion)), {
+        Components: Schema.optionalWith(Schema.Array(Schema.NullOr(ComponentVersion.ComponentVersion)), {
             nullable: true,
         }),
         Version: Schema.String,
@@ -25,5 +25,7 @@ export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("
     {
         identifier: "SystemVersionResponse",
         title: "types.Version",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/types.go#L188-L206",
     }
 ) {}

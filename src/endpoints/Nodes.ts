@@ -13,7 +13,6 @@ import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -206,20 +205,12 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
 });
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface Nodes {
-    readonly _: unique symbol;
-}
-
-/**
  * Nodes service
  *
  * @since 1.0.0
  * @category Tags
  */
-export const Nodes: Context.Tag<Nodes, NodesImpl> = Context.GenericTag<Nodes, NodesImpl>("@the-moby-effect/Nodes");
+export class Nodes extends Effect.Tag("@the-moby-effect/endpoints/Nodes")<Nodes, NodesImpl>() {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent

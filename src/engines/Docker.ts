@@ -1,11 +1,11 @@
 /**
- * Docker helpers
+ * Docker engine helpers
  *
  * @since 1.0.0
  */
 
-import * as HttpClient from "@effect/platform/HttpClient";
 import * as ConfigError from "effect/ConfigError";
+import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -23,55 +23,129 @@ import * as Moby from "./Moby.js";
 
 /**
  * @since 1.0.0
- * @category Layer
+ * @category Layers
  */
-export type DockerLayer = Moby.MobyLayer;
+export type DockerLayerWithoutPlatformLayerConstructor = Moby.MobyLayerWithoutPlatformLayerConstructor;
 
 /**
  * @since 1.0.0
- * @category Layer
+ * @category Layers
  */
-export const layer: Layer.Layer<
-    Layer.Layer.Success<DockerLayer>,
-    Layer.Layer.Error<DockerLayer>,
-    Layer.Layer.Context<DockerLayer> | HttpClient.HttpClient.Default
-> = Moby.layer;
+export type DockerLayerWithoutHttpClient = Moby.MobyLayerWithoutHttpClient;
 
 /**
  * @since 1.0.0
- * @category Layer
+ * @category Layers
  */
-export const layerNodeJS: (connectionOptions: PlatformAgents.MobyConnectionOptions) => DockerLayer = Moby.layerNodeJS;
+export type DockerLayer<E1 = never> = Layer.Layer<
+    Layer.Layer.Success<DockerLayerWithoutPlatformLayerConstructor> | DockerLayerConstructor,
+    Layer.Layer.Error<DockerLayerWithoutPlatformLayerConstructor> | E1,
+    Layer.Layer.Context<DockerLayerWithoutPlatformLayerConstructor>
+>;
 
 /**
  * @since 1.0.0
- * @category Layer
+ * @category Tags
  */
-export const layerBun: (connectionOptions: PlatformAgents.MobyConnectionOptions) => DockerLayer = Moby.layerBun;
+export interface DockerLayerConstructor {
+    readonly _: unique symbol;
+}
 
 /**
  * @since 1.0.0
- * @category Layer
+ * @category Tags
  */
-export const layerDeno: (connectionOptions: PlatformAgents.MobyConnectionOptions) => DockerLayer = Moby.layerDeno;
-
-/**
- * @since 1.0.0
- * @category Layer
- */
-export const layerUndici: (connectionOptions: PlatformAgents.MobyConnectionOptions) => DockerLayer = Moby.layerUndici;
-
-/**
- * @since 1.0.0
- * @category Layer
- */
-export const layerWeb: (
+export type DockerLayerConstructorImpl<E1 = never> = (
     connectionOptions: PlatformAgents.MobyConnectionOptions
-) => Layer.Layer<
-    Layer.Layer.Success<DockerLayer>,
-    Layer.Layer.Error<DockerLayer> | ConfigError.ConfigError,
-    Layer.Layer.Context<DockerLayer>
-> = Moby.layerWeb;
+) => DockerLayer<E1>;
+
+/**
+ * @since 1.0.0
+ * @category Tags
+ */
+export const PlatformLayerConstructor = <E1 = never>(): Context.Tag<
+    DockerLayerConstructor,
+    DockerLayerConstructorImpl<E1>
+> =>
+    Context.GenericTag<DockerLayerConstructor, DockerLayerConstructorImpl<E1>>(
+        "@the-moby-effect/engines/Docker/PlatformLayerConstructor"
+    );
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerWithoutHttpCLient: DockerLayerWithoutHttpClient = Moby.layerWithoutHttpCLient;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerNodeJS: DockerLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): DockerLayer =>
+    Function.pipe(
+        connectionOptions,
+        Moby.layerNodeJS,
+        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
+        Layer.map(Context.add(PlatformLayerConstructor(), layerNodeJS))
+    );
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerBun: DockerLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): DockerLayer =>
+    Function.pipe(
+        connectionOptions,
+        Moby.layerBun,
+        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
+        Layer.map(Context.add(PlatformLayerConstructor(), layerBun))
+    );
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerDeno: DockerLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): DockerLayer =>
+    Function.pipe(
+        connectionOptions,
+        Moby.layerDeno,
+        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
+        Layer.map(Context.add(PlatformLayerConstructor(), layerDeno))
+    );
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerUndici: DockerLayerConstructorImpl = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): DockerLayer =>
+    Function.pipe(
+        connectionOptions,
+        Moby.layerUndici,
+        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
+        Layer.map(Context.add(PlatformLayerConstructor(), layerUndici))
+    );
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerWeb: DockerLayerConstructorImpl<ConfigError.ConfigError> = (
+    connectionOptions: PlatformAgents.MobyConnectionOptions
+): DockerLayer<ConfigError.ConfigError> =>
+    Function.pipe(
+        connectionOptions,
+        Moby.layerWeb,
+        Layer.map(Context.omit(Moby.PlatformLayerConstructor<ConfigError.ConfigError>())),
+        Layer.map(Context.add(PlatformLayerConstructor<ConfigError.ConfigError>(), layerWeb))
+    );
 
 /**
  * Implements the `docker pull` command. It does not have all the flags that the
@@ -89,11 +163,7 @@ export const pull = ({
     auth?: string | undefined;
     platform?: string | undefined;
 }): Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images> =>
-    Function.pipe(
-        Images.Images,
-        Effect.map((images) => images.create({ fromImage: image, "X-Registry-Auth": auth, platform })),
-        Stream.unwrap
-    );
+    Stream.unwrap(Images.Images.create({ fromImage: image, "X-Registry-Auth": auth, platform }));
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
@@ -117,11 +187,7 @@ export const pullScoped = ({
     Images.Images | Scope.Scope
 > => {
     const acquire = pull({ image, auth, platform });
-    const release = Function.pipe(
-        Images.Images,
-        Effect.flatMap((images) => images.delete({ name: image })),
-        Effect.orDie
-    );
+    const release = Effect.orDie(Images.Images.delete({ name: image }));
     return Effect.acquireRelease(Effect.succeed(acquire), () => release);
 };
 
@@ -134,6 +200,7 @@ export const pullScoped = ({
  */
 export const build = <E1>({
     auth,
+    buildArgs,
     context,
     dockerfile,
     platform,
@@ -144,12 +211,9 @@ export const build = <E1>({
     platform?: string | undefined;
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
+    buildArgs?: Record<string, string | undefined> | undefined;
 }): Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images> =>
-    Function.pipe(
-        Images.Images,
-        Effect.map((images) => images.build({ context, dockerfile, platform, t: tag, "X-Registry-Config": auth })),
-        Stream.unwrap
-    );
+    Stream.unwrap(Images.Images.build({ context, buildArgs, dockerfile, platform, t: tag, "X-Registry-Config": auth }));
 
 /**
  * Implements the `docker build` command as a scoped effect. When the scope is
@@ -161,6 +225,7 @@ export const build = <E1>({
  */
 export const buildScoped = <E1>({
     auth,
+    buildArgs,
     context,
     dockerfile,
     platform,
@@ -170,18 +235,15 @@ export const buildScoped = <E1>({
     auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
+    buildArgs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }): Effect.Effect<
     Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>,
     Images.ImagesError,
     Scope.Scope | Images.Images
 > => {
-    const acquire = build({ tag, auth, context, platform, dockerfile });
-    const release = Function.pipe(
-        Images.Images,
-        Effect.flatMap((images) => images.delete({ name: tag })),
-        Effect.orDie
-    );
+    const acquire = build({ tag, buildArgs, auth, context, platform, dockerfile });
+    const release = Effect.orDie(Images.Images.delete({ name: tag }));
     return Effect.acquireRelease(Effect.succeed(acquire), () => release);
 };
 
@@ -195,14 +257,12 @@ export const run = (
     containerOptions: Containers.ContainerCreateOptions
 ): Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers> =>
     Effect.gen(function* () {
-        const containers = yield* Containers.Containers;
-
-        const containerCreateResponse = yield* containers.create(containerOptions);
-        yield* containers.start({ id: containerCreateResponse.Id });
+        const containerCreateResponse = yield* Containers.Containers.create(containerOptions);
+        yield* Containers.Containers.start({ id: containerCreateResponse.Id });
 
         // Helper to wait until a container is dead or running
-        const waitUntilContainerDeadOrRunning: Effect.Effect<void, Containers.ContainersError, never> = Function.pipe(
-            containers.inspect({ id: containerCreateResponse.Id }),
+        const waitUntilContainerDeadOrRunning = Function.pipe(
+            Containers.Containers.inspect({ id: containerCreateResponse.Id }),
             Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 Function.pipe(
@@ -212,7 +272,9 @@ export const run = (
                     // Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
                     // Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
-                ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
+                ).pipe(
+                    Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", cause: new Error(s) }))
+                )
             )
         ).pipe(
             Effect.retry(
@@ -223,8 +285,8 @@ export const run = (
         );
 
         // Helper for if the container has a healthcheck, wait for it to report healthy
-        const waitUntilContainerHealthy: Effect.Effect<void, Containers.ContainersError, never> = Function.pipe(
-            containers.inspect({ id: containerCreateResponse.Id }),
+        const waitUntilContainerHealthy = Function.pipe(
+            Containers.Containers.inspect({ id: containerCreateResponse.Id }),
             Effect.tap(({ State }) =>
                 Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
             ),
@@ -237,7 +299,9 @@ export const run = (
                     // Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
                     // Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
-                ).pipe(Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", message: s })))
+                ).pipe(
+                    Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", cause: new Error(s) }))
+                )
             )
         ).pipe(
             Effect.retry(
@@ -249,7 +313,7 @@ export const run = (
 
         yield* waitUntilContainerDeadOrRunning;
         yield* waitUntilContainerHealthy;
-        return yield* containers.inspect({ id: containerCreateResponse.Id });
+        return yield* Containers.Containers.inspect({ id: containerCreateResponse.Id });
     });
 
 /**
@@ -268,11 +332,13 @@ export const runScoped = (
 > => {
     const acquire = run(containerOptions);
     const release = (containerData: GeneratedSchemas.ContainerInspectResponse) =>
-        Effect.gen(function* () {
-            const containers = yield* Containers.Containers;
-            yield* containers.kill({ id: containerData.Id });
-            yield* containers.delete({ id: containerData.Id, force: true });
-        }).pipe(Effect.orDie);
+        Effect.orDie(
+            Effect.gen(function* () {
+                const containers = yield* Containers.Containers;
+                yield* containers.kill({ id: containerData.Id });
+                yield* containers.delete({ id: containerData.Id, force: true });
+            })
+        );
     return Effect.acquireRelease(acquire, release);
 };
 
@@ -301,10 +367,10 @@ export const runScoped = (
 export const ps = (
     options?: Containers.ContainerListOptions | undefined
 ): Effect.Effect<
-    ReadonlyArray<GeneratedSchemas.ContainerInspectResponse>,
+    ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
     Containers.ContainersError,
     Containers.Containers
-> => Effect.flatMap(Containers.Containers, (containers) => containers.list(options));
+> => Containers.Containers.list(options);
 
 /**
  * Implements the `docker push` command.
@@ -313,11 +379,7 @@ export const ps = (
  * @category Docker
  */
 export const push = (options: Images.ImagePushOptions): Stream.Stream<string, Images.ImagesError, Images.Images> =>
-    Function.pipe(
-        Images.Images,
-        Effect.map((images) => images.push(options)),
-        Stream.unwrap
-    );
+    Stream.unwrap(Images.Images.push(options));
 
 /**
  * Implements the `docker images` command.
@@ -328,7 +390,7 @@ export const push = (options: Images.ImagePushOptions): Stream.Stream<string, Im
 export const images = (
     options?: Images.ImageListOptions | undefined
 ): Effect.Effect<ReadonlyArray<GeneratedSchemas.ImageSummary>, Images.ImagesError, Images.Images> =>
-    Effect.flatMap(Images.Images, (images) => images.list(options));
+    Images.Images.list(options);
 
 /**
  * Implements the `docker search` command.
@@ -339,7 +401,7 @@ export const images = (
 export const search = (
     options: Images.ImageSearchOptions
 ): Effect.Effect<GeneratedSchemas.RegistrySearchResponse, Images.ImagesError, Images.Images> =>
-    Effect.flatMap(Images.Images, (images) => images.search(options));
+    Images.Images.search(options);
 
 /**
  * Implements the `docker version` command.
@@ -351,7 +413,7 @@ export const version: Effect.Effect<
     Readonly<GeneratedSchemas.SystemVersionResponse>,
     System.SystemsError,
     System.Systems
-> = Effect.flatMap(System.Systems, (systems) => systems.version());
+> = System.Systems.version();
 
 /**
  * Implements the `docker info` command.
@@ -363,4 +425,4 @@ export const info: Effect.Effect<
     Readonly<GeneratedSchemas.SystemInfoResponse>,
     System.SystemsError,
     System.Systems
-> = Effect.flatMap(System.Systems, (systems) => systems.info());
+> = System.Systems.info();

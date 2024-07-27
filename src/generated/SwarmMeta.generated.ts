@@ -1,14 +1,17 @@
 import * as Schema from "@effect/schema/Schema";
-import * as MobySchemasGenerated from "./index.js";
+import * as SwarmVersion from "./SwarmVersion.generated.js";
+import * as Time from "./Time.generated.js";
 
 export class SwarmMeta extends Schema.Class<SwarmMeta>("SwarmMeta")(
     {
-        Version: Schema.optionalWith(MobySchemasGenerated.SwarmVersion, { nullable: true }),
-        CreatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
-        UpdatedAt: Schema.optionalWith(MobySchemasGenerated.Time, { nullable: true }),
+        Version: Schema.optionalWith(SwarmVersion.SwarmVersion, { nullable: true }),
+        CreatedAt: Schema.optionalWith(Time.Time, { nullable: true }),
+        UpdatedAt: Schema.optionalWith(Time.Time, { nullable: true }),
     },
     {
         identifier: "SwarmMeta",
         title: "swarm.Meta",
+        documentation:
+            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/common.go#L18-L23",
     }
 ) {}
