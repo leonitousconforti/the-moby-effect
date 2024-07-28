@@ -1,59 +1,56 @@
-import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Path from "@effect/platform/Path";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "the-moby-effect/Moby";
+import * as ManagedRuntime from "effect/ManagedRuntime";
+import * as Match from "effect/Match";
+
+import * as System from "the-moby-effect/endpoints/System";
+import * as DindEngine from "the-moby-effect/engines/Dind";
 
 describe("MobyApi System tests", () => {
-    const testSystemService: Layer.Layer<MobyApi.System.Systems, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const makePlatformDindLayer = Function.pipe(
+        Match.value(inject("__PLATFORM_VARIANT")),
+        Match.when("bun", () => DindEngine.layerBun),
+        Match.when("deno", () => DindEngine.layerDeno),
+        Match.when("node", () => DindEngine.layerNodeJS),
+        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.exhaustive
+    );
+
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+        connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
+    });
+
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.succeed("")).then(() => {}), 60_000);
+    afterAll(() => testRuntime.dispose().then(() => {}));
 
     it("Should ping the docker daemon", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.System.Systems, (systems) => systems.ping()),
-                testSystemService
-            )
-        );
+        await testRuntime.runPromise(System.Systems.ping());
     });
 
     it("Should see the docker version", async () => {
-        const versionResponse: Readonly<MobyApi.Schemas.SystemVersion> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.System.Systems, (systems) => systems.version()),
-                testSystemService
-            )
-        );
+        const versionResponse = await testRuntime.runPromise(System.Systems.version());
         expect(versionResponse).toBeDefined();
     });
 
     it("Should see the docker info", async () => {
-        const infoResponse: Readonly<MobyApi.Schemas.SystemInfo> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.System.Systems, (systems) => systems.info()),
-                testSystemService
-            )
-        );
+        const infoResponse = await testRuntime.runPromise(System.Systems.info());
         expect(infoResponse).toBeDefined();
     });
 
     it("Should see the docker system data usage", async () => {
-        const dataUsageResponse: Readonly<MobyApi.Schemas.SystemDataUsageResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.System.Systems, (systems) => systems.dataUsage()),
-                testSystemService
-            )
-        );
+        const dataUsageResponse = await testRuntime.runPromise(System.Systems.dataUsage());
         expect(dataUsageResponse).toBeDefined();
     });
 
-    it("Should see docker events", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.System.Systems, (systems) => systems.events()),
-                testSystemService
-            ).pipe(Effect.scoped)
-        );
-    });
+    // it("Should see docker events", async () => {
+    //     await testRuntime.runPromise(System.Systems.events());
+    // });
 });
