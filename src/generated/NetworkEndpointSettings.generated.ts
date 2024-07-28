@@ -7,7 +7,7 @@ export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSetting
         IPAMConfig: Schema.NullOr(NetworkEndpointIPAMConfig.NetworkEndpointIPAMConfig),
         Links: Schema.NullOr(Schema.Array(Schema.String)),
         Aliases: Schema.NullOr(Schema.Array(Schema.String)),
-        MacAddress: MobySchemas.MacAddress,
+        MacAddress: Schema.Union(Schema.Literal(""), MobySchemas.MacAddress),
         DriverOpts: Schema.NullOr(
             Schema.Record({
                 key: Schema.String,
@@ -17,7 +17,7 @@ export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSetting
         NetworkID: Schema.String,
         EndpointID: Schema.String,
         Gateway: Schema.String,
-        IPAddress: MobySchemas.Address,
+        IPAddress: Schema.Union(Schema.Literal(""), MobySchemas.Address),
         IPPrefixLen: MobySchemas.Int64,
         IPv6Gateway: Schema.String,
         GlobalIPv6Address: Schema.String,
