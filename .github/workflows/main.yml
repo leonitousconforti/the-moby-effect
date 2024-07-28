@@ -148,6 +148,7 @@ jobs:
       matrix:
         os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
         node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
+        platform-variant: ${{ fromJSON(needs.compute-matricies.outputs.platform-variants) }}
         docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
         docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
