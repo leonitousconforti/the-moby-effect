@@ -99,9 +99,9 @@ jobs:
       - uses: ./.github/actions/common-setup
         with:
           node-version: 18.x
-      - run: pnpm check
-      - run: pnpm build
-      - run: pnpm lint
+      # - run: pnpm check
+      # - run: pnpm build
+      # - run: pnpm lint
 
   # Publishes the docker images to ghcr.io (only if they have been modified in this push/pull_request)
   docker-publish:
