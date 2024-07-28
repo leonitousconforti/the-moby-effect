@@ -7,6 +7,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Match from "effect/Match";
+import * as Stream from "effect/Stream";
 
 import * as System from "the-moby-effect/endpoints/System";
 import * as DindEngine from "the-moby-effect/engines/Dind";
@@ -50,7 +51,7 @@ describe("MobyApi System tests", () => {
         expect(dataUsageResponse).toBeDefined();
     });
 
-    // it("Should see docker events", async () => {
-    //     await testRuntime.runPromise(System.Systems.events());
-    // });
+    it("Should see docker events", async () => {
+        await testRuntime.runPromise(Effect.flatMap(System.Systems.events({ since: "0" }), Stream.runHead));
+    });
 });
