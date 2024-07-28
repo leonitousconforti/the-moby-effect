@@ -138,7 +138,6 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   docker-engine-tests:
-    if: false
     needs: [compute-matricies, docker-build, typescript-build]
     runs-on: ${{ matrix.os }}
     defaults:
