@@ -53,7 +53,7 @@ export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
  */
 const makeDindLayer = <E1 = never>(
     exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"],
-    _dindBaseImage: string
+    dindBaseImage: string
 ): DindLayerWithoutDockerEngineRequirement<E1> =>
     Layer.unwrapScoped(
         Effect.gen(function* () {
@@ -65,12 +65,14 @@ const makeDindLayer = <E1 = never>(
             yield* systems.pingHead();
 
             // Create a volume to store the docker engine data
-            const volumeCreateResponse = yield* volumes.create({});
+            const volumeCreateResponse = yield* Effect.acquireRelease(volumes.create({}), ({ Name }) =>
+                Effect.orDie(Volumes.Volumes.delete({ name: Name }))
+            );
 
             // Build the docker image for the dind container
             const cwd = yield* path.fromFileUrl(new URL("../../docker/", import.meta.url));
             const buildStream = DockerEngine.build({
-                // buildArgs: { DIND_IMAGE: dindBaseImage },
+                buildArgs: { DIND_IMAGE: dindBaseImage },
                 dockerfile: `dind-${exposeDindContainerBy}.dockerfile`,
                 tag: `the-moby-effect-dind-${exposeDindContainerBy}:latest`,
                 context: Convey.packBuildContextIntoTarballStream(cwd, [`dind-${exposeDindContainerBy}.dockerfile`]),
@@ -86,6 +88,11 @@ const makeDindLayer = <E1 = never>(
                     Env: ["DOCKER_TLS_CERTDIR="],
                     Image: `the-moby-effect-dind-${exposeDindContainerBy}:latest`,
                     Volumes: { "/var/lib/docker": {} },
+                    ExposedPorts: {
+                        "22/tcp": {},
+                        "2375/tcp": {},
+                        "2376/tcp": {},
+                    },
                     HostConfig: {
                         Privileged: true,
                         Binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],

@@ -49,7 +49,8 @@ Effect.gen(function* () {
         connectionOptionsToHost: connectionOptions,
     });
 
-    yield* Effect.provide(System.Systems.pingHead(), dindLayer);
+    const response = yield* Effect.provide(System.Systems.ping(), dindLayer);
+    yield* Effect.log(response);
 })
     .pipe(Effect.provide(NodeContext.layer))
     .pipe(NodeRuntime.runMain);

@@ -167,7 +167,7 @@ export interface ContainerCreateOptions {
      */
     readonly platform?: string | undefined;
     /** Container to create */
-    readonly spec: Schema.Schema.Encoded<typeof ContainerCreateRequest>;
+    readonly spec: typeof ContainerCreateRequest.Encoded;
 }
 
 /**
