@@ -110,7 +110,12 @@ export const PortSet: $PortSet = Schema.Record({
  */
 export interface $PortBinding
     extends Schema.Struct<{
-        HostIp: typeof Schema.String;
+        HostIp: Schema.optionalWith<
+            typeof Schema.String,
+            {
+                nullable: true;
+            }
+        >;
         HostPort: typeof Schema.String;
     }> {}
 
@@ -122,8 +127,8 @@ export interface $PortBinding
  * @see https://github.com/docker/go-connections/blob/5df8d2b30ca886f2d94740ce3c54abd58a5bb2c9/nat/nat.go#L11-L17
  */
 export const PortBinding: $PortBinding = Schema.Struct({
-    HostIp: Schema.String,
     HostPort: Schema.String,
+    HostIp: Schema.optionalWith(Schema.String, { nullable: true }),
 }).annotations({
     identifier: "PortBinding",
     title: "nat.PortBinding",
@@ -134,7 +139,7 @@ export const PortBinding: $PortBinding = Schema.Struct({
  * @since 1.0.0
  * @category Api interface
  */
-export interface $PortMap extends Schema.Record$<typeof PortWithMaybeProtocol, $PortBinding> {}
+export interface $PortMap extends Schema.Record$<typeof PortWithMaybeProtocol, Schema.Array$<$PortBinding>> {}
 
 /**
  * Port mapping between the exposed port (container) and the host.
@@ -145,7 +150,7 @@ export interface $PortMap extends Schema.Record$<typeof PortWithMaybeProtocol, $
  */
 export const PortMap: $PortMap = Schema.Record({
     key: PortWithMaybeProtocol,
-    value: PortBinding,
+    value: Schema.Array(PortBinding),
 }).annotations({
     identifier: "PortMap",
     title: "nat.PortMap",

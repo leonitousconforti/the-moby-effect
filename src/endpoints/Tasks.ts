@@ -169,10 +169,7 @@ export interface TasksImpl {
 export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/tasks")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const TaskClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmTask)));
     const TasksClient = client.pipe(
@@ -183,7 +180,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
         options?: TaskListOptions | undefined
     ): Effect.Effect<Readonly<Array<SwarmTask>>, TasksError, never> =>
         Function.pipe(
-            HttpClientRequest.get(""),
+            HttpClientRequest.get("/tasks"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -195,7 +192,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
 
     const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
+            HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}`),
             TaskClient,
             Effect.mapError((cause) => new TasksError({ method: "inspect", cause })),
             Effect.scoped
@@ -203,7 +200,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
 
     const logs_ = (options: TaskLogsOptions): Stream.Stream<string, TasksError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/logs`),
+            HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}/logs`),
             maybeAddQueryParameter("details", Option.fromNullable(options.details)),
             maybeAddQueryParameter("follow", Option.fromNullable(options.follow)),
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),

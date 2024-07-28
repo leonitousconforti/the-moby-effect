@@ -226,10 +226,7 @@ export interface NetworksImpl {
 export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/networks")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const NetworksClient = client.pipe(
@@ -247,7 +244,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
         options?: NetworkListOptions | undefined
     ): Effect.Effect<Readonly<Array<NetworkSummary>>, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.get(""),
+            HttpClientRequest.get("/networks"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -259,7 +256,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
 
     const delete_ = (options: NetworkDeleteOptions): Effect.Effect<void, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.del("/networks/{id}".replace("{id}", encodeURIComponent(options.id))),
             voidClient,
             Effect.mapError((cause) => new NetworksError({ method: "delete", cause })),
             Effect.scoped
@@ -267,7 +264,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
 
     const inspect_ = (options: NetworkInspectOptions): Effect.Effect<Readonly<NetworkSummary>, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.get("/networks/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("verbose", Option.fromNullable(options.verbose)),
             maybeAddQueryParameter("scope", Option.fromNullable(options.scope)),
             NetworkClient,
@@ -277,7 +274,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
 
     const create_ = (options: NetworkCreateRequest): Effect.Effect<NetworkCreateResponse, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
+            HttpClientRequest.post("/networks/create"),
             HttpClientRequest.schemaBody(NetworkCreateRequest)(options),
             Effect.flatMap(NetworkCreateResponseClient),
             Effect.mapError((cause) => new NetworksError({ method: "create", cause })),
@@ -286,7 +283,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
 
     const connect_ = (options: NetworkConnectOptions): Effect.Effect<void, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.post("/{id}/connect".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post("/networks/{id}/connect".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.schemaBody(NetworkConnectRequest)(options.container),
             Effect.flatMap(voidClient),
             Effect.mapError((cause) => new NetworksError({ method: "connect", cause })),
@@ -295,7 +292,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
 
     const disconnect_ = (options: NetworkDisconnectOptions): Effect.Effect<void, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.post("/{id}/disconnect".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post("/networks/{id}/disconnect".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.schemaBody(NetworkDisconnectRequest)(
                 options.container ?? new NetworkDisconnectRequest({} as any)
             ),
@@ -306,7 +303,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
 
     const prune_ = (options: NetworkPruneOptions | undefined): Effect.Effect<NetworkPruneResponse, NetworksError> =>
         Function.pipe(
-            HttpClientRequest.post("/prune"),
+            HttpClientRequest.post("/networks/prune"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))

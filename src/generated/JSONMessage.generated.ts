@@ -15,7 +15,7 @@ export class JSONMessage extends Schema.Class<JSONMessage>("JSONMessage")(
         timeNano: Schema.optional(MobySchemas.Int64),
         errorDetail: Schema.optionalWith(JSONError.JSONError, { nullable: true }),
         error: Schema.optional(Schema.String),
-        aux: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        aux: Schema.optionalWith(Schema.Struct({ ID: Schema.String }), { nullable: true }),
     },
     {
         identifier: "JSONMessage",

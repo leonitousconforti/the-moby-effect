@@ -5,7 +5,7 @@ import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
 import * as Convey from "the-moby-effect/Convey";
-import * as DockerEngine from "the-moby-effect/Docker";
+import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as Images from "the-moby-effect/endpoints/Images";
 import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Schemas from "the-moby-effect/Schemas";

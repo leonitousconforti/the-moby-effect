@@ -369,10 +369,7 @@ export interface PluginsImpl {
 export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/plugins")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const PluginClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Plugin)));
@@ -383,7 +380,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const list_ = (options?: PluginListOptions | undefined): Effect.Effect<Readonly<Array<Plugin>>, PluginsError> =>
         Function.pipe(
-            HttpClientRequest.get(""),
+            HttpClientRequest.get("/plugins"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -397,7 +394,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
         options: GetPluginPrivilegesOptions
     ): Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/privileges"),
+            HttpClientRequest.get("/plugins/privileges"),
             maybeAddQueryParameter("remote", Option.some(options.remote)),
             PluginPrivilegesClient,
             Effect.mapError((cause) => new PluginsError({ method: "getPrivileges", cause })),
@@ -406,7 +403,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const pull_ = (options: PluginPullOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/pull"),
+            HttpClientRequest.post("/plugins/pull"),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
             maybeAddQueryParameter("remote", Option.some(options.remote)),
             maybeAddQueryParameter("name", Option.fromNullable(options.name)),
@@ -418,7 +415,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const inspect_ = (options: PluginInspectOptions): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
+            HttpClientRequest.get(`/plugins/${encodeURIComponent(options.name)}/json`),
             PluginClient,
             Effect.mapError((cause) => new PluginsError({ method: "inspect", cause })),
             Effect.scoped
@@ -426,7 +423,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const delete_ = (options: PluginDeleteOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.del(`/${encodeURIComponent(options.name)}`),
+            HttpClientRequest.del(`/plugins/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             voidClient,
             Effect.mapError((cause) => new PluginsError({ method: "delete", cause })),
@@ -435,7 +432,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const enable_ = (options: PluginEnableOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/enable`),
+            HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/enable`),
             maybeAddQueryParameter("timeout", Option.fromNullable(options.timeout)),
             voidClient,
             Effect.mapError((cause) => new PluginsError({ method: "enable", cause })),
@@ -444,7 +441,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const disable_ = (options: PluginDisableOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/disable`),
+            HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/disable`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             voidClient,
             Effect.mapError((cause) => new PluginsError({ method: "disable", cause })),
@@ -453,7 +450,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/upgrade`),
+            HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/upgrade`),
             maybeAddHeader("X-Registry-Auth", Option.fromNullable(options["X-Registry-Auth"])),
             maybeAddQueryParameter("remote", Option.some(options.remote)),
             HttpClientRequest.schemaBody(Schema.Array(PluginPrivilege))(options.body ?? []),
@@ -464,7 +461,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const create_ = <E1>(options: PluginCreateOptions<E1>): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
+            HttpClientRequest.post("/plugins/create"),
             maybeAddQueryParameter("name", Option.some(options.name)),
             HttpClientRequest.streamBody(options.tarContext),
             voidClient,
@@ -474,7 +471,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const push_ = (options: PluginPushOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/push`),
+            HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/push`),
             voidClient,
             Effect.mapError((cause) => new PluginsError({ method: "push", cause })),
             Effect.scoped
@@ -482,7 +479,7 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
 
     const set_ = (options: PluginSetOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/set`),
+            HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/set`),
             HttpClientRequest.schemaBody(Schema.Array(Schema.String))(options.body ?? []),
             Effect.flatMap(voidClient),
             Effect.mapError((cause) => new PluginsError({ method: "set", cause })),

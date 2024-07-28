@@ -3,7 +3,7 @@ import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
 import * as Convey from "the-moby-effect/Convey";
-import * as DockerEngine from "the-moby-effect/Docker";
+import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as Containers from "the-moby-effect/endpoints/Containers";
 import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Schemas from "the-moby-effect/Schemas";
@@ -42,11 +42,31 @@ const program = Effect.gen(function* () {
     yield* Convey.followProgressInConsole(pullStream);
 
     const containerInspectResponse: Schemas.ContainerInspectResponse = yield* DockerEngine.runScoped({
-        spec: { Image: "ubuntu:latest", Cmd: ["sleep", "infinity"] },
+        spec: {
+            Image: "ubuntu:latest",
+            Cmd: ["sleep", "infinity"],
+            Entrypoint: [],
+
+            Tty: true,
+            OpenStdin: true,
+            AttachStdin: true,
+            AttachStdout: true,
+            AttachStderr: true,
+
+            Hostname: "",
+            Domainname: "",
+            User: "",
+            StdinOnce: false,
+            WorkingDir: "",
+            Env: [],
+            Volumes: {},
+            OnBuild: [],
+            Labels: {},
+        },
     });
 
     const data: Schemas.ContainerTopResponse = yield* containers.top({
-        id: containerInspectResponse.Id!,
+        id: containerInspectResponse.Id,
         ps_args: "aux",
     });
 

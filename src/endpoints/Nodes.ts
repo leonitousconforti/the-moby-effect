@@ -146,10 +146,7 @@ export interface NodesImpl {
 export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/nodes")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const NodesClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))));
@@ -159,7 +156,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
         options?: NodeListOptions | undefined
     ): Effect.Effect<Readonly<Array<SwarmNode>>, NodesError, never> =>
         Function.pipe(
-            HttpClientRequest.get(""),
+            HttpClientRequest.get("/nodes"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -171,7 +168,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
 
     const delete_ = (options: NodeDeleteOptions): Effect.Effect<void, NodesError, never> =>
         Function.pipe(
-            HttpClientRequest.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.del("/nodes/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             voidClient,
             Effect.mapError((cause) => new NodesError({ method: "delete", cause })),
@@ -180,7 +177,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
 
     const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.get("/nodes/{id}".replace("{id}", encodeURIComponent(options.id))),
             NodeClient,
             Effect.mapError((cause) => new NodesError({ method: "inspect", cause })),
             Effect.scoped
@@ -188,7 +185,7 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
 
     const update_ = (options: NodeUpdateOptions): Effect.Effect<void, NodesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post("/nodes/{id}/update".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(SwarmNodeSpec)(options.body),
             Effect.flatMap(voidClient),

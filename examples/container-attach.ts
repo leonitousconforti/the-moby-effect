@@ -4,7 +4,7 @@ import * as Effect from "effect/Effect";
 
 import * as Convey from "the-moby-effect/Convey";
 import * as Demux from "the-moby-effect/Demux";
-import * as DockerEngine from "the-moby-effect/Docker";
+import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Containers from "the-moby-effect/endpoints/Containers";
 

@@ -5,25 +5,25 @@ import * as ContainerHealthConfig from "./ContainerHealthConfig.generated.js";
 export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerConfig")(
     {
         /** Hostname */
-        Hostname: Schema.String,
+        Hostname: Schema.withDecodingDefault(Schema.optionalWith(Schema.String, { nullable: true }), () => ""),
 
         /** Domainname */
-        Domainname: Schema.String,
+        Domainname: Schema.withDecodingDefault(Schema.optionalWith(Schema.String, { nullable: true }), () => ""),
 
         /**
          * User that will run the command(s) inside the container, also support
          * user:group
          */
-        User: Schema.String,
+        User: Schema.withDecodingDefault(Schema.optionalWith(Schema.String, { nullable: true }), () => ""),
 
         /** Attach the standard input, makes possible user interaction */
-        AttachStdin: Schema.Boolean,
+        AttachStdin: Schema.withDecodingDefault(Schema.optionalWith(Schema.Boolean, { nullable: true }), () => false),
 
         /** Attach the standard output */
-        AttachStdout: Schema.Boolean,
+        AttachStdout: Schema.withDecodingDefault(Schema.optionalWith(Schema.Boolean, { nullable: true }), () => true),
 
         /** Attach the standard error */
-        AttachStderr: Schema.Boolean,
+        AttachStderr: Schema.withDecodingDefault(Schema.optionalWith(Schema.Boolean, { nullable: true }), () => true),
 
         /** List of exposed ports */
         ExposedPorts: Schema.optionalWith(MobySchemas.PortSchemas.PortSet, { nullable: true }),
@@ -32,13 +32,13 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
          * Attach standard streams to a tty, including stdin if it is not
          * closed.
          */
-        Tty: Schema.Boolean,
+        Tty: Schema.withDecodingDefault(Schema.optionalWith(Schema.Boolean, { nullable: true }), () => false),
 
         /** Open stdin */
-        OpenStdin: Schema.Boolean,
+        OpenStdin: Schema.withDecodingDefault(Schema.optionalWith(Schema.Boolean, { nullable: true }), () => false),
 
         /** If true, close stdin after the 1 attached client disconnects. */
-        StdinOnce: Schema.Boolean,
+        StdinOnce: Schema.withDecodingDefault(Schema.optionalWith(Schema.Boolean, { nullable: true }), () => false),
 
         /** List of environment variable to set in the container */
         Env: Schema.NullOr(Schema.Array(Schema.String)),
@@ -70,13 +70,16 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         ),
 
         /** Current directory (PWD) in the command will be launched */
-        WorkingDir: Schema.String,
+        WorkingDir: Schema.withDecodingDefault(Schema.optionalWith(Schema.String, { nullable: true }), () => ""),
 
         /** Entrypoint to run when starting the container */
         Entrypoint: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** Is network disabled */
-        NetworkDisabled: Schema.optional(Schema.Boolean),
+        NetworkDisabled: Schema.withDecodingDefault(
+            Schema.optionalWith(Schema.Boolean, { nullable: true }),
+            () => false
+        ),
 
         /**
          * Mac Address of the container. Deprecated: this field is deprecated

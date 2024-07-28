@@ -78,16 +78,13 @@ export interface DistributionsImpl {
  */
 export const make: Effect.Effect<DistributionsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const contextClient = yield* HttpClient.HttpClient;
-    const client = contextClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/distribution")),
-        HttpClient.filterStatusOk
-    );
+    const client = contextClient.pipe(HttpClient.filterStatusOk);
 
     const inspect_ = (
         options: DistributionInspectOptions
     ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
+            HttpClientRequest.get(`/distribution/${encodeURIComponent(options.name)}/json`),
             client,
             HttpClientResponse.schemaBodyJsonScoped(RegistryDistributionInspect),
             Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),

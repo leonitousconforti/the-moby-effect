@@ -811,10 +811,7 @@ export interface ImagesImpl {
 export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const buildClient = defaultClient.pipe(HttpClient.filterStatusOk);
-    const client = defaultClient.pipe(
-        // HttpClient.mapRequest(HttpClientRequest.appendUrl("/images")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
 
     const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
@@ -871,7 +868,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("cpuquota", Option.fromNullable(options.cpuquota))
         ).pipe(
             // FIXME: aaaahhhhhh
-            maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
+            // maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
             maybeAddQueryParameter("shmsize", Option.fromNullable(options.shmsize)),
             maybeAddQueryParameter("squash", Option.fromNullable(options.squash)),
             maybeAddQueryParameter("labels", Option.fromNullable(options.labels)),
@@ -936,7 +933,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         options: ImageHistoryOptions
     ): Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.name)}/history`),
+            HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/history`),
             HistoryResponseItemsClient,
             Effect.mapError((cause) => new ImagesError({ method: "history", cause })),
             Effect.scoped
@@ -944,7 +941,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const push_ = (options: ImagePushOptions): Stream.Stream<string, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/push`),
+            HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/push`),
             HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"]),
             maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
             client,
@@ -955,7 +952,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const tag_ = (options: ImageTagOptions): Effect.Effect<void, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.name)}/tag`),
+            HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/tag`),
             maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
             maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
             voidClient,
@@ -977,7 +974,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const search_ = (options: ImageSearchOptions): Effect.Effect<ImageSearchResponseItem, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/search"),
+            HttpClientRequest.get("/images/search"),
             maybeAddQueryParameter("term", Option.some(options.term)),
             maybeAddQueryParameter("limit", Option.fromNullable(options.limit)),
             maybeAddQueryParameter(
@@ -991,7 +988,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/prune"),
+            HttpClientRequest.post("/images/prune"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -1003,7 +1000,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/commit"),
+            HttpClientRequest.post("/images/commit"),
             maybeAddQueryParameter("container", Option.fromNullable(options.container)),
             maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
             maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
@@ -1019,7 +1016,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const get_ = (options: ImageGetOptions): Stream.Stream<string, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.name)}/get`),
+            HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/get`),
             client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
@@ -1028,7 +1025,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const getall_ = (options?: ImageGetAllOptions | undefined): Stream.Stream<string, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/get"),
+            HttpClientRequest.get("/images/get"),
             maybeAddQueryParameter("names", Option.fromNullable(options?.names)),
             client,
             HttpClientResponse.stream,
@@ -1038,7 +1035,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
 
     const load_ = <E1>(options: ImageLoadOptions<E1>): Effect.Effect<void, ImagesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/load"),
+            HttpClientRequest.post("/images/load"),
             maybeAddQueryParameter("quiet", Option.fromNullable(options?.quiet)),
             HttpClientRequest.streamBody(options.imagesTarball),
             voidClient,

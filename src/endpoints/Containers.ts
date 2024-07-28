@@ -32,6 +32,7 @@ import {
 import {
     ContainerChange,
     ContainerConfig,
+    ContainerCreateRequest,
     ContainerCreateResponse,
     ContainerInspectResponse,
     ContainerListResponseItem,
@@ -166,7 +167,7 @@ export interface ContainerCreateOptions {
      */
     readonly platform?: string | undefined;
     /** Container to create */
-    readonly spec: Schema.Schema.Encoded<typeof ContainerConfig>;
+    readonly spec: Schema.Schema.Encoded<typeof ContainerCreateRequest>;
 }
 
 /**
@@ -846,17 +847,14 @@ export interface ContainersImpl {
  */
 export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const contextClient = yield* HttpClient.HttpClient;
-    const client = contextClient.pipe(
-        // HttpClient.mapRequest(HttpClientRequest.prependUrl("/containers")),
-        HttpClient.filterStatusOk
-    );
+    const client = contextClient.pipe(HttpClient.filterStatusOk);
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
 
     const list_ = (
         options?: ContainerListOptions | undefined
     ): Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/json"),
+            HttpClientRequest.get("/containers/json"),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
             maybeAddQueryParameter("limit", Option.fromNullable(options?.limit)),
             maybeAddQueryParameter("size", Option.fromNullable(options?.size)),
@@ -868,11 +866,11 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const create_ = (options: ContainerCreateOptions): Effect.Effect<ContainerCreateResponse, ContainersError, never> =>
         Function.pipe(
-            Schema.decode(ContainerConfig)(options.spec),
+            Schema.decode(ContainerCreateRequest)(options.spec),
             Effect.map((body) => Tuple.make(HttpClientRequest.post("/containers/create"), body)),
             Effect.map(Tuple.mapFirst(maybeAddQueryParameter("name", Option.fromNullable(options.name)))),
             Effect.map(Tuple.mapFirst(maybeAddQueryParameter("platform", Option.fromNullable(options.platform)))),
-            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBody(ContainerConfig))),
+            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBody(ContainerCreateRequest))),
             Effect.flatMap(client),
             HttpClientResponse.schemaBodyJsonScoped(ContainerCreateResponse),
             Effect.mapError((cause) => new ContainersError({ method: "create", cause }))
@@ -892,7 +890,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const top_ = (options: ContainerTopOptions): Effect.Effect<ContainerTopResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/top`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/top`),
             maybeAddQueryParameter("ps_args", Option.fromNullable(options.ps_args)),
             client,
             HttpClientResponse.schemaBodyJsonScoped(ContainerTopResponse),
@@ -902,7 +900,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const logs_ = (options: ContainerLogsOptions): Stream.Stream<string, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/logs`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/logs`),
             maybeAddQueryParameter("follow", Option.fromNullable(options.follow)),
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
             maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
@@ -920,7 +918,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         options: ContainerChangesOptions
     ): Effect.Effect<ReadonlyArray<ContainerChange>, ContainersError> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/changes`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/changes`),
             client,
             HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerChange)),
             Effect.mapError((cause) => new ContainersError({ method: "changes", cause })),
@@ -929,7 +927,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const export_ = (options: ContainerExportOptions): Stream.Stream<Uint8Array, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/export`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/export`),
             client,
             HttpClientResponse.stream,
             Stream.mapError((cause) => new ContainersError({ method: "export", cause }))
@@ -937,7 +935,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const stats_ = (options: ContainerStatsOptions): Stream.Stream<ContainerStatsResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/stats`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/stats`),
             maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
             maybeAddQueryParameter("one-shot", Option.fromNullable(options["one-shot"])),
             client,
@@ -949,7 +947,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const resize_ = (options: ContainerResizeOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/resize`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/resize`),
             maybeAddQueryParameter("h", Option.fromNullable(options.h)),
             maybeAddQueryParameter("w", Option.fromNullable(options.w)),
             voidClient,
@@ -968,7 +966,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const stop_ = (options: ContainerStopOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/stop`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/stop`),
             maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
             maybeAddQueryParameter("t", Option.fromNullable(options.t)),
             voidClient,
@@ -978,7 +976,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const restart_ = (options: ContainerRestartOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/restart`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/restart`),
             maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
             maybeAddQueryParameter("t", Option.fromNullable(options.t)),
             voidClient,
@@ -997,7 +995,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const update_ = (options: ContainerUpdateOptions): Effect.Effect<ContainerUpdateResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/update`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/update`),
             HttpClientRequest.schemaBody(ContainerConfig)(options.spec),
             Effect.flatMap(client),
             HttpClientResponse.schemaBodyJsonScoped(ContainerUpdateResponse),
@@ -1007,7 +1005,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const rename_ = (options: ContainerRenameOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/rename`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/rename`),
             maybeAddQueryParameter("name", Option.fromNullable(options.name)),
             voidClient,
             Effect.mapError((cause) => new ContainersError({ method: "rename", cause })),
@@ -1016,7 +1014,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const pause_ = (options: ContainerPauseOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/pause`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/pause`),
             voidClient,
             Effect.mapError((cause) => new ContainersError({ method: "pause", cause })),
             Effect.scoped
@@ -1024,7 +1022,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const unpause_ = (options: ContainerUnpauseOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/unpause`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/unpause`),
             voidClient,
             Effect.mapError((cause) => new ContainersError({ method: "unpause", cause })),
             Effect.scoped
@@ -1051,7 +1049,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
     ): Effect.Effect<UnidirectionalRawStreamSocket, ContainersError, Scope.Scope> =>
         Function.pipe(
             // FIXME: needs to be a websocket
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/attach/ws`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/attach/ws`),
             maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
             maybeAddQueryParameter("logs", Option.fromNullable(options.logs)),
             maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
@@ -1065,7 +1063,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const wait_ = (options: ContainerWaitOptions): Effect.Effect<ContainerWaitResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/wait`),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/wait`),
             maybeAddQueryParameter("condition", Option.fromNullable(options.condition)),
             client,
             HttpClientResponse.schemaBodyJsonScoped(ContainerWaitResponse),
@@ -1085,7 +1083,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const archive_ = (options: ContainerArchiveOptions): Stream.Stream<Uint8Array, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}/archive`),
+            HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/archive`),
             maybeAddQueryParameter("path", Option.some(options.path)),
             client,
             HttpClientResponse.stream,
@@ -1094,7 +1092,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const archiveInfo_ = (options: ContainerArchiveInfoOptions): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.head(`/${encodeURIComponent(options.id)}/archive`),
+            HttpClientRequest.head(`/containers/${encodeURIComponent(options.id)}/archive`),
             maybeAddQueryParameter("path", Option.some(options.path)),
             client,
             Effect.mapError((cause) => new ContainersError({ method: "archiveInfo", cause })),
@@ -1103,7 +1101,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const putArchive_ = <E1>(options: PutContainerArchiveOptions<E1>): Effect.Effect<void, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.put(`/${encodeURIComponent(options.id)}/archive`),
+            HttpClientRequest.put(`/containers/${encodeURIComponent(options.id)}/archive`),
             maybeAddQueryParameter("path", Option.some(options.path)),
             maybeAddQueryParameter("noOverwriteDirNonDir", Option.fromNullable(options.noOverwriteDirNonDir)),
             maybeAddQueryParameter("copyUIDGID", Option.fromNullable(options.copyUIDGID)),
@@ -1117,7 +1115,7 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
         options?: ContainerPruneOptions | undefined
     ): Effect.Effect<ContainerPruneResponse, ContainersError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/prune"),
+            HttpClientRequest.post("/containers/prune"),
             maybeAddFilters(options?.filters),
             client,
             HttpClientResponse.schemaBodyJsonScoped(ContainerPruneResponse),

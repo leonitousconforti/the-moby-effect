@@ -53,7 +53,7 @@ export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
  */
 const makeDindLayer = <E1 = never>(
     exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"],
-    dindBaseImage: string
+    _dindBaseImage: string
 ): DindLayerWithoutDockerEngineRequirement<E1> =>
     Layer.unwrapScoped(
         Effect.gen(function* () {
@@ -69,36 +69,32 @@ const makeDindLayer = <E1 = never>(
 
             // Build the docker image for the dind container
             const cwd = yield* path.fromFileUrl(new URL("../../docker/", import.meta.url));
-            const buildStream = yield* DockerEngine.buildScoped({
-                buildArgs: { DIND_IMAGE: dindBaseImage },
+            const buildStream = DockerEngine.build({
+                // buildArgs: { DIND_IMAGE: dindBaseImage },
                 dockerfile: `dind-${exposeDindContainerBy}.dockerfile`,
-                tag: `the-moby-effect-dind-${exposeDindContainerBy}-${dindBaseImage}:latest`,
+                tag: `the-moby-effect-dind-${exposeDindContainerBy}:latest`,
                 context: Convey.packBuildContextIntoTarballStream(cwd, [`dind-${exposeDindContainerBy}.dockerfile`]),
             });
 
             // Wait for the image to be built
-            yield* Convey.waitForProgressToComplete(buildStream);
+            yield* Convey.followProgressInConsole(buildStream);
 
             // Create the dind container
             const containerInspectResponse = yield* DockerEngine.runScoped({
                 spec: {
-                    Image: `the-moby-effect-dind-${exposeDindContainerBy}-${dindBaseImage}:latest`,
-                    Env: ["DOCKER_TLS_CERTDIR="],
                     Cmd: ["--tls=false"],
+                    Env: ["DOCKER_TLS_CERTDIR="],
+                    Image: `the-moby-effect-dind-${exposeDindContainerBy}:latest`,
                     Volumes: { "/var/lib/docker": {} },
-                    ExposedPorts: {
-                        "22/tcp": [{ HostPort: "0" }],
-                        "2375/tcp": [{ HostPort: "0" }],
-                        "2376/tcp": [{ HostPort: "0" }],
+                    HostConfig: {
+                        Privileged: true,
+                        Binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],
+                        PortBindings: {
+                            "22/tcp": [{ HostPort: "0" }],
+                            "2375/tcp": [{ HostPort: "0" }],
+                            "2376/tcp": [{ HostPort: "0" }],
+                        },
                     },
-                    // Privileged: true,
-                    // PortBindings: {
-                    //     "22/tcp": [{ HostPort: "0" }],
-                    //     "2375/tcp": [{ HostPort: "0" }],
-                    //     "2376/tcp": [{ HostPort: "0" }],
-                    // },
-                    // @ts-expect-error aaaaahhhhhhh
-                    binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],
                 },
             });
 

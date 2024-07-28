@@ -146,10 +146,7 @@ export interface SwarmImpl {
 export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/swarm")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const SwarmClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmData)));
@@ -162,7 +159,7 @@ export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default
 
     const inspect_ = (): Effect.Effect<Readonly<SwarmData>, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/"),
+            HttpClientRequest.get("/swarm"),
             SwarmClient,
             Effect.mapError((cause) => new SwarmsError({ method: "inspect", cause }))
         );
@@ -171,7 +168,7 @@ export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default
         options: Schema.Schema.Type<typeof SwarmInitRequest>
     ): Effect.Effect<Readonly<string>, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/init"),
+            HttpClientRequest.post("/swarm/init"),
             HttpClientRequest.schemaBody(SwarmInitRequest)(new SwarmInitRequest(options)),
             Effect.flatMap(StringClient),
             Effect.mapError((cause) => new SwarmsError({ method: "init", cause }))
@@ -179,7 +176,7 @@ export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default
 
     const join_ = (options: Schema.Schema.Type<typeof SwarmJoinRequest>): Effect.Effect<void, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/join"),
+            HttpClientRequest.post("/swarm/join"),
             HttpClientRequest.schemaBody(SwarmJoinRequest)(new SwarmJoinRequest(options)),
             Effect.flatMap(voidClient),
             Effect.mapError((cause) => new SwarmsError({ method: "join", cause })),
@@ -188,7 +185,7 @@ export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default
 
     const leave_ = (options: SwarmLeaveOptions): Effect.Effect<void, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/leave"),
+            HttpClientRequest.post("/swarm/leave"),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             voidClient,
             Effect.mapError((cause) => new SwarmsError({ method: "leave", cause })),
@@ -197,7 +194,7 @@ export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default
 
     const update_ = (options: SwarmUpdateOptions): Effect.Effect<void, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/update"),
+            HttpClientRequest.post("/swarm/update"),
             maybeAddQueryParameter("version", Option.some(options.version)),
             maybeAddQueryParameter("rotateWorkerToken", Option.fromNullable(options.rotateWorkerToken)),
             maybeAddQueryParameter("rotateManagerToken", Option.fromNullable(options.rotateManagerToken)),
@@ -210,14 +207,14 @@ export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient.Default
 
     const unlockkey_ = (): Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/unlockkey"),
+            HttpClientRequest.get("/swarm/unlockkey"),
             UnlockKeyResponseClient,
             Effect.mapError((cause) => new SwarmsError({ method: "unlockkey", cause }))
         );
 
     const unlock_ = (options: Schema.Schema.Type<typeof SwarmUnlockRequest>): Effect.Effect<void, SwarmsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/unlock"),
+            HttpClientRequest.post("/swarm/unlock"),
             HttpClientRequest.schemaBody(SwarmUnlockRequest)(new SwarmUnlockRequest(options)),
             Effect.flatMap(voidClient),
             Effect.mapError((cause) => new SwarmsError({ method: "unlock", cause })),

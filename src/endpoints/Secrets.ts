@@ -177,10 +177,7 @@ export interface SecretsImpl {
 export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/secrets")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const SecretClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SwarmSecret)));
@@ -195,7 +192,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
         options?: SecretListOptions | undefined
     ): Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never> =>
         Function.pipe(
-            HttpClientRequest.get(""),
+            HttpClientRequest.get("/secrets"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -209,7 +206,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
         options: SwarmSecretSpec
     ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
+            HttpClientRequest.post("/secrets/create"),
             HttpClientRequest.schemaBody(SwarmSecretSpec)(options),
             Effect.flatMap(SwarmSecretCreateClient),
             Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
@@ -218,7 +215,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 
     const delete_ = (options: SecretDeleteOptions): Effect.Effect<void, SecretsError, never> =>
         Function.pipe(
-            HttpClientRequest.del(`/${encodeURIComponent(options.id)}`),
+            HttpClientRequest.del(`/secrets/${encodeURIComponent(options.id)}`),
             voidClient,
             Effect.mapError((cause) => new SecretsError({ method: "delete", cause })),
             Effect.scoped
@@ -226,7 +223,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 
     const inspect_ = (options: SecretInspectOptions): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
         Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.id)}`),
+            HttpClientRequest.get(`/secrets/${encodeURIComponent(options.id)}`),
             SecretClient,
             Effect.mapError((cause) => new SecretsError({ method: "inspect", cause })),
             Effect.scoped
@@ -234,7 +231,7 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
 
     const update_ = (options: SecretUpdateOptions): Effect.Effect<void, SecretsError, never> =>
         Function.pipe(
-            HttpClientRequest.post(`/${encodeURIComponent(options.id)}/update`),
+            HttpClientRequest.post(`/secrets/${encodeURIComponent(options.id)}/update`),
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(SwarmSecretSpec)(options.spec),
             Effect.flatMap(voidClient),

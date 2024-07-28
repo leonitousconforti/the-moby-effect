@@ -232,12 +232,11 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
         );
 
     // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L31-L49
-    const pingHead_ = (): Effect.Effect<"OK", SystemsError, never> =>
+    const pingHead_ = (): Effect.Effect<void, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.head("/_ping"),
             client,
-            HttpClientResponse.text,
-            Effect.flatMap(Schema.decodeUnknown(Schema.Literal("OK"))),
+            HttpClientResponse.void,
             Effect.mapError((cause) => new SystemsError({ method: "pingHead", cause }))
         );
 

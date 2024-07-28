@@ -282,10 +282,7 @@ export interface ServicesImpl {
 export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
 
-    const client = defaultClient.pipe(
-        HttpClient.mapRequest(HttpClientRequest.prependUrl("/services")),
-        HttpClient.filterStatusOk
-    );
+    const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const ServicesClient = client.pipe(
@@ -303,7 +300,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         options?: ServiceListOptions | undefined
     ): Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.get(""),
+            HttpClientRequest.get("/services"),
             maybeAddQueryParameter(
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
@@ -318,7 +315,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         options: ServiceCreateOptions
     ): Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/create"),
+            HttpClientRequest.post("/services/create"),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
             HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
             Effect.flatMap(ServiceCreateResponseClient),
@@ -328,7 +325,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
 
     const delete_ = (options: ServiceDeleteOptions): Effect.Effect<void, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.del("/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.del("/services/{id}".replace("{id}", encodeURIComponent(options.id))),
             voidClient,
             Effect.mapError((cause) => new ServicesError({ method: "delete", cause })),
             Effect.scoped
@@ -336,7 +333,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
 
     const inspect_ = (options: ServiceInspectOptions): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.get("/services/{id}".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("insertDefaults", Option.fromNullable(options.insertDefaults)),
             ServiceClient,
             Effect.mapError((cause) => new ServicesError({ method: "inspect", cause })),
@@ -347,7 +344,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         options: ServiceUpdateOptions
     ): Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post("/services/{id}/update".replace("{id}", encodeURIComponent(options.id))),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
             maybeAddQueryParameter("version", Option.some(options.version)),
             maybeAddQueryParameter("registryAuthFrom", Option.fromNullable(options.registryAuthFrom)),
@@ -360,7 +357,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
 
     const logs_ = (options: ServiceLogsOptions): Stream.Stream<string, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.get("/services/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
             maybeAddQueryParameter("details", Option.fromNullable(options.details)),
             maybeAddQueryParameter("follow", Option.fromNullable(options.follow)),
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
