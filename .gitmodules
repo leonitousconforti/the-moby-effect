@@ -1,7 +1,7 @@
 [submodule "moby-27.0-branch-max-api-1.46"]
 	path = submodules/moby-27.0-branch-max-api-1.46
 	url = https://github.com/moby/moby.git
-	branch = 27.0
+	branch = 27.x
 [submodule "moby-26.0-branch-max-api-1.45"]
 	path = submodules/moby-26.0-branch-max-api-1.45
 	url = https://github.com/moby/moby.git
