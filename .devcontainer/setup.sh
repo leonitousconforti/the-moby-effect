@@ -13,7 +13,7 @@ git submodule update --init --recursive
 
 echo "📦 Installing global dependencies..."
 npm uninstall -g pnpm
-npm install -g @devcontainers/cli npm-check-updates pnpm
+npm install -g @devcontainers/cli tsx pnpm
 
 echo "📦 Installing repo dependencies..."
 pnpm install
