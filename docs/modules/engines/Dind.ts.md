@@ -101,7 +101,7 @@ export declare const layerWeb: (options: {
   | Volumes.VolumesError
   | System.SystemsError
   | PlatformError.PlatformError,
-  Path.Path
+  Path.Path | FileSystem.FileSystem
 >
 ```
 
@@ -121,7 +121,7 @@ export type DindLayer = Layer.Layer<
   | Volumes.VolumesError
   | System.SystemsError
   | PlatformError.PlatformError,
-  Path.Path
+  Path.Path | FileSystem.FileSystem
 >
 ```
 
@@ -135,7 +135,7 @@ Added in v1.0.0
 export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
   Layer.Layer.Success<DindLayer>,
   E1 | Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
-  Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer> | Path.Path
+  Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer> | Path.Path | FileSystem.FileSystem
 >
 ```
 
