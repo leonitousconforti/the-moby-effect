@@ -65,7 +65,6 @@ export * from "./JSONProgress.generated.js";
 export * from "./Location.generated.js";
 export * from "./Mount.generated.js";
 export * from "./MountPoint.generated.js";
-export * from "./NetIPNet.generated.js";
 export * from "./NetworkConfigReference.generated.js";
 export * from "./NetworkConnectOptions.generated.js";
 export * from "./NetworkCreateOptions.generated.js";
