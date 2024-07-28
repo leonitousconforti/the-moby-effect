@@ -154,11 +154,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: |
-          for docker_engine_version in ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}; do
-            for docker_engine_connection_variant in ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}; do
+          docker_engine_versions=(${DOCKER_ENGINE_VERSIONS})
+          docker_engine_connection_variants=(${DOCKER_ENGINE_CONNECTION_VARIANTS})
+
+          for docker_engine_version in "${docker_engine_versions[@]}"; do
+            for docker_engine_connection_variant in "${docker_engine_connection_variants[@]}"; do
               echo "Running tests for $docker_engine_version with $docker_engine_connection_variant"
             done
           done
+        env:
+          DOCKER_ENGINE_VERSIONS: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
+          DOCKER_ENGINE_CONNECTION_VARIANTS: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
