@@ -92,7 +92,6 @@ jobs:
 
   # Builds and lints the typescript code
   typescript-build:
-    if: false
     runs-on: ubuntu-latest
     needs: [update-pnpm-caches]
     steps:
@@ -108,8 +107,6 @@ jobs:
   docker-publish:
     runs-on: ubuntu-latest
     needs: [docker-build, compute-matricies]
-    if: ${{ contains(github.event.head_commit.modified, 'docker/dind-http.dockerfile') || contains(github.event.head_commit.modified, 'docker/dind-https.dockerfile') || contains(github.event.head_commit.modified, 'docker/dind-socket.dockerfile') || contains(github.event.head_commit.modified, 'docker/dind-ssh.dockerfile') }}
-    environment: "Docker release"
     strategy:
       matrix:
         dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
