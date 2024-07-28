@@ -5,6 +5,7 @@
  */
 
 import * as PlatformError from "@effect/platform/Error";
+import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
 import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
@@ -34,7 +35,7 @@ export type DindLayer = Layer.Layer<
     | Volumes.VolumesError
     | System.SystemsError
     | PlatformError.PlatformError,
-    Path.Path
+    Path.Path | FileSystem.FileSystem
 >;
 
 /**
@@ -44,7 +45,7 @@ export type DindLayer = Layer.Layer<
 export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
     Layer.Layer.Success<DindLayer>,
     E1 | Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
-    Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer> | Path.Path
+    Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer> | Path.Path | FileSystem.FileSystem
 >;
 
 /**
@@ -58,6 +59,7 @@ const makeDindLayer = <E1 = never>(
     Layer.unwrapScoped(
         Effect.gen(function* () {
             const path: Path.Path = yield* Path.Path;
+            const filesystem: FileSystem.FileSystem = yield* FileSystem.FileSystem;
             const systems: System.SystemsImpl = yield* System.Systems;
             const volumes: Volumes.VolumesImpl = yield* Volumes.Volumes;
 
@@ -81,6 +83,9 @@ const makeDindLayer = <E1 = never>(
             // Wait for the image to be built
             yield* Convey.followProgressInConsole(buildStream);
 
+            // Create a temporary directory to store the docker socket
+            const tempSocketMount = yield* filesystem.makeTempDirectoryScoped();
+
             // Create the dind container
             const containerInspectResponse = yield* DockerEngine.runScoped({
                 spec: {
@@ -95,7 +100,7 @@ const makeDindLayer = <E1 = never>(
                     },
                     HostConfig: {
                         Privileged: true,
-                        Binds: [`${volumeCreateResponse.Name}:/var/lib/docker`],
+                        Binds: [`${tempSocketMount}/:/var/run/`, `${volumeCreateResponse.Name}:/var/lib/docker`],
                         PortBindings: {
                             "22/tcp": [{ HostPort: "0" }],
                             "2375/tcp": [{ HostPort: "0" }],
@@ -121,15 +126,15 @@ const makeDindLayer = <E1 = never>(
                 Match.value(exposeDindContainerBy),
                 Match.when("http", () => PlatformAgents.HttpConnectionOptions({ host, port: httpPort })),
                 Match.when("https", () => PlatformAgents.HttpsConnectionOptions({ host, port: httpsPort })),
+                Match.when("socket", () =>
+                    PlatformAgents.SocketConnectionOptions({ socketPath: `${tempSocketMount}/docker.sock` })
+                ),
                 Match.when("ssh", () =>
                     PlatformAgents.SshConnectionOptions({
                         host,
                         port: sshPort,
                         remoteSocketPath: "/var/run/docker.sock",
                     })
-                ),
-                Match.when("socket", () =>
-                    PlatformAgents.SocketConnectionOptions({ socketPath: "/var/run/docker.sock" })
                 ),
                 Match.exhaustive
             );
@@ -233,7 +238,7 @@ export const layerWeb = (options: {
     | Volumes.VolumesError
     | System.SystemsError
     | PlatformError.PlatformError,
-    Path.Path
+    Path.Path | FileSystem.FileSystem
 > => {
     const intermediateLayer = DockerEngine.layerWeb(options.connectionOptionsToHost);
     const dindLayer = makeDindLayer<ConfigError.ConfigError>(
