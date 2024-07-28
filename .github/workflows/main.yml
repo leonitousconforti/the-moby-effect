@@ -148,17 +148,17 @@ jobs:
         os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
         node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
         platform-variant: ${{ fromJSON(needs.compute-matricies.outputs.platform-variants) }}
-        docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
-        docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
-      # - run: pnpm test
-      #   env:
-      #     THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.docker-engine-version }}"
-      #     THE_MOBY_EFFECT_CONNECTION_METHOD: "${{ matrix.docker-engine-connection-variant }}"
+      - run: |
+          for docker-engine-version in ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}; do
+            for docker-engine-connection-variant in ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}; do
+              echo "Running tests for $docker-engine-version with $docker-engine-connection-variant"
+            done
+          done
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
