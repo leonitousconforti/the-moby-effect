@@ -154,8 +154,8 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: |
-          for docker_engine_version in ${{ env.docker-engine-versions }}; do
-            for docker_engine_connection_variant in ${{ env.docker-engine-connection-variants }}; do
+          for docker_engine_version in ${{ needs.compute-matricies.outputs.docker-engine-versions }}; do
+            for docker_engine_connection_variant in ${{ needs.compute-matricies.outputs.docker-engine-connection-variants }}; do
               echo "Running tests for $docker_engine_version with $docker_engine_connection_variant"
             done
           done
