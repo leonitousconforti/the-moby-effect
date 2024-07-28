@@ -6,9 +6,9 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
 
-import * as PlatformAgents from "./PlatformAgents.js";
-import * as System from "./endpoints/System.js";
-import * as DindEngine from "./engines/Dind.js";
+import * as PlatformAgents from "the-moby-effect/PlatformAgents";
+import * as System from "the-moby-effect/endpoints/System";
+import * as DindEngine from "the-moby-effect/engines/Dind";
 
 Effect.gen(function* () {
     const connectionVariant = yield* Config.literal("socket", "http", "https", "ssh")("__CONNECTION_VARIANT");
