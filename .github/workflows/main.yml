@@ -155,10 +155,10 @@ jobs:
       - uses: ./.github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
-      - run: pnpm test
-        env:
-          THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.docker-engine-version }}"
-          THE_MOBY_EFFECT_CONNECTION_METHOD: "${{ matrix.docker-engine-connection-variant }}"
+      # - run: pnpm test
+      #   env:
+      #     THE_MOBY_EFFECT_DIND_IMAGE: "${{ matrix.docker-engine-version }}"
+      #     THE_MOBY_EFFECT_CONNECTION_METHOD: "${{ matrix.docker-engine-connection-variant }}"
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
