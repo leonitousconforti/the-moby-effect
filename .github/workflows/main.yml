@@ -82,7 +82,7 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: docker/agent-${{ matrix.dockerfile }}.dockerfile
+          file: docker/dind-${{ matrix.dockerfile }}.dockerfile
           outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
       - uses: actions/upload-artifact@v4
         with:
@@ -108,7 +108,7 @@ jobs:
   docker-publish:
     runs-on: ubuntu-latest
     needs: [docker-build, compute-matricies]
-    if: ${{ contains(github.event.head_commit.modified, 'docker/agent-http.dockerfile') || contains(github.event.head_commit.modified, 'docker/agent-https.dockerfile') || contains(github.event.head_commit.modified, 'docker/agent-socket.dockerfile') || contains(github.event.head_commit.modified, 'docker/agent-ssh.dockerfile') }}
+    if: ${{ contains(github.event.head_commit.modified, 'docker/dind-http.dockerfile') || contains(github.event.head_commit.modified, 'docker/dind-https.dockerfile') || contains(github.event.head_commit.modified, 'docker/dind-socket.dockerfile') || contains(github.event.head_commit.modified, 'docker/dind-ssh.dockerfile') }}
     environment: "Docker release"
     strategy:
       matrix:
@@ -137,7 +137,7 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          file: docker/agent-${{ matrix.dockerfile }}.dockerfile
+          file: docker/dind-${{ matrix.dockerfile }}.dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   docker-engine-tests:
