@@ -78,8 +78,8 @@ importers:
         specifier: 0.6.12
         version: 0.6.12(effect@3.5.8)(vitest@1.6.0(@types/node@20.14.12))
       '@rollup/wasm-node':
-        specifier: 4.19.0
-        version: 4.19.0
+        specifier: 4.19.1
+        version: 4.19.1
       '@types/node':
         specifier: 20.14.12
         version: 20.14.12
@@ -805,8 +805,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rollup/wasm-node@4.19.0':
-    resolution: {integrity: sha512-VrWeEGsuUzEfNPWKtSinPU59l2tfcQPm9eV5ngnM36X2l9JNCXtutzEEy8xtjMWXOXVe9IjE8037AmBJIuQA+w==}
+  '@rollup/wasm-node@4.19.1':
+    resolution: {integrity: sha512-G90QnusWbCqaHB0BRgGb5f1FIs7W+0bh/kaoBMZNS30VzCcGBEzbpL0UIDQZYPkbKnP5GHZ9s+HrWuny3IAGIw==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
 
@@ -3576,7 +3576,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.19.1':
     optional: true
 
-  '@rollup/wasm-node@4.19.0':
+  '@rollup/wasm-node@4.19.1':
     dependencies:
       '@types/estree': 1.0.5
     optionalDependencies:
