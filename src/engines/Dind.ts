@@ -134,6 +134,8 @@ const makeDindLayer = <E1 = never>(
                     PlatformAgents.SshConnectionOptions({
                         host,
                         port: sshPort,
+                        username: "root",
+                        password: "password",
                         remoteSocketPath: "/var/run/docker.sock",
                     })
                 ),
