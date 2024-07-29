@@ -1,4 +1,5 @@
-FROM docker:dind
+ARG DIND_BASE_IMAGE
+FROM ${DIND_BASE_IMAGE}
 
 RUN \
     echo -n 'root:password' | chpasswd && \
@@ -9,6 +10,5 @@ RUN \
     ssh-keygen -A
 
 EXPOSE 22
-
 ENTRYPOINT ["/bin/sh", "-c"]
 CMD ["/usr/local/bin/dockerd-entrypoint.sh & /usr/sbin/sshd -D"]
