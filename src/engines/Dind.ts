@@ -13,6 +13,7 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
+import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as Schedule from "effect/Schedule";
 import * as Stream from "effect/Stream";
@@ -94,6 +95,11 @@ const makeDindLayer = <E1 = never>(
                 spec: {
                     Image: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
                     Volumes: { "/var/lib/docker": {} },
+                    ExposedPorts: {
+                        "22/tcp": {},
+                        "2375/tcp": {},
+                        "2376/tcp": {},
+                    },
                     HostConfig: {
                         Privileged: true,
                         Binds: [
@@ -101,16 +107,37 @@ const makeDindLayer = <E1 = never>(
                             `${tempSocketDirectory}/:/var/run/`,
                             `${volumeCreateResponse.Name}:/var/lib/docker`,
                         ],
+                        PortBindings: {
+                            "22/tcp": [{ HostPort: "0" }],
+                            "2375/tcp": [{ HostPort: "0" }],
+                            "2376/tcp": [{ HostPort: "0" }],
+                        },
                     },
                 },
             });
 
+            // Extract the ports from the container inspect response
+            const tryGetPort = Function.flow(
+                Option.fromNullable<string | undefined>,
+                Option.flatMap(Number.parse),
+                Option.getOrThrow
+            );
+            const sshPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort);
+            const httpPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort);
+
+            // Extract the host from the container inspect response
             const host = Function.pipe(
                 containerInspectResponse.NetworkSettings?.IPAddress,
                 Option.fromNullable,
                 Option.getOrThrow
             );
+            const gateway = Function.pipe(
+                containerInspectResponse.NetworkSettings?.Gateway,
+                Option.fromNullable,
+                Option.getOrThrow
+            );
 
+            // Wait for the dind container to be ready
             yield* Function.pipe(
                 Containers.Containers.logs({
                     id: containerInspectResponse.Id,
@@ -139,15 +166,15 @@ const makeDindLayer = <E1 = never>(
             // Craft the connection options
             const connectionOptions: PlatformAgents.MobyConnectionOptions = Function.pipe(
                 Match.value(exposeDindContainerBy),
-                Match.when("http", () => PlatformAgents.HttpConnectionOptions({ host, port: 2375 })),
+                Match.when("http", () => PlatformAgents.HttpConnectionOptions({ host: gateway, port: httpPort })),
+                Match.when("https", () => PlatformAgents.HttpsConnectionOptions({ host, port: 2376, ca, key, cert })),
                 Match.when("socket", () =>
                     PlatformAgents.SocketConnectionOptions({ socketPath: `${tempSocketDirectory}/docker.sock` })
                 ),
-                Match.when("https", () => PlatformAgents.HttpsConnectionOptions({ host, port: 2376, ca, key, cert })),
                 Match.when("ssh", () =>
                     PlatformAgents.SshConnectionOptions({
-                        host,
-                        port: 22,
+                        host: gateway,
+                        port: sshPort,
                         username: "root",
                         password: "password",
                         remoteSocketPath: "/var/run/docker.sock",
