@@ -1,3 +1,5 @@
+// Run with: tsx examples/container-attach.ts
+
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
@@ -8,6 +10,7 @@ import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Containers from "the-moby-effect/endpoints/Containers";
 
+// Connect to the local docker engine at "/var/run/docker.sock"
 const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
     PlatformAgents.SocketConnectionOptions({
         socketPath: "/var/run/docker.sock",
@@ -18,48 +21,38 @@ const program = Effect.gen(function* () {
     const containers: Containers.ContainersImpl = yield* Containers.Containers;
 
     // Pull the image, will be removed when the scope is closed
-    const pullStream = DockerEngine.pull({ image: "docker.io/library/alpine:latest" });
+    const image = "docker.io/library/alpine:latest";
+    const pullStream = yield* DockerEngine.pullScoped({ image });
     yield* Convey.followProgressInConsole(pullStream);
 
     // Run the container, will be removed when the scope is closed
-    const { Id: id } = yield* DockerEngine.runScoped({
+    const { Id: containerId } = yield* DockerEngine.runScoped({
         spec: {
-            Image: "docker.io/library/alpine:latest",
+            Image: image,
             Entrypoint: ["/bin/sh"],
-            Tty: true,
+            Tty: false,
             OpenStdin: true,
             AttachStdin: true,
             AttachStdout: true,
             AttachStderr: true,
-
-            Hostname: "",
-            Domainname: "",
-            User: "",
-            StdinOnce: false,
-            WorkingDir: "",
-            Env: [],
-            Cmd: [],
-            Volumes: {},
-            OnBuild: [],
-            Labels: {},
         },
     });
 
     // Attach to the container
     const socket = yield* containers.attach({
-        id,
+        id: containerId,
         stdin: true,
         stdout: true,
-        stderr: false,
+        stderr: true,
         stream: true,
         detachKeys: "ctrl-e",
     });
 
-    // Demux the socket to stdin, stdout and stderr (blocking)
+    // Demux the socket to stdin, stdout and stderr
     yield* Demux.demuxSocketFromStdinToStdoutAndStderr(socket);
 
     // Done
     yield* Console.log("Disconnected from container");
 });
 
-program.pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

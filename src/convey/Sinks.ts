@@ -7,6 +7,7 @@
 import * as Chunk from "effect/Chunk";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
+import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
@@ -30,7 +31,13 @@ export const waitForProgressToComplete = <E1, R1>(
  */
 export const followProgressSink = Sink.forEach<JSONMessage, void, never, never>((message) =>
     Effect.gen(function* () {
-        yield* Console.log(message);
+        if (Predicate.isNotUndefined(message.status)) {
+            yield* Console.log(`${message.status}${message.progress ? " " : ""}${message.progress ?? ""}`);
+        } else if (Predicate.isNotUndefined(message.stream)) {
+            yield* Console.log(message.stream);
+        } else if (Predicate.isNotUndefined(message.aux)) {
+            yield* Console.log(message.aux.ID);
+        }
     })
 );
 

@@ -1,40 +1,43 @@
+// Run with: tsx examples/authentication.ts
+
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as Chunk from "effect/Chunk";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Stream from "effect/Stream";
 
-import * as DockerEngine from "the-moby-effect/Docker";
+import * as Convey from "the-moby-effect/Convey";
+import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as Images from "the-moby-effect/endpoints/Images";
 import * as System from "the-moby-effect/endpoints/System";
 import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Schemas from "the-moby-effect/Schemas";
 
+// Connect to the local docker engine at "/var/run/docker.sock"
 const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
     PlatformAgents.SocketConnectionOptions({
         socketPath: "/var/run/docker.sock",
     })
 );
 
+// Put your docker hub credentials here
 const dockerHubLogin = {
     username: "username",
     password: "password",
-    serveraddress: "https://registry-1.docker.io/v2",
+    serveraddress: "https://index.docker.io/v1/",
 };
 
-// SystemAuthResponse { Status: 'Login Succeeded', IdentityToken: '' }
-// Login succeeded but no identity token was given, you must pass the bse64 encoded auth options directly using the X-Registry-Auth header
-// {"status":"Pulling from confo014/hello-world","id":"latest"}
-// {"status":"Pulling fs layer","progressDetail":{},"id":"c1ec31eb5944"}
-// {"status":"Downloading","progressDetail":{"current":720,"total":2459},"progress":"[==============\u003e                                    ]     720B/2.459kB","id":"c1ec31eb5944"}
-// {"status":"Downloading","progressDetail":{"current":2459,"total":2459},"progress":"[==================================================\u003e]  2.459kB/2.459kB","id":"c1ec31eb5944"}
-// {"status":"Verifying Checksum","progressDetail":{},"id":"c1ec31eb5944"}
-// {"status":"Download complete","progressDetail":{},"id":"c1ec31eb5944"}
-// {"status":"Extracting","progressDetail":{"current":2459,"total":2459},"progress":"[==================================================\u003e]  2.459kB/2.459kB","id":"c1ec31eb5944"}
-// {"status":"Extracting","progressDetail":{"current":2459,"total":2459},"progress":"[==================================================\u003e]  2.459kB/2.459kB","id":"c1ec31eb5944"}
-// {"status":"Pull complete","progressDetail":{},"id":"c1ec31eb5944"}
-// {"status":"Digest: sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7"}
-// {"status":"Status: Downloaded newer image for confo014/hello-world:latest"}
+// RegistryAuthenticateOKBody { Status: 'Login Succeeded' }
+// Login succeeded but no identity token was given, you must pass the base64 encoded auth options directly using the X-Registry-Auth header
+// Pulling from confo014/hello-world
+// Pulling fs layer
+// Downloading [==============>                                    ]     719B/2.459kB
+// Downloading [==================================================>]  2.459kB/2.459kB
+// Download complete
+// Extracting [==================================================>]  2.459kB/2.459kB
+// Extracting [==================================================>]  2.459kB/2.459kB
+// Pull complete
+// Digest: sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7
+// Status: Downloaded newer image for confo014/hello-world:latest
 const program = Effect.gen(function* () {
     const images: Images.ImagesImpl = yield* Images.Images;
     const system: System.SystemsImpl = yield* System.Systems;
@@ -45,7 +48,7 @@ const program = Effect.gen(function* () {
 
     if (authResponse.Status === "Login Succeeded" && !authResponse.IdentityToken) {
         yield* Console.warn(
-            "Login succeeded but no identity token was given, you must pass the bse64 encoded auth options directly using the X-Registry-Auth header"
+            "Login succeeded but no identity token was given, you must pass the base64 encoded auth options directly using the X-Registry-Auth header"
         );
     }
 
@@ -56,7 +59,7 @@ const program = Effect.gen(function* () {
     });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    return yield* Stream.runCollect(pullStream).pipe(Effect.map(Chunk.toReadonlyArray));
+    yield* Convey.followProgressInConsole(pullStream);
 });
 
-program.pipe(Console.log).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

@@ -1,8 +1,14 @@
 import * as Schema from "@effect/schema/Schema";
+import * as Function from "effect/Function";
+import * as Option from "effect/Option";
+import * as String from "effect/String";
 
 export class RegistryAuthenticateOKBody extends Schema.Class<RegistryAuthenticateOKBody>("RegistryAuthenticateOKBody")(
     {
-        IdentityToken: Schema.String,
+        IdentityToken: Schema.requiredToOptional(Schema.String, Schema.String, {
+            decode: (s) => (String.isEmpty(s) ? Option.none() : Option.some(s)),
+            encode: Option.match({ onNone: () => "" as const, onSome: Function.identity }),
+        }),
         Status: Schema.String,
     },
     {

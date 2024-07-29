@@ -1,3 +1,5 @@
+// Run with: tsx examples/container-top.ts
+
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
@@ -8,6 +10,7 @@ import * as Containers from "the-moby-effect/endpoints/Containers";
 import * as PlatformAgents from "the-moby-effect/PlatformAgents";
 import * as Schemas from "the-moby-effect/Schemas";
 
+// Connect to the local docker engine at "/var/run/docker.sock"
 const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
     PlatformAgents.SocketConnectionOptions({
         socketPath: "/var/run/docker.sock",
@@ -38,30 +41,13 @@ const program = Effect.gen(function* () {
     const containers: Containers.ContainersImpl = yield* Containers.Containers;
 
     // Pull the image, will be removed when the scope is closed
-    const pullStream = DockerEngine.pull({ image: "ubuntu:latest" });
+    const pullStream = yield* DockerEngine.pullScoped({ image: "ubuntu:latest" });
     yield* Convey.followProgressInConsole(pullStream);
 
     const containerInspectResponse: Schemas.ContainerInspectResponse = yield* DockerEngine.runScoped({
         spec: {
             Image: "ubuntu:latest",
             Cmd: ["sleep", "infinity"],
-            Entrypoint: [],
-
-            Tty: true,
-            OpenStdin: true,
-            AttachStdin: true,
-            AttachStdout: true,
-            AttachStderr: true,
-
-            Hostname: "",
-            Domainname: "",
-            User: "",
-            StdinOnce: false,
-            WorkingDir: "",
-            Env: [],
-            Volumes: {},
-            OnBuild: [],
-            Labels: {},
         },
     });
 
@@ -73,4 +59,4 @@ const program = Effect.gen(function* () {
     yield* Console.log(data);
 });
 
-program.pipe(Effect.provide(localDocker)).pipe(Effect.scoped).pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
