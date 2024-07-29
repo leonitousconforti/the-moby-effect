@@ -13,9 +13,9 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
-import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as Schedule from "effect/Schedule";
+import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 
 import * as Convey from "../Convey.js";
@@ -52,7 +52,8 @@ export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
 
 /**
  * Spawns a docker in docker container on the remote host provided by another
- * layer and exposes the dind container as a layer.
+ * layer and exposes the dind container as a layer. This dind engine was built
+ * to power the unit tests.
  */
 const makeDindLayer = <E1 = never>(
     exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"],
@@ -61,15 +62,13 @@ const makeDindLayer = <E1 = never>(
     Layer.unwrapScoped(
         Effect.gen(function* () {
             const path: Path.Path = yield* Path.Path;
-            const systems: System.SystemsImpl = yield* System.Systems;
-            const volumes: Volumes.VolumesImpl = yield* Volumes.Volumes;
             const filesystem: FileSystem.FileSystem = yield* FileSystem.FileSystem;
 
             // Make sure the remote docker engine host is reachable
-            yield* systems.pingHead();
+            yield* System.Systems.pingHead();
 
             // Create a volume to store the docker engine data
-            const volumeCreateResponse = yield* Effect.acquireRelease(volumes.create({}), ({ Name }) =>
+            const volumeCreateResponse = yield* Effect.acquireRelease(Volumes.Volumes.create({}), ({ Name }) =>
                 Effect.orDie(Volumes.Volumes.delete({ name: Name }))
             );
 
@@ -87,53 +86,68 @@ const makeDindLayer = <E1 = never>(
             yield* Convey.followProgressInConsole(buildStream);
 
             // Create a temporary directory to store the docker socket
-            const tempSocketMount = yield* filesystem.makeTempDirectoryScoped();
+            const tempCertsDirectory = yield* filesystem.makeTempDirectory();
+            const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
 
             // Create the dind container
             const containerInspectResponse = yield* DockerEngine.runScoped({
                 spec: {
                     Image: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
                     Volumes: { "/var/lib/docker": {} },
-                    ExposedPorts: {
-                        "22/tcp": {},
-                        "2375/tcp": {},
-                        "2376/tcp": {},
-                    },
                     HostConfig: {
                         Privileged: true,
-                        Binds: [`${tempSocketMount}/:/var/run/`, `${volumeCreateResponse.Name}:/var/lib/docker`],
-                        PortBindings: {
-                            "22/tcp": [{ HostPort: "0" }],
-                            "2375/tcp": [{ HostPort: "0" }],
-                            "2376/tcp": [{ HostPort: "0" }],
-                        },
+                        Binds: [
+                            `${tempCertsDirectory}/:/certs/`,
+                            `${tempSocketDirectory}/:/var/run/`,
+                            `${volumeCreateResponse.Name}:/var/lib/docker`,
+                        ],
                     },
                 },
             });
 
-            // Extract the host and ports from the container inspect response
-            const tryGetPort = Function.flow(
-                Option.fromNullable<string | undefined>,
-                Option.flatMap(Number.parse),
+            const host = Function.pipe(
+                containerInspectResponse.NetworkSettings?.IPAddress,
+                Option.fromNullable,
                 Option.getOrThrow
             );
-            const sshPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort);
-            const httpPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort);
-            const httpsPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort);
-            const host = Option.fromNullable(containerInspectResponse.NetworkSettings?.Gateway).pipe(Option.getOrThrow);
+
+            yield* Function.pipe(
+                Containers.Containers.logs({
+                    id: containerInspectResponse.Id,
+                    follow: true,
+                    stdout: true,
+                    stderr: true,
+                }),
+                Stream.unwrap,
+                Stream.takeUntil(String.includes("Daemon has completed initialization")),
+                Stream.runDrain
+            );
+
+            const ca = yield* Effect.if(exposeDindContainerBy === "https", {
+                onFalse: () => Effect.succeed(undefined),
+                onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "ca.pem")),
+            });
+            const key = yield* Effect.if(exposeDindContainerBy === "https", {
+                onFalse: () => Effect.succeed(undefined),
+                onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "key.pem")),
+            });
+            const cert = yield* Effect.if(exposeDindContainerBy === "https", {
+                onFalse: () => Effect.succeed(undefined),
+                onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "cert.pem")),
+            });
 
             // Craft the connection options
             const connectionOptions: PlatformAgents.MobyConnectionOptions = Function.pipe(
                 Match.value(exposeDindContainerBy),
-                Match.when("http", () => PlatformAgents.HttpConnectionOptions({ host, port: httpPort })),
-                Match.when("https", () => PlatformAgents.HttpsConnectionOptions({ host, port: httpsPort })),
+                Match.when("http", () => PlatformAgents.HttpConnectionOptions({ host, port: 2375 })),
                 Match.when("socket", () =>
-                    PlatformAgents.SocketConnectionOptions({ socketPath: `${tempSocketMount}/docker.sock` })
+                    PlatformAgents.SocketConnectionOptions({ socketPath: `${tempSocketDirectory}/docker.sock` })
                 ),
+                Match.when("https", () => PlatformAgents.HttpsConnectionOptions({ host, port: 2376, ca, key, cert })),
                 Match.when("ssh", () =>
                     PlatformAgents.SshConnectionOptions({
                         host,
-                        port: sshPort,
+                        port: 22,
                         username: "root",
                         password: "password",
                         remoteSocketPath: "/var/run/docker.sock",
