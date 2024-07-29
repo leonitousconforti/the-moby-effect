@@ -66,27 +66,45 @@ export function makeUndiciSshConnector(
 export const getUndiciDispatcher = (
     connectionOptions: MobyConnectionOptions
 ): Effect.Effect<undici.Dispatcher, never, Scope.Scope> =>
-    Function.pipe(
-        Effect.all(
-            {
-                ssh2Lazy: Effect.promise(() => import("ssh2")),
-                undiciLazy: Effect.promise(() => import("undici")),
-            },
-            { concurrency: 2 }
-        ),
-        Effect.flatMap(({ ssh2Lazy, undiciLazy }) => {
-            const AcquireUndiciDispatcher = Function.compose(
-                MobyConnectionOptions.$match({
-                    http: (options) => new undiciLazy.Agent({ connect: options }),
-                    https: (options) => new undiciLazy.Agent({ connect: options }),
-                    socket: (options) => new undiciLazy.Agent({ connect: options }),
-                    ssh: (options) => new undiciLazy.Agent({ connect: makeUndiciSshConnector(ssh2Lazy, options) }),
-                }),
-                Effect.succeed
-            );
+    Effect.flatMap(
+        Effect.promise(() => import("undici")),
+        (undiciLazy) => {
+            const AcquireUndiciDispatcher = MobyConnectionOptions.$match({
+                socket: (options) =>
+                    Effect.succeed(
+                        new undiciLazy.Agent({
+                            connect: { socketPath: options.socketPath },
+                        })
+                    ),
+                http: (options) =>
+                    Effect.succeed(
+                        new undiciLazy.Agent({
+                            connect: { host: options.host, port: options.port, path: options.path },
+                        })
+                    ),
+                https: (options) =>
+                    Effect.succeed(
+                        new undiciLazy.Agent({
+                            connect: {
+                                ca: options.ca,
+                                key: options.key,
+                                cert: options.cert,
+                                passphrase: options.passphrase,
+                                host: options.host,
+                                port: options.port,
+                                path: options.path,
+                            },
+                        })
+                    ),
+                ssh: (options) =>
+                    Effect.map(
+                        Effect.promise(() => import("ssh2")),
+                        (ssh2Lazy) => new undiciLazy.Agent({ connect: makeUndiciSshConnector(ssh2Lazy, options) })
+                    ),
+            });
             const releaseUndiciDispatcher = (dispatcher: undici.Dispatcher) => Effect.sync(() => dispatcher.destroy());
             return Effect.acquireRelease(AcquireUndiciDispatcher(connectionOptions), releaseUndiciDispatcher);
-        })
+        }
     );
 
 /**

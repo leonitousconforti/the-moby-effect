@@ -127,20 +127,24 @@ export const getNodeAgent = (
     Function.pipe(
         Effect.all(
             {
-                ssh2Lazy: Effect.promise(() => import("ssh2")),
                 httpLazy: Effect.promise(() => import("node:http")),
                 httpsLazy: Effect.promise(() => import("node:https")),
                 nodeHttpClientLazy: Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
             },
-            { concurrency: 4 }
+            { concurrency: 3 }
         ),
-        Effect.flatMap(({ httpLazy, httpsLazy, nodeHttpClientLazy, ssh2Lazy }) => {
-            const AcquireNodeHttpAgent = Function.compose(
-                MobyConnectionOptions.$match({
-                    ssh: (options) => makeNodeSshAgent(httpLazy, ssh2Lazy, options),
-                    http: (options) => new httpLazy.Agent({ host: options.host, port: options.port }),
-                    socket: (options) => new httpLazy.Agent({ socketPath: options.socketPath } as http.AgentOptions),
-                    https: (options) =>
+        Effect.flatMap(({ httpLazy, httpsLazy, nodeHttpClientLazy }) => {
+            const AcquireNodeHttpAgent = MobyConnectionOptions.$match({
+                http: (options) => Effect.succeed(new httpLazy.Agent({ host: options.host, port: options.port })),
+                ssh: (options) =>
+                    Effect.map(
+                        Effect.promise(() => import("ssh2")),
+                        (ssh2Lazy) => makeNodeSshAgent(httpLazy, ssh2Lazy, options)
+                    ),
+                socket: (options) =>
+                    Effect.succeed(new httpLazy.Agent({ socketPath: options.socketPath } as http.AgentOptions)),
+                https: (options) =>
+                    Effect.succeed(
                         new httpsLazy.Agent({
                             ca: options.ca,
                             key: options.key,
@@ -148,12 +152,13 @@ export const getNodeAgent = (
                             host: options.host,
                             port: options.port,
                             passphrase: options.passphrase,
-                        }),
-                }),
-                Effect.succeed
-            );
+                        })
+                    ),
+            });
+
             const releaseNodeHttpAgent = (agent: http.Agent) => Effect.sync(() => agent.destroy());
             const resource = Effect.acquireRelease(AcquireNodeHttpAgent(connectionOptions), releaseNodeHttpAgent);
+
             return Effect.map(resource, (agent) => ({
                 http: agent as http.Agent,
                 https: agent as https.Agent,
