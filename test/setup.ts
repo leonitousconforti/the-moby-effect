@@ -21,14 +21,16 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
 
         const dockerEngineVersion = yield* Config.literal(
             "docker.io/library/docker:dind",
+            "docker.io/library/docker:19-dind",
             "docker.io/library/docker:20-dind",
             "docker.io/library/docker:23-dind",
             "docker.io/library/docker:24-dind",
             "docker.io/library/docker:25-dind",
-            "docker.io/library/docker:26-dind"
+            "docker.io/library/docker:26-dind",
+            "docker.io/library/docker:27-dind"
         )("__DOCKER_ENGINE_VERSION");
 
-        const connectionOptions = yield* Function.pipe(
+        const connectionOptions: PlatformAgents.MobyConnectionOptions = yield* Function.pipe(
             Config.string("__DOCKER_HOST_CONNECTION_OPTIONS"),
             Config.option,
             Config.map(Option.map(PlatformAgents.connectionOptionsFromUrl)),
