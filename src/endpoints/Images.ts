@@ -867,8 +867,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("cpuperiod", Option.fromNullable(options.cpuperiod)),
             maybeAddQueryParameter("cpuquota", Option.fromNullable(options.cpuquota))
         ).pipe(
-            // FIXME: aaaahhhhhh
-            // maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
+            maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
             maybeAddQueryParameter("shmsize", Option.fromNullable(options.shmsize)),
             maybeAddQueryParameter("squash", Option.fromNullable(options.squash)),
             maybeAddQueryParameter("labels", Option.fromNullable(options.labels)),
