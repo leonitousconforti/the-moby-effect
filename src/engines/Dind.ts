@@ -7,6 +7,7 @@
 import * as PlatformError from "@effect/platform/Error";
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
+import * as Array from "effect/Array";
 import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -15,6 +16,7 @@ import * as Match from "effect/Match";
 import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as Schedule from "effect/Schedule";
+import * as String from "effect/String";
 
 import * as Convey from "../Convey.js";
 import * as Containers from "../endpoints/Containers.js";
@@ -59,9 +61,9 @@ const makeDindLayer = <E1 = never>(
     Layer.unwrapScoped(
         Effect.gen(function* () {
             const path: Path.Path = yield* Path.Path;
-            const filesystem: FileSystem.FileSystem = yield* FileSystem.FileSystem;
             const systems: System.SystemsImpl = yield* System.Systems;
             const volumes: Volumes.VolumesImpl = yield* Volumes.Volumes;
+            const filesystem: FileSystem.FileSystem = yield* FileSystem.FileSystem;
 
             // Make sure the remote docker engine host is reachable
             yield* systems.pingHead();
@@ -72,11 +74,12 @@ const makeDindLayer = <E1 = never>(
             );
 
             // Build the docker image for the dind container
+            const dindTag = Array.lastNonEmpty(String.split(dindBaseImage, ":"));
             const cwd = yield* path.fromFileUrl(new URL("../../docker/", import.meta.url));
             const buildStream = DockerEngine.build({
-                buildArgs: { DIND_IMAGE: dindBaseImage },
+                buildArgs: { DIND_BASE_IMAGE: dindBaseImage },
                 dockerfile: `dind-${exposeDindContainerBy}.dockerfile`,
-                tag: `the-moby-effect-dind-${exposeDindContainerBy}:latest`,
+                tag: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
                 context: Convey.packBuildContextIntoTarballStream(cwd, [`dind-${exposeDindContainerBy}.dockerfile`]),
             });
 
@@ -89,9 +92,7 @@ const makeDindLayer = <E1 = never>(
             // Create the dind container
             const containerInspectResponse = yield* DockerEngine.runScoped({
                 spec: {
-                    Cmd: ["--tls=false"],
-                    Env: ["DOCKER_TLS_CERTDIR="],
-                    Image: `the-moby-effect-dind-${exposeDindContainerBy}:latest`,
+                    Image: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
                     Volumes: { "/var/lib/docker": {} },
                     ExposedPorts: {
                         "22/tcp": {},
