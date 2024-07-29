@@ -23,18 +23,16 @@ The motivation for this project come from working with dockerode and I became fr
 
 - Version negotiating: either install a specific version for the moby api that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
 
-- Promise/callback api: this project is built on-top of effect-ts and uses it quite extensively. While it would be simple to wrap all the apis in `Effect.runPromise` calls, I don't want to do that because you lose the error management, scheduling, concurrency that effect makes so elegant. If you don't want to adopt effect-ts into your entire stack/project, don't fear, you can either wrap everything in a `Effect.runPromise` call or use an effect ManagedRuntime where you are using the-moby-effect.
+- Promise/callback api: this project is built on-top of effect-ts and uses it quite extensively. While it would be simple to wrap all the apis in `Effect.runPromise` calls, I don't want to do that because you lose the error management, scheduling, concurrency that effect makes so elegant. If you don't want to adopt effect-ts into your entire stack/project, don't fear, you can either wrap everything in a `Effect.runPromise` call yourself or use an effect ManagedRuntime where you are using the-moby-effect.
 
 ## WIP/Todo :construction:
 
-- Add more examples
 - Finish implementing all common docker commands
 - Maybe add tests against something else other than docker like podman?
-- Different layers for podman, docker, ect
 
 ## Blocked :ambulance:
 
-DockerCompose support. Blocked only because I have no idea where to even start on this. I'm confident it just reuses the moby api's so there are no new api's, but that means I have to rewrite the docker-compose go plugin in TS which I'm not too thrilled about. It's not something that I directly need though, so thats also why I am not too interested in supporting this.
+DockerCompose support. Blocked only because I have no idea where to even start on this. I'm confident it just reuses the moby api's so there are no new api's, but that means I have to rewrite the docker-compose go plugin in TS which I'm not too thrilled about. Unlike this rest of this project, it's not something that I directly need, which is why I am not too interested in supporting this.
 
 ## Compatibility :closed_lock_with_key:
 
