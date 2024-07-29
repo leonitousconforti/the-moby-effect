@@ -1,12 +1,11 @@
 import * as Schema from "@effect/schema/Schema";
-import * as NetIPNet from "./NetIPNet.generated.js";
 import * as RegistryIndexInfo from "./RegistryIndexInfo.generated.js";
 
 export class RegistryServiceConfig extends Schema.Class<RegistryServiceConfig>("RegistryServiceConfig")(
     {
-        AllowNondistributableArtifactsCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(NetIPNet.NetIPNet))),
+        AllowNondistributableArtifactsCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.String))),
         AllowNondistributableArtifactsHostnames: Schema.NullOr(Schema.Array(Schema.String)),
-        InsecureRegistryCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(NetIPNet.NetIPNet))),
+        InsecureRegistryCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.String))),
         IndexConfigs: Schema.NullOr(
             Schema.Record({
                 key: Schema.String,
