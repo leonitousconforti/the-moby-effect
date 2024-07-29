@@ -23,6 +23,8 @@ The motivation for this project come from working with dockerode and I became fr
 
 - Version negotiating: either install a specific version for the moby api that you are targeting or just keep your docker install somewhat up-to-date and you should have no problems
 
+- Promise/callback api: this project is built on-top of effect-ts and uses it quite extensively. While it would be simple to wrap all the apis in `Effect.runPromise` calls, I don't want to do that because you lose the error management, scheduling, concurrency that effect makes so elegant. If you don't want to adopt effect-ts into your entire stack/project, don't fear, you can either wrap everything in a `Effect.runPromise` call or use an effect ManagedRuntime where you are using the-moby-effect.
+
 ## WIP/Todo :construction:
 
 - Add more examples
