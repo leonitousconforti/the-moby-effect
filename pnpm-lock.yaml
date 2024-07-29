@@ -76,13 +76,13 @@ importers:
         version: 0.24.51(effect@3.5.8)
       '@effect/vitest':
         specifier: 0.6.12
-        version: 0.6.12(effect@3.5.8)(vitest@1.6.0(@types/node@20.14.12))
+        version: 0.6.12(effect@3.5.8)(vitest@1.6.0(@types/node@22.0.0))
       '@rollup/wasm-node':
         specifier: 4.19.0
         version: 4.19.0
       '@types/node':
-        specifier: 20.14.12
-        version: 20.14.12
+        specifier: 22.0.0
+        version: 22.0.0
       '@types/ssh2':
         specifier: 1.15.0
         version: 1.15.0
@@ -100,7 +100,7 @@ importers:
         version: 7.18.0(eslint@8.57.0)(typescript@5.5.4)
       '@vitest/coverage-v8':
         specifier: 1.6.0
-        version: 1.6.0(vitest@1.6.0(@types/node@20.14.12))
+        version: 1.6.0(vitest@1.6.0(@types/node@22.0.0))
       babel-plugin-annotate-pure-calls:
         specifier: 0.4.0
         version: 0.4.0(@babel/core@7.24.9)
@@ -154,10 +154,10 @@ importers:
         version: 5.5.4
       vite:
         specifier: 5.3.5
-        version: 5.3.5(@types/node@20.14.12)
+        version: 5.3.5(@types/node@22.0.0)
       vitest:
         specifier: 1.6.0
-        version: 1.6.0(@types/node@20.14.12)
+        version: 1.6.0(@types/node@22.0.0)
       ws:
         specifier: 8.18.0
         version: 8.18.0
@@ -866,6 +866,9 @@ packages:
 
   '@types/node@20.14.12':
     resolution: {integrity: sha512-r7wNXakLeSsGT0H1AU863vS2wa5wBOK4bWMjZz2wj+8nBx+m5PeIn0k8AloSLpRuiwdRQZwarZqHE4FNArPuJQ==}
+
+  '@types/node@22.0.0':
+    resolution: {integrity: sha512-VT7KSYudcPOzP5Q0wfbowyNLaVR8QWUdw+088uFWwfvpY6uCWaXpqV6ieLAu9WBcnTa7H4Z5RLK8I5t2FuOcqw==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2851,6 +2854,9 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
+  undici-types@6.11.1:
+    resolution: {integrity: sha512-mIDEX2ek50x0OlRgxryxsenE5XaQD4on5U2inY7RApK3SOJpofyw7uW2AyfMKkhAxXIceo2DeWGVGwyvng1GNQ==}
+
   undici@6.19.4:
     resolution: {integrity: sha512-i3uaEUwNdkRq2qtTRRJb13moW5HWqviu7Vl7oYRYz++uPtGHJj+x7TGjcEuwS5Mt2P4nA0U9dhIX3DdB6JGY0g==}
     engines: {node: '>=18.17'}
@@ -3277,10 +3283,10 @@ snapshots:
     dependencies:
       effect: 3.5.8
 
-  '@effect/vitest@0.6.12(effect@3.5.8)(vitest@1.6.0(@types/node@20.14.12))':
+  '@effect/vitest@0.6.12(effect@3.5.8)(vitest@1.6.0(@types/node@22.0.0))':
     dependencies:
       effect: 3.5.8
-      vitest: 1.6.0(@types/node@20.14.12)
+      vitest: 1.6.0(@types/node@22.0.0)
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
@@ -3410,7 +3416,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
@@ -3600,7 +3606,7 @@ snapshots:
   '@types/glob@7.1.3':
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
 
   '@types/istanbul-lib-coverage@2.0.6': {}
 
@@ -3640,6 +3646,10 @@ snapshots:
     dependencies:
       undici-types: 5.26.5
 
+  '@types/node@22.0.0':
+    dependencies:
+      undici-types: 6.11.1
+
   '@types/normalize-package-data@2.4.4': {}
 
   '@types/ssh2@1.15.0':
@@ -3650,12 +3660,12 @@ snapshots:
 
   '@types/tar-fs@2.0.4':
     dependencies:
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
       '@types/tar-stream': 3.1.3
 
   '@types/tar-stream@3.1.3':
     dependencies:
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
 
   '@types/unist@2.0.10': {}
 
@@ -3750,7 +3760,7 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@20.14.12))':
+  '@vitest/coverage-v8@1.6.0(vitest@1.6.0(@types/node@22.0.0))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 0.2.3
@@ -3765,7 +3775,7 @@ snapshots:
       std-env: 3.7.0
       strip-literal: 2.1.0
       test-exclude: 6.0.0
-      vitest: 1.6.0(@types/node@20.14.12)
+      vitest: 1.6.0(@types/node@22.0.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -4982,7 +4992,7 @@ snapshots:
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
       chalk: 4.1.2
       ci-info: 3.9.0
       graceful-fs: 4.2.11
@@ -6003,6 +6013,8 @@ snapshots:
 
   undici-types@5.26.5: {}
 
+  undici-types@6.11.1: {}
+
   undici@6.19.4:
     optional: true
 
@@ -6031,13 +6043,13 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vite-node@1.6.0(@types/node@20.14.12):
+  vite-node@1.6.0(@types/node@22.0.0):
     dependencies:
       cac: 6.7.14
       debug: 4.3.6
       pathe: 1.1.2
       picocolors: 1.0.1
-      vite: 5.3.5(@types/node@20.14.12)
+      vite: 5.3.5(@types/node@22.0.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -6048,16 +6060,16 @@ snapshots:
       - supports-color
       - terser
 
-  vite@5.3.5(@types/node@20.14.12):
+  vite@5.3.5(@types/node@22.0.0):
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.40
       rollup: 4.19.1
     optionalDependencies:
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
       fsevents: 2.3.3
 
-  vitest@1.6.0(@types/node@20.14.12):
+  vitest@1.6.0(@types/node@22.0.0):
     dependencies:
       '@vitest/expect': 1.6.0
       '@vitest/runner': 1.6.0
@@ -6076,11 +6088,11 @@ snapshots:
       strip-literal: 2.1.0
       tinybench: 2.8.0
       tinypool: 0.8.4
-      vite: 5.3.5(@types/node@20.14.12)
-      vite-node: 1.6.0(@types/node@20.14.12)
+      vite: 5.3.5(@types/node@22.0.0)
+      vite-node: 1.6.0(@types/node@22.0.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 20.14.12
+      '@types/node': 22.0.0
     transitivePeerDependencies:
       - less
       - lightningcss
