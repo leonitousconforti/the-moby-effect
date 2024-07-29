@@ -46,7 +46,7 @@ The only compatibility issue found so far is that when using the-moby-effect wit
 
 ## Notes :memo:
 
-If you want to use the-moby-effect in a web environment or with the undici agent layer, you can not use the `containerAttach` or the `execStart` (with Detach false) endpoints as both will attempt to reuse the tcp socket from the http request which will not be available in those layers. To use those endpoints, you must be using the Node/Bun/Deno agent layer. Alternatively, if you need to attach to containers in a web environment, you could use the `containerAttachWs` endpoint to achieve similar features over a websocket instead. However, the demux helpers only accept sockets right now, so you may need to adapt the demux helpers how you see fit to accept a websocket as well.
+If you want to use the-moby-effect in a web environment or with the undici agent layer, you can not use the `containerAttach` or the `execStart` (with Detach false) endpoints as both will attempt to reuse the tcp socket from the http request which will not be available in those layers. To use those endpoints, you must be using the Node/Bun/Deno agent layer. Alternatively, if you need to attach to containers in a web environment, you could use the `containerAttachWs` endpoint to achieve similar features over a websocket instead.
 
 ## Versioning :rotating_light:
 
