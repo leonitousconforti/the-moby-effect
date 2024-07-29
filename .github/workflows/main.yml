@@ -8,7 +8,7 @@ on:
 
 env:
   node-versions: "['18.x', '20.x', '22.x']"
-  os-variants: "['ubuntu-latest', 'macos-14', 'macos-13', 'windows-latest']"
+  os-variants: "['ubuntu-latest', 'macos-13', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
   platform-variants: "['node', 'bun', 'deno', 'node-undici', 'bun-undici', 'deno-undici']"
   docker-engine-versions: "['docker.io/library/docker:19-dind', 'docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:27-dind', 'docker.io/library/docker:dind']"
@@ -125,6 +125,8 @@ jobs:
       - uses: ./.github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
+      - uses: douglascamata/setup-docker-macos-action@v1-alpha.13
+        if: startsWith(matrix.os, 'macos')
       - run: |
           docker_engine_versions=$(echo ${{ needs.compute-matricies.outputs.docker-engine-versions }} | tr -d "[]" | tr -d "'")
           IFS=',' read -r -a docker_engine_versions_array <<< "$docker_engine_versions"
