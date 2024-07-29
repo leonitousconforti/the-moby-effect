@@ -141,8 +141,10 @@ jobs:
 
           for docker_engine_version in "${docker_engine_versions_array[@]}"; do
             for docker_engine_connection_variant in "${docker_engine_connection_variants_array[@]}"; do
-              echo "Running tests for $docker_engine_version with $docker_engine_connection_variant"
-              # __PLATFORM_VARIANT="${{ matrix.platform-variant }}" __CONNECTION_VARIANT="$docker_engine_version" __DOCKER_ENGINE_VERSION="$docker_engine_connection_variant" pnpm test
+              conn_variant=$(echo $docker_engine_connection_variant | xargs)
+              engine_version=$(echo $docker_engine_version | xargs)
+              echo "Running tests for $engine_version with $conn_variant"
+              # __PLATFORM_VARIANT="${{ matrix.platform-variant }}" __CONNECTION_VARIANT="$conn_variant" __DOCKER_ENGINE_VERSION="$engine_version" pnpm test
             done
           done
 

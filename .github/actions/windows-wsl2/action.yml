@@ -22,12 +22,6 @@ runs:
     - shell: pwsh
       run: wsl --list --verbose
     - shell: pwsh
-      run: wsl --shutdown
-    - shell: pwsh
-      run: Copy-Item "D:\a\the-wireguard-effect\the-wireguard-effect\submodules\.wslconfig" -Destination "C:\Users\runneradmin"
-    - shell: pwsh
-      run: sleep 15
-    - shell: pwsh
       run: wsl --distribution Ubuntu22.04 --user root -- sudo apt-get update
     - shell: pwsh
       run: wsl --distribution Ubuntu22.04 --user root -- sudo apt-get upgrade -y
