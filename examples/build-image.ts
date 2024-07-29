@@ -1,5 +1,6 @@
 // Run with: tsx examples/build-image.ts
 
+import * as NodeContext from "@effect/platform-node/NodeContext";
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Path from "@effect/platform/Path";
 import * as Effect from "effect/Effect";
@@ -61,5 +62,5 @@ const program = Effect.gen(function* () {
 program
     .pipe(Effect.scoped)
     .pipe(Effect.provide(localDocker))
-    .pipe(Effect.provide(Path.layer))
+    .pipe(Effect.provide(NodeContext.layer))
     .pipe(NodeRuntime.runMain);
