@@ -11,7 +11,7 @@ env:
   os-variants: "['ubuntu-latest', 'macos-14', 'macos-13', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
   platform-variants: "['node', 'bun', 'deno', 'node-undici', 'bun-undici', 'deno-undici']"
-  docker-engine-versions: "['docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:dind']"
+  docker-engine-versions: "['docker.io/library/docker:19-dind', 'docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:27-dind', 'docker.io/library/docker:dind']"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -54,42 +54,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-  # Builds the docker images for all the different connection variants
-  docker-build:
-    runs-on: ubuntu-latest
-    needs: [compute-matricies]
-    strategy:
-      matrix:
-        dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: ghcr.io/${{ github.repository }}/${{ matrix.dockerfile }}-dind
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          file: docker/dind-${{ matrix.dockerfile }}.dockerfile
-          outputs: type=docker,dest=/tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.dockerfile }}-dind-docker-image
-          path: /tmp/${{ matrix.dockerfile }}-dind-docker-image.tar
-          if-no-files-found: error
-
   # Builds and lints the typescript code
   typescript-build:
     runs-on: ubuntu-latest
@@ -104,9 +68,9 @@ jobs:
       # - run: pnpm lint
 
   # Publishes the docker images to ghcr.io (only if they have been modified in this push/pull_request)
-  docker-publish:
+  docker-build:
     runs-on: ubuntu-latest
-    needs: [docker-build, compute-matricies]
+    needs: [compute-matricies]
     strategy:
       matrix:
         dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
@@ -134,11 +98,12 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: DIND_BASE_IMAGE="docker.io/library/docker:dind"
           file: docker/dind-${{ matrix.dockerfile }}.dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   docker-engine-tests:
-    needs: [compute-matricies, docker-build, typescript-build]
+    needs: [compute-matricies, typescript-build, docker-build]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -150,13 +115,32 @@ jobs:
         platform-variant: ${{ fromJSON(needs.compute-matricies.outputs.platform-variants) }}
     steps:
       - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: ./.github/actions/common-setup
         with:
           node-version: ${{ matrix.node-version }}
       - run: |
-          for docker_engine_version in ${{ needs.compute-matricies.outputs.docker-engine-versions }}; do
-            for docker_engine_connection_variant in ${{ needs.compute-matricies.outputs.docker-engine-connection-variants }}; do
+          docker_engine_versions=$(echo ${{ needs.compute-matricies.outputs.docker-engine-versions }} | tr -d "[]" | tr -d "'")
+          IFS=',' read -r -a docker_engine_versions_array <<< "$docker_engine_versions"
+
+          docker_engine_connection_variants=$(echo ${{ needs.compute-matricies.outputs.docker-engine-connection-variants }} | tr -d "[]" | tr -d "'")
+          IFS=',' read -r -a docker_engine_connection_variants_array <<< "$docker_engine_connection_variants"
+
+          for image in "${docker_engine_versions_array[@]}"; do
+              image=$(echo $image | xargs)
+              docker pull $image
+          done
+
+          for docker_engine_version in "${docker_engine_versions_array[@]}"; do
+            for docker_engine_connection_variant in "${docker_engine_connection_variants_array[@]}"; do
               echo "Running tests for $docker_engine_version with $docker_engine_connection_variant"
+              # __PLATFORM_VARIANT="${{ matrix.platform-variant }}" __CONNECTION_VARIANT="$docker_engine_version" __DOCKER_ENGINE_VERSION="$docker_engine_connection_variant" pnpm test
             done
           done
 
@@ -168,3 +152,4 @@ jobs:
     steps:
       - run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+
