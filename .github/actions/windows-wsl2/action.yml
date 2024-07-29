@@ -25,5 +25,5 @@ runs:
       run: wsl --distribution Ubuntu22.04 --user root -- sudo apt-get update
     - shell: pwsh
       run: wsl --distribution Ubuntu22.04 --user root -- sudo apt-get upgrade -y
-    - shell: pwsh
-      run: $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchLinuxEngine
+    # - shell: pwsh
+    #   run: $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchLinuxEngine
