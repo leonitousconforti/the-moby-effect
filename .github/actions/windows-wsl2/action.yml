@@ -13,9 +13,9 @@ runs:
     - shell: pwsh
       run: wsl --set-default-version 2
     - shell: pwsh
-      run: Invoke-WebRequest -URI https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -OutFile wsl_update_x64.msi
+      run: wsl --update --web-download
     - shell: pwsh
-      run: msiexec /i wsl_update_x64.msi /norestart
+      run: wsl --install --no-distribution
     - shell: pwsh
       run: Invoke-WebRequest -URI https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64-root.tar.xz -OutFile jammy-server-cloudimg-amd64-root.tar.xz
     - shell: pwsh
