@@ -13,7 +13,7 @@ runs:
     - shell: pwsh
       run: wsl --set-default-version 2
     - shell: pwsh
-      run: wsl --install --no-distribution
+      run: wsl --install --no-launch
     - shell: pwsh
       run: Invoke-WebRequest -URI https://cloud-images.ubuntu.com/releases/jammy/release/ubuntu-22.04-server-cloudimg-amd64-root.tar.xz -OutFile jammy-server-cloudimg-amd64-root.tar.xz
     - shell: pwsh
