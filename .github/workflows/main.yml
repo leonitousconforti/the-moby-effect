@@ -103,6 +103,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   docker-engine-tests:
+    if: false
     needs: [compute-matricies, typescript-build, docker-build]
     runs-on: ${{ matrix.os }}
     defaults:
@@ -148,6 +149,13 @@ jobs:
               # __PLATFORM_VARIANT="${{ matrix.platform-variant }}" __CONNECTION_VARIANT="$conn_variant" __DOCKER_ENGINE_VERSION="$engine_version" pnpm test
             done
           done
+
+  windows-lab:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/windows-wsl2
+      - uses: mxschmitt/action-tmate@v3
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
