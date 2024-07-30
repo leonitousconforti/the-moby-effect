@@ -6,10 +6,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
     test: {
         globals: true,
-        pool: "forks",
-        fileParallelism: false,
         globalSetup: "./test/setup.ts",
-        include: ["./test/system.test.ts"],
+        include: ["./test/**/*.test.ts"],
         reporters: ["default"],
         coverage: {
             provider: "v8",
