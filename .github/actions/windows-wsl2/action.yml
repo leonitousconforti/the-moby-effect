@@ -1,18 +1,17 @@
 name: "Windows WSL2 Test"
 description: "Reusable windows wsl2 test action"
 
+# https://learn.microsoft.com/en-us/windows/wsl/install-manual
+# Yes all this is necessary to get WSL2 working on GitHub Actions without any user input
 runs:
   using: "composite"
   steps:
-    # Yes all this is necessary to get WSL2 working on GitHub Actions without any user input
     - shell: pwsh
       run: dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
     - shell: pwsh
       run: dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
     - shell: pwsh
       run: wsl --set-default-version 2
-    - shell: pwsh
-      run: wsl --update
     - shell: pwsh
       run: wsl --install --no-distribution
     - shell: pwsh
@@ -21,9 +20,3 @@ runs:
       run: wsl --import Ubuntu22.04 . jammy-server-cloudimg-amd64-root.tar.xz --version 2
     - shell: pwsh
       run: wsl --list --verbose
-    - shell: pwsh
-      run: wsl --distribution Ubuntu22.04 --user root -- sudo apt-get update
-    - shell: pwsh
-      run: wsl --distribution Ubuntu22.04 --user root -- sudo apt-get upgrade -y
-    # - shell: pwsh
-    #   run: $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchLinuxEngine
