@@ -12,6 +12,35 @@ import * as IPv6 from "./IPv6.js";
  * @since 1.0.0
  * @category Api interface
  */
+export interface $AddressString extends Schema.Union<[IPv4.$IPv4String, IPv6.$IPv6String]> {}
+
+/**
+ * @since 1.0.0
+ * @category Decoded types
+ */
+export type AddressString = Schema.Schema.Type<$AddressString>;
+
+/**
+ * @since 1.0.0
+ * @category Encoded types
+ */
+export type AddressStringEncoded = Schema.Schema.Encoded<$AddressString>;
+
+/**
+ * An IP address in string format, which is either an IPv4 or IPv6 address.
+ *
+ * @since 1.0.0
+ * @category Schemas
+ */
+export const AddressString: $AddressString = Schema.Union(IPv4.IPv4String, IPv6.IPv6String).annotations({
+    identifier: "AddressString",
+    description: "An ipv4 or ipv6 address in string format",
+});
+
+/**
+ * @since 1.0.0
+ * @category Api interface
+ */
 export interface $Address extends Schema.Union<[IPv4.$IPv4, IPv6.$IPv6]> {}
 
 /**
@@ -53,4 +82,33 @@ export type AddressEncoded = Schema.Schema.Encoded<$Address>;
 export const Address: $Address = Schema.Union(IPv4.IPv4, IPv6.IPv6).annotations({
     identifier: "Address",
     description: "An ipv4 or ipv6 address",
+});
+
+/**
+ * @since 1.0.0
+ * @category Api interface
+ */
+export interface $AddressBigint extends Schema.Union<[IPv4.$IPv4Bigint, IPv6.$IPv6Bigint]> {}
+
+/**
+ * @since 1.0.0
+ * @category Decoded types
+ */
+export type AddressBigint = Schema.Schema.Type<$AddressBigint>;
+
+/**
+ * @since 1.0.0
+ * @category Encoded types
+ */
+export type AddressBigintEncoded = Schema.Schema.Encoded<$AddressBigint>;
+
+/**
+ * An IP address as a bigint.
+ *
+ * @since 1.0.0
+ * @category Schemas
+ */
+export const AddressBigint: $AddressBigint = Schema.Union(IPv4.IPv4Bigint, IPv6.IPv6Bigint).annotations({
+    identifier: "AddressBigint",
+    description: "An ipv4 or ipv6 address as a bigint",
 });

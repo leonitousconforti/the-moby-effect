@@ -1,6 +1,8 @@
-import { afterAll, describe, expect, inject, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -10,6 +12,9 @@ import * as Stream from "effect/Stream";
 
 import * as Images from "the-moby-effect/endpoints/Images";
 import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Images tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -21,20 +26,23 @@ describe("MobyApi Images tests", () => {
         Match.exhaustive
     );
 
-    const testServices: DindEngine.DindLayer = makePlatformDindLayer({
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
         exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
         connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
     });
 
-    const testRuntime = ManagedRuntime.make(Layer.provide(testServices, Path.layer));
-    afterAll(() => testRuntime.dispose().then(() => {}));
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)", async () => {
         const searchResults = await testRuntime.runPromise(
             Images.Images.search({
                 term: "alpine",
                 limit: 1,
-                filters: JSON.stringify({ "is-official": ["true"] }),
+                "is-official": true,
             })
         );
         expect(searchResults).toBeInstanceOf(Array);

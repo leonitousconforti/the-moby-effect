@@ -1,78 +1,64 @@
 import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "the-moby-effect/Moby";
+import * as ManagedRuntime from "effect/ManagedRuntime";
+import * as Match from "effect/Match";
+
+import * as Volumes from "the-moby-effect/endpoints/Volumes";
+import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Volumes tests", () => {
-    const testVolumesService: Layer.Layer<MobyApi.Volumes.Volumes, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
-    const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const makePlatformDindLayer = Function.pipe(
+        Match.value(inject("__PLATFORM_VARIANT")),
+        Match.when("bun", () => DindEngine.layerBun),
+        Match.when("deno", () => DindEngine.layerDeno),
+        Match.when("node", () => DindEngine.layerNodeJS),
+        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.exhaustive
+    );
 
-    beforeAll(async () => {
-        await Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
-            testSwarmsService
-        ).pipe(Effect.runPromise);
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
+        exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+        connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
     });
 
-    afterAll(async () => {
-        await Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
-            testSwarmsService
-        ).pipe(Effect.runPromise);
-    });
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should see no volumes", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.list()),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.list());
         expect(testData.Warnings).toBeNull();
         expect(testData.Volumes).toBeInstanceOf(Array);
         expect(testData.Volumes).toHaveLength(0);
     });
 
     it("Should create a volume", async () => {
-        const testData: Readonly<MobyApi.Schemas.Volume> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.create({ Name: "testVolume" })),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.create({ Name: "testVolume" }));
         expect(testData.Name).toBe("testVolume");
         expect(testData.CreatedAt).toBeDefined();
-        expect(new Date(testData.CreatedAt!).getTime()).toBeLessThanOrEqual(Date.now());
+        expect(testData.CreatedAt!.getTime()).toBeLessThanOrEqual(Date.now());
     });
 
     it("Should see one volume", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.list()),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.list());
         expect(testData.Warnings).toBeNull();
         expect(testData.Volumes).toBeInstanceOf(Array);
         expect(testData.Volumes).toHaveLength(1);
     });
 
     it("Should inspect the volume", async () => {
-        const testData: Readonly<MobyApi.Schemas.Volume> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.inspect({ name: "testVolume" })),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.inspect({ name: "testVolume" }));
         expect(testData.Name).toBe("testVolume");
         expect(testData.Driver).toBe("local");
         expect(testData.Mountpoint).toBe("/var/lib/docker/volumes/testVolume/_data");
@@ -82,81 +68,42 @@ describe("MobyApi Volumes tests", () => {
     });
 
     it("Should remove the volume", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.delete({ name: "testVolume" })),
-                testVolumesService
-            )
-        );
+        await testRuntime.runPromise(Volumes.Volumes.delete({ name: "testVolume" }));
     });
 
     it("Should see no volumes", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.list()),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.list());
         expect(testData.Warnings).toBeNull();
         expect(testData.Volumes).toBeInstanceOf(Array);
         expect(testData.Volumes).toHaveLength(0);
     });
 
     it("Should create a volume with labels", async () => {
-        const testData: Readonly<MobyApi.Schemas.Volume> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
-                    volumes.create({ Name: "testVolume", Labels: { testLabel: "test" } })
-                ),
-                testVolumesService
-            )
+        const testData = await testRuntime.runPromise(
+            Volumes.Volumes.create({ Name: "testVolume", Labels: { testLabel: "test" } })
         );
-
         expect(testData.Name).toBe("testVolume");
         expect(testData.CreatedAt).toBeDefined();
-        expect(new Date(testData.CreatedAt!).getTime()).toBeLessThanOrEqual(Date.now());
+        expect(testData.CreatedAt!.getTime()).toBeLessThanOrEqual(Date.now());
         expect(testData.Labels).toEqual({ testLabel: "test" });
     });
 
     it("Should list volumes with labels", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
-                    volumes.list({ filters: { label: ["testLabel=test"] } })
-                ),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.list({ filters: { label: ["testLabel=test"] } }));
         expect(testData.Warnings).toBeNull();
         expect(testData.Volumes).toBeInstanceOf(Array);
         expect(testData.Volumes).toHaveLength(1);
     });
 
     it("Should list non dangling volumes", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
-                    volumes.list({ filters: { dangling: ["false"] } })
-                ),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.list({ filters: { dangling: ["false"] } }));
         expect(testData.Warnings).toBeNull();
         expect(testData.Volumes).toBeInstanceOf(Array);
         expect(testData.Volumes).toHaveLength(0);
     });
 
     it("Should prune volumes", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumePruneResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.prune({ filters: { all: ["true"] } })),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.prune({ filters: { all: ["true"] } }));
         expect(testData.SpaceReclaimed).toBe(0);
         expect(testData.VolumesDeleted).toBeInstanceOf(Array);
         expect(testData.VolumesDeleted).toHaveLength(1);
@@ -164,44 +111,16 @@ describe("MobyApi Volumes tests", () => {
     });
 
     it("Should see no volumes", async () => {
-        const testData: Readonly<MobyApi.Schemas.VolumeListResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) => volumes.list()),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.list());
         expect(testData.Warnings).toBeNull();
         expect(testData.Volumes).toBeInstanceOf(Array);
         expect(testData.Volumes).toHaveLength(0);
     });
 
     it("Should update a volume", async () => {
-        const testData: Readonly<MobyApi.Schemas.Volume> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
-                    volumes.create({
-                        Name: "testVolume2",
-                        ClusterVolumeSpec: new MobyApi.Schemas.ClusterVolumeSpec({
-                            AccessMode: {
-                                MountVolume: {},
-                            },
-                        }),
-                    })
-                ),
-                testVolumesService
-            )
-        );
-
+        const testData = await testRuntime.runPromise(Volumes.Volumes.create({ Name: "testVolume2" }));
         const spec = testData.ClusterVolume!.Spec!;
         const version = testData.ClusterVolume!.Version!.Index!;
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Volumes.Volumes, (volumes) =>
-                    volumes.update({ name: testData.ClusterVolume!.ID!, version, spec })
-                ),
-                testVolumesService
-            )
-        );
+        await testRuntime.runPromise(Volumes.Volumes.update({ name: testData.ClusterVolume!.ID!, version, spec }));
     });
 });

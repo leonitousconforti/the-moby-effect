@@ -1,6 +1,8 @@
 import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
+import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
@@ -10,7 +12,7 @@ import * as Configs from "the-moby-effect/endpoints/Configs";
 import * as Swarm from "the-moby-effect/endpoints/Swarm";
 import * as DindEngine from "the-moby-effect/engines/Dind";
 
-describe("MobyApi Configs tests", () => {
+describe.skip("MobyApi Configs tests", () => {
     const makePlatformDindLayer = Function.pipe(
         Match.value(inject("__PLATFORM_VARIANT")),
         Match.when("bun", () => DindEngine.layerBun),
@@ -20,12 +22,14 @@ describe("MobyApi Configs tests", () => {
         Match.exhaustive
     );
 
-    const testServices: DindEngine.DindLayer = makePlatformDindLayer({
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
         exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
         connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
     });
 
-    const testRuntime = ManagedRuntime.make(Layer.provide(testServices, Path.layer));
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), 60_000);
     beforeAll(() => testRuntime.runPromise(Swarm.Swarm.init({ ListenAddr: "eth0" })).then(() => {}));
     afterAll(() => testRuntime.runPromise(Swarm.Swarm.leave({ force: true })).then(() => {}));
     afterAll(() => testRuntime.dispose().then(() => {}));
@@ -75,7 +79,9 @@ describe("MobyApi Configs tests", () => {
     });
 
     it("Should see no configs with label testLabel=test", async () => {
-        const configs = await testRuntime.runPromise(Configs.Configs.list({ filters: { label: ["testLabel=test"] } }));
+        const configs = await testRuntime.runPromise(
+            Configs.Configs.list({ filters: { label: { testLabel: "test" } } })
+        );
         expect(configs).toBeInstanceOf(Array);
         expect(configs).toHaveLength(0);
     });

@@ -4,13 +4,12 @@ import * as NetworkEndpointResource from "./NetworkEndpointResource.generated.js
 import * as NetworkIPAM from "./NetworkIPAM.generated.js";
 import * as NetworkPeerInfo from "./NetworkPeerInfo.generated.js";
 import * as NetworkServiceInfo from "./NetworkServiceInfo.generated.js";
-import * as Time from "./Time.generated.js";
 
 export class NetworkSummary extends Schema.Class<NetworkSummary>("NetworkSummary")(
     {
         Name: Schema.String,
         Id: Schema.String,
-        Created: Schema.NullOr(Time.Time),
+        Created: Schema.NullOr(Schema.DateFromString),
         Scope: Schema.String,
         Driver: Schema.String,
         EnableIPv6: Schema.Boolean,

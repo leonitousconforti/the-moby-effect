@@ -1,11 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
 import * as SwarmContainerStatus from "./SwarmContainerStatus.generated.js";
 import * as SwarmPortStatus from "./SwarmPortStatus.generated.js";
-import * as Time from "./Time.generated.js";
 
 export class SwarmTaskStatus extends Schema.Class<SwarmTaskStatus>("SwarmTaskStatus")(
     {
-        Timestamp: Schema.optionalWith(Time.Time, { nullable: true }),
+        Timestamp: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
         State: Schema.optional(Schema.String),
         Message: Schema.optional(Schema.String),
         Err: Schema.optional(Schema.String),

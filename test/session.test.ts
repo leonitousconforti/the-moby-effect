@@ -1,21 +1,42 @@
-import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "the-moby-effect/Moby";
+import * as ManagedRuntime from "effect/ManagedRuntime";
+import * as Match from "effect/Match";
+
+import * as Sessions from "the-moby-effect/endpoints/Session";
+import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Session tests", () => {
-    const testSessionService: Layer.Layer<MobyApi.Sessions.Sessions, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const makePlatformDindLayer = Function.pipe(
+        Match.value(inject("__PLATFORM_VARIANT")),
+        Match.when("bun", () => DindEngine.layerBun),
+        Match.when("deno", () => DindEngine.layerDeno),
+        Match.when("node", () => DindEngine.layerNodeJS),
+        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.exhaustive
+    );
+
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
+        exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+        connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
+    });
+
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should be able to request a session", async () => {
-        const socket = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Sessions.Sessions, (sessions) => sessions.session()),
-                testSessionService
-            ).pipe(Effect.scoped)
-        );
-        expect(socket).toBeDefined();
+        await testRuntime.runPromise(Sessions.Sessions.session().pipe(Effect.scoped));
     });
 });

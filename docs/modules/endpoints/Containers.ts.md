@@ -445,7 +445,7 @@ export interface ContainerPruneOptions {
   readonly filters?:
     | {
         until?: string
-        label?: Record<string, string> | string | undefined
+        label?: Record<string, string> | undefined
       }
     | undefined
 }
@@ -786,7 +786,7 @@ export interface ContainersImpl {
    */
   readonly changes: (
     options: ContainerChangesOptions
-  ) => Effect.Effect<ReadonlyArray<ContainerChange>, ContainersError, never>
+  ) => Effect.Effect<ReadonlyArray<ContainerChange> | null, ContainersError, never>
 
   /**
    * Export a container

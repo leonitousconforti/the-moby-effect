@@ -5,13 +5,12 @@ import * as ContainerCPUStats from "./ContainerCPUStats.generated.js";
 import * as ContainerMemoryStats from "./ContainerMemoryStats.generated.js";
 import * as ContainerPidsStats from "./ContainerPidsStats.generated.js";
 import * as ContainerStorageStats from "./ContainerStorageStats.generated.js";
-import * as Time from "./Time.generated.js";
 
 export class ContainerStats extends Schema.Class<ContainerStats>("ContainerStats")(
     {
         // Common stats
-        read: Schema.NullOr(Time.Time),
-        preread: Schema.NullOr(Time.Time),
+        read: Schema.NullOr(Schema.DateFromString),
+        preread: Schema.NullOr(Schema.DateFromString),
 
         // Linux specific stats, not populated on Windows.
         pids_stats: Schema.optionalWith(ContainerPidsStats.ContainerPidsStats, { nullable: true }),

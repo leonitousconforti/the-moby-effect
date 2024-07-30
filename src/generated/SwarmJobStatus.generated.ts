@@ -1,11 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
 import * as SwarmVersion from "./SwarmVersion.generated.js";
-import * as Time from "./Time.generated.js";
 
 export class SwarmJobStatus extends Schema.Class<SwarmJobStatus>("SwarmJobStatus")(
     {
         JobIteration: Schema.NullOr(SwarmVersion.SwarmVersion),
-        LastExecution: Schema.optionalWith(Time.Time, { nullable: true }),
+        LastExecution: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
     },
     {
         identifier: "SwarmJobStatus",

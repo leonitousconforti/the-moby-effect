@@ -33,7 +33,7 @@ export interface $UInt64 extends Schema.Annotable<$UInt64, UInt64Brand, Brand.Br
  * @category Schemas
  */
 export const UInt64: $UInt64 = Function.pipe(
-    Schema.Int,
+    Schema.Number,
     Schema.greaterThanOrEqualTo(0),
     Schema.lessThanOrEqualTo(2 ** 64 - 1),
     Schema.fromBrand(UInt64Brand),

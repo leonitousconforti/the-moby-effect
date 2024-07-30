@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vites
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -11,6 +12,9 @@ import * as Stream from "effect/Stream";
 
 import * as System from "the-moby-effect/endpoints/System";
 import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi System tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -30,8 +34,8 @@ describe("MobyApi System tests", () => {
 
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
-    beforeAll(() => testRuntime.runPromise(Effect.succeed("")).then(() => {}), 60_000);
-    afterAll(() => testRuntime.dispose().then(() => {}));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    afterAll(() => testRuntime.dispose().then(() => {})), afterAllTimeout;
 
     it("Should ping the docker daemon", async () => {
         await testRuntime.runPromise(System.Systems.ping());

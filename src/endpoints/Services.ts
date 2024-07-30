@@ -325,7 +325,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
 
     const delete_ = (options: ServiceDeleteOptions): Effect.Effect<void, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.del("/services/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.del(`/services/${encodeURIComponent(options.id)}`),
             voidClient,
             Effect.mapError((cause) => new ServicesError({ method: "delete", cause })),
             Effect.scoped
@@ -333,7 +333,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
 
     const inspect_ = (options: ServiceInspectOptions): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/services/{id}".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.get(`/services/${encodeURIComponent(options.id)}`),
             maybeAddQueryParameter("insertDefaults", Option.fromNullable(options.insertDefaults)),
             ServiceClient,
             Effect.mapError((cause) => new ServicesError({ method: "inspect", cause })),
@@ -344,7 +344,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         options: ServiceUpdateOptions
     ): Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/services/{id}/update".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post(`/services/${encodeURIComponent(options.id)}/update`),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
             maybeAddQueryParameter("version", Option.some(options.version)),
             maybeAddQueryParameter("registryAuthFrom", Option.fromNullable(options.registryAuthFrom)),
@@ -357,7 +357,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
 
     const logs_ = (options: ServiceLogsOptions): Stream.Stream<string, ServicesError, never> =>
         Function.pipe(
-            HttpClientRequest.get("/services/{id}/logs".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.get(`/services/${encodeURIComponent(options.id)}/logs`),
             maybeAddQueryParameter("details", Option.fromNullable(options.details)),
             maybeAddQueryParameter("follow", Option.fromNullable(options.follow)),
             maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),

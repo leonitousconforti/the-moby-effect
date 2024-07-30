@@ -62,7 +62,7 @@ export interface ConfigListOptions {
         name?: string | undefined;
         id?: string | undefined;
         names?: string | undefined;
-        label?: Record<string, string> | Array<string> | undefined;
+        label?: Record<string, string> | undefined;
     };
 }
 

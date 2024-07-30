@@ -1,4 +1,4 @@
-module github.com/leonitousconforti/the-wireguard-effect/reflection
+module github.com/leonitousconforti/the-moby-effect/reflection
 
 go 1.22.4
 

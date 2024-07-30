@@ -112,7 +112,7 @@ Added in v1.0.0
 
 ```ts
 export interface SwarmUpdateOptions {
-  readonly body: SwarmSpec
+  readonly spec: SwarmSpec
   /**
    * The version number of the swarm object being updated. This is required to
    * avoid conflicting writes.
@@ -165,16 +165,14 @@ export interface SwarmImpl {
   readonly inspect: () => Effect.Effect<Readonly<SwarmData>, SwarmsError, never>
 
   /** Initialize a new swarm */
-  readonly init: (
-    options: Schema.Schema.Type<typeof SwarmInitRequest>
-  ) => Effect.Effect<Readonly<string>, SwarmsError, never>
+  readonly init: (options: typeof SwarmInitRequest.Encoded) => Effect.Effect<Readonly<string>, SwarmsError, never>
 
   /**
    * Join an existing swarm
    *
    * @param body -
    */
-  readonly join: (options: Schema.Schema.Encoded<typeof SwarmJoinRequest>) => Effect.Effect<void, SwarmsError, never>
+  readonly join: (options: typeof SwarmJoinRequest.Encoded) => Effect.Effect<void, SwarmsError, never>
 
   /**
    * Leave a swarm
@@ -200,9 +198,7 @@ export interface SwarmImpl {
   readonly unlockkey: () => Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never>
 
   /** Unlock a locked manager */
-  readonly unlock: (
-    options: Schema.Schema.Encoded<typeof SwarmUnlockRequest>
-  ) => Effect.Effect<void, SwarmsError, never>
+  readonly unlock: (options: typeof SwarmUnlockRequest.Encoded) => Effect.Effect<void, SwarmsError, never>
 }
 ```
 

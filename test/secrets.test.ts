@@ -1,65 +1,72 @@
 import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "the-moby-effect/Moby";
+import * as ManagedRuntime from "effect/ManagedRuntime";
+import * as Match from "effect/Match";
+
+import * as Secrets from "the-moby-effect/endpoints/Secrets";
+import * as Swarm from "the-moby-effect/endpoints/Swarm";
+import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Secrets tests", () => {
-    const testSecretsService: Layer.Layer<MobyApi.Secrets.Secrets, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
-    const testSwarmsService: Layer.Layer<MobyApi.Swarm.Swarms, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const makePlatformDindLayer = Function.pipe(
+        Match.value(inject("__PLATFORM_VARIANT")),
+        Match.when("bun", () => DindEngine.layerBun),
+        Match.when("deno", () => DindEngine.layerDeno),
+        Match.when("node", () => DindEngine.layerNodeJS),
+        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.exhaustive
+    );
+
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
+        exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+        connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
+    });
+
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
 
     beforeAll(async () => {
-        await Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.init({ ListenAddr: "eth0" })),
-            testSwarmsService
-        ).pipe(Effect.runPromise);
-    });
+        await testRuntime.runPromise(Effect.sync(Function.constUndefined));
+        await testRuntime.runPromise(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }));
+    }, beforeAllTimeout);
 
     afterAll(async () => {
-        await Effect.provide(
-            Effect.flatMap(MobyApi.Swarm.Swarms, (swarm) => swarm.leave({ force: true })),
-            testSwarmsService
-        ).pipe(Effect.runPromise);
-    });
+        try {
+            await testRuntime.runPromise(Swarm.Swarm.leave({ force: true }));
+        } finally {
+            await testRuntime.dispose();
+        }
+    }, afterAllTimeout);
 
     it("Should see no secrets", async () => {
-        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) => secrets.list()),
-                testSecretsService
-            )
-        );
+        const secrets = await testRuntime.runPromise(Secrets.Secrets.list());
         expect(secrets).toBeInstanceOf(Array);
         expect(secrets).toHaveLength(0);
     });
 
     it("Should create a secret", async () => {
-        const secret: Readonly<MobyApi.Schemas.IDResponse> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) =>
-                    secrets.create({
-                        Name: "test-secret",
-                        Labels: { testLabel: "test" },
-                        Data: Buffer.from("aaahhhhh").toString("base64"),
-                    })
-                ),
-                testSecretsService
-            )
+        const secret = await testRuntime.runPromise(
+            Secrets.Secrets.create({
+                Name: "test-secret",
+                Labels: { testLabel: "test" },
+                Data: Buffer.from("aaahhhhh").toString("base64"),
+            })
         );
         expect(secret.ID).toBeDefined();
     });
 
     it("Should list and inspect the secret", async () => {
-        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) => secrets.list()),
-                testSecretsService
-            )
-        );
+        const secrets = await testRuntime.runPromise(Secrets.Secrets.list());
         expect(secrets).toEqual([
             {
                 ID: expect.any(String),
@@ -70,69 +77,33 @@ describe("MobyApi Secrets tests", () => {
             },
         ]);
 
-        const secret: Readonly<MobyApi.Schemas.Secret> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (_secrets) => _secrets.inspect({ id: secrets[0]!.ID! })),
-                testSecretsService
-            )
-        );
+        const secret = await testRuntime.runPromise(Secrets.Secrets.inspect({ id: secrets[0]!.ID! }));
         expect(secret).toEqual(secrets[0]);
     });
 
     it("Should update the secret", async () => {
-        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (_secrets) => _secrets.list()),
-                testSecretsService
-            )
-        );
-
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (_secrets) =>
-                    _secrets.update({
-                        id: secrets[0]!.ID!,
-                        version: secrets[0]!.Version!.Index!,
-                        spec: { ...secrets[0]!.Spec, Labels: { testLabelUpdated: "test" } },
-                    })
-                ),
-                testSecretsService
-            )
+        const secrets = await testRuntime.runPromise(Secrets.Secrets.list());
+        await testRuntime.runPromise(
+            Secrets.Secrets.update({
+                id: secrets[0]!.ID!,
+                version: secrets[0]!.Version!.Index!,
+                spec: { ...secrets[0]!.Spec, Labels: { testLabelUpdated: "test" } },
+            })
         );
     });
 
     it("Should list secrets with the new label", async () => {
-        const secrets: ReadonlyArray<MobyApi.Schemas.Secret> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) =>
-                    secrets.list({ filters: JSON.stringify({ label: ["testLabelUpdated=test"] }) })
-                ),
-                testSecretsService
-            )
+        const secrets = await testRuntime.runPromise(
+            Secrets.Secrets.list({ filters: JSON.stringify({ label: ["testLabelUpdated=test"] }) })
         );
         expect(secrets).toBeInstanceOf(Array);
         expect(secrets).toHaveLength(1);
     });
 
     it("Should delete the secret", async () => {
-        const secrets = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) => secrets.list()),
-                testSecretsService
-            )
-        );
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (_secrets) => _secrets.delete({ id: secrets[0]!.ID! })),
-                testSecretsService
-            )
-        );
-        const secretsAfterDelete = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Secrets.Secrets, (secrets) => secrets.list()),
-                testSecretsService
-            )
-        );
+        const secrets = await testRuntime.runPromise(Secrets.Secrets.list());
+        await testRuntime.runPromise(Secrets.Secrets.delete({ id: secrets[0]!.ID! }));
+        const secretsAfterDelete = await testRuntime.runPromise(Secrets.Secrets.list());
         expect(secretsAfterDelete).toEqual([]);
     });
 });

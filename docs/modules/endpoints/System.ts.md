@@ -121,9 +121,8 @@ Added in v1.0.0
 ```ts
 export interface SystemsImpl {
   /**
-   * Check auth configuration
-   *
-   * @param authConfig - Authentication to check
+   * Validate credentials for a registry and, if available, get an identity
+   * token for accessing the registry without password.
    */
   readonly auth: (
     options: Schema.Schema.Encoded<typeof RegistryAuthConfig>

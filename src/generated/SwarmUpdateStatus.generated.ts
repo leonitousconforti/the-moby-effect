@@ -1,11 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
-import * as Time from "./Time.generated.js";
 
 export class SwarmUpdateStatus extends Schema.Class<SwarmUpdateStatus>("SwarmUpdateStatus")(
     {
         State: Schema.optional(Schema.String),
-        StartedAt: Schema.optionalWith(Time.Time, { nullable: true }),
-        CompletedAt: Schema.optionalWith(Time.Time, { nullable: true }),
+        StartedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
+        CompletedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
         Message: Schema.optional(Schema.String),
     },
     {

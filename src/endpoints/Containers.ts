@@ -516,7 +516,7 @@ export interface ContainerPruneOptions {
     readonly filters?:
         | {
               until?: string;
-              label?: Record<string, string> | string | undefined;
+              label?: Record<string, string> | undefined;
           }
         | undefined;
 }
@@ -628,7 +628,7 @@ export interface ContainersImpl {
      */
     readonly changes: (
         options: ContainerChangesOptions
-    ) => Effect.Effect<ReadonlyArray<ContainerChange>, ContainersError, never>;
+    ) => Effect.Effect<ReadonlyArray<ContainerChange> | null, ContainersError, never>;
 
     /**
      * Export a container
@@ -916,11 +916,11 @@ export const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.De
 
     const changes_ = (
         options: ContainerChangesOptions
-    ): Effect.Effect<ReadonlyArray<ContainerChange>, ContainersError> =>
+    ): Effect.Effect<ReadonlyArray<ContainerChange> | null, ContainersError> =>
         Function.pipe(
             HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/changes`),
             client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ContainerChange)),
+            HttpClientResponse.schemaBodyJsonScoped(Schema.NullOr(Schema.Array(ContainerChange))),
             Effect.mapError((cause) => new ContainersError({ method: "changes", cause })),
             Effect.scoped
         );

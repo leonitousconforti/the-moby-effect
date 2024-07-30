@@ -1,12 +1,11 @@
 import * as Schema from "@effect/schema/Schema";
 import * as SwarmVersion from "./SwarmVersion.generated.js";
-import * as Time from "./Time.generated.js";
 
 export class SwarmMeta extends Schema.Class<SwarmMeta>("SwarmMeta")(
     {
         Version: Schema.optionalWith(SwarmVersion.SwarmVersion, { nullable: true }),
-        CreatedAt: Schema.optionalWith(Time.Time, { nullable: true }),
-        UpdatedAt: Schema.optionalWith(Time.Time, { nullable: true }),
+        CreatedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
+        UpdatedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
     },
     {
         identifier: "SwarmMeta",

@@ -1,6 +1,9 @@
-import { afterAll, describe, expect, inject, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
+import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
@@ -8,6 +11,9 @@ import * as Match from "effect/Match";
 
 import * as Distribution from "the-moby-effect/endpoints/Distribution";
 import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Distribution tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -19,13 +25,16 @@ describe("MobyApi Distribution tests", () => {
         Match.exhaustive
     );
 
-    const testServices: DindEngine.DindLayer = makePlatformDindLayer({
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
         exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
         connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
     });
 
-    const testRuntime = ManagedRuntime.make(Layer.provide(testServices, Path.layer));
-    afterAll(() => testRuntime.dispose().then(() => {}));
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should inspect an image", async () => {
         const testData = await testRuntime.runPromise(

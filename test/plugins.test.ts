@@ -1,86 +1,78 @@
-import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
 
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Path from "@effect/platform/Path";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyApi from "the-moby-effect/Moby";
+import * as ManagedRuntime from "effect/ManagedRuntime";
+import * as Match from "effect/Match";
+
+import * as Plugins from "the-moby-effect/endpoints/Plugins";
+import * as DindEngine from "the-moby-effect/engines/Dind";
+
+const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
+const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe.skip("MobyApi Plugins tests", () => {
-    const testPluginsService: Layer.Layer<MobyApi.Plugins.Plugins, never, never> = MobyApi.fromConnectionOptions(
-        inject("__TEST_CONNECTION_OPTIONS")
-    ).pipe(Layer.orDie);
+    const makePlatformDindLayer = Function.pipe(
+        Match.value(inject("__PLATFORM_VARIANT")),
+        Match.when("bun", () => DindEngine.layerBun),
+        Match.when("deno", () => DindEngine.layerDeno),
+        Match.when("node", () => DindEngine.layerNodeJS),
+        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.exhaustive
+    );
+
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
+        dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
+        exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+        connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
+    });
+
+    const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
+    const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
+    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should see no plugins", async () => {
-        const plugins: ReadonlyArray<MobyApi.Schemas.Plugin> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.list()),
-                testPluginsService
-            )
-        );
+        const plugins = await testRuntime.runPromise(Plugins.Plugins.list());
         expect(plugins).toBeInstanceOf(Array);
         expect(plugins).toHaveLength(0);
     });
 
     it("Should pull a plugin", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) =>
-                    plugins.pull({
-                        remote: "docker.io/grafana/loki-docker-driver:main",
-                        name: "test-plugin:latest",
-                    })
-                ),
-                testPluginsService
-            )
+        await testRuntime.runPromise(
+            Plugins.Plugins.pull({
+                remote: "docker.io/grafana/loki-docker-driver:main",
+                name: "test-plugin:latest",
+            })
         );
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.enable({ name: "test-plugin:latest" })),
-                testPluginsService
-            )
-        );
+        await testRuntime.runPromise(Plugins.Plugins.enable({ name: "test-plugin:latest" }));
     });
 
     it("Should see one plugin", async () => {
-        const plugins: ReadonlyArray<MobyApi.Schemas.Plugin> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.list()),
-                testPluginsService
-            )
-        );
+        const plugins = await testRuntime.runPromise(Plugins.Plugins.list());
         expect(plugins).toBeInstanceOf(Array);
         expect(plugins).toHaveLength(1);
     });
 
     it("Should update a plugin", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) =>
-                    plugins.upgrade({
-                        remote: "docker.io/grafana/loki-docker-driver:main",
-                        name: "test-plugin:latest",
-                    })
-                ),
-                testPluginsService
-            )
+        await testRuntime.runPromise(
+            Plugins.Plugins.upgrade({
+                remote: "docker.io/grafana/loki-docker-driver:main",
+                name: "test-plugin:latest",
+            })
         );
     });
 
     it("Should disable a plugin", async () => {
-        await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.disable({ name: "test-plugin:latest" })),
-                testPluginsService
-            )
-        );
+        await testRuntime.runPromise(Plugins.Plugins.disable({ name: "test-plugin:latest" }));
     });
 
     it("Should see no enabled plugins", async () => {
-        const plugins: ReadonlyArray<MobyApi.Schemas.Plugin> = await Effect.runPromise(
-            Effect.provide(
-                Effect.flatMap(MobyApi.Plugins.Plugins, (plugins) => plugins.list({ filters: { enable: ["true"] } })),
-                testPluginsService
-            )
-        );
+        const plugins = await testRuntime.runPromise(Plugins.Plugins.list({ filters: { enable: ["true"] } }));
         expect(plugins).toBeInstanceOf(Array);
         expect(plugins).toHaveLength(0);
     });

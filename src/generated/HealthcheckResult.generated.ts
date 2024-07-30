@@ -1,11 +1,10 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as Time from "./Time.generated.js";
 
 export class HealthcheckResult extends Schema.Class<HealthcheckResult>("HealthcheckResult")(
     {
-        Start: Schema.NullOr(Time.Time),
-        End: Schema.NullOr(Time.Time),
+        Start: Schema.NullOr(Schema.DateFromString),
+        End: Schema.NullOr(Schema.DateFromString),
         ExitCode: MobySchemas.Int64,
         Output: Schema.String,
     },

@@ -82,7 +82,7 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
             Schema.Array(Schema.NullOr(SystemNetworkAddressPool.SystemNetworkAddressPool)),
             { nullable: true }
         ),
-        CDISpecDirs: Schema.NullOr(Schema.Array(Schema.String)),
+        CDISpecDirs: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         Containerd: Schema.optionalWith(SystemContainerdInfo.SystemContainerdInfo, { nullable: true }),
         ExecutionDriver: Schema.optional(Schema.String),
         Warnings: Schema.NullOr(Schema.Array(Schema.String)),

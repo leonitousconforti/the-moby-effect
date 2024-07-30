@@ -247,7 +247,18 @@ export interface BuildPruneOptions {
      * - `shared`
      * - `private`
      */
-    readonly filters?: string;
+    readonly filters?:
+        | {
+              until?: string | undefined;
+              id?: string | undefined;
+              parent?: string | undefined;
+              type?: string | undefined;
+              description?: string | undefined;
+              inuse?: boolean | undefined;
+              shared?: boolean | undefined;
+              private?: boolean | undefined;
+          }
+        | undefined;
 }
 
 /**
@@ -393,20 +404,11 @@ export interface ImageSearchOptions {
     /** Term to search */
     readonly term: string;
     /** Maximum number of results to return */
-    readonly limit?: number;
-    /**
-     * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the images list. Available filters:
-     *
-     * - `is-automated=(true|false)` (deprecated, see below)
-     * - `is-official=(true|false)`
-     * - `stars=<number>` Matches images that has at least 'number' stars.
-     *
-     * The `is-automated` filter is deprecated. The `is_automated` field has
-     * been deprecated by Docker Hub's search API. Consequently, searching for
-     * `is-automated=true` will yield no results.
-     */
-    readonly filters?: string;
+    readonly limit?: number | undefined;
+    /** Matches images that have at least this many stars */
+    readonly stars?: number | undefined;
+    /** Filters for only official images */
+    readonly "is-official"?: boolean | undefined;
 }
 
 /**
@@ -745,7 +747,7 @@ export interface ImagesImpl {
      */
     readonly search: (
         options: ImageSearchOptions
-    ) => Effect.Effect<Schema.Schema.Type<typeof ImageSearchResponseItem>, ImagesError>;
+    ) => Effect.Effect<ReadonlyArray<Schema.Schema.Type<typeof ImageSearchResponseItem>>, ImagesError>;
 
     /**
      * Delete unused images
@@ -826,7 +828,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem)))
     );
     const ImageSearchResponseItemsClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImageSearchResponseItem))
+        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSearchResponseItem)))
     );
     const ImagePruneResponseClient = client.pipe(
         HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ImagePruneResponse))
@@ -971,15 +973,14 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             Effect.scoped
         );
 
-    const search_ = (options: ImageSearchOptions): Effect.Effect<ImageSearchResponseItem, ImagesError, never> =>
+    const search_ = (
+        options: ImageSearchOptions
+    ): Effect.Effect<ReadonlyArray<ImageSearchResponseItem>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get("/images/search"),
             maybeAddQueryParameter("term", Option.some(options.term)),
             maybeAddQueryParameter("limit", Option.fromNullable(options.limit)),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
+            maybeAddFilters({ stars: options.stars, "is-official": options["is-official"] }),
             ImageSearchResponseItemsClient,
             Effect.mapError((cause) => new ImagesError({ method: "search", cause })),
             Effect.scoped

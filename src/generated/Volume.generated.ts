@@ -5,7 +5,7 @@ import * as VolumeUsageData from "./VolumeUsageData.generated.js";
 export class Volume extends Schema.Class<Volume>("Volume")(
     {
         ClusterVolume: Schema.optionalWith(ClusterVolume.ClusterVolume, { nullable: true }),
-        CreatedAt: Schema.optional(Schema.String),
+        CreatedAt: Schema.optional(Schema.DateFromString),
         Driver: Schema.String,
         Labels: Schema.NullOr(
             Schema.Record({

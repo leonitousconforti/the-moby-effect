@@ -1,9 +1,8 @@
 import * as Schema from "@effect/schema/Schema";
-import * as Time from "./Time.generated.js";
 
 export class ImageMetadata extends Schema.Class<ImageMetadata>("ImageMetadata")(
     {
-        LastTagTime: Schema.optionalWith(Time.Time, { nullable: true }),
+        LastTagTime: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
     },
     {
         identifier: "ImageMetadata",

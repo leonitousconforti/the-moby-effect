@@ -5,8 +5,12 @@
  */
 
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
+import * as Array from "effect/Array";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
+import * as Predicate from "effect/Predicate";
+import * as Record from "effect/Record";
+import * as Tuple from "effect/Tuple";
 
 /**
  * Takes a key and an optional value and returns a function that either adds the
@@ -53,6 +57,16 @@ export const maybeAddHeader = (
  * @internal
  */
 export const maybeAddFilters = (
-    filters?: unknown | undefined
+    filters?: Record<string, Record<string, string> | string | number | boolean | undefined | null> | undefined
 ): ((self: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest) =>
-    maybeAddQueryParameter("filters", Function.pipe(filters, Option.fromNullable, Option.map(JSON.stringify)));
+    maybeAddQueryParameter(
+        "filters",
+        Function.pipe(
+            filters,
+            Option.fromNullable,
+            Option.map(
+                Record.map((val) => (Predicate.isNullable(val) ? Array.empty : Tuple.make(JSON.stringify(val))))
+            ),
+            Option.map(JSON.stringify)
+        )
+    );

@@ -1,6 +1,5 @@
 import * as Schema from "@effect/schema/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as Time from "./Time.generated.js";
 
 export class BuildCache extends Schema.Class<BuildCache>("BuildCache")(
     {
@@ -36,13 +35,13 @@ export class BuildCache extends Schema.Class<BuildCache>("BuildCache")(
         Size: MobySchemas.Int64,
 
         /** CreatedAt is the date and time at which the build cache was created. */
-        CreatedAt: Schema.NullOr(Time.Time),
+        CreatedAt: Schema.NullOr(Schema.DateFromString),
 
         /**
          * LastUsedAt is the date and time at which the build cache was last
          * used.
          */
-        LastUsedAt: Schema.NullOr(Time.Time),
+        LastUsedAt: Schema.NullOr(Schema.DateFromString),
 
         UsageCount: MobySchemas.Int64,
     },

@@ -256,7 +256,7 @@ Implements the `docker search` command.
 ```ts
 export declare const search: (
   options: Images.ImageSearchOptions
-) => Effect.Effect<GeneratedSchemas.RegistrySearchResponse, Images.ImagesError, Images.Images>
+) => Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images>
 ```
 
 Added in v1.0.0

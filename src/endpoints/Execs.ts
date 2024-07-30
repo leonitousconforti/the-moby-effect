@@ -165,7 +165,7 @@ export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default
 
     const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
         Function.pipe(
-            HttpClientRequest.post("/containers/{id}/exec".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/exec`),
             HttpClientRequest.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
             Effect.flatMap(IdResponseClient),
             Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
@@ -184,7 +184,7 @@ export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default
             : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope>;
 
         const response = Function.pipe(
-            HttpClientRequest.post("/exec/{id}/start".replace("{id}", encodeURIComponent(options.id))),
+            HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/start`),
             HttpClientRequest.schemaBody(ContainerExecStartConfig)(
                 Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
             ),

@@ -12,10 +12,11 @@ const connectionOptions = Effect.runSync(PlatformAgents.connectionOptionsFromPla
 const dindLayer = DindEngine.layerNodeJS({
     exposeDindContainerBy: "ssh" as const,
     connectionOptionsToHost: connectionOptions,
+    dindBaseImage: "docker.io/library/docker:23-dind" as const,
 });
 
 Effect.gen(function* () {
-    const result = yield* System.Systems.ping();
+    const result = yield* System.Systems.info();
     yield* Console.log(result);
 })
     .pipe(Effect.provide(dindLayer))

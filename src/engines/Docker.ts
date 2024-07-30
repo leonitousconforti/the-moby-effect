@@ -400,7 +400,7 @@ export const images = (
  */
 export const search = (
     options: Images.ImageSearchOptions
-): Effect.Effect<GeneratedSchemas.RegistrySearchResponse, Images.ImagesError, Images.Images> =>
+): Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images> =>
     Images.Images.search(options);
 
 /**
