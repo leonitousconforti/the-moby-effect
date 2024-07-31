@@ -165,8 +165,8 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.del(`/configs/${encodeURIComponent(options.id)}`),
             client,
-            Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
-            Effect.scoped
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new ConfigsError({ method: "delete", cause }))
         );
 
     const inspect_ = (options: ConfigInspectOptions): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
@@ -183,8 +183,8 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(SwarmConfigSpec)(options.spec),
             Effect.flatMap(client),
-            Effect.mapError((cause) => new ConfigsError({ method: "update", cause })),
-            Effect.scoped
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new ConfigsError({ method: "update", cause }))
         );
 
     return {

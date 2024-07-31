@@ -11,18 +11,19 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
         const connectionVariant = yield* Config.literal("socket", "http", "https", "ssh")("__CONNECTION_VARIANT");
 
         const platformVariant = yield* Config.literal(
-            "node",
             "deno",
             "bun",
-            "node-undici",
+            "node-18.x",
+            "node-20.x",
+            "node-22.x",
+            "bun-undici",
             "deno-undici",
-            "bun-undici"
+            "node-18.x-undici",
+            "node-20.x-undici",
+            "node-22.x-undici"
         )("__PLATFORM_VARIANT");
 
         const dockerEngineVersion = yield* Config.literal(
-            "docker.io/library/docker:dind",
-            "docker.io/library/docker:19-dind",
-            "docker.io/library/docker:20-dind",
             "docker.io/library/docker:23-dind",
             "docker.io/library/docker:24-dind",
             "docker.io/library/docker:25-dind",

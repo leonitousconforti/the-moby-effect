@@ -1,10 +1,18 @@
 import type { MobyConnectionOptions } from "../src/PlatformAgents.ts";
 
-export type PLATFORM_VARIANT = "node" | "deno" | "bun" | "node-undici" | "deno-undici" | "bun-undici";
+export type PLATFORM_VARIANT =
+    | "node-18.x"
+    | "node-20.x"
+    | "node-22.x"
+    | "bun"
+    | "deno"
+    | "node-18.x-undici"
+    | "node-20.x-undici"
+    | "node-22.x-undici"
+    | "bun-undici"
+    | "deno-undici";
+
 export type DOCKER_ENGINE_VERSION =
-    | "docker.io/library/docker:dind"
-    | "docker.io/library/docker:19-dind"
-    | "docker.io/library/docker:20-dind"
     | "docker.io/library/docker:23-dind"
     | "docker.io/library/docker:24-dind"
     | "docker.io/library/docker:25-dind"

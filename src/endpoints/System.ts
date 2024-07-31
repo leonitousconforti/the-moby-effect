@@ -181,43 +181,34 @@ export interface SystemsImpl {
  */
 export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
-
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
-    const SystemInfoClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemInfoResponse)));
-    const SystemAuthResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(AuthResponse)));
-    const SystemVersionClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(SystemVersionResponse))
-    );
-    const SystemDataUsageResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(DiskUsage))
-    );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L324-L339
     const auth_ = (options: RegistryAuthConfig): Effect.Effect<Readonly<AuthResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/auth"),
             HttpClientRequest.schemaBody(RegistryAuthConfig)(options),
-            Effect.flatMap(SystemAuthResponseClient),
-            Effect.mapError((cause) => new SystemsError({ method: "auth", cause })),
-            Effect.scoped
+            Effect.flatMap(client),
+            HttpClientResponse.schemaBodyJsonScoped(AuthResponse),
+            Effect.mapError((cause) => new SystemsError({ method: "auth", cause }))
         );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L60-L110
     const info_ = (): Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/info"),
-            SystemInfoClient,
-            Effect.mapError((cause) => new SystemsError({ method: "info", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(SystemInfoResponse),
+            Effect.mapError((cause) => new SystemsError({ method: "info", cause }))
         );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L112-L119
     const version_ = (): Effect.Effect<Readonly<SystemVersionResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/version"),
-            SystemVersionClient,
-            Effect.mapError((cause) => new SystemsError({ method: "version", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(SystemVersionResponse),
+            Effect.mapError((cause) => new SystemsError({ method: "version", cause }))
         );
 
     // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L31-L49
@@ -263,10 +254,9 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.get("/system/df"),
             maybeAddQueryParameter("type", Option.fromNullable(options?.type)),
-            SystemDataUsageResponseClient,
-            (x) => x,
-            Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(DiskUsage),
+            Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause }))
         );
 
     return {

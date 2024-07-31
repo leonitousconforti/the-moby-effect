@@ -19,6 +19,7 @@ import { JSONMessage } from "../generated/JSONMessage.generated.js";
  * Waits for the progress stream to complete and returns the result.
  *
  * @since 1.0.0
+ * @category Conveyance Sinks
  */
 export const waitForProgressToComplete = <E1, R1>(
     stream: Stream.Stream<JSONMessage, E1, R1>
@@ -28,6 +29,7 @@ export const waitForProgressToComplete = <E1, R1>(
  * Consumes the progress stream and logs it to the console.
  *
  * @since 1.0.0
+ * @category Conveyance Sinks
  */
 export const followProgressSink = Sink.forEach<JSONMessage, void, never, never>((message) =>
     Effect.gen(function* () {
@@ -45,6 +47,7 @@ export const followProgressSink = Sink.forEach<JSONMessage, void, never, never>(
  * Tracks the progress stream in the console and returns the result.
  *
  * @since 1.0.0
+ * @category Conveyance Sinks
  */
 export const followProgressInConsole = <E1, R1>(
     stream: Stream.Stream<JSONMessage, E1, R1>

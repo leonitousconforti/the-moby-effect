@@ -263,7 +263,7 @@ export const run = (
         // Helper to wait until a container is dead or running
         const waitUntilContainerDeadOrRunning = Function.pipe(
             Containers.Containers.inspect({ id: containerCreateResponse.Id }),
-            Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
+            // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 Function.pipe(
                     Match.value(State?.Status),
@@ -287,9 +287,9 @@ export const run = (
         // Helper for if the container has a healthcheck, wait for it to report healthy
         const waitUntilContainerHealthy = Function.pipe(
             Containers.Containers.inspect({ id: containerCreateResponse.Id }),
-            Effect.tap(({ State }) =>
-                Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
-            ),
+            // Effect.tap(({ State }) =>
+            //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
+            // ),
             Effect.flatMap(({ State }) =>
                 Function.pipe(
                     Match.value(State?.Health?.Status),

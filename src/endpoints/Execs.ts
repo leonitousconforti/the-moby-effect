@@ -154,22 +154,16 @@ export interface ExecsImpl {
  * @category Services
  */
 export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-
-    const client = defaultClient.pipe(HttpClient.filterStatusOk);
-    const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const IdResponseClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(IDResponse)));
-    const ExecInspectResponseClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(ExecInspectResponse))
-    );
+    const contextClient = yield* HttpClient.HttpClient;
+    const client = contextClient.pipe(HttpClient.filterStatusOk);
 
     const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/exec`),
             HttpClientRequest.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
-            Effect.flatMap(IdResponseClient),
-            Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
-            Effect.scoped
+            Effect.flatMap(client),
+            HttpClientResponse.schemaBodyJsonScoped(IDResponse),
+            Effect.mapError((cause) => new ExecsError({ method: "container", cause }))
         );
 
     const start_ = <T extends boolean | undefined>(
@@ -207,17 +201,17 @@ export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default
             HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/resize`),
             maybeAddQueryParameter("h", Option.fromNullable(options.h)),
             maybeAddQueryParameter("w", Option.fromNullable(options.w)),
-            voidClient,
-            Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new ExecsError({ method: "resize", cause }))
         );
 
     const inspect_ = (options: ExecInspectOptions): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/exec/${encodeURIComponent(options.id)}/json`),
-            ExecInspectResponseClient,
-            Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(ExecInspectResponse),
+            Effect.mapError((cause) => new ExecsError({ method: "inspect", cause }))
         );
 
     return {

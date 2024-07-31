@@ -7,11 +7,9 @@ on:
     branches: ["main"]
 
 env:
-  node-versions: "['18.x', '20.x', '22.x']"
-  os-variants: "['ubuntu-latest', 'macos-13', 'windows-latest']"
   docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
-  platform-variants: "['node', 'bun', 'deno', 'node-undici', 'bun-undici', 'deno-undici']"
-  docker-engine-versions: "['docker.io/library/docker:19-dind', 'docker.io/library/docker:20-dind', 'docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:27-dind', 'docker.io/library/docker:dind']"
+  platform-variants: "['node-18.x', 'node-20.x', 'node-22.x', 'bun', 'deno', 'node-18.x-undici', 'node-20.x-undici', 'node-22.x-undici', 'bun-undici', 'deno-undici']"
+  docker-engine-versions: "['docker.io/library/docker:23-dind', 'docker.io/library/docker:24-dind', 'docker.io/library/docker:25-dind', 'docker.io/library/docker:26-dind', 'docker.io/library/docker:27-dind']"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -22,55 +20,37 @@ jobs:
   # and I want to use those global env vars to setup things like the matricies for other jobs.
   compute-matricies:
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     outputs:
-      os-variants: ${{ steps.compute-matricies.outputs.os-variants }}
-      node-versions: ${{ steps.compute-matricies.outputs.node-versions }}
       platform-variants: ${{ steps.compute-matricies.outputs.platform-variants }}
       docker-engine-versions: ${{ steps.compute-matricies.outputs.docker-engine-versions }}
       docker-engine-connection-variants: ${{ steps.compute-matricies.outputs.docker-engine-connection-variants }}
     steps:
       - id: compute-matricies
         run: |
-          echo "os-variants=${{ env.os-variants }}" >> $GITHUB_OUTPUT
-          echo "node-versions=${{ env.node-versions }}" >> $GITHUB_OUTPUT
           echo "platform-variants=${{ env.platform-variants }}" >> $GITHUB_OUTPUT
           echo "docker-engine-versions=${{ env.docker-engine-versions }}" >> $GITHUB_OUTPUT
           echo "docker-engine-connection-variants=${{ env.docker-engine-connection-variants }}" >> $GITHUB_OUTPUT
 
-  # Creates pnpm caches for all os/node-version combinations
-  update-pnpm-caches:
-    runs-on: ${{ matrix.os }}
-    needs: [compute-matricies]
-    defaults:
-      run:
-        shell: bash
-    strategy:
-      matrix:
-        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
-        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/common-setup
-        with:
-          node-version: ${{ matrix.node-version }}
-
-  # Builds and lints the typescript code
   typescript-build:
     runs-on: ubuntu-latest
-    needs: [update-pnpm-caches]
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/common-setup
+      - uses: actions/setup-node@v4
         with:
           node-version: 18.x
-      # - run: pnpm check
-      # - run: pnpm build
-      # - run: pnpm lint
+      - uses: pnpm/action-setup@v3
+      - run: pnpm install
+      - run: pnpm check
+      - run: pnpm build
+      - run: pnpm lint
 
-  # Publishes the docker images to ghcr.io (only if they have been modified in this push/pull_request)
+  # Checks that the docker images build and publishes them to ghcr.io
   docker-build:
     runs-on: ubuntu-latest
     needs: [compute-matricies]
+    timeout-minutes: 10
     strategy:
       matrix:
         dockerfile: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
@@ -103,59 +83,45 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
 
   docker-engine-tests:
-    if: false
     needs: [compute-matricies, typescript-build, docker-build]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ fromJSON(needs.compute-matricies.outputs.os-variants) }}
-        node-version: ${{ fromJSON(needs.compute-matricies.outputs.node-versions) }}
         platform-variant: ${{ fromJSON(needs.compute-matricies.outputs.platform-variants) }}
+        docker-engine-version: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-versions) }}
+        docker-engine-connection-variant: ${{ fromJSON(needs.compute-matricies.outputs.docker-engine-connection-variants) }}
+    env:
+      __PLATFORM_VARIANT: ${{ matrix.platform-variant }}
+      __DOCKER_ENGINE_VERSION: ${{ matrix.docker-engine-version }}
+      __CONNECTION_VARIANT: ${{ matrix.docker-engine-connection-variant }}
     steps:
       - uses: actions/checkout@v4
-      - uses: douglascamata/setup-docker-macos-action@v1-alpha.13
-        if: startsWith(matrix.os, 'macos')
-      - uses: ./.github/actions/windows-wsl2
-        if: startsWith(matrix.os, 'windows')
+
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: ./.github/actions/common-setup
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: |
-          docker_engine_versions=$(echo ${{ needs.compute-matricies.outputs.docker-engine-versions }} | tr -d "[]" | tr -d "'")
-          IFS=',' read -r -a docker_engine_versions_array <<< "$docker_engine_versions"
+      - run: docker pull ${{ matrix.docker-engine-version }}
 
-          docker_engine_connection_variants=$(echo ${{ needs.compute-matricies.outputs.docker-engine-connection-variants }} | tr -d "[]" | tr -d "'")
-          IFS=',' read -r -a docker_engine_connection_variants_array <<< "$docker_engine_connection_variants"
+      - if: startsWith(matrix.platform-variant, 'bun')
+        uses: ./.github/actions/setup-bun
+      - if: startsWith(matrix.platform-variant, 'deno')
+        uses: ./.github/actions/setup-deno
+      - if: startsWith(matrix.platform-variant, 'node')
+        uses: ./.github/actions/setup-node
 
-          for image in "${docker_engine_versions_array[@]}"; do
-              image=$(echo $image | xargs)
-              docker pull $image
-          done
-
-          for docker_engine_version in "${docker_engine_versions_array[@]}"; do
-            for docker_engine_connection_variant in "${docker_engine_connection_variants_array[@]}"; do
-              conn_variant=$(echo $docker_engine_connection_variant | xargs)
-              engine_version=$(echo $docker_engine_version | xargs)
-              echo "Running tests for $engine_version with $conn_variant"
-              # __PLATFORM_VARIANT="${{ matrix.platform-variant }}" __CONNECTION_VARIANT="$conn_variant" __DOCKER_ENGINE_VERSION="$engine_version" pnpm test
-            done
-          done
-
-  windows-lab:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/windows-wsl2
-      - uses: mxschmitt/action-tmate@v3
+      - if: startsWith(matrix.platform-variant, 'bun')
+        run: pnpm test
+      - if: startsWith(matrix.platform-variant, 'deno')
+        run: deno run test
+      - if: startsWith(matrix.platform-variant, 'node')
+        run: bun run test
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:

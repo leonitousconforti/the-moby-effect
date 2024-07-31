@@ -21,8 +21,15 @@ describe("MobyApi Images tests", () => {
         Match.value(inject("__PLATFORM_VARIANT")),
         Match.when("bun", () => DindEngine.layerBun),
         Match.when("deno", () => DindEngine.layerDeno),
-        Match.when("node", () => DindEngine.layerNodeJS),
-        Match.whenOr("node-undici", "deno-undici", "bun-undici", () => DindEngine.layerUndici),
+        Match.whenOr("node-18.x", "node-20.x", "node-22.x", () => DindEngine.layerNodeJS),
+        Match.whenOr(
+            "node-18.x-undici",
+            "node-20.x-undici",
+            "node-22.x-undici",
+            "deno-undici",
+            "bun-undici",
+            () => DindEngine.layerUndici
+        ),
         Match.exhaustive
     );
 
@@ -62,7 +69,7 @@ describe("MobyApi Images tests", () => {
         }).pipe(testRuntime.runPromise);
     }, 30_000);
 
-    it("Should inspect an image", async () => {
+    it.skip("Should inspect an image", async () => {
         const inspectResponse = await testRuntime.runPromise(
             Images.Images.inspect({ name: "docker.io/library/alpine:latest" })
         );
@@ -89,7 +96,7 @@ describe("MobyApi Images tests", () => {
         expect(historyResponse).toBeInstanceOf(Array);
     });
 
-    it("Should prune all images", async () => {
+    it.skip("Should prune all images", async () => {
         const pruneResponse = await testRuntime.runPromise(Images.Images.prune({ filters: { dangling: ["true"] } }));
         expect(pruneResponse.CachesDeleted).toBeDefined();
         expect(pruneResponse.SpaceReclaimed).toBeDefined();

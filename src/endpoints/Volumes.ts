@@ -203,10 +203,8 @@ export interface VolumesImpl {
  */
 export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
-
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-    const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
     const VolumeClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Volume)));
     const VolumeListResponseClient = client.pipe(
         HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(VolumeListResponse))
@@ -238,9 +236,9 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.del(`/volumes/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            voidClient,
-            Effect.mapError((cause) => new VolumesError({ method: "delete", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new VolumesError({ method: "delete", cause }))
         );
 
     const inspect_ = (options: VolumeInspectOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
@@ -255,9 +253,9 @@ export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.put(`/volumes/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("version", Option.some(options.version)),
             HttpClientRequest.schemaBody(ClusterVolumeSpec)(options.spec),
-            Effect.flatMap(voidClient),
-            Effect.mapError((cause) => new VolumesError({ method: "update", cause })),
-            Effect.scoped
+            Effect.flatMap(client),
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new VolumesError({ method: "update", cause }))
         );
 
     const prune_ = (

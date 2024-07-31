@@ -186,16 +186,14 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             TasksClient,
-            Effect.mapError((cause) => new TasksError({ method: "list", cause })),
-            Effect.scoped
+            Effect.mapError((cause) => new TasksError({ method: "list", cause }))
         );
 
     const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}`),
             TaskClient,
-            Effect.mapError((cause) => new TasksError({ method: "inspect", cause })),
-            Effect.scoped
+            Effect.mapError((cause) => new TasksError({ method: "inspect", cause }))
         );
 
     const logs_ = (options: TaskLogsOptions): Stream.Stream<string, TasksError, never> =>

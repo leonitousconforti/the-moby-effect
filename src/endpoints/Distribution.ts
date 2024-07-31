@@ -87,8 +87,7 @@ export const make: Effect.Effect<DistributionsImpl, never, HttpClient.HttpClient
             HttpClientRequest.get(`/distribution/${encodeURIComponent(options.name)}/json`),
             client,
             HttpClientResponse.schemaBodyJsonScoped(RegistryDistributionInspect),
-            Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),
-            Effect.scoped
+            Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause }))
         );
 
     return { inspect: inspect_ };

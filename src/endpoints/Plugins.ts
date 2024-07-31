@@ -368,15 +368,7 @@ export interface PluginsImpl {
  */
 export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
-
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
-
-    const voidClient = client.pipe(HttpClient.transform(Effect.asVoid));
-    const PluginClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Plugin)));
-    const PluginsClient = client.pipe(HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(Plugin))));
-    const PluginPrivilegesClient = client.pipe(
-        HttpClient.mapEffect(HttpClientResponse.schemaBodyJson(Schema.Array(PluginPrivilege)))
-    );
 
     const list_ = (options?: PluginListOptions | undefined): Effect.Effect<Readonly<Array<Plugin>>, PluginsError> =>
         Function.pipe(
@@ -385,9 +377,9 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
-            PluginsClient,
-            Effect.mapError((cause) => new PluginsError({ method: "list", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(Plugin)),
+            Effect.mapError((cause) => new PluginsError({ method: "list", cause }))
         );
 
     const getPrivileges_ = (
@@ -396,9 +388,9 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.get("/plugins/privileges"),
             maybeAddQueryParameter("remote", Option.some(options.remote)),
-            PluginPrivilegesClient,
-            Effect.mapError((cause) => new PluginsError({ method: "getPrivileges", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(PluginPrivilege)),
+            Effect.mapError((cause) => new PluginsError({ method: "getPrivileges", cause }))
         );
 
     const pull_ = (options: PluginPullOptions): Effect.Effect<void, PluginsError, never> =>
@@ -408,44 +400,44 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
             maybeAddQueryParameter("remote", Option.some(options.remote)),
             maybeAddQueryParameter("name", Option.fromNullable(options.name)),
             HttpClientRequest.schemaBody(Schema.Array(PluginPrivilege))(options.body ?? []),
-            Effect.flatMap(voidClient),
-            Effect.mapError((cause) => new PluginsError({ method: "pull", cause })),
-            Effect.scoped
+            Effect.flatMap(client),
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "pull", cause }))
         );
 
     const inspect_ = (options: PluginInspectOptions): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/plugins/${encodeURIComponent(options.name)}/json`),
-            PluginClient,
-            Effect.mapError((cause) => new PluginsError({ method: "inspect", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.schemaBodyJsonScoped(Plugin),
+            Effect.mapError((cause) => new PluginsError({ method: "inspect", cause }))
         );
 
     const delete_ = (options: PluginDeleteOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/plugins/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            voidClient,
-            Effect.mapError((cause) => new PluginsError({ method: "delete", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "delete", cause }))
         );
 
     const enable_ = (options: PluginEnableOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/enable`),
             maybeAddQueryParameter("timeout", Option.fromNullable(options.timeout)),
-            voidClient,
-            Effect.mapError((cause) => new PluginsError({ method: "enable", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "enable", cause }))
         );
 
     const disable_ = (options: PluginDisableOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/disable`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            voidClient,
-            Effect.mapError((cause) => new PluginsError({ method: "disable", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "disable", cause }))
         );
 
     const upgrade_ = (options: PluginUpgradeOptions): Effect.Effect<void, PluginsError, never> =>
@@ -454,9 +446,9 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
             maybeAddHeader("X-Registry-Auth", Option.fromNullable(options["X-Registry-Auth"])),
             maybeAddQueryParameter("remote", Option.some(options.remote)),
             HttpClientRequest.schemaBody(Schema.Array(PluginPrivilege))(options.body ?? []),
-            Effect.flatMap(voidClient),
-            Effect.mapError((cause) => new PluginsError({ method: "upgrade", cause })),
-            Effect.scoped
+            Effect.flatMap(client),
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "upgrade", cause }))
         );
 
     const create_ = <E1>(options: PluginCreateOptions<E1>): Effect.Effect<void, PluginsError, never> =>
@@ -464,26 +456,26 @@ export const make: Effect.Effect<PluginsImpl, never, HttpClient.HttpClient.Defau
             HttpClientRequest.post("/plugins/create"),
             maybeAddQueryParameter("name", Option.some(options.name)),
             HttpClientRequest.streamBody(options.tarContext),
-            voidClient,
-            Effect.mapError((cause) => new PluginsError({ method: "create", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "create", cause }))
         );
 
     const push_ = (options: PluginPushOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/push`),
-            voidClient,
-            Effect.mapError((cause) => new PluginsError({ method: "push", cause })),
-            Effect.scoped
+            client,
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "push", cause }))
         );
 
     const set_ = (options: PluginSetOptions): Effect.Effect<void, PluginsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/set`),
             HttpClientRequest.schemaBody(Schema.Array(Schema.String))(options.body ?? []),
-            Effect.flatMap(voidClient),
-            Effect.mapError((cause) => new PluginsError({ method: "set", cause })),
-            Effect.scoped
+            Effect.flatMap(client),
+            HttpClientResponse.void,
+            Effect.mapError((cause) => new PluginsError({ method: "set", cause }))
         );
 
     return {

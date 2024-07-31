@@ -1,0 +1,8 @@
+name: "Setup Deno"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: vx.x.x
