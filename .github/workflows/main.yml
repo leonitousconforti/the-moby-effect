@@ -40,7 +40,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18.x
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
       - run: pnpm install
       - run: pnpm check
       - run: pnpm build
