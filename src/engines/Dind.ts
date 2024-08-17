@@ -79,7 +79,7 @@ const makeDindLayer = <E1>(
             buildArgs: { DIND_BASE_IMAGE: dindBaseImage },
             dockerfile: `dind-${exposeDindContainerBy}.dockerfile`,
             tag: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
-            context: Convey.packBuildContextIntoTarballStream(cwd, [`dind-${exposeDindContainerBy}.dockerfile`]),
+            context: Convey.packBuildContextIntoTarballStreamServer(cwd, [`dind-${exposeDindContainerBy}.dockerfile`]),
         });
 
         // Wait for the image to be built
