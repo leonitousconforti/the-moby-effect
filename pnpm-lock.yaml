@@ -27,7 +27,7 @@ importers:
         version: 3.0.6
       undici:
         specifier: ^6.19.7
-        version: 6.19.7
+        version: 6.19.8
     devDependencies:
       '@babel/cli':
         specifier: 7.24.8
@@ -2997,8 +2997,8 @@ packages:
   undici-types@6.19.6:
     resolution: {integrity: sha512-e/vggGopEfTKSvj4ihnOLTsqhrKRN3LeO6qSN/GxohhuRv8qH9bNQ4B8W7e/vFL+0XTnmHPB4/kegunZGA4Org==}
 
-  undici@6.19.7:
-    resolution: {integrity: sha512-HR3W/bMGPSr90i8AAp2C4DM3wChFdJPLrWYpIS++LxS8K+W535qftjt+4MyjNYHeWabMj1nvtmLIi7l++iq91A==}
+  undici@6.19.8:
+    resolution: {integrity: sha512-U8uCCl2x9TK3WANvmBavymRzxbfFYG+tAu+fgx3zxQy3qdagQqBLwJVrdyO1TBfUXvfKveMKJZhpvUYoOjM+4g==}
     engines: {node: '>=18.17'}
 
   unist-util-stringify-position@2.0.3:
@@ -3388,7 +3388,7 @@ snapshots:
       '@effect/platform-node-shared': 0.12.0(@effect/platform@0.62.0(@effect/schema@0.71.0(effect@3.6.4))(effect@3.6.4))(effect@3.6.4)
       effect: 3.6.4
       mime: 3.0.0
-      undici: 6.19.7
+      undici: 6.19.8
       ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
@@ -6246,7 +6246,7 @@ snapshots:
 
   undici-types@6.19.6: {}
 
-  undici@6.19.7:
+  undici@6.19.8:
     optional: true
 
   unist-util-stringify-position@2.0.3:
