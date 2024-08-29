@@ -19,6 +19,11 @@ import * as Schedule from "effect/Schedule";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 
+import * as path from "path";
+import * as HttpBlob from "../blobs/Http.js";
+import * as HttpsBlob from "../blobs/Https.js";
+import * as SocketBlob from "../blobs/Socket.js";
+import * as SshBlob from "../blobs/Ssh.js";
 import * as Convey from "../Convey.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Images from "../endpoints/Images.js";
@@ -48,8 +53,22 @@ export type DindLayer = Layer.Layer<
 export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
     Layer.Layer.Success<DindLayer>,
     E1 | Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
-    Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer> | Path.Path | FileSystem.FileSystem
+    Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer>
 >;
+
+/**
+ * @since 1.0.0
+ * @category Blobs
+ */
+export const blobForExposeBy: (exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]) => string =
+    Function.pipe(
+        Match.type<PlatformAgents.MobyConnectionOptions["_tag"]>(),
+        Match.when("ssh", () => SshBlob.content),
+        Match.when("http", () => HttpBlob.content),
+        Match.when("https", () => HttpsBlob.content),
+        Match.when("socket", () => SocketBlob.content),
+        Match.exhaustive
+    );
 
 /**
  * Spawns a docker in docker container on the remote host provided by another
@@ -61,9 +80,6 @@ const makeDindLayer = <E1>(
     dindBaseImage: string
 ) =>
     Effect.gen(function* () {
-        const path: Path.Path = yield* Path.Path;
-        const filesystem: FileSystem.FileSystem = yield* FileSystem.FileSystem;
-
         // Make sure the remote docker engine host is reachable
         yield* System.Systems.pingHead();
 
@@ -74,19 +90,18 @@ const makeDindLayer = <E1>(
 
         // Build the docker image for the dind container
         const dindTag = Array.lastNonEmpty(String.split(dindBaseImage, ":"));
-        const cwd = yield* path.fromFileUrl(new URL("../../docker/", import.meta.url));
+        const dindBlob = blobForExposeBy(exposeDindContainerBy);
         const buildStream = DockerEngine.build({
+            dockerfile: "Dockerfile",
             buildArgs: { DIND_BASE_IMAGE: dindBaseImage },
-            dockerfile: `dind-${exposeDindContainerBy}.dockerfile`,
             tag: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
-            context: Convey.packBuildContextIntoTarballStream(cwd, [`dind-${exposeDindContainerBy}.dockerfile`]),
+            context: Convey.packBuildContextIntoTarballStreamWeb({ Dockerfile: dindBlob }),
         });
 
         // Wait for the image to be built
         yield* Convey.waitForProgressToComplete(buildStream);
 
         // Create a temporary directory to store the docker socket
-        const tempCertsDirectory = yield* filesystem.makeTempDirectory();
         const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
 
         // Create the dind container
@@ -101,11 +116,7 @@ const makeDindLayer = <E1>(
                 },
                 HostConfig: {
                     Privileged: true,
-                    Binds: [
-                        `${tempCertsDirectory}/:/certs/`,
-                        `${tempSocketDirectory}/:/var/run/`,
-                        `${volumeCreateResponse.Name}:/var/lib/docker`,
-                    ],
+                    Binds: [`${tempSocketDirectory}/:/var/run/`, `${volumeCreateResponse.Name}:/var/lib/docker`],
                     PortBindings: {
                         "22/tcp": [{ HostPort: "0" }],
                         "2375/tcp": [{ HostPort: "0" }],
