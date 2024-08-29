@@ -26,9 +26,9 @@
       "integrity": "sha256:6adad519ea1b49989de42ce5bde5add32748cae68eeb6034db4c2d69e87c161b"
     },
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "1.5.0",
-      "resolved": "ghcr.io/devcontainers/features/node@sha256:a124954d7ed085eb90e08e6fcecac8cbcbb866317ab16deb2c7797d63cbf35d6",
-      "integrity": "sha256:a124954d7ed085eb90e08e6fcecac8cbcbb866317ab16deb2c7797d63cbf35d6"
+      "version": "1.6.0",
+      "resolved": "ghcr.io/devcontainers/features/node@sha256:902b97a02d04ffd3404579d793f3e101d1126d4d198929196c5872ed75a6d351",
+      "integrity": "sha256:902b97a02d04ffd3404579d793f3e101d1126d4d198929196c5872ed75a6d351"
     }
   }
 }
