@@ -14,14 +14,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [utils](#utils)
+- [Conveyance Sinks](#conveyance-sinks)
   - [followProgressInConsole](#followprogressinconsole)
   - [followProgressSink](#followprogresssink)
   - [waitForProgressToComplete](#waitforprogresstocomplete)
 
 ---
 
-# utils
+# Conveyance Sinks
 
 ## followProgressInConsole
 

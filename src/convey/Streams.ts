@@ -6,6 +6,7 @@
 
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Option from "effect/Option";
 import * as Stream from "effect/Stream";
 
 import * as Images from "../endpoints/Images.js";
@@ -14,7 +15,7 @@ import * as Images from "../endpoints/Images.js";
  * Packs the context into a tarball stream to use with the build endpoint using
  * the tar-fs npm package. Because we read from the filesystem, this will only
  * work in Node.js/Deno/Bun. If you need to pack a build context in the browser,
- * see {@link packBuildContextIntoTarballStream2}.
+ * see {@link packBuildContextIntoTarballStreamWeb}.
  *
  * @since 1.0.0
  * @category Conveyance Streams
@@ -44,7 +45,9 @@ export const packBuildContextIntoTarballStreamServer = (
  */
 export const packBuildContextIntoTarballStreamWeb = (
     entries: Record<string, string | Uint8Array>
-): Stream.Stream<Uint8Array, Images.ImagesError, never> => Stream.never;
+): Stream.Stream<Uint8Array, Images.ImagesError, never> => Stream.never as any;
+
+Stream.unfold(new Uint8Array(), (buffer) => Option.none());
 
 // struct posix_header {          // byte offset
 // 	char name[100];               // 0
