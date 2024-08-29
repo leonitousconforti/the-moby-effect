@@ -27,7 +27,7 @@ export const waitForProgressToComplete = sinksInternal.waitForProgressToComplete
  * Packs the context into a tarball stream to use with the build endpoint using
  * the tar-fs npm package. Because we read from the filesystem, this will only
  * work in Node.js/Deno/Bun. If you need to pack a build context in the browser,
- * see {@link packBuildContextIntoTarballStreamWeb}.
+ * see {@link packBuildContextIntoTarballStream2}.
  *
  * @since 1.0.0
  * @category Conveyance Streams
