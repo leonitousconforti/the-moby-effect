@@ -45,7 +45,7 @@
         "test": "vitest"
     },
     "devDependencies": {
-        "@babel/cli": "7.24.8",
+        "@babel/cli": "7.25.6",
         "@babel/core": "7.25.2",
         "@babel/plugin-transform-export-namespace-from": "7.24.7",
         "@babel/plugin-transform-modules-commonjs": "7.24.8",
