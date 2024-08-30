@@ -12,24 +12,24 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    groups:
-      effect:
-        applies-to: version-updates
-        patterns:
-          - "effect"
-          - "@effect*"
-      babel:
-        applies-to: version-updates
-        patterns:
-          - "babel"
-          - "@babel/*"
-      typescript:
-        applies-to: version-updates
-        patterns:
-          - "tsx"
-          - "typescript"
-          - "@typescript-eslint/*"
+  # - package-ecosystem: "npm"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "daily"
+  #   groups:
+  #     effect:
+  #       applies-to: version-updates
+  #       patterns:
+  #         - "effect"
+  #         - "@effect*"
+  #     babel:
+  #       applies-to: version-updates
+  #       patterns:
+  #         - "babel"
+  #         - "@babel/*"
+  #     typescript:
+  #       applies-to: version-updates
+  #       patterns:
+  #         - "tsx"
+  #         - "typescript"
+  #         - "@typescript-eslint/*"
