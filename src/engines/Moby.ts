@@ -185,7 +185,7 @@ export const layerUndici: MobyLayerConstructorImpl = (
  * @category Layers
  */
 export const layerWeb: MobyLayerConstructorImpl<ConfigError.ConfigError> = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
+    connectionOptions: PlatformAgents.MobyConnectionOptions | PlatformAgents.MobyConnectionOptionsHttpsTagged
 ): MobyLayer<ConfigError.ConfigError> => {
     const platformLayerConstructor = PlatformAgents.makeWebHttpClientLayer;
     const platformHttpLayer = platformLayerConstructor(connectionOptions);
