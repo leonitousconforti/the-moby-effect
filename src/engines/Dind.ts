@@ -102,7 +102,15 @@ const makeDindLayer = <E1>(
         yield* Convey.waitForProgressToComplete(buildStream);
 
         // Create a temporary directory to store the docker socket
-        const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
+        const binds = yield* Effect.if(exposeDindContainerBy === "socket", {
+            onFalse: () => Effect.succeed([`${volumeCreateResponse.Name}:/var/lib/docker`]),
+            onTrue: () =>
+                Effect.gen(function* () {
+                    const filesystem = yield* FileSystem.FileSystem;
+                    const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
+                    return [`${tempSocketDirectory}/:/var/run/`, `${volumeCreateResponse.Name}:/var/lib/docker`];
+                }),
+        });
 
         // Create the dind container
         const containerInspectResponse = yield* DockerEngine.runScoped({
@@ -116,7 +124,7 @@ const makeDindLayer = <E1>(
                 },
                 HostConfig: {
                     Privileged: true,
-                    Binds: [`${tempSocketDirectory}/:/var/run/`, `${volumeCreateResponse.Name}:/var/lib/docker`],
+                    Binds: binds,
                     PortBindings: {
                         "22/tcp": [{ HostPort: "0" }],
                         "2375/tcp": [{ HostPort: "0" }],
@@ -160,6 +168,7 @@ const makeDindLayer = <E1>(
             Stream.runDrain
         );
 
+        const a = Containers.Containers.archive({ id: containerInspectResponse.Id, path: "/certs" });
         const ca = yield* Effect.if(exposeDindContainerBy === "https", {
             onFalse: () => Effect.succeed(undefined),
             onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "ca.pem")),
