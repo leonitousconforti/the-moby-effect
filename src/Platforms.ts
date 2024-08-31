@@ -66,34 +66,127 @@ export const makeUndiciHttpClientLayer = UndiciInternal.makeUndiciHttpClientLaye
 export const makeWebHttpClientLayer = WebInternal.makeWebHttpClientLayer;
 
 /**
+ * Connection options for how to connect to your moby/docker instance. Can be a
+ * unix socket on the current machine. Can be an ssh connection to a remote
+ * machine with a remote user, remote machine, remote port, and remote socket
+ * path. Can be an http connection to a remote machine with a host, port, and
+ * path. Or it can be an https connection to a remote machine with a host, port,
+ * path, cert, ca, key, and passphrase.
+ *
  * @since 1.0.0
  * @category Connection Types
  */
-export const HttpConnectionOptions = CommonInternal.HttpConnectionOptions;
+export type MobyConnectionOptions = CommonInternal.MobyConnectionOptions;
 
 /**
  * @since 1.0.0
  * @category Connection Types
  */
-export const HttpsConnectionOptions = CommonInternal.HttpsConnectionOptions;
+export type SocketConnectionOptions = CommonInternal.SocketConnectionOptions;
 
 /**
  * @since 1.0.0
  * @category Connection Types
+ */
+export type SocketConnectionOptionsTagged = CommonInternal.SocketConnectionOptionsTagged;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type HttpConnectionOptions = CommonInternal.HttpConnectionOptions;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type HttpConnectionOptionsTagged = CommonInternal.HttpConnectionOptionsTagged;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type HttpsConnectionOptions = CommonInternal.HttpsConnectionOptions;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type HttpsConnectionOptionsTagged = CommonInternal.HttpsConnectionOptionsTagged;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type SshConnectionOptions = CommonInternal.SshConnectionOptions;
+
+/**
+ * @since 1.0.0
+ * @category Connection Types
+ */
+export type SshConnectionOptionsTagged = CommonInternal.SshConnectionOptionsTagged;
+
+/**
+ * @since 1.0.0
+ * @category Connection Constructors
+ * @code
+ *     import { SocketConnectionOptions } from "@the-moby-effect/Agent";
+ *     const connectionOptions = SocketConnectionOptions({
+ *         socketPath: "/var/run/docker.sock",
+ *     });
  */
 export const SocketConnectionOptions = CommonInternal.SocketConnectionOptions;
 
 /**
+ * Connects to a remote machine over ssh. This specific ssh implementation uses
+ * the OpenSSH extension "ForwardOutLocalStream" (so you must being running an
+ * OpenSSH server or something that implements the "ForwardOutLocalStream"
+ * extension) that opens a connection to a UNIX domain socket at socketPath on
+ * the server.
+ *
  * @since 1.0.0
- * @category Connection Types
+ * @category Connection Constructors
+ * @code
+ *     import { SshConnectionOptions } from "@the-moby-effect/Agent";
+ *     const connectionOptions = SshConnectionOptions({
+ *         host: "host.domain.com",
+ *         port: 2222,
+ *         username: "user",
+ *         password: "password",
+ *         remoteSocketPath: "/var/run/docker.sock",
+ *     });
  */
 export const SshConnectionOptions = CommonInternal.SshConnectionOptions;
 
 /**
  * @since 1.0.0
- * @category Connection Types
+ * @category Connection Constructors
+ * @code
+ *     import { HttpConnectionOptions } from "@the-moby-effect/Agent";
+ *     const connectionOptions = HttpConnectionOptions({
+ *         host: "host.domain.com",
+ *         port: 2375,
+ *         path: "/proxy-path",
+ *     });
  */
-export type MobyConnectionOptions = CommonInternal.MobyConnectionOptions;
+export const HttpConnectionOptions = CommonInternal.HttpConnectionOptions;
+
+/**
+ * @since 1.0.0
+ * @category Connection Constructors
+ * @code
+ *     import { HttpsConnectionOptions } from "@the-moby-effect/Agent";
+ *     const connectionOptions = HttpsConnectionOptions({
+ *         host: "host.domain.com",
+ *         port: 2375,
+ *         path: "/proxy-path",
+ *         cert: fs.readFileSync("cert.pem"),
+ *         ca: fs.readFileSync("ca.pem"),
+ *         key: fs.readFileSync("key.pem"),
+ *         passphrase: "password",
+ *     });
+ */
+export const HttpsConnectionOptions = CommonInternal.HttpsConnectionOptions;
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a

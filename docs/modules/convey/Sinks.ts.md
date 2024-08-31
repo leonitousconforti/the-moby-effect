@@ -1,6 +1,6 @@
 ---
 title: convey/Sinks.ts
-nav_order: 2
+nav_order: 9
 parent: Modules
 ---
 
@@ -32,7 +32,7 @@ Tracks the progress stream in the console and returns the result.
 ```ts
 export declare const followProgressInConsole: <E1, R1>(
   stream: Stream.Stream<JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<JSONMessage>, E1, R1>
+) => Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>>
 ```
 
 Added in v1.0.0

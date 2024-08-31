@@ -1,3 +1,9 @@
+/**
+ * GNU ustar tar implementation.
+ *
+ * @since 1.0.0
+ */
+
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Array from "effect/Array";
 import * as Chunk from "effect/Chunk";

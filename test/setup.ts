@@ -4,7 +4,7 @@ import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
-import * as PlatformAgents from "the-moby-effect/PlatformAgents";
+import * as Platforms from "the-moby-effect/Platforms";
 
 export const setup = async function ({ provide }: GlobalSetupContext): Promise<void> {
     await Effect.gen(function* () {
@@ -31,11 +31,11 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
             "docker.io/library/docker:27-dind"
         )("__DOCKER_ENGINE_VERSION");
 
-        const connectionOptions: PlatformAgents.MobyConnectionOptions = yield* Function.pipe(
+        const connectionOptions: Platforms.MobyConnectionOptions = yield* Function.pipe(
             Config.string("__DOCKER_HOST_CONNECTION_OPTIONS"),
             Config.option,
-            Config.map(Option.map(PlatformAgents.connectionOptionsFromUrl)),
-            Config.map(Option.getOrElse(PlatformAgents.connectionOptionsFromPlatformSystemSocketDefault)),
+            Config.map(Option.map(Platforms.connectionOptionsFromUrl)),
+            Config.map(Option.getOrElse(Platforms.connectionOptionsFromPlatformSystemSocketDefault)),
             Effect.flatten
         );
 

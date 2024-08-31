@@ -24,7 +24,7 @@ export * as DockerEngine from "./DockerEngine.js"
  *
  * @since 1.0.0
  */
-export * as PlatformAgents from "./PlatformAgents.js"
+export * as Platforms from "./Platforms.js"
 
 /**
  * Podman helpers

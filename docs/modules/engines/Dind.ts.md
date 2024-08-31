@@ -1,6 +1,6 @@
 ---
 title: engines/Dind.ts
-nav_order: 27
+nav_order: 34
 parent: Modules
 ---
 
@@ -14,6 +14,10 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Blobs](#blobs)
+  - [blobForExposeBy](#blobforexposeby)
+- [Constants](#constants)
+  - [DefaultDindBaseImage](#defaultdindbaseimage)
 - [Layer](#layer)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -26,6 +30,30 @@ Added in v1.0.0
 
 ---
 
+# Blobs
+
+## blobForExposeBy
+
+**Signature**
+
+```ts
+export declare const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]) => string
+```
+
+Added in v1.0.0
+
+# Constants
+
+## DefaultDindBaseImage
+
+**Signature**
+
+```ts
+export declare const DefaultDindBaseImage: string
+```
+
+Added in v1.0.0
+
 # Layer
 
 ## layerBun
@@ -35,9 +63,9 @@ Added in v1.0.0
 ```ts
 export declare const layerBun: (options: {
   dindBaseImage?: string | undefined
-  connectionOptionsToHost: PlatformAgents.MobyConnectionOptions
-  exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]
-}) => DindLayer
+  connectionOptionsToHost: Platforms.MobyConnectionOptions
+  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
+}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
 ```
 
 Added in v1.0.0
@@ -49,9 +77,9 @@ Added in v1.0.0
 ```ts
 export declare const layerDeno: (options: {
   dindBaseImage?: string | undefined
-  connectionOptionsToHost: PlatformAgents.MobyConnectionOptions
-  exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]
-}) => DindLayer
+  connectionOptionsToHost: Platforms.MobyConnectionOptions
+  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
+}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
 ```
 
 Added in v1.0.0
@@ -63,9 +91,9 @@ Added in v1.0.0
 ```ts
 export declare const layerNodeJS: (options: {
   dindBaseImage?: string | undefined
-  connectionOptionsToHost: PlatformAgents.MobyConnectionOptions
-  exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]
-}) => DindLayer
+  connectionOptionsToHost: Platforms.MobyConnectionOptions
+  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
+}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
 ```
 
 Added in v1.0.0
@@ -77,9 +105,9 @@ Added in v1.0.0
 ```ts
 export declare const layerUndici: (options: {
   dindBaseImage?: string | undefined
-  connectionOptionsToHost: PlatformAgents.MobyConnectionOptions
-  exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]
-}) => DindLayer
+  connectionOptionsToHost: Platforms.MobyConnectionOptions
+  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
+}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
 ```
 
 Added in v1.0.0
@@ -91,18 +119,9 @@ Added in v1.0.0
 ```ts
 export declare const layerWeb: (options: {
   dindBaseImage?: string | undefined
-  connectionOptionsToHost: PlatformAgents.MobyConnectionOptions
-  exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]
-}) => Layer.Layer<
-  Layer.Layer.Success<DockerEngine.DockerLayer>,
-  | ConfigError.ConfigError
-  | Images.ImagesError
-  | Containers.ContainersError
-  | Volumes.VolumesError
-  | System.SystemsError
-  | PlatformError.PlatformError,
-  Path.Path | FileSystem.FileSystem
->
+  exposeDindContainerBy: "http" | "https"
+  connectionOptionsToHost: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+}) => DindLayer<never, never>
 ```
 
 Added in v1.0.0
@@ -114,14 +133,15 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DindLayer = Layer.Layer<
+export type DindLayer<E1 = PlatformError.PlatformError, R1 = Path.Path | FileSystem.FileSystem> = Layer.Layer<
   Layer.Layer.Success<DockerEngine.DockerLayer>,
   | Images.ImagesError
-  | Containers.ContainersError
-  | Volumes.VolumesError
   | System.SystemsError
-  | PlatformError.PlatformError,
-  Path.Path | FileSystem.FileSystem
+  | Volumes.VolumesError
+  | ParseResult.ParseError
+  | Containers.ContainersError
+  | E1,
+  R1
 >
 ```
 
@@ -132,10 +152,10 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
+export type DindLayerWithoutDockerEngineRequirement = Layer.Layer<
   Layer.Layer.Success<DindLayer>,
-  E1 | Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
-  Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer> | Path.Path | FileSystem.FileSystem
+  Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
+  Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer>
 >
 ```
 

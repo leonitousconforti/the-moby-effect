@@ -1,3 +1,9 @@
+/**
+ * GNU ustar untar implementation.
+ *
+ * @since 1.0.0
+ */
+
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Chunk from "effect/Chunk";
 import * as Duration from "effect/Duration";

@@ -1,10 +1,10 @@
 ---
-title: PlatformAgents.ts
-nav_order: 32
+title: Platforms.ts
+nav_order: 39
 parent: Modules
 ---
 
-## PlatformAgents overview
+## Platforms overview
 
 Http, https, ssh, and unix socket connection agents for all platforms.
 
@@ -20,13 +20,22 @@ Added in v1.0.0
   - [makeNodeHttpClientLayer](#makenodehttpclientlayer)
   - [makeUndiciHttpClientLayer](#makeundicihttpclientlayer)
   - [makeWebHttpClientLayer](#makewebhttpclientlayer)
-- [Connection Types](#connection-types)
+- [Connection Constructors](#connection-constructors)
   - [HttpConnectionOptions](#httpconnectionoptions)
   - [HttpsConnectionOptions](#httpsconnectionoptions)
-  - [MobyConnectionOptions](#mobyconnectionoptions)
-  - [MobyConnectionOptions (type alias)](#mobyconnectionoptions-type-alias)
   - [SocketConnectionOptions](#socketconnectionoptions)
   - [SshConnectionOptions](#sshconnectionoptions)
+- [Connection Types](#connection-types)
+  - [HttpConnectionOptions (type alias)](#httpconnectionoptions-type-alias)
+  - [HttpConnectionOptionsTagged (type alias)](#httpconnectionoptionstagged-type-alias)
+  - [HttpsConnectionOptions (type alias)](#httpsconnectionoptions-type-alias)
+  - [HttpsConnectionOptionsTagged (type alias)](#httpsconnectionoptionstagged-type-alias)
+  - [MobyConnectionOptions](#mobyconnectionoptions)
+  - [MobyConnectionOptions (type alias)](#mobyconnectionoptions-type-alias)
+  - [SocketConnectionOptions (type alias)](#socketconnectionoptions-type-alias)
+  - [SocketConnectionOptionsTagged (type alias)](#socketconnectionoptionstagged-type-alias)
+  - [SshConnectionOptions (type alias)](#sshconnectionoptions-type-alias)
+  - [SshConnectionOptionsTagged (type alias)](#sshconnectionoptionstagged-type-alias)
 - [Constructors](#constructors)
   - [connectionOptionsFromDockerHostEnvironmentVariable](#connectionoptionsfromdockerhostenvironmentvariable)
   - [connectionOptionsFromPlatformSystemSocketDefault](#connectionoptionsfromplatformsystemsocketdefault)
@@ -301,43 +310,6 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeWebHttpClientLayer: (
   connectionOptions:
-    | { readonly _tag: "socket"; readonly socketPath: string }
-    | {
-        readonly _tag: "ssh"
-        readonly remoteSocketPath: string
-        readonly host?: string | undefined
-        readonly port?: number | undefined
-        readonly forceIPv4?: boolean | undefined
-        readonly forceIPv6?: boolean | undefined
-        readonly hostHash?: string | undefined
-        readonly hostVerifier?:
-          | HostVerifier
-          | SyncHostVerifier
-          | HostFingerprintVerifier
-          | SyncHostFingerprintVerifier
-          | undefined
-        readonly username?: string | undefined
-        readonly password?: string | undefined
-        readonly agent?: string | BaseAgent<string | Buffer | ParsedKey> | undefined
-        readonly privateKey?: string | Buffer | undefined
-        readonly passphrase?: string | Buffer | undefined
-        readonly localHostname?: string | undefined
-        readonly localUsername?: string | undefined
-        readonly tryKeyboard?: boolean | undefined
-        readonly keepaliveInterval?: number | undefined
-        readonly keepaliveCountMax?: number | undefined
-        readonly readyTimeout?: number | undefined
-        readonly strictVendor?: boolean | undefined
-        readonly sock?: Readable | undefined
-        readonly agentForward?: boolean | undefined
-        readonly algorithms?: Algorithms | undefined
-        readonly debug?: DebugFunction | undefined
-        readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[] | undefined
-        readonly localAddress?: string | undefined
-        readonly localPort?: number | undefined
-        readonly timeout?: number | undefined
-        readonly ident?: string | Buffer | undefined
-      }
     | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
     | {
         readonly _tag: "https"
@@ -349,12 +321,12 @@ export declare const makeWebHttpClientLayer: (
         readonly key?: string | undefined
         readonly passphrase?: string | undefined
       }
-) => Layer<HttpClient.Default, ConfigError.ConfigError, never>
+) => Layer<HttpClient.Default, never, never>
 ```
 
 Added in v1.0.0
 
-# Connection Types
+# Connection Constructors
 
 ## HttpConnectionOptions
 
@@ -387,6 +359,115 @@ export declare const HttpsConnectionOptions: Case.Constructor<
   },
   "_tag"
 >
+```
+
+Added in v1.0.0
+
+## SocketConnectionOptions
+
+**Signature**
+
+```ts
+export declare const SocketConnectionOptions: Case.Constructor<
+  { readonly _tag: "socket"; readonly socketPath: string },
+  "_tag"
+>
+```
+
+Added in v1.0.0
+
+## SshConnectionOptions
+
+Connects to a remote machine over ssh. This specific ssh implementation uses
+the OpenSSH extension "ForwardOutLocalStream" (so you must being running an
+OpenSSH server or something that implements the "ForwardOutLocalStream"
+extension) that opens a connection to a UNIX domain socket at socketPath on
+the server.
+
+**Signature**
+
+```ts
+export declare const SshConnectionOptions: Case.Constructor<
+  {
+    readonly _tag: "ssh"
+    readonly remoteSocketPath: string
+    readonly host?: string | undefined
+    readonly port?: number | undefined
+    readonly forceIPv4?: boolean | undefined
+    readonly forceIPv6?: boolean | undefined
+    readonly hostHash?: string | undefined
+    readonly hostVerifier?:
+      | HostVerifier
+      | SyncHostVerifier
+      | HostFingerprintVerifier
+      | SyncHostFingerprintVerifier
+      | undefined
+    readonly username?: string | undefined
+    readonly password?: string | undefined
+    readonly agent?: string | BaseAgent<string | Buffer | ParsedKey> | undefined
+    readonly privateKey?: string | Buffer | undefined
+    readonly passphrase?: string | Buffer | undefined
+    readonly localHostname?: string | undefined
+    readonly localUsername?: string | undefined
+    readonly tryKeyboard?: boolean | undefined
+    readonly keepaliveInterval?: number | undefined
+    readonly keepaliveCountMax?: number | undefined
+    readonly readyTimeout?: number | undefined
+    readonly strictVendor?: boolean | undefined
+    readonly sock?: Readable | undefined
+    readonly agentForward?: boolean | undefined
+    readonly algorithms?: Algorithms | undefined
+    readonly debug?: DebugFunction | undefined
+    readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[] | undefined
+    readonly localAddress?: string | undefined
+    readonly localPort?: number | undefined
+    readonly timeout?: number | undefined
+    readonly ident?: string | Buffer | undefined
+  },
+  "_tag"
+>
+```
+
+Added in v1.0.0
+
+# Connection Types
+
+## HttpConnectionOptions (type alias)
+
+**Signature**
+
+```ts
+export type HttpConnectionOptions = CommonInternal.HttpConnectionOptions
+```
+
+Added in v1.0.0
+
+## HttpConnectionOptionsTagged (type alias)
+
+**Signature**
+
+```ts
+export type HttpConnectionOptionsTagged = CommonInternal.HttpConnectionOptionsTagged
+```
+
+Added in v1.0.0
+
+## HttpsConnectionOptions (type alias)
+
+**Signature**
+
+```ts
+export type HttpsConnectionOptions = CommonInternal.HttpsConnectionOptions
+```
+
+Added in v1.0.0
+
+## HttpsConnectionOptionsTagged (type alias)
+
+**Signature**
+
+```ts
+export type HttpsConnectionOptionsTagged = CommonInternal.HttpsConnectionOptionsTagged
 ```
 
 Added in v1.0.0
@@ -637,6 +718,13 @@ Added in v1.0.0
 
 ## MobyConnectionOptions (type alias)
 
+Connection options for how to connect to your moby/docker instance. Can be a
+unix socket on the current machine. Can be an ssh connection to a remote
+machine with a remote user, remote machine, remote port, and remote socket
+path. Can be an http connection to a remote machine with a host, port, and
+path. Or it can be an https connection to a remote machine with a host, port,
+path, cert, ca, key, and passphrase.
+
 **Signature**
 
 ```ts
@@ -645,63 +733,42 @@ export type MobyConnectionOptions = CommonInternal.MobyConnectionOptions
 
 Added in v1.0.0
 
-## SocketConnectionOptions
+## SocketConnectionOptions (type alias)
 
 **Signature**
 
 ```ts
-export declare const SocketConnectionOptions: Case.Constructor<
-  { readonly _tag: "socket"; readonly socketPath: string },
-  "_tag"
->
+export type SocketConnectionOptions = CommonInternal.SocketConnectionOptions
 ```
 
 Added in v1.0.0
 
-## SshConnectionOptions
+## SocketConnectionOptionsTagged (type alias)
 
 **Signature**
 
 ```ts
-export declare const SshConnectionOptions: Case.Constructor<
-  {
-    readonly _tag: "ssh"
-    readonly remoteSocketPath: string
-    readonly host?: string | undefined
-    readonly port?: number | undefined
-    readonly forceIPv4?: boolean | undefined
-    readonly forceIPv6?: boolean | undefined
-    readonly hostHash?: string | undefined
-    readonly hostVerifier?:
-      | HostVerifier
-      | SyncHostVerifier
-      | HostFingerprintVerifier
-      | SyncHostFingerprintVerifier
-      | undefined
-    readonly username?: string | undefined
-    readonly password?: string | undefined
-    readonly agent?: string | BaseAgent<string | Buffer | ParsedKey> | undefined
-    readonly privateKey?: string | Buffer | undefined
-    readonly passphrase?: string | Buffer | undefined
-    readonly localHostname?: string | undefined
-    readonly localUsername?: string | undefined
-    readonly tryKeyboard?: boolean | undefined
-    readonly keepaliveInterval?: number | undefined
-    readonly keepaliveCountMax?: number | undefined
-    readonly readyTimeout?: number | undefined
-    readonly strictVendor?: boolean | undefined
-    readonly sock?: Readable | undefined
-    readonly agentForward?: boolean | undefined
-    readonly algorithms?: Algorithms | undefined
-    readonly debug?: DebugFunction | undefined
-    readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[] | undefined
-    readonly localAddress?: string | undefined
-    readonly localPort?: number | undefined
-    readonly timeout?: number | undefined
-    readonly ident?: string | Buffer | undefined
-  },
-  "_tag"
->
+export type SocketConnectionOptionsTagged = CommonInternal.SocketConnectionOptionsTagged
+```
+
+Added in v1.0.0
+
+## SshConnectionOptions (type alias)
+
+**Signature**
+
+```ts
+export type SshConnectionOptions = CommonInternal.SshConnectionOptions
+```
+
+Added in v1.0.0
+
+## SshConnectionOptionsTagged (type alias)
+
+**Signature**
+
+```ts
+export type SshConnectionOptionsTagged = CommonInternal.SshConnectionOptionsTagged
 ```
 
 Added in v1.0.0

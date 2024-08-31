@@ -1,6 +1,6 @@
 ---
 title: schemas/Int16.ts
-nav_order: 45
+nav_order: 52
 parent: Modules
 ---
 

@@ -5,12 +5,12 @@ import * as Stream from "effect/Stream";
 import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as Images from "the-moby-effect/endpoints/Images";
-import * as PlatformAgents from "the-moby-effect/PlatformAgents";
+import * as Platforms from "the-moby-effect/Platforms";
 import * as Schemas from "the-moby-effect/Schemas";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
-    PlatformAgents.SocketConnectionOptions({
+    Platforms.SocketConnectionOptions({
         socketPath: "/var/run/docker.sock",
     })
 );

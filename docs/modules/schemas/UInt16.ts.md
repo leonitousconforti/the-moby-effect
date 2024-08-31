@@ -1,6 +1,6 @@
 ---
 title: schemas/UInt16.ts
-nav_order: 53
+nav_order: 60
 parent: Modules
 ---
 

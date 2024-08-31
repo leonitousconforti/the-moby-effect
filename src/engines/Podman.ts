@@ -5,12 +5,11 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as ConfigError from "effect/ConfigError";
 import * as Context from "effect/Context";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
-import * as PlatformAgents from "../PlatformAgents.js";
+import * as Platforms from "../Platforms.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Execs from "../endpoints/Execs.js";
 import * as Images from "../endpoints/Images.js";
@@ -50,9 +49,9 @@ export type PodmanLayerWithoutHttpCLient = Layer.Layer<
  * @since 1.0.0
  * @category Layers
  */
-export type PodmanLayer<E1 = never> = Layer.Layer<
+export type PodmanLayer = Layer.Layer<
     Layer.Layer.Success<PodmanLayerWithoutPlatformLayerConstructor> | PodmanLayerConstructor,
-    Layer.Layer.Error<PodmanLayerWithoutPlatformLayerConstructor> | E1,
+    Layer.Layer.Error<PodmanLayerWithoutPlatformLayerConstructor>,
     Layer.Layer.Context<PodmanLayerWithoutPlatformLayerConstructor>
 >;
 
@@ -68,19 +67,17 @@ export interface PodmanLayerConstructor {
  * @since 1.0.0
  * @category Tags
  */
-export type PodmanLayerConstructorImpl<E1 = never> = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
-) => PodmanLayer<E1>;
+export type PodmanLayerConstructorImpl<A = Platforms.MobyConnectionOptions> = (connectionOptions: A) => PodmanLayer;
 
 /**
  * @since 1.0.0
  * @category Tags
  */
-export const PlatformLayerConstructor = <E1 = never>(): Context.Tag<
+export const PlatformLayerConstructor = <A = Platforms.MobyConnectionOptions>(): Context.Tag<
     PodmanLayerConstructor,
-    PodmanLayerConstructorImpl<E1>
+    PodmanLayerConstructorImpl<A>
 > =>
-    Context.GenericTag<PodmanLayerConstructor, PodmanLayerConstructorImpl<E1>>(
+    Context.GenericTag<PodmanLayerConstructor, PodmanLayerConstructorImpl<A>>(
         "@the-moby-effect/engines/Podman/PlatformLayerConstructor"
     );
 
@@ -103,7 +100,7 @@ export const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLient = Layer.mergeA
  * @category Layers
  */
 export const layerNodeJS: PodmanLayerConstructorImpl = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
+    connectionOptions: Platforms.MobyConnectionOptions
 ): PodmanLayer =>
     Function.pipe(
         connectionOptions,
@@ -116,9 +113,7 @@ export const layerNodeJS: PodmanLayerConstructorImpl = (
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun: PodmanLayerConstructorImpl = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
-): PodmanLayer =>
+export const layerBun: PodmanLayerConstructorImpl = (connectionOptions: Platforms.MobyConnectionOptions): PodmanLayer =>
     Function.pipe(
         connectionOptions,
         Moby.layerBun,
@@ -131,7 +126,7 @@ export const layerBun: PodmanLayerConstructorImpl = (
  * @category Layers
  */
 export const layerDeno: PodmanLayerConstructorImpl = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
+    connectionOptions: Platforms.MobyConnectionOptions
 ): PodmanLayer =>
     Function.pipe(
         connectionOptions,
@@ -145,7 +140,7 @@ export const layerDeno: PodmanLayerConstructorImpl = (
  * @category Layers
  */
 export const layerUndici: PodmanLayerConstructorImpl = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
+    connectionOptions: Platforms.MobyConnectionOptions
 ): PodmanLayer =>
     Function.pipe(
         connectionOptions,
@@ -158,12 +153,19 @@ export const layerUndici: PodmanLayerConstructorImpl = (
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb: PodmanLayerConstructorImpl<ConfigError.ConfigError> = (
-    connectionOptions: PlatformAgents.MobyConnectionOptions
-): PodmanLayer<ConfigError.ConfigError> =>
+export const layerWeb: PodmanLayerConstructorImpl<
+    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+> = (connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged): PodmanLayer =>
     Function.pipe(
         connectionOptions,
         Moby.layerWeb,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor<ConfigError.ConfigError>())),
-        Layer.map(Context.add(PlatformLayerConstructor<ConfigError.ConfigError>(), layerWeb))
+        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
+        Layer.map(
+            Context.add(
+                PlatformLayerConstructor<
+                    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+                >(),
+                layerWeb
+            )
+        )
     );

@@ -7,19 +7,22 @@
 import * as PlatformError from "@effect/platform/Error";
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
+import * as ParseResult from "@effect/schema/ParseResult";
 import * as Array from "effect/Array";
-import * as ConfigError from "effect/ConfigError";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as HashMap from "effect/HashMap";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as Schedule from "effect/Schedule";
+import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
+import * as Tuple from "effect/Tuple";
 
-import * as path from "path";
+import * as Untar from "../archive/Untar.js";
 import * as HttpBlob from "../blobs/Http.js";
 import * as HttpsBlob from "../blobs/Https.js";
 import * as SocketBlob from "../blobs/Socket.js";
@@ -29,30 +32,31 @@ import * as Containers from "../endpoints/Containers.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";
 import * as Volumes from "../endpoints/Volumes.js";
-import * as PlatformAgents from "../PlatformAgents.js";
+import * as Platforms from "../Platforms.js";
 import * as DockerEngine from "./Docker.js";
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export type DindLayer = Layer.Layer<
+export type DindLayer<E1 = PlatformError.PlatformError, R1 = Path.Path | FileSystem.FileSystem> = Layer.Layer<
     Layer.Layer.Success<DockerEngine.DockerLayer>,
     | Images.ImagesError
-    | Containers.ContainersError
-    | Volumes.VolumesError
     | System.SystemsError
-    | PlatformError.PlatformError,
-    Path.Path | FileSystem.FileSystem
+    | Volumes.VolumesError
+    | ParseResult.ParseError
+    | Containers.ContainersError
+    | E1,
+    R1
 >;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
+export type DindLayerWithoutDockerEngineRequirement = Layer.Layer<
     Layer.Layer.Success<DindLayer>,
-    E1 | Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
+    Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
     Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer>
 >;
 
@@ -60,9 +64,9 @@ export type DindLayerWithoutDockerEngineRequirement<E1 = never> = Layer.Layer<
  * @since 1.0.0
  * @category Blobs
  */
-export const blobForExposeBy: (exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"]) => string =
+export const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]) => string =
     Function.pipe(
-        Match.type<PlatformAgents.MobyConnectionOptions["_tag"]>(),
+        Match.type<Platforms.MobyConnectionOptions["_tag"]>(),
         Match.when("ssh", () => SshBlob.content),
         Match.when("http", () => HttpBlob.content),
         Match.when("https", () => HttpsBlob.content),
@@ -71,14 +75,35 @@ export const blobForExposeBy: (exposeDindContainerBy: PlatformAgents.MobyConnect
     );
 
 /**
+ * @since 1.0.0
+ * @category Constants
+ */
+export const DefaultDindBaseImage: string = "docker.io/library/docker:dind" as const;
+
+/**
  * Spawns a docker in docker container on the remote host provided by another
  * layer and exposes the dind container as a layer. This dind engine was built
  * to power the unit tests.
  */
-const makeDindLayer = <E1>(
-    exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"],
+const makeDindLayer = <A extends Platforms.MobyConnectionOptions["_tag"]>(
+    exposeDindContainerBy: A,
     dindBaseImage: string
-) =>
+): Effect.Effect<
+    DockerEngine.DockerLayer,
+    | Images.ImagesError
+    | System.SystemsError
+    | Volumes.VolumesError
+    | Containers.ContainersError
+    | ParseResult.ParseError
+    | (A extends "socket" | "ssh" ? PlatformError.PlatformError : never),
+    | Scope.Scope
+    | Images.Images
+    | System.Systems
+    | Volumes.Volumes
+    | Containers.Containers
+    | DockerEngine.DockerLayerConstructor
+    | (A extends "socket" | "ssh" ? Path.Path | FileSystem.FileSystem : never)
+> =>
     Effect.gen(function* () {
         // Make sure the remote docker engine host is reachable
         yield* System.Systems.pingHead();
@@ -102,15 +127,25 @@ const makeDindLayer = <E1>(
         yield* Convey.waitForProgressToComplete(buildStream);
 
         // Create a temporary directory to store the docker socket
-        const binds = yield* Effect.if(exposeDindContainerBy === "socket", {
-            onFalse: () => Effect.succeed([`${volumeCreateResponse.Name}:/var/lib/docker`]),
+        const bindsEffect: Effect.Effect<
+            readonly [tempSocketDirectory: string, binds: Array<string>],
+            A extends "socket" | "ssh" ? PlatformError.PlatformError : never,
+            A extends "socket" | "ssh" ? Path.Path | FileSystem.FileSystem : never
+        > = Effect.if(exposeDindContainerBy === "socket", {
+            onFalse: () => Effect.succeed(Tuple.make("", Tuple.make(`${volumeCreateResponse.Name}:/var/lib/docker`))),
             onTrue: () =>
                 Effect.gen(function* () {
                     const filesystem = yield* FileSystem.FileSystem;
                     const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
-                    return [`${tempSocketDirectory}/:/var/run/`, `${volumeCreateResponse.Name}:/var/lib/docker`];
+                    const binds = Tuple.make(
+                        `${tempSocketDirectory}/:/var/run/`,
+                        `${volumeCreateResponse.Name}:/var/lib/docker`
+                    );
+                    return Tuple.make(tempSocketDirectory, binds);
                 }),
-        });
+        }) as any;
+
+        const [tempSocketDirectory, binds] = yield* bindsEffect;
 
         // Create the dind container
         const containerInspectResponse = yield* DockerEngine.runScoped({
@@ -168,30 +203,32 @@ const makeDindLayer = <E1>(
             Stream.runDrain
         );
 
-        const a = Containers.Containers.archive({ id: containerInspectResponse.Id, path: "/certs" });
-        const ca = yield* Effect.if(exposeDindContainerBy === "https", {
-            onFalse: () => Effect.succeed(undefined),
-            onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "ca.pem")),
-        });
-        const key = yield* Effect.if(exposeDindContainerBy === "https", {
-            onFalse: () => Effect.succeed(undefined),
-            onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "key.pem")),
-        });
-        const cert = yield* Effect.if(exposeDindContainerBy === "https", {
-            onFalse: () => Effect.succeed(undefined),
-            onTrue: () => filesystem.readFileString(path.join(tempCertsDirectory, "server", "cert.pem")),
-        });
+        const certs = yield* Effect.flatMap(
+            Containers.Containers.archive({ id: containerInspectResponse.Id, path: "/certs" }),
+            (stream) => Untar.Untar(stream)
+        );
+        const ca = yield* Function.pipe(
+            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "server/ca.pem"),
+            Option.getOrThrow,
+            Tuple.getSecond,
+            Stream.decodeText("utf-8"),
+            Stream.mkString
+        );
+        const key = "";
+        const cert = "";
 
         // Craft the connection options
-        const connectionOptions: PlatformAgents.MobyConnectionOptions = Function.pipe(
-            Match.value(exposeDindContainerBy),
-            Match.when("http", () => PlatformAgents.HttpConnectionOptions({ host: gateway, port: httpPort })),
-            Match.when("https", () => PlatformAgents.HttpsConnectionOptions({ host, port: 2376, ca, key, cert })),
+        const connectionOptions: A extends "socket" | "ssh"
+            ? Platforms.MobyConnectionOptions
+            : Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged = Function.pipe(
+            Match.value<Platforms.MobyConnectionOptions["_tag"]>(exposeDindContainerBy),
+            Match.when("http", () => Platforms.HttpConnectionOptions({ host: gateway, port: httpPort })),
+            Match.when("https", () => Platforms.HttpsConnectionOptions({ host, port: 2376, ca, key, cert })),
             Match.when("socket", () =>
-                PlatformAgents.SocketConnectionOptions({ socketPath: `${tempSocketDirectory}/docker.sock` })
+                Platforms.SocketConnectionOptions({ socketPath: `${tempSocketDirectory}/docker.sock` })
             ),
             Match.when("ssh", () =>
-                PlatformAgents.SshConnectionOptions({
+                Platforms.SshConnectionOptions({
                     host: gateway,
                     port: sshPort,
                     username: "root",
@@ -200,10 +237,15 @@ const makeDindLayer = <E1>(
                 })
             ),
             Match.exhaustive
-        );
+        ) as any;
 
         // Build the layer for the same platform that we are on
-        const layerConstructor = yield* DockerEngine.PlatformLayerConstructor<E1>();
+        const layerConstructor =
+            yield* DockerEngine.PlatformLayerConstructor<
+                A extends "socket" | "ssh"
+                    ? Platforms.MobyConnectionOptions
+                    : Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+            >();
         const layer = layerConstructor(connectionOptions);
 
         // Test that the dind container is reachable
@@ -222,12 +264,12 @@ const makeDindLayer = <E1>(
  */
 export const layerNodeJS = (options: {
     dindBaseImage?: string | undefined;
-    connectionOptionsToHost: PlatformAgents.MobyConnectionOptions;
-    exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"];
+    connectionOptionsToHost: Platforms.MobyConnectionOptions;
+    exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayer =>
     Layer.unwrapScoped(
         Effect.provide(
-            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? "docker.io/library/docker:dind"),
+            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
             DockerEngine.layerNodeJS(options.connectionOptionsToHost)
         )
     );
@@ -238,12 +280,12 @@ export const layerNodeJS = (options: {
  */
 export const layerBun = (options: {
     dindBaseImage?: string | undefined;
-    connectionOptionsToHost: PlatformAgents.MobyConnectionOptions;
-    exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"];
+    connectionOptionsToHost: Platforms.MobyConnectionOptions;
+    exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayer =>
     Layer.unwrapScoped(
         Effect.provide(
-            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? "docker.io/library/docker:dind"),
+            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
             DockerEngine.layerBun(options.connectionOptionsToHost)
         )
     );
@@ -254,12 +296,12 @@ export const layerBun = (options: {
  */
 export const layerDeno = (options: {
     dindBaseImage?: string | undefined;
-    connectionOptionsToHost: PlatformAgents.MobyConnectionOptions;
-    exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"];
+    connectionOptionsToHost: Platforms.MobyConnectionOptions;
+    exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayer =>
     Layer.unwrapScoped(
         Effect.provide(
-            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? "docker.io/library/docker:dind"),
+            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
             DockerEngine.layerDeno(options.connectionOptionsToHost)
         )
     );
@@ -270,12 +312,12 @@ export const layerDeno = (options: {
  */
 export const layerUndici = (options: {
     dindBaseImage?: string | undefined;
-    connectionOptionsToHost: PlatformAgents.MobyConnectionOptions;
-    exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"];
+    connectionOptionsToHost: Platforms.MobyConnectionOptions;
+    exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayer =>
     Layer.unwrapScoped(
         Effect.provide(
-            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? "docker.io/library/docker:dind"),
+            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
             DockerEngine.layerUndici(options.connectionOptionsToHost)
         )
     );
@@ -286,24 +328,12 @@ export const layerUndici = (options: {
  */
 export const layerWeb = (options: {
     dindBaseImage?: string | undefined;
-    connectionOptionsToHost: PlatformAgents.MobyConnectionOptions;
-    exposeDindContainerBy: PlatformAgents.MobyConnectionOptions["_tag"];
-}): Layer.Layer<
-    Layer.Layer.Success<DockerEngine.DockerLayer>,
-    | ConfigError.ConfigError
-    | Images.ImagesError
-    | Containers.ContainersError
-    | Volumes.VolumesError
-    | System.SystemsError
-    | PlatformError.PlatformError,
-    Path.Path | FileSystem.FileSystem
-> =>
+    exposeDindContainerBy: "http" | "https";
+    connectionOptionsToHost: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged;
+}): DindLayer<never, never> =>
     Layer.unwrapScoped(
         Effect.provide(
-            makeDindLayer<ConfigError.ConfigError>(
-                options.exposeDindContainerBy,
-                options.dindBaseImage ?? "docker.io/library/docker:dind"
-            ),
+            makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
             DockerEngine.layerWeb(options.connectionOptionsToHost)
         )
     );

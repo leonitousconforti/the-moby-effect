@@ -1,6 +1,6 @@
 ---
 title: Convey.ts
-nav_order: 1
+nav_order: 8
 parent: Modules
 ---
 
@@ -34,7 +34,7 @@ Tracks the progress stream in the console and returns the result.
 ```ts
 export declare const followProgressInConsole: <E1, R1>(
   stream: Stream<JSONMessage, E1, R1>
-) => Effect<Chunk<JSONMessage>, E1, R1>
+) => Effect<Chunk<JSONMessage>, E1, Exclude<R1, Scope>>
 ```
 
 Added in v1.0.0
@@ -60,7 +60,7 @@ Added in v1.0.0
 Packs the context into a tarball stream to use with the build endpoint using
 the tar-fs npm package. Because we read from the filesystem, this will only
 work in Node.js/Deno/Bun. If you need to pack a build context in the browser,
-see {@link packBuildContextIntoTarballStreamWeb}.
+see {@link packBuildContextIntoTarballStream2}.
 
 **Signature**
 

@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 31
+nav_order: 38
 parent: Modules
 ---
 
@@ -18,7 +18,7 @@ Added in v1.0.0
   - [From "./Convey.js"](#from-conveyjs)
   - [From "./Demux.js"](#from-demuxjs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
-  - [From "./PlatformAgents.js"](#from-platformagentsjs)
+  - [From "./Platforms.js"](#from-platformsjs)
   - [From "./PodmanEngine.js"](#from-podmanenginejs)
   - [From "./Schemas.js"](#from-schemasjs)
 
@@ -62,14 +62,14 @@ export * as DockerEngine from "./DockerEngine.js"
 
 Added in v1.0.0
 
-## From "./PlatformAgents.js"
+## From "./Platforms.js"
 
 Http, https, ssh, and unix socket connection agents for all platforms.
 
 **Signature**
 
 ```ts
-export * as PlatformAgents from "./PlatformAgents.js"
+export * as Platforms from "./Platforms.js"
 ```
 
 Added in v1.0.0

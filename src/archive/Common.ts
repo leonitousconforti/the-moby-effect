@@ -1,3 +1,9 @@
+/**
+ * Shared GNU ustar tar details.
+ *
+ * @since 1.0.0
+ */
+
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
 import * as Effect from "effect/Effect";
@@ -181,6 +187,7 @@ export class TarHeader extends Schema.Class<TarHeader>("TarHeader")({
         padding: Schema.Literal("\0".repeat(12)),
     }) {};
 
+    /** @since 1.0.0 */
     public static read = (source: Uint8Array): Effect.Effect<TarHeader, ParseResult.ParseError, never> => {
         const asString = textDecoder.decode(source);
         const fullHeader = Schema.decode(TarHeader.FullTarHeaderBlock)({
@@ -204,6 +211,7 @@ export class TarHeader extends Schema.Class<TarHeader>("TarHeader")({
         return Effect.map(fullHeader, ({ checksum: _checksum, padding: _padding, ustar: _ustar, ...rest }) => rest);
     };
 
+    /** @since 1.0.0 */
     public write = (): Effect.Effect<Uint8Array, ParseResult.ParseError, never> =>
         Effect.gen(this, function* () {
             const checksum = 0;

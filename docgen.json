@@ -1,6 +1,6 @@
 {
     "$schema": "./node_modules/@effect/docgen/schema.json",
-    "exclude": ["src/internal/**/*.ts", "src/generated/**/*.ts", "src/schemas/index.ts"],
+    "exclude": ["src/internal/**/*.ts", "src/generated/**/*.ts", "src/schemas/index.ts", "src/blobs/update.ts"],
     "projectHomepage": "https://github.com/leonitousconforti/the-moby-effect",
     "examplesCompilerOptions": {
         "noEmit": true,

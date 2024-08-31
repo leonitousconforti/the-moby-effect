@@ -1,6 +1,6 @@
 ---
 title: convey/Streams.ts
-nav_order: 3
+nav_order: 10
 parent: Modules
 ---
 
@@ -32,10 +32,7 @@ see {@link packBuildContextIntoTarballStreamWeb}.
 **Signature**
 
 ```ts
-export declare const packBuildContextIntoTarballStreamServer: (
-  cwd: string,
-  entries?: Array<string>
-) => Stream.Stream<Uint8Array, Images.ImagesError, never>
+export declare const packBuildContextIntoTarballStreamServer: (cwd: string, entries?: Array<string>) => [unknown] extends [typeof  ? "Missing tar-fs package" : Stream.Stream<Uint8Array, Images.ImagesError, never>
 ```
 
 Added in v1.0.0

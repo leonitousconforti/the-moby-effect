@@ -1,6 +1,6 @@
 ---
 title: endpoints/Distribution.ts
-nav_order: 13
+nav_order: 20
 parent: Modules
 ---
 

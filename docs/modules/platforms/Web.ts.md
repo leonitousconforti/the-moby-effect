@@ -1,6 +1,6 @@
 ---
 title: platforms/Web.ts
-nav_order: 38
+nav_order: 45
 parent: Modules
 ---
 
@@ -30,8 +30,8 @@ http client that you could use to connect to your moby instance.
 
 ```ts
 export declare const makeWebHttpClientLayer: (
-  connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient.Default, ConfigError.ConfigError, never>
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => Layer.Layer<HttpClient.HttpClient.Default, never, never>
 ```
 
 Added in v1.0.0
