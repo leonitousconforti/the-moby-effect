@@ -51,7 +51,7 @@ export const followProgressSink = Sink.forEach<JSONMessage, void, never, never>(
  */
 export const followProgressInConsole = <E1, R1>(
     stream: Stream.Stream<JSONMessage, E1, R1>
-): Effect.Effect<Chunk.Chunk<JSONMessage>, E1, R1> =>
+): Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>> =>
     Effect.gen(function* () {
         const firstStream = stream;
         const secondStream = yield* Stream.broadcastDynamic(stream, 16);
