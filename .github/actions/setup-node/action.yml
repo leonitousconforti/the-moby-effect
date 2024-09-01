@@ -13,4 +13,6 @@ runs:
       with:
         node-version: ${{ inputs.node-version }}
     - uses: pnpm/action-setup@v3
+
     - run: pnpm install
+      shell: bash
