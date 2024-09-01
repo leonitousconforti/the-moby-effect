@@ -281,7 +281,7 @@ export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Defa
         Function.pipe(
             HttpClientRequest.post(`/networks/${encodeURIComponent(options.id)}/disconnect`),
             HttpClientRequest.schemaBody(NetworkDisconnectRequest)(
-                options.container ?? new NetworkDisconnectRequest({} as any)
+                options.container ?? NetworkDisconnectRequest.make({ Container: options.container, Force: false })
             ),
             Effect.flatMap(client),
             HttpClientResponse.void,
