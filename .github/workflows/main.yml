@@ -117,11 +117,11 @@ jobs:
         uses: ./.github/actions/setup-node
 
       - if: startsWith(matrix.platform-variant, 'bun')
-        run: pnpm test
+        run: bun run test
       - if: startsWith(matrix.platform-variant, 'deno')
         run: deno run test
       - if: startsWith(matrix.platform-variant, 'node')
-        run: bun run test
+        run: pnpm test
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
