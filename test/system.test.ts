@@ -42,7 +42,7 @@ describe("MobyApi System tests", () => {
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
     beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
-    afterAll(() => testRuntime.dispose().then(() => {})), afterAllTimeout;
+    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should ping the docker daemon", async () => {
         await testRuntime.runPromise(System.Systems.ping());

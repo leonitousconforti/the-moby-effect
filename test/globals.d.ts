@@ -21,9 +21,9 @@ export type DOCKER_ENGINE_VERSION =
 
 declare module "vitest" {
     export interface ProvidedContext {
-        __DOCKER_HOST_CONNECTION_OPTIONS: MobyConnectionOptions;
-        __CONNECTION_VARIANT: MobyConnectionOptions["_tag"];
         __PLATFORM_VARIANT: PLATFORM_VARIANT;
         __DOCKER_ENGINE_VERSION: DOCKER_ENGINE_VERSION;
+        __CONNECTION_VARIANT: MobyConnectionOptions["_tag"];
+        __DOCKER_HOST_CONNECTION_OPTIONS: MobyConnectionOptions;
     }
 }
