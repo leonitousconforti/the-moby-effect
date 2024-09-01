@@ -15,6 +15,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Connection](#connection)
+  - [makeAgnosticHttpClientLayer](#makeagnostichttpclientlayer)
   - [makeBunHttpClientLayer](#makebunhttpclientlayer)
   - [makeDenoHttpClientLayer](#makedenohttpclientlayer)
   - [makeNodeHttpClientLayer](#makenodehttpclientlayer)
@@ -45,6 +46,47 @@ Added in v1.0.0
 ---
 
 # Connection
+
+## makeAgnosticHttpClientLayer
+
+Given the moby connection options, it will construct a layer that provides a
+http client that you could use to connect to your moby instance.
+
+**Signature**
+
+```ts
+export declare const makeAgnosticHttpClientLayer: (<Ein, Rin>(
+  connectionOptions:
+    | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+    | {
+        readonly _tag: "https"
+        readonly host: string
+        readonly port: number
+        readonly path?: string | undefined
+        readonly cert?: string | undefined
+        readonly ca?: string | undefined
+        readonly key?: string | undefined
+        readonly passphrase?: string | undefined
+      }
+) => (layer: Layer<HttpClient.Default, Ein, Rin>) => Layer<HttpClient.Default, Ein, Rin>) &
+  (<Ein, Rin>(
+    connectionOptions:
+      | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+      | {
+          readonly _tag: "https"
+          readonly host: string
+          readonly port: number
+          readonly path?: string | undefined
+          readonly cert?: string | undefined
+          readonly ca?: string | undefined
+          readonly key?: string | undefined
+          readonly passphrase?: string | undefined
+        },
+    layer: Layer<HttpClient.Default, Ein, Rin>
+  ) => Layer<HttpClient.Default, Ein, Rin>)
+```
+
+Added in v1.0.0
 
 ## makeBunHttpClientLayer
 

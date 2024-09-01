@@ -172,3 +172,12 @@ export const getWebRequestUrl: (
     http: (options) => `http://0.0.0.0${options.path ?? ""}`,
     https: (options) => `https://0.0.0.0${options.path ?? ""}`,
 });
+
+/**
+ * @since 1.0.0
+ * @category Helpers
+ */
+export const getAgnosticRequestUrl = (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+): string =>
+    `${connectionOptions._tag}://${connectionOptions.host}:${connectionOptions.port}${connectionOptions.path ?? ""}` as const;

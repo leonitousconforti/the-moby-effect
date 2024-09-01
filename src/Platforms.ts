@@ -11,6 +11,7 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Redacted from "effect/Redacted";
 
+import * as AgnosticInternal from "./platforms/Agnostic.js";
 import * as BunInternal from "./platforms/Bun.js";
 import * as CommonInternal from "./platforms/Common.js";
 import * as DenoInternal from "./platforms/Deno.js";
@@ -64,6 +65,15 @@ export const makeUndiciHttpClientLayer = UndiciInternal.makeUndiciHttpClientLaye
  * @category Connection
  */
 export const makeWebHttpClientLayer = WebInternal.makeWebHttpClientLayer;
+
+/**
+ * Given the moby connection options, it will construct a layer that provides a
+ * http client that you could use to connect to your moby instance.
+ *
+ * @since 1.0.0
+ * @category Connection
+ */
+export const makeAgnosticHttpClientLayer = AgnosticInternal.makeAgnosticHttpClientLayer;
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a

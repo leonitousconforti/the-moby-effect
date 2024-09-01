@@ -31,6 +31,7 @@ Added in v1.0.0
   - [SshConnectionOptions (type alias)](#sshconnectionoptions-type-alias)
   - [SshConnectionOptionsTagged (type alias)](#sshconnectionoptionstagged-type-alias)
 - [Helpers](#helpers)
+  - [getAgnosticRequestUrl](#getagnosticrequesturl)
   - [getNodeRequestUrl](#getnoderequesturl)
   - [getWebRequestUrl](#getwebrequesturl)
 
@@ -498,6 +499,18 @@ export type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOpt
 Added in v1.0.0
 
 # Helpers
+
+## getAgnosticRequestUrl
+
+**Signature**
+
+```ts
+export declare const getAgnosticRequestUrl: (
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => string
+```
+
+Added in v1.0.0
 
 ## getNodeRequestUrl
 
