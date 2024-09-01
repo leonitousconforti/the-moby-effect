@@ -1,6 +1,6 @@
 ---
 title: convey/Streams.ts
-nav_order: 10
+nav_order: 11
 parent: Modules
 ---
 
@@ -15,40 +15,28 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Conveyance Streams](#conveyance-streams)
-  - [packBuildContextIntoTarballStreamServer](#packbuildcontextintotarballstreamserver)
-  - [packBuildContextIntoTarballStreamWeb](#packbuildcontextintotarballstreamweb)
+  - [packBuildContextIntoTarballStream](#packbuildcontextintotarballstream)
 
 ---
 
 # Conveyance Streams
 
-## packBuildContextIntoTarballStreamServer
-
-Packs the context into a tarball stream to use with the build endpoint using
-the tar-fs npm package. Because we read from the filesystem, this will only
-work in Node.js/Deno/Bun. If you need to pack a build context in the browser,
-see {@link packBuildContextIntoTarballStreamWeb}.
+## packBuildContextIntoTarballStream
 
 **Signature**
 
 ```ts
-export declare const packBuildContextIntoTarballStreamServer: (cwd: string, entries?: Array<string>) => [unknown] extends [typeof  ? "Missing tar-fs package" : Stream.Stream<Uint8Array, Images.ImagesError, never>
-```
-
-Added in v1.0.0
-
-## packBuildContextIntoTarballStreamWeb
-
-Packs the context into a tarball stream to use with the build endpoint using
-an in-memory implementation. This is useful for the browser, where we don't
-have access to the filesystem.
-
-**Signature**
-
-```ts
-export declare const packBuildContextIntoTarballStreamWeb: (
-  entries: Record<string, string | Uint8Array>
-) => Stream.Stream<Uint8Array, Images.ImagesError, never>
+export declare const packBuildContextIntoTarballStream: {
+  (
+    cwd: string,
+    entries?: Array<string> | undefined
+  ): Effect.Effect<
+    Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, never>,
+    PlatformError.PlatformError,
+    Path.Path | FileSystem.FileSystem
+  >
+  (entries: HashMap.HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseResult.ParseError, never>
+}
 ```
 
 Added in v1.0.0
