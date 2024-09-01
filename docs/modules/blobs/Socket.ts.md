@@ -1,10 +1,12 @@
 ---
 title: blobs/Socket.ts
-nav_order: 7
+nav_order: 8
 parent: Modules
 ---
 
 ## Socket overview
+
+Socket docker content
 
 Added in v1.0.0
 
@@ -24,7 +26,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const content: "ARG DIND_BASE_IMAGE\nFROM ${DIND_BASE_IMAGE}\n"
+export declare const content: string
 ```
 
 Added in v1.0.0

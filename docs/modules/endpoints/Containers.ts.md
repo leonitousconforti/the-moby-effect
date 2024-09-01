@@ -1,6 +1,6 @@
 ---
 title: endpoints/Containers.ts
-nav_order: 20
+nav_order: 21
 parent: Modules
 ---
 
@@ -923,7 +923,7 @@ export interface ContainersImpl {
    */
   readonly attachWebsocket: (
     options: ContainerAttachWebsocketOptions
-  ) => Effect.Effect<void, ContainersError, Scope.Scope>
+  ) => Effect.Effect<UnidirectionalRawStreamSocket, ContainersError, Scope.Scope>
 
   /**
    * Wait for a container

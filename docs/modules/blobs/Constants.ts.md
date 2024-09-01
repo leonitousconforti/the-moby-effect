@@ -1,12 +1,12 @@
 ---
-title: endpoints/Common.ts
-nav_order: 19
+title: blobs/Constants.ts
+nav_order: 5
 parent: Modules
 ---
 
-## Common overview
+## Constants overview
 
-Common request helpers
+Docker content constants
 
 Added in v1.0.0
 

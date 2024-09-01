@@ -22,6 +22,7 @@ import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 
 import * as Untar from "../archive/Untar.js";
+import * as BlobConstants from "../blobs/Constants.js";
 import * as HttpBlob from "../blobs/Http.js";
 import * as HttpsBlob from "../blobs/Https.js";
 import * as SocketBlob from "../blobs/Socket.js";
@@ -79,13 +80,6 @@ export const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOp
         Match.when("socket", () => SocketBlob.content),
         Match.exhaustive
     );
-
-/**
- * @since 1.0.0
- * @category Constants
- * @internal
- */
-export const DefaultDindBaseImage: string = "docker.io/library/docker:dind" as const;
 
 /**
  * Spawns a docker in docker container on the remote host provided by another
@@ -269,7 +263,7 @@ export const layerNodeJS = (options: {
     exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayerWithDockerEngineRequirementsProvided =>
     Layer.provide(
-        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
+        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? BlobConstants.DefaultDindBaseImage),
         DockerEngine.layerNodeJS(options.connectionOptionsToHost)
     );
 
@@ -283,7 +277,7 @@ export const layerBun = (options: {
     exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayerWithDockerEngineRequirementsProvided =>
     Layer.provide(
-        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
+        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? BlobConstants.DefaultDindBaseImage),
         DockerEngine.layerBun(options.connectionOptionsToHost)
     );
 
@@ -297,7 +291,7 @@ export const layerDeno = (options: {
     exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayerWithDockerEngineRequirementsProvided =>
     Layer.provide(
-        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
+        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? BlobConstants.DefaultDindBaseImage),
         DockerEngine.layerDeno(options.connectionOptionsToHost)
     );
 
@@ -311,7 +305,7 @@ export const layerUndici = (options: {
     exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"];
 }): DindLayerWithDockerEngineRequirementsProvided =>
     Layer.provide(
-        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
+        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? BlobConstants.DefaultDindBaseImage),
         DockerEngine.layerUndici(options.connectionOptionsToHost)
     );
 
@@ -325,6 +319,6 @@ export const layerWeb = (options: {
     connectionOptionsToHost: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged;
 }): DindLayerWithDockerEngineRequirementsProvided<"http" | "https"> =>
     Layer.provide(
-        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? DefaultDindBaseImage),
+        makeDindLayer(options.exposeDindContainerBy, options.dindBaseImage ?? BlobConstants.DefaultDindBaseImage),
         DockerEngine.layerWeb(options.connectionOptionsToHost)
     );

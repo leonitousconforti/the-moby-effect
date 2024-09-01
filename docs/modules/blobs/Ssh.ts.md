@@ -1,10 +1,12 @@
 ---
 title: blobs/Ssh.ts
-nav_order: 8
+nav_order: 9
 parent: Modules
 ---
 
 ## Ssh overview
+
+Ssh docker content
 
 Added in v1.0.0
 
@@ -24,7 +26,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const content: 'ARG DIND_BASE_IMAGE\nFROM ${DIND_BASE_IMAGE}\n\nRUN \\\n    echo -n \'root:password\' | chpasswd && \\\n    apk update && apk upgrade && apk add openssh-server && \\\n    echo "PermitRootLogin yes" >> /etc/ssh/sshd_config && \\\n    echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config && \\\n    sed -i \'s/AllowTcpForwarding no/AllowTcpForwarding yes/g\' /etc/ssh/sshd_config && \\\n    ssh-keygen -A\n\nEXPOSE 22\nENTRYPOINT ["/bin/sh", "-c"]\nCMD ["/usr/local/bin/dockerd-entrypoint.sh & /usr/sbin/sshd -D"]\n'
+export declare const content: string
 ```
 
 Added in v1.0.0

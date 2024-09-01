@@ -1,10 +1,12 @@
 ---
 title: blobs/Http.ts
-nav_order: 5
+nav_order: 6
 parent: Modules
 ---
 
 ## Http overview
+
+Http docker content
 
 Added in v1.0.0
 
@@ -24,7 +26,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const content: 'ARG DIND_BASE_IMAGE\nFROM ${DIND_BASE_IMAGE}\n\nEXPOSE 2375\nENV DOCKER_TLS_CERTDIR=\nCMD [ "--tls=false" ]\n'
+export declare const content: string
 ```
 
 Added in v1.0.0
