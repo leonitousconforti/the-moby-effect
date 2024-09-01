@@ -1,6 +1,6 @@
 ---
 title: endpoints/Images.ts
-nav_order: 24
+nav_order: 13
 parent: Modules
 ---
 

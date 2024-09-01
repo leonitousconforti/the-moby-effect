@@ -1,6 +1,6 @@
 ---
 title: endpoints/Networks.ts
-nav_order: 25
+nav_order: 14
 parent: Modules
 ---
 

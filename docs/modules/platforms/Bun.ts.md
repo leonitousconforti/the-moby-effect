@@ -1,6 +1,6 @@
 ---
 title: platforms/Bun.ts
-nav_order: 42
+nav_order: 32
 parent: Modules
 ---
 

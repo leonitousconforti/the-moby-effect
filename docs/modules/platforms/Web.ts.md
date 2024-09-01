@@ -1,6 +1,6 @@
 ---
 title: platforms/Web.ts
-nav_order: 47
+nav_order: 37
 parent: Modules
 ---
 

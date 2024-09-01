@@ -1,6 +1,6 @@
 ---
 title: endpoints/Configs.ts
-nav_order: 20
+nav_order: 9
 parent: Modules
 ---
 

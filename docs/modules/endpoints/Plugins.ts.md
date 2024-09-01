@@ -1,6 +1,6 @@
 ---
 title: endpoints/Plugins.ts
-nav_order: 27
+nav_order: 16
 parent: Modules
 ---
 

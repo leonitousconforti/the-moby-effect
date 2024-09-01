@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 40
+nav_order: 29
 parent: Modules
 ---
 
