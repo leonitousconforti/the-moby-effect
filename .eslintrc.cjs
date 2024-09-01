@@ -28,6 +28,7 @@ module.exports = {
         "object-shorthand": "error",
         "import/newline-after-import": "error",
         "import/no-duplicates": "error",
+        "@typescript-eslint/no-empty-object-type": "off",
         "sort-destructure-keys/sort-destructure-keys": "error",
         "@typescript-eslint/array-type": ["warn", { default: "generic", readonly: "generic" }],
         "@typescript-eslint/consistent-type-imports": "off",

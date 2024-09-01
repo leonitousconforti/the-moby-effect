@@ -49,7 +49,7 @@ const program = Effect.gen(function* () {
     const path: Path.Path = yield* Path.Path;
 
     const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
-    const buildContext = Convey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]);
+    const buildContext = yield* Convey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]);
     const buildStream = yield* DockerEngine.buildScoped({
         context: buildContext,
         tag: "mydockerimage:latest",

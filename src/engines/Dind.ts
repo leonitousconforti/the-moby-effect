@@ -120,7 +120,7 @@ const makeDindLayer = <A extends Platforms.MobyConnectionOptions["_tag"]>(
             dockerfile: "Dockerfile",
             buildArgs: { DIND_BASE_IMAGE: dindBaseImage },
             tag: `the-moby-effect-${exposeDindContainerBy}-${dindTag}:latest`,
-            context: Convey.packBuildContextIntoTarballStreamWeb({ Dockerfile: dindBlob }),
+            context: Convey.packBuildContextIntoTarballStream(HashMap.make(["Dockerfile", dindBlob] as const)),
         });
 
         // Wait for the image to be built

@@ -20,10 +20,11 @@ export const command = Cli.Command.make(
     },
     ({ context, dockerfile, tag }) =>
         Effect.gen(function* () {
+            const context2 = yield* Convey.packBuildContextIntoTarballStream(context, [dockerfile]);
             const buildStream = DockerEngine.build({
                 tag,
                 dockerfile,
-                context: Convey.packBuildContextIntoTarballStream(context, [dockerfile]),
+                context: context2,
             });
 
             yield* Convey.followProgressInConsole(buildStream);
