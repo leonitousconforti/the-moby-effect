@@ -14,10 +14,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Blobs](#blobs)
-  - [blobForExposeBy](#blobforexposeby)
-- [Constants](#constants)
-  - [DefaultDindBaseImage](#defaultdindbaseimage)
+- [Engines](#engines)
+  - [makeDindLayer](#makedindlayer)
 - [Layer](#layer)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -26,30 +24,25 @@ Added in v1.0.0
   - [layerWeb](#layerweb)
 - [Layers](#layers)
   - [DindLayer (type alias)](#dindlayer-type-alias)
-  - [DindLayerWithoutDockerEngineRequirement (type alias)](#dindlayerwithoutdockerenginerequirement-type-alias)
+  - [DindLayerWithDockerEngineRequirementsProvided (type alias)](#dindlayerwithdockerenginerequirementsprovided-type-alias)
 
 ---
 
-# Blobs
+# Engines
 
-## blobForExposeBy
+## makeDindLayer
 
-**Signature**
-
-```ts
-export declare const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]) => string
-```
-
-Added in v1.0.0
-
-# Constants
-
-## DefaultDindBaseImage
+Spawns a docker in docker container on the remote host provided by another
+layer and exposes the dind container as a layer. This dind engine was built
+to power the unit tests.
 
 **Signature**
 
 ```ts
-export declare const DefaultDindBaseImage: string
+export declare const makeDindLayer: <T extends "socket" | "ssh" | "http" | "https">(
+  exposeDindContainerBy: T,
+  dindBaseImage: string
+) => DindLayer<T>
 ```
 
 Added in v1.0.0
@@ -65,7 +58,7 @@ export declare const layerBun: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
+}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
 ```
 
 Added in v1.0.0
@@ -79,7 +72,7 @@ export declare const layerDeno: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
+}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
 ```
 
 Added in v1.0.0
@@ -93,7 +86,7 @@ export declare const layerNodeJS: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
+}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
 ```
 
 Added in v1.0.0
@@ -107,7 +100,7 @@ export declare const layerUndici: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer<PlatformError.PlatformError, Path.Path | FileSystem.FileSystem>
+}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
 ```
 
 Added in v1.0.0
@@ -121,7 +114,7 @@ export declare const layerWeb: (options: {
   dindBaseImage?: string | undefined
   exposeDindContainerBy: "http" | "https"
   connectionOptionsToHost: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-}) => DindLayer<never, never>
+}) => DindLayerWithDockerEngineRequirementsProvided<"http" | "https">
 ```
 
 Added in v1.0.0
@@ -133,29 +126,35 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DindLayer<E1 = PlatformError.PlatformError, R1 = Path.Path | FileSystem.FileSystem> = Layer.Layer<
+export type DindLayer<T = Platforms.MobyConnectionOptions["_tag"]> = Layer.Layer<
   Layer.Layer.Success<DockerEngine.DockerLayer>,
   | Images.ImagesError
   | System.SystemsError
   | Volumes.VolumesError
   | ParseResult.ParseError
   | Containers.ContainersError
-  | E1,
-  R1
+  | (T extends "socket" ? PlatformError.PlatformError : never),
+  | Images.Images
+  | System.Systems
+  | Volumes.Volumes
+  | Containers.Containers
+  | DockerEngine.DockerLayerConstructor
+  | (T extends "socket" ? Path.Path | FileSystem.FileSystem : never)
 >
 ```
 
 Added in v1.0.0
 
-## DindLayerWithoutDockerEngineRequirement (type alias)
+## DindLayerWithDockerEngineRequirementsProvided (type alias)
 
 **Signature**
 
 ```ts
-export type DindLayerWithoutDockerEngineRequirement = Layer.Layer<
-  Layer.Layer.Success<DindLayer>,
-  Layer.Layer.Error<DindLayer> | PlatformError.PlatformError,
-  Layer.Layer.Context<DindLayer> | Layer.Layer.Success<DockerEngine.DockerLayer>
+export type DindLayerWithDockerEngineRequirementsProvided<T = "http" | "https" | "socket" | "ssh"> = Layer.Layer<
+  Layer.Layer.Success<DindLayer<T>>,
+  Layer.Layer.Error<DindLayer<T>> | Layer.Layer.Error<DockerEngine.DockerLayer>,
+  | Layer.Layer.Context<DockerEngine.DockerLayer>
+  | Exclude<Layer.Layer.Context<DindLayer<T>>, Layer.Layer.Success<DockerEngine.DockerLayer>>
 >
 ```
 

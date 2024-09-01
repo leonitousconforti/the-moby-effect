@@ -29,10 +29,19 @@ export const packBuildContextIntoTarballStream: {
         Path.Path | FileSystem.FileSystem
     >;
     (entries: HashMap.HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseResult.ParseError, never>;
-} = (cwdOrEntries: string | HashMap.HashMap<string, string | Uint8Array>, entries: Array<string> = ["dockerfile"]) => {
-    if (Predicate.isString(cwdOrEntries)) {
-        return Tar.TarballFromFilesystem(cwdOrEntries, entries) as any;
-    } else {
-        return Tar.TarballFromMemory(cwdOrEntries) as any;
-    }
-};
+} = <
+    T extends string | HashMap.HashMap<string, string | Uint8Array>,
+    U extends T extends string
+        ? Effect.Effect<
+              Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, never>,
+              PlatformError.PlatformError,
+              Path.Path | FileSystem.FileSystem
+          >
+        : Stream.Stream<Uint8Array, ParseResult.ParseError, never>,
+>(
+    cwdOrEntries: T,
+    entries: Array<string> = ["dockerfile"]
+): U =>
+    Predicate.isString(cwdOrEntries)
+        ? (Tar.TarballFromFilesystem(cwdOrEntries, entries) as U)
+        : (Tar.TarballFromMemory(cwdOrEntries) as U);
