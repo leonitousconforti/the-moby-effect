@@ -202,27 +202,39 @@ export const makeDindLayer = <T extends Platforms.MobyConnectionOptions["_tag"]>
             Containers.Containers.archive({ id: containerInspectResponse.Id, path: "/certs" }),
             (stream) => Untar.Untar(stream)
         );
-        const ca = yield* Function.pipe(
-            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/ca.pem"),
-            Option.getOrThrow,
-            Tuple.getSecond,
-            Stream.decodeText("utf-8"),
-            Stream.mkString
-        );
-        const key = yield* Function.pipe(
-            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/key.pem"),
-            Option.getOrThrow,
-            Tuple.getSecond,
-            Stream.decodeText("utf-8"),
-            Stream.mkString
-        );
-        const cert = yield* Function.pipe(
-            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/cert.pem"),
-            Option.getOrThrow,
-            Tuple.getSecond,
-            Stream.decodeText("utf-8"),
-            Stream.mkString
-        );
+        const ca = yield* Effect.if(exposeDindContainerBy === "https", {
+            onFalse: () => Effect.succeed(""),
+            onTrue: () =>
+                Function.pipe(
+                    HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/ca.pem"),
+                    Option.getOrThrow,
+                    Tuple.getSecond,
+                    Stream.decodeText("utf-8"),
+                    Stream.mkString
+                ),
+        });
+        const key = yield* Effect.if(exposeDindContainerBy === "https", {
+            onFalse: () => Effect.succeed(""),
+            onTrue: () =>
+                Function.pipe(
+                    HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/key.pem"),
+                    Option.getOrThrow,
+                    Tuple.getSecond,
+                    Stream.decodeText("utf-8"),
+                    Stream.mkString
+                ),
+        });
+        const cert = yield* Effect.if(exposeDindContainerBy === "https", {
+            onFalse: () => Effect.succeed(""),
+            onTrue: () =>
+                Function.pipe(
+                    HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/cert.pem"),
+                    Option.getOrThrow,
+                    Tuple.getSecond,
+                    Stream.decodeText("utf-8"),
+                    Stream.mkString
+                ),
+        });
 
         // Craft the connection options
         const connectionOptions: T extends "socket" | "ssh"
