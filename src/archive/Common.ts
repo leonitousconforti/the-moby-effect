@@ -78,7 +78,7 @@ export class TarHeader extends Schema.Class<TarHeader>("TarHeader")({
         Schema.String,
         Schema.maxLength(8),
         Schema.propertySignature,
-        Schema.withConstructorDefault(() => "")
+        Schema.withConstructorDefault(() => "644")
     ),
 
     /**
@@ -214,24 +214,26 @@ export class TarHeader extends Schema.Class<TarHeader>("TarHeader")({
     /** @since 1.0.0 */
     public write = (): Effect.Effect<Uint8Array, ParseResult.ParseError, never> =>
         Effect.gen(this, function* () {
-            const checksum = 0;
             const uint8Array = new Uint8Array(BLOCK_SIZE);
             const self = yield* Schema.encode(TarHeader)(this);
-            uint8Array.set(textEncoder.encode(self.filename.padEnd(100, "\0")), 0);
-            uint8Array.set(textEncoder.encode(self.fileMode.padEnd(8, "\0")), 100);
-            uint8Array.set(textEncoder.encode(self.uid.padStart(8, "\0")), 108);
-            uint8Array.set(textEncoder.encode(self.gid.padStart(8, "\0")), 116);
-            uint8Array.set(textEncoder.encode(self.fileSize.toString().padStart(12, "\0")), 124);
-            uint8Array.set(textEncoder.encode(self.mtime.padStart(12, "\0")), 136);
-            uint8Array.set(textEncoder.encode(checksum.toString().padStart(8, "\0")), 148);
-            uint8Array.set(textEncoder.encode(self.type.toString().padStart(1, "\0")), 156);
-            uint8Array.set(textEncoder.encode(self.filenamePrefix.padEnd(155, "\0")), 345);
+            uint8Array.set(textEncoder.encode(self.filename), 0);
+            uint8Array.set(textEncoder.encode(self.fileMode.padStart(7, "0")), 100);
+            uint8Array.set(textEncoder.encode(self.uid.padStart(7, "0")), 108);
+            uint8Array.set(textEncoder.encode(self.gid.padStart(7, "0")), 116);
+            uint8Array.set(textEncoder.encode(self.fileSize.toString().padStart(11, "0")), 124);
+            uint8Array.set(textEncoder.encode(self.mtime.padStart(11, "0")), 136);
+            uint8Array.set(textEncoder.encode("\x20\x20\x20\x20\x20\x20\x20\x20"), 148);
+            uint8Array.set(textEncoder.encode(self.type.toString()), 156);
+            uint8Array.set(textEncoder.encode(self.filenamePrefix), 345);
             uint8Array.set(textEncoder.encode("ustar\x20\x20\x00"), 257);
-            uint8Array.set(textEncoder.encode(self.owner.padEnd(32, "\0")), 265);
-            uint8Array.set(textEncoder.encode(self.group.padEnd(32, "\0")), 297);
-            uint8Array.set(textEncoder.encode(self.deviceMajorNumber.padEnd(8, "\0")), 329);
-            uint8Array.set(textEncoder.encode(self.deviceMinorNumber.padEnd(8, "\0")), 337);
+            uint8Array.set(textEncoder.encode(self.owner), 265);
+            uint8Array.set(textEncoder.encode(self.group), 297);
+            uint8Array.set(textEncoder.encode(self.deviceMajorNumber), 329);
+            uint8Array.set(textEncoder.encode(self.deviceMinorNumber), 337);
             uint8Array.set(textEncoder.encode("\0".repeat(12)), 500);
+            const checksum = uint8Array.reduce((acc, curr) => acc + curr, 0);
+            uint8Array.set(textEncoder.encode(checksum.toString(8).padStart(6, "0")), 148);
+            uint8Array.set(textEncoder.encode("\0 "), 154);
             return uint8Array;
         });
 }
