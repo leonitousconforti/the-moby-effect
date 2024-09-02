@@ -201,14 +201,26 @@ export const makeDindLayer = <T extends Platforms.MobyConnectionOptions["_tag"]>
             (stream) => Untar.Untar(stream)
         );
         const ca = yield* Function.pipe(
-            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "server/ca.pem"),
+            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/ca.pem"),
             Option.getOrThrow,
             Tuple.getSecond,
             Stream.decodeText("utf-8"),
             Stream.mkString
         );
-        const key = "";
-        const cert = "";
+        const key = yield* Function.pipe(
+            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/key.pem"),
+            Option.getOrThrow,
+            Tuple.getSecond,
+            Stream.decodeText("utf-8"),
+            Stream.mkString
+        );
+        const cert = yield* Function.pipe(
+            HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/cert.pem"),
+            Option.getOrThrow,
+            Tuple.getSecond,
+            Stream.decodeText("utf-8"),
+            Stream.mkString
+        );
 
         // Craft the connection options
         const connectionOptions: T extends "socket" | "ssh"
