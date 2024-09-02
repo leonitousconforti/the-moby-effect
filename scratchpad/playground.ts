@@ -3,11 +3,11 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
-import * as PlatformAgents from "the-moby-effect/PlatformAgents";
+import * as Platforms from "the-moby-effect/Platforms";
 import * as System from "the-moby-effect/endpoints/System";
 import * as DindEngine from "the-moby-effect/engines/Dind";
 
-const connectionOptions = Effect.runSync(PlatformAgents.connectionOptionsFromPlatformSystemSocketDefault());
+const connectionOptions = Effect.runSync(Platforms.connectionOptionsFromPlatformSystemSocketDefault());
 
 const dindLayer = DindEngine.layerNodeJS({
     exposeDindContainerBy: "ssh" as const,
