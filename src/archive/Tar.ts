@@ -17,21 +17,14 @@ import * as Match from "effect/Match";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
-import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 
 import * as TarCommon from "./Common.js";
 
 /** @internal */
-const padString = (str: string): string => {
-    const padding = (TarCommon.BLOCK_SIZE - (String.length(str) % TarCommon.BLOCK_SIZE)) % TarCommon.BLOCK_SIZE;
-    return String.padEnd(padding, "\x00")(str);
-};
-
-/** @internal */
 const padUint8Array = (arr: Uint8Array): Uint8Array => {
-    if (arr.length % 512 === 0) return arr;
-    const newSize = (Math.floor(arr.length / 512) + 1) * 512;
+    if (arr.length % TarCommon.BLOCK_SIZE === 0) return arr;
+    const newSize = (Math.floor(arr.length / TarCommon.BLOCK_SIZE) + 1) * TarCommon.BLOCK_SIZE;
     const newArray = new Uint8Array(newSize);
     newArray.set(arr, 0);
     return newArray;
@@ -42,7 +35,7 @@ const padStream = <E1, R1>(stream: Stream.Stream<Uint8Array, E1, R1>): Stream.St
     Function.pipe(
         stream,
         Stream.mapConcat(Function.identity),
-        Stream.grouped(512),
+        Stream.grouped(TarCommon.BLOCK_SIZE),
         Stream.map((chunk) => Uint8Array.from(chunk)),
         Stream.map(padUint8Array)
     );
@@ -63,12 +56,14 @@ const convertSingleEntry = <E1, R1>(
 ] =>
     Tuple.mapBoth(entry, {
         onFirst: (tarHeader) => Stream.fromEffect(tarHeader.write()),
-        onSecond: Function.pipe(
-            Match.type<string | Uint8Array | Stream.Stream<Uint8Array, E1, R1>>(),
-            Match.when(Predicate.isUint8Array, (arr) => Stream.make(padUint8Array(arr))),
-            Match.when(Predicate.isString, (str) => Stream.make(TarCommon.textEncoder.encode(padString(str)))),
-            Match.orElse((stream) => padStream(stream))
-        ),
+        onSecond: (tarHeader) =>
+            Function.pipe(
+                Match.value(tarHeader),
+                Match.when(Predicate.isUint8Array, (arr) => Stream.make(arr)),
+                Match.when(Predicate.isString, (str) => Stream.make(TarCommon.textEncoder.encode(str))),
+                Match.orElse(Function.identity<Stream.Stream<Uint8Array, E1, R1>>),
+                padStream
+            ),
     });
 
 /**

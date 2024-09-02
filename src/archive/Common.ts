@@ -183,7 +183,7 @@ export class TarHeader extends Schema.Class<TarHeader>("TarHeader")({
         "FullTarHeaderBlock"
     )({
         checksum: Schema.NumberFromString,
-        ustar: Schema.Literal("ustar\x20\x20\x00" as string),
+        ustar: Schema.Literal("ustar\x20\x20\x00" as string, "ustar\x0000" as string),
         padding: Schema.Literal("\0".repeat(12)),
     }) {};
 
