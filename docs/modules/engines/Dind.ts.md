@@ -126,14 +126,15 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DindLayer<T = Platforms.MobyConnectionOptions["_tag"]> = Layer.Layer<
-  Layer.Layer.Success<DockerEngine.DockerLayer>,
+export type DindLayer<T = Platforms.MobyConnectionOptions["_tag"]> = Effect.Effect<
+  DockerEngine.DockerLayer,
   | Images.ImagesError
   | System.SystemsError
   | Volumes.VolumesError
   | ParseResult.ParseError
   | Containers.ContainersError
   | (T extends "socket" ? PlatformError.PlatformError : never),
+  | Scope.Scope
   | Images.Images
   | System.Systems
   | Volumes.Volumes
@@ -151,10 +152,10 @@ Added in v1.0.0
 
 ```ts
 export type DindLayerWithDockerEngineRequirementsProvided<T = "http" | "https" | "socket" | "ssh"> = Layer.Layer<
-  Layer.Layer.Success<DindLayer<T>>,
-  Layer.Layer.Error<DindLayer<T>> | Layer.Layer.Error<DockerEngine.DockerLayer>,
+  Layer.Layer.Success<Effect.Effect.Success<DindLayer<T>>>,
+  Effect.Effect.Error<DindLayer<T>> | Layer.Layer.Error<DockerEngine.DockerLayer>,
   | Layer.Layer.Context<DockerEngine.DockerLayer>
-  | Exclude<Layer.Layer.Context<DindLayer<T>>, Layer.Layer.Success<DockerEngine.DockerLayer>>
+  | Exclude<Effect.Effect.Context<DindLayer<T>>, Layer.Layer.Success<DockerEngine.DockerLayer> | Scope.Scope>
 >
 ```
 
