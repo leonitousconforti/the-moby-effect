@@ -39,7 +39,7 @@ to power the unit tests.
 **Signature**
 
 ```ts
-export declare const makeDindLayer: <T extends "socket" | "ssh" | "http" | "https">(
+export declare const makeDindLayer: <T extends Platforms.MobyConnectionOptions["_tag"]>(
   exposeDindContainerBy: T,
   dindBaseImage: string
 ) => DindLayer<T>
@@ -58,7 +58,7 @@ export declare const layerBun: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
+}) => DindLayerWithDockerEngineRequirementsProvided
 ```
 
 Added in v1.0.0
@@ -72,7 +72,7 @@ export declare const layerDeno: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
+}) => DindLayerWithDockerEngineRequirementsProvided
 ```
 
 Added in v1.0.0
@@ -86,7 +86,7 @@ export declare const layerNodeJS: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
+}) => DindLayerWithDockerEngineRequirementsProvided
 ```
 
 Added in v1.0.0
@@ -100,7 +100,7 @@ export declare const layerUndici: (options: {
   dindBaseImage?: string | undefined
   connectionOptionsToHost: Platforms.MobyConnectionOptions
   exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayerWithDockerEngineRequirementsProvided<"socket" | "ssh" | "http" | "https">
+}) => DindLayerWithDockerEngineRequirementsProvided
 ```
 
 Added in v1.0.0

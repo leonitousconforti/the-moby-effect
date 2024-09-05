@@ -45,13 +45,13 @@ export declare const demuxBidirectionalSocket: {
     socket: BidirectionalRawStreamSocket,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>
-  ): Effect.Effect<A1, Socket.SocketError | E1 | E2, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
+  ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>
   ): (
     socket: BidirectionalRawStreamSocket
-  ) => Effect.Effect<A1, Socket.SocketError | E1 | E2, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
+  ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
   <A1, A2, E1, E2, E3, R1, R2, R3>(
     socket: MultiplexedStreamSocket,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
@@ -60,7 +60,7 @@ export declare const demuxBidirectionalSocket: {
     options?: { bufferSize?: number | undefined } | undefined
   ): Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
-    Socket.SocketError | E1 | E2 | E3 | ParseResult.ParseError,
+    E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
   >
   <A1, A2, E1, E2, E3, R1, R2, R3>(
@@ -72,7 +72,7 @@ export declare const demuxBidirectionalSocket: {
     socket: MultiplexedStreamSocket
   ) => Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
-    Socket.SocketError | E1 | E2 | E3 | ParseResult.ParseError,
+    E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
   >
 }
@@ -96,7 +96,7 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: <
     stdout: UnidirectionalRawStreamSocket
     stderr: UnidirectionalRawStreamSocket
   },
-  SocketOptions extends MultiplexedStreamSocket | BidirectionalRawStreamSocket | UnidirectionalSocketOptions,
+  SocketOptions extends BidirectionalRawStreamSocket | MultiplexedStreamSocket | UnidirectionalSocketOptions,
   E1 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never
 >(
   socketOptions: SocketOptions
@@ -119,14 +119,14 @@ export declare const demuxSocketWithInputToConsole: <
     stdout: UnidirectionalRawStreamSocket
     stderr: UnidirectionalRawStreamSocket
   },
-  SocketOptions extends MultiplexedStreamSocket | BidirectionalRawStreamSocket | UnidirectionalSocketOptions,
+  SocketOptions extends BidirectionalRawStreamSocket | MultiplexedStreamSocket | UnidirectionalSocketOptions,
   E2 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never,
   E1,
   R1
 >(
   input: Stream.Stream<string | Uint8Array, E1, R1>,
   socketOptions: SocketOptions
-) => Effect.Effect<void, Socket.SocketError | E2 | E1, Exclude<R1, Scope.Scope>>
+) => Effect.Effect<void, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope>>
 ```
 
 Added in v1.0.0
@@ -183,7 +183,7 @@ export declare const responseToStreamingSocketOrFail: (<
 ) => Effect.Effect<
   SourceIsKnownUnidirectional extends true
     ? UnidirectionalRawStreamSocket
-    : MultiplexedStreamSocket | BidirectionalRawStreamSocket,
+    : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
   Socket.SocketError,
   never
 >) &
@@ -193,7 +193,7 @@ export declare const responseToStreamingSocketOrFail: (<
   ) => Effect.Effect<
     SourceIsKnownUnidirectional extends true
       ? UnidirectionalRawStreamSocket
-      : MultiplexedStreamSocket | BidirectionalRawStreamSocket,
+      : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
     Socket.SocketError,
     never
   >)

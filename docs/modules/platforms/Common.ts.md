@@ -102,38 +102,37 @@ export declare const SshConnectionOptions: Data.Case.Constructor<
   {
     readonly _tag: "ssh"
     readonly remoteSocketPath: string
-    readonly host?: string | undefined
-    readonly port?: number | undefined
-    readonly forceIPv4?: boolean | undefined
-    readonly forceIPv6?: boolean | undefined
-    readonly hostHash?: string | undefined
+    readonly host?: string
+    readonly port?: number
+    readonly forceIPv4?: boolean
+    readonly forceIPv6?: boolean
+    readonly hostHash?: string
     readonly hostVerifier?:
       | ssh2.HostVerifier
       | ssh2.SyncHostVerifier
       | ssh2.HostFingerprintVerifier
       | ssh2.SyncHostFingerprintVerifier
-      | undefined
-    readonly username?: string | undefined
-    readonly password?: string | undefined
-    readonly agent?: string | ssh2.BaseAgent<string | Buffer | ssh2.ParsedKey> | undefined
-    readonly privateKey?: string | Buffer | undefined
-    readonly passphrase?: string | Buffer | undefined
-    readonly localHostname?: string | undefined
-    readonly localUsername?: string | undefined
-    readonly tryKeyboard?: boolean | undefined
-    readonly keepaliveInterval?: number | undefined
-    readonly keepaliveCountMax?: number | undefined
-    readonly readyTimeout?: number | undefined
-    readonly strictVendor?: boolean | undefined
-    readonly sock?: Readable | undefined
-    readonly agentForward?: boolean | undefined
-    readonly algorithms?: ssh2.Algorithms | undefined
-    readonly debug?: ssh2.DebugFunction | undefined
-    readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[] | undefined
-    readonly localAddress?: string | undefined
-    readonly localPort?: number | undefined
-    readonly timeout?: number | undefined
-    readonly ident?: string | Buffer | undefined
+    readonly username?: string
+    readonly password?: string
+    readonly agent?: ssh2.BaseAgent | string
+    readonly privateKey?: Buffer | string
+    readonly passphrase?: Buffer | string
+    readonly localHostname?: string
+    readonly localUsername?: string
+    readonly tryKeyboard?: boolean
+    readonly keepaliveInterval?: number
+    readonly keepaliveCountMax?: number
+    readonly readyTimeout?: number
+    readonly strictVendor?: boolean
+    readonly sock?: Readable
+    readonly agentForward?: boolean
+    readonly algorithms?: ssh2.Algorithms
+    readonly debug?: ssh2.DebugFunction
+    readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+    readonly localAddress?: string
+    readonly localPort?: number
+    readonly timeout?: number
+    readonly ident?: Buffer | string
   },
   "_tag"
 >
@@ -201,38 +200,37 @@ export declare const MobyConnectionOptions: {
     {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
-      readonly host?: string | undefined
-      readonly port?: number | undefined
-      readonly forceIPv4?: boolean | undefined
-      readonly forceIPv6?: boolean | undefined
-      readonly hostHash?: string | undefined
+      readonly host?: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
       readonly hostVerifier?:
         | ssh2.HostVerifier
         | ssh2.SyncHostVerifier
         | ssh2.HostFingerprintVerifier
         | ssh2.SyncHostFingerprintVerifier
-        | undefined
-      readonly username?: string | undefined
-      readonly password?: string | undefined
-      readonly agent?: string | ssh2.BaseAgent<string | Buffer | ssh2.ParsedKey> | undefined
-      readonly privateKey?: string | Buffer | undefined
-      readonly passphrase?: string | Buffer | undefined
-      readonly localHostname?: string | undefined
-      readonly localUsername?: string | undefined
-      readonly tryKeyboard?: boolean | undefined
-      readonly keepaliveInterval?: number | undefined
-      readonly keepaliveCountMax?: number | undefined
-      readonly readyTimeout?: number | undefined
-      readonly strictVendor?: boolean | undefined
-      readonly sock?: Readable | undefined
-      readonly agentForward?: boolean | undefined
-      readonly algorithms?: ssh2.Algorithms | undefined
-      readonly debug?: ssh2.DebugFunction | undefined
-      readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[] | undefined
-      readonly localAddress?: string | undefined
-      readonly localPort?: number | undefined
-      readonly timeout?: number | undefined
-      readonly ident?: string | Buffer | undefined
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: ssh2.BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: ssh2.Algorithms
+      readonly debug?: ssh2.DebugFunction
+      readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
     },
     "_tag"
   >
@@ -257,64 +255,56 @@ export declare const MobyConnectionOptions: {
     tag: Tag
   ) => (
     u: unknown
-  ) => u is
-    | Extract<{ readonly _tag: "socket"; readonly socketPath: string }, { readonly _tag: Tag }>
-    | Extract<
-        {
-          readonly _tag: "ssh"
-          readonly remoteSocketPath: string
-          readonly host?: string | undefined
-          readonly port?: number | undefined
-          readonly forceIPv4?: boolean | undefined
-          readonly forceIPv6?: boolean | undefined
-          readonly hostHash?: string | undefined
-          readonly hostVerifier?:
-            | ssh2.HostVerifier
-            | ssh2.SyncHostVerifier
-            | ssh2.HostFingerprintVerifier
-            | ssh2.SyncHostFingerprintVerifier
-            | undefined
-          readonly username?: string | undefined
-          readonly password?: string | undefined
-          readonly agent?: string | ssh2.BaseAgent<string | Buffer | ssh2.ParsedKey> | undefined
-          readonly privateKey?: string | Buffer | undefined
-          readonly passphrase?: string | Buffer | undefined
-          readonly localHostname?: string | undefined
-          readonly localUsername?: string | undefined
-          readonly tryKeyboard?: boolean | undefined
-          readonly keepaliveInterval?: number | undefined
-          readonly keepaliveCountMax?: number | undefined
-          readonly readyTimeout?: number | undefined
-          readonly strictVendor?: boolean | undefined
-          readonly sock?: Readable | undefined
-          readonly agentForward?: boolean | undefined
-          readonly algorithms?: ssh2.Algorithms | undefined
-          readonly debug?: ssh2.DebugFunction | undefined
-          readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[] | undefined
-          readonly localAddress?: string | undefined
-          readonly localPort?: number | undefined
-          readonly timeout?: number | undefined
-          readonly ident?: string | Buffer | undefined
-        },
-        { readonly _tag: Tag }
-      >
-    | Extract<
-        { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined },
-        { readonly _tag: Tag }
-      >
-    | Extract<
-        {
-          readonly _tag: "https"
-          readonly host: string
-          readonly port: number
-          readonly path?: string | undefined
-          readonly cert?: string | undefined
-          readonly ca?: string | undefined
-          readonly key?: string | undefined
-          readonly passphrase?: string | undefined
-        },
-        { readonly _tag: Tag }
-      >
+  ) => u is Extract<
+    | { readonly _tag: "socket"; readonly socketPath: string }
+    | {
+        readonly _tag: "ssh"
+        readonly remoteSocketPath: string
+        readonly host?: string
+        readonly port?: number
+        readonly forceIPv4?: boolean
+        readonly forceIPv6?: boolean
+        readonly hostHash?: string
+        readonly hostVerifier?:
+          | ssh2.HostVerifier
+          | ssh2.SyncHostVerifier
+          | ssh2.HostFingerprintVerifier
+          | ssh2.SyncHostFingerprintVerifier
+        readonly username?: string
+        readonly password?: string
+        readonly agent?: ssh2.BaseAgent | string
+        readonly privateKey?: Buffer | string
+        readonly passphrase?: Buffer | string
+        readonly localHostname?: string
+        readonly localUsername?: string
+        readonly tryKeyboard?: boolean
+        readonly keepaliveInterval?: number
+        readonly keepaliveCountMax?: number
+        readonly readyTimeout?: number
+        readonly strictVendor?: boolean
+        readonly sock?: Readable
+        readonly agentForward?: boolean
+        readonly algorithms?: ssh2.Algorithms
+        readonly debug?: ssh2.DebugFunction
+        readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+        readonly localAddress?: string
+        readonly localPort?: number
+        readonly timeout?: number
+        readonly ident?: Buffer | string
+      }
+    | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+    | {
+        readonly _tag: "https"
+        readonly host: string
+        readonly port: number
+        readonly path?: string | undefined
+        readonly cert?: string | undefined
+        readonly ca?: string | undefined
+        readonly key?: string | undefined
+        readonly passphrase?: string | undefined
+      },
+    { readonly _tag: Tag }
+  >
   readonly $match: {
     <Cases>(
       cases: Cases
@@ -324,42 +314,37 @@ export declare const MobyConnectionOptions: {
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
-            readonly host?: string | undefined
-            readonly port?: number | undefined
-            readonly forceIPv4?: boolean | undefined
-            readonly forceIPv6?: boolean | undefined
-            readonly hostHash?: string | undefined
+            readonly host?: string
+            readonly port?: number
+            readonly forceIPv4?: boolean
+            readonly forceIPv6?: boolean
+            readonly hostHash?: string
             readonly hostVerifier?:
               | ssh2.HostVerifier
               | ssh2.SyncHostVerifier
               | ssh2.HostFingerprintVerifier
               | ssh2.SyncHostFingerprintVerifier
-              | undefined
-            readonly username?: string | undefined
-            readonly password?: string | undefined
-            readonly agent?: string | ssh2.BaseAgent<string | Buffer | ssh2.ParsedKey> | undefined
-            readonly privateKey?: string | Buffer | undefined
-            readonly passphrase?: string | Buffer | undefined
-            readonly localHostname?: string | undefined
-            readonly localUsername?: string | undefined
-            readonly tryKeyboard?: boolean | undefined
-            readonly keepaliveInterval?: number | undefined
-            readonly keepaliveCountMax?: number | undefined
-            readonly readyTimeout?: number | undefined
-            readonly strictVendor?: boolean | undefined
-            readonly sock?: Readable | undefined
-            readonly agentForward?: boolean | undefined
-            readonly algorithms?: ssh2.Algorithms | undefined
-            readonly debug?: ssh2.DebugFunction | undefined
-            readonly authHandler?:
-              | ssh2.AuthenticationType[]
-              | ssh2.AuthHandlerMiddleware
-              | ssh2.AuthMethod[]
-              | undefined
-            readonly localAddress?: string | undefined
-            readonly localPort?: number | undefined
-            readonly timeout?: number | undefined
-            readonly ident?: string | Buffer | undefined
+            readonly username?: string
+            readonly password?: string
+            readonly agent?: ssh2.BaseAgent | string
+            readonly privateKey?: Buffer | string
+            readonly passphrase?: Buffer | string
+            readonly localHostname?: string
+            readonly localUsername?: string
+            readonly tryKeyboard?: boolean
+            readonly keepaliveInterval?: number
+            readonly keepaliveCountMax?: number
+            readonly readyTimeout?: number
+            readonly strictVendor?: boolean
+            readonly sock?: Readable
+            readonly agentForward?: boolean
+            readonly algorithms?: ssh2.Algorithms
+            readonly debug?: ssh2.DebugFunction
+            readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+            readonly localAddress?: string
+            readonly localPort?: number
+            readonly timeout?: number
+            readonly ident?: Buffer | string
           }
         | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
         | {
@@ -379,42 +364,37 @@ export declare const MobyConnectionOptions: {
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
-            readonly host?: string | undefined
-            readonly port?: number | undefined
-            readonly forceIPv4?: boolean | undefined
-            readonly forceIPv6?: boolean | undefined
-            readonly hostHash?: string | undefined
+            readonly host?: string
+            readonly port?: number
+            readonly forceIPv4?: boolean
+            readonly forceIPv6?: boolean
+            readonly hostHash?: string
             readonly hostVerifier?:
               | ssh2.HostVerifier
               | ssh2.SyncHostVerifier
               | ssh2.HostFingerprintVerifier
               | ssh2.SyncHostFingerprintVerifier
-              | undefined
-            readonly username?: string | undefined
-            readonly password?: string | undefined
-            readonly agent?: string | ssh2.BaseAgent<string | Buffer | ssh2.ParsedKey> | undefined
-            readonly privateKey?: string | Buffer | undefined
-            readonly passphrase?: string | Buffer | undefined
-            readonly localHostname?: string | undefined
-            readonly localUsername?: string | undefined
-            readonly tryKeyboard?: boolean | undefined
-            readonly keepaliveInterval?: number | undefined
-            readonly keepaliveCountMax?: number | undefined
-            readonly readyTimeout?: number | undefined
-            readonly strictVendor?: boolean | undefined
-            readonly sock?: Readable | undefined
-            readonly agentForward?: boolean | undefined
-            readonly algorithms?: ssh2.Algorithms | undefined
-            readonly debug?: ssh2.DebugFunction | undefined
-            readonly authHandler?:
-              | ssh2.AuthenticationType[]
-              | ssh2.AuthHandlerMiddleware
-              | ssh2.AuthMethod[]
-              | undefined
-            readonly localAddress?: string | undefined
-            readonly localPort?: number | undefined
-            readonly timeout?: number | undefined
-            readonly ident?: string | Buffer | undefined
+            readonly username?: string
+            readonly password?: string
+            readonly agent?: ssh2.BaseAgent | string
+            readonly privateKey?: Buffer | string
+            readonly passphrase?: Buffer | string
+            readonly localHostname?: string
+            readonly localUsername?: string
+            readonly tryKeyboard?: boolean
+            readonly keepaliveInterval?: number
+            readonly keepaliveCountMax?: number
+            readonly readyTimeout?: number
+            readonly strictVendor?: boolean
+            readonly sock?: Readable
+            readonly agentForward?: boolean
+            readonly algorithms?: ssh2.Algorithms
+            readonly debug?: ssh2.DebugFunction
+            readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+            readonly localAddress?: string
+            readonly localPort?: number
+            readonly timeout?: number
+            readonly ident?: Buffer | string
           }
         | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
         | {

@@ -103,12 +103,12 @@ export declare const demuxBidirectionalRawSocket: (<A1, E1, E2, R1, R2>(
   sink: Sink.Sink<A1, string, string, E2, R2>
 ) => (
   socket: BidirectionalRawStreamSocket
-) => Effect.Effect<A1, Socket.SocketError | E1 | E2, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>) &
+) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>) &
   (<A1, E1, E2, R1, R2>(
     socket: BidirectionalRawStreamSocket,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>
-  ) => Effect.Effect<A1, Socket.SocketError | E1 | E2, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>)
+  ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>)
 ```
 
 Added in v1.0.0
@@ -142,16 +142,16 @@ export declare const demuxUnidirectionalRawSockets: <
     : undefined
 >(
   streams:
-    | { stdin: O1; stdout?: undefined; stderr?: undefined }
-    | { stdin?: undefined; stdout: O2; stderr?: undefined }
-    | { stdin?: undefined; stdout?: undefined; stderr: O3 }
-    | { stdin: O1; stdout: O2; stderr?: undefined }
-    | { stdin: O1; stdout?: undefined; stderr: O3 }
-    | { stdin?: undefined; stdout: O2; stderr: O3 }
+    | { stdin: O1; stdout?: never; stderr?: never }
+    | { stdin?: never; stdout: O2; stderr?: never }
+    | { stdin?: never; stdout?: never; stderr: O3 }
+    | { stdin: O1; stdout: O2; stderr?: never }
+    | { stdin: O1; stdout?: never; stderr: O3 }
+    | { stdin?: never; stdout: O2; stderr: O3 }
     | { stdin: O1; stdout: O2; stderr: O3 }
 ) => Effect.Effect<
   CompressedDemuxOutput<A1, A2>,
-  Socket.SocketError | E1 | E2 | E3,
+  E1 | E2 | E3 | Socket.SocketError,
   Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
 >
 ```
@@ -213,7 +213,7 @@ export declare const responseToRawStreamSocketOrFail: (<
     ? UnidirectionalRawStreamSocket
     : SourceIsKnownBidirectional extends true
       ? BidirectionalRawStreamSocket
-      : BidirectionalRawStreamSocket | UnidirectionalRawStreamSocket,
+      : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
   Socket.SocketError,
   never
 >) &
@@ -231,7 +231,7 @@ export declare const responseToRawStreamSocketOrFail: (<
       ? UnidirectionalRawStreamSocket
       : SourceIsKnownBidirectional extends true
         ? BidirectionalRawStreamSocket
-        : BidirectionalRawStreamSocket | UnidirectionalRawStreamSocket,
+        : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
     Socket.SocketError,
     never
   >)
