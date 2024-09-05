@@ -40,7 +40,7 @@ describe("MobyApi Distribution tests", () => {
 
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
-    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    beforeAll(() => testRuntime.runPromise(Effect.void).then(() => {}), beforeAllTimeout);
     afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should inspect an image", async () => {

@@ -43,7 +43,7 @@ describe("MobyApi Nodes tests", () => {
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
 
     beforeAll(async () => {
-        await testRuntime.runPromise(Effect.sync(Function.constUndefined));
+        await testRuntime.runPromise(Effect.void);
         await testRuntime.runPromise(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }));
     }, beforeAllTimeout);
 
