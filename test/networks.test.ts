@@ -32,7 +32,7 @@ describe("MobyApi Networks tests", () => {
         Match.exhaustive
     );
 
-    const testDindLayer: DindEngine.DindLayerWithDockerEngineRequirementsProvided = makePlatformDindLayer({
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
         dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
         exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
         connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
