@@ -812,7 +812,6 @@ export interface ImagesImpl {
  */
 export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
-    const buildClient = defaultClient.pipe(HttpClient.filterStatusOk);
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
     const list_ = (
@@ -861,7 +860,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("outputs", Option.fromNullable(options.outputs)),
             maybeAddQueryParameter("version", Option.some("1")),
             HttpClientRequest.streamBody(options.context),
-            buildClient,
+            client,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
@@ -878,7 +877,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("keep-storage", Option.fromNullable(options?.["keep-storage"])),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
             maybeAddFilters(options?.filters),
-            buildClient,
+            client,
             HttpClientResponse.schemaBodyJsonScoped(ImagePruneResponse),
             Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause }))
         );

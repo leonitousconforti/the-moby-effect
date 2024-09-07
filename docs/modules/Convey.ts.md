@@ -62,7 +62,7 @@ Added in v1.0.0
 export declare const packBuildContextIntoTarballStream: {
   (
     cwd: string,
-    entries?: string[] | undefined
+    entries?: Array<string> | undefined
   ): Effect<Stream<Uint8Array, PlatformError | ParseError, never>, PlatformError, Path | FileSystem>
   (entries: HashMap<string, string | Uint8Array>): Stream<Uint8Array, ParseError, never>
 }

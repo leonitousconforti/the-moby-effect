@@ -57,7 +57,7 @@ export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3, R1, R2, R3>(
   socket: MultiplexedStreamSocket
 ) => Effect.Effect<
   CompressedDemuxOutput<A1, A2>,
-  Socket.SocketError | ParseResult.ParseError | E1 | E2 | E3,
+  E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
   Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
 >) &
   (<A1, A2, E1, E2, E3, R1, R2, R3>(
@@ -68,7 +68,7 @@ export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3, R1, R2, R3>(
     options?: { bufferSize?: number | undefined } | undefined
   ) => Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
-    Socket.SocketError | ParseResult.ParseError | E1 | E2 | E3,
+    E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
   >)
 ```

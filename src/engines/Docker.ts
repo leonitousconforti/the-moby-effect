@@ -4,10 +4,8 @@
  * @since 1.0.0
  */
 
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
@@ -24,7 +22,7 @@ import * as Moby from "./Moby.js";
  * @since 1.0.0
  * @category Layers
  */
-export type DockerLayerWithoutPlatformLayerConstructor = Moby.MobyLayerWithoutPlatformLayerConstructor;
+export type DockerLayer = Moby.MobyLayer;
 
 /**
  * @since 1.0.0
@@ -36,118 +34,47 @@ export type DockerLayerWithoutHttpClient = Moby.MobyLayerWithoutHttpClient;
  * @since 1.0.0
  * @category Layers
  */
-export type DockerLayer = Layer.Layer<
-    Layer.Layer.Success<DockerLayerWithoutPlatformLayerConstructor> | DockerLayerConstructor,
-    Layer.Layer.Error<DockerLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Context<DockerLayerWithoutPlatformLayerConstructor>
->;
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface DockerLayerConstructor {
-    readonly _: unique symbol;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export type DockerLayerConstructorImpl<A = Platforms.MobyConnectionOptions> = (connectionOptions: A) => DockerLayer;
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export const PlatformLayerConstructor = <A = Platforms.MobyConnectionOptions>(): Context.Tag<
-    DockerLayerConstructor,
-    DockerLayerConstructorImpl<A>
-> =>
-    Context.GenericTag<DockerLayerConstructor, DockerLayerConstructorImpl<A>>(
-        "@the-moby-effect/engines/Docker/PlatformLayerConstructor"
-    );
-
-/**
- * @since 1.0.0
- * @category Layers
- */
 export const layerWithoutHttpCLient: DockerLayerWithoutHttpClient = Moby.layerWithoutHttpCLient;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS: DockerLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): DockerLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerNodeJS,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerNodeJS))
-    );
+export const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerNodeJS;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun: DockerLayerConstructorImpl = (connectionOptions: Platforms.MobyConnectionOptions): DockerLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerBun,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerBun))
-    );
+export const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerBun;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno: DockerLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): DockerLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerDeno,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerDeno))
-    );
+export const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerDeno;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici: DockerLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): DockerLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerUndici,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerUndici))
-    );
+export const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerUndici;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb: DockerLayerConstructorImpl<
-    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-> = (connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged): DockerLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerWeb,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(
-            Context.add(
-                PlatformLayerConstructor<
-                    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-                >(),
-                layerWeb
-            )
-        )
-    );
+export const layerWeb: (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+) => DockerLayer = Moby.layerWeb;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerAgnostic: (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+) => DockerLayerWithoutHttpClient = Moby.layerAgnostic;
 
 /**
  * Implements the `docker pull` command. It does not have all the flags that the

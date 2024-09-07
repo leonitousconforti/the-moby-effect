@@ -32,7 +32,7 @@ describe("MobyApi Distribution tests", () => {
         Match.exhaustive
     );
 
-    const testDindLayer: DindEngine.DindLayerWithDockerEngineRequirementsProvided = makePlatformDindLayer({
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
         dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
         exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
         connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
@@ -40,7 +40,7 @@ describe("MobyApi Distribution tests", () => {
 
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
-    beforeAll(() => testRuntime.runPromise(Effect.sync(Function.constUndefined)).then(() => {}), beforeAllTimeout);
+    beforeAll(() => testRuntime.runPromise(Effect.void).then(() => {}), beforeAllTimeout);
     afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
     it("Should inspect an image", async () => {

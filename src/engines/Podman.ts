@@ -5,8 +5,6 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as Context from "effect/Context";
-import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
 import * as Platforms from "../Platforms.js";
@@ -23,7 +21,7 @@ import * as Moby from "./Moby.js";
  * @since 1.0.0
  * @category Layers
  */
-export type PodmanLayerWithoutPlatformLayerConstructor = Layer.Layer<
+export type PodmanLayer = Layer.Layer<
     | Containers.Containers
     | Execs.Execs
     | Images.Images
@@ -40,46 +38,10 @@ export type PodmanLayerWithoutPlatformLayerConstructor = Layer.Layer<
  * @category Layers
  */
 export type PodmanLayerWithoutHttpCLient = Layer.Layer<
-    Layer.Layer.Success<PodmanLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Error<PodmanLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Context<PodmanLayerWithoutPlatformLayerConstructor> | HttpClient.HttpClient.Default
+    Layer.Layer.Success<PodmanLayer>,
+    Layer.Layer.Error<PodmanLayer>,
+    Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient.Default
 >;
-
-/**
- * @since 1.0.0
- * @category Layers
- */
-export type PodmanLayer = Layer.Layer<
-    Layer.Layer.Success<PodmanLayerWithoutPlatformLayerConstructor> | PodmanLayerConstructor,
-    Layer.Layer.Error<PodmanLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Context<PodmanLayerWithoutPlatformLayerConstructor>
->;
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface PodmanLayerConstructor {
-    readonly _: unique symbol;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export type PodmanLayerConstructorImpl<A = Platforms.MobyConnectionOptions> = (connectionOptions: A) => PodmanLayer;
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export const PlatformLayerConstructor = <A = Platforms.MobyConnectionOptions>(): Context.Tag<
-    PodmanLayerConstructor,
-    PodmanLayerConstructorImpl<A>
-> =>
-    Context.GenericTag<PodmanLayerConstructor, PodmanLayerConstructorImpl<A>>(
-        "@the-moby-effect/engines/Podman/PlatformLayerConstructor"
-    );
 
 /**
  * @since 1.0.0
@@ -99,73 +61,38 @@ export const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLient = Layer.mergeA
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS: PodmanLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): PodmanLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerNodeJS,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerNodeJS))
-    );
+export const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerNodeJS;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun: PodmanLayerConstructorImpl = (connectionOptions: Platforms.MobyConnectionOptions): PodmanLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerBun,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerBun))
-    );
+export const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerBun;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno: PodmanLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): PodmanLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerDeno,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerDeno))
-    );
+export const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerDeno;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici: PodmanLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): PodmanLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerUndici,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(Context.add(PlatformLayerConstructor(), layerUndici))
-    );
+export const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerUndici;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb: PodmanLayerConstructorImpl<
-    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-> = (connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged): PodmanLayer =>
-    Function.pipe(
-        connectionOptions,
-        Moby.layerWeb,
-        Layer.map(Context.omit(Moby.PlatformLayerConstructor())),
-        Layer.map(
-            Context.add(
-                PlatformLayerConstructor<
-                    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-                >(),
-                layerWeb
-            )
-        )
-    );
+export const layerWeb: (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+) => PodmanLayer = Moby.layerWeb;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerAgnostic: (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+) => PodmanLayerWithoutHttpCLient = Moby.layerAgnostic;

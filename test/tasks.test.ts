@@ -33,7 +33,7 @@ describe("MobyApi Tasks tests", () => {
         Match.exhaustive
     );
 
-    const testDindLayer: DindEngine.DindLayerWithDockerEngineRequirementsProvided = makePlatformDindLayer({
+    const testDindLayer: DindEngine.DindLayer = makePlatformDindLayer({
         dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
         exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
         connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
@@ -43,7 +43,7 @@ describe("MobyApi Tasks tests", () => {
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
 
     beforeAll(async () => {
-        await testRuntime.runPromise(Effect.sync(Function.constUndefined));
+        await testRuntime.runPromise(Effect.void);
         await testRuntime.runPromise(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }));
     }, beforeAllTimeout);
 

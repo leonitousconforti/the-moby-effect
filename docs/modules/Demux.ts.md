@@ -41,12 +41,12 @@ export declare const demuxBidirectionalRawSocket: (<A1, E1, E2, R1, R2>(
   sink: Sink<A1, string, string, E2, R2>
 ) => (
   socket: rawInternal.BidirectionalRawStreamSocket
-) => Effect<A1, SocketError | E1 | E2, Exclude<R1, Scope> | Exclude<R2, Scope>>) &
+) => Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>) &
   (<A1, E1, E2, R1, R2>(
     socket: rawInternal.BidirectionalRawStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>
-  ) => Effect<A1, SocketError | E1 | E2, Exclude<R1, Scope> | Exclude<R2, Scope>>)
+  ) => Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>)
 ```
 
 Added in v1.0.0
@@ -67,13 +67,13 @@ export declare const demuxBidirectionalSocket: {
     socket: rawInternal.BidirectionalRawStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>
-  ): Effect<A1, SocketError | E1 | E2, Exclude<R1, Scope> | Exclude<R2, Scope>>
+  ): Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>
   ): (
     socket: rawInternal.BidirectionalRawStreamSocket
-  ) => Effect<A1, SocketError | E1 | E2, Exclude<R1, Scope> | Exclude<R2, Scope>>
+  ) => Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, A2, E1, E2, E3, R1, R2, R3>(
     socket: multiplexedInternal.MultiplexedStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
@@ -82,7 +82,7 @@ export declare const demuxBidirectionalSocket: {
     options?: { bufferSize?: number | undefined } | undefined
   ): Effect<
     CompressedDemuxOutput<A1, A2>,
-    SocketError | E1 | E2 | E3 | ParseError,
+    E1 | E2 | E3 | SocketError | ParseError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
   <A1, A2, E1, E2, E3, R1, R2, R3>(
@@ -94,7 +94,7 @@ export declare const demuxBidirectionalSocket: {
     socket: multiplexedInternal.MultiplexedStreamSocket
   ) => Effect<
     CompressedDemuxOutput<A1, A2>,
-    SocketError | E1 | E2 | E3 | ParseError,
+    E1 | E2 | E3 | SocketError | ParseError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
 }
@@ -124,7 +124,7 @@ export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3, R1, R2, R3>(
   socket: multiplexedInternal.MultiplexedStreamSocket
 ) => Effect<
   CompressedDemuxOutput<A1, A2>,
-  SocketError | ParseError | E1 | E2 | E3,
+  E1 | E2 | E3 | SocketError | ParseError,
   Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
 >) &
   (<A1, A2, E1, E2, E3, R1, R2, R3>(
@@ -135,7 +135,7 @@ export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3, R1, R2, R3>(
     options?: { bufferSize?: number | undefined } | undefined
   ) => Effect<
     CompressedDemuxOutput<A1, A2>,
-    SocketError | ParseError | E1 | E2 | E3,
+    E1 | E2 | E3 | SocketError | ParseError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >)
 ```
@@ -159,8 +159,8 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: <
     stderr: rawInternal.UnidirectionalRawStreamSocket
   },
   SocketOptions extends
-    | multiplexedInternal.MultiplexedStreamSocket
     | rawInternal.BidirectionalRawStreamSocket
+    | multiplexedInternal.MultiplexedStreamSocket
     | UnidirectionalSocketOptions,
   E1 extends SocketOptions extends multiplexedInternal.MultiplexedStreamSocket ? ParseError : never
 >(
@@ -189,8 +189,8 @@ export declare const demuxSocketWithInputToConsole: <
     stderr: rawInternal.UnidirectionalRawStreamSocket
   },
   SocketOptions extends
-    | multiplexedInternal.MultiplexedStreamSocket
     | rawInternal.BidirectionalRawStreamSocket
+    | multiplexedInternal.MultiplexedStreamSocket
     | UnidirectionalSocketOptions,
   E2 extends SocketOptions extends multiplexedInternal.MultiplexedStreamSocket ? ParseError : never,
   E1,
@@ -198,7 +198,7 @@ export declare const demuxSocketWithInputToConsole: <
 >(
   input: Stream<string | Uint8Array, E1, R1>,
   socketOptions: SocketOptions
-) => Effect<void, SocketError | E2 | E1, Exclude<R1, Scope>>
+) => Effect<void, E1 | E2 | SocketError, Exclude<R1, Scope>>
 ```
 
 Added in v1.0.0
