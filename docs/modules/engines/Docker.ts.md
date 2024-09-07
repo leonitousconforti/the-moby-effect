@@ -30,17 +30,13 @@ Added in v1.0.0
 - [Layers](#layers)
   - [DockerLayer (type alias)](#dockerlayer-type-alias)
   - [DockerLayerWithoutHttpClient (type alias)](#dockerlayerwithouthttpclient-type-alias)
-  - [DockerLayerWithoutPlatformLayerConstructor (type alias)](#dockerlayerwithoutplatformlayerconstructor-type-alias)
+  - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
   - [layerNodeJS](#layernodejs)
   - [layerUndici](#layerundici)
   - [layerWeb](#layerweb)
   - [layerWithoutHttpCLient](#layerwithouthttpclient)
-- [Tags](#tags)
-  - [DockerLayerConstructor (interface)](#dockerlayerconstructor-interface)
-  - [DockerLayerConstructorImpl (type alias)](#dockerlayerconstructorimpl-type-alias)
-  - [PlatformLayerConstructor](#platformlayerconstructor)
 
 ---
 
@@ -284,11 +280,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DockerLayer = Layer.Layer<
-  Layer.Layer.Success<DockerLayerWithoutPlatformLayerConstructor> | DockerLayerConstructor,
-  Layer.Layer.Error<DockerLayerWithoutPlatformLayerConstructor>,
-  Layer.Layer.Context<DockerLayerWithoutPlatformLayerConstructor>
->
+export type DockerLayer = Moby.MobyLayer
 ```
 
 Added in v1.0.0
@@ -303,12 +295,14 @@ export type DockerLayerWithoutHttpClient = Moby.MobyLayerWithoutHttpClient
 
 Added in v1.0.0
 
-## DockerLayerWithoutPlatformLayerConstructor (type alias)
+## layerAgnostic
 
 **Signature**
 
 ```ts
-export type DockerLayerWithoutPlatformLayerConstructor = Moby.MobyLayerWithoutPlatformLayerConstructor
+export declare const layerAgnostic: (
+  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+) => DockerLayerWithoutHttpClient
 ```
 
 Added in v1.0.0
@@ -318,51 +312,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: DockerLayerConstructorImpl<
-  | { readonly _tag: "socket"; readonly socketPath: string }
-  | {
-      readonly _tag: "ssh"
-      readonly remoteSocketPath: string
-      readonly host?: string
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
-    }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
-  | {
-      readonly _tag: "https"
-      readonly host: string
-      readonly port: number
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
-    }
->
+export declare const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -372,51 +322,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: DockerLayerConstructorImpl<
-  | { readonly _tag: "socket"; readonly socketPath: string }
-  | {
-      readonly _tag: "ssh"
-      readonly remoteSocketPath: string
-      readonly host?: string
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
-    }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
-  | {
-      readonly _tag: "https"
-      readonly host: string
-      readonly port: number
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
-    }
->
+export declare const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -426,51 +332,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: DockerLayerConstructorImpl<
-  | { readonly _tag: "socket"; readonly socketPath: string }
-  | {
-      readonly _tag: "ssh"
-      readonly remoteSocketPath: string
-      readonly host?: string
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
-    }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
-  | {
-      readonly _tag: "https"
-      readonly host: string
-      readonly port: number
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
-    }
->
+export declare const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -480,51 +342,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: DockerLayerConstructorImpl<
-  | { readonly _tag: "socket"; readonly socketPath: string }
-  | {
-      readonly _tag: "ssh"
-      readonly remoteSocketPath: string
-      readonly host?: string
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
-    }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
-  | {
-      readonly _tag: "https"
-      readonly host: string
-      readonly port: number
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
-    }
->
+export declare const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -534,19 +352,9 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerWeb: DockerLayerConstructorImpl<
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
-  | {
-      readonly _tag: "https"
-      readonly host: string
-      readonly port: number
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
-    }
->
+export declare const layerWeb: (
+  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -557,85 +365,6 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWithoutHttpCLient: Moby.MobyLayerWithoutHttpClient
-```
-
-Added in v1.0.0
-
-# Tags
-
-## DockerLayerConstructor (interface)
-
-**Signature**
-
-```ts
-export interface DockerLayerConstructor {
-  readonly _: unique symbol
-}
-```
-
-Added in v1.0.0
-
-## DockerLayerConstructorImpl (type alias)
-
-**Signature**
-
-```ts
-export type DockerLayerConstructorImpl<A = Platforms.MobyConnectionOptions> = (connectionOptions: A) => DockerLayer
-```
-
-Added in v1.0.0
-
-## PlatformLayerConstructor
-
-**Signature**
-
-```ts
-export declare const PlatformLayerConstructor: <
-  A =
-    | { readonly _tag: "socket"; readonly socketPath: string }
-    | {
-        readonly _tag: "ssh"
-        readonly remoteSocketPath: string
-        readonly host?: string
-        readonly port?: number
-        readonly forceIPv4?: boolean
-        readonly forceIPv6?: boolean
-        readonly hostHash?: string
-        readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-        readonly username?: string
-        readonly password?: string
-        readonly agent?: BaseAgent | string
-        readonly privateKey?: Buffer | string
-        readonly passphrase?: Buffer | string
-        readonly localHostname?: string
-        readonly localUsername?: string
-        readonly tryKeyboard?: boolean
-        readonly keepaliveInterval?: number
-        readonly keepaliveCountMax?: number
-        readonly readyTimeout?: number
-        readonly strictVendor?: boolean
-        readonly sock?: Readable
-        readonly agentForward?: boolean
-        readonly algorithms?: Algorithms
-        readonly debug?: DebugFunction
-        readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-        readonly localAddress?: string
-        readonly localPort?: number
-        readonly timeout?: number
-        readonly ident?: Buffer | string
-      }
-    | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
-    | {
-        readonly _tag: "https"
-        readonly host: string
-        readonly port: number
-        readonly path?: string | undefined
-        readonly cert?: string | undefined
-        readonly ca?: string | undefined
-        readonly key?: string | undefined
-        readonly passphrase?: string | undefined
-      }
->() => Context.Tag<DockerLayerConstructor, DockerLayerConstructorImpl<A>>
 ```
 
 Added in v1.0.0

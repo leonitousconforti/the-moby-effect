@@ -5,7 +5,6 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as Context from "effect/Context";
 import * as Layer from "effect/Layer";
 
 import * as Platforms from "../Platforms.js";
@@ -26,12 +25,10 @@ import * as Tasks from "../endpoints/Tasks.js";
 import * as Volumes from "../endpoints/Volumes.js";
 
 /**
- * Merges all the layers into a single layer
- *
  * @since 1.0.0
  * @category Layers
  */
-export type MobyLayerWithoutPlatformLayerConstructor = Layer.Layer<
+export type MobyLayer = Layer.Layer<
     | Configs.Configs
     | Containers.Containers
     | Distributions.Distributions
@@ -56,46 +53,10 @@ export type MobyLayerWithoutPlatformLayerConstructor = Layer.Layer<
  * @category Layers
  */
 export type MobyLayerWithoutHttpClient = Layer.Layer<
-    Layer.Layer.Success<MobyLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Error<MobyLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Context<MobyLayerWithoutPlatformLayerConstructor> | HttpClient.HttpClient.Default
+    Layer.Layer.Success<MobyLayer>,
+    Layer.Layer.Error<MobyLayer>,
+    Layer.Layer.Context<MobyLayer> | HttpClient.HttpClient.Default
 >;
-
-/**
- * @since 1.0.0
- * @category Layers
- */
-export type MobyLayer = Layer.Layer<
-    Layer.Layer.Success<MobyLayerWithoutPlatformLayerConstructor> | MobyLayerConstructor,
-    Layer.Layer.Error<MobyLayerWithoutPlatformLayerConstructor>,
-    Layer.Layer.Context<MobyLayerWithoutPlatformLayerConstructor>
->;
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface MobyLayerConstructor {
-    readonly _: unique symbol;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export type MobyLayerConstructorImpl<A = Platforms.MobyConnectionOptions> = (connectionOptions: A) => MobyLayer;
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export const PlatformLayerConstructor = <A = Platforms.MobyConnectionOptions>(): Context.Tag<
-    MobyLayerConstructor,
-    MobyLayerConstructorImpl<A>
-> =>
-    Context.GenericTag<MobyLayerConstructor, MobyLayerConstructorImpl<A>>(
-        "@the-moby-effect/engines/Moby/PlatformLayerConstructor"
-    );
 
 /**
  * Merges all the layers into a single layer
@@ -125,67 +86,43 @@ export const layerWithoutHttpCLient: MobyLayerWithoutHttpClient = Layer.mergeAll
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS: MobyLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): MobyLayer => {
-    const platformLayerConstructor = Platforms.makeNodeHttpClientLayer;
-    const platformHttpLayer = platformLayerConstructor(connectionOptions);
-    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerNodeJS);
-    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
-    return Layer.provide(outLater, platformHttpLayer);
-};
+export const layerNodeJS = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, Platforms.makeNodeHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun: MobyLayerConstructorImpl = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer => {
-    const platformLayerConstructor = Platforms.makeBunHttpClientLayer;
-    const platformHttpLayer = platformLayerConstructor(connectionOptions);
-    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerBun);
-    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
-    return Layer.provide(outLater, platformHttpLayer);
-};
+export const layerBun = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, Platforms.makeBunHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno: MobyLayerConstructorImpl = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer => {
-    const platformLayerConstructor = Platforms.makeDenoHttpClientLayer;
-    const platformHttpLayer = platformLayerConstructor(connectionOptions);
-    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerDeno);
-    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
-    return Layer.provide(outLater, platformHttpLayer);
-};
+export const layerDeno = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, Platforms.makeDenoHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici: MobyLayerConstructorImpl = (
-    connectionOptions: Platforms.MobyConnectionOptions
-): MobyLayer => {
-    const platformLayerConstructor = Platforms.makeUndiciHttpClientLayer;
-    const platformHttpLayer = platformLayerConstructor(connectionOptions);
-    const platformConstructorLayer = Layer.succeed(PlatformLayerConstructor(), layerUndici);
-    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
-    return Layer.provide(outLater, platformHttpLayer);
-};
+export const layerUndici = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, Platforms.makeUndiciHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb: MobyLayerConstructorImpl<
-    Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-> = (connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged): MobyLayer => {
-    const platformLayerConstructor = Platforms.makeWebHttpClientLayer;
-    const platformHttpLayer = platformLayerConstructor(connectionOptions);
-    const platformConstructorLayer = Layer.succeed(
-        PlatformLayerConstructor<Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged>(),
-        layerWeb
-    );
-    const outLater = Layer.merge(layerWithoutHttpCLient, platformConstructorLayer);
-    return Layer.provide(outLater, platformHttpLayer);
-};
+export const layerWeb = (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+): MobyLayer => Layer.provide(layerWithoutHttpCLient, Platforms.makeWebHttpClientLayer(connectionOptions));
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerAgnostic = (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+): MobyLayerWithoutHttpClient =>
+    Layer.provide(layerWithoutHttpCLient, Platforms.makeAgnosticHttpClientLayer(connectionOptions));

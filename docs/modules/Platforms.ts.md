@@ -55,13 +55,9 @@ http client that you could use to connect to your moby instance.
 **Signature**
 
 ```ts
-export declare const makeAgnosticHttpClientLayer: (<Ein, Rin>(
+export declare const makeAgnosticHttpClientLayer: (
   connectionOptions: CommonInternal.HttpConnectionOptionsTagged | CommonInternal.HttpsConnectionOptionsTagged
-) => (layer: Layer<HttpClient.Default, Ein, Rin>) => Layer<HttpClient.Default, Ein, Rin>) &
-  (<Ein, Rin>(
-    connectionOptions: CommonInternal.HttpConnectionOptionsTagged | CommonInternal.HttpsConnectionOptionsTagged,
-    layer: Layer<HttpClient.Default, Ein, Rin>
-  ) => Layer<HttpClient.Default, Ein, Rin>)
+) => Layer<HttpClient.Default, never, HttpClient.Default>
 ```
 
 Added in v1.0.0

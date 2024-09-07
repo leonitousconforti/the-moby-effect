@@ -9,7 +9,7 @@ import * as DindEngine from "the-moby-effect/engines/Dind";
 
 const connectionOptions = Effect.runSync(Platforms.connectionOptionsFromPlatformSystemSocketDefault());
 
-const dindLayer = DindEngine.layerNodeJS({
+const dindLayer = DindEngine.layerUndici({
     exposeDindContainerBy: "ssh" as const,
     connectionOptionsToHost: connectionOptions,
     dindBaseImage: "docker.io/library/docker:23-dind" as const,
