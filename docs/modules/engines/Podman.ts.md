@@ -6,7 +6,7 @@ parent: Modules
 
 ## Podman overview
 
-Podman engine helpers
+Podman engine
 
 Added in v1.0.0
 

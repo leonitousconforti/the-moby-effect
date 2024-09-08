@@ -6,7 +6,7 @@ parent: Modules
 
 ## Docker overview
 
-Docker engine helpers
+Docker engine
 
 Added in v1.0.0
 

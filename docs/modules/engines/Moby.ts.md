@@ -6,7 +6,7 @@ parent: Modules
 
 ## Moby overview
 
-Generic Moby helpers
+Generic Moby engine
 
 Added in v1.0.0
 

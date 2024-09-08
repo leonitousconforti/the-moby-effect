@@ -6,7 +6,7 @@ parent: Modules
 
 ## Compose overview
 
-Docker compose helpers
+Docker compose engine
 
 Added in v1.0.0
 
@@ -23,7 +23,7 @@ Added in v1.0.0
 
 ## ComposeImpl (interface)
 
-Docker compose helpers
+Docker compose engine
 
 **Signature**
 

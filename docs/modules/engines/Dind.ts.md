@@ -6,7 +6,7 @@ parent: Modules
 
 ## Dind overview
 
-Docker in docker engine helpers
+Docker in docker engine
 
 Added in v1.0.0
 
