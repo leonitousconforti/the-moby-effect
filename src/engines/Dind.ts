@@ -1,5 +1,5 @@
 /**
- * Docker in docker engine helpers
+ * Docker in docker engine
  *
  * @since 1.0.0
  */
@@ -84,11 +84,12 @@ export const makeDindLayer = <
     platformLayerConstructor: (connectionOptions: T | U) => DockerEngine.DockerLayer;
 }): DindLayer<T["_tag"]> =>
     Effect.gen(function* () {
-        const test = yield* Layer.build(options.platformLayerConstructor(options.connectionOptionsToHost));
-        const hostImages = Context.get(test, Images.Images);
-        const hostSystem = Context.get(test, System.Systems);
-        const hostVolumes = Context.get(test, Volumes.Volumes);
-        const hostContainers = Context.get(test, Containers.Containers);
+        // Do it this way so there isn't conflicting services with the same tag in the final layer
+        const hostContext = yield* Layer.build(options.platformLayerConstructor(options.connectionOptionsToHost));
+        const hostImages = Context.get(hostContext, Images.Images);
+        const hostSystem = Context.get(hostContext, System.Systems);
+        const hostVolumes = Context.get(hostContext, Volumes.Volumes);
+        const hostContainers = Context.get(hostContext, Containers.Containers);
 
         // Make sure the remote docker engine host is reachable
         yield* hostSystem.pingHead();
@@ -112,11 +113,7 @@ export const makeDindLayer = <
         yield* Convey.waitForProgressToComplete(buildStream);
 
         // Create a temporary directory to store the docker socket
-        const bindsEffect: Effect.Effect<
-            readonly [tempSocketDirectory: string, binds: Array<string>],
-            T["_tag"] extends "socket" ? PlatformError.PlatformError : never,
-            T["_tag"] extends "socket" ? Path.Path | FileSystem.FileSystem : never
-        > = Effect.if(options.exposeDindContainerBy === "socket", {
+        const bindsEffect = Effect.if(options.exposeDindContainerBy === "socket", {
             onFalse: () => Effect.succeed(Tuple.make("", Tuple.make(`${volumeCreateResponse.Name}:/var/lib/docker`))),
             onTrue: () =>
                 Effect.gen(function* () {
