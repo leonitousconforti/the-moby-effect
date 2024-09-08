@@ -61,5 +61,5 @@ export const followProgressInConsole = <E1, R1>(
         );
         return yield* Effect.all(effects, { concurrency: 2 });
     })
-        .pipe(Effect.map(Tuple.getFirst))
-        .pipe(Effect.scoped);
+        .pipe(Effect.scoped)
+        .pipe(Effect.map(Tuple.getFirst));

@@ -1,5 +1,5 @@
 /**
- * Podman engine helpers
+ * Podman engine
  *
  * @since 1.0.0
  */
