@@ -1,5 +1,5 @@
 /**
- * Docker engine helpers
+ * Docker engine
  *
  * @since 1.0.0
  */
@@ -264,7 +264,7 @@ export const runScoped = (
         Effect.orDie(
             Effect.gen(function* () {
                 const containers = yield* Containers.Containers;
-                yield* containers.kill({ id: containerData.Id });
+                yield* Effect.catchTag(containers.kill({ id: containerData.Id }), "ContainersError", () => Effect.void);
                 yield* containers.delete({ id: containerData.Id, force: true });
             })
         );
