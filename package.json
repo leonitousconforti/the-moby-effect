@@ -103,7 +103,7 @@
         "tar-fs": "^3.0.6",
         "undici": "^6.19.8"
     },
-    "packageManager": "pnpm@9.9.0",
+    "packageManager": "pnpm@9.10.0",
     "engines": {
         "node": ">=18.0.0"
     },
