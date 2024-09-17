@@ -106,7 +106,7 @@ Containers layer that depends on a Moby connection agent
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Containers, never, HttpClient.HttpClient.Default>
+export declare const layer: Layer.Layer<Containers, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0
@@ -661,7 +661,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.Default>
+export declare const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0

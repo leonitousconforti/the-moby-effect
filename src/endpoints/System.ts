@@ -179,7 +179,7 @@ export interface SystemsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -187,47 +187,52 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
     const auth_ = (options: RegistryAuthConfig): Effect.Effect<Readonly<AuthResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/auth"),
-            HttpClientRequest.schemaBody(RegistryAuthConfig)(options),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(AuthResponse),
-            Effect.mapError((cause) => new SystemsError({ method: "auth", cause }))
+            HttpClientRequest.schemaBodyJson(RegistryAuthConfig)(options),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(AuthResponse)),
+            Effect.mapError((cause) => new SystemsError({ method: "auth", cause })),
+            Effect.scoped
         );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L60-L110
     const info_ = (): Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/info"),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(SystemInfoResponse),
-            Effect.mapError((cause) => new SystemsError({ method: "info", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SystemInfoResponse)),
+            Effect.mapError((cause) => new SystemsError({ method: "info", cause })),
+            Effect.scoped
         );
 
     // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L112-L119
     const version_ = (): Effect.Effect<Readonly<SystemVersionResponse>, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/version"),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(SystemVersionResponse),
-            Effect.mapError((cause) => new SystemsError({ method: "version", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SystemVersionResponse)),
+            Effect.mapError((cause) => new SystemsError({ method: "version", cause })),
+            Effect.scoped
         );
 
     // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L31-L49
     const ping_ = (): Effect.Effect<"OK", SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.get("/_ping"),
-            client,
-            HttpClientResponse.text,
+            client.execute,
+            Effect.flatMap((response) => response.text),
             Effect.flatMap(Schema.decodeUnknown(Schema.Literal("OK"))),
-            Effect.mapError((cause) => new SystemsError({ method: "ping", cause }))
+            Effect.mapError((cause) => new SystemsError({ method: "ping", cause })),
+            Effect.scoped
         );
 
     // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L31-L49
     const pingHead_ = (): Effect.Effect<void, SystemsError, never> =>
         Function.pipe(
             HttpClientRequest.head("/_ping"),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new SystemsError({ method: "pingHead", cause }))
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new SystemsError({ method: "pingHead", cause })),
+            Effect.scoped
         );
 
     // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L225-L303
@@ -240,7 +245,7 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
-            client,
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
@@ -254,9 +259,10 @@ export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.get("/system/df"),
             maybeAddQueryParameter("type", Option.fromNullable(options?.type)),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(DiskUsage),
-            Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(DiskUsage)),
+            Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause })),
+            Effect.scoped
         );
 
     return {
@@ -284,4 +290,4 @@ export class Systems extends Effect.Tag("@the-moby-effect/endpoints/System")<Sys
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Systems, never, HttpClient.HttpClient.Default> = Layer.effect(Systems, make);
+export const layer: Layer.Layer<Systems, never, HttpClient.HttpClient.Service> = Layer.effect(Systems, make);

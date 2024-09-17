@@ -143,7 +143,7 @@ export interface NodesImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -156,36 +156,40 @@ export const make: Effect.Effect<NodesImpl, never, HttpClient.HttpClient.Default
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmNode)),
-            Effect.mapError((cause) => new NodesError({ method: "list", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
+            Effect.mapError((cause) => new NodesError({ method: "list", cause })),
+            Effect.scoped
         );
 
     const delete_ = (options: NodeDeleteOptions): Effect.Effect<void, NodesError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/nodes/${encodeURIComponent(options.id)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmNode)),
-            Effect.mapError((cause) => new NodesError({ method: "delete", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
+            Effect.mapError((cause) => new NodesError({ method: "delete", cause })),
+            Effect.scoped
         );
 
     const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/nodes/${encodeURIComponent(options.id)}`),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(SwarmNode),
-            Effect.mapError((cause) => new NodesError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmNode)),
+            Effect.mapError((cause) => new NodesError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     const update_ = (options: NodeUpdateOptions): Effect.Effect<void, NodesError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/nodes/${encodeURIComponent(options.id)}/update`),
             maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBody(SwarmNodeSpec)(options.body),
-            Effect.flatMap(client),
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new NodesError({ method: "update", cause }))
+            HttpClientRequest.schemaBodyJson(SwarmNodeSpec)(options.body),
+            Effect.flatMap(client.execute),
+            Effect.asVoid,
+            Effect.mapError((cause) => new NodesError({ method: "update", cause })),
+            Effect.scoped
         );
 
     return {
@@ -210,4 +214,4 @@ export class Nodes extends Effect.Tag("@the-moby-effect/endpoints/Nodes")<Nodes,
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Nodes, never, HttpClient.HttpClient.Default> = Layer.effect(Nodes, make);
+export const layer: Layer.Layer<Nodes, never, HttpClient.HttpClient.Service> = Layer.effect(Nodes, make);

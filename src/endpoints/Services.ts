@@ -279,7 +279,7 @@ export interface ServicesImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -293,9 +293,10 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
             maybeAddQueryParameter("status", Option.fromNullable(options?.status)),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmService)),
-            Effect.mapError((cause) => new ServicesError({ method: "list", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmService))),
+            Effect.mapError((cause) => new ServicesError({ method: "list", cause })),
+            Effect.scoped
         );
 
     const create_ = (
@@ -304,27 +305,30 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
         Function.pipe(
             HttpClientRequest.post("/services/create"),
             HttpClientRequest.setHeader("X-Registry-Auth", ""),
-            HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(SwarmServiceCreateResponse),
-            Effect.mapError((cause) => new ServicesError({ method: "create", cause }))
+            HttpClientRequest.schemaBodyJson(SwarmServiceSpec)(options.body),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmServiceCreateResponse)),
+            Effect.mapError((cause) => new ServicesError({ method: "create", cause })),
+            Effect.scoped
         );
 
     const delete_ = (options: ServiceDeleteOptions): Effect.Effect<void, ServicesError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/services/${encodeURIComponent(options.id)}`),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new ServicesError({ method: "delete", cause }))
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new ServicesError({ method: "delete", cause })),
+            Effect.scoped
         );
 
     const inspect_ = (options: ServiceInspectOptions): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/services/${encodeURIComponent(options.id)}`),
             maybeAddQueryParameter("insertDefaults", Option.fromNullable(options.insertDefaults)),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(SwarmService),
-            Effect.mapError((cause) => new ServicesError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmService)),
+            Effect.mapError((cause) => new ServicesError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     const update_ = (
@@ -336,10 +340,11 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             maybeAddQueryParameter("version", Option.some(options.version)),
             maybeAddQueryParameter("registryAuthFrom", Option.fromNullable(options.registryAuthFrom)),
             maybeAddQueryParameter("rollback", Option.fromNullable(options.rollback)),
-            HttpClientRequest.schemaBody(SwarmServiceSpec)(options.body),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(SwarmServiceUpdateResponse),
-            Effect.mapError((cause) => new ServicesError({ method: "update", cause }))
+            HttpClientRequest.schemaBodyJson(SwarmServiceSpec)(options.body),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmServiceUpdateResponse)),
+            Effect.mapError((cause) => new ServicesError({ method: "update", cause })),
+            Effect.scoped
         );
 
     const logs_ = (options: ServiceLogsOptions): Stream.Stream<string, ServicesError, never> =>
@@ -352,7 +357,7 @@ export const make: Effect.Effect<ServicesImpl, never, HttpClient.HttpClient.Defa
             maybeAddQueryParameter("since", Option.fromNullable(options.since)),
             maybeAddQueryParameter("timestamps", Option.fromNullable(options.timestamps)),
             maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
-            client,
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.mapError((cause) => new ServicesError({ method: "logs", cause }))
@@ -382,4 +387,4 @@ export class Services extends Effect.Tag("@the-moby-effect/endpoints/Services")<
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Services, never, HttpClient.HttpClient.Default> = Layer.effect(Services, make);
+export const layer: Layer.Layer<Services, never, HttpClient.HttpClient.Service> = Layer.effect(Services, make);

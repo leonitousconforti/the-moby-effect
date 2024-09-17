@@ -49,7 +49,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeUndiciHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient.Default, never, never>
+) => Layer.Layer<HttpClient.HttpClient.Service, never, never>
 ```
 
 Added in v1.0.0

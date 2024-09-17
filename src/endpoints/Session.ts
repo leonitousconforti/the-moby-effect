@@ -71,7 +71,7 @@ export interface SessionsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
 
@@ -80,7 +80,7 @@ export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Defa
             HttpClientRequest.post("/session"),
             HttpClientRequest.setHeader("Upgrade", "h2c"),
             HttpClientRequest.setHeader("Connection", "Upgrade"),
-            client,
+            client.execute,
             Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
             Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
             Effect.mapError((cause) => new SessionsError({ method: "session", cause }))
@@ -103,4 +103,4 @@ export class Sessions extends Effect.Tag("@the-moby-effect/endpoints/Session")<S
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient.Default> = Layer.effect(Sessions, make);
+export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient.Service> = Layer.effect(Sessions, make);

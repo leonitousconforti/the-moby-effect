@@ -31,7 +31,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeAgnosticHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer.Layer<HttpClient.HttpClient.Default, never, HttpClient.HttpClient.Default>
+) => Layer.Layer<HttpClient.HttpClient.Service, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0

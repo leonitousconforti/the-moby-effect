@@ -134,7 +134,7 @@ export interface ConfigsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const contextClient = yield* HttpClient.HttpClient;
     const client = contextClient.pipe(HttpClient.filterStatusOk);
 
@@ -144,9 +144,10 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             HttpClientRequest.get("/configs"),
             maybeAddFilters(options?.filters),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmConfig)),
-            Effect.mapError((cause) => new ConfigsError({ method: "list", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmConfig))),
+            Effect.mapError((cause) => new ConfigsError({ method: "list", cause })),
+            Effect.scoped
         );
 
     const create_ = (
@@ -155,36 +156,40 @@ export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Defau
         Function.pipe(
             Schema.decode(SwarmConfigSpec)(options),
             Effect.map((body) => Tuple.make(HttpClientRequest.post("/configs/create"), body)),
-            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBody(SwarmConfigSpec))),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(SwarmConfigCreateResponse),
-            Effect.mapError((cause) => new ConfigsError({ method: "create", cause }))
+            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmConfigSpec))),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfigCreateResponse)),
+            Effect.mapError((cause) => new ConfigsError({ method: "create", cause })),
+            Effect.scoped
         );
 
     const delete_ = (options: ConfigDeleteOptions): Effect.Effect<void, ConfigsError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/configs/${encodeURIComponent(options.id)}`),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new ConfigsError({ method: "delete", cause }))
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
+            Effect.scoped
         );
 
     const inspect_ = (options: ConfigInspectOptions): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/configs/${encodeURIComponent(options.id)}`),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(SwarmConfig),
-            Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfig)),
+            Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     const update_ = (options: ConfigUpdateOptions): Effect.Effect<void, ConfigsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/configs/${encodeURIComponent(options.id)}/update`),
             maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBody(SwarmConfigSpec)(options.spec),
-            Effect.flatMap(client),
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new ConfigsError({ method: "update", cause }))
+            HttpClientRequest.schemaBodyJson(SwarmConfigSpec)(options.spec),
+            Effect.flatMap(client.execute),
+            Effect.asVoid,
+            Effect.mapError((cause) => new ConfigsError({ method: "update", cause })),
+            Effect.scoped
         );
 
     return {
@@ -210,4 +215,4 @@ export class Configs extends Effect.Tag("@the-moby-effect/endpoints/Configs")<Co
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Configs, never, HttpClient.HttpClient.Default> = Layer.effect(Configs, make);
+export const layer: Layer.Layer<Configs, never, HttpClient.HttpClient.Service> = Layer.effect(Configs, make);

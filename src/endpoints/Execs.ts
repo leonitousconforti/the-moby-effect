@@ -153,17 +153,18 @@ export interface ExecsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const contextClient = yield* HttpClient.HttpClient;
     const client = contextClient.pipe(HttpClient.filterStatusOk);
 
     const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/exec`),
-            HttpClientRequest.schemaBody(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(IDResponse),
-            Effect.mapError((cause) => new ExecsError({ method: "container", cause }))
+            HttpClientRequest.schemaBodyJson(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
+            Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
+            Effect.scoped
         );
 
     const start_ = <T extends boolean | undefined>(
@@ -179,10 +180,10 @@ export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default
 
         const response = Function.pipe(
             HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/start`),
-            HttpClientRequest.schemaBody(ContainerExecStartConfig)(
+            HttpClientRequest.schemaBodyJson(ContainerExecStartConfig)(
                 Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
             ),
-            Effect.flatMap(client),
+            Effect.flatMap(client.execute),
             Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
         );
 
@@ -201,17 +202,19 @@ export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Default
             HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/resize`),
             maybeAddQueryParameter("h", Option.fromNullable(options.h)),
             maybeAddQueryParameter("w", Option.fromNullable(options.w)),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new ExecsError({ method: "resize", cause }))
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
+            Effect.scoped
         );
 
     const inspect_ = (options: ExecInspectOptions): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/exec/${encodeURIComponent(options.id)}/json`),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(ExecInspectResponse),
-            Effect.mapError((cause) => new ExecsError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(ExecInspectResponse)),
+            Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     return {
@@ -236,4 +239,4 @@ export class Execs extends Effect.Tag("@the-moby-effect/endpoints/Execs")<Execs,
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Execs, never, HttpClient.HttpClient.Default> = Layer.effect(Execs, make);
+export const layer: Layer.Layer<Execs, never, HttpClient.HttpClient.Service> = Layer.effect(Execs, make);

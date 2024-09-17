@@ -87,7 +87,7 @@ Configs layer that depends on the MobyConnectionAgent
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Networks, never, HttpClient.HttpClient.Default>
+export declare const layer: Layer.Layer<Networks, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0
@@ -99,7 +99,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Default>
+export declare const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0

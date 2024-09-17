@@ -32,7 +32,7 @@ different than the Node implementation currently.
 ```ts
 export declare const makeBunHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient.Default, never, never>
+) => Layer.Layer<HttpClient.HttpClient.Service, never, never>
 ```
 
 Added in v1.0.0

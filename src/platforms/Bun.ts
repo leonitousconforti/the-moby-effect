@@ -20,4 +20,4 @@ import { makeNodeHttpClientLayer } from "./Node.js";
  */
 export const makeBunHttpClientLayer: (
     connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient.Default, never, never> = makeNodeHttpClientLayer;
+) => Layer.Layer<HttpClient.HttpClient.Service, never, never> = makeNodeHttpClientLayer;

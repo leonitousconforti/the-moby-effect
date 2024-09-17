@@ -55,7 +55,7 @@ export type MobyLayer = Layer.Layer<
 export type MobyLayerWithoutHttpClient = Layer.Layer<
     Layer.Layer.Success<MobyLayer>,
     Layer.Layer.Error<MobyLayer>,
-    Layer.Layer.Context<MobyLayer> | HttpClient.HttpClient.Default
+    Layer.Layer.Context<MobyLayer> | HttpClient.HttpClient.Service
 >;
 
 /**

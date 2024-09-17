@@ -174,7 +174,7 @@ export interface SecretsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -187,9 +187,10 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmSecret)),
-            Effect.mapError((cause) => new SecretsError({ method: "list", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmSecret))),
+            Effect.mapError((cause) => new SecretsError({ method: "list", cause })),
+            Effect.scoped
         );
 
     const create_ = (
@@ -197,36 +198,40 @@ export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Defau
     ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.post("/secrets/create"),
-            HttpClientRequest.schemaBody(SwarmSecretSpec)(options),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(SwarmSecretCreateResponse),
-            Effect.mapError((cause) => new SecretsError({ method: "create", cause }))
+            HttpClientRequest.schemaBodyJson(SwarmSecretSpec)(options),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecretCreateResponse)),
+            Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
+            Effect.scoped
         );
 
     const delete_ = (options: SecretDeleteOptions): Effect.Effect<void, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.del(`/secrets/${encodeURIComponent(options.id)}`),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new SecretsError({ method: "delete", cause }))
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new SecretsError({ method: "delete", cause })),
+            Effect.scoped
         );
 
     const inspect_ = (options: SecretInspectOptions): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/secrets/${encodeURIComponent(options.id)}`),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(SwarmSecret),
-            Effect.mapError((cause) => new SecretsError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecret)),
+            Effect.mapError((cause) => new SecretsError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     const update_ = (options: SecretUpdateOptions): Effect.Effect<void, SecretsError, never> =>
         Function.pipe(
             HttpClientRequest.post(`/secrets/${encodeURIComponent(options.id)}/update`),
             maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBody(SwarmSecretSpec)(options.spec),
-            Effect.flatMap(client),
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new SecretsError({ method: "update", cause }))
+            HttpClientRequest.schemaBodyJson(SwarmSecretSpec)(options.spec),
+            Effect.flatMap(client.execute),
+            Effect.asVoid,
+            Effect.mapError((cause) => new SecretsError({ method: "update", cause })),
+            Effect.scoped
         );
 
     return {
@@ -252,4 +257,4 @@ export class Secrets extends Effect.Tag("@the-moby-effect/endpoints/Secrets")<Se
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Secrets, never, HttpClient.HttpClient.Default> = Layer.effect(Secrets, make);
+export const layer: Layer.Layer<Secrets, never, HttpClient.HttpClient.Service> = Layer.effect(Secrets, make);

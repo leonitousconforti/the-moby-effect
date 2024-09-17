@@ -810,7 +810,7 @@ export interface ImagesImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -823,9 +823,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("filters", Option.fromNullable(options?.filters)),
             maybeAddQueryParameter("shared-size", Option.fromNullable(options?.["shared-size"])),
             maybeAddQueryParameter("digests", Option.fromNullable(options?.digests)),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ImageSummary)),
-            Effect.mapError((cause) => new ImagesError({ method: "list", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSummary))),
+            Effect.mapError((cause) => new ImagesError({ method: "list", cause })),
+            Effect.scoped
         );
 
     const build_ = <E1>(options: ImageBuildOptions<E1>): Stream.Stream<JSONMessage, ImagesError, never> =>
@@ -859,8 +860,8 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("target", Option.fromNullable(options.target)),
             maybeAddQueryParameter("outputs", Option.fromNullable(options.outputs)),
             maybeAddQueryParameter("version", Option.some("1")),
-            HttpClientRequest.streamBody(options.context),
-            client,
+            HttpClientRequest.bodyStream(options.context),
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
@@ -877,9 +878,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("keep-storage", Option.fromNullable(options?.["keep-storage"])),
             maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
             maybeAddFilters(options?.filters),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(ImagePruneResponse),
-            Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
+            Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause })),
+            Effect.scoped
         );
 
     const create_ = (options: ImageCreateOptions): Stream.Stream<JSONMessage, ImagesError, never> =>
@@ -893,8 +895,8 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("message", Option.fromNullable(options.message)),
             maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
             maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
-            HttpClientRequest.schemaBody(Schema.String)(options.inputImage ?? ""),
-            Effect.flatMap(client),
+            HttpClientRequest.bodyText(options.inputImage ?? ""),
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.map(String.linesIterator),
@@ -906,9 +908,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
     const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(ImageInspect),
-            Effect.mapError((cause) => new ImagesError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(ImageInspect)),
+            Effect.mapError((cause) => new ImagesError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     const history_ = (
@@ -916,9 +919,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
     ): Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/history`),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ImageHistoryResponseItem)),
-            Effect.mapError((cause) => new ImagesError({ method: "history", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageHistoryResponseItem))),
+            Effect.mapError((cause) => new ImagesError({ method: "history", cause })),
+            Effect.scoped
         );
 
     const push_ = (options: ImagePushOptions): Stream.Stream<string, ImagesError, never> =>
@@ -926,7 +930,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/push`),
             HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"]),
             maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
-            client,
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.mapError((cause) => new ImagesError({ method: "push", cause }))
@@ -937,9 +941,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/tag`),
             maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
             maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new ImagesError({ method: "tag", cause }))
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new ImagesError({ method: "tag", cause })),
+            Effect.scoped
         );
 
     const delete_ = (
@@ -949,9 +954,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             HttpClientRequest.del(`/images/${encodeURIComponent(options.name)}`),
             maybeAddQueryParameter("force", Option.fromNullable(options.force)),
             maybeAddQueryParameter("noprune", Option.fromNullable(options.noprune)),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ImageDeleteResponseItem)),
-            Effect.mapError((cause) => new ImagesError({ method: "delete", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem))),
+            Effect.mapError((cause) => new ImagesError({ method: "delete", cause })),
+            Effect.scoped
         );
 
     const search_ = (
@@ -962,9 +968,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("term", Option.some(options.term)),
             maybeAddQueryParameter("limit", Option.fromNullable(options.limit)),
             maybeAddFilters({ stars: options.stars, "is-official": options["is-official"] }),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(Schema.Array(ImageSearchResponseItem)),
-            Effect.mapError((cause) => new ImagesError({ method: "search", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSearchResponseItem))),
+            Effect.mapError((cause) => new ImagesError({ method: "search", cause })),
+            Effect.scoped
         );
 
     const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
@@ -974,9 +981,10 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
-            client,
-            HttpClientResponse.schemaBodyJsonScoped(ImagePruneResponse),
-            Effect.mapError((cause) => new ImagesError({ method: "prune", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
+            Effect.mapError((cause) => new ImagesError({ method: "prune", cause })),
+            Effect.scoped
         );
 
     const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError, never> =>
@@ -989,16 +997,17 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
             maybeAddQueryParameter("author", Option.fromNullable(options.author)),
             maybeAddQueryParameter("pause", Option.fromNullable(options.pause)),
             maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
-            HttpClientRequest.schemaBody(ContainerConfig)(options.containerConfig),
-            Effect.flatMap(client),
-            HttpClientResponse.schemaBodyJsonScoped(IDResponse),
-            Effect.mapError((cause) => new ImagesError({ method: "commit", cause }))
+            HttpClientRequest.schemaBodyJson(ContainerConfig)(options.containerConfig),
+            Effect.flatMap(client.execute),
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
+            Effect.mapError((cause) => new ImagesError({ method: "commit", cause })),
+            Effect.scoped
         );
 
     const get_ = (options: ImageGetOptions): Stream.Stream<string, ImagesError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/get`),
-            client,
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.mapError((cause) => new ImagesError({ method: "get", cause }))
@@ -1008,7 +1017,7 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         Function.pipe(
             HttpClientRequest.get("/images/get"),
             maybeAddQueryParameter("names", Option.fromNullable(options?.names)),
-            client,
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.mapError((cause) => new ImagesError({ method: "getall", cause }))
@@ -1018,10 +1027,11 @@ export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Defaul
         Function.pipe(
             HttpClientRequest.post("/images/load"),
             maybeAddQueryParameter("quiet", Option.fromNullable(options?.quiet)),
-            HttpClientRequest.streamBody(options.imagesTarball),
-            client,
-            HttpClientResponse.void,
-            Effect.mapError((cause) => new ImagesError({ method: "load", cause }))
+            HttpClientRequest.bodyStream(options.imagesTarball),
+            client.execute,
+            Effect.asVoid,
+            Effect.mapError((cause) => new ImagesError({ method: "load", cause })),
+            Effect.scoped
         );
 
     return {
@@ -1057,4 +1067,4 @@ export class Images extends Effect.Tag("@the-moby-effect/endpoints/Images")<Imag
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Images, never, HttpClient.HttpClient.Default> = Layer.effect(Images, make);
+export const layer: Layer.Layer<Images, never, HttpClient.HttpClient.Service> = Layer.effect(Images, make);

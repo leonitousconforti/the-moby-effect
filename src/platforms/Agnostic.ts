@@ -19,7 +19,7 @@ import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, getAgnosticR
  */
 export const makeAgnosticHttpClientLayer = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): Layer.Layer<HttpClient.HttpClient.Default, never, HttpClient.HttpClient.Default> =>
+): Layer.Layer<HttpClient.HttpClient.Service, never, HttpClient.HttpClient.Service> =>
     Layer.function(HttpClient.HttpClient, HttpClient.HttpClient, (oldClient) => {
         const requestUrl = getAgnosticRequestUrl(connectionOptions);
         const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));

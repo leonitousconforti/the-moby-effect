@@ -22,7 +22,7 @@ import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, getWebReques
  */
 export const makeWebHttpClientLayer = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): Layer.Layer<HttpClient.HttpClient.Default, never, never> =>
+): Layer.Layer<HttpClient.HttpClient.Service, never, never> =>
     Function.pipe(
         Effect.promise(() => import("@effect/platform-browser/BrowserHttpClient")),
         Effect.map((browserHttpClientLazy) => browserHttpClientLazy.layerXMLHttpRequest),

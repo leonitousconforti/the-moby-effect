@@ -116,7 +116,7 @@ export const getUndiciDispatcher = (
  */
 export const makeUndiciHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
-): Layer.Layer<HttpClient.HttpClient.Default, never, never> =>
+): Layer.Layer<HttpClient.HttpClient.Service, never, never> =>
     Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>

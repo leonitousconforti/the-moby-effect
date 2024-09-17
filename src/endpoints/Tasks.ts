@@ -166,15 +166,9 @@ export interface TasksImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default> = Effect.gen(function* () {
+export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
-
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
-
-    const TaskClient = client.pipe(HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(SwarmTask)));
-    const TasksClient = client.pipe(
-        HttpClient.transformResponse(HttpClientResponse.schemaBodyJsonScoped(Schema.Array(SwarmTask)))
-    );
 
     const list_ = (
         options?: TaskListOptions | undefined
@@ -185,15 +179,19 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
                 "filters",
                 Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
             ),
-            TasksClient,
-            Effect.mapError((cause) => new TasksError({ method: "list", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmTask))),
+            Effect.mapError((cause) => new TasksError({ method: "list", cause })),
+            Effect.scoped
         );
 
     const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
         Function.pipe(
             HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}`),
-            TaskClient,
-            Effect.mapError((cause) => new TasksError({ method: "inspect", cause }))
+            client.execute,
+            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmTask)),
+            Effect.mapError((cause) => new TasksError({ method: "inspect", cause })),
+            Effect.scoped
         );
 
     const logs_ = (options: TaskLogsOptions): Stream.Stream<string, TasksError, never> =>
@@ -206,7 +204,7 @@ export const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Default
             maybeAddQueryParameter("since", Option.fromNullable(options.since)),
             maybeAddQueryParameter("timestamps", Option.fromNullable(options.timestamps)),
             maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
-            client,
+            client.execute,
             HttpClientResponse.stream,
             Stream.decodeText("utf8"),
             Stream.mapError((cause) => new TasksError({ method: "logs", cause }))
@@ -229,4 +227,4 @@ export class Tasks extends Effect.Tag("@the-moby-effect/endpoints/Tasks")<Tasks,
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Tasks, never, HttpClient.HttpClient.Default> = Layer.effect(Tasks, make);
+export const layer: Layer.Layer<Tasks, never, HttpClient.HttpClient.Service> = Layer.effect(Tasks, make);
