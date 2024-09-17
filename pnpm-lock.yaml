@@ -114,8 +114,8 @@ importers:
         specifier: 3.6.3
         version: 3.6.3(@typescript-eslint/parser@8.6.0(eslint@8.57.1)(typescript@5.6.2))(eslint-plugin-import@2.30.0)(eslint@8.57.1)
       eslint-plugin-codegen:
-        specifier: 0.28.0
-        version: 0.28.0(eslint@8.57.1)
+        specifier: 0.29.0
+        version: 0.29.0(eslint@8.57.1)
       eslint-plugin-deprecation:
         specifier: 3.0.0
         version: 3.0.0(eslint@8.57.1)(typescript@5.6.2)
@@ -1625,8 +1625,8 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
 
-  eslint-plugin-codegen@0.28.0:
-    resolution: {integrity: sha512-tM8Pj0Ej2QYqN7hpREA8IJ2P36fpvW5TIu8Vx/Y4JlyLy+pAO8PsVYRIdw0+qQ900eCQSyDoSa93O0+NfNjbnQ==}
+  eslint-plugin-codegen@0.29.0:
+    resolution: {integrity: sha512-C5NqptnJgf5ngxAaPg125OodjYeDD1o79Q2QbRV4Ga8WGX70KyC9KgB5walRy037fl9/JFC8PKVB9lwLOBbVGw==}
     engines: {node: '>=18.0.0'}
 
   eslint-plugin-deprecation@3.0.0:
@@ -4616,7 +4616,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-codegen@0.28.0(eslint@8.57.1):
+  eslint-plugin-codegen@0.29.0(eslint@8.57.1):
     dependencies:
       '@babel/core': 7.25.2
       '@babel/generator': 7.12.17
