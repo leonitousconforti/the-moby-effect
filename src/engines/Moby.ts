@@ -28,7 +28,7 @@ import * as Volumes from "../endpoints/Volumes.js";
  * @since 1.0.0
  * @category Layers
  */
-export type MobyLayer = Layer.Layer<
+export type MobyLayerWithoutHttpClient = Layer.Layer<
     | Configs.Configs
     | Containers.Containers
     | Distributions.Distributions
@@ -45,17 +45,17 @@ export type MobyLayer = Layer.Layer<
     | Tasks.Tasks
     | Volumes.Volumes,
     never,
-    never
+    HttpClient.HttpClient.Service
 >;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export type MobyLayerWithoutHttpClient = Layer.Layer<
-    Layer.Layer.Success<MobyLayer>,
-    Layer.Layer.Error<MobyLayer>,
-    Layer.Layer.Context<MobyLayer> | HttpClient.HttpClient.Service
+export type MobyLayer = Layer.Layer<
+    Layer.Layer.Success<MobyLayerWithoutHttpClient>,
+    Layer.Layer.Error<MobyLayerWithoutHttpClient>,
+    Exclude<Layer.Layer.Context<MobyLayerWithoutHttpClient>, HttpClient.HttpClient.Service>
 >;
 
 /**

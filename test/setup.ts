@@ -24,11 +24,12 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
         )("__PLATFORM_VARIANT");
 
         const dockerEngineVersion = yield* Config.literal(
-            "docker.io/library/docker:23-dind",
-            "docker.io/library/docker:24-dind",
-            "docker.io/library/docker:25-dind",
-            "docker.io/library/docker:26-dind",
-            "docker.io/library/docker:27-dind"
+            "docker.io/library/docker:dind-rootless",
+            "docker.io/library/docker:23-dind-rootless",
+            "docker.io/library/docker:24-dind-rootless",
+            "docker.io/library/docker:25-dind-rootless",
+            "docker.io/library/docker:26-dind-rootless",
+            "docker.io/library/docker:27-dind-rootless"
         )("__DOCKER_ENGINE_VERSION");
 
         const connectionOptions: Platforms.MobyConnectionOptions = yield* Function.pipe(

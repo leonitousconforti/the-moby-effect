@@ -12,7 +12,7 @@ const connectionOptions = Effect.runSync(Platforms.connectionOptionsFromPlatform
 const dindLayer = DindEngine.layerNodeJS({
     exposeDindContainerBy: "socket" as const,
     connectionOptionsToHost: connectionOptions,
-    dindBaseImage: "docker.io/library/docker:23-dind" as const,
+    dindBaseImage: "docker.io/library/docker:23-dind-rootless" as const,
 });
 
 Effect.gen(function* () {

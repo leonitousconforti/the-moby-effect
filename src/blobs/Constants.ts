@@ -9,7 +9,7 @@
  * @category Constants
  * @internal
  */
-export const DefaultDindBaseImage: string = "docker.io/library/docker:dind" as const;
+export const DefaultDindBaseImage: RecommendedDindBaseImages = "docker.io/library/docker:dind-rootless" as const;
 
 /**
  * @since 1.0.0
@@ -17,8 +17,9 @@ export const DefaultDindBaseImage: string = "docker.io/library/docker:dind" as c
  * @internal
  */
 export type RecommendedDindBaseImages =
-    | "docker.io/library/docker:23-dind"
-    | "docker.io/library/docker:24-dind"
-    | "docker.io/library/docker:25-dind"
-    | "docker.io/library/docker:26-dind"
-    | "docker.io/library/docker:27-dind";
+    | "docker.io/library/docker:dind-rootless"
+    | "docker.io/library/docker:23-dind-rootless"
+    | "docker.io/library/docker:24-dind-rootless"
+    | "docker.io/library/docker:25-dind-rootless"
+    | "docker.io/library/docker:26-dind-rootless"
+    | "docker.io/library/docker:27-dind-rootless";

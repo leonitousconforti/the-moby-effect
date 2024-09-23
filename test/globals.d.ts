@@ -1,4 +1,5 @@
 import type { MobyConnectionOptions } from "../src/PlatformAgents.ts";
+import type { RecommendedDindBaseImages } from "../src/blobs/Constants.ts";
 
 export type PLATFORM_VARIANT =
     | "node-18.x"
@@ -12,17 +13,10 @@ export type PLATFORM_VARIANT =
     | "bun-undici"
     | "deno-undici";
 
-export type DOCKER_ENGINE_VERSION =
-    | "docker.io/library/docker:23-dind"
-    | "docker.io/library/docker:24-dind"
-    | "docker.io/library/docker:25-dind"
-    | "docker.io/library/docker:26-dind"
-    | "docker.io/library/docker:27-dind";
-
 declare module "vitest" {
     export interface ProvidedContext {
         __PLATFORM_VARIANT: PLATFORM_VARIANT;
-        __DOCKER_ENGINE_VERSION: DOCKER_ENGINE_VERSION;
+        __DOCKER_ENGINE_VERSION: RecommendedDindBaseImages;
         __CONNECTION_VARIANT: MobyConnectionOptions["_tag"];
         __DOCKER_HOST_CONNECTION_OPTIONS: MobyConnectionOptions;
     }
