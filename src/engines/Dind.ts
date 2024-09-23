@@ -17,11 +17,14 @@ import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Number from "effect/Number";
 import * as Option from "effect/Option";
+import * as Record from "effect/Record";
 import * as Schedule from "effect/Schedule";
+import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 
+import * as TarCommon from "../archive/Common.js";
 import * as Untar from "../archive/Untar.js";
 import * as BlobConstants from "../blobs/Constants.js";
 import * as HttpBlob from "../blobs/Http.js";
@@ -86,18 +89,92 @@ export type MakeDindLayerFromPlatformConstructor<
 
 /**
  * @since 1.0.0
- * @category Blobs
+ * @category Helpers
  * @internal
  */
-export const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]) => string =
-    Function.pipe(
-        Match.type<Platforms.MobyConnectionOptions["_tag"]>(),
-        Match.when("ssh", () => SshBlob.content),
-        Match.when("http", () => HttpBlob.content),
-        Match.when("https", () => HttpsBlob.content),
-        Match.when("socket", () => SocketBlob.content),
-        Match.exhaustive
-    );
+const downloadDindCertificates = (
+    dindContainerId: string
+): Effect.Effect<
+    {
+        ca: string;
+        key: string;
+        cert: string;
+    },
+    Containers.ContainersError | ParseResult.ParseError,
+    Containers.Containers
+> =>
+    Effect.gen(function* () {
+        const certs = yield* Function.pipe(
+            Containers.Containers.archive({ id: dindContainerId, path: "/certs" }),
+            Effect.flatMap(Untar.Untar)
+        );
+
+        const readAndAssemble: <E, R>(
+            _: Option.Option<[TarCommon.TarHeader, Stream.Stream<Uint8Array, E, R>]>
+        ) => Effect.Effect<string, E, R> = Function.flow(
+            Option.getOrThrow,
+            Tuple.getSecond,
+            Stream.decodeText("utf-8"),
+            Stream.mkString
+        );
+
+        const ca = HashMap.findFirst(certs, (_stream, header) => header.filename === "certs/server/ca.pem");
+        const key = HashMap.findFirst(certs, (_stream, header) => header.filename === "certs/server/key.pem");
+        const cert = HashMap.findFirst(certs, (_stream, header) => header.filename === "certs/server/cert.pem");
+        return yield* Effect.all(Record.map({ ca, key, cert }, readAndAssemble), { concurrency: 3 });
+    });
+
+/**
+ * @since 1.0.0
+ * @category Helpers
+ * @internal
+ */
+const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]) => string = Function.pipe(
+    Match.type<Platforms.MobyConnectionOptions["_tag"]>(),
+    Match.when("ssh", () => SshBlob.content),
+    Match.when("http", () => HttpBlob.content),
+    Match.when("https", () => HttpsBlob.content),
+    Match.when("socket", () => SocketBlob.content),
+    Match.exhaustive
+);
+
+/**
+ * @since 1.0.0
+ * @category Helpers
+ * @internal
+ */
+const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_tag"]>(
+    exposeDindBy: ExposeDindBy
+): Effect.Effect<
+    readonly [tempSocketDirectory: string, binds: Array<string>],
+    Volumes.VolumesError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
+    Volumes.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
+> =>
+    Effect.gen(function* () {
+        const acquireScopedVolume = Effect.acquireRelease(Volumes.Volumes.create({}), ({ Name }) =>
+            Effect.orDie(Volumes.Volumes.delete({ name: Name }))
+        );
+
+        const volume1 = yield* acquireScopedVolume;
+        const volume2 = yield* acquireScopedVolume;
+
+        const tempSocketDirectory = yield* Effect.if(exposeDindBy === "socket", {
+            onFalse: () => Effect.succeed(""),
+            onTrue: () => Effect.flatMap(FileSystem.FileSystem, (fs) => fs.makeTempDirectoryScoped()),
+        });
+
+        const mountBinds = exposeDindBy === "socket" ? [`${tempSocketDirectory}:/run/user/1000/`] : [];
+        const volumeBinds = Tuple.make(
+            `${volume1.Name}:/var/lib/docker`,
+            `${volume2.Name}:/home/rootless/.local/share/docker`
+        );
+        const binds = Array.appendAll(mountBinds, volumeBinds);
+        return [tempSocketDirectory, binds] as const;
+    }) as Effect.Effect<
+        readonly [tempSocketDirectory: string, binds: Array<string>],
+        Volumes.VolumesError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
+        Volumes.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
+    >;
 
 /**
  * Spawns a docker in docker container on the remote host provided by another
@@ -174,11 +251,6 @@ export const makeDindLayerFromPlatformConstructor =
             // Make sure the remote docker engine host is reachable
             yield* hostSystem.pingHead();
 
-            // Create a volume to store the docker engine data
-            const volumeCreateResponse = yield* Effect.acquireRelease(hostVolumes.create({}), ({ Name }) =>
-                Effect.orDie(hostVolumes.delete({ name: Name }))
-            );
-
             // Build the docker image for the dind container
             const dindTag = Array.lastNonEmpty(String.split(options.dindBaseImage, ":"));
             const dindBlob = blobForExposeBy(options.exposeDindContainerBy);
@@ -192,50 +264,38 @@ export const makeDindLayerFromPlatformConstructor =
             // Wait for the image to be built
             yield* Convey.waitForProgressToComplete(buildStream);
 
-            // Create a temporary directory to store the docker socket
-            const bindsEffect = Effect.if(options.exposeDindContainerBy === "socket", {
-                onFalse: () =>
-                    Effect.succeed(Tuple.make("", Tuple.make(`${volumeCreateResponse.Name}:/var/lib/docker`))),
-                onTrue: () =>
-                    Effect.gen(function* () {
-                        const filesystem = yield* FileSystem.FileSystem;
-                        // FIXME: this should be makeTempDirectoryScoped
-                        const tempSocketDirectory = yield* filesystem.makeTempDirectory();
-                        const binds = Tuple.make(
-                            `${tempSocketDirectory}/:/run/user/1000/`,
-                            `${volumeCreateResponse.Name}:/var/lib/docker`
-                        );
-                        return Tuple.make(tempSocketDirectory, binds);
-                    }),
-            }) as Effect.Effect<
-                readonly [tempSocketDirectory: string, binds: Array<string>],
-                ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never,
-                ConnectionOptionsToDind extends "socket" ? Path.Path | FileSystem.FileSystem : never
-            >;
-
-            const [tempSocketDirectory, binds] = yield* bindsEffect;
+            // Create volumes and binds for the container so they can be cleaned up after
+            const [tempSocketDirectory, binds] = yield* Effect.provideService(
+                makeDindBinds(options.exposeDindContainerBy),
+                Volumes.Volumes,
+                hostVolumes
+            );
 
             // Create the dind container
-            const containerInspectResponse = yield* DockerEngine.runScoped({
-                spec: {
-                    Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
-                    Volumes: { "/var/lib/docker": {} },
-                    ExposedPorts: {
-                        "22/tcp": {},
-                        "2375/tcp": {},
-                        "2376/tcp": {},
-                    },
-                    HostConfig: {
-                        Privileged: true,
-                        Binds: binds,
-                        PortBindings: {
-                            "22/tcp": [{ HostPort: "0" }],
-                            "2375/tcp": [{ HostPort: "0" }],
-                            "2376/tcp": [{ HostPort: "0" }],
+            const containerInspectResponse = yield* Effect.provideService(
+                DockerEngine.runScoped({
+                    spec: {
+                        Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
+                        Volumes: { "/var/lib/docker": {}, "/home/rootless/.local/share/docker": {} },
+                        ExposedPorts: {
+                            "22/tcp": {},
+                            "2375/tcp": {},
+                            "2376/tcp": {},
+                        },
+                        HostConfig: {
+                            Privileged: true,
+                            Binds: binds,
+                            PortBindings: {
+                                "22/tcp": [{ HostPort: "0" }],
+                                "2375/tcp": [{ HostPort: "0" }],
+                                "2376/tcp": [{ HostPort: "0" }],
+                            },
                         },
                     },
-                },
-            }).pipe(Effect.provideService(Containers.Containers, hostContainers));
+                }),
+                Containers.Containers,
+                hostContainers
+            );
 
             // Extract the ports from the container inspect response
             const tryGetPort = Function.flow(
@@ -270,40 +330,14 @@ export const makeDindLayerFromPlatformConstructor =
                 Stream.runDrain
             );
 
-            const certs = yield* Untar.Untar(
-                hostContainers.archive({ id: containerInspectResponse.Id, path: "/certs" })
-            );
-            const ca = yield* Effect.if(options.exposeDindContainerBy === "https", {
-                onFalse: () => Effect.succeed(""),
+            // Get the engine certificates if we are exposing the dind container by https
+            const { ca, cert, key } = yield* Effect.if(options.exposeDindContainerBy === "https", {
+                onFalse: () => Effect.succeed({ ca: "", cert: "", key: "" }),
                 onTrue: () =>
-                    Function.pipe(
-                        HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/ca.pem"),
-                        Option.getOrThrow,
-                        Tuple.getSecond,
-                        Stream.decodeText("utf-8"),
-                        Stream.mkString
-                    ),
-            });
-            const key = yield* Effect.if(options.exposeDindContainerBy === "https", {
-                onFalse: () => Effect.succeed(""),
-                onTrue: () =>
-                    Function.pipe(
-                        HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/key.pem"),
-                        Option.getOrThrow,
-                        Tuple.getSecond,
-                        Stream.decodeText("utf-8"),
-                        Stream.mkString
-                    ),
-            });
-            const cert = yield* Effect.if(options.exposeDindContainerBy === "https", {
-                onFalse: () => Effect.succeed(""),
-                onTrue: () =>
-                    Function.pipe(
-                        HashMap.findFirst(certs, (stream, tarHeader) => tarHeader.filename === "certs/server/cert.pem"),
-                        Option.getOrThrow,
-                        Tuple.getSecond,
-                        Stream.decodeText("utf-8"),
-                        Stream.mkString
+                    Effect.provideService(
+                        downloadDindCertificates(containerInspectResponse.Id),
+                        Containers.Containers,
+                        hostContainers
                     ),
             });
 

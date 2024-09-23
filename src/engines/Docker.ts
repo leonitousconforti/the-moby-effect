@@ -264,7 +264,8 @@ export const runScoped = (
         Effect.orDie(
             Effect.gen(function* () {
                 const containers = yield* Containers.Containers;
-                yield* Effect.catchTag(containers.kill({ id: containerData.Id }), "ContainersError", () => Effect.void);
+                // FIXME: this cleanup should be better
+                yield* Effect.catchTag(containers.stop({ id: containerData.Id }), "ContainersError", () => Effect.void);
                 yield* containers.delete({ id: containerData.Id, force: true });
             })
         );
