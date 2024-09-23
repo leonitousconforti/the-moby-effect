@@ -46,7 +46,5 @@
         }
     },
 
-    "privileged": true,
-    "remoteUser": "root",
     "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/.devcontainer/setup.sh'"
 }
