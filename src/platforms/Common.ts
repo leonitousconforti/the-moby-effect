@@ -158,8 +158,8 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
 export const getNodeRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
     ssh: () => "http://0.0.0.0" as const,
     socket: () => "http://0.0.0.0" as const,
-    http: (options) => `http://0.0.0.0${options.path ?? ""}` as const,
-    https: (options) => `https://0.0.0.0${options.path ?? ""}` as const,
+    http: (options) => `http://0.0.0.0:${options.port}${options.path ?? ""}` as const,
+    https: (options) => `https://0.0.0.0:${options.port}${options.path ?? ""}` as const,
 });
 
 /**

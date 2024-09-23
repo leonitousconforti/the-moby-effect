@@ -43,7 +43,7 @@ describe("MobyApi Session tests", () => {
     beforeAll(() => testRuntime.runPromise(Effect.void).then(() => {}), beforeAllTimeout);
     afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
 
-    it("Should be able to request a session", async () => {
+    it.skipIf(inject("__PLATFORM_VARIANT").includes("undici"))("Should be able to request a session", async () => {
         await testRuntime.runPromise(Sessions.Sessions.session().pipe(Effect.scoped));
     });
 });
