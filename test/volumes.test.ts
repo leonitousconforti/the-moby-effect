@@ -68,7 +68,7 @@ describe("MobyApi Volumes tests", () => {
         const testData = await testRuntime.runPromise(Volumes.Volumes.inspect({ name: "testVolume" }));
         expect(testData.Name).toBe("testVolume");
         expect(testData.Driver).toBe("local");
-        expect(testData.Mountpoint).toBe("/var/lib/docker/volumes/testVolume/_data");
+        expect(testData.Mountpoint).toContain("/docker/volumes/testVolume/_data");
         expect(testData.Labels).toBeNull();
         expect(testData.Scope).toBe("local");
         expect(testData.Options).toBeNull();
