@@ -201,7 +201,7 @@ export const makeDindLayerFromPlatformConstructor =
                         const filesystem = yield* FileSystem.FileSystem;
                         const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
                         const binds = Tuple.make(
-                            `${tempSocketDirectory}/:/var/run/`,
+                            `${tempSocketDirectory}/:/run/user/1000/`,
                             `${volumeCreateResponse.Name}:/var/lib/docker`
                         );
                         return Tuple.make(tempSocketDirectory, binds);
