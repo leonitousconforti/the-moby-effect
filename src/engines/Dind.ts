@@ -199,7 +199,8 @@ export const makeDindLayerFromPlatformConstructor =
                 onTrue: () =>
                     Effect.gen(function* () {
                         const filesystem = yield* FileSystem.FileSystem;
-                        const tempSocketDirectory = yield* filesystem.makeTempDirectoryScoped();
+                        // FIXME: this should be makeTempDirectoryScoped
+                        const tempSocketDirectory = yield* filesystem.makeTempDirectory();
                         const binds = Tuple.make(
                             `${tempSocketDirectory}/:/run/user/1000/`,
                             `${volumeCreateResponse.Name}:/var/lib/docker`
