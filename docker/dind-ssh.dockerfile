@@ -1,5 +1,6 @@
-ARG DIND_BASE_IMAGE="docker.io/library/docker:dind"
+ARG DIND_BASE_IMAGE="docker.io/library/docker:dind-rootless"
 FROM ${DIND_BASE_IMAGE}
+USER root
 
 RUN \
     echo -n 'root:password' | chpasswd && \

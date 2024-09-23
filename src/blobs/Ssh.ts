@@ -12,6 +12,7 @@ import * as BlobConstants from "../blobs/Constants.js";
  */
 export const content = `ARG DIND_BASE_IMAGE="${BlobConstants.DefaultDindBaseImage}"
 FROM \${DIND_BASE_IMAGE}
+USER root
 
 RUN \\
     echo -n 'root:password' | chpasswd && \\
