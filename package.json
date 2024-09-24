@@ -50,14 +50,14 @@
         "@babel/plugin-transform-export-namespace-from": "7.24.7",
         "@babel/plugin-transform-modules-commonjs": "7.24.8",
         "@effect/build-utils": "0.7.8",
-        "@effect/cli": "0.45.0",
+        "@effect/cli": "0.45.1",
         "@effect/docgen": "0.4.5",
         "@effect/eslint-plugin": "0.2.0",
-        "@effect/experimental": "0.27.0",
+        "@effect/experimental": "0.27.1",
         "@effect/language-service": "0.1.0",
-        "@effect/platform": "0.66.0",
-        "@effect/platform-browser": "0.45.0",
-        "@effect/platform-node": "0.61.0",
+        "@effect/platform": "0.66.1",
+        "@effect/platform-browser": "0.45.1",
+        "@effect/platform-node": "0.61.1",
         "@effect/printer": "0.36.3",
         "@effect/printer-ansi": "0.36.3",
         "@effect/schema": "0.74.0",
@@ -91,14 +91,14 @@
         "vitest": "2.1.1"
     },
     "peerDependencies": {
-        "@effect/experimental": "0.27.0",
-        "@effect/platform": "0.66.0",
+        "@effect/experimental": "0.27.1",
+        "@effect/platform": "0.66.1",
         "@effect/schema": "0.74.0",
         "effect": "3.8.3"
     },
     "optionalDependencies": {
-        "@effect/platform-browser": "0.45.0",
-        "@effect/platform-node": "0.61.0",
+        "@effect/platform-browser": "0.45.1",
+        "@effect/platform-node": "0.61.1",
         "ssh2": "^1.16.0",
         "tar-fs": "^3.0.6",
         "undici": "^6.19.8"
