@@ -15,7 +15,7 @@ import * as Match from "effect/Match";
  */
 export type MobyConnectionOptions = Data.TaggedEnum<{
     socket: { readonly socketPath: string };
-    ssh: { readonly remoteSocketPath: string } & ssh2.ConnectConfig;
+    ssh: { readonly remoteSocketPath: string; host: string } & Exclude<ssh2.ConnectConfig, "host">;
     http: { readonly host: string; readonly port: number; readonly path?: string | undefined };
     https: {
         readonly host: string;
@@ -159,7 +159,7 @@ export const getNodeRequestUrl: (connectionOptions: MobyConnectionOptions) => st
     ssh: () => "http://0.0.0.0" as const,
     socket: () => "http://0.0.0.0" as const,
     http: (options) => `http://0.0.0.0:${options.port}${options.path ?? ""}` as const,
-    https: (options) => `https://0.0.0.0:${options.port}${options.path ?? ""}` as const,
+    https: (options) => `https://${options.host}:${options.port}${options.path ?? ""}` as const,
 });
 
 /**
