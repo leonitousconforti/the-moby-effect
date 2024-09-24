@@ -305,17 +305,11 @@ export const makeDindLayerFromPlatformConstructor =
             );
             const sshPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort);
             const httpPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort);
-
-            // Extract the host from the container inspect response
+            const httpsPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort);
             const host = Function.pipe(
-                containerInspectResponse.NetworkSettings?.IPAddress,
-                Option.fromNullable,
-                Option.getOrThrow
-            );
-            const gateway = Function.pipe(
-                containerInspectResponse.NetworkSettings?.Gateway,
-                Option.fromNullable,
-                Option.getOrThrow
+                Match.value<Platforms.MobyConnectionOptions>(options.connectionOptionsToHost),
+                Match.tag("socket", () => "localhost" as const),
+                Match.orElse(({ host }) => host)
             );
 
             // Wait for the dind container to be ready
@@ -344,14 +338,14 @@ export const makeDindLayerFromPlatformConstructor =
             // Craft the connection options
             const connectionOptions = Function.pipe(
                 Match.value<Platforms.MobyConnectionOptions["_tag"]>(options.exposeDindContainerBy),
-                Match.when("http", () => Platforms.HttpConnectionOptions({ host: gateway, port: httpPort })),
-                Match.when("https", () => Platforms.HttpsConnectionOptions({ host, port: 2376, ca, key, cert })),
+                Match.when("http", () => Platforms.HttpConnectionOptions({ host, port: httpPort })),
+                Match.when("https", () => Platforms.HttpsConnectionOptions({ host, port: httpsPort, ca, key, cert })),
                 Match.when("socket", () =>
                     Platforms.SocketConnectionOptions({ socketPath: `${tempSocketDirectory}/docker.sock` })
                 ),
                 Match.when("ssh", () =>
                     Platforms.SshConnectionOptions({
-                        host: gateway,
+                        host,
                         port: sshPort,
                         username: "root",
                         password: "password",
