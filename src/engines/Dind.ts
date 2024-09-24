@@ -177,6 +177,29 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
     >;
 
 /**
+ * Since the dind containers do not have health checks, we must wait until a
+ * specific log line is printed to know that the engine is ready.
+ *
+ * @since 1.0.0
+ * @category Helpers
+ * @internal
+ */
+const waitForDindContainerToBeReady = (
+    dindContainerId: string
+): Effect.Effect<void, Containers.ContainersError, Containers.Containers> =>
+    Function.pipe(
+        Containers.Containers.logs({
+            follow: true,
+            stdout: true,
+            stderr: true,
+            id: dindContainerId,
+        }),
+        Stream.unwrap,
+        Stream.takeUntil(String.includes("Daemon has completed initialization")),
+        Stream.runDrain
+    );
+
+/**
  * Spawns a docker in docker container on the remote host provided by another
  * layer and exposes the dind container as a layer. This dind engine was built
  * to power the unit tests.
@@ -306,6 +329,8 @@ export const makeDindLayerFromPlatformConstructor =
             const sshPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort);
             const httpPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort);
             const httpsPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort);
+
+            // Get the host from the connection options
             const host = Function.pipe(
                 Match.value<Platforms.MobyConnectionOptions>(options.connectionOptionsToHost),
                 Match.tag("socket", () => "localhost" as const),
@@ -313,15 +338,10 @@ export const makeDindLayerFromPlatformConstructor =
             );
 
             // Wait for the dind container to be ready
-            yield* Function.pipe(
-                hostContainers.logs({
-                    id: containerInspectResponse.Id,
-                    follow: true,
-                    stdout: true,
-                    stderr: true,
-                }),
-                Stream.takeUntil(String.includes("Daemon has completed initialization")),
-                Stream.runDrain
+            yield* Effect.provideService(
+                waitForDindContainerToBeReady(containerInspectResponse.Id),
+                Containers.Containers,
+                hostContainers
             );
 
             // Get the engine certificates if we are exposing the dind container by https
