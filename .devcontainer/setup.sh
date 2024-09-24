@@ -11,15 +11,16 @@ pnpm config set store-dir $PNPM_HOME/store
 echo "Initializing submodules"
 git submodule update --init --recursive
 
-echo "📦 Installing global dependencies..."
-npm uninstall -g pnpm
-npm install -g @devcontainers/cli tsx pnpm
-
 echo "📦 Installing repo dependencies..."
+corepack install
+corepack enable
 pnpm install
 
-echo "🏗️ Building + testing..."
+echo "🏗️ Building..."
 pnpm build
+
+echo "🧪 Testing..."
+pnpm test
 
 echo "✅ Devcontainer setup complete!"
 echo "🙏 Thank you for contributing to the-moby-effect!"

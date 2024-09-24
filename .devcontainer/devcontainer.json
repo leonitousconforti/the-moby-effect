@@ -39,9 +39,19 @@
                 },
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": "always",
-                    "source.addMissingImports": "always"
+                    "source.addMissingImports": "always",
+                    "source.fixAll.eslint": "explicit"
                 },
-                "files.associations": { "*.json": "jsonc" }
+                "files.associations": { "*.json": "jsonc" },
+                "editor.acceptSuggestionOnCommitCharacter": true,
+                "editor.acceptSuggestionOnEnter": "on",
+                "editor.quickSuggestionsDelay": 10,
+                "editor.suggestOnTriggerCharacters": true,
+                "editor.tabCompletion": "off",
+                "editor.suggest.localityBonus": true,
+                "editor.suggestSelection": "recentlyUsed",
+                "editor.wordBasedSuggestions": "matchingDocuments",
+                "editor.parameterHints.enabled": true
             }
         }
     },

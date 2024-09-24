@@ -6,7 +6,7 @@ on:
 
 concurrency:
   cancel-in-progress: false
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}
 
 jobs:
   build:
@@ -25,20 +25,7 @@ jobs:
           node-version: "18.x"
           registry-url: "https://registry.npmjs.org/"
 
-      - name: "Install pnpm"
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-      - name: "Get pnpm store"
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-      - name: "Setup pnpm cache"
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-node18.x-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-node18.x-pnpm-store-
+      - uses: pnpm/action-setup@v4
 
       - run: pnpm install
       - run: pnpm check
