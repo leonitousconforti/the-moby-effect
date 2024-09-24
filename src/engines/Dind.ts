@@ -326,7 +326,7 @@ export const makeDindLayerFromPlatformConstructor =
 
             // Get the engine certificates if we are exposing the dind container by https
             const { ca, cert, key } = yield* Effect.if(options.exposeDindContainerBy === "https", {
-                onFalse: () => Effect.succeed({ ca: "", cert: "", key: "" }),
+                onFalse: () => Effect.succeed({ ca: "", cert: "", key: "" } as const),
                 onTrue: () =>
                     Effect.provideService(
                         downloadDindCertificates(containerInspectResponse.Id),
