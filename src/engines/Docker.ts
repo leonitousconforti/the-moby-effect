@@ -356,3 +356,19 @@ export const info: Effect.Effect<
     System.SystemsError,
     System.Systems
 > = System.Systems.info();
+
+/**
+ * Implements the `docker ping` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const ping: Effect.Effect<"OK", System.SystemsError, System.Systems> = System.Systems.ping();
+
+/**
+ * Implements the `docker ping` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const pingHead: Effect.Effect<void, System.SystemsError, System.Systems> = System.Systems.pingHead();
