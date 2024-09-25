@@ -145,7 +145,7 @@ const blobForExposeBy: (exposeDindContainerBy: Platforms.MobyConnectionOptions["
 const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_tag"]>(
     exposeDindBy: ExposeDindBy
 ): Effect.Effect<
-    readonly [tempSocketDirectory: string, binds: Array<string>],
+    readonly [boundDockerSocket: string, binds: Array<string>],
     Volumes.VolumesError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
     Volumes.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
 > =>
@@ -162,15 +162,20 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
             onTrue: () => Effect.flatMap(FileSystem.FileSystem, (fs) => fs.makeTempDirectoryScoped()),
         });
 
+        const boundDockerSocket = yield* Effect.if(exposeDindBy === "socket", {
+            onFalse: () => Effect.succeed(""),
+            onTrue: () => Effect.map(Path.Path, (path) => path.join(tempSocketDirectory, "docker.sock")),
+        });
+
         const mountBinds = exposeDindBy === "socket" ? [`${tempSocketDirectory}:/run/user/1000`] : [];
         const volumeBinds = Tuple.make(
             `${volume1.Name}:/var/lib/docker`,
             `${volume2.Name}:/home/rootless/.local/share/docker`
         );
         const binds = Array.appendAll(mountBinds, volumeBinds);
-        return [tempSocketDirectory, binds] as const;
+        return [boundDockerSocket, binds] as const;
     }) as Effect.Effect<
-        readonly [tempSocketDirectory: string, binds: Array<string>],
+        readonly [boundDockerSocket: string, binds: Array<string>],
         Volumes.VolumesError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
         Volumes.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
     >;
@@ -283,7 +288,7 @@ export const makeDindLayerFromPlatformConstructor =
             yield* Convey.waitForProgressToComplete(buildStream);
 
             // Create volumes and binds for the container so they can be cleaned up after
-            const [tempSocketDirectory, binds] = yield* makeDindBinds(options.exposeDindContainerBy).pipe(
+            const [boundDockerSocket, binds] = yield* makeDindBinds(options.exposeDindContainerBy).pipe(
                 Effect.provide(hostDocker)
             );
 
@@ -340,9 +345,7 @@ export const makeDindLayerFromPlatformConstructor =
                 Match.value<Platforms.MobyConnectionOptions["_tag"]>(options.exposeDindContainerBy),
                 Match.when("http", () => Platforms.HttpConnectionOptions({ host, port: httpPort })),
                 Match.when("https", () => Platforms.HttpsConnectionOptions({ host, port: httpsPort, ca, key, cert })),
-                Match.when("socket", () =>
-                    Platforms.SocketConnectionOptions({ socketPath: `${tempSocketDirectory}/docker.sock` })
-                ),
+                Match.when("socket", () => Platforms.SocketConnectionOptions({ socketPath: boundDockerSocket })),
                 Match.when("ssh", () =>
                     Platforms.SshConnectionOptions({
                         host,
