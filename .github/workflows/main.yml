@@ -119,7 +119,7 @@ jobs:
       - if: startsWith(matrix.platform-variant, 'bun')
         run: bun run test
       - if: startsWith(matrix.platform-variant, 'deno')
-        run: deno task test
+        run: deno task test --watch=false
       - if: startsWith(matrix.platform-variant, 'node')
         run: pnpm test
 
