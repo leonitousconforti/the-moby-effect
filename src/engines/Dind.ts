@@ -254,7 +254,8 @@ export const makeDindLayerFromPlatformConstructor =
         | (ConnectionOptionsToDind extends "socket" ? Path.Path | FileSystem.FileSystem : never)
     > =>
         Effect.gen(function* () {
-            // Since the generic type of the layer constructor is pretty wide, we must cast it
+            // The generic type of the layer constructor is too wide
+            // since we want to be able to pass it as the only required generic
             const platformLayerConstructorCasted = platformLayerConstructor as (
                 connectionOptions: SupportedConnectionOptions
             ) => Layer.Layer<
