@@ -9,7 +9,6 @@ import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Array from "effect/Array";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as HashMap from "effect/HashMap";
@@ -255,24 +254,19 @@ export const makeDindLayerFromPlatformConstructor =
         | (ConnectionOptionsToDind extends "socket" ? Path.Path | FileSystem.FileSystem : never)
     > =>
         Effect.gen(function* () {
-            type PlatformLayerConstructor = (
+            // Since the generic type of the layer constructor is pretty wide, we must cast it
+            const platformLayerConstructorCasted = platformLayerConstructor as (
                 connectionOptions: SupportedConnectionOptions
             ) => Layer.Layer<
                 Layer.Layer.Success<DockerEngine.DockerLayer>,
                 PlatformLayerConstructorError,
                 PlatformLayerConstructorContext
             >;
-            const platformLayerConstructorCasted = platformLayerConstructor as PlatformLayerConstructor;
 
-            // Do it this way so there isn't conflicting services with the same tag in the final layer
-            const hostContext = yield* Layer.build(platformLayerConstructorCasted(options.connectionOptionsToHost));
-            const hostImages = Context.get(hostContext, Images.Images);
-            const hostSystem = Context.get(hostContext, System.Systems);
-            const hostVolumes = Context.get(hostContext, Volumes.Volumes);
-            const hostContainers = Context.get(hostContext, Containers.Containers);
-
-            // Make sure the remote docker engine host is reachable
-            yield* hostSystem.pingHead();
+            // Building a layer here instead of providing it to the final effect
+            // prevents conflicting services with the same tag in the final layer
+            const hostDocker = platformLayerConstructorCasted(options.connectionOptionsToHost);
+            yield* System.Systems.pingHead().pipe(Effect.provide(hostDocker));
 
             // Build the docker image for the dind container
             const dindTag = Array.lastNonEmpty(String.split(options.dindBaseImage, ":"));
@@ -282,43 +276,37 @@ export const makeDindLayerFromPlatformConstructor =
                 buildArgs: { DIND_BASE_IMAGE: options.dindBaseImage },
                 tag: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
                 context: Convey.packBuildContextIntoTarballStream(HashMap.make(["Dockerfile", dindBlob] as const)),
-            }).pipe(Stream.provideService(Images.Images, hostImages));
+            }).pipe(Stream.provideSomeLayer(hostDocker));
 
             // Wait for the image to be built
             yield* Convey.waitForProgressToComplete(buildStream);
 
             // Create volumes and binds for the container so they can be cleaned up after
-            const [tempSocketDirectory, binds] = yield* Effect.provideService(
-                makeDindBinds(options.exposeDindContainerBy),
-                Volumes.Volumes,
-                hostVolumes
+            const [tempSocketDirectory, binds] = yield* makeDindBinds(options.exposeDindContainerBy).pipe(
+                Effect.provide(hostDocker)
             );
 
             // Create the dind container
-            const containerInspectResponse = yield* Effect.provideService(
-                DockerEngine.runScoped({
-                    spec: {
-                        Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
-                        Volumes: { "/var/lib/docker": {}, "/home/rootless/.local/share/docker": {} },
-                        ExposedPorts: {
-                            "22/tcp": {},
-                            "2375/tcp": {},
-                            "2376/tcp": {},
-                        },
-                        HostConfig: {
-                            Privileged: true,
-                            Binds: binds,
-                            PortBindings: {
-                                "22/tcp": [{ HostPort: "0" }],
-                                "2375/tcp": [{ HostPort: "0" }],
-                                "2376/tcp": [{ HostPort: "0" }],
-                            },
+            const containerInspectResponse = yield* DockerEngine.runScoped({
+                spec: {
+                    Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
+                    Volumes: { "/var/lib/docker": {}, "/home/rootless/.local/share/docker": {} },
+                    ExposedPorts: {
+                        "22/tcp": {},
+                        "2375/tcp": {},
+                        "2376/tcp": {},
+                    },
+                    HostConfig: {
+                        Privileged: true,
+                        Binds: binds,
+                        PortBindings: {
+                            "22/tcp": [{ HostPort: "0" }],
+                            "2375/tcp": [{ HostPort: "0" }],
+                            "2376/tcp": [{ HostPort: "0" }],
                         },
                     },
-                }),
-                Containers.Containers,
-                hostContainers
-            );
+                },
+            }).pipe(Effect.provide(hostDocker));
 
             // Extract the ports from the container inspect response
             const tryGetPort = Function.flow(
@@ -338,21 +326,12 @@ export const makeDindLayerFromPlatformConstructor =
             );
 
             // Wait for the dind container to be ready
-            yield* Effect.provideService(
-                waitForDindContainerToBeReady(containerInspectResponse.Id),
-                Containers.Containers,
-                hostContainers
-            );
+            yield* waitForDindContainerToBeReady(containerInspectResponse.Id).pipe(Effect.provide(hostDocker));
 
             // Get the engine certificates if we are exposing the dind container by https
             const { ca, cert, key } = yield* Effect.if(options.exposeDindContainerBy === "https", {
                 onFalse: () => Effect.succeed({ ca: "", cert: "", key: "" } as const),
-                onTrue: () =>
-                    Effect.provideService(
-                        downloadDindCertificates(containerInspectResponse.Id),
-                        Containers.Containers,
-                        hostContainers
-                    ),
+                onTrue: () => downloadDindCertificates(containerInspectResponse.Id).pipe(Effect.provide(hostDocker)),
             });
 
             // Craft the connection options
