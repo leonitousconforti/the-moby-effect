@@ -35,6 +35,20 @@ Added in v1.0.0
 
 ```ts
 export type MobyLayer = Layer.Layer<
+  Layer.Layer.Success<MobyLayerWithoutHttpClient>,
+  Layer.Layer.Error<MobyLayerWithoutHttpClient>,
+  Exclude<Layer.Layer.Context<MobyLayerWithoutHttpClient>, HttpClient.HttpClient.Service>
+>
+```
+
+Added in v1.0.0
+
+## MobyLayerWithoutHttpClient (type alias)
+
+**Signature**
+
+```ts
+export type MobyLayerWithoutHttpClient = Layer.Layer<
   | Configs.Configs
   | Containers.Containers
   | Distributions.Distributions
@@ -51,21 +65,7 @@ export type MobyLayer = Layer.Layer<
   | Tasks.Tasks
   | Volumes.Volumes,
   never,
-  never
->
-```
-
-Added in v1.0.0
-
-## MobyLayerWithoutHttpClient (type alias)
-
-**Signature**
-
-```ts
-export type MobyLayerWithoutHttpClient = Layer.Layer<
-  Layer.Layer.Success<MobyLayer>,
-  Layer.Layer.Error<MobyLayer>,
-  Layer.Layer.Context<MobyLayer> | HttpClient.HttpClient.Service
+  HttpClient.HttpClient.Service
 >
 ```
 

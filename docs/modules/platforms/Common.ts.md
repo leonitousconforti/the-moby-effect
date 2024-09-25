@@ -102,7 +102,7 @@ export declare const SshConnectionOptions: Data.Case.Constructor<
   {
     readonly _tag: "ssh"
     readonly remoteSocketPath: string
-    readonly host?: string
+    readonly host: string
     readonly port?: number
     readonly forceIPv4?: boolean
     readonly forceIPv6?: boolean
@@ -200,7 +200,7 @@ export declare const MobyConnectionOptions: {
     {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
-      readonly host?: string
+      readonly host: string
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -260,7 +260,7 @@ export declare const MobyConnectionOptions: {
     | {
         readonly _tag: "ssh"
         readonly remoteSocketPath: string
-        readonly host?: string
+        readonly host: string
         readonly port?: number
         readonly forceIPv4?: boolean
         readonly forceIPv6?: boolean
@@ -314,7 +314,7 @@ export declare const MobyConnectionOptions: {
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
-            readonly host?: string
+            readonly host: string
             readonly port?: number
             readonly forceIPv4?: boolean
             readonly forceIPv6?: boolean
@@ -364,7 +364,7 @@ export declare const MobyConnectionOptions: {
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
-            readonly host?: string
+            readonly host: string
             readonly port?: number
             readonly forceIPv4?: boolean
             readonly forceIPv6?: boolean
@@ -422,7 +422,7 @@ Added in v1.0.0
 ```ts
 export type MobyConnectionOptions = Data.TaggedEnum<{
   socket: { readonly socketPath: string }
-  ssh: { readonly remoteSocketPath: string } & ssh2.ConnectConfig
+  ssh: { readonly remoteSocketPath: string; host: string } & Exclude<ssh2.ConnectConfig, "host">
   http: { readonly host: string; readonly port: number; readonly path?: string | undefined }
   https: {
     readonly host: string

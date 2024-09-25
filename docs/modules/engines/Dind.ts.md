@@ -15,9 +15,9 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Engines](#engines)
-  - [makeDindLayer](#makedindlayer)
+  - [makeDindLayerFromPlatformConstructor](#makedindlayerfromplatformconstructor)
 - [Layers](#layers)
-  - [DindLayer (type alias)](#dindlayer-type-alias)
+  - [MakeDindLayerFromPlatformConstructor (type alias)](#makedindlayerfromplatformconstructor-type-alias)
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -29,7 +29,7 @@ Added in v1.0.0
 
 # Engines
 
-## makeDindLayer
+## makeDindLayerFromPlatformConstructor
 
 Spawns a docker in docker container on the remote host provided by another
 layer and exposes the dind container as a layer. This dind engine was built
@@ -38,36 +38,71 @@ to power the unit tests.
 **Signature**
 
 ```ts
-export declare const makeDindLayer: <
-  T extends Platforms.MobyConnectionOptions,
-  U extends Platforms.MobyConnectionOptions
->(options: {
-  dindBaseImage: string
-  exposeDindContainerBy: T["_tag"]
-  connectionOptionsToHost: U
-  platformLayerConstructor: (connectionOptions: T | U) => DockerEngine.DockerLayer
-}) => DindLayer<T["_tag"]>
+export declare const makeDindLayerFromPlatformConstructor: <
+  PlatformLayerConstructor extends (
+    connectionOptions: any
+  ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
+  SupportedConnectionOptions extends Platforms.MobyConnectionOptions = PlatformLayerConstructor extends (
+    connectionOptions: infer C
+  ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
+    ? C
+    : never
+>(
+  platformLayerConstructor: PlatformLayerConstructor
+) => MakeDindLayerFromPlatformConstructor<PlatformLayerConstructor>
 ```
 
 Added in v1.0.0
 
 # Layers
 
-## DindLayer (type alias)
+## MakeDindLayerFromPlatformConstructor (type alias)
 
 **Signature**
 
 ```ts
-export type DindLayer<T = Platforms.MobyConnectionOptions["_tag"]> = Layer.Layer<
+export type MakeDindLayerFromPlatformConstructor<
+  PlatformLayerConstructor extends (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connectionOptions: any
+  ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
+  SupportedConnectionOptions extends Platforms.MobyConnectionOptions = PlatformLayerConstructor extends (
+    connectionOptions: infer C
+  ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
+    ? C
+    : never,
+  PlatformLayerConstructorError = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
+    Layer.Layer.Success<DockerEngine.DockerLayer>,
+    infer E,
+    infer _R
+  >
+    ? E
+    : never,
+  PlatformLayerConstructorContext = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
+    Layer.Layer.Success<DockerEngine.DockerLayer>,
+    infer _E,
+    infer R
+  >
+    ? R
+    : never
+> = <
+  ConnectionOptionsToHost extends SupportedConnectionOptions,
+  ConnectionOptionsToDind extends SupportedConnectionOptions["_tag"]
+>(options: {
+  exposeDindContainerBy: ConnectionOptionsToDind
+  connectionOptionsToHost: ConnectionOptionsToHost
+  dindBaseImage: BlobConstants.RecommendedDindBaseImages
+}) => Layer.Layer<
   Layer.Layer.Success<DockerEngine.DockerLayer>,
   | Images.ImagesError
   | System.SystemsError
   | Volumes.VolumesError
   | ParseResult.ParseError
   | Containers.ContainersError
-  | Layer.Layer.Error<DockerEngine.DockerLayer>
-  | (T extends "socket" ? PlatformError.PlatformError : never),
-  (T extends "socket" ? Path.Path | FileSystem.FileSystem : never) | Layer.Layer.Context<DockerEngine.DockerLayer>
+  | PlatformLayerConstructorError
+  | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
+  | PlatformLayerConstructorContext
+  | (ConnectionOptionsToDind extends "socket" ? Path.Path | FileSystem.FileSystem : never)
 >
 ```
 
@@ -78,11 +113,24 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerAgnostic: (options: {
-  dindBaseImage?: string | undefined
-  exposeDindContainerBy: "http" | "https"
-  connectionOptionsToHost: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-}) => DindLayer<"http" | "https">
+export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
+  (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  ) => DockerEngine.DockerLayerWithoutHttpClient,
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  HttpClient.Service
+>
 ```
 
 Added in v1.0.0
@@ -92,11 +140,54 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (options: {
-  dindBaseImage?: string | undefined
-  connectionOptionsToHost: Platforms.MobyConnectionOptions
-  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer
+export declare const layerBun: MakeDindLayerFromPlatformConstructor<
+  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  | { readonly _tag: "socket"; readonly socketPath: string }
+  | {
+      readonly _tag: "ssh"
+      readonly remoteSocketPath: string
+      readonly host: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
+      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: Algorithms
+      readonly debug?: DebugFunction
+      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
+    }
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  never
+>
 ```
 
 Added in v1.0.0
@@ -106,11 +197,54 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (options: {
-  dindBaseImage?: string | undefined
-  connectionOptionsToHost: Platforms.MobyConnectionOptions
-  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer
+export declare const layerDeno: MakeDindLayerFromPlatformConstructor<
+  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  | { readonly _tag: "socket"; readonly socketPath: string }
+  | {
+      readonly _tag: "ssh"
+      readonly remoteSocketPath: string
+      readonly host: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
+      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: Algorithms
+      readonly debug?: DebugFunction
+      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
+    }
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  never
+>
 ```
 
 Added in v1.0.0
@@ -120,11 +254,54 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (options: {
-  dindBaseImage?: string | undefined
-  connectionOptionsToHost: Platforms.MobyConnectionOptions
-  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer
+export declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
+  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  | { readonly _tag: "socket"; readonly socketPath: string }
+  | {
+      readonly _tag: "ssh"
+      readonly remoteSocketPath: string
+      readonly host: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
+      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: Algorithms
+      readonly debug?: DebugFunction
+      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
+    }
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  never
+>
 ```
 
 Added in v1.0.0
@@ -134,11 +311,54 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (options: {
-  dindBaseImage?: string | undefined
-  connectionOptionsToHost: Platforms.MobyConnectionOptions
-  exposeDindContainerBy: Platforms.MobyConnectionOptions["_tag"]
-}) => DindLayer
+export declare const layerUndici: MakeDindLayerFromPlatformConstructor<
+  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  | { readonly _tag: "socket"; readonly socketPath: string }
+  | {
+      readonly _tag: "ssh"
+      readonly remoteSocketPath: string
+      readonly host: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
+      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: Algorithms
+      readonly debug?: DebugFunction
+      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
+    }
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  never
+>
 ```
 
 Added in v1.0.0
@@ -148,11 +368,24 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerWeb: (options: {
-  dindBaseImage?: string | undefined
-  exposeDindContainerBy: "http" | "https"
-  connectionOptionsToHost: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-}) => DindLayer<"http" | "https">
+export declare const layerWeb: MakeDindLayerFromPlatformConstructor<
+  (
+    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  ) => DockerEngine.DockerLayer,
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  never
+>
 ```
 
 Added in v1.0.0

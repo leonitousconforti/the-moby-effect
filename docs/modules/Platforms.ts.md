@@ -204,7 +204,7 @@ export declare const SshConnectionOptions: Case.Constructor<
   {
     readonly _tag: "ssh"
     readonly remoteSocketPath: string
-    readonly host?: string
+    readonly host: string
     readonly port?: number
     readonly forceIPv4?: boolean
     readonly forceIPv6?: boolean
@@ -298,7 +298,7 @@ export declare const MobyConnectionOptions: {
     {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
-      readonly host?: string
+      readonly host: string
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -354,7 +354,7 @@ export declare const MobyConnectionOptions: {
     | {
         readonly _tag: "ssh"
         readonly remoteSocketPath: string
-        readonly host?: string
+        readonly host: string
         readonly port?: number
         readonly forceIPv4?: boolean
         readonly forceIPv6?: boolean
@@ -404,7 +404,7 @@ export declare const MobyConnectionOptions: {
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
-            readonly host?: string
+            readonly host: string
             readonly port?: number
             readonly forceIPv4?: boolean
             readonly forceIPv6?: boolean
@@ -454,7 +454,7 @@ export declare const MobyConnectionOptions: {
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
-            readonly host?: string
+            readonly host: string
             readonly port?: number
             readonly forceIPv4?: boolean
             readonly forceIPv6?: boolean
@@ -576,7 +576,7 @@ export declare const connectionOptionsFromDockerHostEnvironmentVariable: Effect.
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
-      readonly host?: string
+      readonly host: string
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean

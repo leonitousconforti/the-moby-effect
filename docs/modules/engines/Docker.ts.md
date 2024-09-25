@@ -19,6 +19,8 @@ Added in v1.0.0
   - [buildScoped](#buildscoped)
   - [images](#images)
   - [info](#info)
+  - [ping](#ping)
+  - [pingHead](#pinghead)
   - [ps](#ps)
   - [pull](#pull)
   - [pullScoped](#pullscoped)
@@ -127,6 +129,30 @@ export declare const info: Effect.Effect<
   System.SystemsError,
   System.Systems
 >
+```
+
+Added in v1.0.0
+
+## ping
+
+Implements the `docker ping` command.
+
+**Signature**
+
+```ts
+export declare const ping: Effect.Effect<"OK", System.SystemsError, System.Systems>
+```
+
+Added in v1.0.0
+
+## pingHead
+
+Implements the `docker ping` command.
+
+**Signature**
+
+```ts
+export declare const pingHead: Effect.Effect<void, System.SystemsError, System.Systems>
 ```
 
 Added in v1.0.0
