@@ -163,7 +163,7 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
             onTrue: () => Effect.flatMap(FileSystem.FileSystem, (fs) => fs.makeTempDirectoryScoped()),
         });
 
-        const mountBinds = exposeDindBy === "socket" ? [`${tempSocketDirectory}:/run/user/1000/`] : [];
+        const mountBinds = exposeDindBy === "socket" ? [`${tempSocketDirectory}:/run/user/1000`] : [];
         const volumeBinds = Tuple.make(
             `${volume1.Name}:/var/lib/docker`,
             `${volume2.Name}:/home/rootless/.local/share/docker`
