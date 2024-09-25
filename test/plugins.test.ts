@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAllEffect, afterAllTimeout, beforeAllEffect, beforeAllTimeout, provideManagedRuntime } from "./shared.js";
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
-import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -11,9 +11,6 @@ import * as Match from "effect/Match";
 
 import * as Plugins from "the-moby-effect/endpoints/Plugins";
 import * as DindEngine from "the-moby-effect/engines/Dind";
-
-const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
-const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe.skip("MobyApi Plugins tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -40,8 +37,8 @@ describe.skip("MobyApi Plugins tests", () => {
 
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
-    beforeAll(() => testRuntime.runPromise(Effect.void).then(() => {}), beforeAllTimeout);
-    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
+    beforeAllEffect(() => provideManagedRuntime(Effect.void, testRuntime), beforeAllTimeout);
+    afterAllEffect(() => testRuntime.disposeEffect, afterAllTimeout);
 
     it("Should see no plugins", async () => {
         const plugins = await testRuntime.runPromise(Plugins.Plugins.list());

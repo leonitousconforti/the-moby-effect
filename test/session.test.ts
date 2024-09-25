@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, inject, it } from "@effect/vitest";
+import { describe, inject, it } from "@effect/vitest";
+import { afterAllEffect, afterAllTimeout, beforeAllEffect, beforeAllTimeout, provideManagedRuntime } from "./shared.js";
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
-import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -11,9 +11,6 @@ import * as Match from "effect/Match";
 
 import * as Sessions from "the-moby-effect/endpoints/Session";
 import * as DindEngine from "the-moby-effect/engines/Dind";
-
-const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
-const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Session tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -40,8 +37,8 @@ describe("MobyApi Session tests", () => {
 
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
-    beforeAll(() => testRuntime.runPromise(Effect.void).then(() => {}), beforeAllTimeout);
-    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
+    beforeAllEffect(() => provideManagedRuntime(Effect.void, testRuntime), beforeAllTimeout);
+    afterAllEffect(() => testRuntime.disposeEffect, afterAllTimeout);
 
     it.skipIf(inject("__PLATFORM_VARIANT").includes("undici"))("Should be able to request a session", async () => {
         await testRuntime.runPromise(Sessions.Sessions.session().pipe(Effect.scoped));

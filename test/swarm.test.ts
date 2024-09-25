@@ -1,4 +1,5 @@
-import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAllEffect, afterAllTimeout, beforeAllEffect, beforeAllTimeout, provideManagedRuntime } from "./shared.js";
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
@@ -13,8 +14,6 @@ import * as Swarm from "the-moby-effect/endpoints/Swarm";
 import * as DindEngine from "the-moby-effect/engines/Dind";
 
 const testTimeout = Duration.seconds(30).pipe(Duration.toMillis);
-const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
-const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Swarm tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -42,18 +41,19 @@ describe("MobyApi Swarm tests", () => {
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
 
-    beforeAll(async () => {
-        await testRuntime.runPromise(Effect.void);
-        await testRuntime.runPromise(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }));
-    }, beforeAllTimeout);
+    beforeAllEffect(
+        () => provideManagedRuntime(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }), testRuntime),
+        beforeAllTimeout
+    );
 
-    afterAll(async () => {
-        try {
-            await testRuntime.runPromise(Swarm.Swarm.leave({ force: true }));
-        } finally {
-            await testRuntime.dispose();
-        }
-    }, afterAllTimeout);
+    afterAllEffect(
+        () =>
+            Effect.ensuring(
+                provideManagedRuntime(Swarm.Swarm.leave({ force: true }), testRuntime),
+                testRuntime.disposeEffect
+            ),
+        afterAllTimeout
+    );
 
     it(
         "Should leave, rejoin, unlock, update, and get the unlock key of the swarm",

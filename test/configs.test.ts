@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAllEffect, afterAllTimeout, beforeAllEffect, beforeAllTimeout, provideManagedRuntime } from "./shared.js";
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
-import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -12,9 +12,6 @@ import * as Match from "effect/Match";
 import * as Configs from "the-moby-effect/endpoints/Configs";
 import * as Swarm from "the-moby-effect/endpoints/Swarm";
 import * as DindEngine from "the-moby-effect/engines/Dind";
-
-const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
-const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi Configs tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -42,18 +39,19 @@ describe("MobyApi Configs tests", () => {
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
 
-    beforeAll(async () => {
-        await testRuntime.runPromise(Effect.void);
-        await testRuntime.runPromise(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }));
-    }, beforeAllTimeout);
+    beforeAllEffect(
+        () => provideManagedRuntime(Swarm.Swarm.init({ ListenAddr: "0.0.0.0:0" }), testRuntime),
+        beforeAllTimeout
+    );
 
-    afterAll(async () => {
-        try {
-            await testRuntime.runPromise(Swarm.Swarm.leave({ force: true }));
-        } finally {
-            await testRuntime.dispose();
-        }
-    }, afterAllTimeout);
+    afterAllEffect(
+        () =>
+            Effect.ensuring(
+                provideManagedRuntime(Swarm.Swarm.leave({ force: true }), testRuntime),
+                testRuntime.disposeEffect
+            ),
+        afterAllTimeout
+    );
 
     it("Should see no configs", async () => {
         const configs = await testRuntime.runPromise(Configs.Configs.list());

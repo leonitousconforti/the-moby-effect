@@ -1,8 +1,8 @@
-import { afterAll, beforeAll, describe, expect, inject, it } from "@effect/vitest";
+import { describe, expect, inject, it } from "@effect/vitest";
+import { afterAllEffect, afterAllTimeout, beforeAllEffect, beforeAllTimeout, provideManagedRuntime } from "./shared.js";
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Path from "@effect/platform/Path";
-import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -12,9 +12,6 @@ import * as Stream from "effect/Stream";
 
 import * as System from "the-moby-effect/endpoints/System";
 import * as DindEngine from "the-moby-effect/engines/Dind";
-
-const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
-const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
 
 describe("MobyApi System tests", () => {
     const makePlatformDindLayer = Function.pipe(
@@ -41,8 +38,8 @@ describe("MobyApi System tests", () => {
 
     const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
     const testRuntime = ManagedRuntime.make(Layer.provide(testDindLayer, testServices));
-    beforeAll(() => testRuntime.runPromise(Effect.void).then(() => {}), beforeAllTimeout);
-    afterAll(() => testRuntime.dispose().then(() => {}), afterAllTimeout);
+    beforeAllEffect(() => provideManagedRuntime(Effect.void, testRuntime), beforeAllTimeout);
+    afterAllEffect(() => testRuntime.disposeEffect, afterAllTimeout);
 
     it("Should ping the docker daemon", async () => {
         await testRuntime.runPromise(System.Systems.ping());
