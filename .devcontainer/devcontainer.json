@@ -1,0 +1,60 @@
+// spell-checker: disable
+{
+    "name": "the-moby-effect",
+    "image": "mcr.microsoft.com/devcontainers/base:bullseye",
+
+    "features": {
+        "ghcr.io/devcontainers/features/go:1": {},
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/node:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {},
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "kisstkondoros.vscode-codemetrics",
+                "visualstudioexptteam.vscodeintellicode",
+                "esbenp.prettier-vscode",
+                "editorconfig.editorconfig",
+                "streetsidesoftware.code-spell-checker",
+                "eamodio.gitlens",
+                "mutantdino.resourcemonitor",
+                "GitHub.vscode-github-actions",
+                "yoavbls.pretty-ts-errors"
+            ],
+            "settings": {
+                "cSpell.enabled": true,
+                "editor.formatOnSave": true,
+                "editor.formatOnPaste": true,
+                "editor.bracketPairColorization.enabled": true,
+                "codemetrics.basics.DecorationModeEnabled": false,
+                "codemetrics.basics.OverviewRulerModeEnabled": false,
+                "editor.defaultFormatter": "EditorConfig.EditorConfig",
+                "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc][yaml]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "editor.codeActionsOnSave": {
+                    "source.organizeImports": "always",
+                    "source.addMissingImports": "always",
+                    "source.fixAll.eslint": "explicit"
+                },
+                "files.associations": { "*.json": "jsonc" },
+                "editor.acceptSuggestionOnCommitCharacter": true,
+                "editor.acceptSuggestionOnEnter": "on",
+                "editor.quickSuggestionsDelay": 10,
+                "editor.suggestOnTriggerCharacters": true,
+                "editor.tabCompletion": "off",
+                "editor.suggest.localityBonus": true,
+                "editor.suggestSelection": "recentlyUsed",
+                "editor.wordBasedSuggestions": "matchingDocuments",
+                "editor.parameterHints.enabled": true
+            }
+        }
+    },
+
+    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/.devcontainer/setup.sh'"
+}

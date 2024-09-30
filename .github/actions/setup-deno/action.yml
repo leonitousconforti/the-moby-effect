@@ -1,0 +1,16 @@
+name: "Setup Deno"
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    - uses: pnpm/action-setup@v3
+
+    - run: pnpm install
+      shell: bash
+
+    - uses: denoland/setup-deno@v1
+      with:
+        deno-version: vx.x.x

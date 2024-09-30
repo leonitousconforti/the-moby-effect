@@ -1,0 +1,24 @@
+name: Lab
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - run: pnpm check
+      - run: pnpm build
+      - run: pnpm lint
+
+      - if: ${{ always() }}
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true

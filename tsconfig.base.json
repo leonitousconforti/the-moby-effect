@@ -1,0 +1,49 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "moduleDetection": "force",
+        "composite": true,
+        "downlevelIteration": true,
+        "esModuleInterop": false,
+        "skipLibCheck": true,
+        "exactOptionalPropertyTypes": true,
+        "emitDecoratorMetadata": false,
+        "experimentalDecorators": true,
+        "moduleResolution": "NodeNext",
+        "lib": ["ES2022"],
+        "isolatedModules": true,
+        "noImplicitReturns": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "noFallthroughCasesInSwitch": true,
+        "noEmitOnError": false,
+        "noErrorTruncation": false,
+        "allowJs": false,
+        "checkJs": false,
+        "forceConsistentCasingInFileNames": true,
+        "stripInternal": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noUncheckedIndexedAccess": true,
+        "strictNullChecks": true,
+        "target": "ES2022",
+        "module": "NodeNext",
+
+        "pretty": true,
+        "sourceMap": true,
+        "incremental": true,
+        "declaration": true,
+        "declarationMap": true,
+        "baseUrl": ".",
+        "paths": {
+            "the-moby-effect": ["./src/index.js"],
+            "the-moby-effect/*": ["./src/*.js"]
+        },
+        "types": ["node"],
+        "plugins": [
+            {
+                "name": "@effect/language-service"
+            }
+        ]
+    }
+}
