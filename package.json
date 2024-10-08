@@ -63,7 +63,7 @@
         "@effect/schema": "0.74.1",
         "@effect/typeclass": "0.27.4",
         "@effect/vitest": "0.10.4",
-        "@types/node": "22.7.2",
+        "@types/node": "22.7.5",
         "@types/ssh2": "1.15.1",
         "@types/tar-fs": "2.0.4",
         "@typescript-eslint/eslint-plugin": "8.7.0",
