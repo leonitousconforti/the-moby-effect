@@ -6,7 +6,7 @@ parent: Modules
 
 ## Containers overview
 
-Containers service
+Create and manage containers
 
 Added in v1.0.0
 
@@ -48,9 +48,8 @@ Added in v1.0.0
   - [ContainerWaitOptions (interface)](#containerwaitoptions-interface)
   - [PutContainerArchiveOptions (interface)](#putcontainerarchiveoptions-interface)
 - [Services](#services)
-  - [make](#make)
-- [Tags](#tags)
   - [Containers (class)](#containers-class)
+- [Tags](#tags)
   - [ContainersImpl (interface)](#containersimpl-interface)
 
 ---
@@ -101,12 +100,14 @@ Added in v1.0.0
 
 ## layer
 
-Containers layer that depends on a Moby connection agent
-
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Containers, never, HttpClient.HttpClient.Service>
+export declare const layer: Layer.Layer<
+  Containers,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+>
 ```
 
 Added in v1.0.0
@@ -656,21 +657,7 @@ Added in v1.0.0
 
 # Services
 
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<ContainersImpl, never, HttpClient.HttpClient.Service>
-```
-
-Added in v1.0.0
-
-# Tags
-
 ## Containers (class)
-
-Containers service
 
 **Signature**
 
@@ -679,6 +666,8 @@ export declare class Containers
 ```
 
 Added in v1.0.0
+
+# Tags
 
 ## ContainersImpl (interface)
 
@@ -923,7 +912,7 @@ export interface ContainersImpl {
    */
   readonly attachWebsocket: (
     options: ContainerAttachWebsocketOptions
-  ) => Effect.Effect<UnidirectionalRawStreamSocket, ContainersError, Scope.Scope>
+  ) => Effect.Effect<UnidirectionalRawStreamSocket, ContainersError, Socket.WebSocketConstructor>
 
   /**
    * Wait for a container

@@ -71,7 +71,7 @@ export interface SessionsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
+export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
 
@@ -103,4 +103,4 @@ export class Sessions extends Effect.Tag("@the-moby-effect/endpoints/Session")<S
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient.Service> = Layer.effect(Sessions, make);
+export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Layer.effect(Sessions, make);

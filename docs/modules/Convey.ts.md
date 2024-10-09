@@ -60,10 +60,7 @@ Added in v1.0.0
 
 ```ts
 export declare const packBuildContextIntoTarballStream: {
-  (
-    cwd: string,
-    entries?: Array<string> | undefined
-  ): Effect<Stream<Uint8Array, PlatformError | ParseError, never>, PlatformError, Path | FileSystem>
+  (cwd: string, entries?: Array<string> | undefined): Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
   (entries: HashMap<string, string | Uint8Array>): Stream<Uint8Array, ParseError, never>
 }
 ```

@@ -5,6 +5,7 @@ import * as NodeContext from "@effect/platform-node/NodeContext";
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
+import * as Stream from "effect/Stream";
 
 import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
@@ -20,7 +21,10 @@ export const command = Cli.Command.make(
     },
     ({ context, dockerfile, tag }) =>
         Effect.gen(function* () {
-            const context2 = yield* Convey.packBuildContextIntoTarballStream(context, [dockerfile]);
+            const context2 = Stream.provideSomeLayer(
+                Convey.packBuildContextIntoTarballStream(context, [dockerfile]),
+                NodeContext.layer
+            );
             const buildStream = DockerEngine.build({
                 tag,
                 dockerfile,

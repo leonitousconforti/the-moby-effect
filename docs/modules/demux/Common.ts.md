@@ -31,8 +31,8 @@ Added in v1.0.0
 
 ## demuxBidirectionalSocket
 
-Demux an http socket. The source stream is the stream that you want to
-forward to the containers stdin. If the socket is a raw stream, then there
+Demux a bidirectional socket. The source stream is the stream that you want
+to forward to the containers stdin. If the socket is a raw stream, then there
 will only be one sink that combines the containers stdout and stderr. if the
 socket is a multiplexed stream, then there will be two sinks, one for stdout
 and one for stderr.
@@ -83,41 +83,56 @@ Added in v1.0.0
 ## demuxSocketFromStdinToStdoutAndStderr
 
 Demux either a raw stream socket or a multiplexed stream socket from stdin to
-stdout and stderr. If given a raw stream socket, then stdout and stderr will
-be combined on the same sink. If given a multiplexed stream socket, then
-stdout and stderr will be forwarded to different sinks.
+stdout and stderr. If given a bidirectional raw stream socket, then stdout
+and stderr will be combined on the same sink. If given a multiplexed stream
+socket, then stdout and stderr will be forwarded to different sinks. If given
+a unidirectional raw stream socket, then you are only required to provide one
+for stdout but can also provide sockets for stdin and stderr as well.
+
+If you are looking for a way to demux to the console instead of stdin,
+stdout, and stderr then see {@link demuxSocketWithInputToConsole}.
+
+Since we are interacting with stdin, stdout, and stderr this function
+dynamically imports the `@effect/platform-node` package.
 
 **Signature**
 
 ```ts
 export declare const demuxSocketFromStdinToStdoutAndStderr: <
   UnidirectionalSocketOptions extends {
-    stdin: UnidirectionalRawStreamSocket
     stdout: UnidirectionalRawStreamSocket
-    stderr: UnidirectionalRawStreamSocket
+    stdin?: UnidirectionalRawStreamSocket | undefined
+    stderr?: UnidirectionalRawStreamSocket | undefined
   },
   SocketOptions extends BidirectionalRawStreamSocket | MultiplexedStreamSocket | UnidirectionalSocketOptions,
   E1 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never
 >(
   socketOptions: SocketOptions
-) => Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never>
+) => NeedsPlatformNode<Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never>>
 ```
 
 Added in v1.0.0
 
 ## demuxSocketWithInputToConsole
 
-Demux either a raw stream socket or a multiplexed stream socket. It will send
-the input stream to the container and will log all output to the console.
+Demux either a raw stream socket or a multiplexed stream socket to the
+console. If given a bidirectional raw stream socket, then stdout and stderr
+will be combined on the same sink. If given a multiplexed stream socket, then
+stdout and stderr will be forwarded to different sinks. If given a
+unidirectional raw stream socket, then you are only required to provide one
+for stdout but can also provide sockets for stdin and stderr as well.
+
+If you are looking for a way to demux to stdin, stdout, and stderr instead of
+the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
 
 **Signature**
 
 ```ts
 export declare const demuxSocketWithInputToConsole: <
   UnidirectionalSocketOptions extends {
-    stdin: UnidirectionalRawStreamSocket
     stdout: UnidirectionalRawStreamSocket
-    stderr: UnidirectionalRawStreamSocket
+    stdin?: UnidirectionalRawStreamSocket | undefined
+    stderr?: UnidirectionalRawStreamSocket | undefined
   },
   SocketOptions extends BidirectionalRawStreamSocket | MultiplexedStreamSocket | UnidirectionalSocketOptions,
   E2 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never,
@@ -168,8 +183,12 @@ Added in v1.0.0
 ## responseToStreamingSocketOrFail
 
 Transforms an http response into a multiplexed stream socket or a raw stream
-socket. If the response is neither a multiplexed stream socket nor a raw,
-then an error will be returned.
+socket. If the response is neither a multiplexed stream socket nor a raw or
+can not be transformed, then an error will be returned.
+
+FIXME: this function relies on a hack to expose the underlying tcp socket
+from the http client response. This will only work in NodeJs, not tested in
+Bun/Deno yet, and will never work in the browser.
 
 **Signature**
 
@@ -180,22 +199,26 @@ export declare const responseToStreamingSocketOrFail: (<
   options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
 ) => (
   response: HttpClientResponse.HttpClientResponse
-) => Effect.Effect<
-  SourceIsKnownUnidirectional extends true
-    ? UnidirectionalRawStreamSocket
-    : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-  Socket.SocketError,
-  never
->) &
-  (<SourceIsKnownUnidirectional extends true | undefined = undefined>(
-    response: HttpClientResponse.HttpClientResponse,
-    options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-  ) => Effect.Effect<
+) => NeedsPlatformNode<
+  Effect.Effect<
     SourceIsKnownUnidirectional extends true
       ? UnidirectionalRawStreamSocket
       : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
     Socket.SocketError,
     never
+  >
+>) &
+  (<SourceIsKnownUnidirectional extends true | undefined = undefined>(
+    response: HttpClientResponse.HttpClientResponse,
+    options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
+  ) => NeedsPlatformNode<
+    Effect.Effect<
+      SourceIsKnownUnidirectional extends true
+        ? UnidirectionalRawStreamSocket
+        : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+      Socket.SocketError,
+      never
+    >
   >)
 ```
 

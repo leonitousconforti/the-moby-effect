@@ -1,5 +1,14 @@
 /**
- * Demux utilities for raw streams.
+ * Demux utilities for raw sockets. Raw sockets come in two "flavors" -
+ * unidirectional and bidirectional. In both cases, they are represented as
+ * bidirectional sockets because even in the unidirectional case data could be
+ * flowing in either direction. Unlike multiplexed sockets, bidirectional raw
+ * sockets can not differentiate between stdout and stderr because the data is
+ * just raw bytes from the process's PTY. However, you can attach multiple
+ * unidirectional sockets to the same container (one for stdout and one for
+ * stderr) and then use the demux utilities to separate the streams.
+ *
+ * Upcasting and downcasting between the two types is supported, but discouraged
  *
  * @since 1.0.0
  */
@@ -14,6 +23,7 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
+import { NeedsPlatformNode } from "../platforms/Needs.js";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
@@ -126,10 +136,15 @@ export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.H
  * Transforms an http response into a raw stream socket. If the response is not
  * a raw stream socket, then an error will be returned.
  *
+ * FIXME: this function relies on a hack to expose the underlying tcp socket
+ * from the http client response. This will only work in NodeJs, not tested in
+ * Bun/Deno yet, and will never work in the browser.
+ *
  * @since 1.0.0
  * @category Predicates
  */
 export const responseToRawStreamSocketOrFail = Function.dual<
+    // Data-last signature
     <
         SourceIsKnownUnidirectional extends true | undefined = undefined,
         SourceIsKnownBidirectional extends true | undefined = undefined,
@@ -140,15 +155,18 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             | undefined
     ) => (
         response: HttpClientResponse.HttpClientResponse
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : SourceIsKnownBidirectional extends true
-              ? BidirectionalRawStreamSocket
-              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-        Socket.SocketError,
-        never
+    ) => NeedsPlatformNode<
+        Effect.Effect<
+            SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : SourceIsKnownBidirectional extends true
+                  ? BidirectionalRawStreamSocket
+                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+            Socket.SocketError,
+            never
+        >
     >,
+    // Data-first signature
     <
         SourceIsKnownUnidirectional extends true | undefined = undefined,
         SourceIsKnownBidirectional extends true | undefined = undefined,
@@ -158,14 +176,16 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
             | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
             | undefined
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : SourceIsKnownBidirectional extends true
-              ? BidirectionalRawStreamSocket
-              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-        Socket.SocketError,
-        never
+    ) => NeedsPlatformNode<
+        Effect.Effect<
+            SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : SourceIsKnownBidirectional extends true
+                  ? BidirectionalRawStreamSocket
+                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+            Socket.SocketError,
+            never
+        >
     >
 >(
     (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
@@ -178,14 +198,16 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
             | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
             | undefined
-    ): Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : SourceIsKnownBidirectional extends true
-              ? BidirectionalRawStreamSocket
-              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-        Socket.SocketError,
-        never
+    ): NeedsPlatformNode<
+        Effect.Effect<
+            SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : SourceIsKnownBidirectional extends true
+                  ? BidirectionalRawStreamSocket
+                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+            Socket.SocketError,
+            never
+        >
     > =>
         Effect.gen(function* () {
             type Ret = SourceIsKnownUnidirectional extends true
@@ -227,7 +249,8 @@ export const responseToRawStreamSocketOrFail = Function.dual<
  * there is no way to differentiate between stdout and stderr so they are
  * combined on the same sink.
  *
- * To demux multiple raw sockets, you should use {@link demuxRawSockets}
+ * To demux multiple raw sockets, you should use
+ * {@link demuxUnidirectionalRawSockets}
  *
  * @since 1.0.0
  * @category Demux
@@ -263,9 +286,11 @@ export const demuxBidirectionalRawSocket = Function.dual<
 /**
  * Demux multiple raw sockets, created from multiple container attach websocket
  * requests. If no options are provided for a given stream, it will be ignored.
- * This is really just an Effect.all wrapper around {@link demuxRawSocket}.
+ * This is really just an Effect.all wrapper around
+ * {@link demuxBidirectionalRawSocket}.
  *
- * To demux a single raw socket, you should use {@link demuxRawSocket}
+ * To demux a single raw socket, you should use
+ * {@link demuxBidirectionalRawSocket}
  *
  * @since 1.0.0
  * @category Demux

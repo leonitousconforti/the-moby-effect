@@ -807,264 +807,260 @@ export interface ImagesImpl {
 }
 
 /**
- * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-    const client = defaultClient.pipe(HttpClient.filterStatusOk);
-
-    const list_ = (
-        options?: ImageListOptions | undefined
-    ): Effect.Effect<ReadonlyArray<ImageSummary>, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get("/images/json"),
-            maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
-            maybeAddQueryParameter("filters", Option.fromNullable(options?.filters)),
-            maybeAddQueryParameter("shared-size", Option.fromNullable(options?.["shared-size"])),
-            maybeAddQueryParameter("digests", Option.fromNullable(options?.digests)),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSummary))),
-            Effect.mapError((cause) => new ImagesError({ method: "list", cause })),
-            Effect.scoped
-        );
-
-    const build_ = <E1>(options: ImageBuildOptions<E1>): Stream.Stream<JSONMessage, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post(`/build`),
-            HttpClientRequest.setHeader("Content-type", options["Content-type"] ?? "application/x-tar"),
-            HttpClientRequest.setHeader("X-Registry-Config", options["X-Registry-Config"] ?? ""),
-            maybeAddQueryParameter("dockerfile", Option.fromNullable(options.dockerfile)),
-            maybeAddQueryParameter("t", Option.fromNullable(options.t)),
-            maybeAddQueryParameter("extrahosts", Option.fromNullable(options.extrahosts)),
-            maybeAddQueryParameter("remote", Option.fromNullable(options.remote)),
-            maybeAddQueryParameter("q", Option.fromNullable(options.q)),
-            maybeAddQueryParameter("nocache", Option.fromNullable(options.nocache)),
-            maybeAddQueryParameter("cachefrom", Option.fromNullable(options.cachefrom)),
-            maybeAddQueryParameter("pull", Option.fromNullable(options.pull)),
-            maybeAddQueryParameter("rm", Option.fromNullable(options.rm)),
-            maybeAddQueryParameter("forcerm", Option.fromNullable(options.forcerm)),
-            maybeAddQueryParameter("memory", Option.fromNullable(options.memory)),
-            maybeAddQueryParameter("memswap", Option.fromNullable(options.memswap)),
-            maybeAddQueryParameter("cpushares", Option.fromNullable(options.cpushares)),
-            maybeAddQueryParameter("cpusetcpus", Option.fromNullable(options.cpusetcpus)),
-            maybeAddQueryParameter("cpuperiod", Option.fromNullable(options.cpuperiod)),
-            maybeAddQueryParameter("cpuquota", Option.fromNullable(options.cpuquota))
-        ).pipe(
-            maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
-            maybeAddQueryParameter("shmsize", Option.fromNullable(options.shmsize)),
-            maybeAddQueryParameter("squash", Option.fromNullable(options.squash)),
-            maybeAddQueryParameter("labels", Option.fromNullable(options.labels)),
-            maybeAddQueryParameter("networkmode", Option.fromNullable(options.networkmode)),
-            maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
-            maybeAddQueryParameter("target", Option.fromNullable(options.target)),
-            maybeAddQueryParameter("outputs", Option.fromNullable(options.outputs)),
-            maybeAddQueryParameter("version", Option.some("1")),
-            HttpClientRequest.bodyStream(options.context),
-            client.execute,
-            HttpClientResponse.stream,
-            Stream.decodeText("utf8"),
-            Stream.map(String.linesIterator),
-            Stream.flattenIterables,
-            Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage)), { unordered: false }),
-            Stream.mapError((cause) => new ImagesError({ method: "build", cause }))
-        );
-
-    const buildPrune_ = (
-        options?: BuildPruneOptions | undefined
-    ): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/build/prune"),
-            maybeAddQueryParameter("keep-storage", Option.fromNullable(options?.["keep-storage"])),
-            maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
-            maybeAddFilters(options?.filters),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
-            Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause })),
-            Effect.scoped
-        );
-
-    const create_ = (options: ImageCreateOptions): Stream.Stream<JSONMessage, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/images/create"),
-            HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
-            maybeAddQueryParameter("fromImage", Option.fromNullable(options.fromImage)),
-            maybeAddQueryParameter("fromSrc", Option.fromNullable(options.fromSrc)),
-            maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
-            maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
-            maybeAddQueryParameter("message", Option.fromNullable(options.message)),
-            maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
-            maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
-            HttpClientRequest.bodyText(options.inputImage ?? ""),
-            client.execute,
-            HttpClientResponse.stream,
-            Stream.decodeText("utf8"),
-            Stream.map(String.linesIterator),
-            Stream.flattenIterables,
-            Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
-            Stream.mapError((cause) => new ImagesError({ method: "create", cause }))
-        );
-
-    const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(ImageInspect)),
-            Effect.mapError((cause) => new ImagesError({ method: "inspect", cause })),
-            Effect.scoped
-        );
-
-    const history_ = (
-        options: ImageHistoryOptions
-    ): Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/history`),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageHistoryResponseItem))),
-            Effect.mapError((cause) => new ImagesError({ method: "history", cause })),
-            Effect.scoped
-        );
-
-    const push_ = (options: ImagePushOptions): Stream.Stream<string, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/push`),
-            HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"]),
-            maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
-            client.execute,
-            HttpClientResponse.stream,
-            Stream.decodeText("utf8"),
-            Stream.mapError((cause) => new ImagesError({ method: "push", cause }))
-        );
-
-    const tag_ = (options: ImageTagOptions): Effect.Effect<void, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/tag`),
-            maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
-            maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
-            client.execute,
-            Effect.asVoid,
-            Effect.mapError((cause) => new ImagesError({ method: "tag", cause })),
-            Effect.scoped
-        );
-
-    const delete_ = (
-        options: ImageDeleteOptions
-    ): Effect.Effect<ReadonlyArray<ImageDeleteResponseItem>, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.del(`/images/${encodeURIComponent(options.name)}`),
-            maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            maybeAddQueryParameter("noprune", Option.fromNullable(options.noprune)),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem))),
-            Effect.mapError((cause) => new ImagesError({ method: "delete", cause })),
-            Effect.scoped
-        );
-
-    const search_ = (
-        options: ImageSearchOptions
-    ): Effect.Effect<ReadonlyArray<ImageSearchResponseItem>, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get("/images/search"),
-            maybeAddQueryParameter("term", Option.some(options.term)),
-            maybeAddQueryParameter("limit", Option.fromNullable(options.limit)),
-            maybeAddFilters({ stars: options.stars, "is-official": options["is-official"] }),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSearchResponseItem))),
-            Effect.mapError((cause) => new ImagesError({ method: "search", cause })),
-            Effect.scoped
-        );
-
-    const prune_ = (options?: ImagePruneOptions | undefined): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/images/prune"),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
-            Effect.mapError((cause) => new ImagesError({ method: "prune", cause })),
-            Effect.scoped
-        );
-
-    const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/images/commit"),
-            maybeAddQueryParameter("container", Option.fromNullable(options.container)),
-            maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
-            maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
-            maybeAddQueryParameter("comment", Option.fromNullable(options.comment)),
-            maybeAddQueryParameter("author", Option.fromNullable(options.author)),
-            maybeAddQueryParameter("pause", Option.fromNullable(options.pause)),
-            maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
-            HttpClientRequest.schemaBodyJson(ContainerConfig)(options.containerConfig),
-            Effect.flatMap(client.execute),
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
-            Effect.mapError((cause) => new ImagesError({ method: "commit", cause })),
-            Effect.scoped
-        );
-
-    const get_ = (options: ImageGetOptions): Stream.Stream<string, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/get`),
-            client.execute,
-            HttpClientResponse.stream,
-            Stream.decodeText("utf8"),
-            Stream.mapError((cause) => new ImagesError({ method: "get", cause }))
-        );
-
-    const getall_ = (options?: ImageGetAllOptions | undefined): Stream.Stream<string, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get("/images/get"),
-            maybeAddQueryParameter("names", Option.fromNullable(options?.names)),
-            client.execute,
-            HttpClientResponse.stream,
-            Stream.decodeText("utf8"),
-            Stream.mapError((cause) => new ImagesError({ method: "getall", cause }))
-        );
-
-    const load_ = <E1>(options: ImageLoadOptions<E1>): Effect.Effect<void, ImagesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/images/load"),
-            maybeAddQueryParameter("quiet", Option.fromNullable(options?.quiet)),
-            HttpClientRequest.bodyStream(options.imagesTarball),
-            client.execute,
-            Effect.asVoid,
-            Effect.mapError((cause) => new ImagesError({ method: "load", cause })),
-            Effect.scoped
-        );
-
-    return {
-        list: list_,
-        build: build_,
-        buildPrune: buildPrune_,
-        create: create_,
-        inspect: inspect_,
-        history: history_,
-        push: push_,
-        tag: tag_,
-        delete: delete_,
-        search: search_,
-        prune: prune_,
-        commit: commit_,
-        get: get_,
-        getall: getall_,
-        load: load_,
-    };
-});
-
-/**
  * Images service
  *
  * @since 1.0.0
  * @category Tags
  */
-export class Images extends Effect.Tag("@the-moby-effect/endpoints/Images")<Images, ImagesImpl>() {}
+export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints/Images", {
+    effect: Effect.gen(function* () {
+        const defaultClient = yield* HttpClient.HttpClient;
+        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+
+        const list_ = (
+            options?: ImageListOptions | undefined
+        ): Effect.Effect<ReadonlyArray<ImageSummary>, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get("/images/json"),
+                maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
+                maybeAddQueryParameter("filters", Option.fromNullable(options?.filters)),
+                maybeAddQueryParameter("shared-size", Option.fromNullable(options?.["shared-size"])),
+                maybeAddQueryParameter("digests", Option.fromNullable(options?.digests)),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSummary))),
+                Effect.mapError((cause) => new ImagesError({ method: "list", cause })),
+                Effect.scoped
+            );
+
+        const build_ = <E1>(options: ImageBuildOptions<E1>): Stream.Stream<JSONMessage, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post(`/build`),
+                HttpClientRequest.setHeader("Content-type", options["Content-type"] ?? "application/x-tar"),
+                HttpClientRequest.setHeader("X-Registry-Config", options["X-Registry-Config"] ?? ""),
+                maybeAddQueryParameter("dockerfile", Option.fromNullable(options.dockerfile)),
+                maybeAddQueryParameter("t", Option.fromNullable(options.t)),
+                maybeAddQueryParameter("extrahosts", Option.fromNullable(options.extrahosts)),
+                maybeAddQueryParameter("remote", Option.fromNullable(options.remote)),
+                maybeAddQueryParameter("q", Option.fromNullable(options.q)),
+                maybeAddQueryParameter("nocache", Option.fromNullable(options.nocache)),
+                maybeAddQueryParameter("cachefrom", Option.fromNullable(options.cachefrom)),
+                maybeAddQueryParameter("pull", Option.fromNullable(options.pull)),
+                maybeAddQueryParameter("rm", Option.fromNullable(options.rm)),
+                maybeAddQueryParameter("forcerm", Option.fromNullable(options.forcerm)),
+                maybeAddQueryParameter("memory", Option.fromNullable(options.memory)),
+                maybeAddQueryParameter("memswap", Option.fromNullable(options.memswap)),
+                maybeAddQueryParameter("cpushares", Option.fromNullable(options.cpushares)),
+                maybeAddQueryParameter("cpusetcpus", Option.fromNullable(options.cpusetcpus)),
+                maybeAddQueryParameter("cpuperiod", Option.fromNullable(options.cpuperiod)),
+                maybeAddQueryParameter("cpuquota", Option.fromNullable(options.cpuquota))
+            ).pipe(
+                maybeAddQueryParameter("buildargs", Option.fromNullable(JSON.stringify(options.buildArgs))),
+                maybeAddQueryParameter("shmsize", Option.fromNullable(options.shmsize)),
+                maybeAddQueryParameter("squash", Option.fromNullable(options.squash)),
+                maybeAddQueryParameter("labels", Option.fromNullable(options.labels)),
+                maybeAddQueryParameter("networkmode", Option.fromNullable(options.networkmode)),
+                maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
+                maybeAddQueryParameter("target", Option.fromNullable(options.target)),
+                maybeAddQueryParameter("outputs", Option.fromNullable(options.outputs)),
+                maybeAddQueryParameter("version", Option.some("1")),
+                HttpClientRequest.bodyStream(options.context),
+                client.execute,
+                HttpClientResponse.stream,
+                Stream.decodeText("utf8"),
+                Stream.map(String.linesIterator),
+                Stream.flattenIterables,
+                Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage)), { unordered: false }),
+                Stream.mapError((cause) => new ImagesError({ method: "build", cause }))
+            );
+
+        const buildPrune_ = (
+            options?: BuildPruneOptions | undefined
+        ): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/build/prune"),
+                maybeAddQueryParameter("keep-storage", Option.fromNullable(options?.["keep-storage"])),
+                maybeAddQueryParameter("all", Option.fromNullable(options?.all)),
+                maybeAddFilters(options?.filters),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
+                Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause })),
+                Effect.scoped
+            );
+
+        const create_ = (options: ImageCreateOptions): Stream.Stream<JSONMessage, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/images/create"),
+                HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"] || ""),
+                maybeAddQueryParameter("fromImage", Option.fromNullable(options.fromImage)),
+                maybeAddQueryParameter("fromSrc", Option.fromNullable(options.fromSrc)),
+                maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
+                maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
+                maybeAddQueryParameter("message", Option.fromNullable(options.message)),
+                maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
+                maybeAddQueryParameter("platform", Option.fromNullable(options.platform)),
+                HttpClientRequest.bodyText(options.inputImage ?? ""),
+                client.execute,
+                HttpClientResponse.stream,
+                Stream.decodeText("utf8"),
+                Stream.map(String.linesIterator),
+                Stream.flattenIterables,
+                Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
+                Stream.mapError((cause) => new ImagesError({ method: "create", cause }))
+            );
+
+        const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(ImageInspect)),
+                Effect.mapError((cause) => new ImagesError({ method: "inspect", cause })),
+                Effect.scoped
+            );
+
+        const history_ = (
+            options: ImageHistoryOptions
+        ): Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/history`),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageHistoryResponseItem))),
+                Effect.mapError((cause) => new ImagesError({ method: "history", cause })),
+                Effect.scoped
+            );
+
+        const push_ = (options: ImagePushOptions): Stream.Stream<string, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/push`),
+                HttpClientRequest.setHeader("X-Registry-Auth", options["X-Registry-Auth"]),
+                maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
+                client.execute,
+                HttpClientResponse.stream,
+                Stream.decodeText("utf8"),
+                Stream.mapError((cause) => new ImagesError({ method: "push", cause }))
+            );
+
+        const tag_ = (options: ImageTagOptions): Effect.Effect<void, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post(`/images/${encodeURIComponent(options.name)}/tag`),
+                maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
+                maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
+                client.execute,
+                Effect.asVoid,
+                Effect.mapError((cause) => new ImagesError({ method: "tag", cause })),
+                Effect.scoped
+            );
+
+        const delete_ = (
+            options: ImageDeleteOptions
+        ): Effect.Effect<ReadonlyArray<ImageDeleteResponseItem>, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.del(`/images/${encodeURIComponent(options.name)}`),
+                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                maybeAddQueryParameter("noprune", Option.fromNullable(options.noprune)),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem))),
+                Effect.mapError((cause) => new ImagesError({ method: "delete", cause })),
+                Effect.scoped
+            );
+
+        const search_ = (
+            options: ImageSearchOptions
+        ): Effect.Effect<ReadonlyArray<ImageSearchResponseItem>, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get("/images/search"),
+                maybeAddQueryParameter("term", Option.some(options.term)),
+                maybeAddQueryParameter("limit", Option.fromNullable(options.limit)),
+                maybeAddFilters({ stars: options.stars, "is-official": options["is-official"] }),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSearchResponseItem))),
+                Effect.mapError((cause) => new ImagesError({ method: "search", cause })),
+                Effect.scoped
+            );
+
+        const prune_ = (
+            options?: ImagePruneOptions | undefined
+        ): Effect.Effect<ImagePruneResponse, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/images/prune"),
+                maybeAddQueryParameter(
+                    "filters",
+                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
+                ),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
+                Effect.mapError((cause) => new ImagesError({ method: "prune", cause })),
+                Effect.scoped
+            );
+
+        const commit_ = (options: ImageCommitOptions): Effect.Effect<Readonly<IDResponse>, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/images/commit"),
+                maybeAddQueryParameter("container", Option.fromNullable(options.container)),
+                maybeAddQueryParameter("repo", Option.fromNullable(options.repo)),
+                maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
+                maybeAddQueryParameter("comment", Option.fromNullable(options.comment)),
+                maybeAddQueryParameter("author", Option.fromNullable(options.author)),
+                maybeAddQueryParameter("pause", Option.fromNullable(options.pause)),
+                maybeAddQueryParameter("changes", Option.fromNullable(options.changes)),
+                HttpClientRequest.schemaBodyJson(ContainerConfig)(options.containerConfig),
+                Effect.flatMap(client.execute),
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
+                Effect.mapError((cause) => new ImagesError({ method: "commit", cause })),
+                Effect.scoped
+            );
+
+        const get_ = (options: ImageGetOptions): Stream.Stream<string, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/get`),
+                client.execute,
+                HttpClientResponse.stream,
+                Stream.decodeText("utf8"),
+                Stream.mapError((cause) => new ImagesError({ method: "get", cause }))
+            );
+
+        const getall_ = (options?: ImageGetAllOptions | undefined): Stream.Stream<string, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get("/images/get"),
+                maybeAddQueryParameter("names", Option.fromNullable(options?.names)),
+                client.execute,
+                HttpClientResponse.stream,
+                Stream.decodeText("utf8"),
+                Stream.mapError((cause) => new ImagesError({ method: "getall", cause }))
+            );
+
+        const load_ = <E1>(options: ImageLoadOptions<E1>): Effect.Effect<void, ImagesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/images/load"),
+                maybeAddQueryParameter("quiet", Option.fromNullable(options?.quiet)),
+                HttpClientRequest.bodyStream(options.imagesTarball),
+                client.execute,
+                Effect.asVoid,
+                Effect.mapError((cause) => new ImagesError({ method: "load", cause })),
+                Effect.scoped
+            );
+
+        return {
+            list: list_,
+            build: build_,
+            buildPrune: buildPrune_,
+            create: create_,
+            inspect: inspect_,
+            history: history_,
+            push: push_,
+            tag: tag_,
+            delete: delete_,
+            search: search_,
+            prune: prune_,
+            commit: commit_,
+            get: get_,
+            getall: getall_,
+            load: load_,
+        } satisfies ImagesImpl;
+    }),
+}) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
- *
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Images, never, HttpClient.HttpClient.Service> = Layer.effect(Images, make);
+export const layer: Layer.Layer<Images, never, HttpClient.HttpClient> = Images.Default;

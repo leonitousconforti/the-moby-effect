@@ -1,6 +1,6 @@
 ---
 title: platforms/Node.ts
-nav_order: 35
+nav_order: 36
 parent: Modules
 ---
 
@@ -48,12 +48,15 @@ Given the moby connection options, it will construct a scoped effect that
 provides a node http connection agent that you could use to connect to your
 moby instance.
 
+This function will dynamically import the `node:http`, `node:https`, and
+`@effect/platform-node` packages.
+
 **Signature**
 
 ```ts
 export declare const getNodeAgent: (
   connectionOptions: MobyConnectionOptions
-) => Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope>
+) => NeedsPlatformNode<Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope>>
 ```
 
 Added in v1.0.0
@@ -63,12 +66,14 @@ Added in v1.0.0
 Given the moby connection options, it will construct a layer that provides a
 http client that you could use to connect to your moby instance.
 
+This function will dynamically import the `@effect/platform-node` package.
+
 **Signature**
 
 ```ts
 export declare const makeNodeHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient.Service, never, never>
+) => NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>>
 ```
 
 Added in v1.0.0

@@ -31,7 +31,7 @@ import * as HttpsBlob from "../blobs/Https.js";
 import * as SocketBlob from "../blobs/Socket.js";
 import * as SshBlob from "../blobs/Ssh.js";
 import * as Convey from "../Convey.js";
-import * as Containers from "../endpoints/Containers.js";
+import { Containers, ContainersError } from "../endpoints/Containers.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";
 import * as Volumes from "../endpoints/Volumes.js";
@@ -79,7 +79,7 @@ export type MakeDindLayerFromPlatformConstructor<
     | System.SystemsError
     | Volumes.VolumesError
     | ParseResult.ParseError
-    | Containers.ContainersError
+    | ContainersError
     | PlatformLayerConstructorError
     | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
     | PlatformLayerConstructorContext
@@ -99,14 +99,12 @@ const downloadDindCertificates = (
         key: string;
         cert: string;
     },
-    Containers.ContainersError | ParseResult.ParseError,
-    Containers.Containers
+    ContainersError | ParseResult.ParseError,
+    Containers
 > =>
     Effect.gen(function* () {
-        const certs = yield* Function.pipe(
-            Containers.Containers.archive({ id: dindContainerId, path: "/certs" }),
-            Effect.flatMap(Untar.Untar)
-        );
+        const containers = yield* Containers;
+        const certs = yield* Untar.Untar(containers.archive({ id: dindContainerId, path: "/certs" }));
 
         const readAndAssemble: <E, R>(
             _: Option.Option<[TarCommon.TarHeader, Stream.Stream<Uint8Array, E, R>]>
@@ -188,16 +186,16 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
  * @category Helpers
  * @internal
  */
-const waitForDindContainerToBeReady = (
-    dindContainerId: string
-): Effect.Effect<void, Containers.ContainersError, Containers.Containers> =>
+const waitForDindContainerToBeReady = (dindContainerId: string): Effect.Effect<void, ContainersError, Containers> =>
     Function.pipe(
-        Containers.Containers.logs({
-            follow: true,
-            stdout: true,
-            stderr: true,
-            id: dindContainerId,
-        }),
+        Containers.use((containers) =>
+            containers.logs({
+                follow: true,
+                stdout: true,
+                stderr: true,
+                id: dindContainerId,
+            })
+        ),
         Stream.unwrap,
         Stream.takeUntil(String.includes("Daemon has completed initialization")),
         Stream.runDrain
@@ -252,7 +250,7 @@ export const makeDindLayerFromPlatformConstructor =
         | System.SystemsError
         | Volumes.VolumesError
         | ParseResult.ParseError
-        | Containers.ContainersError
+        | ContainersError
         | PlatformLayerConstructorError
         | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
         | PlatformLayerConstructorContext

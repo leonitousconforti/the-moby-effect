@@ -4,6 +4,8 @@ import * as NodeContext from "@effect/platform-node/NodeContext";
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Path from "@effect/platform/Path";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Stream from "effect/Stream";
 
 import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
@@ -49,7 +51,10 @@ const program = Effect.gen(function* () {
     const path: Path.Path = yield* Path.Path;
 
     const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
-    const buildContext = yield* Convey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]);
+    const buildContext = Function.pipe(
+        Convey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
+        Stream.provideLayer(NodeContext.layer)
+    );
     const buildStream = yield* DockerEngine.buildScoped({
         context: buildContext,
         tag: "mydockerimage:latest",

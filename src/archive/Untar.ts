@@ -32,6 +32,11 @@ export type FolderState = {
 };
 
 /**
+ * This sink will read blocks from the stream and will combine the data blocks
+ * for this header block into a single stream. This sink will stop once it has
+ * read all the data block for this header block or once it see the endOfArchive
+ * flag.
+ *
  * @since 1.0.0
  * @category Untar
  */
@@ -86,21 +91,33 @@ export const aggregateBlocksByHeadersSink: Sink.Sink<
 });
 
 /**
+ * When the stream is done, we will have a bunch of FolderState objects which
+ * container their header blocks and data streams. We will collect them all into
+ * a map, where the key is the Tar header block and the value is the data
+ * stream. If we encounter two of the exact same header blocks in our stream,
+ * then we will just take the second one.
+ *
  * @since 1.0.0
  * @category Untar
  */
 export const collectorSink: Sink.Sink<
-    HashMap.HashMap<TarCommon.TarHeader, FolderState>,
+    HashMap.HashMap<TarCommon.TarHeader, Stream.Stream<Uint8Array, never, never>>,
     FolderState,
     never,
     never,
     never
-> = Sink.collectAllToMap<FolderState, TarCommon.TarHeader>(
-    (input) => input.headerBlock!,
-    (a, b) => b
+> = Sink.map(
+    Sink.collectAllToMap<FolderState, TarCommon.TarHeader>(
+        (input) => input.headerBlock!,
+        (_a, b) => b
+    ),
+    HashMap.map(({ dataStream }) => dataStream)
 );
 
 /**
+ * Takes a Tar stream and unpacks it into a map of Tar headers and their data
+ * streams.
+ *
  * @since 1.0.0
  * @category Untar
  */
@@ -118,6 +135,5 @@ export const Untar = <E1, R1>(
         Stream.map((chunk) => Uint8Array.from(chunk)),
         Stream.aggregateWithin(aggregateBlocksByHeadersSink, Schedule.fixed(Duration.infinity)),
         Stream.takeWhile(({ endOfArchiveFlag }) => endOfArchiveFlag === false),
-        Stream.run(collectorSink),
-        Effect.map(HashMap.map(({ dataStream }) => dataStream))
+        Stream.run(collectorSink)
     );

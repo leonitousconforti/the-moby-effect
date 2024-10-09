@@ -8,7 +8,6 @@ import * as PlatformError from "@effect/platform/Error";
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
 import * as ParseResult from "@effect/schema/ParseResult";
-import * as Effect from "effect/Effect";
 import * as HashMap from "effect/HashMap";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
@@ -23,18 +22,18 @@ export const packBuildContextIntoTarballStream: {
     (
         cwd: string,
         entries?: Array<string> | undefined
-    ): Effect.Effect<
-        Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, never>,
-        PlatformError.PlatformError,
+    ): Stream.Stream<
+        Uint8Array,
+        PlatformError.PlatformError | ParseResult.ParseError,
         Path.Path | FileSystem.FileSystem
     >;
     (entries: HashMap.HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseResult.ParseError, never>;
 } = <
     T extends string | HashMap.HashMap<string, string | Uint8Array>,
     U extends T extends string
-        ? Effect.Effect<
-              Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, never>,
-              PlatformError.PlatformError,
+        ? Stream.Stream<
+              Uint8Array,
+              PlatformError.PlatformError | ParseResult.ParseError,
               Path.Path | FileSystem.FileSystem
           >
         : Stream.Stream<Uint8Array, ParseResult.ParseError, never>,

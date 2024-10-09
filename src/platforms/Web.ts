@@ -12,17 +12,20 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
 import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, getWebRequestUrl } from "./Common.js";
+import { NeedsPlatformBrowser } from "./Needs.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance.
+ *
+ * This function will dynamically import the `@effect/platform-browser` package.
  *
  * @since 1.0.0
  * @category Connection
  */
 export const makeWebHttpClientLayer = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): Layer.Layer<HttpClient.HttpClient.Service, never, never> =>
+): NeedsPlatformBrowser<Layer.Layer<HttpClient.HttpClient, never, never>> =>
     Function.pipe(
         Effect.promise(() => import("@effect/platform-browser/BrowserHttpClient")),
         Effect.map((browserHttpClientLazy) => browserHttpClientLazy.layerXMLHttpRequest),

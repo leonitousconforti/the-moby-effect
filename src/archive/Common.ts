@@ -176,8 +176,9 @@ export class TarHeader extends Schema.Class<TarHeader>("TarHeader")({
     ),
 }) {
     /**
-     * Extra things to decode that don't need to be exposed. TODO: Maybe look
-     * into implementing this with schema variants?
+     * Extra things to decode that don't need to be exposed.
+     *
+     * TODO: Maybe look into implementing this with schema variants?
      */
     private static FullTarHeaderBlock = class FullTarHeaderBlock extends TarHeader.extend<FullTarHeaderBlock>(
         "FullTarHeaderBlock"

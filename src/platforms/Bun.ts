@@ -8,6 +8,7 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
 import { MobyConnectionOptions } from "./Common.js";
+import { NeedsPlatformNode } from "./Needs.js";
 import { makeNodeHttpClientLayer } from "./Node.js";
 
 /**
@@ -15,9 +16,11 @@ import { makeNodeHttpClientLayer } from "./Node.js";
  * http client that you could use to connect to your moby instance. This is no
  * different than the Node implementation currently.
  *
+ * This function will dynamically import the `@effect/platform-node` package.
+ *
  * @since 1.0.0
  * @category Connection
  */
 export const makeBunHttpClientLayer: (
     connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient.Service, never, never> = makeNodeHttpClientLayer;
+) => NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>> = makeNodeHttpClientLayer;

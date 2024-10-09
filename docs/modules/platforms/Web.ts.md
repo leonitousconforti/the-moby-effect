@@ -1,6 +1,6 @@
 ---
 title: platforms/Web.ts
-nav_order: 37
+nav_order: 38
 parent: Modules
 ---
 
@@ -26,12 +26,14 @@ Added in v1.0.0
 Given the moby connection options, it will construct a layer that provides a
 http client that you could use to connect to your moby instance.
 
+This function will dynamically import the `@effect/platform-browser` package.
+
 **Signature**
 
 ```ts
 export declare const makeWebHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer.Layer<HttpClient.HttpClient.Service, never, never>
+) => NeedsPlatformBrowser<Layer.Layer<HttpClient.HttpClient, never, never>>
 ```
 
 Added in v1.0.0

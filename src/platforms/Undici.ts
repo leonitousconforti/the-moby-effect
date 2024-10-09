@@ -17,6 +17,7 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import { MobyConnectionOptions, SshConnectionOptions, getNodeRequestUrl } from "./Common.js";
+import { NeedsPlatformNode, NeedsUndici } from "./Needs.js";
 
 /**
  * An undici connector that connects to remote moby instances over ssh.
@@ -60,12 +61,14 @@ export function makeUndiciSshConnector(
  * provides a undici dispatcher that you could use to connect to your moby
  * instance.
  *
+ * This function will dynamically import the `undici` package.
+ *
  * @since 1.0.0
  * @category Connection
  */
 export const getUndiciDispatcher = (
     connectionOptions: MobyConnectionOptions
-): Effect.Effect<undici.Dispatcher, never, Scope.Scope> =>
+): NeedsUndici<Effect.Effect<undici.Dispatcher, never, Scope.Scope>> =>
     Effect.flatMap(
         Effect.promise(() => import("undici")),
         (undiciLazy) => {
@@ -111,12 +114,15 @@ export const getUndiciDispatcher = (
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance.
  *
+ * This function will dynamically import the `@effect/platform-node` and
+ * `undici` packages.
+ *
  * @since 1.0.0
  * @category Connection
  */
 export const makeUndiciHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
-): Layer.Layer<HttpClient.HttpClient.Service, never, never> =>
+): NeedsPlatformNode<NeedsUndici<Layer.Layer<HttpClient.HttpClient, never, never>>> =>
     Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>

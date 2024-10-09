@@ -223,7 +223,7 @@ export interface NetworksImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
+export const make: Effect.Effect<NetworksImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -334,4 +334,4 @@ export class Networks extends Effect.Tag("@the-moby-effect/endpoints/Networks")<
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Networks, never, HttpClient.HttpClient.Service> = Layer.effect(Networks, make);
+export const layer: Layer.Layer<Networks, never, HttpClient.HttpClient> = Layer.effect(Networks, make);

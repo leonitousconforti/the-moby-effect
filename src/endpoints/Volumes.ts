@@ -201,7 +201,7 @@ export interface VolumesImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
+export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -297,4 +297,4 @@ export class Volumes extends Effect.Tag("@the-moby-effect/endpoints/Volumes")<Vo
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Volumes, never, HttpClient.HttpClient.Service> = Layer.effect(Volumes, make);
+export const layer: Layer.Layer<Volumes, never, HttpClient.HttpClient> = Layer.effect(Volumes, make);

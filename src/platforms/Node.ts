@@ -21,6 +21,7 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import { MobyConnectionOptions, SshConnectionOptions, getNodeRequestUrl } from "./Common.js";
+import { NeedsPlatformNode } from "./Needs.js";
 
 /**
  * Helper interface to expose the underlying socket from the effect HttpClient
@@ -61,7 +62,7 @@ export const makeNodeSshAgent = (
     ssh2Lazy: typeof ssh2,
     connectionOptions: SshConnectionOptions
 ): http.Agent =>
-    new (class SSHAgent extends httpLazy.Agent {
+    new (class extends httpLazy.Agent {
         // The ssh client that will be connecting to the server
         public readonly sshClient: ssh2.Client;
 
@@ -118,12 +119,15 @@ export const makeNodeSshAgent = (
  * provides a node http connection agent that you could use to connect to your
  * moby instance.
  *
+ * This function will dynamically import the `node:http`, `node:https`, and
+ * `@effect/platform-node` packages.
+ *
  * @since 1.0.0
  * @category Connection
  */
 export const getNodeAgent = (
     connectionOptions: MobyConnectionOptions
-): Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope> =>
+): NeedsPlatformNode<Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope>> =>
     Function.pipe(
         Effect.all(
             {
@@ -136,13 +140,13 @@ export const getNodeAgent = (
         Effect.flatMap(({ httpLazy, httpsLazy, nodeHttpClientLazy }) => {
             const AcquireNodeHttpAgent = MobyConnectionOptions.$match({
                 http: (options) => Effect.succeed(new httpLazy.Agent({ host: options.host, port: options.port })),
+                socket: (options) =>
+                    Effect.succeed(new httpLazy.Agent({ socketPath: options.socketPath } as http.AgentOptions)),
                 ssh: (options) =>
                     Effect.map(
                         Effect.promise(() => import("ssh2")),
                         (ssh2Lazy) => makeNodeSshAgent(httpLazy, ssh2Lazy, options)
                     ),
-                socket: (options) =>
-                    Effect.succeed(new httpLazy.Agent({ socketPath: options.socketPath } as http.AgentOptions)),
                 https: (options) =>
                     Effect.succeed(
                         new httpsLazy.Agent({
@@ -171,12 +175,14 @@ export const getNodeAgent = (
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance.
  *
+ * This function will dynamically import the `@effect/platform-node` package.
+ *
  * @since 1.0.0
  * @category Connection
  */
 export const makeNodeHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
-): Layer.Layer<HttpClient.HttpClient.Service, never, never> =>
+): NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>> =>
     Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>

@@ -37,8 +37,6 @@ Added in v1.0.0
   - [ImagePushOptions (interface)](#imagepushoptions-interface)
   - [ImageSearchOptions (interface)](#imagesearchoptions-interface)
   - [ImageTagOptions (interface)](#imagetagoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Images (class)](#images-class)
   - [ImagesImpl (interface)](#imagesimpl-interface)
@@ -91,12 +89,10 @@ Added in v1.0.0
 
 ## layer
 
-Configs layer that depends on the MobyConnectionAgent
-
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Images, never, HttpClient.HttpClient.Service>
+export declare const layer: Layer.Layer<Images, never, HttpClient.HttpClient<HttpClientError, Scope>>
 ```
 
 Added in v1.0.0
@@ -587,18 +583,6 @@ export interface ImageTagOptions {
   /** The name of the new tag. */
   readonly tag?: string
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<ImagesImpl, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0

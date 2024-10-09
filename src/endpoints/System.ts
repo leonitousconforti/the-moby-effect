@@ -179,7 +179,7 @@ export interface SystemsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
+export const make: Effect.Effect<SystemsImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -290,4 +290,4 @@ export class Systems extends Effect.Tag("@the-moby-effect/endpoints/System")<Sys
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Systems, never, HttpClient.HttpClient.Service> = Layer.effect(Systems, make);
+export const layer: Layer.Layer<Systems, never, HttpClient.HttpClient> = Layer.effect(Systems, make);

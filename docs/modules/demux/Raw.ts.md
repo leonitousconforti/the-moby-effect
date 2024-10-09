@@ -6,7 +6,16 @@ parent: Modules
 
 ## Raw overview
 
-Demux utilities for raw streams.
+Demux utilities for raw sockets. Raw sockets come in two "flavors" -
+unidirectional and bidirectional. In both cases, they are represented as
+bidirectional sockets because even in the unidirectional case data could be
+flowing in either direction. Unlike multiplexed sockets, bidirectional raw
+sockets can not differentiate between stdout and stderr because the data is
+just raw bytes from the process's PTY. However, you can attach multiple
+unidirectional sockets to the same container (one for stdout and one for
+stderr) and then use the demux utilities to separate the streams.
+
+Upcasting and downcasting between the two types is supported, but discouraged
 
 Added in v1.0.0
 
@@ -93,7 +102,8 @@ Demux a raw socket. When given a raw socket of the remote process's pty,
 there is no way to differentiate between stdout and stderr so they are
 combined on the same sink.
 
-To demux multiple raw sockets, you should use {@link demuxRawSockets}
+To demux multiple raw sockets, you should use
+{@link demuxUnidirectionalRawSockets}
 
 **Signature**
 
@@ -117,9 +127,11 @@ Added in v1.0.0
 
 Demux multiple raw sockets, created from multiple container attach websocket
 requests. If no options are provided for a given stream, it will be ignored.
-This is really just an Effect.all wrapper around {@link demuxRawSocket}.
+This is really just an Effect.all wrapper around
+{@link demuxBidirectionalRawSocket}.
 
-To demux a single raw socket, you should use {@link demuxRawSocket}
+To demux a single raw socket, you should use
+{@link demuxBidirectionalRawSocket}
 
 **Signature**
 
@@ -195,6 +207,10 @@ Added in v1.0.0
 Transforms an http response into a raw stream socket. If the response is not
 a raw stream socket, then an error will be returned.
 
+FIXME: this function relies on a hack to expose the underlying tcp socket
+from the http client response. This will only work in NodeJs, not tested in
+Bun/Deno yet, and will never work in the browser.
+
 **Signature**
 
 ```ts
@@ -208,14 +224,16 @@ export declare const responseToRawStreamSocketOrFail: (<
     | undefined
 ) => (
   response: HttpClientResponse.HttpClientResponse
-) => Effect.Effect<
-  SourceIsKnownUnidirectional extends true
-    ? UnidirectionalRawStreamSocket
-    : SourceIsKnownBidirectional extends true
-      ? BidirectionalRawStreamSocket
-      : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-  Socket.SocketError,
-  never
+) => NeedsPlatformNode<
+  Effect.Effect<
+    SourceIsKnownUnidirectional extends true
+      ? UnidirectionalRawStreamSocket
+      : SourceIsKnownBidirectional extends true
+        ? BidirectionalRawStreamSocket
+        : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+    Socket.SocketError,
+    never
+  >
 >) &
   (<
     SourceIsKnownUnidirectional extends true | undefined = undefined,
@@ -226,14 +244,16 @@ export declare const responseToRawStreamSocketOrFail: (<
       | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
       | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
       | undefined
-  ) => Effect.Effect<
-    SourceIsKnownUnidirectional extends true
-      ? UnidirectionalRawStreamSocket
-      : SourceIsKnownBidirectional extends true
-        ? BidirectionalRawStreamSocket
-        : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-    Socket.SocketError,
-    never
+  ) => NeedsPlatformNode<
+    Effect.Effect<
+      SourceIsKnownUnidirectional extends true
+        ? UnidirectionalRawStreamSocket
+        : SourceIsKnownBidirectional extends true
+          ? BidirectionalRawStreamSocket
+          : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+      Socket.SocketError,
+      never
+    >
   >)
 ```
 

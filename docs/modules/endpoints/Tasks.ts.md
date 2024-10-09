@@ -84,7 +84,7 @@ Configs layer that depends on the MobyConnectionAgent
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Tasks, never, HttpClient.HttpClient.Service>
+export declare const layer: Layer.Layer<Tasks, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
 ```
 
 Added in v1.0.0
@@ -173,7 +173,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const make: Effect.Effect<TasksImpl, never, HttpClient.HttpClient.Service>
+export declare const make: Effect.Effect<
+  TasksImpl,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

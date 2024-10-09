@@ -142,15 +142,12 @@ const tarEntryFromFilesystem = (
 export const TarballFromFilesystem = (
     base: string,
     entries: Array<string>
-): Effect.Effect<
-    Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, never>,
-    PlatformError.PlatformError,
-    Path.Path | FileSystem.FileSystem
-> =>
+): Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, Path.Path | FileSystem.FileSystem> =>
     Function.pipe(
         entries,
         Array.map((file) => tarEntryFromFilesystem(file, base)),
         Effect.allWith({ concurrency: "unbounded" }),
         Effect.map(HashMap.fromIterable),
-        Effect.map(Tarball)
+        Effect.map(Tarball),
+        Stream.unwrap
     );

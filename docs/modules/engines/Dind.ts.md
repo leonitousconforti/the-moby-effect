@@ -98,7 +98,7 @@ export type MakeDindLayerFromPlatformConstructor<
   | System.SystemsError
   | Volumes.VolumesError
   | ParseResult.ParseError
-  | Containers.ContainersError
+  | ContainersError
   | PlatformLayerConstructorError
   | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
   | PlatformLayerConstructorContext
@@ -129,7 +129,7 @@ export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
       readonly passphrase?: string | undefined
     },
   never,
-  HttpClient.Service
+  HttpClient<HttpClientError, Scope.Scope>
 >
 ```
 

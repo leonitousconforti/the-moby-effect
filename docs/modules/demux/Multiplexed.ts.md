@@ -6,7 +6,9 @@ parent: Modules
 
 ## Multiplexed overview
 
-Demux utilities for multiplexed streams.
+Demux utilities for multiplexed sockets. Multiplexed sockets come in a single
+"flavor" - they are always bidirectional. You can receive data (both stdout
+and stderr) and send data (stdin) over the same socket.
 
 Added in v1.0.0
 
@@ -120,12 +122,16 @@ Added in v1.0.0
 Transforms an http response into a multiplexed stream socket. If the response
 is not a multiplexed stream socket, then an error will be returned.
 
+FIXME: this function relies on a hack to expose the underlying tcp socket
+from the http client response. This will only work in NodeJs, not tested in
+Bun/Deno yet, and will never work in the browser.
+
 **Signature**
 
 ```ts
 export declare const responseToMultiplexedStreamSocketOrFail: (
   response: HttpClientResponse.HttpClientResponse
-) => Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never>
+) => NeedsPlatformNode<Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never>>
 ```
 
 Added in v1.0.0

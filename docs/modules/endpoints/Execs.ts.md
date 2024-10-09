@@ -26,8 +26,6 @@ Added in v1.0.0
   - [ExecInspectOptions (interface)](#execinspectoptions-interface)
   - [ExecResizeOptions (interface)](#execresizeoptions-interface)
   - [ExecStartOptions (interface)](#execstartoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Execs (class)](#execs-class)
   - [ExecsImpl (interface)](#execsimpl-interface)
@@ -85,7 +83,11 @@ Configs layer that depends on the MobyConnectionAgent
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Execs, never, HttpClient.HttpClient.Service>
+export declare const layer: Layer.Layer<
+  Execs,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+>
 ```
 
 Added in v1.0.0
@@ -147,18 +149,6 @@ export interface ExecStartOptions {
   /** Exec instance ID */
   readonly id: string
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Service>
 ```
 
 Added in v1.0.0

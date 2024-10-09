@@ -40,7 +40,7 @@ export type PodmanLayer = Layer.Layer<
 export type PodmanLayerWithoutHttpCLient = Layer.Layer<
     Layer.Layer.Success<PodmanLayer>,
     Layer.Layer.Error<PodmanLayer>,
-    Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient.Service
+    Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient
 >;
 
 /**

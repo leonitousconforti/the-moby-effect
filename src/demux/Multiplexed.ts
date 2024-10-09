@@ -1,5 +1,7 @@
 /**
- * Demux utilities for multiplexed streams.
+ * Demux utilities for multiplexed sockets. Multiplexed sockets come in a single
+ * "flavor" - they are always bidirectional. You can receive data (both stdout
+ * and stderr) and send data (stdin) over the same socket.
  *
  * @since 1.0.0
  */
@@ -17,6 +19,7 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
+import { NeedsPlatformNode } from "../platforms/Needs.js";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
@@ -102,12 +105,16 @@ export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientRe
  * Transforms an http response into a multiplexed stream socket. If the response
  * is not a multiplexed stream socket, then an error will be returned.
  *
+ * FIXME: this function relies on a hack to expose the underlying tcp socket
+ * from the http client response. This will only work in NodeJs, not tested in
+ * Bun/Deno yet, and will never work in the browser.
+ *
  * @since 1.0.0
  * @category Predicates
  */
 export const responseToMultiplexedStreamSocketOrFail = (
     response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
+): NeedsPlatformNode<Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never>> =>
     Effect.gen(function* () {
         if (responseIsMultiplexedStreamSocketResponse(response)) {
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
@@ -194,6 +201,7 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
 export const demuxMultiplexedSocket = Function.dual<
+    // Data last signature
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
@@ -206,6 +214,7 @@ export const demuxMultiplexedSocket = Function.dual<
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >,
+    // Data first signature
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,

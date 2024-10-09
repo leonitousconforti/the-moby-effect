@@ -154,9 +154,9 @@ stdout and stderr will be forwarded to different sinks.
 ```ts
 export declare const demuxSocketFromStdinToStdoutAndStderr: <
   UnidirectionalSocketOptions extends {
-    stdin: rawInternal.UnidirectionalRawStreamSocket
     stdout: rawInternal.UnidirectionalRawStreamSocket
-    stderr: rawInternal.UnidirectionalRawStreamSocket
+    stdin?: rawInternal.UnidirectionalRawStreamSocket | undefined
+    stderr?: rawInternal.UnidirectionalRawStreamSocket | undefined
   },
   SocketOptions extends
     | rawInternal.BidirectionalRawStreamSocket
@@ -165,10 +165,12 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: <
   E1 extends SocketOptions extends multiplexedInternal.MultiplexedStreamSocket ? ParseError : never
 >(
   socketOptions: SocketOptions
-) => Effect<
-  void,
-  SocketError | E1 | commonInternal.StdinError | commonInternal.StdoutError | commonInternal.StderrError,
-  never
+) => NeedsPlatformNode<
+  Effect<
+    void,
+    SocketError | E1 | commonInternal.StdinError | commonInternal.StdoutError | commonInternal.StderrError,
+    never
+  >
 >
 ```
 
@@ -184,9 +186,9 @@ the input stream to the container and will log all output to the console.
 ```ts
 export declare const demuxSocketWithInputToConsole: <
   UnidirectionalSocketOptions extends {
-    stdin: rawInternal.UnidirectionalRawStreamSocket
     stdout: rawInternal.UnidirectionalRawStreamSocket
-    stderr: rawInternal.UnidirectionalRawStreamSocket
+    stdin?: rawInternal.UnidirectionalRawStreamSocket | undefined
+    stderr?: rawInternal.UnidirectionalRawStreamSocket | undefined
   },
   SocketOptions extends
     | rawInternal.BidirectionalRawStreamSocket

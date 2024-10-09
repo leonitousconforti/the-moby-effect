@@ -169,8 +169,8 @@ export const getNodeRequestUrl: (connectionOptions: MobyConnectionOptions) => st
 export const getWebRequestUrl: (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => string = Match.typeTags<HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged>()({
-    http: (options) => `http://0.0.0.0${options.path ?? ""}`,
-    https: (options) => `https://0.0.0.0${options.path ?? ""}`,
+    http: (options) => `http://0.0.0.0${options.path ?? ""}` as const,
+    https: (options) => `https://0.0.0.0${options.path ?? ""}` as const,
 });
 
 /**

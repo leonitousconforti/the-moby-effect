@@ -15,7 +15,7 @@ import * as Tuple from "effect/Tuple";
 /**
  * Takes a key and an optional value and returns a function that either adds the
  * key and value to the query parameters of a request if the value was a Some or
- * does nothing if its a None.
+ * does nothing to the request if the value is a None.
  *
  * @since 1.0.0
  * @category Request Helpers
@@ -27,13 +27,13 @@ export const maybeAddQueryParameter = (
 ): ((self: HttpClientRequest.HttpClientRequest) => HttpClientRequest.HttpClientRequest) =>
     Option.match({
         onNone: Function.constant(Function.identity),
-        onSome: (val) => HttpClientRequest.setUrlParam(key, String(val)),
+        onSome: (val: unknown) => HttpClientRequest.setUrlParam(key, String(val)),
     })(value);
 
 /**
  * Takes a key and an optional value and returns a function that either adds the
  * key and value to the headers of a request if the value was a Some or does
- * nothing if its a None.
+ * nothing to the request if the values is a None.
  *
  * @since 1.0.0
  * @category Request Helpers
@@ -51,6 +51,8 @@ export const maybeAddHeader = (
 /**
  * For a given set of filters, returns a function that adds the filters to the
  * http request as a query parameter.
+ *
+ * TODO: can the type of filters be more specific?
  *
  * @since 1.0.0
  * @category Request Helpers

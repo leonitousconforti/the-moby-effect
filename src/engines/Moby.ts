@@ -45,7 +45,7 @@ export type MobyLayerWithoutHttpClient = Layer.Layer<
     | Tasks.Tasks
     | Volumes.Volumes,
     never,
-    HttpClient.HttpClient.Service
+    HttpClient.HttpClient
 >;
 
 /**
@@ -55,7 +55,7 @@ export type MobyLayerWithoutHttpClient = Layer.Layer<
 export type MobyLayer = Layer.Layer<
     Layer.Layer.Success<MobyLayerWithoutHttpClient>,
     Layer.Layer.Error<MobyLayerWithoutHttpClient>,
-    Exclude<Layer.Layer.Context<MobyLayerWithoutHttpClient>, HttpClient.HttpClient.Service>
+    Exclude<Layer.Layer.Context<MobyLayerWithoutHttpClient>, HttpClient.HttpClient>
 >;
 
 /**

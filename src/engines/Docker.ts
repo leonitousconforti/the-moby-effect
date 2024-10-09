@@ -92,7 +92,9 @@ export const pull = ({
     auth?: string | undefined;
     platform?: string | undefined;
 }): Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images> =>
-    Stream.unwrap(Images.Images.create({ fromImage: image, "X-Registry-Auth": auth, platform }));
+    Stream.unwrap(
+        Images.Images.use((images) => images.create({ fromImage: image, "X-Registry-Auth": auth, platform }))
+    );
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
@@ -116,7 +118,7 @@ export const pullScoped = ({
     Images.Images | Scope.Scope
 > => {
     const acquire = pull({ image, auth, platform });
-    const release = Effect.orDie(Images.Images.delete({ name: image }));
+    const release = Effect.orDie(Images.Images.use((images) => images.delete({ name: image })));
     return Effect.acquireRelease(Effect.succeed(acquire), () => release);
 };
 
@@ -142,7 +144,11 @@ export const build = <E1>({
     context: Stream.Stream<Uint8Array, E1, never>;
     buildArgs?: Record<string, string | undefined> | undefined;
 }): Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images> =>
-    Stream.unwrap(Images.Images.build({ context, buildArgs, dockerfile, platform, t: tag, "X-Registry-Config": auth }));
+    Stream.unwrap(
+        Images.Images.use((images) =>
+            images.build({ context, buildArgs, dockerfile, platform, t: tag, "X-Registry-Config": auth })
+        )
+    );
 
 /**
  * Implements the `docker build` command as a scoped effect. When the scope is
@@ -172,7 +178,7 @@ export const buildScoped = <E1>({
     Scope.Scope | Images.Images
 > => {
     const acquire = build({ tag, buildArgs, auth, context, platform, dockerfile });
-    const release = Effect.orDie(Images.Images.delete({ name: tag }));
+    const release = Effect.orDie(Images.Images.use((images) => images.delete({ name: tag })));
     return Effect.acquireRelease(Effect.succeed(acquire), () => release);
 };
 
@@ -186,12 +192,13 @@ export const run = (
     containerOptions: Containers.ContainerCreateOptions
 ): Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers> =>
     Effect.gen(function* () {
-        const containerCreateResponse = yield* Containers.Containers.create(containerOptions);
-        yield* Containers.Containers.start({ id: containerCreateResponse.Id });
+        const containers = yield* Containers.Containers;
+        const containerCreateResponse = yield* containers.create(containerOptions);
+        yield* containers.start({ id: containerCreateResponse.Id });
 
         // Helper to wait until a container is dead or running
         const waitUntilContainerDeadOrRunning = Function.pipe(
-            Containers.Containers.inspect({ id: containerCreateResponse.Id }),
+            containers.inspect({ id: containerCreateResponse.Id }),
             // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 Function.pipe(
@@ -215,7 +222,7 @@ export const run = (
 
         // Helper for if the container has a healthcheck, wait for it to report healthy
         const waitUntilContainerHealthy = Function.pipe(
-            Containers.Containers.inspect({ id: containerCreateResponse.Id }),
+            containers.inspect({ id: containerCreateResponse.Id }),
             // Effect.tap(({ State }) =>
             //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
             // ),
@@ -242,7 +249,7 @@ export const run = (
 
         yield* waitUntilContainerDeadOrRunning;
         yield* waitUntilContainerHealthy;
-        return yield* Containers.Containers.inspect({ id: containerCreateResponse.Id });
+        return yield* containers.inspect({ id: containerCreateResponse.Id });
     });
 
 /**
@@ -300,7 +307,7 @@ export const ps = (
     ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
     Containers.ContainersError,
     Containers.Containers
-> => Containers.Containers.list(options);
+> => Containers.Containers.use((containers) => containers.list(options));
 
 /**
  * Implements the `docker push` command.
@@ -309,7 +316,7 @@ export const ps = (
  * @category Docker
  */
 export const push = (options: Images.ImagePushOptions): Stream.Stream<string, Images.ImagesError, Images.Images> =>
-    Stream.unwrap(Images.Images.push(options));
+    Stream.unwrap(Images.Images.use((images) => images.push(options)));
 
 /**
  * Implements the `docker images` command.
@@ -320,7 +327,7 @@ export const push = (options: Images.ImagePushOptions): Stream.Stream<string, Im
 export const images = (
     options?: Images.ImageListOptions | undefined
 ): Effect.Effect<ReadonlyArray<GeneratedSchemas.ImageSummary>, Images.ImagesError, Images.Images> =>
-    Images.Images.list(options);
+    Images.Images.use((images) => images.list(options));
 
 /**
  * Implements the `docker search` command.
@@ -331,7 +338,7 @@ export const images = (
 export const search = (
     options: Images.ImageSearchOptions
 ): Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images> =>
-    Images.Images.search(options);
+    Images.Images.use((images) => images.search(options));
 
 /**
  * Implements the `docker version` command.

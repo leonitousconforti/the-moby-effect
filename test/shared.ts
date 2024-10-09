@@ -1,81 +1,51 @@
-import * as Cause from "effect/Cause";
-import * as Duration from "effect/Duration";
-import * as Effect from "effect/Effect";
-import * as Exit from "effect/Exit";
-import * as ManagedRuntime from "effect/ManagedRuntime";
-import * as Vitest from "vitest";
+import { inject } from "@effect/vitest";
 
-export const afterAllTimeout = Duration.seconds(10).pipe(Duration.toMillis);
-export const beforeAllTimeout = Duration.seconds(60).pipe(Duration.toMillis);
+import * as FileSystem from "@effect/platform-node/NodeFileSystem";
+import * as PlatformError from "@effect/platform/Error";
+import * as Path from "@effect/platform/Path";
+import * as ParseResult from "@effect/schema/ParseResult";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Match from "effect/Match";
 
-// -----------------------------------------------------------------------------
-// TODO: https://github.com/Effect-TS/effect/pull/3686
-// -----------------------------------------------------------------------------
+import * as Containers from "the-moby-effect/endpoints/Containers";
+import * as Images from "the-moby-effect/endpoints/Images";
+import * as System from "the-moby-effect/endpoints/System";
+import * as Volumes from "the-moby-effect/endpoints/Volumes";
+import * as DindEngine from "the-moby-effect/engines/Dind";
+import * as MobyEngine from "the-moby-effect/engines/Moby";
 
-/** @internal */
-const handleExit = <E, A>(exit: Exit.Exit<E, A>): Effect.Effect<() => void, never, never> =>
-    Effect.gen(function* () {
-        if (Exit.isSuccess(exit)) {
-            return () => {};
-        } else {
-            const errors = Cause.prettyErrors(exit.cause);
-            for (let i = 1; i < errors.length; i++) {
-                yield* Effect.logError(errors[i]);
-            }
-            return () => {
-                throw errors[0];
-            };
-        }
-    });
+const makePlatformDindLayer = Function.pipe(
+    Match.value(inject("__PLATFORM_VARIANT")),
+    Match.when("bun", () => DindEngine.layerBun),
+    Match.when("deno", () => DindEngine.layerDeno),
+    Match.whenOr("node-18.x", "node-20.x", "node-22.x", () => DindEngine.layerNodeJS),
+    Match.whenOr(
+        "node-18.x-undici",
+        "node-20.x-undici",
+        "node-22.x-undici",
+        "deno-undici",
+        "bun-undici",
+        () => DindEngine.layerUndici
+    ),
+    Match.exhaustive
+);
 
-/** @internal */
-const runHook = <E, A>(effect: Effect.Effect<A, E>): Promise<void> =>
-    Effect.gen(function* () {
-        const exit = yield* Effect.exit(effect);
-        return yield* handleExit(exit);
-    })
-        .pipe(Effect.runPromise)
-        .then((f) => f());
+const testDindLayer = makePlatformDindLayer({
+    dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
+    exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
+    connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
+});
 
-export const beforeAllEffect = <E>(
-    self: (
-        suite: Readonly<Vitest.RunnerTestSuite | Vitest.RunnerTestFile>
-    ) => Effect.Effect<Vitest.HookCleanupCallback | PromiseLike<Vitest.HookCleanupCallback>, E, never>,
-    timeout?: number
-): void => Vitest.beforeAll((suite) => runHook(self(suite)), timeout);
+const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
 
-export const beforeEachEffect = <E>(
-    self: (
-        ctx: Vitest.TaskContext<Vitest.RunnerCustomCase<object> | Vitest.RunnerTestCase<object>> &
-            Vitest.TestContext &
-            object,
-        suite: Vitest.RunnerTestSuite
-    ) => Effect.Effect<Vitest.HookCleanupCallback | PromiseLike<Vitest.HookCleanupCallback>, E, never>,
-    timeout?: number
-): void => Vitest.beforeEach((ctx, suite) => runHook(self(ctx, suite)), timeout);
-
-export const afterAllEffect = <E>(
-    self: (
-        suite: Readonly<Vitest.RunnerTestSuite | Vitest.RunnerTestFile>
-    ) => Effect.Effect<void | PromiseLike<void>, E, never>,
-    timeout?: number
-): void => Vitest.afterAll((suite) => runHook(self(suite)), timeout);
-
-export const afterEachEffect = <E>(
-    self: (
-        ctx: Vitest.TaskContext<Vitest.RunnerCustomCase<object> | Vitest.RunnerTestCase<object>> &
-            Vitest.TestContext &
-            object,
-        suite: Vitest.RunnerTestSuite
-    ) => Effect.Effect<void | PromiseLike<void>, E, never>,
-    timeout?: number
-): void => Vitest.afterEach((ctx, suite) => runHook(self(ctx, suite)), timeout);
-
-// -----------------------------------------------------------------------------
-// TODO: https://github.com/Effect-TS/effect/pull/3677
-// -----------------------------------------------------------------------------
-
-export const provideManagedRuntime = <A, E, E2, R, R2>(
-    self: Effect.Effect<A, E, R>,
-    runtime: ManagedRuntime.ManagedRuntime<R2, E2>
-): Effect.Effect<A, E | E2, Exclude<R, R2>> => Effect.flatMap(runtime.runtimeEffect, (rt) => Effect.provide(self, rt));
+export const testLayer: Layer.Layer<
+    Layer.Layer.Success<MobyEngine.MobyLayer>,
+    | Containers.ContainersError
+    | Images.ImagesError
+    | System.SystemsError
+    | Volumes.VolumesError
+    | ParseResult.ParseError
+    | PlatformError.PlatformError,
+    never
+> = Layer.provide(testDindLayer, testServices);

@@ -174,7 +174,7 @@ export interface SecretsImpl {
  * @since 1.0.0
  * @category Services
  */
-export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
+export const make: Effect.Effect<SecretsImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
     const defaultClient = yield* HttpClient.HttpClient;
     const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
@@ -257,4 +257,4 @@ export class Secrets extends Effect.Tag("@the-moby-effect/endpoints/Secrets")<Se
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Secrets, never, HttpClient.HttpClient.Service> = Layer.effect(Secrets, make);
+export const layer: Layer.Layer<Secrets, never, HttpClient.HttpClient> = Layer.effect(Secrets, make);

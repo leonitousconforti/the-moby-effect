@@ -150,88 +150,84 @@ export interface ExecsImpl {
 }
 
 /**
- * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<ExecsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
-    const contextClient = yield* HttpClient.HttpClient;
-    const client = contextClient.pipe(HttpClient.filterStatusOk);
-
-    const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
-        Function.pipe(
-            HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/exec`),
-            HttpClientRequest.schemaBodyJson(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
-            Effect.flatMap(client.execute),
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
-            Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
-            Effect.scoped
-        );
-
-    const start_ = <T extends boolean | undefined>(
-        options: ExecStartOptions & {
-            execStartConfig: Omit<Schema.Schema.Type<typeof ContainerExecStartConfig>, "Detach"> & { Detach?: T };
-        }
-    ): T extends true
-        ? Effect.Effect<void, ExecsError, never>
-        : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope> => {
-        type U = T extends true
-            ? Effect.Effect<void, ExecsError, never>
-            : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope>;
-
-        const response = Function.pipe(
-            HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/start`),
-            HttpClientRequest.schemaBodyJson(ContainerExecStartConfig)(
-                Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
-            ),
-            Effect.flatMap(client.execute),
-            Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
-        );
-
-        const toStreamingSock = Function.compose(
-            responseToStreamingSocketOrFail,
-            Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
-        );
-
-        return options.execStartConfig.Detach
-            ? (Function.pipe(response, Effect.asVoid, Effect.scoped) as U)
-            : (Function.pipe(response, Effect.flatMap(toStreamingSock)) as U);
-    };
-
-    const resize_ = (options: ExecResizeOptions): Effect.Effect<void, ExecsError, never> =>
-        Function.pipe(
-            HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/resize`),
-            maybeAddQueryParameter("h", Option.fromNullable(options.h)),
-            maybeAddQueryParameter("w", Option.fromNullable(options.w)),
-            client.execute,
-            Effect.asVoid,
-            Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
-            Effect.scoped
-        );
-
-    const inspect_ = (options: ExecInspectOptions): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/exec/${encodeURIComponent(options.id)}/json`),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(ExecInspectResponse)),
-            Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),
-            Effect.scoped
-        );
-
-    return {
-        container: container_,
-        start: start_,
-        resize: resize_,
-        inspect: inspect_,
-    };
-});
-
-/**
  * Execs service
  *
  * @since 1.0.0
  * @category Tags
  */
-export class Execs extends Effect.Tag("@the-moby-effect/endpoints/Execs")<Execs, ExecsImpl>() {}
+export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/Execs", {
+    effect: Effect.gen(function* () {
+        const contextClient = yield* HttpClient.HttpClient;
+        const client = contextClient.pipe(HttpClient.filterStatusOk);
+
+        const container_ = (options: ContainerExecOptions): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
+            Function.pipe(
+                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/exec`),
+                HttpClientRequest.schemaBodyJson(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
+                Effect.flatMap(client.execute),
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
+                Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
+                Effect.scoped
+            );
+
+        const start_ = <T extends boolean | undefined>(
+            options: ExecStartOptions & {
+                execStartConfig: Omit<Schema.Schema.Type<typeof ContainerExecStartConfig>, "Detach"> & { Detach?: T };
+            }
+        ): T extends true
+            ? Effect.Effect<void, ExecsError, never>
+            : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope> => {
+            type U = T extends true
+                ? Effect.Effect<void, ExecsError, never>
+                : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope>;
+
+            const response = Function.pipe(
+                HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/start`),
+                HttpClientRequest.schemaBodyJson(ContainerExecStartConfig)(
+                    Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
+                ),
+                Effect.flatMap(client.execute),
+                Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
+            );
+
+            const toStreamingSock = Function.compose(
+                responseToStreamingSocketOrFail,
+                Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
+            );
+
+            return options.execStartConfig.Detach
+                ? (Function.pipe(response, Effect.asVoid, Effect.scoped) as U)
+                : (Function.pipe(response, Effect.flatMap(toStreamingSock)) as U);
+        };
+
+        const resize_ = (options: ExecResizeOptions): Effect.Effect<void, ExecsError, never> =>
+            Function.pipe(
+                HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/resize`),
+                maybeAddQueryParameter("h", Option.fromNullable(options.h)),
+                maybeAddQueryParameter("w", Option.fromNullable(options.w)),
+                client.execute,
+                Effect.asVoid,
+                Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
+                Effect.scoped
+            );
+
+        const inspect_ = (options: ExecInspectOptions): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/exec/${encodeURIComponent(options.id)}/json`),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(ExecInspectResponse)),
+                Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),
+                Effect.scoped
+            );
+
+        return {
+            container: container_,
+            start: start_,
+            resize: resize_,
+            inspect: inspect_,
+        } satisfies ExecsImpl;
+    }),
+}) {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent
@@ -239,4 +235,4 @@ export class Execs extends Effect.Tag("@the-moby-effect/endpoints/Execs")<Execs,
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Execs, never, HttpClient.HttpClient.Service> = Layer.effect(Execs, make);
+export const layer: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.Default;

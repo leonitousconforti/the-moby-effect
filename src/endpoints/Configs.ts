@@ -1,7 +1,9 @@
 /**
- * Configs service
+ * Configs are application configurations that can be used by services. Swarm
+ * mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -46,29 +48,31 @@ export const isConfigsError = (u: unknown): u is ConfigsError => Predicate.hasPr
  */
 export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, "ConfigsError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
-        return this.method;
+        return `${this.method}`;
     }
 }
 
 /**
  * @since 1.0.0
  * @category Params
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigList
  */
 export interface ConfigListOptions {
     readonly filters?: {
-        name?: string | undefined;
         id?: string | undefined;
-        names?: string | undefined;
         label?: Record<string, string> | undefined;
+        name?: string | undefined;
+        names?: string | undefined;
     };
 }
 
 /**
  * @since 1.0.0
  * @category Params
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigDelete
  */
 export interface ConfigDeleteOptions {
     readonly id: string;
@@ -77,6 +81,7 @@ export interface ConfigDeleteOptions {
 /**
  * @since 1.0.0
  * @category Params
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigInspect
  */
 export interface ConfigInspectOptions {
     readonly id: string;
@@ -85,6 +90,7 @@ export interface ConfigInspectOptions {
 /**
  * @since 1.0.0
  * @category Params
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigUpdate
  */
 export interface ConfigUpdateOptions {
     /** The ID or name of the config */
@@ -103,116 +109,93 @@ export interface ConfigUpdateOptions {
 }
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface ConfigsImpl {
-    readonly list: (
-        options?: ConfigListOptions | undefined
-    ) => Effect.Effect<ReadonlyArray<SwarmConfig>, ConfigsError, never>;
-    readonly create: (
-        options: SwarmConfigSpec
-    ) => Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never>;
-    readonly delete: (options: ConfigDeleteOptions) => Effect.Effect<void, ConfigsError, never>;
-    readonly inspect: (options: ConfigInspectOptions) => Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never>;
-
-    /**
-     * Update a Config
-     *
-     * @param id - The ID or name of the config
-     * @param spec - The spec of the config to update. Currently, only the
-     *   Labels field can be updated. All other fields must remain unchanged
-     *   from the [ConfigInspect endpoint](#operation/ConfigInspect) response
-     *   values.
-     * @param version - The version number of the config object being updated.
-     *   This is required to avoid conflicting writes.
-     */
-    readonly update: (options: ConfigUpdateOptions) => Effect.Effect<void, ConfigsError, never>;
-}
-
-/**
- * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<ConfigsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
-    const contextClient = yield* HttpClient.HttpClient;
-    const client = contextClient.pipe(HttpClient.filterStatusOk);
-
-    const list_ = (
-        options?: ConfigListOptions | undefined
-    ): Effect.Effect<ReadonlyArray<SwarmConfig>, ConfigsError, never> =>
-        Function.pipe(
-            HttpClientRequest.get("/configs"),
-            maybeAddFilters(options?.filters),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmConfig))),
-            Effect.mapError((cause) => new ConfigsError({ method: "list", cause })),
-            Effect.scoped
-        );
-
-    const create_ = (
-        options: Schema.Schema.Encoded<typeof SwarmConfigSpec>
-    ): Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never> =>
-        Function.pipe(
-            Schema.decode(SwarmConfigSpec)(options),
-            Effect.map((body) => Tuple.make(HttpClientRequest.post("/configs/create"), body)),
-            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmConfigSpec))),
-            Effect.flatMap(client.execute),
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfigCreateResponse)),
-            Effect.mapError((cause) => new ConfigsError({ method: "create", cause })),
-            Effect.scoped
-        );
-
-    const delete_ = (options: ConfigDeleteOptions): Effect.Effect<void, ConfigsError, never> =>
-        Function.pipe(
-            HttpClientRequest.del(`/configs/${encodeURIComponent(options.id)}`),
-            client.execute,
-            Effect.asVoid,
-            Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
-            Effect.scoped
-        );
-
-    const inspect_ = (options: ConfigInspectOptions): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/configs/${encodeURIComponent(options.id)}`),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfig)),
-            Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause })),
-            Effect.scoped
-        );
-
-    const update_ = (options: ConfigUpdateOptions): Effect.Effect<void, ConfigsError, never> =>
-        Function.pipe(
-            HttpClientRequest.post(`/configs/${encodeURIComponent(options.id)}/update`),
-            maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBodyJson(SwarmConfigSpec)(options.spec),
-            Effect.flatMap(client.execute),
-            Effect.asVoid,
-            Effect.mapError((cause) => new ConfigsError({ method: "update", cause })),
-            Effect.scoped
-        );
-
-    return {
-        list: list_,
-        create: create_,
-        delete: delete_,
-        inspect: inspect_,
-        update: update_,
-    };
-});
-
-/**
- * Configs service
+ * Configs are application configurations that can be used by services. Swarm
+ * mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @category Tags
+ * @category Services
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
  */
-export class Configs extends Effect.Tag("@the-moby-effect/endpoints/Configs")<Configs, ConfigsImpl>() {}
+export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoints/Configs", {
+    effect: Effect.gen(function* () {
+        const contextClient = yield* HttpClient.HttpClient;
+        const client = contextClient.pipe(HttpClient.filterStatusOk);
+
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigList */
+        const list_ = (
+            options?: ConfigListOptions | undefined
+        ): Effect.Effect<ReadonlyArray<SwarmConfig>, ConfigsError, never> =>
+            Function.pipe(
+                HttpClientRequest.get("/configs"),
+                maybeAddFilters(options?.filters),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmConfig))),
+                Effect.mapError((cause) => new ConfigsError({ method: "list", cause })),
+                Effect.scoped
+            );
+
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigCreate */
+        const create_ = (
+            options: Schema.Schema.Encoded<typeof SwarmConfigSpec>
+        ): Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never> =>
+            Function.pipe(
+                Schema.decode(SwarmConfigSpec)(options),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/configs/create"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmConfigSpec))),
+                Effect.flatMap(client.execute),
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfigCreateResponse)),
+                Effect.mapError((cause) => new ConfigsError({ method: "create", cause })),
+                Effect.scoped
+            );
+
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigDelete */
+        const delete_ = (options: ConfigDeleteOptions): Effect.Effect<void, ConfigsError, never> =>
+            Function.pipe(
+                HttpClientRequest.del(`/configs/${encodeURIComponent(options.id)}`),
+                client.execute,
+                Effect.asVoid,
+                Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
+                Effect.scoped
+            );
+
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigInspect */
+        const inspect_ = (options: ConfigInspectOptions): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/configs/${encodeURIComponent(options.id)}`),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfig)),
+                Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause })),
+                Effect.scoped
+            );
+
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigUpdate */
+        const update_ = (options: ConfigUpdateOptions): Effect.Effect<void, ConfigsError, never> =>
+            Function.pipe(
+                HttpClientRequest.post(`/configs/${encodeURIComponent(options.id)}/update`),
+                maybeAddQueryParameter("version", Option.some(options.version)),
+                HttpClientRequest.schemaBodyJson(SwarmConfigSpec)(options.spec),
+                Effect.flatMap(client.execute),
+                Effect.asVoid,
+                Effect.mapError((cause) => new ConfigsError({ method: "update", cause })),
+                Effect.scoped
+            );
+
+        return {
+            list: list_,
+            create: create_,
+            delete: delete_,
+            inspect: inspect_,
+            update: update_,
+        };
+    }),
+}) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
+ * Configs are application configurations that can be used by services. Swarm
+ * mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
  */
-export const layer: Layer.Layer<Configs, never, HttpClient.HttpClient.Service> = Layer.effect(Configs, make);
+export const layer: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.Default;

@@ -24,14 +24,16 @@ Added in v1.0.0
 ## makeAgnosticHttpClientLayer
 
 Given the moby connection options, it will construct a layer that provides a
-http client that you could use to connect to your moby instance.
+http client that you could use to connect to your moby instance. Since this
+is meant to be platform agnostic and there are some platforms where we can
+not construct ssh nor socket connections, only http and https are supported.
 
 **Signature**
 
 ```ts
 export declare const makeAgnosticHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer.Layer<HttpClient.HttpClient.Service, never, HttpClient.HttpClient.Service>
+) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

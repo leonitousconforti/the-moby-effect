@@ -26,5 +26,5 @@ export const compressDemuxOutput = <A1, A2>(
     data: readonly [ranStdout: A1, ranStderr: A2]
 ): CompressedDemuxOutput<A1, A2> =>
     Predicate.isUndefined(data[0]) && Predicate.isUndefined(data[1])
-        ? (void 0 as CompressedDemuxOutput<A1, A2>)
+        ? (void undefined as CompressedDemuxOutput<A1, A2>)
         : (data as CompressedDemuxOutput<A1, A2>);

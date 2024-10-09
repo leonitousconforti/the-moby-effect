@@ -74,44 +74,30 @@ export interface DistributionsImpl {
 
 /**
  * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<DistributionsImpl, never, HttpClient.HttpClient.Service> = Effect.gen(function* () {
-    const contextClient = yield* HttpClient.HttpClient;
-    const client = contextClient.pipe(HttpClient.filterStatusOk);
-
-    const inspect_ = (
-        options: DistributionInspectOptions
-    ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/distribution/${encodeURIComponent(options.name)}/json`),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(RegistryDistributionInspect)),
-            Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),
-            Effect.scoped
-        );
-
-    return { inspect: inspect_ };
-});
-
-/**
- * Distributions service
- *
- * @since 1.0.0
  * @category Tags
  */
-export class Distributions extends Effect.Tag("@the-moby-effect/endpoints/Distributions")<
-    Distributions,
-    DistributionsImpl
->() {}
+export class Distributions extends Effect.Service<Distributions>()("@the-moby-effect/endpoints/Distributions", {
+    effect: Effect.gen(function* () {
+        const contextClient = yield* HttpClient.HttpClient;
+        const client = contextClient.pipe(HttpClient.filterStatusOk);
+
+        const inspect_ = (
+            options: DistributionInspectOptions
+        ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/distribution/${encodeURIComponent(options.name)}/json`),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(RegistryDistributionInspect)),
+                Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),
+                Effect.scoped
+            );
+
+        return { inspect: inspect_ } satisfies DistributionsImpl;
+    }),
+}) {}
 
 /**
- * Distributions layer that depends on the MobyConnectionAgent
- *
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Distributions, never, HttpClient.HttpClient.Service> = Layer.effect(
-    Distributions,
-    make
-);
+export const layer: Layer.Layer<Distributions, never, HttpClient.HttpClient> = Distributions.Default;

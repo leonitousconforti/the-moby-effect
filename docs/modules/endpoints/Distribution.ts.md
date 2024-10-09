@@ -23,8 +23,6 @@ Added in v1.0.0
   - [layer](#layer)
 - [Params](#params)
   - [DistributionInspectOptions (interface)](#distributioninspectoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Distributions (class)](#distributions-class)
   - [DistributionsImpl (interface)](#distributionsimpl-interface)
@@ -77,12 +75,14 @@ Added in v1.0.0
 
 ## layer
 
-Distributions layer that depends on the MobyConnectionAgent
-
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Distributions, never, HttpClient.HttpClient.Service>
+export declare const layer: Layer.Layer<
+  Distributions,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0
@@ -101,23 +101,9 @@ export interface DistributionInspectOptions {
 
 Added in v1.0.0
 
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<DistributionsImpl, never, HttpClient.HttpClient.Service>
-```
-
-Added in v1.0.0
-
 # Tags
 
 ## Distributions (class)
-
-Distributions service
 
 **Signature**
 

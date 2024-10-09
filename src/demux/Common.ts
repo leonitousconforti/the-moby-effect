@@ -11,11 +11,13 @@ import * as Console from "effect/Console";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
+import { NeedsPlatformNode } from "../platforms/Needs.js";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput } from "./Compressed.js";
 import {
@@ -56,8 +58,12 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
 
 /**
  * Transforms an http response into a multiplexed stream socket or a raw stream
- * socket. If the response is neither a multiplexed stream socket nor a raw,
- * then an error will be returned.
+ * socket. If the response is neither a multiplexed stream socket nor a raw or
+ * can not be transformed, then an error will be returned.
+ *
+ * FIXME: this function relies on a hack to expose the underlying tcp socket
+ * from the http client response. This will only work in NodeJs, not tested in
+ * Bun/Deno yet, and will never work in the browser.
  *
  * @since 1.0.0
  * @category Predicates
@@ -67,34 +73,40 @@ export const responseToStreamingSocketOrFail = Function.dual<
         options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
     ) => (
         response: HttpClientResponse.HttpClientResponse
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-        Socket.SocketError,
-        never
+    ) => NeedsPlatformNode<
+        Effect.Effect<
+            SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+            Socket.SocketError,
+            never
+        >
     >,
     <SourceIsKnownUnidirectional extends true | undefined = undefined>(
         response: HttpClientResponse.HttpClientResponse,
         options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-        Socket.SocketError,
-        never
+    ) => NeedsPlatformNode<
+        Effect.Effect<
+            SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+            Socket.SocketError,
+            never
+        >
     >
 >(
     (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
     <SourceIsKnownUnidirectional extends true | undefined = undefined>(
         response: HttpClientResponse.HttpClientResponse,
         options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ): Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-        Socket.SocketError,
-        never
+    ): NeedsPlatformNode<
+        Effect.Effect<
+            SourceIsKnownUnidirectional extends true
+                ? UnidirectionalRawStreamSocket
+                : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+            Socket.SocketError,
+            never
+        >
     > =>
         Effect.gen(function* () {
             type Ret = SourceIsKnownUnidirectional extends true
@@ -130,8 +142,8 @@ export const responseToStreamingSocketOrFail = Function.dual<
 );
 
 /**
- * Demux an http socket. The source stream is the stream that you want to
- * forward to the containers stdin. If the socket is a raw stream, then there
+ * Demux a bidirectional socket. The source stream is the stream that you want
+ * to forward to the containers stdin. If the socket is a raw stream, then there
  * will only be one sink that combines the containers stdout and stderr. if the
  * socket is a multiplexed stream, then there will be two sinks, one for stdout
  * and one for stderr.
@@ -140,17 +152,20 @@ export const responseToStreamingSocketOrFail = Function.dual<
  * @category Demux
  */
 export const demuxBidirectionalSocket: {
+    // Demux a bidirectional raw socket, data-first signature.
     <A1, E1, E2, R1, R2>(
         socket: BidirectionalRawStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>
     ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>;
+    // Demux a bidirectional raw socket, data-last signature.
     <A1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>
     ): (
         socket: BidirectionalRawStreamSocket
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>;
+    // Demux a bidirectional multiplexed socket, data-first signature.
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
@@ -162,6 +177,7 @@ export const demuxBidirectionalSocket: {
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
+    // Demux a bidirectional multiplexed socket, data-last signature.
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
@@ -200,24 +216,32 @@ export const demuxBidirectionalSocket: {
 
 /**
  * Demux either a raw stream socket or a multiplexed stream socket from stdin to
- * stdout and stderr. If given a raw stream socket, then stdout and stderr will
- * be combined on the same sink. If given a multiplexed stream socket, then
- * stdout and stderr will be forwarded to different sinks.
+ * stdout and stderr. If given a bidirectional raw stream socket, then stdout
+ * and stderr will be combined on the same sink. If given a multiplexed stream
+ * socket, then stdout and stderr will be forwarded to different sinks. If given
+ * a unidirectional raw stream socket, then you are only required to provide one
+ * for stdout but can also provide sockets for stdin and stderr as well.
+ *
+ * If you are looking for a way to demux to the console instead of stdin,
+ * stdout, and stderr then see {@link demuxSocketWithInputToConsole}.
+ *
+ * Since we are interacting with stdin, stdout, and stderr this function
+ * dynamically imports the `@effect/platform-node` package.
  *
  * @since 1.0.0
  * @category Demux
  */
 export const demuxSocketFromStdinToStdoutAndStderr = <
     UnidirectionalSocketOptions extends {
-        stdin: UnidirectionalRawStreamSocket;
         stdout: UnidirectionalRawStreamSocket;
-        stderr: UnidirectionalRawStreamSocket;
+        stdin?: UnidirectionalRawStreamSocket | undefined;
+        stderr?: UnidirectionalRawStreamSocket | undefined;
     },
     SocketOptions extends BidirectionalRawStreamSocket | MultiplexedStreamSocket | UnidirectionalSocketOptions,
     E1 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never,
 >(
     socketOptions: SocketOptions
-): Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never> =>
+): NeedsPlatformNode<Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never>> =>
     Effect.flatMap(
         Effect.all(
             {
@@ -244,12 +268,15 @@ export const demuxSocketFromStdinToStdoutAndStderr = <
                 { endOnDone: false }
             );
 
-            if ("stdin" in socketOptions && "stdout" in socketOptions && "stderr" in socketOptions) {
-                return demuxUnidirectionalRawSockets({
-                    stdin: Tuple.make(stdinStream, socketOptions.stdin),
-                    stdout: Tuple.make(socketOptions.stdout, stdoutSink),
-                    stderr: Tuple.make(socketOptions.stderr, stderrSink),
-                }) as Ret;
+            if ("stdout" in socketOptions) {
+                const stdinTuple = Predicate.isNotUndefined(socketOptions.stdin)
+                    ? { stdin: Tuple.make(stdinStream, socketOptions.stdin) }
+                    : {};
+                const stderrTuple = Predicate.isNotUndefined(socketOptions.stderr)
+                    ? { stderr: Tuple.make(socketOptions.stderr, stderrSink) }
+                    : {};
+                const stdoutTuple = { stdout: Tuple.make(socketOptions.stdout, stdoutSink) };
+                return demuxUnidirectionalRawSockets({ ...stdinTuple, ...stdoutTuple, ...stderrTuple }) as Ret;
             }
 
             if (isBidirectionalRawStreamSocket(socketOptions)) {
@@ -265,17 +292,24 @@ export const demuxSocketFromStdinToStdoutAndStderr = <
     );
 
 /**
- * Demux either a raw stream socket or a multiplexed stream socket. It will send
- * the input stream to the container and will log all output to the console.
+ * Demux either a raw stream socket or a multiplexed stream socket to the
+ * console. If given a bidirectional raw stream socket, then stdout and stderr
+ * will be combined on the same sink. If given a multiplexed stream socket, then
+ * stdout and stderr will be forwarded to different sinks. If given a
+ * unidirectional raw stream socket, then you are only required to provide one
+ * for stdout but can also provide sockets for stdin and stderr as well.
+ *
+ * If you are looking for a way to demux to stdin, stdout, and stderr instead of
+ * the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
  *
  * @since 1.0.0
  * @category Demux
  */
 export const demuxSocketWithInputToConsole = <
     UnidirectionalSocketOptions extends {
-        stdin: UnidirectionalRawStreamSocket;
         stdout: UnidirectionalRawStreamSocket;
-        stderr: UnidirectionalRawStreamSocket;
+        stdin?: UnidirectionalRawStreamSocket | undefined;
+        stderr?: UnidirectionalRawStreamSocket | undefined;
     },
     SocketOptions extends BidirectionalRawStreamSocket | MultiplexedStreamSocket | UnidirectionalSocketOptions,
     E2 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never,
@@ -290,12 +324,15 @@ export const demuxSocketWithInputToConsole = <
     const stdoutSink = Sink.forEach<string, void, never, never>(Console.log);
     const stderrSink = Sink.forEach<string, void, never, never>(Console.error);
 
-    if ("stdout" in socketOptions && "stderr" in socketOptions && "stdin" in socketOptions) {
-        return demuxUnidirectionalRawSockets({
-            stdin: Tuple.make(input, socketOptions.stdin),
-            stdout: Tuple.make(socketOptions.stdout, stdoutSink),
-            stderr: Tuple.make(socketOptions.stderr, stderrSink),
-        }) as Ret;
+    if ("stdout" in socketOptions) {
+        const stdinTuple = Predicate.isNotUndefined(socketOptions.stdin)
+            ? { stdin: Tuple.make(input, socketOptions.stdin) }
+            : {};
+        const stderrTuple = Predicate.isNotUndefined(socketOptions.stderr)
+            ? { stderr: Tuple.make(socketOptions.stderr, stderrSink) }
+            : {};
+        const stdoutTuple = { stdout: Tuple.make(socketOptions.stdout, stdoutSink) };
+        return demuxUnidirectionalRawSockets({ ...stdinTuple, ...stdoutTuple, ...stderrTuple }) as Ret;
     }
 
     if (isBidirectionalRawStreamSocket(socketOptions)) {
