@@ -18,7 +18,7 @@ import { makeNodeHttpClientLayer } from "./Node.js";
  * This function will dynamically import the `@effect/platform-node` package.
  *
  * @since 1.0.0
- * @category Connection
+ * @category Deno
  */
 export const makeDenoHttpClientLayer: (
     connectionOptions: MobyConnectionOptions

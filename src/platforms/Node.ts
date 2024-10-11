@@ -27,7 +27,7 @@ import { MobyConnectionOptions, SshConnectionOptions } from "./Common.js";
  * will only work when using the NodeJS http layer.
  *
  * @since 1.0.0
- * @category Connection
+ * @category NodeJS
  */
 export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
     source: {
