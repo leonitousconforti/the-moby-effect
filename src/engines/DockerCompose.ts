@@ -5,7 +5,7 @@
  */
 
 // TODO: implement
-export interface ComposeImpl {
+export interface DockerComposeImpl {
     up: () => void;
     down: () => void;
 }
