@@ -13,7 +13,7 @@ import PackageJson from "../package.json" assert { type: "json" };
 
 export const command = Cli.Command.make("info", {}, () =>
     Effect.gen(function* () {
-        const data = yield* DockerEngine.info;
+        const data = yield* DockerEngine.info();
         yield* Console.log(data);
     })
 );

@@ -6,7 +6,8 @@ import { testLayer } from "./shared.js";
 layer(Layer.fresh(testLayer))("MobyApi Swarm tests", (it) => {
     it.effect("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", () =>
         Effect.gen(function* () {
-            const inspect = yield* Swarm.Swarm.inspect();
+            const swarm = yield* Swarm.Swarm;
+            const inspect = yield* swarm.inspect();
 
             const spec = inspect.Spec;
             const version = inspect.Version;
@@ -15,7 +16,7 @@ layer(Layer.fresh(testLayer))("MobyApi Swarm tests", (it) => {
             expect(version).toBeDefined();
             expect(version!.Index).toBeDefined();
 
-            yield* Swarm.Swarm.update({
+            yield* swarm.update({
                 spec: spec!,
                 version: version!.Index!,
                 rotateWorkerToken: true,
@@ -23,7 +24,7 @@ layer(Layer.fresh(testLayer))("MobyApi Swarm tests", (it) => {
                 rotateManagerUnlockKey: true,
             });
 
-            const { UnlockKey } = yield* Swarm.Swarm.unlockkey();
+            const { UnlockKey } = yield* swarm.unlockkey();
             expect(UnlockKey).toBeDefined();
         })
     );

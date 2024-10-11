@@ -5,9 +5,12 @@
  */
 
 import * as PlatformError from "@effect/platform/Error";
+import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
+import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -34,7 +37,7 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
  * @since 1.0.0
  * @category Errors
  */
-export const ImagesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/moby/ImagesError");
+export const ImagesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ImagesError");
 
 /**
  * @since 1.0.0
@@ -54,11 +57,10 @@ export const isDistributionsError = (u: unknown): u is ImagesError => Predicate.
  */
 export class ImagesError extends PlatformError.TypeIdError(ImagesErrorTypeId, "ImagesError")<{
     method: string;
-    cause: unknown;
-    // cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return this.method;
+        return `${this.method}`;
     }
 }
 
@@ -1055,7 +1057,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
             get: get_,
             getall: getall_,
             load: load_,
-        } satisfies ImagesImpl;
+        };
     }),
 }) {}
 

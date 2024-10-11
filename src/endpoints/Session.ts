@@ -22,7 +22,7 @@ import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
  * @since 1.0.0
  * @category Errors
  */
-export const SessionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/moby/SessionsError");
+export const SessionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SessionsError");
 
 /**
  * @since 1.0.0
@@ -45,7 +45,7 @@ export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId
     cause: HttpClientError.HttpClientError;
 }> {
     get message() {
-        return this.method;
+        return `${this.method}`;
     }
 }
 
@@ -68,34 +68,30 @@ export interface SessionsImpl {
 }
 
 /**
- * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<SessionsImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-    const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
-
-    const session_ = (): Effect.Effect<Socket.Socket, SessionsError, Scope.Scope> =>
-        Function.pipe(
-            HttpClientRequest.post("/session"),
-            HttpClientRequest.setHeader("Upgrade", "h2c"),
-            HttpClientRequest.setHeader("Connection", "Upgrade"),
-            client.execute,
-            Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
-            Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
-            Effect.mapError((cause) => new SessionsError({ method: "session", cause }))
-        );
-
-    return { session: session_ };
-});
-
-/**
  * Sessions service
  *
  * @since 1.0.0
  * @category Tags
  */
-export class Sessions extends Effect.Tag("@the-moby-effect/endpoints/Session")<Sessions, SessionsImpl>() {}
+export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpoints/Session", {
+    effect: Effect.gen(function* () {
+        const defaultClient = yield* HttpClient.HttpClient;
+        const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
+
+        const session_ = (): Effect.Effect<Socket.Socket, SessionsError, Scope.Scope> =>
+            Function.pipe(
+                HttpClientRequest.post("/session"),
+                HttpClientRequest.setHeader("Upgrade", "h2c"),
+                HttpClientRequest.setHeader("Connection", "Upgrade"),
+                client.execute,
+                Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
+                Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
+                Effect.mapError((cause) => new SessionsError({ method: "session", cause }))
+            );
+
+        return { session: session_ };
+    }),
+}) {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent
@@ -103,4 +99,4 @@ export class Sessions extends Effect.Tag("@the-moby-effect/endpoints/Session")<S
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Layer.effect(Sessions, make);
+export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;

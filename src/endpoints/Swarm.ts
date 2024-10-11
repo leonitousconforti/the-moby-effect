@@ -33,7 +33,7 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @since 1.0.0
  * @category Errors
  */
-export const SwarmsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/moby/SwarmsError");
+export const SwarmsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SwarmsError");
 
 /**
  * @since 1.0.0
@@ -56,7 +56,7 @@ export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "S
     cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return this.method;
+        return `${this.method}`;
     }
 }
 
@@ -137,106 +137,102 @@ export interface SwarmImpl {
 }
 
 /**
- * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<SwarmImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-    const client = defaultClient.pipe(HttpClient.filterStatusOk);
-
-    const inspect_ = (): Effect.Effect<Readonly<SwarmData>, SwarmsError, never> =>
-        Function.pipe(
-            HttpClientRequest.get("/swarm"),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmData)),
-            Effect.mapError((cause) => new SwarmsError({ method: "inspect", cause })),
-            Effect.scoped
-        );
-
-    const init_ = (options: typeof SwarmInitRequest.Encoded): Effect.Effect<Readonly<string>, SwarmsError, never> =>
-        Function.pipe(
-            Schema.decode(SwarmInitRequest)(options),
-            Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/init"), body)),
-            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmInitRequest))),
-            Effect.flatMap(client.execute),
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.String)),
-            Effect.mapError((cause) => new SwarmsError({ method: "init", cause })),
-            Effect.scoped
-        );
-
-    const join_ = (options: typeof SwarmJoinRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
-        Function.pipe(
-            Schema.decode(SwarmJoinRequest)(options),
-            Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/join"), body)),
-            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmJoinRequest))),
-            Effect.flatMap(client.execute),
-            Effect.asVoid,
-            Effect.mapError((cause) => new SwarmsError({ method: "join", cause })),
-            Effect.scoped
-        );
-
-    const leave_ = (options: SwarmLeaveOptions): Effect.Effect<void, SwarmsError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/swarm/leave"),
-            maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            client.execute,
-            Effect.asVoid,
-            Effect.mapError((cause) => new SwarmsError({ method: "leave", cause })),
-            Effect.scoped
-        );
-
-    const update_ = (options: SwarmUpdateOptions): Effect.Effect<void, SwarmsError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/swarm/update"),
-            maybeAddQueryParameter("version", Option.some(options.version)),
-            maybeAddQueryParameter("rotateWorkerToken", Option.fromNullable(options.rotateWorkerToken)),
-            maybeAddQueryParameter("rotateManagerToken", Option.fromNullable(options.rotateManagerToken)),
-            maybeAddQueryParameter("rotateManagerUnlockKey", Option.fromNullable(options.rotateManagerUnlockKey)),
-            HttpClientRequest.schemaBodyJson(SwarmSpec)(options.spec),
-            Effect.flatMap(client.execute),
-            Effect.asVoid,
-            Effect.mapError((cause) => new SwarmsError({ method: "update", cause })),
-            Effect.scoped
-        );
-
-    const unlockkey_ = (): Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never> =>
-        Function.pipe(
-            HttpClientRequest.get("/swarm/unlockkey"),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmUnlockKeyResponse)),
-            Effect.mapError((cause) => new SwarmsError({ method: "unlockkey", cause })),
-            Effect.scoped
-        );
-
-    const unlock_ = (options: typeof SwarmUnlockRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
-        Function.pipe(
-            Schema.decode(SwarmUnlockRequest)(options),
-            Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/unlock"), body)),
-            Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmUnlockRequest))),
-            Effect.flatMap(client.execute),
-            Effect.asVoid,
-            Effect.mapError((cause) => new SwarmsError({ method: "unlock", cause })),
-            Effect.scoped
-        );
-
-    return {
-        inspect: inspect_,
-        init: init_,
-        join: join_,
-        leave: leave_,
-        update: update_,
-        unlockkey: unlockkey_,
-        unlock: unlock_,
-    };
-});
-
-/**
  * Swarms service
  *
  * @since 1.0.0
  * @category Tags
  */
-export class Swarm extends Effect.Tag("@the-moby-effect/endpoints/Swarm")<Swarm, SwarmImpl>() {}
+export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/Swarm", {
+    effect: Effect.gen(function* () {
+        const defaultClient = yield* HttpClient.HttpClient;
+        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+
+        const inspect_ = (): Effect.Effect<Readonly<SwarmData>, SwarmsError, never> =>
+            Function.pipe(
+                HttpClientRequest.get("/swarm"),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmData)),
+                Effect.mapError((cause) => new SwarmsError({ method: "inspect", cause })),
+                Effect.scoped
+            );
+
+        const init_ = (options: typeof SwarmInitRequest.Encoded): Effect.Effect<Readonly<string>, SwarmsError, never> =>
+            Function.pipe(
+                Schema.decode(SwarmInitRequest)(options),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/init"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmInitRequest))),
+                Effect.flatMap(client.execute),
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.String)),
+                Effect.mapError((cause) => new SwarmsError({ method: "init", cause })),
+                Effect.scoped
+            );
+
+        const join_ = (options: typeof SwarmJoinRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
+            Function.pipe(
+                Schema.decode(SwarmJoinRequest)(options),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/join"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmJoinRequest))),
+                Effect.flatMap(client.execute),
+                Effect.asVoid,
+                Effect.mapError((cause) => new SwarmsError({ method: "join", cause })),
+                Effect.scoped
+            );
+
+        const leave_ = (options: SwarmLeaveOptions): Effect.Effect<void, SwarmsError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/swarm/leave"),
+                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                client.execute,
+                Effect.asVoid,
+                Effect.mapError((cause) => new SwarmsError({ method: "leave", cause })),
+                Effect.scoped
+            );
+
+        const update_ = (options: SwarmUpdateOptions): Effect.Effect<void, SwarmsError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/swarm/update"),
+                maybeAddQueryParameter("version", Option.some(options.version)),
+                maybeAddQueryParameter("rotateWorkerToken", Option.fromNullable(options.rotateWorkerToken)),
+                maybeAddQueryParameter("rotateManagerToken", Option.fromNullable(options.rotateManagerToken)),
+                maybeAddQueryParameter("rotateManagerUnlockKey", Option.fromNullable(options.rotateManagerUnlockKey)),
+                HttpClientRequest.schemaBodyJson(SwarmSpec)(options.spec),
+                Effect.flatMap(client.execute),
+                Effect.asVoid,
+                Effect.mapError((cause) => new SwarmsError({ method: "update", cause })),
+                Effect.scoped
+            );
+
+        const unlockkey_ = (): Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never> =>
+            Function.pipe(
+                HttpClientRequest.get("/swarm/unlockkey"),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmUnlockKeyResponse)),
+                Effect.mapError((cause) => new SwarmsError({ method: "unlockkey", cause })),
+                Effect.scoped
+            );
+
+        const unlock_ = (options: typeof SwarmUnlockRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
+            Function.pipe(
+                Schema.decode(SwarmUnlockRequest)(options),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/unlock"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmUnlockRequest))),
+                Effect.flatMap(client.execute),
+                Effect.asVoid,
+                Effect.mapError((cause) => new SwarmsError({ method: "unlock", cause })),
+                Effect.scoped
+            );
+
+        return {
+            inspect: inspect_,
+            init: init_,
+            join: join_,
+            leave: leave_,
+            update: update_,
+            unlockkey: unlockkey_,
+            unlock: unlock_,
+        };
+    }),
+}) {}
 
 /**
  * Configs layer that depends on the MobyConnectionAgent
@@ -244,4 +240,4 @@ export class Swarm extends Effect.Tag("@the-moby-effect/endpoints/Swarm")<Swarm,
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Layer.effect(Swarm, make);
+export const layer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.Default;

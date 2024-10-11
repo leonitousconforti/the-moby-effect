@@ -30,7 +30,7 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @since 1.0.0
  * @category Errors
  */
-export const VolumesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/moby/VolumesError");
+export const VolumesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/VolumesError");
 
 /**
  * @since 1.0.0
@@ -53,7 +53,7 @@ export class VolumesError extends PlatformError.TypeIdError(VolumesErrorTypeId, 
     cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return this.method;
+        return `${this.method}`;
     }
 }
 
@@ -198,103 +198,97 @@ export interface VolumesImpl {
 }
 
 /**
- * @since 1.0.0
- * @category Services
- */
-export const make: Effect.Effect<VolumesImpl, never, HttpClient.HttpClient> = Effect.gen(function* () {
-    const defaultClient = yield* HttpClient.HttpClient;
-    const client = defaultClient.pipe(HttpClient.filterStatusOk);
-
-    const list_ = (options?: VolumeListOptions | undefined): Effect.Effect<VolumeListResponse, VolumesError> =>
-        Function.pipe(
-            HttpClientRequest.get("/volumes"),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumeListResponse)),
-            Effect.mapError((cause) => new VolumesError({ method: "list", cause })),
-            Effect.scoped
-        );
-
-    const create_ = (options: VolumeCreateOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/volumes/create"),
-            HttpClientRequest.schemaBodyJson(VolumeCreateOptions)(options),
-            Effect.flatMap(client.execute),
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
-            Effect.mapError((cause) => new VolumesError({ method: "create", cause })),
-            Effect.scoped
-        );
-
-    const delete_ = (options: VolumeDeleteOptions): Effect.Effect<void, VolumesError, never> =>
-        Function.pipe(
-            HttpClientRequest.del(`/volumes/${encodeURIComponent(options.name)}`),
-            maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-            client.execute,
-            Effect.asVoid,
-            Effect.mapError((cause) => new VolumesError({ method: "delete", cause })),
-            Effect.scoped
-        );
-
-    const inspect_ = (options: VolumeInspectOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
-        Function.pipe(
-            HttpClientRequest.get(`/volumes/${encodeURIComponent(options.name)}`),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
-            Effect.mapError((cause) => new VolumesError({ method: "inspect", cause })),
-            Effect.scoped
-        );
-
-    const update_ = (options: VolumeUpdateOptions): Effect.Effect<void, VolumesError, never> =>
-        Function.pipe(
-            HttpClientRequest.put(`/volumes/${encodeURIComponent(options.name)}`),
-            maybeAddQueryParameter("version", Option.some(options.version)),
-            HttpClientRequest.schemaBodyJson(ClusterVolumeSpec)(options.spec),
-            Effect.flatMap(client.execute),
-            Effect.asVoid,
-            Effect.mapError((cause) => new VolumesError({ method: "update", cause })),
-            Effect.scoped
-        );
-
-    const prune_ = (
-        options?: VolumePruneOptions | undefined
-    ): Effect.Effect<VolumePruneResponse, VolumesError, never> =>
-        Function.pipe(
-            HttpClientRequest.post("/volumes/prune"),
-            maybeAddQueryParameter(
-                "filters",
-                Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-            ),
-            client.execute,
-            Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumePruneResponse)),
-            Effect.mapError((cause) => new VolumesError({ method: "prune", cause })),
-            Effect.scoped
-        );
-
-    return {
-        list: list_,
-        create: create_,
-        delete: delete_,
-        inspect: inspect_,
-        update: update_,
-        prune: prune_,
-    };
-});
-
-/**
  * Volumes service
  *
  * @since 1.0.0
  * @category Tags
  */
-export class Volumes extends Effect.Tag("@the-moby-effect/endpoints/Volumes")<Volumes, VolumesImpl>() {}
+export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoints/Volumes", {
+    effect: Effect.gen(function* () {
+        const defaultClient = yield* HttpClient.HttpClient;
+        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+
+        const list_ = (options?: VolumeListOptions | undefined): Effect.Effect<VolumeListResponse, VolumesError> =>
+            Function.pipe(
+                HttpClientRequest.get("/volumes"),
+                maybeAddQueryParameter(
+                    "filters",
+                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
+                ),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumeListResponse)),
+                Effect.mapError((cause) => new VolumesError({ method: "list", cause })),
+                Effect.scoped
+            );
+
+        const create_ = (options: VolumeCreateOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/volumes/create"),
+                HttpClientRequest.schemaBodyJson(VolumeCreateOptions)(options),
+                Effect.flatMap(client.execute),
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
+                Effect.mapError((cause) => new VolumesError({ method: "create", cause })),
+                Effect.scoped
+            );
+
+        const delete_ = (options: VolumeDeleteOptions): Effect.Effect<void, VolumesError, never> =>
+            Function.pipe(
+                HttpClientRequest.del(`/volumes/${encodeURIComponent(options.name)}`),
+                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                client.execute,
+                Effect.asVoid,
+                Effect.mapError((cause) => new VolumesError({ method: "delete", cause })),
+                Effect.scoped
+            );
+
+        const inspect_ = (options: VolumeInspectOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
+            Function.pipe(
+                HttpClientRequest.get(`/volumes/${encodeURIComponent(options.name)}`),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
+                Effect.mapError((cause) => new VolumesError({ method: "inspect", cause })),
+                Effect.scoped
+            );
+
+        const update_ = (options: VolumeUpdateOptions): Effect.Effect<void, VolumesError, never> =>
+            Function.pipe(
+                HttpClientRequest.put(`/volumes/${encodeURIComponent(options.name)}`),
+                maybeAddQueryParameter("version", Option.some(options.version)),
+                HttpClientRequest.schemaBodyJson(ClusterVolumeSpec)(options.spec),
+                Effect.flatMap(client.execute),
+                Effect.asVoid,
+                Effect.mapError((cause) => new VolumesError({ method: "update", cause })),
+                Effect.scoped
+            );
+
+        const prune_ = (
+            options?: VolumePruneOptions | undefined
+        ): Effect.Effect<VolumePruneResponse, VolumesError, never> =>
+            Function.pipe(
+                HttpClientRequest.post("/volumes/prune"),
+                maybeAddQueryParameter(
+                    "filters",
+                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
+                ),
+                client.execute,
+                Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumePruneResponse)),
+                Effect.mapError((cause) => new VolumesError({ method: "prune", cause })),
+                Effect.scoped
+            );
+
+        return {
+            list: list_,
+            create: create_,
+            delete: delete_,
+            inspect: inspect_,
+            update: update_,
+            prune: prune_,
+        };
+    }),
+}) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
- *
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Volumes, never, HttpClient.HttpClient> = Layer.effect(Volumes, make);
+export const layer: Layer.Layer<Volumes, never, HttpClient.HttpClient> = Volumes.Default;

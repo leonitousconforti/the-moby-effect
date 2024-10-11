@@ -148,8 +148,9 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
     Volumes.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
 > =>
     Effect.gen(function* () {
-        const acquireScopedVolume = Effect.acquireRelease(Volumes.Volumes.create({}), ({ Name }) =>
-            Effect.orDie(Volumes.Volumes.delete({ name: Name }))
+        const acquireScopedVolume = Effect.acquireRelease(
+            Volumes.Volumes.use((volumes) => volumes.create({})),
+            ({ Name }) => Effect.orDie(Volumes.Volumes.use((volumes) => volumes.delete({ name: Name })))
         );
 
         const volume1 = yield* acquireScopedVolume;
@@ -270,7 +271,7 @@ export const makeDindLayerFromPlatformConstructor =
             // Building a layer here instead of providing it to the final effect
             // prevents conflicting services with the same tag in the final layer
             const hostDocker = platformLayerConstructorCasted(options.connectionOptionsToHost);
-            yield* System.Systems.pingHead().pipe(Effect.provide(hostDocker));
+            yield* DockerEngine.pingHead().pipe(Effect.provide(hostDocker));
 
             // Build the docker image for the dind container
             const dindTag = Array.lastNonEmpty(String.split(options.dindBaseImage, ":"));
@@ -361,7 +362,7 @@ export const makeDindLayerFromPlatformConstructor =
 
             // Test that the dind container is reachable
             yield* Function.pipe(
-                System.Systems.pingHead(),
+                DockerEngine.pingHead(),
                 Effect.retry(Schedule.recurs(3).pipe(Schedule.addDelay(() => 2000))),
                 Effect.provide(layer)
             );

@@ -38,7 +38,7 @@ const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
 //   ]
 // }
 const program = Effect.gen(function* () {
-    const containers: Containers.ContainersImpl = yield* Containers.Containers;
+    const containers = yield* Containers.Containers;
 
     // Pull the image, will be removed when the scope is closed
     const pullStream = yield* DockerEngine.pullScoped({ image: "ubuntu:latest" });

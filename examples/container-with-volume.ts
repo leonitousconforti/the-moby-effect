@@ -21,7 +21,7 @@ const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
 // Recommended reading: https://blog.logrocket.com/docker-volumes-vs-bind-mounts/
 const program = Effect.gen(function* () {
     const path: Path.Path = yield* Path.Path;
-    const containers: Containers.ContainersImpl = yield* Containers.Containers;
+    const containers = yield* Containers.Containers;
 
     // Pull the image, will be removed when the scope is closed
     const pullStream = yield* DockerEngine.pullScoped({ image: "ubuntu:latest" });

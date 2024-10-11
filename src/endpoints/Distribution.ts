@@ -23,7 +23,7 @@ import { RegistryDistributionInspect } from "../generated/index.js";
  * @since 1.0.0
  * @category Errors
  */
-export const DistributionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/moby/DistributionsError");
+export const DistributionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/DistributionsError");
 
 /**
  * @since 1.0.0
@@ -47,29 +47,8 @@ export class DistributionsError extends PlatformError.TypeIdError(DistributionsE
     cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
 }> {
     get message() {
-        return this.method;
+        return `${this.method}`;
     }
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface DistributionInspectOptions {
-    readonly name: string;
-}
-
-/**
- * Distributions service
- *
- * @since 1.0.0
- * @category Tags
- */
-export interface DistributionsImpl {
-    /** Get image information from the registry */
-    readonly inspect: (
-        options: DistributionInspectOptions
-    ) => Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never>;
 }
 
 /**
@@ -81,9 +60,9 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
 
-        const inspect_ = (
-            options: DistributionInspectOptions
-        ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
+        const inspect_ = (options: {
+            readonly name: string;
+        }): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/distribution/${encodeURIComponent(options.name)}/json`),
                 client.execute,
@@ -92,7 +71,7 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
                 Effect.scoped
             );
 
-        return { inspect: inspect_ } satisfies DistributionsImpl;
+        return { inspect: inspect_ };
     }),
 }) {}
 

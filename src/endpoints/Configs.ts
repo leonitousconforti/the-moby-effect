@@ -28,7 +28,7 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
  * @since 1.0.0
  * @category Errors
  */
-export const ConfigsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/moby/ConfigsError");
+export const ConfigsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ConfigsError");
 
 /**
  * @since 1.0.0
@@ -56,59 +56,6 @@ export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, 
 }
 
 /**
- * @since 1.0.0
- * @category Params
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigList
- */
-export interface ConfigListOptions {
-    readonly filters?: {
-        id?: string | undefined;
-        label?: Record<string, string> | undefined;
-        name?: string | undefined;
-        names?: string | undefined;
-    };
-}
-
-/**
- * @since 1.0.0
- * @category Params
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigDelete
- */
-export interface ConfigDeleteOptions {
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigInspect
- */
-export interface ConfigInspectOptions {
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigUpdate
- */
-export interface ConfigUpdateOptions {
-    /** The ID or name of the config */
-    readonly id: string;
-    /**
-     * The spec of the config to update. Currently, only the Labels field can be
-     * updated. All other fields must remain unchanged from the ConfigInspect
-     * response values.
-     */
-    readonly spec: SwarmConfigSpec;
-    /**
-     * The version number of the config object being updated. This is required
-     * to avoid conflicting writes.
-     */
-    readonly version: number;
-}
-
-/**
  * Configs are application configurations that can be used by services. Swarm
  * mode must be enabled for these endpoints to work.
  *
@@ -123,7 +70,16 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigList */
         const list_ = (
-            options?: ConfigListOptions | undefined
+            options?:
+                | {
+                      readonly filters?: {
+                          id?: string | undefined;
+                          label?: Record<string, string> | undefined;
+                          name?: string | undefined;
+                          names?: string | undefined;
+                      };
+                  }
+                | undefined
         ): Effect.Effect<ReadonlyArray<SwarmConfig>, ConfigsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/configs"),
@@ -149,7 +105,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigDelete */
-        const delete_ = (options: ConfigDeleteOptions): Effect.Effect<void, ConfigsError, never> =>
+        const delete_ = (options: { readonly id: string }): Effect.Effect<void, ConfigsError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/configs/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -159,7 +115,9 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigInspect */
-        const inspect_ = (options: ConfigInspectOptions): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
+        const inspect_ = (options: {
+            readonly id: string;
+        }): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/configs/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -169,7 +127,20 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigUpdate */
-        const update_ = (options: ConfigUpdateOptions): Effect.Effect<void, ConfigsError, never> =>
+        const update_ = (options: {
+            readonly id: string;
+            /**
+             * The spec of the config to update. Currently, only the Labels
+             * field can be updated. All other fields must remain unchanged from
+             * the ConfigInspect response values.
+             */
+            readonly spec: SwarmConfigSpec;
+            /**
+             * The version number of the config object being updated. This is
+             * required to avoid conflicting writes.
+             */
+            readonly version: number;
+        }): Effect.Effect<void, ConfigsError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/configs/${encodeURIComponent(options.id)}/update`),
                 maybeAddQueryParameter("version", Option.some(options.version)),

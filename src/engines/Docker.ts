@@ -189,7 +189,7 @@ export const buildScoped = <E1>({
  * @category Docker
  */
 export const run = (
-    containerOptions: Containers.ContainerCreateOptions
+    containerOptions: Parameters<Containers.Containers["create"]>[0]
 ): Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers> =>
     Effect.gen(function* () {
         const containers = yield* Containers.Containers;
@@ -260,7 +260,7 @@ export const run = (
  * @category Docker
  */
 export const runScoped = (
-    containerOptions: Containers.ContainerCreateOptions
+    containerOptions: Parameters<Containers.Containers["create"]>[0]
 ): Effect.Effect<
     GeneratedSchemas.ContainerInspectResponse,
     Containers.ContainersError,
@@ -302,7 +302,7 @@ export const runScoped = (
  * @category Docker
  */
 export const ps = (
-    options?: Containers.ContainerListOptions | undefined
+    options?: Parameters<Containers.Containers["list"]>[0]
 ): Effect.Effect<
     ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
     Containers.ContainersError,
@@ -346,11 +346,11 @@ export const search = (
  * @since 1.0.0
  * @category Docker
  */
-export const version: Effect.Effect<
+export const version: () => Effect.Effect<
     Readonly<GeneratedSchemas.SystemVersionResponse>,
     System.SystemsError,
     System.Systems
-> = System.Systems.version();
+> = Function.constant(System.Systems.use((systems) => systems.version()));
 
 /**
  * Implements the `docker info` command.
@@ -358,11 +358,11 @@ export const version: Effect.Effect<
  * @since 1.0.0
  * @category Docker
  */
-export const info: Effect.Effect<
+export const info: () => Effect.Effect<
     Readonly<GeneratedSchemas.SystemInfoResponse>,
     System.SystemsError,
     System.Systems
-> = System.Systems.info();
+> = Function.constant(System.Systems.use((systems) => systems.info()));
 
 /**
  * Implements the `docker ping` command.
@@ -370,7 +370,9 @@ export const info: Effect.Effect<
  * @since 1.0.0
  * @category Docker
  */
-export const ping: Effect.Effect<"OK", System.SystemsError, System.Systems> = System.Systems.ping();
+export const ping: () => Effect.Effect<"OK", System.SystemsError, System.Systems> = Function.constant(
+    System.Systems.use((systems) => systems.ping())
+);
 
 /**
  * Implements the `docker ping` command.
@@ -378,4 +380,6 @@ export const ping: Effect.Effect<"OK", System.SystemsError, System.Systems> = Sy
  * @since 1.0.0
  * @category Docker
  */
-export const pingHead: Effect.Effect<void, System.SystemsError, System.Systems> = System.Systems.pingHead();
+export const pingHead: () => Effect.Effect<void, System.SystemsError, System.Systems> = Function.constant(
+    System.Systems.use((systems) => systems.ping())
+);

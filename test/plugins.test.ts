@@ -6,33 +6,37 @@ import { testLayer } from "./shared.js";
 layer(Layer.fresh(testLayer))("MobyApi Plugins tests", (it) => {
     it.effect("Should see no plugins", () =>
         Effect.gen(function* () {
-            const plugins = yield* Plugins.Plugins.list();
-            expect(plugins).toBeInstanceOf(Array);
-            expect(plugins).toHaveLength(0);
+            const plugins = yield* Plugins.Plugins;
+            const pluginsList = yield* plugins.list();
+            expect(pluginsList).toBeInstanceOf(Array);
+            expect(pluginsList).toHaveLength(0);
         })
     );
 
     it.effect("Should pull a plugin", () =>
         Effect.gen(function* () {
-            yield* Plugins.Plugins.pull({
+            const plugins = yield* Plugins.Plugins;
+            yield* plugins.pull({
                 remote: "docker.io/grafana/loki-docker-driver:main",
                 name: "test-plugin:latest",
             });
-            yield* Plugins.Plugins.enable({ name: "test-plugin:latest" });
+            yield* plugins.enable({ name: "test-plugin:latest" });
         })
     );
 
     it.effect("Should see one plugin", () =>
         Effect.gen(function* () {
-            const plugins = yield* Plugins.Plugins.list();
-            expect(plugins).toBeInstanceOf(Array);
-            expect(plugins).toHaveLength(1);
+            const plugins = yield* Plugins.Plugins;
+            const pluginsList = yield* plugins.list();
+            expect(pluginsList).toBeInstanceOf(Array);
+            expect(pluginsList).toHaveLength(1);
         })
     );
 
     it.effect("Should update a plugin", () =>
         Effect.gen(function* () {
-            Plugins.Plugins.upgrade({
+            const plugins = yield* Plugins.Plugins;
+            plugins.upgrade({
                 remote: "docker.io/grafana/loki-docker-driver:main",
                 name: "test-plugin:latest",
             });
@@ -41,15 +45,17 @@ layer(Layer.fresh(testLayer))("MobyApi Plugins tests", (it) => {
 
     it.effect("Should disable a plugin", () =>
         Effect.gen(function* () {
-            yield* Plugins.Plugins.disable({ name: "test-plugin:latest" });
+            const plugins = yield* Plugins.Plugins;
+            yield* plugins.disable({ name: "test-plugin:latest" });
         })
     );
 
     it.effect("Should see no enabled plugins", () =>
         Effect.gen(function* () {
-            const plugins = yield* Plugins.Plugins.list({ filters: { enable: ["true"] } });
-            expect(plugins).toBeInstanceOf(Array);
-            expect(plugins).toHaveLength(0);
+            const plugins = yield* Plugins.Plugins;
+            const pluginsList = yield* plugins.list({ filters: { enable: ["true"] } });
+            expect(pluginsList).toBeInstanceOf(Array);
+            expect(pluginsList).toHaveLength(0);
         })
     );
 });

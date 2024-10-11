@@ -6,9 +6,10 @@ import { testLayer } from "./shared.js";
 layer(Layer.fresh(testLayer))("MobyApi Tasks tests", (it) => {
     it.effect("Should see no tasks", () =>
         Effect.gen(function* () {
-            const tasks = yield* Tasks.Tasks.list();
-            expect(tasks).toBeInstanceOf(Array);
-            expect(tasks).toHaveLength(0);
+            const tasks = yield* Tasks.Tasks;
+            const tasksList = yield* tasks.list();
+            expect(tasksList).toBeInstanceOf(Array);
+            expect(tasksList).toHaveLength(0);
         })
     );
 });
