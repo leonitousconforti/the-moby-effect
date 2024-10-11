@@ -23,7 +23,6 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { NeedsPlatformNode } from "../platforms/Needs.js";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
@@ -155,16 +154,14 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             | undefined
     ) => (
         response: HttpClientResponse.HttpClientResponse
-    ) => NeedsPlatformNode<
-        Effect.Effect<
-            SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : SourceIsKnownBidirectional extends true
-                  ? BidirectionalRawStreamSocket
-                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-            Socket.SocketError,
-            never
-        >
+    ) => Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : SourceIsKnownBidirectional extends true
+              ? BidirectionalRawStreamSocket
+              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+        Socket.SocketError,
+        never
     >,
     // Data-first signature
     <
@@ -176,16 +173,14 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
             | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
             | undefined
-    ) => NeedsPlatformNode<
-        Effect.Effect<
-            SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : SourceIsKnownBidirectional extends true
-                  ? BidirectionalRawStreamSocket
-                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-            Socket.SocketError,
-            never
-        >
+    ) => Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : SourceIsKnownBidirectional extends true
+              ? BidirectionalRawStreamSocket
+              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+        Socket.SocketError,
+        never
     >
 >(
     (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
@@ -198,16 +193,14 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
             | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
             | undefined
-    ): NeedsPlatformNode<
-        Effect.Effect<
-            SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : SourceIsKnownBidirectional extends true
-                  ? BidirectionalRawStreamSocket
-                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-            Socket.SocketError,
-            never
-        >
+    ): Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : SourceIsKnownBidirectional extends true
+              ? BidirectionalRawStreamSocket
+              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
+        Socket.SocketError,
+        never
     > =>
         Effect.gen(function* () {
             type Ret = SourceIsKnownUnidirectional extends true

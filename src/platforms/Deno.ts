@@ -8,7 +8,6 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
 import { MobyConnectionOptions } from "./Common.js";
-import { NeedsPlatformNode } from "./Needs.js";
 import { makeNodeHttpClientLayer } from "./Node.js";
 
 /**
@@ -23,4 +22,4 @@ import { makeNodeHttpClientLayer } from "./Node.js";
  */
 export const makeDenoHttpClientLayer: (
     connectionOptions: MobyConnectionOptions
-) => NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>> = makeNodeHttpClientLayer;
+) => Layer.Layer<HttpClient.HttpClient, never, never> = makeNodeHttpClientLayer;

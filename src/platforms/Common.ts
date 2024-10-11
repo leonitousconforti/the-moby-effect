@@ -7,7 +7,6 @@
 import type ssh2 from "ssh2";
 
 import * as Data from "effect/Data";
-import * as Match from "effect/Match";
 
 /**
  * @since 1.0.0
@@ -155,29 +154,9 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
  * @since 1.0.0
  * @category Helpers
  */
-export const getNodeRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
+export const getRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
     ssh: () => "http://0.0.0.0" as const,
     socket: () => "http://0.0.0.0" as const,
-    http: (options) => `http://0.0.0.0:${options.port}${options.path ?? ""}` as const,
+    http: (options) => `http://${options.host}:${options.port}${options.path ?? ""}` as const,
     https: (options) => `https://${options.host}:${options.port}${options.path ?? ""}` as const,
 });
-
-/**
- * @since 1.0.0
- * @category Helpers
- */
-export const getWebRequestUrl: (
-    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => string = Match.typeTags<HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged>()({
-    http: (options) => `http://0.0.0.0${options.path ?? ""}` as const,
-    https: (options) => `https://0.0.0.0${options.path ?? ""}` as const,
-});
-
-/**
- * @since 1.0.0
- * @category Helpers
- */
-export const getAgnosticRequestUrl = (
-    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): string =>
-    `${connectionOptions._tag}://${connectionOptions.host}:${connectionOptions.port}${connectionOptions.path ?? ""}` as const;

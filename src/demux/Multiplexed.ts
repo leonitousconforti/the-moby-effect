@@ -19,7 +19,6 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { NeedsPlatformNode } from "../platforms/Needs.js";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
@@ -114,7 +113,7 @@ export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientRe
  */
 export const responseToMultiplexedStreamSocketOrFail = (
     response: HttpClientResponse.HttpClientResponse
-): NeedsPlatformNode<Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never>> =>
+): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
     Effect.gen(function* () {
         if (responseIsMultiplexedStreamSocketResponse(response)) {
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));

@@ -5,10 +5,13 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as HttpClientError from "@effect/platform/HttpClientError";
+import * as Context from "effect/Context";
 import * as Layer from "effect/Layer";
+import * as Scope from "effect/Scope";
 
 import { HttpClientRequest } from "@effect/platform";
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, getAgnosticRequestUrl } from "./Common.js";
+import { MobyConnectionOptions, getRequestUrl } from "./Common.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -20,10 +23,22 @@ import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, getAgnosticR
  * @category Connection
  */
 export const makeAgnosticHttpClientLayer = (
-    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+    connectionOptions: MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> =>
     Layer.function(HttpClient.HttpClient, HttpClient.HttpClient, (oldClient) => {
-        const requestUrl = getAgnosticRequestUrl(connectionOptions);
+        const requestUrl = getRequestUrl(connectionOptions);
         const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));
         return newClient;
+    });
+
+export const transformLayer = (connectionOptions: MobyConnectionOptions) =>
+    Layer.map<
+        HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>,
+        HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+    >((context) => {
+        const oldClient = Context.get(context, HttpClient.HttpClient);
+        const requestUrl = getRequestUrl(connectionOptions);
+        const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));
+        const newContext = Context.make(HttpClient.HttpClient, newClient);
+        return newContext;
     });

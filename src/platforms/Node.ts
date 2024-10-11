@@ -13,15 +13,13 @@ import type * as stream from "node:stream";
 import type * as ssh2 from "ssh2";
 
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
-import { MobyConnectionOptions, SshConnectionOptions, getNodeRequestUrl } from "./Common.js";
-import { NeedsPlatformNode } from "./Needs.js";
+import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
+import { MobyConnectionOptions, SshConnectionOptions } from "./Common.js";
 
 /**
  * Helper interface to expose the underlying socket from the effect HttpClient
@@ -40,22 +38,7 @@ export interface IExposeSocketOnEffectClientResponseHack extends HttpClientRespo
 /**
  * An http agent that connects to remote moby instances over ssh.
  *
- * @since 1.0.0
- * @category Connection
- * @code
- *     import http from "node:http";
- *
- *     http.get(
- *         {
- *             path: "/_ping",
- *             agent: new SSHAgent(ssh2Options),
- *         },
- *         (response) => {
- *             console.log(response.statusCode);
- *             console.dir(response.headers);
- *             response.resume();
- *         }
- *     ).end();
+ * @internal
  */
 export const makeNodeSshAgent = (
     httpLazy: typeof http,
@@ -123,11 +106,11 @@ export const makeNodeSshAgent = (
  * `@effect/platform-node` packages.
  *
  * @since 1.0.0
- * @category Connection
+ * @category NodeJS
  */
 export const getNodeAgent = (
     connectionOptions: MobyConnectionOptions
-): NeedsPlatformNode<Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope>> =>
+): Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope> =>
     Function.pipe(
         Effect.all(
             {
@@ -178,12 +161,12 @@ export const getNodeAgent = (
  * This function will dynamically import the `@effect/platform-node` package.
  *
  * @since 1.0.0
- * @category Connection
+ * @category NodeJS
  */
 export const makeNodeHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
-): NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>> =>
-    Function.pipe(
+): Layer.Layer<HttpClient.HttpClient, never, never> => {
+    const nodeHttpClientLayer = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>
             Layer.provide(
@@ -191,12 +174,8 @@ export const makeNodeHttpClientLayer = (
                 Layer.scoped(nodeHttpClientLazy.HttpAgent, getNodeAgent(connectionOptions))
             )
         ),
-        Layer.unwrapEffect,
-        Layer.map((context) => {
-            const oldClient = Context.get(context, HttpClient.HttpClient);
-            const requestUrl = getNodeRequestUrl(connectionOptions);
-            const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));
-            const newContext = Context.make(HttpClient.HttpClient, newClient);
-            return newContext;
-        })
+        Layer.unwrapEffect
     );
+    const agnosticHttpClientLayer = makeAgnosticHttpClientLayer(connectionOptions);
+    return Layer.provide(agnosticHttpClientLayer, nodeHttpClientLayer);
+};

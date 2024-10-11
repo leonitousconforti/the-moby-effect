@@ -17,7 +17,6 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { NeedsPlatformNode } from "../platforms/Needs.js";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput } from "./Compressed.js";
 import {
@@ -73,40 +72,34 @@ export const responseToStreamingSocketOrFail = Function.dual<
         options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
     ) => (
         response: HttpClientResponse.HttpClientResponse
-    ) => NeedsPlatformNode<
-        Effect.Effect<
-            SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-            Socket.SocketError,
-            never
-        >
+    ) => Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+        Socket.SocketError,
+        never
     >,
     <SourceIsKnownUnidirectional extends true | undefined = undefined>(
         response: HttpClientResponse.HttpClientResponse,
         options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ) => NeedsPlatformNode<
-        Effect.Effect<
-            SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-            Socket.SocketError,
-            never
-        >
+    ) => Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+        Socket.SocketError,
+        never
     >
 >(
     (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
     <SourceIsKnownUnidirectional extends true | undefined = undefined>(
         response: HttpClientResponse.HttpClientResponse,
         options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ): NeedsPlatformNode<
-        Effect.Effect<
-            SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-            Socket.SocketError,
-            never
-        >
+    ): Effect.Effect<
+        SourceIsKnownUnidirectional extends true
+            ? UnidirectionalRawStreamSocket
+            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+        Socket.SocketError,
+        never
     > =>
         Effect.gen(function* () {
             type Ret = SourceIsKnownUnidirectional extends true
@@ -241,7 +234,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = <
     E1 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never,
 >(
     socketOptions: SocketOptions
-): NeedsPlatformNode<Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never>> =>
+): Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never> =>
     Effect.flatMap(
         Effect.all(
             {

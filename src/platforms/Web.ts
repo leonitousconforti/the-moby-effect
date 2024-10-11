@@ -5,14 +5,12 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, getWebRequestUrl } from "./Common.js";
-import { NeedsPlatformBrowser } from "./Needs.js";
+import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
+import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "./Common.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -21,20 +19,16 @@ import { NeedsPlatformBrowser } from "./Needs.js";
  * This function will dynamically import the `@effect/platform-browser` package.
  *
  * @since 1.0.0
- * @category Connection
+ * @category Browser
  */
 export const makeWebHttpClientLayer = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): NeedsPlatformBrowser<Layer.Layer<HttpClient.HttpClient, never, never>> =>
-    Function.pipe(
+): Layer.Layer<HttpClient.HttpClient, never, never> => {
+    const browserLayer = Function.pipe(
         Effect.promise(() => import("@effect/platform-browser/BrowserHttpClient")),
         Effect.map((browserHttpClientLazy) => browserHttpClientLazy.layerXMLHttpRequest),
-        Layer.unwrapEffect,
-        Layer.map((context) => {
-            const oldClient = Context.get(context, HttpClient.HttpClient);
-            const requestUrl = getWebRequestUrl(connectionOptions);
-            const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));
-            const newContext = Context.make(HttpClient.HttpClient, newClient);
-            return newContext;
-        })
+        Layer.unwrapEffect
     );
+    const agnosticHttpClientLayer = makeAgnosticHttpClientLayer(connectionOptions);
+    return Layer.provide(agnosticHttpClientLayer, browserLayer);
+};
