@@ -33,8 +33,6 @@ Added in v1.0.0
   - [PluginPushOptions (interface)](#pluginpushoptions-interface)
   - [PluginSetOptions (interface)](#pluginsetoptions-interface)
   - [PluginUpgradeOptions (interface)](#pluginupgradeoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Plugins (class)](#plugins-class)
   - [PluginsImpl (interface)](#pluginsimpl-interface)
@@ -319,22 +317,6 @@ export interface PluginUpgradeOptions {
   readonly "X-Registry-Auth"?: string
   readonly body?: Array<PluginPrivilege>
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  PluginsImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

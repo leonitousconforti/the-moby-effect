@@ -21,8 +21,6 @@ Added in v1.0.0
   - [isSessionsError](#issessionserror)
 - [Layers](#layers)
   - [layer](#layer)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Sessions (class)](#sessions-class)
   - [SessionsImpl (interface)](#sessionsimpl-interface)
@@ -82,22 +80,6 @@ Configs layer that depends on the MobyConnectionAgent
 ```ts
 export declare const layer: Layer.Layer<
   Sessions,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
->
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  SessionsImpl,
   never,
   HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
 >

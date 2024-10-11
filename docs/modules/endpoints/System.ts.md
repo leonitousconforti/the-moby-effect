@@ -21,8 +21,6 @@ Added in v1.0.0
   - [isSystemsError](#issystemserror)
 - [Layers](#layers)
   - [layer](#layer)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Systems (class)](#systems-class)
   - [SystemsImpl (interface)](#systemsimpl-interface)
@@ -78,28 +76,10 @@ Added in v1.0.0
 
 ## layer
 
-Configs layer that depends on the MobyConnectionAgent
-
 **Signature**
 
 ```ts
 export declare const layer: Layer.Layer<Systems, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  SystemsImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

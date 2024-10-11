@@ -1,6 +1,6 @@
 ---
 title: engines/Docker.ts
-nav_order: 26
+nav_order: 25
 parent: Modules
 ---
 
@@ -124,7 +124,7 @@ Implements the `docker info` command.
 **Signature**
 
 ```ts
-export declare const info: Effect.Effect<
+export declare const info: () => Effect.Effect<
   Readonly<GeneratedSchemas.SystemInfoResponse>,
   System.SystemsError,
   System.Systems
@@ -140,7 +140,7 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const ping: Effect.Effect<"OK", System.SystemsError, System.Systems>
+export declare const ping: () => Effect.Effect<"OK", System.SystemsError, System.Systems>
 ```
 
 Added in v1.0.0
@@ -152,7 +152,7 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const pingHead: Effect.Effect<void, System.SystemsError, System.Systems>
+export declare const pingHead: () => Effect.Effect<void, System.SystemsError, System.Systems>
 ```
 
 Added in v1.0.0
@@ -165,7 +165,7 @@ Implements the `docker ps` command.
 
 ```ts
 export declare const ps: (
-  options?: Containers.ContainerListOptions | undefined
+  options?: Parameters<Containers.Containers["list"]>[0]
 ) => Effect.Effect<
   ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
   Containers.ContainersError,
@@ -244,7 +244,7 @@ Implements `docker run` command.
 
 ```ts
 export declare const run: (
-  containerOptions: Containers.ContainerCreateOptions
+  containerOptions: Parameters<Containers.Containers["create"]>[0]
 ) => Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers>
 ```
 
@@ -259,7 +259,7 @@ both the image and the container is removed.
 
 ```ts
 export declare const runScoped: (
-  containerOptions: Containers.ContainerCreateOptions
+  containerOptions: Parameters<Containers.Containers["create"]>[0]
 ) => Effect.Effect<
   GeneratedSchemas.ContainerInspectResponse,
   Containers.ContainersError,
@@ -290,7 +290,7 @@ Implements the `docker version` command.
 **Signature**
 
 ```ts
-export declare const version: Effect.Effect<
+export declare const version: () => Effect.Effect<
   Readonly<GeneratedSchemas.SystemVersionResponse>,
   System.SystemsError,
   System.Systems

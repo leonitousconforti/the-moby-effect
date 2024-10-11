@@ -26,8 +26,6 @@ Added in v1.0.0
   - [NodeInspectOptions (interface)](#nodeinspectoptions-interface)
   - [NodeListOptions (interface)](#nodelistoptions-interface)
   - [NodeUpdateOptions (interface)](#nodeupdateoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Nodes (class)](#nodes-class)
   - [NodesImpl (interface)](#nodesimpl-interface)
@@ -154,22 +152,6 @@ export interface NodeUpdateOptions {
    */
   readonly version: number
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  NodesImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

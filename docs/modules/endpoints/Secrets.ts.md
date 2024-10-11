@@ -26,8 +26,6 @@ Added in v1.0.0
   - [SecretInspectOptions (interface)](#secretinspectoptions-interface)
   - [SecretListOptions (interface)](#secretlistoptions-interface)
   - [SecretUpdateOptions (interface)](#secretupdateoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Secrets (class)](#secrets-class)
   - [SecretsImpl (interface)](#secretsimpl-interface)
@@ -163,22 +161,6 @@ export interface SecretUpdateOptions {
    */
   readonly version: number
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  SecretsImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

@@ -28,8 +28,6 @@ Added in v1.0.0
   - [ServiceListOptions (interface)](#servicelistoptions-interface)
   - [ServiceLogsOptions (interface)](#servicelogsoptions-interface)
   - [ServiceUpdateOptions (interface)](#serviceupdateoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Services (class)](#services-class)
   - [ServicesImpl (interface)](#servicesimpl-interface)
@@ -235,22 +233,6 @@ export interface ServiceUpdateOptions {
    */
   readonly "X-Registry-Auth"?: string
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  ServicesImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

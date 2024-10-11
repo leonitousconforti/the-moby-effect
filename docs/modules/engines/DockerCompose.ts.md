@@ -1,10 +1,10 @@
 ---
-title: engines/Compose.ts
-nav_order: 24
+title: engines/DockerCompose.ts
+nav_order: 26
 parent: Modules
 ---
 
-## Compose overview
+## DockerCompose overview
 
 Docker compose engine
 
@@ -15,20 +15,20 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [utils](#utils)
-  - [ComposeImpl (interface)](#composeimpl-interface)
+  - [DockerComposeImpl (interface)](#dockercomposeimpl-interface)
 
 ---
 
 # utils
 
-## ComposeImpl (interface)
+## DockerComposeImpl (interface)
 
 Docker compose engine
 
 **Signature**
 
 ```ts
-export interface ComposeImpl {
+export interface DockerComposeImpl {
   up: () => void
   down: () => void
 }

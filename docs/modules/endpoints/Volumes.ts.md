@@ -21,8 +21,6 @@ Added in v1.0.0
   - [isVolumesError](#isvolumeserror)
 - [Layers](#layers)
   - [layer](#layer)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Volumes (class)](#volumes-class)
   - [VolumesImpl (interface)](#volumesimpl-interface)
@@ -81,28 +79,10 @@ Added in v1.0.0
 
 ## layer
 
-Configs layer that depends on the MobyConnectionAgent
-
 **Signature**
 
 ```ts
 export declare const layer: Layer.Layer<Volumes, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  VolumesImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

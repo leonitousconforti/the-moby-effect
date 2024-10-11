@@ -24,8 +24,6 @@ Added in v1.0.0
 - [Params](#params)
   - [SwarmLeaveOptions (interface)](#swarmleaveoptions-interface)
   - [SwarmUpdateOptions (interface)](#swarmupdateoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Swarm (class)](#swarm-class)
   - [SwarmImpl (interface)](#swarmimpl-interface)
@@ -125,22 +123,6 @@ export interface SwarmUpdateOptions {
   /** Rotate the manager unlock key. */
   readonly rotateManagerUnlockKey?: boolean
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  SwarmImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

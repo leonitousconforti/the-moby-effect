@@ -21,8 +21,6 @@ Added in v1.0.0
   - [isNetworksError](#isnetworkserror)
 - [Layers](#layers)
   - [layer](#layer)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Networks (class)](#networks-class)
   - [NetworksImpl (interface)](#networksimpl-interface)
@@ -82,28 +80,10 @@ Added in v1.0.0
 
 ## layer
 
-Configs layer that depends on the MobyConnectionAgent
-
 **Signature**
 
 ```ts
 export declare const layer: Layer.Layer<Networks, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  NetworksImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

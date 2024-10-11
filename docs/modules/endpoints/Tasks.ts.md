@@ -25,8 +25,6 @@ Added in v1.0.0
   - [TaskInspectOptions (interface)](#taskinspectoptions-interface)
   - [TaskListOptions (interface)](#tasklistoptions-interface)
   - [TaskLogsOptions (interface)](#tasklogsoptions-interface)
-- [Services](#services)
-  - [make](#make)
 - [Tags](#tags)
   - [Tasks (class)](#tasks-class)
   - [TasksImpl (interface)](#tasksimpl-interface)
@@ -78,8 +76,6 @@ Added in v1.0.0
 # Layers
 
 ## layer
-
-Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 
@@ -162,22 +158,6 @@ export interface TaskLogsOptions {
    */
   readonly tail?: string
 }
-```
-
-Added in v1.0.0
-
-# Services
-
-## make
-
-**Signature**
-
-```ts
-export declare const make: Effect.Effect<
-  TasksImpl,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
 ```
 
 Added in v1.0.0

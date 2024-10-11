@@ -21,11 +21,8 @@ Added in v1.0.0
   - [isDistributionsError](#isdistributionserror)
 - [Layers](#layers)
   - [layer](#layer)
-- [Params](#params)
-  - [DistributionInspectOptions (interface)](#distributioninspectoptions-interface)
 - [Tags](#tags)
   - [Distributions (class)](#distributions-class)
-  - [DistributionsImpl (interface)](#distributionsimpl-interface)
 
 ---
 
@@ -87,20 +84,6 @@ export declare const layer: Layer.Layer<
 
 Added in v1.0.0
 
-# Params
-
-## DistributionInspectOptions (interface)
-
-**Signature**
-
-```ts
-export interface DistributionInspectOptions {
-  readonly name: string
-}
-```
-
-Added in v1.0.0
-
 # Tags
 
 ## Distributions (class)
@@ -109,23 +92,6 @@ Added in v1.0.0
 
 ```ts
 export declare class Distributions
-```
-
-Added in v1.0.0
-
-## DistributionsImpl (interface)
-
-Distributions service
-
-**Signature**
-
-```ts
-export interface DistributionsImpl {
-  /** Get image information from the registry */
-  readonly inspect: (
-    options: DistributionInspectOptions
-  ) => Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never>
-}
 ```
 
 Added in v1.0.0
