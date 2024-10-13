@@ -17,7 +17,10 @@ Added in v1.0.0
 - [Agnostic](#agnostic)
   - [makeAgnosticHttpClientLayer](#makeagnostichttpclientlayer)
 - [Helpers](#helpers)
-  - [getRequestUrl](#getrequesturl)
+  - [makeHttpRequestUrl](#makehttprequesturl)
+  - [makeWebsocketRequestUrl](#makewebsocketrequesturl)
+- [Types](#types)
+  - [HttpClientRequestExtension (interface)](#httpclientrequestextension-interface)
 
 ---
 
@@ -41,12 +44,40 @@ Added in v1.0.0
 
 # Helpers
 
-## getRequestUrl
+## makeHttpRequestUrl
 
 **Signature**
 
 ```ts
-export declare const getRequestUrl: (connectionOptions: MobyConnectionOptions) => string
+export declare const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string
+```
+
+Added in v1.0.0
+
+## makeWebsocketRequestUrl
+
+**Signature**
+
+```ts
+export declare const makeWebsocketRequestUrl: (connectionOptions: MobyConnectionOptions) => string
+```
+
+Added in v1.0.0
+
+# Types
+
+## HttpClientRequestExtension (interface)
+
+FIXME: this feels very hacky, and is currently only used in one spot where we
+get very desperate, can we do better?
+
+**Signature**
+
+```ts
+export interface HttpClientRequestExtension extends HttpClientRequest.HttpClientRequest {
+  readonly [HttpClientRequestHttpUrl]: string
+  readonly [HttpClientRequestWebsocketUrl]: string
+}
 ```
 
 Added in v1.0.0

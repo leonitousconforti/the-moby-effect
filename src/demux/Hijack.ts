@@ -1,5 +1,6 @@
 /**
- * Utilities for hijacking a connection and transforming it into a raw stream
+ * Utilities for hijacking a connection and transforming it into a raw stream.
+ * Only works on "server-side" platforms.
  *
  * @since 1.0.0
  */
