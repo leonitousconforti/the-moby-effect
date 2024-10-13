@@ -23,7 +23,6 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
 /**
@@ -132,112 +131,6 @@ export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.H
     response.headers["content-type"] === RawStreamSocketContentType;
 
 /**
- * Transforms an http response into a raw stream socket. If the response is not
- * a raw stream socket, then an error will be returned.
- *
- * FIXME: this function relies on a hack to expose the underlying tcp socket
- * from the http client response. This will only work in NodeJs, not tested in
- * Bun/Deno yet, and will never work in the browser.
- *
- * @since 1.0.0
- * @category Predicates
- */
-export const responseToRawStreamSocketOrFail = Function.dual<
-    // Data-last signature
-    <
-        SourceIsKnownUnidirectional extends true | undefined = undefined,
-        SourceIsKnownBidirectional extends true | undefined = undefined,
-    >(
-        options?:
-            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-            | undefined
-    ) => (
-        response: HttpClientResponse.HttpClientResponse
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : SourceIsKnownBidirectional extends true
-              ? BidirectionalRawStreamSocket
-              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-        Socket.SocketError,
-        never
-    >,
-    // Data-first signature
-    <
-        SourceIsKnownUnidirectional extends true | undefined = undefined,
-        SourceIsKnownBidirectional extends true | undefined = undefined,
-    >(
-        response: HttpClientResponse.HttpClientResponse,
-        options?:
-            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-            | undefined
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : SourceIsKnownBidirectional extends true
-              ? BidirectionalRawStreamSocket
-              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-        Socket.SocketError,
-        never
-    >
->(
-    (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
-    <
-        SourceIsKnownUnidirectional extends true | undefined = undefined,
-        SourceIsKnownBidirectional extends true | undefined = undefined,
-    >(
-        response: HttpClientResponse.HttpClientResponse,
-        options?:
-            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-            | undefined
-    ): Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : SourceIsKnownBidirectional extends true
-              ? BidirectionalRawStreamSocket
-              : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-        Socket.SocketError,
-        never
-    > =>
-        Effect.gen(function* () {
-            type Ret = SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : SourceIsKnownBidirectional extends true
-                  ? BidirectionalRawStreamSocket
-                  : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket;
-
-            if (!responseIsRawStreamSocketResponse(response)) {
-                return yield* new Socket.SocketGenericError({
-                    reason: "Read",
-                    cause: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
-                });
-            }
-
-            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
-            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-
-            const bidirectional: BidirectionalRawStreamSocket = {
-                ...effectSocket,
-                "content-type": RawStreamSocketContentType,
-                [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId,
-            };
-
-            const sourceIsKnownUnidirectional =
-                Predicate.isNotUndefined(options) &&
-                Predicate.hasProperty(options, "sourceIsKnownUnidirectional") &&
-                options.sourceIsKnownUnidirectional === true;
-
-            return sourceIsKnownUnidirectional
-                ? (downcastBidirectionalToUnidirectional(bidirectional) as Ret)
-                : (bidirectional as Ret);
-        })
-);
-
-/**
  * Demux a raw socket. When given a raw socket of the remote process's pty,
  * there is no way to differentiate between stdout and stderr so they are
  * combined on the same sink.
@@ -247,31 +140,108 @@ export const responseToRawStreamSocketOrFail = Function.dual<
  *
  * @since 1.0.0
  * @category Demux
+ * @example
+ *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
+ *     import * as Chunk from "effect/Chunk";
+ *     import * as Effect from "effect/Effect";
+ *     import * as Function from "effect/Function";
+ *     import * as Layer from "effect/Layer";
+ *     import * as Sink from "effect/Sink";
+ *     import * as Stream from "effect/Stream";
+ *
+ *     import * as Convey from "the-moby-effect/Convey";
+ *     import * as Platforms from "the-moby-effect/Platforms";
+ *     import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed";
+ *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
+ *     import * as Containers from "the-moby-effect/endpoints/Containers";
+ *     import * as DockerEngine from "the-moby-effect/engines/Docker";
+ *
+ *     const layer = Function.pipe(
+ *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Effect.map(DockerEngine.layerNodeJS),
+ *         Layer.unwrapEffect
+ *     );
+ *
+ *     Effect.gen(function* () {
+ *         const image = "ubuntu:latest";
+ *         const containers = yield* Containers.Containers;
+ *
+ *         // Pull the image, which will be removed when the scope is closed
+ *         const pullStream = DockerEngine.pull({ image });
+ *         yield* Convey.followProgressInConsole(pullStream);
+ *
+ *         // Start a container, which will be removed when the scope is closed
+ *         const { Id: containerId } = yield* DockerEngine.runScoped({
+ *             spec: {
+ *                 Image: image,
+ *                 Tty: true,
+ *                 Cmd: [
+ *                     "bash",
+ *                     "-c",
+ *                     'sleep 2s && echo "Hi" && >&2 echo "Hi2"',
+ *                 ],
+ *             },
+ *         });
+ *
+ *         // Since the container was started with "tty: true", we should get a raw socket here
+ *         const socket:
+ *             | DemuxRaw.BidirectionalRawStreamSocket
+ *             | DemuxMultiplexed.MultiplexedStreamSocket =
+ *             yield* containers.attach({
+ *                 stdout: true,
+ *                 stderr: true,
+ *                 stream: true,
+ *                 id: containerId,
+ *             });
+ *
+ *         assert.ok(
+ *             DemuxRaw.isBidirectionalRawStreamSocket(socket),
+ *             "Expected a bidirectional raw socket"
+ *         );
+ *
+ *         const data = yield* DemuxRaw.demuxBidirectionalRawSocket(
+ *             socket,
+ *             Stream.never,
+ *             Sink.collectAll<string>()
+ *         );
+ *         assert.deepStrictEqual(Chunk.toReadonlyArray(data), [
+ *             "Hi\r\nHi2\r\n",
+ *         ]);
+ *
+ *         yield* containers.wait({ id: containerId });
+ *     })
+ *         .pipe(Effect.scoped)
+ *         .pipe(Effect.provide(layer))
+ *         .pipe(NodeRuntime.runMain);
+ *
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
 export const demuxBidirectionalRawSocket = Function.dual<
     <A1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
-        sink: Sink.Sink<A1, string, string, E2, R2>
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
     ) => (
         socket: BidirectionalRawStreamSocket
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>,
     <A1, E1, E2, R1, R2>(
         socket: BidirectionalRawStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
-        sink: Sink.Sink<A1, string, string, E2, R2>
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
 >(
-    3,
+    (arguments_) => isBidirectionalRawStreamSocket(arguments_[0]),
     <A1, E1, E2, R1, R2>(
         socket: BidirectionalRawStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
-        sink: Sink.Sink<A1, string, string, E2, R2>
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
         Function.pipe(
             source,
             Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
-            Stream.decodeText("utf-8"),
+            Stream.decodeText(options?.encoding ?? "utf-8"),
             Stream.run(sink)
         )
 );
@@ -287,6 +257,99 @@ export const demuxBidirectionalRawSocket = Function.dual<
  *
  * @since 1.0.0
  * @category Demux
+ * @example
+ *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
+ *     import * as NodeSocket from "@effect/platform-node/NodeSocket";
+ *     import * as Chunk from "effect/Chunk";
+ *     import * as Effect from "effect/Effect";
+ *     import * as Function from "effect/Function";
+ *     import * as Layer from "effect/Layer";
+ *     import * as Sink from "effect/Sink";
+ *     import * as Stream from "effect/Stream";
+ *     import * as Tuple from "effect/Tuple";
+ *
+ *     import * as Convey from "the-moby-effect/Convey";
+ *     import * as Platforms from "the-moby-effect/Platforms";
+ *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
+ *     import * as Containers from "the-moby-effect/endpoints/Containers";
+ *     import * as DockerEngine from "the-moby-effect/engines/Docker";
+ *
+ *     const layer = Function.pipe(
+ *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Effect.map(DockerEngine.layerNodeJS),
+ *         Layer.unwrapEffect
+ *     );
+ *
+ *     Effect.gen(function* () {
+ *         const image = "ubuntu:latest";
+ *         const containers = yield* Containers.Containers;
+ *
+ *         // Pull the image, which will be removed when the scope is closed
+ *         const pullStream = DockerEngine.pull({ image });
+ *         yield* Convey.followProgressInConsole(pullStream);
+ *
+ *         // Start a container, which will be removed when the scope is closed
+ *         const { Id: containerId } = yield* DockerEngine.runScoped({
+ *             spec: {
+ *                 Image: image,
+ *                 Tty: false,
+ *                 Cmd: [
+ *                     "bash",
+ *                     "-c",
+ *                     'sleep 2s && echo "Hi" && >&2 echo "Hi2"',
+ *                 ],
+ *             },
+ *         });
+ *
+ *         // It doesn't matter what tty option we start the container with here, we will only get a unidirectional socket
+ *         const stdinSocket: DemuxRaw.UnidirectionalRawStreamSocket =
+ *             yield* containers.attachWebsocket({
+ *                 stdin: true,
+ *                 stream: true,
+ *                 id: containerId,
+ *             });
+ *         const stdoutSocket: DemuxRaw.UnidirectionalRawStreamSocket =
+ *             yield* containers.attachWebsocket({
+ *                 stdout: true,
+ *                 stream: true,
+ *                 id: containerId,
+ *             });
+ *         const stderrSocket: DemuxRaw.UnidirectionalRawStreamSocket =
+ *             yield* containers.attachWebsocket({
+ *                 stderr: true,
+ *                 stream: true,
+ *                 id: containerId,
+ *             });
+ *
+ *         assert.ok(
+ *             DemuxRaw.isUnidirectionalRawStreamSocket(stdinSocket),
+ *             "Expected a unidirectional raw socket"
+ *         );
+ *         assert.ok(
+ *             DemuxRaw.isUnidirectionalRawStreamSocket(stdoutSocket),
+ *             "Expected a unidirectional raw socket"
+ *         );
+ *         assert.ok(
+ *             DemuxRaw.isUnidirectionalRawStreamSocket(stderrSocket),
+ *             "Expected a unidirectional raw socket"
+ *         );
+ *
+ *         const [stdoutData, stderrData] =
+ *             yield* DemuxRaw.demuxUnidirectionalRawSockets({
+ *                 stdin: Tuple.make(Stream.never, stdinSocket),
+ *                 stdout: Tuple.make(stdoutSocket, Sink.collectAll<string>()),
+ *                 stderr: Tuple.make(stderrSocket, Sink.collectAll<string>()),
+ *             });
+ *
+ *         assert.deepStrictEqual(Chunk.toReadonlyArray(stdoutData), ["Hi\n"]);
+ *         assert.deepStrictEqual(Chunk.toReadonlyArray(stderrData), ["Hi2\n"]);
+ *         yield* containers.wait({ id: containerId });
+ *     })
+ *         .pipe(Effect.scoped)
+ *         .pipe(Effect.provide(layer))
+ *         .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
+ *         .pipe(NodeRuntime.runMain);
+ *
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttachWebsocket
  */
 export const demuxUnidirectionalRawSockets = <
@@ -306,14 +369,15 @@ export const demuxUnidirectionalRawSockets = <
         ? A
         : undefined,
 >(
-    streams:
+    sockets:
         | { stdin: O1; stdout?: never; stderr?: never }
         | { stdin?: never; stdout: O2; stderr?: never }
         | { stdin?: never; stdout?: never; stderr: O3 }
         | { stdin: O1; stdout: O2; stderr?: never }
         | { stdin: O1; stdout?: never; stderr: O3 }
         | { stdin?: never; stdout: O2; stderr: O3 }
-        | { stdin: O1; stdout: O2; stderr: O3 }
+        | { stdin: O1; stdout: O2; stderr: O3 },
+    options?: { encoding?: string | undefined } | undefined
 ): Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | Socket.SocketError,
@@ -326,19 +390,34 @@ export const demuxUnidirectionalRawSockets = <
     type StdoutEffect = Effect.Effect<A1, E2 | Socket.SocketError, Exclude<R2, Scope.Scope>>;
     type StderrEffect = Effect.Effect<A2, E3 | Socket.SocketError, Exclude<R3, Scope.Scope>>;
 
-    const { stderr, stdin, stdout } = streams;
+    const { stderr, stdin, stdout } = sockets;
 
     const runStdin: StdinEffect = Predicate.isNotUndefined(stdin)
-        ? demuxBidirectionalRawSocket(upcastUnidirectionalToBidirectional(stdin[1]), stdin[0] as S1, Sink.drain)
+        ? demuxBidirectionalRawSocket(
+              upcastUnidirectionalToBidirectional(stdin[1]),
+              stdin[0] as S1,
+              Sink.drain,
+              options
+          )
         : Effect.void;
 
     const runStdout: StdoutEffect = Predicate.isNotUndefined(stdout)
-        ? demuxBidirectionalRawSocket(upcastUnidirectionalToBidirectional(stdout[0]), Stream.never, stdout[1] as S2)
-        : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
+        ? demuxBidirectionalRawSocket(
+              upcastUnidirectionalToBidirectional(stdout[0]),
+              Stream.never,
+              stdout[1] as S2,
+              options
+          )
+        : Function.unsafeCoerce(Effect.void);
 
-    const runStderr: StderrEffect = stderr
-        ? demuxBidirectionalRawSocket(upcastUnidirectionalToBidirectional(stderr[0]), Stream.never, stderr[1] as S3)
-        : Function.unsafeCoerce(Effect.sync(Function.constUndefined));
+    const runStderr: StderrEffect = Predicate.isNotUndefined(stderr)
+        ? demuxBidirectionalRawSocket(
+              upcastUnidirectionalToBidirectional(stderr[0]),
+              Stream.never,
+              stderr[1] as S3,
+              options
+          )
+        : Function.unsafeCoerce(Effect.void);
 
     return Effect.map(
         Effect.all({ ranStdin: runStdin, ranStdout: runStdout, ranStderr: runStderr }, { concurrency: 3 }),

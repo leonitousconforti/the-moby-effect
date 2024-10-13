@@ -12,6 +12,7 @@ import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
+import * as UrlParams from "@effect/platform/UrlParams";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
 import * as Effect from "effect/Effect";
@@ -23,7 +24,7 @@ import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { responseToStreamingSocketOrFail } from "../demux/Common.js";
+import { responseToStreamingSocketOrFail } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import {
     BidirectionalRawStreamSocket,
@@ -44,7 +45,7 @@ import {
     ContainerUpdateResponse,
     ContainerWaitResponse,
 } from "../generated/index.js";
-import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
+import { filterStatusMaybeUpgraded, maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
  * @since 1.0.0
@@ -91,6 +92,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
     effect: Effect.gen(function* () {
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
+        const maybeUpgradedClient = contextClient.pipe(filterStatusMaybeUpgraded);
 
         const list_ = (
             options?:
@@ -390,13 +392,15 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
         }): Effect.Effect<BidirectionalRawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/attach`),
+                HttpClientRequest.setHeader("Upgrade", "tcp"),
+                HttpClientRequest.setHeader("Connection", "Upgrade"),
                 maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
                 maybeAddQueryParameter("logs", Option.fromNullable(options.logs)),
                 maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
                 maybeAddQueryParameter("stdin", Option.fromNullable(options.stdin)),
                 maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-                client.execute,
+                maybeUpgradedClient.execute,
                 Effect.flatMap((response) => responseToStreamingSocketOrFail(response)),
                 Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
             );
@@ -418,8 +422,10 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdin", Option.fromNullable(options.stdin)),
                 maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-                ({ url }) => url,
-                Socket.makeWebSocket,
+                ({ url, urlParams, hash }) =>
+                    UrlParams.makeUrl(`ws+unix:///var/run/docker.sock:${url}`, urlParams, hash),
+                Effect.map((url) => url.toString()),
+                Effect.flatMap(Socket.makeWebSocket),
                 Effect.map(
                     (socket) =>
                         ({

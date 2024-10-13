@@ -8,7 +8,7 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
 import { HttpClientRequest } from "@effect/platform";
-import { MobyConnectionOptions, getRequestUrl } from "./Common.js";
+import { MobyConnectionOptions } from "./Connection.js";
 
 // export const transformLayer = (connectionOptions: MobyConnectionOptions) =>
 //     Layer.map<
@@ -21,6 +21,17 @@ import { MobyConnectionOptions, getRequestUrl } from "./Common.js";
 //         const newContext = Context.make(HttpClient.HttpClient, newClient);
 //         return newContext;
 //     });
+
+/**
+ * @since 1.0.0
+ * @category Helpers
+ */
+export const getRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
+    ssh: () => "http://0.0.0.0" as const,
+    socket: () => "http://0.0.0.0" as const,
+    http: (options) => `http://${options.host}:${options.port}${options.path ?? ""}` as const,
+    https: (options) => `https://${options.host}:${options.port}${options.path ?? ""}` as const,
+});
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

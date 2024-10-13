@@ -19,11 +19,11 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
-import { MobyConnectionOptions, SshConnectionOptions } from "./Common.js";
+import { MobyConnectionOptions, SshConnectionOptions } from "./Connection.js";
 
 /**
  * Helper interface to expose the underlying socket from the effect HttpClient
- * response. Useful for multiplexing the response stream. This is a hack, and it
+ * response. Useful for hijacking the response stream. This is a hack, and it
  * will only work when using the NodeJS http layer.
  *
  * @since 1.0.0

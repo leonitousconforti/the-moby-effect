@@ -1,12 +1,12 @@
 ---
 title: platforms/Agnostic.ts
-nav_order: 31
+nav_order: 32
 parent: Modules
 ---
 
 ## Agnostic overview
 
-Http and https connection agents in a platform agnostic way.
+Connection agents in a platform agnostic way.
 
 Added in v1.0.0
 
@@ -14,26 +14,39 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Connection](#connection)
+- [Agnostic](#agnostic)
   - [makeAgnosticHttpClientLayer](#makeagnostichttpclientlayer)
+- [Helpers](#helpers)
+  - [getRequestUrl](#getrequesturl)
 
 ---
 
-# Connection
+# Agnostic
 
 ## makeAgnosticHttpClientLayer
 
 Given the moby connection options, it will construct a layer that provides a
-http client that you could use to connect to your moby instance. Since this
-is meant to be platform agnostic and there are some platforms where we can
-not construct ssh nor socket connections, only http and https are supported.
+http client that you could use to connect to your moby instance and requires
+an http client to transform from.
 
 **Signature**
 
 ```ts
 export declare const makeAgnosticHttpClientLayer: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+  connectionOptions: MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient>
+```
+
+Added in v1.0.0
+
+# Helpers
+
+## getRequestUrl
+
+**Signature**
+
+```ts
+export declare const getRequestUrl: (connectionOptions: MobyConnectionOptions) => string
 ```
 
 Added in v1.0.0

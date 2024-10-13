@@ -4,7 +4,6 @@
  * @since 1.0.0
  */
 
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Console from "effect/Console";
@@ -17,15 +16,12 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput } from "./Compressed.js";
 import {
     demuxMultiplexedSocket,
     isMultiplexedStreamSocket,
     MultiplexedStreamSocket,
     MultiplexedStreamSocketContentType,
-    MultiplexedStreamSocketTypeId,
-    responseIsMultiplexedStreamSocketResponse,
 } from "./Multiplexed.js";
 import {
     BidirectionalRawStreamSocket,
@@ -33,7 +29,6 @@ import {
     demuxUnidirectionalRawSockets,
     isBidirectionalRawStreamSocket,
     RawStreamSocketContentType,
-    responseToRawStreamSocketOrFail,
     UnidirectionalRawStreamSocket,
 } from "./Raw.js";
 
@@ -56,85 +51,6 @@ export class StdoutError extends Data.TaggedError("StdoutError")<{ message: stri
 export class StderrError extends Data.TaggedError("StderrError")<{ message: string }> {}
 
 /**
- * Transforms an http response into a multiplexed stream socket or a raw stream
- * socket. If the response is neither a multiplexed stream socket nor a raw or
- * can not be transformed, then an error will be returned.
- *
- * FIXME: this function relies on a hack to expose the underlying tcp socket
- * from the http client response. This will only work in NodeJs, not tested in
- * Bun/Deno yet, and will never work in the browser.
- *
- * @since 1.0.0
- * @category Predicates
- */
-export const responseToStreamingSocketOrFail = Function.dual<
-    <SourceIsKnownUnidirectional extends true | undefined = undefined>(
-        options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ) => (
-        response: HttpClientResponse.HttpClientResponse
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-        Socket.SocketError,
-        never
-    >,
-    <SourceIsKnownUnidirectional extends true | undefined = undefined>(
-        response: HttpClientResponse.HttpClientResponse,
-        options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-        Socket.SocketError,
-        never
-    >
->(
-    (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
-    <SourceIsKnownUnidirectional extends true | undefined = undefined>(
-        response: HttpClientResponse.HttpClientResponse,
-        options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-    ): Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-        Socket.SocketError,
-        never
-    > =>
-        Effect.gen(function* () {
-            type Ret = SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : BidirectionalRawStreamSocket | MultiplexedStreamSocket;
-
-            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
-            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-
-            if (responseIsMultiplexedStreamSocketResponse(response)) {
-                // Bad, you can't have a unidirectional multiplexed stream socket
-                if (options?.sourceIsKnownUnidirectional) {
-                    return yield* new Socket.SocketGenericError({
-                        reason: "Read",
-                        cause: `Can not have a unidirectional multiplexed stream socket`,
-                    });
-                }
-
-                // Fine to have a multiplexed stream socket now
-                else {
-                    return {
-                        ...effectSocket,
-                        "content-type": MultiplexedStreamSocketContentType,
-                        [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
-                    } as Ret;
-                }
-            }
-
-            const maybeRawSocket = yield* responseToRawStreamSocketOrFail(response, options);
-            return maybeRawSocket as Ret;
-        })
-);
-
-/**
  * Demux a bidirectional socket. The source stream is the stream that you want
  * to forward to the containers stdin. If the socket is a raw stream, then there
  * will only be one sink that combines the containers stdout and stderr. if the
@@ -149,12 +65,14 @@ export const demuxBidirectionalSocket: {
     <A1, E1, E2, R1, R2>(
         socket: BidirectionalRawStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
-        sink: Sink.Sink<A1, string, string, E2, R2>
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>;
     // Demux a bidirectional raw socket, data-last signature.
     <A1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
-        sink: Sink.Sink<A1, string, string, E2, R2>
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
     ): (
         socket: BidirectionalRawStreamSocket
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>;
@@ -190,7 +108,7 @@ export const demuxBidirectionalSocket: {
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
         sink2?: Sink.Sink<A2, string, string, E3, R3>,
-        options?: { bufferSize?: number | undefined } | undefined
+        options?: { bufferSize?: number | undefined } | { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         A1 | CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
@@ -198,10 +116,10 @@ export const demuxBidirectionalSocket: {
     > => {
         switch (socket["content-type"]) {
             case RawStreamSocketContentType: {
-                return demuxBidirectionalRawSocket(socket, source, sink1);
+                return demuxBidirectionalRawSocket(socket, source, sink1, options as any);
             }
             case MultiplexedStreamSocketContentType: {
-                return demuxMultiplexedSocket(socket, source, sink1, sink2!, options);
+                return demuxMultiplexedSocket(socket, source, sink1, sink2!, options as any);
             }
         }
     }

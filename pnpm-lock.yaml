@@ -25,6 +25,9 @@ importers:
       undici:
         specifier: ^6.20.0
         version: 6.20.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.18.0
     devDependencies:
       '@babel/cli':
         specifier: 7.25.7

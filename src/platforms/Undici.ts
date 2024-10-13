@@ -15,7 +15,7 @@ import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
-import { MobyConnectionOptions, SshConnectionOptions } from "./Common.js";
+import { MobyConnectionOptions, SshConnectionOptions } from "./Connection.js";
 
 /**
  * An undici connector that connects to remote moby instances over ssh.

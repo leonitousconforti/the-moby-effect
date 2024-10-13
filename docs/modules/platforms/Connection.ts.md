@@ -1,10 +1,10 @@
 ---
-title: platforms/Common.ts
-nav_order: 33
+title: platforms/Connection.ts
+nav_order: 34
 parent: Modules
 ---
 
-## Common overview
+## Connection overview
 
 Common connection options for all agents
 
@@ -30,10 +30,6 @@ Added in v1.0.0
   - [SocketConnectionOptionsTagged (type alias)](#socketconnectionoptionstagged-type-alias)
   - [SshConnectionOptions (type alias)](#sshconnectionoptions-type-alias)
   - [SshConnectionOptionsTagged (type alias)](#sshconnectionoptionstagged-type-alias)
-- [Helpers](#helpers)
-  - [getAgnosticRequestUrl](#getagnosticrequesturl)
-  - [getNodeRequestUrl](#getnoderequesturl)
-  - [getWebRequestUrl](#getwebrequesturl)
 
 ---
 
@@ -48,6 +44,17 @@ export declare const HttpConnectionOptions: Data.Case.Constructor<
   { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined },
   "_tag"
 >
+```
+
+**Example**
+
+```ts
+import { HttpConnectionOptions } from "the-moby-effect/platforms/Connection"
+const connectionOptions = HttpConnectionOptions({
+  host: "host.domain.com",
+  port: 2375,
+  path: "/proxy-path"
+})
 ```
 
 Added in v1.0.0
@@ -72,6 +79,21 @@ export declare const HttpsConnectionOptions: Data.Case.Constructor<
 >
 ```
 
+**Example**
+
+```ts
+import { HttpsConnectionOptions } from "the-moby-effect/platforms/Connection"
+const connectionOptions = HttpsConnectionOptions({
+  host: "host.domain.com",
+  port: 2375,
+  path: "/proxy-path"
+  // passphrase: "passphrase",
+  // ca: fs.readFileSync("ca.pem"),
+  // key: fs.readFileSync("key.pem"),
+  // cert: fs.readFileSync("cert.pem"),
+})
+```
+
 Added in v1.0.0
 
 ## SocketConnectionOptions
@@ -83,6 +105,15 @@ export declare const SocketConnectionOptions: Data.Case.Constructor<
   { readonly _tag: "socket"; readonly socketPath: string },
   "_tag"
 >
+```
+
+**Example**
+
+```ts
+import { SocketConnectionOptions } from "the-moby-effect/platforms/Connection"
+const connectionOptions = SocketConnectionOptions({
+  socketPath: "/var/run/docker.sock"
+})
 ```
 
 Added in v1.0.0
@@ -136,6 +167,19 @@ export declare const SshConnectionOptions: Data.Case.Constructor<
   },
   "_tag"
 >
+```
+
+**Example**
+
+```ts
+import { SshConnectionOptions } from "the-moby-effect/platforms/Connection"
+const connectionOptions = SshConnectionOptions({
+  host: "host.domain.com",
+  port: 2222,
+  username: "user",
+  password: "password",
+  remoteSocketPath: "/var/run/docker.sock"
+})
 ```
 
 Added in v1.0.0
@@ -474,42 +518,6 @@ Added in v1.0.0
 
 ```ts
 export type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "ssh">
-```
-
-Added in v1.0.0
-
-# Helpers
-
-## getAgnosticRequestUrl
-
-**Signature**
-
-```ts
-export declare const getAgnosticRequestUrl: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => string
-```
-
-Added in v1.0.0
-
-## getNodeRequestUrl
-
-**Signature**
-
-```ts
-export declare const getNodeRequestUrl: (connectionOptions: MobyConnectionOptions) => string
-```
-
-Added in v1.0.0
-
-## getWebRequestUrl
-
-**Signature**
-
-```ts
-export declare const getWebRequestUrl: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => string
 ```
 
 Added in v1.0.0

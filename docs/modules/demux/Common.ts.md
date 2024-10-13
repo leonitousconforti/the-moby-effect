@@ -22,8 +22,6 @@ Added in v1.0.0
   - [StderrError (class)](#stderrerror-class)
   - [StdinError (class)](#stdinerror-class)
   - [StdoutError (class)](#stdouterror-class)
-- [Predicates](#predicates)
-  - [responseToStreamingSocketOrFail](#responsetostreamingsocketorfail)
 
 ---
 
@@ -44,11 +42,13 @@ export declare const demuxBidirectionalSocket: {
   <A1, E1, E2, R1, R2>(
     socket: BidirectionalRawStreamSocket,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
-    sink: Sink.Sink<A1, string, string, E2, R2>
+    sink: Sink.Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
   ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream.Stream<string | Uint8Array, E1, R1>,
-    sink: Sink.Sink<A1, string, string, E2, R2>
+    sink: Sink.Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
   ): (
     socket: BidirectionalRawStreamSocket
   ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
@@ -108,7 +108,7 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: <
   E1 extends SocketOptions extends MultiplexedStreamSocket ? ParseResult.ParseError : never
 >(
   socketOptions: SocketOptions
-) => NeedsPlatformNode<Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never>>
+) => Effect.Effect<void, Socket.SocketError | E1 | StdinError | StdoutError | StderrError, never>
 ```
 
 Added in v1.0.0
@@ -174,52 +174,6 @@ Added in v1.0.0
 
 ```ts
 export declare class StdoutError
-```
-
-Added in v1.0.0
-
-# Predicates
-
-## responseToStreamingSocketOrFail
-
-Transforms an http response into a multiplexed stream socket or a raw stream
-socket. If the response is neither a multiplexed stream socket nor a raw or
-can not be transformed, then an error will be returned.
-
-FIXME: this function relies on a hack to expose the underlying tcp socket
-from the http client response. This will only work in NodeJs, not tested in
-Bun/Deno yet, and will never work in the browser.
-
-**Signature**
-
-```ts
-export declare const responseToStreamingSocketOrFail: (<
-  SourceIsKnownUnidirectional extends true | undefined = undefined
->(
-  options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-) => (
-  response: HttpClientResponse.HttpClientResponse
-) => NeedsPlatformNode<
-  Effect.Effect<
-    SourceIsKnownUnidirectional extends true
-      ? UnidirectionalRawStreamSocket
-      : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-    Socket.SocketError,
-    never
-  >
->) &
-  (<SourceIsKnownUnidirectional extends true | undefined = undefined>(
-    response: HttpClientResponse.HttpClientResponse,
-    options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
-  ) => NeedsPlatformNode<
-    Effect.Effect<
-      SourceIsKnownUnidirectional extends true
-        ? UnidirectionalRawStreamSocket
-        : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
-      Socket.SocketError,
-      never
-    >
-  >)
 ```
 
 Added in v1.0.0

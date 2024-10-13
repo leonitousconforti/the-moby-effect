@@ -38,14 +38,16 @@ To demux multiple raw sockets, you should use {@link demuxRawSockets}
 ```ts
 export declare const demuxBidirectionalRawSocket: (<A1, E1, E2, R1, R2>(
   source: Stream<string | Uint8Array, E1, R1>,
-  sink: Sink<A1, string, string, E2, R2>
+  sink: Sink<A1, string, string, E2, R2>,
+  options?: { encoding?: string | undefined } | undefined
 ) => (
   socket: rawInternal.BidirectionalRawStreamSocket
 ) => Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>) &
   (<A1, E1, E2, R1, R2>(
     socket: rawInternal.BidirectionalRawStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
-    sink: Sink<A1, string, string, E2, R2>
+    sink: Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
   ) => Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>)
 ```
 
@@ -66,11 +68,13 @@ export declare const demuxBidirectionalSocket: {
   <A1, E1, E2, R1, R2>(
     socket: rawInternal.BidirectionalRawStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
-    sink: Sink<A1, string, string, E2, R2>
+    sink: Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
   ): Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream<string | Uint8Array, E1, R1>,
-    sink: Sink<A1, string, string, E2, R2>
+    sink: Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
   ): (
     socket: rawInternal.BidirectionalRawStreamSocket
   ) => Effect<A1, E1 | E2 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope>>
@@ -165,12 +169,10 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: <
   E1 extends SocketOptions extends multiplexedInternal.MultiplexedStreamSocket ? ParseError : never
 >(
   socketOptions: SocketOptions
-) => NeedsPlatformNode<
-  Effect<
-    void,
-    SocketError | E1 | commonInternal.StdinError | commonInternal.StdoutError | commonInternal.StderrError,
-    never
-  >
+) => Effect<
+  void,
+  SocketError | E1 | commonInternal.StdinError | commonInternal.StdoutError | commonInternal.StderrError,
+  never
 >
 ```
 

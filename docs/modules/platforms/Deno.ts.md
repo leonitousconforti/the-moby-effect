@@ -1,6 +1,6 @@
 ---
 title: platforms/Deno.ts
-nav_order: 34
+nav_order: 35
 parent: Modules
 ---
 
@@ -14,12 +14,12 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Connection](#connection)
+- [Deno](#deno)
   - [makeDenoHttpClientLayer](#makedenohttpclientlayer)
 
 ---
 
-# Connection
+# Deno
 
 ## makeDenoHttpClientLayer
 
@@ -34,7 +34,7 @@ This function will dynamically import the `@effect/platform-node` package.
 ```ts
 export declare const makeDenoHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>>
+) => Layer.Layer<HttpClient.HttpClient, never, never>
 ```
 
 Added in v1.0.0

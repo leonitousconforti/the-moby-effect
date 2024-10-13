@@ -1,6 +1,6 @@
 ---
 title: platforms/Web.ts
-nav_order: 38
+nav_order: 40
 parent: Modules
 ---
 
@@ -14,12 +14,12 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Connection](#connection)
+- [Browser](#browser)
   - [makeWebHttpClientLayer](#makewebhttpclientlayer)
 
 ---
 
-# Connection
+# Browser
 
 ## makeWebHttpClientLayer
 
@@ -33,7 +33,7 @@ This function will dynamically import the `@effect/platform-browser` package.
 ```ts
 export declare const makeWebHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => NeedsPlatformBrowser<Layer.Layer<HttpClient.HttpClient, never, never>>
+) => Layer.Layer<HttpClient.HttpClient, never, never>
 ```
 
 Added in v1.0.0

@@ -13,7 +13,7 @@ import * as Redacted from "effect/Redacted";
 
 import * as AgnosticInternal from "./platforms/Agnostic.js";
 import * as BunInternal from "./platforms/Bun.js";
-import * as CommonInternal from "./platforms/Common.js";
+import * as CommonInternal from "./platforms/Connection.js";
 import * as DenoInternal from "./platforms/Deno.js";
 import * as NodeInternal from "./platforms/Node.js";
 import * as UndiciInternal from "./platforms/Undici.js";

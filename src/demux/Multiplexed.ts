@@ -11,15 +11,16 @@ import * as Socket from "@effect/platform/Socket";
 import * as ParseResult from "@effect/schema/ParseResult";
 import * as Schema from "@effect/schema/Schema";
 import * as Chunk from "effect/Chunk";
+import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Predicate from "effect/Predicate";
+import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 
 /**
@@ -31,6 +32,19 @@ export enum MultiplexedStreamSocketHeaderType {
     Stdout = 1,
     Stderr = 2,
 }
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+export type MultiplexedStreamSocketAccumulator = {
+    headerBytesRead: number;
+    messageBytesRead: number;
+    headerBuffer: Chunk.Chunk<number>;
+    messageBuffer: Chunk.Chunk<number>;
+    messageSize: number | undefined;
+    messageType: number | undefined;
+};
 
 /**
  * @since 1.0.0
@@ -101,43 +115,13 @@ export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientRe
     response.headers["content-type"] === MultiplexedStreamSocketContentType;
 
 /**
- * Transforms an http response into a multiplexed stream socket. If the response
- * is not a multiplexed stream socket, then an error will be returned.
+ * Accumulates the header and its message bytes into a single value.
  *
- * FIXME: this function relies on a hack to expose the underlying tcp socket
- * from the http client response. This will only work in NodeJs, not tested in
- * Bun/Deno yet, and will never work in the browser.
- *
- * @since 1.0.0
- * @category Predicates
- */
-export const responseToMultiplexedStreamSocketOrFail = (
-    response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
-    Effect.gen(function* () {
-        if (responseIsMultiplexedStreamSocketResponse(response)) {
-            const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
-            const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-            return {
-                ...effectSocket,
-                "content-type": MultiplexedStreamSocketContentType,
-                [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
-            };
-        } else {
-            return yield* new Socket.SocketGenericError({
-                reason: "Read",
-                cause: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
-            });
-        }
-    });
-
-/**
  * @since 1.0.0
  * @category Demux
  */
 export const demuxMultiplexedSocketFolderSink: Sink.Sink<
-    readonly [MultiplexedStreamSocketHeaderType, Uint8Array],
+    MultiplexedStreamSocketAccumulator,
     number,
     number,
     ParseResult.ParseError,
@@ -151,7 +135,7 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
         messageSize: undefined as number | undefined,
         messageType: undefined as number | undefined,
     },
-    ({ messageBytesRead, messageSize }) => messageBytesRead >= (messageSize ?? Number.MAX_SAFE_INTEGER),
+    ({ messageBytesRead, messageSize }) => messageSize === undefined || messageBytesRead < messageSize,
     (accumulator, input: number) => {
         // If we have not read the entire header yet
         if (accumulator.headerBytesRead < 8) {
@@ -182,9 +166,10 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
             messageBuffer: Chunk.append(accumulator.messageBuffer, input),
         };
     }
-)
-    .pipe(Sink.map(({ messageBuffer, messageType }) => Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))))
-    .pipe(Sink.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema)));
+);
+// THIS DOES NOT WORK (the types work, but the implementation is wrong)
+// .pipe(Sink.map(({ messageBuffer, messageType }) => Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))))
+// .pipe(Sink.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema)));
 
 /**
  * Demux a multiplexed socket. When given a multiplexed socket, we must parse
@@ -197,6 +182,80 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
  *
  * @since 1.0.0
  * @category Demux
+ * @example
+ *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
+ *     import * as Chunk from "effect/Chunk";
+ *     import * as Effect from "effect/Effect";
+ *     import * as Function from "effect/Function";
+ *     import * as Layer from "effect/Layer";
+ *     import * as Sink from "effect/Sink";
+ *     import * as Stream from "effect/Stream";
+ *
+ *     import * as Convey from "the-moby-effect/Convey";
+ *     import * as Platforms from "the-moby-effect/Platforms";
+ *     import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed";
+ *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
+ *     import * as Containers from "the-moby-effect/endpoints/Containers";
+ *     import * as DockerEngine from "the-moby-effect/engines/Docker";
+ *
+ *     const layer = Function.pipe(
+ *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Effect.map(DockerEngine.layerNodeJS),
+ *         Layer.unwrapEffect
+ *     );
+ *
+ *     Effect.gen(function* () {
+ *         const image = "ubuntu:latest";
+ *         const containers = yield* Containers.Containers;
+ *
+ *         // Pull the image, which will be removed when the scope is closed
+ *         const pullStream = DockerEngine.pull({ image });
+ *         yield* Convey.followProgressInConsole(pullStream);
+ *
+ *         // Start a container, which will be removed when the scope is closed
+ *         const { Id: containerId } = yield* DockerEngine.runScoped({
+ *             spec: {
+ *                 Image: image,
+ *                 Tty: false,
+ *                 Cmd: [
+ *                     "bash",
+ *                     "-c",
+ *                     'sleep 2s && echo "Hi" && >&2 echo "Hi2"',
+ *                 ],
+ *             },
+ *         });
+ *
+ *         // Since the container was started with "tty: false", we should get a multiplexed socket here
+ *         const socket:
+ *             | DemuxRaw.BidirectionalRawStreamSocket
+ *             | DemuxMultiplexed.MultiplexedStreamSocket =
+ *             yield* containers.attach({
+ *                 stdout: true,
+ *                 stderr: true,
+ *                 stream: true,
+ *                 id: containerId,
+ *             });
+ *
+ *         assert.ok(
+ *             DemuxMultiplexed.isMultiplexedStreamSocket(socket),
+ *             "Expected a multiplexed socket"
+ *         );
+ *         const [stdoutData, stderrData] =
+ *             yield* DemuxMultiplexed.demuxMultiplexedSocket(
+ *                 socket,
+ *                 Stream.never,
+ *                 Sink.collectAll<string>(),
+ *                 Sink.collectAll<string>()
+ *             );
+ *
+ *         assert.deepStrictEqual(Chunk.toReadonlyArray(stdoutData), ["Hi\n"]);
+ *         assert.deepStrictEqual(Chunk.toReadonlyArray(stderrData), ["Hi2\n"]);
+ *         yield* containers.wait({ id: containerId });
+ *     })
+ *         .pipe(Effect.scoped)
+ *         .pipe(Effect.provide(layer))
+ *         .pipe(NodeRuntime.runMain);
+ *
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
 export const demuxMultiplexedSocket = Function.dual<
@@ -242,13 +301,17 @@ export const demuxMultiplexedSocket = Function.dual<
             source,
             Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
             Stream.mapConcat(Function.identity),
-            Stream.aggregate(demuxMultiplexedSocketFolderSink),
+            Stream.aggregateWithin(demuxMultiplexedSocketFolderSink, Schedule.fixed(Duration.infinity)),
+            Stream.map(({ messageBuffer, messageType }) =>
+                Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))
+            ),
+            Stream.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema)),
             Stream.filter(
                 ([messageType]) =>
                     messageType === MultiplexedStreamSocketHeaderType.Stdout ||
                     messageType === MultiplexedStreamSocketHeaderType.Stderr
             ),
-            Stream.partition(([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stderr, options),
+            Stream.partition(([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stdout, options),
             Effect.map(
                 Tuple.mapBoth({
                     onFirst: Function.flow(Stream.map(Tuple.getSecond), Stream.decodeText("utf-8"), Stream.run(sink1)),

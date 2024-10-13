@@ -1,6 +1,6 @@
 ---
 title: platforms/Node.ts
-nav_order: 36
+nav_order: 38
 parent: Modules
 ---
 
@@ -14,20 +14,19 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Connection](#connection)
+- [NodeJS](#nodejs)
   - [IExposeSocketOnEffectClientResponseHack (interface)](#iexposesocketoneffectclientresponsehack-interface)
   - [getNodeAgent](#getnodeagent)
   - [makeNodeHttpClientLayer](#makenodehttpclientlayer)
-  - [makeNodeSshAgent](#makenodesshagent)
 
 ---
 
-# Connection
+# NodeJS
 
 ## IExposeSocketOnEffectClientResponseHack (interface)
 
 Helper interface to expose the underlying socket from the effect HttpClient
-response. Useful for multiplexing the response stream. This is a hack, and it
+response. Useful for hijacking the response stream. This is a hack, and it
 will only work when using the NodeJS http layer.
 
 **Signature**
@@ -56,7 +55,7 @@ This function will dynamically import the `node:http`, `node:https`, and
 ```ts
 export declare const getNodeAgent: (
   connectionOptions: MobyConnectionOptions
-) => NeedsPlatformNode<Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope>>
+) => Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -73,23 +72,7 @@ This function will dynamically import the `@effect/platform-node` package.
 ```ts
 export declare const makeNodeHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => NeedsPlatformNode<Layer.Layer<HttpClient.HttpClient, never, never>>
-```
-
-Added in v1.0.0
-
-## makeNodeSshAgent
-
-An http agent that connects to remote moby instances over ssh.
-
-**Signature**
-
-```ts
-export declare const makeNodeSshAgent: (
-  httpLazy: typeof http,
-  ssh2Lazy: typeof ssh2,
-  connectionOptions: SshConnectionOptions
-) => http.Agent
+) => Layer.Layer<HttpClient.HttpClient, never, never>
 ```
 
 Added in v1.0.0

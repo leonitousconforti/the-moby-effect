@@ -1,12 +1,12 @@
 ---
 title: platforms/Undici.ts
-nav_order: 37
+nav_order: 39
 parent: Modules
 ---
 
 ## Undici overview
 
-Http, https, ssh, and unix socket undici dispatchers for NodeJS.
+Http, https, ssh, and unix socket undici dispatchers.
 
 Added in v1.0.0
 
@@ -14,14 +14,13 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Connection](#connection)
+- [Undici](#undici)
   - [getUndiciDispatcher](#getundicidispatcher)
   - [makeUndiciHttpClientLayer](#makeundicihttpclientlayer)
-  - [makeUndiciSshConnector](#makeundicisshconnector)
 
 ---
 
-# Connection
+# Undici
 
 ## getUndiciDispatcher
 
@@ -36,7 +35,7 @@ This function will dynamically import the `undici` package.
 ```ts
 export declare const getUndiciDispatcher: (
   connectionOptions: MobyConnectionOptions
-) => NeedsUndici<Effect.Effect<undici.Dispatcher, never, Scope.Scope>>
+) => Effect.Effect<undici.Dispatcher, never, Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -54,22 +53,7 @@ This function will dynamically import the `@effect/platform-node` and
 ```ts
 export declare const makeUndiciHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => NeedsPlatformNode<NeedsUndici<Layer.Layer<HttpClient.HttpClient, never, never>>>
-```
-
-Added in v1.0.0
-
-## makeUndiciSshConnector
-
-An undici connector that connects to remote moby instances over ssh.
-
-**Signature**
-
-```ts
-export declare function makeUndiciSshConnector(
-  ssh2Lazy: typeof ssh2,
-  connectionOptions: SshConnectionOptions
-): undici.buildConnector.connector
+) => Layer.Layer<HttpClient.HttpClient, never, never>
 ```
 
 Added in v1.0.0

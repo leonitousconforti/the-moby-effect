@@ -10,7 +10,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "./Common.js";
+import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "./Connection.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

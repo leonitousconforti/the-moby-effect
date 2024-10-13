@@ -1,6 +1,6 @@
 ---
 title: demux/Multiplexed.ts
-nav_order: 5
+nav_order: 6
 parent: Modules
 ---
 
@@ -22,7 +22,6 @@ Added in v1.0.0
 - [Predicates](#predicates)
   - [isMultiplexedStreamSocket](#ismultiplexedstreamsocket)
   - [responseIsMultiplexedStreamSocketResponse](#responseismultiplexedstreamsocketresponse)
-  - [responseToMultiplexedStreamSocketOrFail](#responsetomultiplexedstreamsocketorfail)
 - [Schemas](#schemas)
   - [MultiplexedStreamSocketSchema](#multiplexedstreamsocketschema)
 - [Type ids](#type-ids)
@@ -31,6 +30,7 @@ Added in v1.0.0
 - [Types](#types)
   - [$MultiplexedStreamSocketSchema (interface)](#multiplexedstreamsocketschema-interface)
   - [MultiplexedStreamSocket (type alias)](#multiplexedstreamsocket-type-alias)
+  - [MultiplexedStreamSocketAccumulator (type alias)](#multiplexedstreamsocketaccumulator-type-alias)
   - [MultiplexedStreamSocketContentType](#multiplexedstreamsocketcontenttype)
 
 ---
@@ -75,15 +75,84 @@ export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3, R1, R2, R3>(
   >)
 ```
 
+**Example**
+
+```ts
+import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
+import * as Chunk from "effect/Chunk"
+import * as Effect from "effect/Effect"
+import * as Function from "effect/Function"
+import * as Layer from "effect/Layer"
+import * as Sink from "effect/Sink"
+import * as Stream from "effect/Stream"
+
+import * as Convey from "the-moby-effect/Convey"
+import * as Platforms from "the-moby-effect/Platforms"
+import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed"
+import * as DemuxRaw from "the-moby-effect/demux/Raw"
+import * as Containers from "the-moby-effect/endpoints/Containers"
+import * as DockerEngine from "the-moby-effect/engines/Docker"
+
+const layer = Function.pipe(
+  Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+  Effect.map(DockerEngine.layerNodeJS),
+  Layer.unwrapEffect
+)
+
+Effect.gen(function* () {
+  const image = "ubuntu:latest"
+  const containers = yield* Containers.Containers
+
+  // Pull the image, which will be removed when the scope is closed
+  const pullStream = DockerEngine.pull({ image })
+  yield* Convey.followProgressInConsole(pullStream)
+
+  // Start a container, which will be removed when the scope is closed
+  const { Id: containerId } = yield* DockerEngine.runScoped({
+    spec: {
+      Image: image,
+      Tty: false,
+      Cmd: ["bash", "-c", 'sleep 2s && echo "Hi" && >&2 echo "Hi2"']
+    }
+  })
+
+  // Since the container was started with "tty: false", we should get a multiplexed socket here
+  const socket: DemuxRaw.BidirectionalRawStreamSocket | DemuxMultiplexed.MultiplexedStreamSocket =
+    yield* containers.attach({
+      stdout: true,
+      stderr: true,
+      stream: true,
+      id: containerId
+    })
+
+  assert.ok(DemuxMultiplexed.isMultiplexedStreamSocket(socket), "Expected a multiplexed socket")
+  const [stdoutData, stderrData] = yield* DemuxMultiplexed.demuxMultiplexedSocket(
+    socket,
+    Stream.never,
+    Sink.collectAll<string>(),
+    Sink.collectAll<string>()
+  )
+
+  assert.deepStrictEqual(Chunk.toReadonlyArray(stdoutData), ["Hi\n"])
+  assert.deepStrictEqual(Chunk.toReadonlyArray(stderrData), ["Hi2\n"])
+  yield* containers.wait({ id: containerId })
+})
+  .pipe(Effect.scoped)
+  .pipe(Effect.provide(layer))
+  .pipe(NodeRuntime.runMain)
+```
+
 Added in v1.0.0
 
 ## demuxMultiplexedSocketFolderSink
+
+Accumulates the header and its message bytes into a single value.
 
 **Signature**
 
 ```ts
 export declare const demuxMultiplexedSocketFolderSink: Sink.Sink<
-  readonly [MultiplexedStreamSocketHeaderType, Uint8Array],
+  MultiplexedStreamSocketAccumulator,
   number,
   number,
   ParseResult.ParseError,
@@ -113,25 +182,6 @@ Added in v1.0.0
 export declare const responseIsMultiplexedStreamSocketResponse: (
   response: HttpClientResponse.HttpClientResponse
 ) => boolean
-```
-
-Added in v1.0.0
-
-## responseToMultiplexedStreamSocketOrFail
-
-Transforms an http response into a multiplexed stream socket. If the response
-is not a multiplexed stream socket, then an error will be returned.
-
-FIXME: this function relies on a hack to expose the underlying tcp socket
-from the http client response. This will only work in NodeJs, not tested in
-Bun/Deno yet, and will never work in the browser.
-
-**Signature**
-
-```ts
-export declare const responseToMultiplexedStreamSocketOrFail: (
-  response: HttpClientResponse.HttpClientResponse
-) => NeedsPlatformNode<Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never>>
 ```
 
 Added in v1.0.0
@@ -199,6 +249,23 @@ header and a payload.
 export type MultiplexedStreamSocket = Socket.Socket & {
   readonly "content-type": typeof MultiplexedStreamSocketContentType
   readonly [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId
+}
+```
+
+Added in v1.0.0
+
+## MultiplexedStreamSocketAccumulator (type alias)
+
+**Signature**
+
+```ts
+export type MultiplexedStreamSocketAccumulator = {
+  headerBytesRead: number
+  messageBytesRead: number
+  headerBuffer: Chunk.Chunk<number>
+  messageBuffer: Chunk.Chunk<number>
+  messageSize: number | undefined
+  messageType: number | undefined
 }
 ```
 

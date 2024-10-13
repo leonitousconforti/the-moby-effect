@@ -91,8 +91,8 @@ export const MobyConnectionOptions = Data.taggedEnum<MobyConnectionOptions>();
 /**
  * @since 1.0.0
  * @category Connection Constructors
- * @code
- *     import { SocketConnectionOptions } from "@the-moby-effect/Agent";
+ * @example
+ *     import { SocketConnectionOptions } from "the-moby-effect/platforms/Connection";
  *     const connectionOptions = SocketConnectionOptions({
  *         socketPath: "/var/run/docker.sock",
  *     });
@@ -108,8 +108,8 @@ export const SocketConnectionOptions = MobyConnectionOptions.socket;
  *
  * @since 1.0.0
  * @category Connection Constructors
- * @code
- *     import { SshConnectionOptions } from "@the-moby-effect/Agent";
+ * @example
+ *     import { SshConnectionOptions } from "the-moby-effect/platforms/Connection";
  *     const connectionOptions = SshConnectionOptions({
  *         host: "host.domain.com",
  *         port: 2222,
@@ -123,8 +123,8 @@ export const SshConnectionOptions = MobyConnectionOptions.ssh;
 /**
  * @since 1.0.0
  * @category Connection Constructors
- * @code
- *     import { HttpConnectionOptions } from "@the-moby-effect/Agent";
+ * @example
+ *     import { HttpConnectionOptions } from "the-moby-effect/platforms/Connection";
  *     const connectionOptions = HttpConnectionOptions({
  *         host: "host.domain.com",
  *         port: 2375,
@@ -136,27 +136,16 @@ export const HttpConnectionOptions = MobyConnectionOptions.http;
 /**
  * @since 1.0.0
  * @category Connection Constructors
- * @code
- *     import { HttpsConnectionOptions } from "@the-moby-effect/Agent";
+ * @example
+ *     import { HttpsConnectionOptions } from "the-moby-effect/platforms/Connection";
  *     const connectionOptions = HttpsConnectionOptions({
  *         host: "host.domain.com",
  *         port: 2375,
  *         path: "/proxy-path",
- *         cert: fs.readFileSync("cert.pem"),
- *         ca: fs.readFileSync("ca.pem"),
- *         key: fs.readFileSync("key.pem"),
- *         passphrase: "password",
+ *         // passphrase: "passphrase",
+ *         // ca: fs.readFileSync("ca.pem"),
+ *         // key: fs.readFileSync("key.pem"),
+ *         // cert: fs.readFileSync("cert.pem"),
  *     });
  */
 export const HttpsConnectionOptions = MobyConnectionOptions.https;
-
-/**
- * @since 1.0.0
- * @category Helpers
- */
-export const getRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
-    ssh: () => "http://0.0.0.0" as const,
-    socket: () => "http://0.0.0.0" as const,
-    http: (options) => `http://${options.host}:${options.port}${options.path ?? ""}` as const,
-    https: (options) => `https://${options.host}:${options.port}${options.path ?? ""}` as const,
-});
