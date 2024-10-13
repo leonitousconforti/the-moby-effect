@@ -4,8 +4,6 @@
  * @since 1.0.0
  */
 
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Array from "effect/Array";
 import * as Function from "effect/Function";
@@ -74,14 +72,3 @@ export const maybeAddFilters = (
             Option.map(JSON.stringify)
         )
     );
-
-/**
- * @since 1.0.0
- * @category Request Helpers
- * @internal
- */
-export const filterStatusMaybeUpgraded: <E, R>(
-    self: HttpClient.HttpClient<E, R>
-) => HttpClient.HttpClient<E | HttpClientError.ResponseError, R> = HttpClient.filterStatus(
-    (status) => (status >= 200 && status < 300) || status === 101
-);

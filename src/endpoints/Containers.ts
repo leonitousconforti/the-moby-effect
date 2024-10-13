@@ -44,7 +44,12 @@ import {
     ContainerUpdateResponse,
     ContainerWaitResponse,
 } from "../generated/index.js";
-import { filterStatusMaybeUpgraded, maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
+import {
+    HttpClientRequestExtension,
+    HttpClientRequestHttpUrl,
+    HttpClientRequestWebsocketUrl,
+} from "../platforms/Agnostic.js";
+import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
  * @since 1.0.0
@@ -91,7 +96,9 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
     effect: Effect.gen(function* () {
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
-        const maybeUpgradedClient = contextClient.pipe(filterStatusMaybeUpgraded);
+        const maybeUpgradedClient = contextClient.pipe(
+            HttpClient.filterStatus((status) => (status >= 200 && status < 300) || status === 101)
+        );
 
         const list_ = (
             options?:
@@ -421,8 +428,24 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdin", Option.fromNullable(options.stdin)),
                 maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-                ({ url, urlParams, hash }) =>
-                    UrlParams.makeUrl(`ws+unix:///var/run/docker.sock:${url}`, urlParams, hash),
+                (
+                    client as HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope> & {
+                        preprocess: (
+                            request: HttpClientRequest.HttpClientRequest
+                        ) => Effect.Effect<HttpClientRequestExtension>;
+                    }
+                ).preprocess as (
+                    request: HttpClientRequest.HttpClientRequest
+                ) => Effect.Effect<HttpClientRequestExtension>,
+                Effect.flatMap(
+                    ({
+                        url,
+                        urlParams,
+                        hash,
+                        [HttpClientRequestHttpUrl]: httpUrl,
+                        [HttpClientRequestWebsocketUrl]: websocketUrl,
+                    }) => UrlParams.makeUrl(`${url.replace(httpUrl, websocketUrl)}`, urlParams, hash)
+                ),
                 Effect.map((url) => url.toString()),
                 Effect.flatMap(Socket.makeWebSocket),
                 Effect.map(makeUnidirectionalRawStreamSocket),
