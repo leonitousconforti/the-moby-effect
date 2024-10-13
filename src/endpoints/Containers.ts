@@ -28,9 +28,8 @@ import { responseToStreamingSocketOrFail } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import {
     BidirectionalRawStreamSocket,
-    RawStreamSocketContentType,
+    makeUnidirectionalRawStreamSocket,
     UnidirectionalRawStreamSocket,
-    UnidirectionalRawStreamSocketTypeId,
 } from "../demux/Raw.js";
 import {
     ContainerChange,
@@ -426,14 +425,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     UrlParams.makeUrl(`ws+unix:///var/run/docker.sock:${url}`, urlParams, hash),
                 Effect.map((url) => url.toString()),
                 Effect.flatMap(Socket.makeWebSocket),
-                Effect.map(
-                    (socket) =>
-                        ({
-                            ...socket,
-                            "content-type": RawStreamSocketContentType,
-                            [UnidirectionalRawStreamSocketTypeId]: UnidirectionalRawStreamSocketTypeId,
-                        }) as UnidirectionalRawStreamSocket
-                ),
+                Effect.map(makeUnidirectionalRawStreamSocket),
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))
             );
 

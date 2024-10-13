@@ -12,16 +12,14 @@ import * as Predicate from "effect/Predicate";
 
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 import {
+    makeMultiplexedStreamSocket,
     MultiplexedStreamSocket,
-    MultiplexedStreamSocketContentType,
-    MultiplexedStreamSocketTypeId,
     responseIsMultiplexedStreamSocketResponse,
 } from "./Multiplexed.js";
 import {
     BidirectionalRawStreamSocket,
-    BidirectionalRawStreamSocketTypeId,
     downcastBidirectionalToUnidirectional,
-    RawStreamSocketContentType,
+    makeBidirectionalRawStreamSocket,
     responseIsRawStreamSocketResponse,
     UnidirectionalRawStreamSocket,
 } from "./Raw.js";
@@ -45,11 +43,7 @@ export const responseToMultiplexedStreamSocketOrFail = (
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
             const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
             const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-            return {
-                ...effectSocket,
-                "content-type": MultiplexedStreamSocketContentType,
-                [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
-            };
+            return makeMultiplexedStreamSocket(effectSocket);
         } else {
             return yield* new Socket.SocketGenericError({
                 reason: "Read",
@@ -146,12 +140,7 @@ export const responseToRawStreamSocketOrFail = Function.dual<
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
             const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
             const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-
-            const bidirectional: BidirectionalRawStreamSocket = {
-                ...effectSocket,
-                "content-type": RawStreamSocketContentType,
-                [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId,
-            };
+            const bidirectional = makeBidirectionalRawStreamSocket(effectSocket);
 
             const sourceIsKnownUnidirectional =
                 Predicate.isNotUndefined(options) &&
@@ -230,11 +219,7 @@ export const responseToStreamingSocketOrFail = Function.dual<
 
                 // Fine to have a multiplexed stream socket now
                 else {
-                    return {
-                        ...effectSocket,
-                        "content-type": MultiplexedStreamSocketContentType,
-                        [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
-                    } as Ret;
+                    return makeMultiplexedStreamSocket(effectSocket) as Ret;
                 }
             }
 

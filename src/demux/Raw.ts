@@ -60,6 +60,16 @@ export type BidirectionalRawStreamSocket = Socket.Socket & {
 
 /**
  * @since 1.0.0
+ * @category Constructors
+ */
+export const makeBidirectionalRawStreamSocket = (socket: Socket.Socket): BidirectionalRawStreamSocket => ({
+    ...socket,
+    "content-type": RawStreamSocketContentType,
+    [BidirectionalRawStreamSocketTypeId]: BidirectionalRawStreamSocketTypeId,
+});
+
+/**
+ * @since 1.0.0
  * @category Predicates
  */
 export const isBidirectionalRawStreamSocket = (u: unknown): u is BidirectionalRawStreamSocket =>
@@ -91,6 +101,16 @@ export type UnidirectionalRawStreamSocket = Socket.Socket & {
     readonly "content-type": typeof RawStreamSocketContentType;
     readonly [UnidirectionalRawStreamSocketTypeId]: typeof UnidirectionalRawStreamSocketTypeId;
 };
+
+/**
+ * @since 1.0.0
+ * @category Constructors
+ */
+export const makeUnidirectionalRawStreamSocket = (socket: Socket.Socket): UnidirectionalRawStreamSocket => ({
+    ...socket,
+    "content-type": RawStreamSocketContentType,
+    [UnidirectionalRawStreamSocketTypeId]: UnidirectionalRawStreamSocketTypeId,
+});
 
 /**
  * @since 1.0.0

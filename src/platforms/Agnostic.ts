@@ -10,18 +10,6 @@ import * as Layer from "effect/Layer";
 import { HttpClientRequest } from "@effect/platform";
 import { MobyConnectionOptions } from "./Connection.js";
 
-// export const transformLayer = (connectionOptions: MobyConnectionOptions) =>
-//     Layer.map<
-//         HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>,
-//         HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
-//     >((context) => {
-//         const oldClient = Context.get(context, HttpClient.HttpClient);
-//         const requestUrl = getRequestUrl(connectionOptions);
-//         const newClient = HttpClient.mapRequest(oldClient, HttpClientRequest.prependUrl(requestUrl));
-//         const newContext = Context.make(HttpClient.HttpClient, newClient);
-//         return newContext;
-//     });
-
 /**
  * @since 1.0.0
  * @category Helpers

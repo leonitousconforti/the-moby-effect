@@ -86,13 +86,6 @@ export const MultiplexedStreamSocketTypeId: unique symbol = Symbol.for("the-moby
 export type MultiplexedStreamSocketTypeId = typeof MultiplexedStreamSocketTypeId;
 
 /**
- * @since 1.0.0
- * @category Predicates
- */
-export const isMultiplexedStreamSocket = (u: unknown): u is MultiplexedStreamSocket =>
-    Predicate.hasProperty(u, MultiplexedStreamSocketTypeId);
-
-/**
  * When the TTY setting is disabled in POST /containers/create, the HTTP
  * Content-Type header is set to application/vnd.docker.multiplexed-stream and
  * the stream over the hijacked connected is multiplexed to separate out stdout
@@ -106,6 +99,23 @@ export type MultiplexedStreamSocket = Socket.Socket & {
     readonly "content-type": typeof MultiplexedStreamSocketContentType;
     readonly [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId;
 };
+
+/**
+ * @since 1.0.0
+ * @category Constructors
+ */
+export const makeMultiplexedStreamSocket = (socket: Socket.Socket): MultiplexedStreamSocket => ({
+    ...socket,
+    "content-type": MultiplexedStreamSocketContentType,
+    [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
+});
+
+/**
+ * @since 1.0.0
+ * @category Predicates
+ */
+export const isMultiplexedStreamSocket = (u: unknown): u is MultiplexedStreamSocket =>
+    Predicate.hasProperty(u, MultiplexedStreamSocketTypeId);
 
 /**
  * @since 1.0.0
@@ -167,9 +177,6 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
         };
     }
 );
-// THIS DOES NOT WORK (the types work, but the implementation is wrong)
-// .pipe(Sink.map(({ messageBuffer, messageType }) => Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))))
-// .pipe(Sink.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema)));
 
 /**
  * Demux a multiplexed socket. When given a multiplexed socket, we must parse

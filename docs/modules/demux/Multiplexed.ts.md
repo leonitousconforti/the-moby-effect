@@ -16,6 +16,8 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [Constructors](#constructors)
+  - [makeMultiplexedStreamSocket](#makemultiplexedstreamsocket)
 - [Demux](#demux)
   - [demuxMultiplexedSocket](#demuxmultiplexedsocket)
   - [demuxMultiplexedSocketFolderSink](#demuxmultiplexedsocketfoldersink)
@@ -34,6 +36,18 @@ Added in v1.0.0
   - [MultiplexedStreamSocketContentType](#multiplexedstreamsocketcontenttype)
 
 ---
+
+# Constructors
+
+## makeMultiplexedStreamSocket
+
+**Signature**
+
+```ts
+export declare const makeMultiplexedStreamSocket: (socket: Socket.Socket) => MultiplexedStreamSocket
+```
+
+Added in v1.0.0
 
 # Demux
 

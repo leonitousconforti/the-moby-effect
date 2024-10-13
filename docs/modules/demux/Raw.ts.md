@@ -28,6 +28,9 @@ Added in v1.0.0
 - [Casting](#casting)
   - [downcastBidirectionalToUnidirectional](#downcastbidirectionaltounidirectional)
   - [upcastUnidirectionalToBidirectional](#upcastunidirectionaltobidirectional)
+- [Constructors](#constructors)
+  - [makeBidirectionalRawStreamSocket](#makebidirectionalrawstreamsocket)
+  - [makeUnidirectionalRawStreamSocket](#makeunidirectionalrawstreamsocket)
 - [Demux](#demux)
   - [demuxBidirectionalRawSocket](#demuxbidirectionalrawsocket)
   - [demuxUnidirectionalRawSockets](#demuxunidirectionalrawsockets)
@@ -89,6 +92,28 @@ export declare const upcastUnidirectionalToBidirectional: ({
   [UnidirectionalRawStreamSocketTypeId]: _,
   ...rest
 }: UnidirectionalRawStreamSocket) => BidirectionalRawStreamSocket
+```
+
+Added in v1.0.0
+
+# Constructors
+
+## makeBidirectionalRawStreamSocket
+
+**Signature**
+
+```ts
+export declare const makeBidirectionalRawStreamSocket: (socket: Socket.Socket) => BidirectionalRawStreamSocket
+```
+
+Added in v1.0.0
+
+## makeUnidirectionalRawStreamSocket
+
+**Signature**
+
+```ts
+export declare const makeUnidirectionalRawStreamSocket: (socket: Socket.Socket) => UnidirectionalRawStreamSocket
 ```
 
 Added in v1.0.0
