@@ -265,46 +265,70 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
  *
  * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
-export const demuxMultiplexedSocket = Function.dual<
-    // Data last signature
+export const demuxMultiplexedSocket: {
+    // One sink, data-first signature.
+    <A1, E1, E2, R1, R2>(
+        socket: MultiplexedStreamSocket,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): Effect.Effect<
+        CompressedDemuxOutput<A1, never>,
+        E1 | E2 | Socket.SocketError | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
+    >;
+    // One sink, data-last signature.
+    <A1, E1, E2, R1, R2>(
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): (
+        socket: MultiplexedStreamSocket
+    ) => Effect.Effect<
+        CompressedDemuxOutput<A1, never>,
+        E1 | E2 | Socket.SocketError | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
+    >;
+    // Two sinks, data-first signature.
+    <A1, A2, E1, E2, E3, R1, R2, R3>(
+        socket: MultiplexedStreamSocket,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink1: Sink.Sink<A1, string, string, E2, R2>,
+        sink2: Sink.Sink<A2, string, string, E3, R3>,
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    ): Effect.Effect<
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+    >;
+    // Two sinks, data-last signature.
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
         sink2: Sink.Sink<A2, string, string, E3, R3>,
-        options?: { bufferSize?: number | undefined } | undefined
-    ) => (
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    ): (
         socket: MultiplexedStreamSocket
     ) => Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >,
-    // Data first signature
-    <A1, A2, E1, E2, E3, R1, R2, R3>(
-        socket: MultiplexedStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, R1>,
-        sink1: Sink.Sink<A1, string, string, E2, R2>,
-        sink2: Sink.Sink<A2, string, string, E3, R3>,
-        options?: { bufferSize?: number | undefined } | undefined
-    ) => Effect.Effect<
-        CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >
->(
+    >;
+} = Function.dual(
     (arguments_) => arguments_[0][Socket.TypeId] !== undefined,
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
-        sink2: Sink.Sink<A2, string, string, E3, R3>,
-        options?: { bufferSize?: number | undefined } | undefined
+        sink2OrOptions?: Sink.Sink<A2, string, string, E3, R3> | { encoding: string | undefined } | undefined,
+        options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
     ): Effect.Effect<
-        CompressedDemuxOutput<A1, A2>,
+        A1 | CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    > =>
-        Function.pipe(
+    > => {
+        const willPartition = Predicate.hasProperty(sink2OrOptions, Sink.SinkTypeId);
+        const untilPartition = Function.pipe(
             source,
             Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
             Stream.mapConcat(Function.identity),
@@ -317,17 +341,39 @@ export const demuxMultiplexedSocket = Function.dual<
                 ([messageType]) =>
                     messageType === MultiplexedStreamSocketHeaderType.Stdout ||
                     messageType === MultiplexedStreamSocketHeaderType.Stderr
-            ),
+            )
+        );
+
+        if (!willPartition) {
+            return Function.pipe(
+                untilPartition,
+                Stream.map(Tuple.getSecond),
+                Stream.decodeText(sink2OrOptions?.encoding ?? "utf-8"),
+                Stream.run(sink1)
+            );
+        }
+
+        return Function.pipe(
+            untilPartition,
             Stream.partition(([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stdout, options),
             Effect.map(
                 Tuple.mapBoth({
-                    onFirst: Function.flow(Stream.map(Tuple.getSecond), Stream.decodeText("utf-8"), Stream.run(sink1)),
-                    onSecond: Function.flow(Stream.map(Tuple.getSecond), Stream.decodeText("utf-8"), Stream.run(sink2)),
+                    onFirst: Function.flow(
+                        Stream.map(Tuple.getSecond),
+                        Stream.decodeText(options?.encoding ?? "utf-8"),
+                        Stream.run(sink1)
+                    ),
+                    onSecond: Function.flow(
+                        Stream.map(Tuple.getSecond),
+                        Stream.decodeText(options?.encoding ?? "utf-8"),
+                        Stream.run(sink2OrOptions)
+                    ),
                 })
             ),
             Effect.map(Effect.allWith({ concurrency: 2 })),
             Effect.flatten,
             Effect.map(compressDemuxOutput),
             Effect.scoped
-        )
+        );
+    }
 );

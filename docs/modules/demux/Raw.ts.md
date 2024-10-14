@@ -224,37 +224,88 @@ To demux a single raw socket, you should use
 **Signature**
 
 ```ts
-export declare const demuxUnidirectionalRawSockets: <
-  O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, UnidirectionalRawStreamSocket],
-  O2 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-  O3 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-  E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, UnidirectionalRawStreamSocket] ? E : never,
-  E2 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
-  E3 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
-  R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, UnidirectionalRawStreamSocket] ? R : never,
-  R2 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
-  R3 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
-  A1 = O2 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
-    ? A
-    : undefined,
-  A2 = O3 extends [UnidirectionalRawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>]
-    ? A
-    : undefined
->(
-  sockets:
-    | { stdin: O1; stdout?: never; stderr?: never }
-    | { stdin?: never; stdout: O2; stderr?: never }
-    | { stdin?: never; stdout?: never; stderr: O3 }
-    | { stdin: O1; stdout: O2; stderr?: never }
-    | { stdin: O1; stdout?: never; stderr: O3 }
-    | { stdin?: never; stdout: O2; stderr: O3 }
-    | { stdin: O1; stdout: O2; stderr: O3 },
-  options?: { encoding?: string | undefined } | undefined
-) => Effect.Effect<
-  CompressedDemuxOutput<A1, A2>,
-  E1 | E2 | E3 | Socket.SocketError,
-  Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
->
+export declare const demuxUnidirectionalRawSockets: {
+  <
+    O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, UnidirectionalRawStreamSocket],
+    O2 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
+    O3 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
+    S = UnidirectionalRawStreamSocket,
+    E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, S] ? E : never,
+    E2 = O2 extends [S, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
+    E3 = O3 extends [S, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
+    R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, S] ? R : never,
+    R2 = O2 extends [S, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
+    R3 = O3 extends [S, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
+    A1 = O2 extends [S, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : void,
+    A2 = O3 extends [S, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : void
+  >(
+    sockets:
+      | { stdin: O1; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: O2; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: O3 }
+      | { stdin: O1; stdout: O2; stderr?: never }
+      | { stdin: O1; stdout?: never; stderr: O3 }
+      | { stdin?: never; stdout: O2; stderr: O3 }
+      | { stdin: O1; stdout: O2; stderr: O3 },
+    options?: { encoding?: string | undefined } | undefined
+  ): Effect.Effect<
+    CompressedDemuxOutput<A1, A2>,
+    E1 | E2 | E3 | Socket.SocketError,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+  >
+  <A1, A2, E1, E2, E3, R1, R2, R3>(
+    sockets: {
+      stdout: UnidirectionalRawStreamSocket
+      stdin?: UnidirectionalRawStreamSocket | undefined
+      stderr?: UnidirectionalRawStreamSocket | undefined
+    },
+    io: {
+      stdin: Stream.Stream<string | Uint8Array, E1, R1>
+      stdout: Sink.Sink<A1, string, string, E2, R2>
+      stderr: Sink.Sink<A2, string, string, E3, R3>
+    },
+    options?: { encoding?: string | undefined } | undefined
+  ): Effect.Effect<
+    CompressedDemuxOutput<A1, A2>,
+    E1 | E2 | E3 | Socket.SocketError,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+  >
+  <A1, A2, E1, E2, E3, R1, R2, R3>(
+    io: {
+      stdin: Stream.Stream<string | Uint8Array, E1, R1>
+      stdout: Sink.Sink<A1, string, string, E2, R2>
+      stderr: Sink.Sink<A2, string, string, E3, R3>
+    },
+    options?: { encoding?: string | undefined } | undefined
+  ): (sockets: {
+    stdout: UnidirectionalRawStreamSocket
+    stdin?: UnidirectionalRawStreamSocket | undefined
+    stderr?: UnidirectionalRawStreamSocket | undefined
+  }) => Effect.Effect<
+    CompressedDemuxOutput<A1, A2>,
+    E1 | E2 | E3 | Socket.SocketError,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+  >
+  <A1, E1, E2, R1, R2>(
+    sockets: {
+      stdout: UnidirectionalRawStreamSocket
+      stdin?: UnidirectionalRawStreamSocket | undefined
+      stderr?: UnidirectionalRawStreamSocket | undefined
+    },
+    source: Stream.Stream<string | Uint8Array, E1, R1>,
+    sink: Sink.Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
+  ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
+  <A1, E1, E2, R1, R2>(
+    source: Stream.Stream<string | Uint8Array, E1, R1>,
+    sink: Sink.Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
+  ): (sockets: {
+    stdout: UnidirectionalRawStreamSocket
+    stdin?: UnidirectionalRawStreamSocket | undefined
+    stderr?: UnidirectionalRawStreamSocket | undefined
+  }) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
+}
 ```
 
 **Example**

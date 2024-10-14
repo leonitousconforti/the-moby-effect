@@ -5,10 +5,10 @@ import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 
 import * as Convey from "the-moby-effect/Convey";
-import * as Demux from "the-moby-effect/Demux";
+import * as DemuxStdio from "the-moby-effect/demux/Stdio";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
-import * as Platforms from "the-moby-effect/Platforms";
 import * as Containers from "the-moby-effect/endpoints/Containers";
+import * as Platforms from "the-moby-effect/Platforms";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -49,7 +49,7 @@ const program = Effect.gen(function* () {
     });
 
     // Demux the socket to stdin, stdout and stderr
-    yield* Demux.demuxSocketFromStdinToStdoutAndStderr(socket);
+    yield* DemuxStdio.demuxSocketFromStdinToStdoutAndStderr(socket);
 
     // Done
     yield* Console.log("Disconnected from container");

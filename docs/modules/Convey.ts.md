@@ -26,8 +26,6 @@ Added in v1.0.0
 
 ## followProgressInConsole
 
-Tracks the progress stream in the console and returns the result.
-
 **Signature**
 
 ```ts
@@ -39,8 +37,6 @@ export declare const followProgressInConsole: <E1, R1>(
 Added in v1.0.0
 
 ## waitForProgressToComplete
-
-Waits for the progress stream to complete and returns the result.
 
 **Signature**
 

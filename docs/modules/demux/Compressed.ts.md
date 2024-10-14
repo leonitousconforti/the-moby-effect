@@ -1,12 +1,12 @@
 ---
 title: demux/Compressed.ts
-nav_order: 4
+nav_order: 3
 parent: Modules
 ---
 
 ## Compressed overview
 
-Compression utilities for demuxing.
+Compressing utilities for demuxing.
 
 Added in v1.0.0
 

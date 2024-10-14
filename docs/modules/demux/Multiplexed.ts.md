@@ -64,29 +64,52 @@ bufferSize is 16.
 **Signature**
 
 ```ts
-export declare const demuxMultiplexedSocket: (<A1, A2, E1, E2, E3, R1, R2, R3>(
-  source: Stream.Stream<string | Uint8Array, E1, R1>,
-  sink1: Sink.Sink<A1, string, string, E2, R2>,
-  sink2: Sink.Sink<A2, string, string, E3, R3>,
-  options?: { bufferSize?: number | undefined } | undefined
-) => (
-  socket: MultiplexedStreamSocket
-) => Effect.Effect<
-  CompressedDemuxOutput<A1, A2>,
-  E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
-  Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
->) &
-  (<A1, A2, E1, E2, E3, R1, R2, R3>(
+export declare const demuxMultiplexedSocket: {
+  <A1, E1, E2, R1, R2>(
+    socket: MultiplexedStreamSocket,
+    source: Stream.Stream<string | Uint8Array, E1, R1>,
+    sink: Sink.Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
+  ): Effect.Effect<
+    CompressedDemuxOutput<A1, never>,
+    E1 | E2 | Socket.SocketError | ParseResult.ParseError,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
+  >
+  <A1, E1, E2, R1, R2>(
+    source: Stream.Stream<string | Uint8Array, E1, R1>,
+    sink: Sink.Sink<A1, string, string, E2, R2>,
+    options?: { encoding?: string | undefined } | undefined
+  ): (
+    socket: MultiplexedStreamSocket
+  ) => Effect.Effect<
+    CompressedDemuxOutput<A1, never>,
+    E1 | E2 | Socket.SocketError | ParseResult.ParseError,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
+  >
+  <A1, A2, E1, E2, E3, R1, R2, R3>(
     socket: MultiplexedStreamSocket,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink1: Sink.Sink<A1, string, string, E2, R2>,
     sink2: Sink.Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined } | undefined
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+  ): Effect.Effect<
+    CompressedDemuxOutput<A1, A2>,
+    E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+  >
+  <A1, A2, E1, E2, E3, R1, R2, R3>(
+    source: Stream.Stream<string | Uint8Array, E1, R1>,
+    sink1: Sink.Sink<A1, string, string, E2, R2>,
+    sink2: Sink.Sink<A2, string, string, E3, R3>,
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+  ): (
+    socket: MultiplexedStreamSocket
   ) => Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-  >)
+  >
+}
 ```
 
 **Example**

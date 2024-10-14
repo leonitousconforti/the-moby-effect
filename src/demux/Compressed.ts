@@ -1,5 +1,5 @@
 /**
- * Compression utilities for demuxing.
+ * Compressing utilities for demuxing.
  *
  * @since 1.0.0
  */
