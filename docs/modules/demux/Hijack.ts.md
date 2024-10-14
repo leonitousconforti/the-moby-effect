@@ -16,15 +16,15 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Predicates](#predicates)
-  - [responseToMultiplexedStreamSocketOrFail](#responsetomultiplexedstreamsocketorfail)
-  - [responseToRawStreamSocketOrFail](#responsetorawstreamsocketorfail)
-  - [responseToStreamingSocketOrFail](#responsetostreamingsocketorfail)
+  - [responseToMultiplexedStreamSocketOrFailUnsafe](#responsetomultiplexedstreamsocketorfailunsafe)
+  - [responseToRawStreamSocketOrFailUnsafe](#responsetorawstreamsocketorfailunsafe)
+  - [responseToStreamingSocketOrFailUnsafe](#responsetostreamingsocketorfailunsafe)
 
 ---
 
 # Predicates
 
-## responseToMultiplexedStreamSocketOrFail
+## responseToMultiplexedStreamSocketOrFailUnsafe
 
 Transforms an http response into a multiplexed stream socket. If the response
 is not a multiplexed stream socket, then an error will be returned.
@@ -36,14 +36,14 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const responseToMultiplexedStreamSocketOrFail: (
+export declare const responseToMultiplexedStreamSocketOrFailUnsafe: (
   response: HttpClientResponse.HttpClientResponse
 ) => Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never>
 ```
 
 Added in v1.0.0
 
-## responseToRawStreamSocketOrFail
+## responseToRawStreamSocketOrFailUnsafe
 
 Transforms an http response into a raw stream socket. If the response is not
 a raw stream socket, then an error will be returned.
@@ -55,7 +55,7 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const responseToRawStreamSocketOrFail: (<
+export declare const responseToRawStreamSocketOrFailUnsafe: (<
   SourceIsKnownUnidirectional extends true | undefined = undefined,
   SourceIsKnownBidirectional extends true | undefined = undefined
 >(
@@ -96,7 +96,7 @@ export declare const responseToRawStreamSocketOrFail: (<
 
 Added in v1.0.0
 
-## responseToStreamingSocketOrFail
+## responseToStreamingSocketOrFailUnsafe
 
 Transforms an http response into a multiplexed stream socket or a raw stream
 socket. If the response is neither a multiplexed stream socket nor a raw or
@@ -109,26 +109,42 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const responseToStreamingSocketOrFail: (<
-  SourceIsKnownUnidirectional extends true | undefined = undefined
+export declare const responseToStreamingSocketOrFailUnsafe: (<
+  SourceIsKnownUnidirectional extends true | undefined = undefined,
+  SourceIsKnownBidirectional extends true | undefined = undefined
 >(
-  options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
+  options?:
+    | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+    | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+    | undefined
 ) => (
   response: HttpClientResponse.HttpClientResponse
 ) => Effect.Effect<
-  SourceIsKnownUnidirectional extends true
-    ? UnidirectionalRawStreamSocket
-    : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+  | MultiplexedStreamSocket
+  | (SourceIsKnownUnidirectional extends true
+      ? UnidirectionalRawStreamSocket
+      : SourceIsKnownBidirectional extends true
+        ? BidirectionalRawStreamSocket
+        : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
   Socket.SocketError,
   never
 >) &
-  (<SourceIsKnownUnidirectional extends true | undefined = undefined>(
+  (<
+    SourceIsKnownUnidirectional extends true | undefined = undefined,
+    SourceIsKnownBidirectional extends true | undefined = undefined
+  >(
     response: HttpClientResponse.HttpClientResponse,
-    options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
+    options?:
+      | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+      | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+      | undefined
   ) => Effect.Effect<
-    SourceIsKnownUnidirectional extends true
-      ? UnidirectionalRawStreamSocket
-      : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+    | MultiplexedStreamSocket
+    | (SourceIsKnownUnidirectional extends true
+        ? UnidirectionalRawStreamSocket
+        : SourceIsKnownBidirectional extends true
+          ? BidirectionalRawStreamSocket
+          : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
     Socket.SocketError,
     never
   >)

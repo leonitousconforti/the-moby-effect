@@ -36,7 +36,7 @@ import {
  * @since 1.0.0
  * @category Predicates
  */
-export const responseToMultiplexedStreamSocketOrFail = (
+export const responseToMultiplexedStreamSocketOrFailUnsafe = (
     response: HttpClientResponse.HttpClientResponse
 ): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
     Effect.gen(function* () {
@@ -64,7 +64,7 @@ export const responseToMultiplexedStreamSocketOrFail = (
  * @since 1.0.0
  * @category Predicates
  */
-export const responseToRawStreamSocketOrFail = Function.dual<
+export const responseToRawStreamSocketOrFailUnsafe = Function.dual<
     // Data-last signature
     <
         SourceIsKnownUnidirectional extends true | undefined = undefined,
@@ -166,52 +166,81 @@ export const responseToRawStreamSocketOrFail = Function.dual<
  * @since 1.0.0
  * @category Predicates
  */
-export const responseToStreamingSocketOrFail = Function.dual<
-    <SourceIsKnownUnidirectional extends true | undefined = undefined>(
-        options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
+export const responseToStreamingSocketOrFailUnsafe = Function.dual<
+    // Data-last signature
+    <
+        SourceIsKnownUnidirectional extends true | undefined = undefined,
+        SourceIsKnownBidirectional extends true | undefined = undefined,
+    >(
+        options?:
+            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+            | undefined
     ) => (
         response: HttpClientResponse.HttpClientResponse
     ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+        | MultiplexedStreamSocket
+        | (SourceIsKnownUnidirectional extends true
+              ? UnidirectionalRawStreamSocket
+              : SourceIsKnownBidirectional extends true
+                ? BidirectionalRawStreamSocket
+                : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
         Socket.SocketError,
         never
     >,
-    <SourceIsKnownUnidirectional extends true | undefined = undefined>(
+    // Data-first signature
+    <
+        SourceIsKnownUnidirectional extends true | undefined = undefined,
+        SourceIsKnownBidirectional extends true | undefined = undefined,
+    >(
         response: HttpClientResponse.HttpClientResponse,
-        options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
+        options?:
+            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+            | undefined
     ) => Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+        | MultiplexedStreamSocket
+        | (SourceIsKnownUnidirectional extends true
+              ? UnidirectionalRawStreamSocket
+              : SourceIsKnownBidirectional extends true
+                ? BidirectionalRawStreamSocket
+                : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
         Socket.SocketError,
         never
     >
 >(
     (_arguments) => _arguments[0][HttpClientResponse.TypeId] !== undefined,
-    <SourceIsKnownUnidirectional extends true | undefined = undefined>(
+    <
+        SourceIsKnownUnidirectional extends true | undefined = undefined,
+        SourceIsKnownBidirectional extends true | undefined = undefined,
+    >(
         response: HttpClientResponse.HttpClientResponse,
-        options?: { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional } | undefined
+        options?:
+            | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
+            | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
+            | undefined
     ): Effect.Effect<
-        SourceIsKnownUnidirectional extends true
-            ? UnidirectionalRawStreamSocket
-            : BidirectionalRawStreamSocket | MultiplexedStreamSocket,
+        | MultiplexedStreamSocket
+        | (SourceIsKnownUnidirectional extends true
+              ? UnidirectionalRawStreamSocket
+              : SourceIsKnownBidirectional extends true
+                ? BidirectionalRawStreamSocket
+                : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
         Socket.SocketError,
         never
     > =>
         Effect.gen(function* () {
-            type Ret = SourceIsKnownUnidirectional extends true
-                ? UnidirectionalRawStreamSocket
-                : BidirectionalRawStreamSocket | MultiplexedStreamSocket;
-
             const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
             const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
             const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
 
             if (responseIsMultiplexedStreamSocketResponse(response)) {
                 // Bad, you can't have a unidirectional multiplexed stream socket
-                if (options?.sourceIsKnownUnidirectional) {
+                if (
+                    Predicate.isNotUndefined(options) &&
+                    "sourceIsKnownUnidirectional" in options &&
+                    options.sourceIsKnownUnidirectional
+                ) {
                     return yield* new Socket.SocketGenericError({
                         reason: "Read",
                         cause: `Can not have a unidirectional multiplexed stream socket`,
@@ -219,12 +248,9 @@ export const responseToStreamingSocketOrFail = Function.dual<
                 }
 
                 // Fine to have a multiplexed stream socket now
-                else {
-                    return makeMultiplexedStreamSocket(effectSocket) as Ret;
-                }
+                return makeMultiplexedStreamSocket(effectSocket);
             }
 
-            const maybeRawSocket = yield* responseToRawStreamSocketOrFail(response, options);
-            return maybeRawSocket as Ret;
+            return yield* responseToRawStreamSocketOrFailUnsafe(response, options);
         })
 );

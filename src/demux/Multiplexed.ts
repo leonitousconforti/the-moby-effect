@@ -189,81 +189,6 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
  *
  * @since 1.0.0
  * @category Demux
- * @example
- *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
- *     import * as Chunk from "effect/Chunk";
- *     import * as Effect from "effect/Effect";
- *     import * as Function from "effect/Function";
- *     import * as Layer from "effect/Layer";
- *     import * as Sink from "effect/Sink";
- *     import * as Stream from "effect/Stream";
- *
- *     import * as Convey from "the-moby-effect/Convey";
- *     import * as Platforms from "the-moby-effect/Platforms";
- *     import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed";
- *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
- *     import * as Containers from "the-moby-effect/endpoints/Containers";
- *     import * as DockerEngine from "the-moby-effect/engines/Docker";
- *
- *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
- *         Effect.map(DockerEngine.layerNodeJS),
- *         Layer.unwrapEffect
- *     );
- *
- *     Effect.gen(function* () {
- *         const image = "ubuntu:latest";
- *         const containers = yield* Containers.Containers;
- *
- *         // Pull the image, which will be removed when the scope is closed
- *         const pullStream = DockerEngine.pull({ image });
- *         yield* Convey.followProgressInConsole(pullStream);
- *
- *         // Start a container, which will be removed when the scope is closed
- *         const { Id: containerId } = yield* DockerEngine.runScoped({
- *             spec: {
- *                 Image: image,
- *                 Tty: false,
- *                 Cmd: [
- *                     "bash",
- *                     "-c",
- *                     'sleep 2s && echo "Hi" && >&2 echo "Hi2"',
- *                 ],
- *             },
- *         });
- *
- *         // Since the container was started with "tty: false", we should get a multiplexed socket here
- *         const socket:
- *             | DemuxRaw.BidirectionalRawStreamSocket
- *             | DemuxMultiplexed.MultiplexedStreamSocket =
- *             yield* containers.attach({
- *                 stdout: true,
- *                 stderr: true,
- *                 stream: true,
- *                 id: containerId,
- *             });
- *
- *         assert.ok(
- *             DemuxMultiplexed.isMultiplexedStreamSocket(socket),
- *             "Expected a multiplexed socket"
- *         );
- *         const [stdoutData, stderrData] =
- *             yield* DemuxMultiplexed.demuxMultiplexedSocket(
- *                 socket,
- *                 Stream.never,
- *                 Sink.collectAll<string>(),
- *                 Sink.collectAll<string>()
- *             );
- *
- *         assert.deepStrictEqual(Chunk.toReadonlyArray(stdoutData), ["Hi\n"]);
- *         assert.deepStrictEqual(Chunk.toReadonlyArray(stderrData), ["Hi2\n"]);
- *         yield* containers.wait({ id: containerId });
- *     })
- *         .pipe(Effect.scoped)
- *         .pipe(Effect.provide(layer))
- *         .pipe(NodeRuntime.runMain);
- *
- * @see https://docs.docker.com/engine/api/v1.46/#tag/Container/operation/ContainerAttach
  */
 export const demuxMultiplexedSocket: {
     // One sink, data-first signature.
@@ -289,6 +214,7 @@ export const demuxMultiplexedSocket: {
         E1 | E2 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
     >;
+
     // Two sinks, data-first signature.
     <A1, A2, E1, E2, E3, R1, R2, R3>(
         socket: MultiplexedStreamSocket,

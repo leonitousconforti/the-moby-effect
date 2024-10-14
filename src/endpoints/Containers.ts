@@ -24,7 +24,7 @@ import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
-import { responseToStreamingSocketOrFail } from "../demux/Hijack.js";
+import { responseToStreamingSocketOrFailUnsafe } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import {
     BidirectionalRawStreamSocket,
@@ -407,7 +407,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
                 maybeUpgradedClient.execute,
-                Effect.flatMap((response) => responseToStreamingSocketOrFail(response)),
+                Effect.flatMap(responseToStreamingSocketOrFailUnsafe({ sourceIsKnownBidirectional: true })),
                 Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
             );
 

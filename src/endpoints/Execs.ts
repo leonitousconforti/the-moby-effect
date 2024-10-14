@@ -20,7 +20,7 @@ import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
-import { responseToStreamingSocketOrFail } from "../demux/Hijack.js";
+import { responseToStreamingSocketOrFailUnsafe } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import { BidirectionalRawStreamSocket } from "../demux/Raw.js";
 import {
@@ -127,7 +127,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
             );
 
             const toStreamingSock = Function.compose(
-                responseToStreamingSocketOrFail,
+                responseToStreamingSocketOrFailUnsafe,
                 Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
             );
 

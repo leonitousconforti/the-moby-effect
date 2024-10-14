@@ -52,32 +52,80 @@ export declare const demuxToSeparateSinks: {
     E1 | E2 | E3 | SocketError | ParseError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
-  <A1, A2, E1, E2, E3, R1, R2, R3>(
-    sockets: {
-      stdout: UnidirectionalRawStreamSocket
-      stdin?: UnidirectionalRawStreamSocket | undefined
-      stderr?: UnidirectionalRawStreamSocket | undefined
-    },
+  <
+    A1,
+    A2,
+    E1,
+    E2,
+    E3,
+    R1,
+    R2,
+    R3,
+    SocketOptions extends
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+      | {
+          stdin: UnidirectionalRawStreamSocket
+          stdout: UnidirectionalRawStreamSocket
+          stderr: UnidirectionalRawStreamSocket
+        }
+  >(
+    sockets: SocketOptions,
     source: Stream<string | Uint8Array, E1, R1>,
     sink1: Sink<A1, string, string, E2, R2>,
     sink2: Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): Effect<
-    CompressedDemuxOutput<A1, A2>,
+    SocketOptions["stdout"] extends UnidirectionalRawStreamSocket
+      ? SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<A1, A2>
+        : CompressedDemuxOutput<A1, void>
+      : SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<void, A2>
+        : CompressedDemuxOutput<void, void>,
     E1 | E2 | E3 | SocketError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
-  <A1, A2, E1, E2, E3, R1, R2, R3>(
+  <
+    A1,
+    A2,
+    E1,
+    E2,
+    E3,
+    R1,
+    R2,
+    R3,
+    SocketOptions extends
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+      | {
+          stdin: UnidirectionalRawStreamSocket
+          stdout: UnidirectionalRawStreamSocket
+          stderr: UnidirectionalRawStreamSocket
+        }
+  >(
     source: Stream<string | Uint8Array, E1, R1>,
     sink1: Sink<A1, string, string, E2, R2>,
     sink2: Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-  ): (sockets: {
-    stdout: UnidirectionalRawStreamSocket
-    stdin?: UnidirectionalRawStreamSocket | undefined
-    stderr?: UnidirectionalRawStreamSocket | undefined
-  }) => Effect<
-    CompressedDemuxOutput<A1, A2>,
+    options?: { encoding?: string | undefined } | undefined
+  ): (
+    sockets: SocketOptions
+  ) => Effect<
+    SocketOptions["stdout"] extends UnidirectionalRawStreamSocket
+      ? SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<A1, A2>
+        : CompressedDemuxOutput<A1, void>
+      : SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<void, A2>
+        : CompressedDemuxOutput<void, void>,
     E1 | E2 | E3 | SocketError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
@@ -96,12 +144,12 @@ export declare const demuxToSingleSink: {
     socket: BidirectionalRawStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): (
     socket: BidirectionalRawStreamSocket
   ) => Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
@@ -109,47 +157,50 @@ export declare const demuxToSingleSink: {
     socket: MultiplexedStreamSocket,
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
   ): Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
   ): (
     socket: MultiplexedStreamSocket
   ) => Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, E1, E2, R1, R2>(
-    socket: UnidirectionalRawStreamSocket,
+    sockets:
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+      | {
+          stdin: UnidirectionalRawStreamSocket
+          stdout: UnidirectionalRawStreamSocket
+          stderr: UnidirectionalRawStreamSocket
+        },
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
   <A1, E1, E2, R1, R2>(
     source: Stream<string | Uint8Array, E1, R1>,
     sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): (
-    sockets: UnidirectionalRawStreamSocket
+    sockets:
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+      | {
+          stdin: UnidirectionalRawStreamSocket
+          stdout: UnidirectionalRawStreamSocket
+          stderr: UnidirectionalRawStreamSocket
+        }
   ) => Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
-  <A1, E1, E2, R1, R2>(
-    sockets: {
-      stdout: UnidirectionalRawStreamSocket
-      stdin?: UnidirectionalRawStreamSocket | undefined
-      stderr?: UnidirectionalRawStreamSocket | undefined
-    },
-    source: Stream<string | Uint8Array, E1, R1>,
-    sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
-  ): Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
-  <A1, E1, E2, R1, R2>(
-    source: Stream<string | Uint8Array, E1, R1>,
-    sink: Sink<A1, string, string, E2, R2>,
-    options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
-  ): (sockets: {
-    stdout: UnidirectionalRawStreamSocket
-    stdin?: UnidirectionalRawStreamSocket | undefined
-    stderr?: UnidirectionalRawStreamSocket | undefined
-  }) => Effect<A1, E1 | E2 | SocketError | ParseError, Exclude<R1, Scope> | Exclude<R2, Scope>>
 }
 ```
 
@@ -166,13 +217,13 @@ export declare const demuxUnknownToSeparateSinks: {
     source: Stream<string | Uint8Array, E1, R1>,
     sink1: Sink<A1, string, string, E2, R2>,
     sink2: Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): Effect<A1, E1 | E2 | E3 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>>
   <A1, A2, E1, E2, E3, R1, R2, R3>(
     source: Stream<string | Uint8Array, E1, R1>,
     sink1: Sink<A1, string, string, E2, R2>,
     sink2: Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): (
     socket: BidirectionalRawStreamSocket
   ) => Effect<A1, E1 | E2 | E3 | SocketError, Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>>
@@ -199,32 +250,80 @@ export declare const demuxUnknownToSeparateSinks: {
     E1 | E2 | E3 | SocketError | ParseError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
-  <A1, A2, E1, E2, E3, R1, R2, R3>(
-    sockets: {
-      stdout: UnidirectionalRawStreamSocket
-      stdin?: UnidirectionalRawStreamSocket | undefined
-      stderr?: UnidirectionalRawStreamSocket | undefined
-    },
+  <
+    A1,
+    A2,
+    E1,
+    E2,
+    E3,
+    R1,
+    R2,
+    R3,
+    SocketOptions extends
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+      | {
+          stdin: UnidirectionalRawStreamSocket
+          stdout: UnidirectionalRawStreamSocket
+          stderr: UnidirectionalRawStreamSocket
+        }
+  >(
+    sockets: SocketOptions,
     source: Stream<string | Uint8Array, E1, R1>,
     sink1: Sink<A1, string, string, E2, R2>,
     sink2: Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    options?: { encoding?: string | undefined } | undefined
   ): Effect<
-    CompressedDemuxOutput<A1, A2>,
+    SocketOptions["stdout"] extends UnidirectionalRawStreamSocket
+      ? SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<A1, A2>
+        : CompressedDemuxOutput<A1, void>
+      : SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<void, A2>
+        : CompressedDemuxOutput<void, void>,
     E1 | E2 | E3 | SocketError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
-  <A1, A2, E1, E2, E3, R1, R2, R3>(
+  <
+    A1,
+    A2,
+    E1,
+    E2,
+    E3,
+    R1,
+    R2,
+    R3,
+    SocketOptions extends
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+      | {
+          stdin: UnidirectionalRawStreamSocket
+          stdout: UnidirectionalRawStreamSocket
+          stderr: UnidirectionalRawStreamSocket
+        }
+  >(
     source: Stream<string | Uint8Array, E1, R1>,
     sink1: Sink<A1, string, string, E2, R2>,
     sink2: Sink<A2, string, string, E3, R3>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-  ): (sockets: {
-    stdout: UnidirectionalRawStreamSocket
-    stdin?: UnidirectionalRawStreamSocket | undefined
-    stderr?: UnidirectionalRawStreamSocket | undefined
-  }) => Effect<
-    CompressedDemuxOutput<A1, A2>,
+    options?: { encoding?: string | undefined } | undefined
+  ): (
+    sockets: SocketOptions
+  ) => Effect<
+    SocketOptions["stdout"] extends UnidirectionalRawStreamSocket
+      ? SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<A1, A2>
+        : CompressedDemuxOutput<A1, void>
+      : SocketOptions["stderr"] extends UnidirectionalRawStreamSocket
+        ? CompressedDemuxOutput<void, A2>
+        : CompressedDemuxOutput<void, void>,
     E1 | E2 | E3 | SocketError,
     Exclude<R1, Scope> | Exclude<R2, Scope> | Exclude<R3, Scope>
   >
