@@ -52,14 +52,15 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * @category Demux
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
-    socketOptions:
+    sockets:
         | BidirectionalRawStreamSocket
         | MultiplexedStreamSocket
         | {
               stdout: UnidirectionalRawStreamSocket;
               stdin?: UnidirectionalRawStreamSocket | undefined;
               stderr?: UnidirectionalRawStreamSocket | undefined;
-          }
+          },
+    options?: { encoding: string | undefined } | undefined
 ): Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never> =>
     Effect.flatMap(
         Effect.all(
@@ -85,7 +86,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
                 { endOnDone: false }
             );
 
-            const helper = demuxUnknownToSeparateSinks(stdinStream, stdoutSink, stderrSink, { encoding: "utf8" }) as (
+            const helper = demuxUnknownToSeparateSinks(stdinStream, stdoutSink, stderrSink, options) as (
                 socketOptions:
                     | BidirectionalRawStreamSocket
                     | MultiplexedStreamSocket
@@ -100,7 +101,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
                 never
             >;
 
-            return helper(socketOptions);
+            return helper(sockets);
         }
     );
 
@@ -120,28 +121,34 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
  */
 export const demuxSocketWithInputToConsole: {
     <E1, R1>(
-        input: Stream.Stream<string | Uint8Array, E1, R1>
+        input: Stream.Stream<string | Uint8Array, E1, R1>,
+        options?: { encoding: string | undefined } | undefined
     ): (
         socket: BidirectionalRawStreamSocket
     ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
     <E1, R1>(
-        input: Stream.Stream<string | Uint8Array, E1, R1>
+        input: Stream.Stream<string | Uint8Array, E1, R1>,
+        options?: { encoding: string | undefined } | undefined
     ): (
         socket: MultiplexedStreamSocket
     ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
     <E1, R1>(
-        input: Stream.Stream<string | Uint8Array, E1, R1>
+        input: Stream.Stream<string | Uint8Array, E1, R1>,
+        options?: { encoding: string | undefined } | undefined
     ): (sockets: {
         stdout: UnidirectionalRawStreamSocket;
         stdin?: UnidirectionalRawStreamSocket | undefined;
         stderr?: UnidirectionalRawStreamSocket | undefined;
     }) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-} = <E1, R1>(input: Stream.Stream<string | Uint8Array, E1, R1>) =>
+} = <E1, R1>(
+    input: Stream.Stream<string | Uint8Array, E1, R1>,
+    options?: { encoding: string | undefined } | undefined
+) =>
     demuxUnknownToSeparateSinks(
         input,
         Sink.forEach<string, void, never, never>(Console.log),
         Sink.forEach<string, void, never, never>(Console.error),
-        { encoding: "utf8" }
+        options
     ) as {
         (
             socket: BidirectionalRawStreamSocket

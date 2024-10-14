@@ -44,14 +44,15 @@ imports the `@effect/platform-node` package.
 
 ```ts
 export declare const demuxSocketFromStdinToStdoutAndStderr: (
-  socketOptions:
+  sockets:
     | BidirectionalRawStreamSocket
     | MultiplexedStreamSocket
     | {
         stdout: UnidirectionalRawStreamSocket
         stdin?: UnidirectionalRawStreamSocket | undefined
         stderr?: UnidirectionalRawStreamSocket | undefined
-      }
+      },
+  options?: { encoding: string | undefined } | undefined
 ) => Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never>
 ```
 
@@ -74,17 +75,20 @@ the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
 ```ts
 export declare const demuxSocketWithInputToConsole: {
   <E1, R1>(
-    input: Stream.Stream<string | Uint8Array, E1, R1>
+    input: Stream.Stream<string | Uint8Array, E1, R1>,
+    options?: { encoding: string | undefined } | undefined
   ): (
     socket: BidirectionalRawStreamSocket
   ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>
   <E1, R1>(
-    input: Stream.Stream<string | Uint8Array, E1, R1>
+    input: Stream.Stream<string | Uint8Array, E1, R1>,
+    options?: { encoding: string | undefined } | undefined
   ): (
     socket: MultiplexedStreamSocket
   ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>
   <E1, R1>(
-    input: Stream.Stream<string | Uint8Array, E1, R1>
+    input: Stream.Stream<string | Uint8Array, E1, R1>,
+    options?: { encoding: string | undefined } | undefined
   ): (sockets: {
     stdout: UnidirectionalRawStreamSocket
     stdin?: UnidirectionalRawStreamSocket | undefined
