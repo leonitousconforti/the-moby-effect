@@ -6,7 +6,7 @@ parent: Modules
 
 ## PodmanEngine overview
 
-Podman helpers
+Podman helpers.
 
 Added in v1.0.0
 
@@ -23,7 +23,7 @@ Added in v1.0.0
 
 ## From "./engines/Podman.js"
 
-Podman helpers
+Podman helpers.
 
 **Signature**
 

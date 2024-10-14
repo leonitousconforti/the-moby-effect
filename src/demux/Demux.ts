@@ -40,16 +40,16 @@ import {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *     import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -118,16 +118,16 @@ import {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *     import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -197,15 +197,15 @@ import {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -302,15 +302,15 @@ import {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -526,16 +526,16 @@ export const demuxToSingleSink: {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *     import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -606,15 +606,15 @@ export const demuxToSingleSink: {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -706,15 +706,15 @@ export const demuxToSingleSink: {
  *     import * as Sink from "effect/Sink";
  *     import * as Stream from "effect/Stream";
  *
+ *     import * as Connection from "the-moby-effect/Connection";
  *     import * as Convey from "the-moby-effect/Convey";
  *     import * as Demux from "the-moby-effect/Demux";
  *     import * as DemuxRaw from "the-moby-effect/demux/Raw";
  *     import * as Containers from "the-moby-effect/endpoints/Containers";
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
- *     import * as Platforms from "the-moby-effect/Platforms";
  *
  *     const layer = Function.pipe(
- *         Platforms.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         Connection.connectionOptionsFromPlatformSystemSocketDefault(),
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );

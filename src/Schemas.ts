@@ -1,5 +1,5 @@
 /**
- * Moby schemas
+ * Moby schemas.
  *
  * @since 1.0.0
  */

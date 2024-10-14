@@ -1,12 +1,12 @@
 ---
 title: index.ts
-nav_order: 31
+nav_order: 32
 parent: Modules
 ---
 
 ## index overview
 
-Convenance utilities for Docker input and output streams.
+Http, https, ssh, and unix socket connection agents for all platforms.
 
 Added in v1.0.0
 
@@ -15,6 +15,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
+  - [From "./Connection.js"](#from-connectionjs)
   - [From "./Convey.js"](#from-conveyjs)
   - [From "./Demux.js"](#from-demuxjs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
@@ -25,6 +26,18 @@ Added in v1.0.0
 ---
 
 # exports
+
+## From "./Connection.js"
+
+Http, https, ssh, and unix socket connection agents for all platforms.
+
+**Signature**
+
+```ts
+export * as Connection from "./Connection.js"
+```
+
+Added in v1.0.0
 
 ## From "./Convey.js"
 
@@ -52,7 +65,7 @@ Added in v1.0.0
 
 ## From "./DockerEngine.js"
 
-Docker helpers
+Docker helpers.
 
 **Signature**
 
@@ -76,7 +89,7 @@ Added in v1.0.0
 
 ## From "./PodmanEngine.js"
 
-Podman helpers
+Podman helpers.
 
 **Signature**
 
@@ -88,7 +101,7 @@ Added in v1.0.0
 
 ## From "./Schemas.js"
 
-Moby schemas
+Moby schemas.
 
 **Signature**
 

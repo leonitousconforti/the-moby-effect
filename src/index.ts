@@ -1,4 +1,11 @@
 /**
+ * Http, https, ssh, and unix socket connection agents for all platforms.
+ *
+ * @since 1.0.0
+ */
+export * as Connection from "./Connection.js"
+
+/**
  * Convenance utilities for Docker input and output streams.
  *
  * @since 1.0.0
@@ -13,7 +20,7 @@ export * as Convey from "./Convey.js"
 export * as Demux from "./Demux.js"
 
 /**
- * Docker helpers
+ * Docker helpers.
  *
  * @since 1.0.0
  */
@@ -27,14 +34,14 @@ export * as DockerEngine from "./DockerEngine.js"
 export * as Platforms from "./Platforms.js"
 
 /**
- * Podman helpers
+ * Podman helpers.
  *
  * @since 1.0.0
  */
 export * as PodmanEngine from "./PodmanEngine.js"
 
 /**
- * Moby schemas
+ * Moby schemas.
  *
  * @since 1.0.0
  */

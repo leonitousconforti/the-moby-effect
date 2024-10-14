@@ -30,12 +30,12 @@ import * as HttpBlob from "../blobs/Http.js";
 import * as HttpsBlob from "../blobs/Https.js";
 import * as SocketBlob from "../blobs/Socket.js";
 import * as SshBlob from "../blobs/Ssh.js";
+import * as Platforms from "../Connection.js";
 import * as Convey from "../Convey.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";
 import * as Volumes from "../endpoints/Volumes.js";
-import * as Platforms from "../Platforms.js";
 import * as DockerEngine from "./Docker.js";
 
 /**

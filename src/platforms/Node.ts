@@ -18,8 +18,8 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
+import { MobyConnectionOptions, SshConnectionOptions } from "../Connection.js";
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
-import { MobyConnectionOptions, SshConnectionOptions } from "./Connection.js";
 
 /**
  * Helper interface to expose the underlying socket from the effect HttpClient

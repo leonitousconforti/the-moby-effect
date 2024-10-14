@@ -7,7 +7,7 @@
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
-import * as Platforms from "../Platforms.js";
+import * as Platforms from "../Connection.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Execs from "../endpoints/Execs.js";
 import * as Images from "../endpoints/Images.js";

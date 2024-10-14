@@ -8,7 +8,7 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Layer from "effect/Layer";
 
-import { MobyConnectionOptions } from "./Connection.js";
+import { MobyConnectionOptions } from "../Connection.js";
 
 /** @internal */
 export const HttpClientRequestHttpUrl: unique symbol = Symbol.for(

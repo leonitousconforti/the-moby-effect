@@ -1,6 +1,6 @@
 ---
 title: engines/Moby.ts
-nav_order: 29
+nav_order: 30
 parent: Modules
 ---
 
@@ -77,7 +77,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerAgnostic: (
-  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
 ) => MobyLayerWithoutHttpClient
 ```
 
@@ -88,7 +88,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => MobyLayer
+export declare const layerBun: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -98,7 +98,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => MobyLayer
+export declare const layerDeno: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -108,7 +108,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => MobyLayer
+export declare const layerNodeJS: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -118,7 +118,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => MobyLayer
+export declare const layerUndici: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -129,7 +129,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: (
-  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
 ) => MobyLayer
 ```
 

@@ -60,7 +60,7 @@ const convertSingleEntry = <E1, R1>(
             Function.pipe(
                 Match.value(tarHeader),
                 Match.when(Predicate.isUint8Array, (arr) => Stream.make(arr)),
-                Match.when(Predicate.isString, (str) => Stream.make(TarCommon.textEncoder.encode(str))),
+                Match.when(Predicate.isString, Function.flow(TarCommon.textEncoder.encode, Stream.make)),
                 Match.orElse(Function.identity<Stream.Stream<Uint8Array, E1, R1>>),
                 padStream
             ),

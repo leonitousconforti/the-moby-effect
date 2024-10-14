@@ -1,5 +1,5 @@
 /**
- * Podman helpers
+ * Podman helpers.
  *
  * @since 1.0.0
  */

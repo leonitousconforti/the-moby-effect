@@ -11,7 +11,7 @@ import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 
-import * as Platforms from "../Platforms.js";
+import * as Platforms from "../Connection.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";

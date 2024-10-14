@@ -7,7 +7,7 @@
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
-import * as Platforms from "../Platforms.js";
+import * as Connection from "../Connection.js";
 import * as Configs from "../endpoints/Configs.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Distributions from "../endpoints/Distribution.js";
@@ -23,6 +23,7 @@ import * as Swarm from "../endpoints/Swarm.js";
 import * as System from "../endpoints/System.js";
 import * as Tasks from "../endpoints/Tasks.js";
 import * as Volumes from "../endpoints/Volumes.js";
+import * as Platforms from "../Platforms.js";
 
 /**
  * @since 1.0.0
@@ -86,28 +87,28 @@ export const layerWithoutHttpCLient: MobyLayerWithoutHttpClient = Layer.mergeAll
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+export const layerNodeJS = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
     Layer.provide(layerWithoutHttpCLient, Platforms.makeNodeHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+export const layerBun = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
     Layer.provide(layerWithoutHttpCLient, Platforms.makeBunHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+export const layerDeno = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
     Layer.provide(layerWithoutHttpCLient, Platforms.makeDenoHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici = (connectionOptions: Platforms.MobyConnectionOptions): MobyLayer =>
+export const layerUndici = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
     Layer.provide(layerWithoutHttpCLient, Platforms.makeUndiciHttpClientLayer(connectionOptions));
 
 /**
@@ -115,7 +116,7 @@ export const layerUndici = (connectionOptions: Platforms.MobyConnectionOptions):
  * @category Layers
  */
 export const layerWeb = (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+    connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
 ): MobyLayer => Layer.provide(layerWithoutHttpCLient, Platforms.makeWebHttpClientLayer(connectionOptions));
 
 /**
@@ -123,6 +124,6 @@ export const layerWeb = (
  * @category Layers
  */
 export const layerAgnostic = (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+    connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
 ): MobyLayerWithoutHttpClient =>
     Layer.provide(layerWithoutHttpCLient, Platforms.makeAgnosticHttpClientLayer(connectionOptions));

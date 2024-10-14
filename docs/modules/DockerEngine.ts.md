@@ -1,12 +1,12 @@
 ---
 title: DockerEngine.ts
-nav_order: 9
+nav_order: 10
 parent: Modules
 ---
 
 ## DockerEngine overview
 
-Docker helpers
+Docker helpers.
 
 Added in v1.0.0
 
@@ -23,7 +23,7 @@ Added in v1.0.0
 
 ## From "./engines/Docker.js"
 
-Docker helpers
+Docker helpers.
 
 **Signature**
 

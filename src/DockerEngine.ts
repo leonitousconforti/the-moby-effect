@@ -1,5 +1,5 @@
 /**
- * Docker helpers
+ * Docker helpers.
  *
  * @since 1.0.0
  */

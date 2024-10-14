@@ -6,7 +6,7 @@ parent: Modules
 
 ## Schemas overview
 
-Moby schemas
+Moby schemas.
 
 Added in v1.0.0
 
@@ -23,7 +23,7 @@ Added in v1.0.0
 
 ## From "./generated/index.js"
 
-Moby schemas
+Moby schemas.
 
 **Signature**
 
