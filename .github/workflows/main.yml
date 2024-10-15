@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 env:
-  docker-engine-connection-variants: "['ssh', 'http', 'https']" # "['ssh', 'http', 'https', 'socket']"
+  docker-engine-connection-variants: "['ssh', 'http', 'https', 'socket']"
   platform-variants: "['node-18.x', 'node-20.x', 'node-22.x', 'bun', 'deno', 'node-18.x-undici', 'node-20.x-undici', 'node-22.x-undici', 'bun-undici', 'deno-undici']"
   docker-engine-versions: "['docker.io/library/docker:23-dind-rootless', 'docker.io/library/docker:24-dind-rootless', 'docker.io/library/docker:25-dind-rootless', 'docker.io/library/docker:26-dind-rootless', 'docker.io/library/docker:27-dind-rootless']"
 
