@@ -373,7 +373,7 @@ export const demuxUnidirectionalRawSockets: {
               }
             | { encoding?: string | undefined }
             | undefined,
-        sink?: Sink.Sink<A1, string, string, E2, R2> | { encoding?: string | undefined } | undefined,
+        sinkOrOptions?: Sink.Sink<A1, string, string, E2, R2> | { encoding?: string | undefined } | undefined,
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         A1 | CompressedDemuxOutput<A1, A2>,
@@ -413,7 +413,7 @@ export const demuxUnidirectionalRawSockets: {
 
         // Single sink case
         if (willMerge) {
-            const sinkForBoth = sink as S2;
+            const sinkForBoth = sinkOrOptions as S2;
             const sourceStream = sourceOrIoOrOptions as S1;
             const { stderr, stdin, stdout } = sockets as RegularInput;
 
