@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 32
+nav_order: 33
 parent: Modules
 ---
 
@@ -19,6 +19,7 @@ Added in v1.0.0
   - [From "./Convey.js"](#from-conveyjs)
   - [From "./Demux.js"](#from-demuxjs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
+  - [From "./Endpoints.js"](#from-endpointsjs)
   - [From "./Platforms.js"](#from-platformsjs)
   - [From "./PodmanEngine.js"](#from-podmanenginejs)
   - [From "./Schemas.js"](#from-schemasjs)
@@ -71,6 +72,18 @@ Docker helpers.
 
 ```ts
 export * as DockerEngine from "./DockerEngine.js"
+```
+
+Added in v1.0.0
+
+## From "./Endpoints.js"
+
+Moby endpoints.
+
+**Signature**
+
+```ts
+export * as Endpoints from "./Endpoints.js"
 ```
 
 Added in v1.0.0

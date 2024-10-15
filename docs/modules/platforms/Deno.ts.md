@@ -1,6 +1,6 @@
 ---
 title: platforms/Deno.ts
-nav_order: 36
+nav_order: 37
 parent: Modules
 ---
 

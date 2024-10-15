@@ -27,6 +27,13 @@ export * as Demux from "./Demux.js"
 export * as DockerEngine from "./DockerEngine.js"
 
 /**
+ * Moby endpoints.
+ *
+ * @since 1.0.0
+ */
+export * as Endpoints from "./Endpoints.js"
+
+/**
  * Http, https, ssh, and unix socket connection agents for all platforms.
  *
  * @since 1.0.0
