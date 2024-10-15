@@ -25,7 +25,6 @@ jobs:
           node-version: "18.x"
           registry-url: "https://registry.npmjs.org/"
 
-      # TODO: can we get rid of this once examples build against docker 26?
       - name: Check Docker Version
         run: docker --version
       - name: Install Latest Docker
