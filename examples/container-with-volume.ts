@@ -5,15 +5,15 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Path from "@effect/platform/Path";
 import * as Effect from "effect/Effect";
 
+import * as Connection from "the-moby-effect/Connection";
 import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as Containers from "the-moby-effect/endpoints/Containers";
-import * as Platforms from "the-moby-effect/Platforms";
 import * as Schemas from "the-moby-effect/Schemas";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
-    Platforms.SocketConnectionOptions({
+    Connection.SocketConnectionOptions({
         socketPath: "/var/run/docker.sock",
     })
 );

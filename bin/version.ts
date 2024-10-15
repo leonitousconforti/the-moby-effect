@@ -7,8 +7,8 @@ import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 
+import * as Connection from "the-moby-effect/Connection";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
-import * as Platforms from "the-moby-effect/Platforms";
 import PackageJson from "../package.json" assert { type: "json" };
 
 export const command = Cli.Command.make("version", {}, () =>
@@ -19,7 +19,7 @@ export const command = Cli.Command.make("version", {}, () =>
 );
 
 const DockerLive = Layer.unwrapEffect(
-    Effect.map(Platforms.connectionOptionsFromDockerHostEnvironmentVariable, DockerEngine.layerNodeJS)
+    Effect.map(Connection.connectionOptionsFromDockerHostEnvironmentVariable, DockerEngine.layerNodeJS)
 );
 
 const cli = Cli.Command.run(command, {

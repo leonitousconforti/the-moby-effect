@@ -7,9 +7,9 @@ import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Stream from "effect/Stream";
 
+import * as Connection from "the-moby-effect/Connection";
 import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
-import * as Platforms from "the-moby-effect/Platforms";
 import PackageJson from "../package.json" assert { type: "json" };
 
 export const command = Cli.Command.make(
@@ -36,7 +36,7 @@ export const command = Cli.Command.make(
 );
 
 const DockerLive = Layer.unwrapEffect(
-    Effect.map(Platforms.connectionOptionsFromDockerHostEnvironmentVariable, DockerEngine.layerNodeJS)
+    Effect.map(Connection.connectionOptionsFromDockerHostEnvironmentVariable, DockerEngine.layerNodeJS)
 );
 
 const cli = Cli.Command.run(command, {
