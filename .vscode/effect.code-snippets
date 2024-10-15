@@ -1,12 +1,108 @@
+
 {
-    "Gen Function _": {
-        "prefix": "gg",
-        "body": ["Effect.gen(function* () {", "    $0", "})"],
-        "description": "Generator Function with no generator parameter"
-    },
-    "Gen Yield _": {
-        "prefix": "yy",
-        "body": ["yield* $0"],
-        "description": "Yield generator"
-    }
+	"egen": {
+		"prefix": "egen",
+		"body": [
+			"Effect.gen(function* () {",
+			"  $0",
+			"})"
+		],
+		"description": "Effect.gen"
+	},
+	"ogen": {
+		"prefix": "ogen",
+		"body": [
+			"Option.gen(function* () {",
+			"  $0",
+			"})"
+		],
+		"description": "Option.gen"
+	},
+	"yield": {
+		"prefix": "yy",
+		"body": [
+			"yield* "
+		],
+		"description": "yield*"
+	},
+	"Effect andThen": {
+		"prefix": "eth",
+		"body": [
+			"Effect.andThen((_) => $1)"
+		],
+		"description": "Effect.andThen"
+	},
+	"pipe": {
+		"prefix": ".pi",
+		"body": [
+			".pipe(\n  $1\n)"
+		],
+		"description": "pipe"
+	},
+	"Effect layer": {
+		"prefix": "elayer",
+		"body": [
+			"export class $1 extends Context.Tag(\"$1\")<",
+			"  $1,",
+			"  Effect.Effect.Success<typeof make>",
+			">() {",
+			"  static Live = Layer.effect(this, make);",
+			"}",
+			""
+		],
+		"description": "Generate a new Effect.ts layer"
+	},
+	"Import effect schema": {
+		"prefix": "simport",
+		"body": [
+			"import * as S from \"@effect/schema/Schema\""
+		],
+		"description": "Import Effect shema as S"
+	},
+	"Effect tryPromise": {
+		"prefix": "etp",
+		"body": [
+			"yield* Effect.tryPromise(() => $1)"
+		],
+		"description": "Create a new Effect.tryPromise"
+	},
+	"Tagged request": {
+		"prefix": "staggedRequest",
+		"body": [
+			"export class $1 extends S.TaggedRequest<$1>()(",
+			"  \"$1\",",
+			"  {",
+			"    payload: {  },",
+			"    success: S.Struct({",
+			"    }),",
+			"    failure: S.Never,",
+			"  },",
+			") {}",
+			"",
+			""
+		],
+		"description": "Create a new Tagged Request"
+	},
+	"Effect service": {
+		"prefix": "eservice",
+		"body": [
+			"export class $1 extends Effect.Service<$1>()(\"$1\", {",
+			"  effect: Effect.gen(function* () {",
+			"    return {};",
+			"  }),",
+			"  dependencies: [],",
+			"}) {}",
+			""
+		],
+		"description": "Create a new Effect service"
+	},
+	"Effect tagged class": {
+		"prefix": "staggedclass",
+		"body": [
+			"export class $1 extends S.TaggedClass<$1>()(\"$1\", {",
+			"  $0",
+			"}) {}"
+		],
+		"description": "Generate a new Effect tagged class"
+	}
 }
