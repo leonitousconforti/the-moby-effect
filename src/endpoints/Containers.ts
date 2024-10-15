@@ -439,9 +439,9 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 ) => Effect.Effect<HttpClientRequestExtension>,
                 Effect.flatMap(
                     ({
+                        hash,
                         url,
                         urlParams,
-                        hash,
                         [HttpClientRequestHttpUrl]: httpUrl,
                         [HttpClientRequestWebsocketUrl]: websocketUrl,
                     }) => UrlParams.makeUrl(`${url.replace(httpUrl, websocketUrl)}`, urlParams, hash)
