@@ -1,5 +1,5 @@
 /**
- * Http, https, ssh, and unix socket connection agents for all platforms.
+ * Http client layers for all platforms.
  *
  * @since 1.0.0
  */

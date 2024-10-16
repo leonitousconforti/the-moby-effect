@@ -47,12 +47,18 @@ export declare const demuxSocketFromStdinToStdoutAndStderr: (
   sockets:
     | BidirectionalRawStreamSocket
     | MultiplexedStreamSocket
+    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+    | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+    | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
     | {
+        stdin: UnidirectionalRawStreamSocket
         stdout: UnidirectionalRawStreamSocket
-        stdin?: UnidirectionalRawStreamSocket | undefined
-        stderr?: UnidirectionalRawStreamSocket | undefined
+        stderr: UnidirectionalRawStreamSocket
       },
-  options?: { encoding: string | undefined } | undefined
+  options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never>
 ```
 
@@ -73,28 +79,24 @@ the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
 **Signature**
 
 ```ts
-export declare const demuxSocketWithInputToConsole: {
-  <E1, R1>(
-    input: Stream.Stream<string | Uint8Array, E1, R1>,
-    options?: { encoding: string | undefined } | undefined
-  ): (
-    socket: BidirectionalRawStreamSocket
-  ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>
-  <E1, R1>(
-    input: Stream.Stream<string | Uint8Array, E1, R1>,
-    options?: { encoding: string | undefined } | undefined
-  ): (
-    socket: MultiplexedStreamSocket
-  ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>
-  <E1, R1>(
-    input: Stream.Stream<string | Uint8Array, E1, R1>,
-    options?: { encoding: string | undefined } | undefined
-  ): (sockets: {
-    stdout: UnidirectionalRawStreamSocket
-    stdin?: UnidirectionalRawStreamSocket | undefined
-    stderr?: UnidirectionalRawStreamSocket | undefined
-  }) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>
-}
+export declare const demuxSocketWithInputToConsole: <E1, R1>(
+  sockets:
+    | BidirectionalRawStreamSocket
+    | MultiplexedStreamSocket
+    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+    | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+    | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+    | {
+        stdin: UnidirectionalRawStreamSocket
+        stdout: UnidirectionalRawStreamSocket
+        stderr: UnidirectionalRawStreamSocket
+      },
+  input: Stream.Stream<string | Uint8Array, E1, R1>,
+  options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>
 ```
 
 Added in v1.0.0

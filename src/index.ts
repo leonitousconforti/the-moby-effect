@@ -20,7 +20,14 @@ export * as Convey from "./Convey.js"
 export * as Demux from "./Demux.js"
 
 /**
- * Docker helpers.
+ * Docker-in-docker engine.
+ *
+ * @since 1.0.0
+ */
+export * as DindEngine from "./DindEngine.js"
+
+/**
+ * Docker engine.
  *
  * @since 1.0.0
  */
@@ -34,14 +41,14 @@ export * as DockerEngine from "./DockerEngine.js"
 export * as Endpoints from "./Endpoints.js"
 
 /**
- * Http, https, ssh, and unix socket connection agents for all platforms.
+ * Http client layers for all platforms.
  *
  * @since 1.0.0
  */
 export * as Platforms from "./Platforms.js"
 
 /**
- * Podman helpers.
+ * Podman engine.
  *
  * @since 1.0.0
  */

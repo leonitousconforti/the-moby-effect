@@ -1,12 +1,12 @@
 ---
 title: Platforms.ts
-nav_order: 34
+nav_order: 35
 parent: Modules
 ---
 
 ## Platforms overview
 
-Http, https, ssh, and unix socket connection agents for all platforms.
+Http client layers for all platforms.
 
 Added in v1.0.0
 

@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 33
+nav_order: 34
 parent: Modules
 ---
 
@@ -18,6 +18,7 @@ Added in v1.0.0
   - [From "./Connection.js"](#from-connectionjs)
   - [From "./Convey.js"](#from-conveyjs)
   - [From "./Demux.js"](#from-demuxjs)
+  - [From "./DindEngine.js"](#from-dindenginejs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
   - [From "./Endpoints.js"](#from-endpointsjs)
   - [From "./Platforms.js"](#from-platformsjs)
@@ -64,9 +65,21 @@ export * as Demux from "./Demux.js"
 
 Added in v1.0.0
 
+## From "./DindEngine.js"
+
+Docker-in-docker engine.
+
+**Signature**
+
+```ts
+export * as DindEngine from "./DindEngine.js"
+```
+
+Added in v1.0.0
+
 ## From "./DockerEngine.js"
 
-Docker helpers.
+Docker engine.
 
 **Signature**
 
@@ -90,7 +103,7 @@ Added in v1.0.0
 
 ## From "./Platforms.js"
 
-Http, https, ssh, and unix socket connection agents for all platforms.
+Http client layers for all platforms.
 
 **Signature**
 
@@ -102,7 +115,7 @@ Added in v1.0.0
 
 ## From "./PodmanEngine.js"
 
-Podman helpers.
+Podman engine.
 
 **Signature**
 

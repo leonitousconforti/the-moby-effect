@@ -1,6 +1,6 @@
 ---
 title: engines/Docker.ts
-nav_order: 29
+nav_order: 30
 parent: Modules
 ---
 
@@ -17,6 +17,8 @@ Added in v1.0.0
 - [Docker](#docker)
   - [build](#build)
   - [buildScoped](#buildscoped)
+  - [exec](#exec)
+  - [execNonBlocking](#execnonblocking)
   - [images](#images)
   - [info](#info)
   - [ping](#ping)
@@ -99,6 +101,42 @@ export declare const buildScoped: <E1>({
   Images.ImagesError,
   Scope.Scope | Images.Images
 >
+```
+
+Added in v1.0.0
+
+## exec
+
+Implements the `docker exec` command in a blocking fashion.
+
+**Signature**
+
+```ts
+export declare const exec: ({
+  command,
+  containerId
+}: {
+  containerId: string
+  command: Array<string>
+}) => Effect.Effect<string, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs>
+```
+
+Added in v1.0.0
+
+## execNonBlocking
+
+Implements the `docker exec` command in a non blocking fashion.
+
+**Signature**
+
+```ts
+export declare const execNonBlocking: ({
+  command,
+  containerId
+}: {
+  containerId: string
+  command: Array<string>
+}) => Effect.Effect<void, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs>
 ```
 
 Added in v1.0.0

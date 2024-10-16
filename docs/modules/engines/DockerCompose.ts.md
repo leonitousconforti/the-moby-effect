@@ -1,6 +1,6 @@
 ---
 title: engines/DockerCompose.ts
-nav_order: 30
+nav_order: 31
 parent: Modules
 ---
 
@@ -31,6 +31,8 @@ Docker compose engine
 export interface DockerComposeImpl {
   up: () => void
   down: () => void
+  pull: () => void
+  build: () => void
 }
 ```
 
