@@ -61,82 +61,6 @@ export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "S
 }
 
 /**
- * @since 1.0.0
- * @category Params
- */
-export interface SwarmLeaveOptions {
-    /**
-     * Force leave swarm, even if this is the last manager or that it will break
-     * the cluster.
-     */
-    readonly force?: boolean;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface SwarmUpdateOptions {
-    readonly spec: SwarmSpec;
-    /**
-     * The version number of the swarm object being updated. This is required to
-     * avoid conflicting writes.
-     */
-    readonly version: number;
-    /** Rotate the worker join token. */
-    readonly rotateWorkerToken?: boolean;
-    /** Rotate the manager join token. */
-    readonly rotateManagerToken?: boolean;
-    /** Rotate the manager unlock key. */
-    readonly rotateManagerUnlockKey?: boolean;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface SwarmImpl {
-    /** Inspect swarm */
-    readonly inspect: () => Effect.Effect<Readonly<SwarmData>, SwarmsError, never>;
-
-    /** Initialize a new swarm */
-    readonly init: (options: typeof SwarmInitRequest.Encoded) => Effect.Effect<Readonly<string>, SwarmsError, never>;
-
-    /**
-     * Join an existing swarm
-     *
-     * @param body -
-     */
-    readonly join: (options: typeof SwarmJoinRequest.Encoded) => Effect.Effect<void, SwarmsError, never>;
-
-    /**
-     * Leave a swarm
-     *
-     * @param force - Force leave swarm, even if this is the last manager or
-     *   that it will break the cluster.
-     */
-    readonly leave: (options: SwarmLeaveOptions) => Effect.Effect<void, SwarmsError, never>;
-
-    /**
-     * Update a swarm
-     *
-     * @param body -
-     * @param version - The version number of the swarm object being updated.
-     *   This is required to avoid conflicting writes.
-     * @param rotateWorkerToken - Rotate the worker join token.
-     * @param rotateManagerToken - Rotate the manager join token.
-     * @param rotateManagerUnlockKey - Rotate the manager unlock key.
-     */
-    readonly update: (options: SwarmUpdateOptions) => Effect.Effect<void, SwarmsError, never>;
-
-    /** Get the unlock key */
-    readonly unlockkey: () => Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never>;
-
-    /** Unlock a locked manager */
-    readonly unlock: (options: typeof SwarmUnlockRequest.Encoded) => Effect.Effect<void, SwarmsError, never>;
-}
-
-/**
  * Swarms service
  *
  * @since 1.0.0
@@ -181,7 +105,13 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        const leave_ = (options: SwarmLeaveOptions): Effect.Effect<void, SwarmsError, never> =>
+        const leave_ = (options: {
+            /**
+             * Force leave swarm, even if this is the last manager or that it
+             * will break the cluster.
+             */
+            readonly force?: boolean;
+        }): Effect.Effect<void, SwarmsError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/swarm/leave"),
                 maybeAddQueryParameter("force", Option.fromNullable(options.force)),
@@ -191,7 +121,13 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        const update_ = (options: SwarmUpdateOptions): Effect.Effect<void, SwarmsError, never> =>
+        const update_ = (options: {
+            readonly spec: SwarmSpec;
+            readonly version: number;
+            readonly rotateWorkerToken?: boolean;
+            readonly rotateManagerToken?: boolean;
+            readonly rotateManagerUnlockKey?: boolean;
+        }): Effect.Effect<void, SwarmsError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/swarm/update"),
                 maybeAddQueryParameter("version", Option.some(options.version)),

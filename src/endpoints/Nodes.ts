@@ -54,92 +54,6 @@ export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "Nod
 }
 
 /**
- * @since 1.0.0
- * @category Params
- */
-export interface NodeListOptions {
-    readonly filters?: {
-        id?: [string] | undefined;
-        label?: [string] | undefined;
-        membership?: ["accepted" | "pending"] | undefined;
-        name?: [string] | undefined;
-        "node.label"?: [string] | undefined;
-        role?: ["manager" | "worker"] | undefined;
-    };
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface NodeDeleteOptions {
-    /** The ID or name of the node */
-    readonly id: string;
-    /** Force remove a node from the swarm */
-    readonly force?: boolean;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface NodeInspectOptions {
-    /** The ID or name of the node */
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface NodeUpdateOptions {
-    readonly body: SwarmNodeSpec;
-    /** The ID of the node */
-    readonly id: string;
-    /**
-     * The version number of the node object being updated. This is required to
-     * avoid conflicting writes.
-     */
-    readonly version: number;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface NodesImpl {
-    /** List nodes */
-    readonly list: (
-        options?: NodeListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<SwarmNode>>, NodesError, never>;
-
-    /**
-     * Delete a node
-     *
-     * @param id - The ID or name of the node
-     * @param force - Force remove a node from the swarm
-     */
-    readonly delete: (options: NodeDeleteOptions) => Effect.Effect<void, NodesError, never>;
-
-    /**
-     * Inspect a node
-     *
-     * @param id - The ID or name of the node
-     */
-    readonly inspect: (options: NodeInspectOptions) => Effect.Effect<Readonly<SwarmNode>, NodesError, never>;
-
-    /**
-     * Update a node
-     *
-     * @param id - The ID of the node
-     * @param body -
-     * @param version - The version number of the node object being updated.
-     *   This is required to avoid conflicting writes.
-     */
-    readonly update: (options: NodeUpdateOptions) => Effect.Effect<void, NodesError, never>;
-}
-
-/**
  * Nodes service
  *
  * @since 1.0.0
@@ -154,7 +68,18 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
         const list_ = (
-            options?: NodeListOptions | undefined
+            options?:
+                | {
+                      readonly filters?: {
+                          id?: [string] | undefined;
+                          label?: [string] | undefined;
+                          membership?: ["accepted" | "pending"] | undefined;
+                          name?: [string] | undefined;
+                          "node.label"?: [string] | undefined;
+                          role?: ["manager" | "worker"] | undefined;
+                      };
+                  }
+                | undefined
         ): Effect.Effect<Readonly<Array<SwarmNode>>, NodesError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/nodes"),
@@ -168,7 +93,10 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
-        const delete_ = (options: NodeDeleteOptions): Effect.Effect<void, NodesError, never> =>
+        const delete_ = (options: {
+            readonly id: string;
+            readonly force?: boolean | undefined;
+        }): Effect.Effect<void, NodesError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/nodes/${encodeURIComponent(options.id)}`),
                 maybeAddQueryParameter("force", Option.fromNullable(options.force)),
@@ -178,7 +106,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
-        const inspect_ = (options: NodeInspectOptions): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
+        const inspect_ = (options: { readonly id: string }): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/nodes/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -187,7 +115,11 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
-        const update_ = (options: NodeUpdateOptions): Effect.Effect<void, NodesError, never> =>
+        const update_ = (options: {
+            readonly body: SwarmNodeSpec;
+            readonly id: string;
+            readonly version: number;
+        }): Effect.Effect<void, NodesError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/nodes/${encodeURIComponent(options.id)}/update`),
                 maybeAddQueryParameter("version", Option.some(options.version)),

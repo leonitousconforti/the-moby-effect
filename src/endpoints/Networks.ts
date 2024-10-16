@@ -59,166 +59,6 @@ export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId
     }
 }
 
-/** @since 1.0.0 */
-export interface NetworkListOptions {
-    /**
-     * JSON encoded value of the filters (a `map[string][]string`) to process on
-     * the networks list.
-     *
-     * Available filters:
-     *
-     * - `dangling=<boolean>` When set to `true` (or `1`), returns all networks
-     *   that are not in use by a container. When set to `false` (or `0`), only
-     *   networks that are in use by one or more containers are returned.
-     * - `driver=<driver-name>` Matches a network's driver.
-     * - `id=<network-id>` Matches all or part of a network ID.
-     * - `label=<key>` or `label=<key>=<value>` of a network label.
-     * - `name=<network-name>` Matches all or part of a network name.
-     * - `scope=["swarm"|"global"|"local"]` Filters networks by scope (`swarm`,
-     *   `global`, or `local`).
-     * - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
-     *   keyword returns all user-defined networks.
-     */
-    readonly filters?: string;
-}
-
-/** @since 1.0.0 */
-export interface NetworkDeleteOptions {
-    /** Network ID or name */
-    readonly id: string;
-}
-
-/** @since 1.0.0 */
-export interface NetworkInspectOptions {
-    /** Network ID or name */
-    readonly id: string;
-    /** Detailed inspect output for troubleshooting */
-    readonly verbose?: boolean;
-    /** Filter the network by scope (swarm, global, or local) */
-    readonly scope?: string;
-}
-
-/** @since 1.0.0 */
-export interface NetworkConnectOptions {
-    /** Network ID or name */
-    readonly id: string;
-    readonly container: NetworkConnectRequest;
-}
-
-/** @since 1.0.0 */
-export interface NetworkDisconnectOptions {
-    /** Network ID or name */
-    readonly id: string;
-    readonly container: NetworkDisconnectRequest;
-}
-
-/** @since 1.0.0 */
-export interface NetworkPruneOptions {
-    /**
-     * Filters to process on the prune list, encoded as JSON (a
-     * `map[string][]string`).
-     *
-     * Available filters:
-     *
-     * - `until=<timestamp>` Prune networks created before this timestamp. The
-     *   `<timestamp>` can be Unix timestamps, date formatted timestamps, or Go
-     *   duration strings (e.g. `10m`, `1h30m`) computed relative to the daemon
-     *   machine’s time.
-     * - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
-     *   `label!=<key>=<value>`) Prune networks with (or without, in case
-     *   `label!=...` is used) the specified labels.
-     */
-    readonly filters?: string;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface NetworksImpl {
-    /**
-     * List networks
-     *
-     * @param filters - JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the networks list.
-     *
-     *   Available filters:
-     *
-     *   - `dangling=<boolean>` When set to `true` (or `1`), returns all networks
-     *       that are not in use by a container. When set to `false` (or `0`),
-     *       only networks that are in use by one or more containers are
-     *       returned.
-     *   - `driver=<driver-name>` Matches a network's driver.
-     *   - `id=<network-id>` Matches all or part of a network ID.
-     *   - `label=<key>` or `label=<key>=<value>` of a network label.
-     *   - `name=<network-name>` Matches all or part of a network name.
-     *   - `scope=["swarm"|"global"|"local"]` Filters networks by scope (`swarm`,
-     *       `global`, or `local`).
-     *   - `type=["custom"|"builtin"]` Filters networks by type. The `custom`
-     *       keyword returns all user-defined networks.
-     */
-    readonly list: (
-        options?: NetworkListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<NetworkSummary>>, NetworksError>;
-
-    /**
-     * Remove a network
-     *
-     * @param id - Network ID or name
-     */
-    readonly delete: (options: NetworkDeleteOptions) => Effect.Effect<void, NetworksError>;
-
-    /**
-     * Inspect a network
-     *
-     * @param id - Network ID or name
-     * @param verbose - Detailed inspect output for troubleshooting
-     * @param scope - Filter the network by scope (swarm, global, or local)
-     */
-    readonly inspect: (options: NetworkInspectOptions) => Effect.Effect<Readonly<NetworkSummary>, NetworksError>;
-
-    /**
-     * Create a network
-     *
-     * @param networkConfig - Network configuration
-     */
-    readonly create: (options: NetworkCreateRequest) => Effect.Effect<NetworkCreateResponse, NetworksError>;
-
-    /**
-     * Connect a container to a network
-     *
-     * @param id - Network ID or name
-     * @param container -
-     */
-    readonly connect: (options: NetworkConnectOptions) => Effect.Effect<void, NetworksError>;
-
-    /**
-     * Disconnect a container from a network
-     *
-     * @param id - Network ID or name
-     * @param container -
-     */
-    readonly disconnect: (options: NetworkDisconnectOptions) => Effect.Effect<void, NetworksError>;
-
-    /**
-     * Delete unused networks
-     *
-     * @param filters - Filters to process on the prune list, encoded as JSON (a
-     *   `map[string][]string`).
-     *
-     *   Available filters:
-     *
-     *   - `until=<timestamp>` Prune networks created before this timestamp. The
-     *       `<timestamp>` can be Unix timestamps, date formatted timestamps, or
-     *       Go duration strings (e.g. `10m`, `1h30m`) computed relative to the
-     *       daemon machine’s time.
-     *   - `label` (`label=<key>`, `label=<key>=<value>`, `label!=<key>`, or
-     *       `label!=<key>=<value>`) Prune networks with (or without, in case
-     *       `label!=...` is used) the specified labels.
-     */
-    readonly prune: (options: NetworkPruneOptions) => Effect.Effect<NetworkPruneResponse, NetworksError>;
-}
-
 /**
  * Networks service
  *
@@ -234,7 +74,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
         const list_ = (
-            options?: NetworkListOptions | undefined
+            options?: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<Readonly<Array<NetworkSummary>>, NetworksError> =>
             Function.pipe(
                 HttpClientRequest.get("/networks"),
@@ -248,7 +88,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const delete_ = (options: NetworkDeleteOptions): Effect.Effect<void, NetworksError> =>
+        const delete_ = (options: { readonly id: string }): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 HttpClientRequest.del(`/networks/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -257,7 +97,11 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const inspect_ = (options: NetworkInspectOptions): Effect.Effect<Readonly<NetworkSummary>, NetworksError> =>
+        const inspect_ = (options: {
+            readonly id: string;
+            readonly verbose?: boolean;
+            readonly scope?: string;
+        }): Effect.Effect<Readonly<NetworkSummary>, NetworksError> =>
             Function.pipe(
                 HttpClientRequest.get(`/networks/${encodeURIComponent(options.id)}`),
                 maybeAddQueryParameter("verbose", Option.fromNullable(options.verbose)),
@@ -278,7 +122,10 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const connect_ = (options: NetworkConnectOptions): Effect.Effect<void, NetworksError> =>
+        const connect_ = (options: {
+            readonly id: string;
+            readonly container: NetworkConnectRequest;
+        }): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 HttpClientRequest.post(`/networks/${encodeURIComponent(options.id)}/connect`),
                 HttpClientRequest.schemaBodyJson(NetworkConnectRequest)(options.container),
@@ -288,7 +135,10 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const disconnect_ = (options: NetworkDisconnectOptions): Effect.Effect<void, NetworksError> =>
+        const disconnect_ = (options: {
+            readonly id: string;
+            readonly container: NetworkDisconnectRequest;
+        }): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 HttpClientRequest.post(`/networks/${encodeURIComponent(options.id)}/disconnect`),
                 HttpClientRequest.schemaBodyJson(NetworkDisconnectRequest)(
@@ -301,7 +151,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             );
 
         const prune_ = (
-            options: NetworkPruneOptions | undefined
+            options: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<NetworkPruneResponse, NetworksError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/networks/prune"),

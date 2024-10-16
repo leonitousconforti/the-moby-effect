@@ -53,116 +53,6 @@ export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "Tas
 }
 
 /**
- * @since 1.0.0
- * @category Params
- */
-export interface TaskListOptions {
-    /**
-     * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the tasks list.
-     *
-     * Available filters:
-     *
-     * - `desired-state=(running | shutdown | accepted)`
-     * - `id=<task id>`
-     * - `name=<task name>`
-     * - `node=<node id or name>`
-     * - `service=<service name>`
-     * - `label=key` or `label="key=value"`
-     */
-    readonly filters?: {
-        "desired-state"?: ["running" | "shutdown" | "accepted"] | undefined;
-        id?: [string] | undefined;
-        name?: [string] | undefined;
-        node?: [string] | undefined;
-        service?: [string] | undefined;
-        label?: Array<string> | undefined;
-    };
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface TaskInspectOptions {
-    /** ID of the task */
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface TaskLogsOptions {
-    /** ID of the task */
-    readonly id: string;
-    /** Show task context and extra details provided to logs. */
-    readonly details?: boolean;
-    /** Keep connection after returning logs. */
-    readonly follow?: boolean;
-    /** Return logs from `stdout` */
-    readonly stdout?: boolean;
-    /** Return logs from `stderr` */
-    readonly stderr?: boolean;
-    /** Only return logs since this time, as a UNIX timestamp */
-    readonly since?: number;
-    /** Add timestamps to every log line */
-    readonly timestamps?: boolean;
-    /**
-     * Only return this number of log lines from the end of the logs. Specify as
-     * an integer or `all` to output all log lines.
-     */
-    readonly tail?: string;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface TasksImpl {
-    /**
-     * List tasks
-     *
-     * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the tasks list.
-     *
-     *   Available filters:
-     *
-     *   - `desired-state=(running | shutdown | accepted)`
-     *   - `id=<task id>`
-     *   - `name=<task name>`
-     *   - `node=<node id or name>`
-     *   - `service=<service name>`
-     *   - `label=key` or `label="key=value"`
-     */
-    readonly list: (
-        options?: TaskListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<SwarmTask>>, TasksError, never>;
-
-    /**
-     * Inspect a task
-     *
-     * @param id - ID of the task
-     */
-    readonly inspect: (options: TaskInspectOptions) => Effect.Effect<Readonly<SwarmTask>, TasksError, never>;
-
-    /**
-     * Get task logs
-     *
-     * @param id - ID of the task
-     * @param details - Show task context and extra details provided to logs.
-     * @param follow - Keep connection after returning logs.
-     * @param stdout - Return logs from `stdout`
-     * @param stderr - Return logs from `stderr`
-     * @param since - Only return logs since this time, as a UNIX timestamp
-     * @param timestamps - Add timestamps to every log line
-     * @param tail - Only return this number of log lines from the end of the
-     *   logs. Specify as an integer or `all` to output all log lines.
-     */
-    readonly logs: (options: TaskLogsOptions) => Stream.Stream<string, TasksError, never>;
-}
-
-/**
  * Tasks service
  *
  * @since 1.0.0
@@ -177,7 +67,18 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
         const list_ = (
-            options?: TaskListOptions | undefined
+            options?:
+                | {
+                      readonly filters?: {
+                          "desired-state"?: ["running" | "shutdown" | "accepted"] | undefined;
+                          id?: [string] | undefined;
+                          name?: [string] | undefined;
+                          node?: [string] | undefined;
+                          service?: [string] | undefined;
+                          label?: Array<string> | undefined;
+                      };
+                  }
+                | undefined
         ): Effect.Effect<Readonly<Array<SwarmTask>>, TasksError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/tasks"),
@@ -191,7 +92,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 Effect.scoped
             );
 
-        const inspect_ = (options: TaskInspectOptions): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
+        const inspect_ = (options: { readonly id: string }): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -200,7 +101,16 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 Effect.scoped
             );
 
-        const logs_ = (options: TaskLogsOptions): Stream.Stream<string, TasksError, never> =>
+        const logs_ = (options: {
+            readonly id: string;
+            readonly details?: boolean;
+            readonly follow?: boolean;
+            readonly stdout?: boolean;
+            readonly stderr?: boolean;
+            readonly since?: number;
+            readonly timestamps?: boolean;
+            readonly tail?: string;
+        }): Stream.Stream<string, TasksError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}/logs`),
                 maybeAddQueryParameter("details", Option.fromNullable(options.details)),

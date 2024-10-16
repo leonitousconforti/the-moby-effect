@@ -59,223 +59,6 @@ export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId
 }
 
 /**
- * @since 1.0.0
- * @category Params
- */
-export interface ServiceListOptions {
-    /**
-     * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the services list.
-     *
-     * Available filters:
-     *
-     * - `id=<service id>`
-     * - `label=<service label>`
-     * - `mode=["replicated"|"global"]`
-     * - `name=<service name>`
-     *
-     * FIXME: implement this type
-     */
-    readonly filters?: string;
-    /** Include service status, with count of running and desired tasks. */
-    readonly status?: boolean;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface ServiceCreateOptions {
-    readonly body: SwarmServiceSpec;
-    /**
-     * A base64url-encoded auth configuration for pulling from private
-     * registries.
-     *
-     * Refer to the [authentication section](#section/Authentication) for
-     * details.
-     */
-    readonly "X-Registry-Auth"?: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface ServiceDeleteOptions {
-    /** ID or name of service. */
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface ServiceInspectOptions {
-    /** ID or name of service. */
-    readonly id: string;
-    /** Fill empty fields with default values. */
-    readonly insertDefaults?: boolean;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface ServiceUpdateOptions {
-    /** ID or name of service. */
-    readonly id: string;
-    readonly body: SwarmServiceSpec;
-    /**
-     * The version number of the service object being updated. This is required
-     * to avoid conflicting writes. This version number should be the value as
-     * currently set on the service _before_ the update. You can find the
-     * current version by calling `GET /services/{id}`
-     */
-    readonly version: number;
-    /**
-     * If the `X-Registry-Auth` header is not specified, this parameter
-     * indicates where to find registry authorization credentials.
-     */
-    readonly registryAuthFrom?: string;
-    /**
-     * Set to this parameter to `previous` to cause a server-side rollback to
-     * the previous service spec. The supplied spec will be ignored in this
-     * case.
-     */
-    readonly rollback?: string;
-    /**
-     * A base64url-encoded auth configuration for pulling from private
-     * registries.
-     *
-     * Refer to the [authentication section](#section/Authentication) for
-     * details.
-     */
-    readonly "X-Registry-Auth"?: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface ServiceLogsOptions {
-    /** ID or name of the service */
-    readonly id: string;
-    /** Show service context and extra details provided to logs. */
-    readonly details?: boolean;
-    /** Keep connection after returning logs. */
-    readonly follow?: boolean;
-    /** Return logs from `stdout` */
-    readonly stdout?: boolean;
-    /** Return logs from `stderr` */
-    readonly stderr?: boolean;
-    /** Only return logs since this time, as a UNIX timestamp */
-    readonly since?: number;
-    /** Add timestamps to every log line */
-    readonly timestamps?: boolean;
-    /**
-     * Only return this number of log lines from the end of the logs. Specify as
-     * an integer or `all` to output all log lines.
-     */
-    readonly tail?: string;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface ServicesImpl {
-    /**
-     * List services
-     *
-     * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the services list.
-     *
-     *   Available filters:
-     *
-     *   - `id=<service id>`
-     *   - `label=<service label>`
-     *   - `mode=["replicated"|"global"]`
-     *   - `name=<service name>`
-     *
-     * @param status - Include service status, with count of running and desired
-     *   tasks.
-     */
-    readonly list: (
-        options?: ServiceListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never>;
-
-    /**
-     * Create a service
-     *
-     * @param body -
-     * @param X-Registry-Auth - A base64url-encoded auth configuration for
-     *   pulling from private registries.
-     *
-     *   Refer to the [authentication section](#section/Authentication) for
-     *   details.
-     */
-    readonly create: (
-        options: ServiceCreateOptions
-    ) => Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never>;
-
-    /**
-     * Delete a service
-     *
-     * @param id - ID or name of service.
-     */
-    readonly delete: (options: ServiceDeleteOptions) => Effect.Effect<void, ServicesError, never>;
-
-    /**
-     * Inspect a service
-     *
-     * @param id - ID or name of service.
-     * @param insertDefaults - Fill empty fields with default values.
-     */
-    readonly inspect: (options: ServiceInspectOptions) => Effect.Effect<Readonly<SwarmService>, ServicesError, never>;
-
-    /**
-     * Update a service
-     *
-     * @param id - ID or name of service.
-     * @param body -
-     * @param version - The version number of the service object being updated.
-     *   This is required to avoid conflicting writes. This version number
-     *   should be the value as currently set on the service _before_ the
-     *   update. You can find the current version by calling `GET
-     *   /services/{id}`
-     * @param registryAuthFrom - If the `X-Registry-Auth` header is not
-     *   specified, this parameter indicates where to find registry
-     *   authorization credentials.
-     * @param rollback - Set to this parameter to `previous` to cause a
-     *   server-side rollback to the previous service spec. The supplied spec
-     *   will be ignored in this case.
-     * @param X-Registry-Auth - A base64url-encoded auth configuration for
-     *   pulling from private registries.
-     *
-     *   Refer to the [authentication section](#section/Authentication) for
-     *   details.
-     */
-    readonly update: (
-        options: ServiceUpdateOptions
-    ) => Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never>;
-
-    /**
-     * Get service logs
-     *
-     * @param id - ID or name of the service
-     * @param details - Show service context and extra details provided to logs.
-     * @param follow - Keep connection after returning logs.
-     * @param stdout - Return logs from `stdout`
-     * @param stderr - Return logs from `stderr`
-     * @param since - Only return logs since this time, as a UNIX timestamp
-     * @param timestamps - Add timestamps to every log line
-     * @param tail - Only return this number of log lines from the end of the
-     *   logs. Specify as an integer or `all` to output all log lines.
-     */
-    readonly logs: (options: ServiceLogsOptions) => Stream.Stream<string, ServicesError, never>;
-}
-
-/**
  * Services service
  *
  * @since 1.0.0
@@ -290,7 +73,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
         const list_ = (
-            options?: ServiceListOptions | undefined
+            options?: { readonly filters?: string; readonly status?: boolean } | undefined
         ): Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/services"),
@@ -305,9 +88,10 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const create_ = (
-            options: ServiceCreateOptions
-        ): Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never> =>
+        const create_ = (options: {
+            readonly body: SwarmServiceSpec;
+            readonly "X-Registry-Auth"?: string;
+        }): Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/services/create"),
                 HttpClientRequest.setHeader("X-Registry-Auth", ""),
@@ -318,7 +102,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const delete_ = (options: ServiceDeleteOptions): Effect.Effect<void, ServicesError, never> =>
+        const delete_ = (options: { readonly id: string }): Effect.Effect<void, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/services/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -327,9 +111,10 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const inspect_ = (
-            options: ServiceInspectOptions
-        ): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
+        const inspect_ = (options: {
+            readonly id: string;
+            readonly insertDefaults?: boolean;
+        }): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/services/${encodeURIComponent(options.id)}`),
                 maybeAddQueryParameter("insertDefaults", Option.fromNullable(options.insertDefaults)),
@@ -339,9 +124,36 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const update_ = (
-            options: ServiceUpdateOptions
-        ): Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never> =>
+        const update_ = (options: {
+            readonly id: string;
+            readonly body: SwarmServiceSpec;
+            /**
+             * The version number of the service object being updated. This is
+             * required to avoid conflicting writes. This version number should
+             * be the value as currently set on the service _before_ the update.
+             * You can find the current version by calling `GET /services/{id}`
+             */
+            readonly version: number;
+            /**
+             * If the `X-Registry-Auth` header is not specified, this parameter
+             * indicates where to find registry authorization credentials.
+             */
+            readonly registryAuthFrom?: string;
+            /**
+             * Set to this parameter to `previous` to cause a server-side
+             * rollback to the previous service spec. The supplied spec will be
+             * ignored in this case.
+             */
+            readonly rollback?: string;
+            /**
+             * A base64url-encoded auth configuration for pulling from private
+             * registries.
+             *
+             * Refer to the [authentication section](#section/Authentication)
+             * for details.
+             */
+            readonly "X-Registry-Auth"?: string;
+        }): Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/services/${encodeURIComponent(options.id)}/update`),
                 HttpClientRequest.setHeader("X-Registry-Auth", ""),
@@ -355,7 +167,16 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        const logs_ = (options: ServiceLogsOptions): Stream.Stream<string, ServicesError, never> =>
+        const logs_ = (options: {
+            readonly id: string;
+            readonly details?: boolean;
+            readonly follow?: boolean;
+            readonly stdout?: boolean;
+            readonly stderr?: boolean;
+            readonly since?: number;
+            readonly timestamps?: boolean;
+            readonly tail?: string;
+        }): Stream.Stream<string, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/services/${encodeURIComponent(options.id)}/logs`),
                 maybeAddQueryParameter("details", Option.fromNullable(options.details)),

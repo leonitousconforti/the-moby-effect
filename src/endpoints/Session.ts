@@ -16,6 +16,7 @@ import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
+import { HttpClientResponse } from "@effect/platform";
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 
 /**
@@ -50,24 +51,6 @@ export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId
 }
 
 /**
- * @since 1.0.0
- * @category Tags
- */
-export interface SessionsImpl {
-    /**
-     * Start a new interactive session with a server. Session allows server to
-     * call back to the client for advanced capabilities. ### Hijacking This
-     * endpoint hijacks the HTTP connection to HTTP2 transport that allows the
-     * client to expose gPRC services on that connection. For example, the
-     * client sends this request to upgrade the connection: `POST /session
-     * HTTP/1.1 Upgrade: h2c Connection: Upgrade` The Docker daemon responds
-     * with a `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
-     * UPGRADED Connection: Upgrade Upgrade: h2c`
-     */
-    readonly session: () => Effect.Effect<Socket.Socket, SessionsError, Scope.Scope>;
-}
-
-/**
  * Sessions service
  *
  * @since 1.0.0
@@ -78,15 +61,25 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
     dependencies: [],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
+        const client = yield* HttpClient.HttpClient;
 
+        /**
+         * Start a new interactive session with a server. Session allows server
+         * to call back to the client for advanced capabilities. This endpoint
+         * hijacks the HTTP connection to HTTP2 transport that allows the client
+         * to expose gPRC services on that connection. For example, the client
+         * sends this request to upgrade the connection: `POST /session HTTP/1.1
+         * Upgrade: h2c Connection: Upgrade` The Docker daemon responds with a
+         * `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
+         * UPGRADED Connection: Upgrade Upgrade: h2c`
+         */
         const session_ = (): Effect.Effect<Socket.Socket, SessionsError, Scope.Scope> =>
             Function.pipe(
                 HttpClientRequest.post("/session"),
                 HttpClientRequest.setHeader("Upgrade", "h2c"),
                 HttpClientRequest.setHeader("Connection", "Upgrade"),
                 client.execute,
+                Effect.flatMap(HttpClientResponse.filterStatus((status) => status === 101)),
                 Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
                 Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
                 Effect.mapError((cause) => new SessionsError({ method: "session", cause }))

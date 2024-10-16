@@ -53,124 +53,6 @@ export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, 
 }
 
 /**
- * @since 1.0.0
- * @category Params
- */
-export interface SecretListOptions {
-    /**
-     * A JSON encoded value of the filters (a `map[string][]string`) to process
-     * on the secrets list.
-     *
-     * Available filters:
-     *
-     * - `id=<secret id>`
-     * - `label=<key> or label=<key>=value`
-     * - `name=<secret name>`
-     * - `names=<secret name>`
-     *
-     * FIXME: implement this type
-     */
-    readonly filters?: Record<string, string | Array<string>>;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface SecretDeleteOptions {
-    /** ID of the secret */
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface SecretInspectOptions {
-    /** ID of the secret */
-    readonly id: string;
-}
-
-/**
- * @since 1.0.0
- * @category Params
- */
-export interface SecretUpdateOptions {
-    /** The ID or name of the secret */
-    readonly id: string;
-    /**
-     * The spec of the secret to update. Currently, only the Labels field can be
-     * updated. All other fields must remain unchanged from the [SecretInspect
-     * endpoint](#operation/SecretInspect) response values.
-     */
-    readonly spec: SwarmSecretSpec;
-    /**
-     * The version number of the secret object being updated. This is required
-     * to avoid conflicting writes.
-     */
-    readonly version: number;
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- */
-export interface SecretsImpl {
-    /**
-     * List secrets
-     *
-     * @param filters - A JSON encoded value of the filters (a
-     *   `map[string][]string`) to process on the secrets list.
-     *
-     *   Available filters:
-     *
-     *   - `id=<secret id>`
-     *   - `label=<key> or label=<key>=value`
-     *   - `name=<secret name>`
-     *   - `names=<secret name>`
-     */
-    readonly list: (
-        options?: SecretListOptions | undefined
-    ) => Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never>;
-
-    /**
-     * Create a secret
-     *
-     * @param body -
-     */
-    readonly create: (
-        options: SwarmSecretSpec
-    ) => Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never>;
-
-    /**
-     * Delete a secret
-     *
-     * @param id - ID of the secret
-     */
-    readonly delete: (options: SecretDeleteOptions) => Effect.Effect<void, SecretsError, never>;
-
-    /**
-     * Inspect a secret
-     *
-     * @param id - ID of the secret
-     */
-    readonly inspect: (options: SecretInspectOptions) => Effect.Effect<Readonly<SwarmSecret>, SecretsError, never>;
-
-    /**
-     * Update a Secret
-     *
-     * @param id - The ID or name of the secret
-     * @param spec - The spec of the secret to update. Currently, only the
-     *   Labels field can be updated. All other fields must remain unchanged
-     *   from the [SecretInspect endpoint](#operation/SecretInspect) response
-     *   values.
-     * @param version - The version number of the secret object being updated.
-     *   This is required to avoid conflicting writes.
-     */
-    readonly update: (options: SecretUpdateOptions) => Effect.Effect<void, SecretsError, never>;
-}
-
-/**
  * Secrets service
  *
  * @since 1.0.0
@@ -185,7 +67,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
         const list_ = (
-            options?: SecretListOptions | undefined
+            options?: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/secrets"),
@@ -211,7 +93,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        const delete_ = (options: SecretDeleteOptions): Effect.Effect<void, SecretsError, never> =>
+        const delete_ = (options: { readonly id: string }): Effect.Effect<void, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/secrets/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -220,7 +102,9 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        const inspect_ = (options: SecretInspectOptions): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
+        const inspect_ = (options: {
+            readonly id: string;
+        }): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/secrets/${encodeURIComponent(options.id)}`),
                 client.execute,
@@ -229,7 +113,11 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        const update_ = (options: SecretUpdateOptions): Effect.Effect<void, SecretsError, never> =>
+        const update_ = (options: {
+            readonly id: string;
+            readonly spec: SwarmSecretSpec;
+            readonly version: number;
+        }): Effect.Effect<void, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/secrets/${encodeURIComponent(options.id)}/update`),
                 maybeAddQueryParameter("version", Option.some(options.version)),
