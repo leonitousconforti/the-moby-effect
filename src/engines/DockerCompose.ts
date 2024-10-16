@@ -8,4 +8,6 @@
 export interface DockerComposeImpl {
     up: () => void;
     down: () => void;
+    pull: () => void;
+    build: () => void;
 }
