@@ -16,6 +16,7 @@
         "Cgroupns",
         "cgroups",
         "codegen",
+        "compat",
         "Conforti",
         "conta",
         "containerd",
