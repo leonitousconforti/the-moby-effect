@@ -1,6 +1,6 @@
 import { expect, layer } from "@effect/vitest";
 import { Effect, Layer, Stream } from "effect";
-import * as Images from "the-moby-effect/endpoints/Images";
+import { Images } from "the-moby-effect/Endpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
@@ -8,7 +8,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
         "Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)",
         () =>
             Effect.gen(function* () {
-                const images = yield* Images.Images;
+                const images = yield* Images;
                 const searchResults = yield* images.search({
                     term: "alpine",
                     limit: 1,
@@ -29,7 +29,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
         "Should pull an image",
         () =>
             Effect.gen(function* () {
-                const images = yield* Images.Images;
+                const images = yield* Images;
                 const pullResponse = images.create({ fromImage: "docker.io/library/alpine:latest" });
                 yield* Stream.runCollect(pullResponse);
             }),
@@ -38,7 +38,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
 
     it.effect("Should inspect an image", () =>
         Effect.gen(function* () {
-            const images = yield* Images.Images;
+            const images = yield* Images;
             const inspectResponse = yield* images.inspect({ name: "docker.io/library/alpine:latest" });
             expect(inspectResponse.Id).toBeDefined();
             expect(inspectResponse.RepoDigests).toBeDefined();
@@ -49,7 +49,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
 
     it.effect("Should tag an image", () =>
         Effect.gen(function* () {
-            const images = yield* Images.Images;
+            const images = yield* Images;
             yield* images.tag({
                 name: "docker.io/library/alpine:latest",
                 repo: "docker.io/person/their-image",
@@ -60,7 +60,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
 
     it.effect("Should get the history of an image", () =>
         Effect.gen(function* () {
-            const images = yield* Images.Images;
+            const images = yield* Images;
             const historyResponse = yield* images.history({ name: "docker.io/library/alpine:latest" });
             expect(historyResponse).toBeInstanceOf(Array);
         })
@@ -68,7 +68,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
 
     it.effect("Should prune all images", () =>
         Effect.gen(function* () {
-            const images = yield* Images.Images;
+            const images = yield* Images;
             const pruneResponse = yield* images.prune();
             expect(pruneResponse.SpaceReclaimed).toBeDefined();
         })

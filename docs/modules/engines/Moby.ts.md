@@ -1,12 +1,12 @@
 ---
 title: engines/Moby.ts
-nav_order: 32
+nav_order: 33
 parent: Modules
 ---
 
 ## Moby overview
 
-Generic Moby engine
+Generic Moby engine.
 
 Added in v1.0.0
 

@@ -4,15 +4,21 @@
  * @since 1.0.0
  */
 
+import * as Socket from "@effect/platform/Socket";
+import * as ParseResult from "@effect/schema/ParseResult";
+import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
+import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
 import * as Platforms from "../Connection.js";
+import * as Demux from "../Demux.js";
 import * as Containers from "../endpoints/Containers.js";
+import * as Execs from "../endpoints/Execs.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";
 import * as GeneratedSchemas from "../generated/index.js";
@@ -280,20 +286,71 @@ export const runScoped = (
 };
 
 /**
- * Implements `docker exec` command.
+ * Implements the `docker exec` command in a non blocking fashion.
  *
  * @since 1.0.0
  * @category Docker
  */
-// export const exec = <T extends boolean | undefined>(
-//     options1: Execs.ContainerExecOptions,
-//     options2: Omit<Schema.Schema.Encoded<typeof Schemas.ExecStartConfig>, "Detach"> & { Detach?: T }
-// ) =>
-//     Effect.gen(function* () {
-//         const execs: Execs.Execs = yield* Execs.Execs;
-//         const execCreateResponse: Schemas.IdResponse = yield* execs.container(options1);
-//         return yield* execs.start<T>({ id: execCreateResponse.Id, execStartConfig: options2 });
-//     });
+export const execNonBlocking = ({
+    command,
+    containerId,
+}: {
+    containerId: string;
+    command: Array<string>;
+}): Effect.Effect<void, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs> =>
+    Effect.gen(function* () {
+        const execs = yield* Execs.Execs;
+        const execId = yield* execs.container({
+            id: containerId,
+            execConfig: {
+                Cmd: command,
+                AttachStderr: true,
+                AttachStdout: true,
+                AttachStdin: false,
+            } as any,
+        });
+
+        return yield* execs.start({
+            id: execId.Id,
+            execStartConfig: { Detach: true } as any,
+        });
+    }).pipe(Effect.scoped);
+
+/**
+ * Implements the `docker exec` command in a blocking fashion.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const exec = ({
+    command,
+    containerId,
+}: {
+    containerId: string;
+    command: Array<string>;
+}): Effect.Effect<string, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs> =>
+    Effect.gen(function* () {
+        const execs = yield* Execs.Execs;
+        const execId = yield* execs.container({
+            id: containerId,
+            execConfig: {
+                Cmd: command,
+                AttachStderr: true,
+                AttachStdout: true,
+                AttachStdin: false,
+            } as any,
+        });
+
+        const socket = yield* execs.start({
+            id: execId.Id,
+            // @ts-expect-error aaaahhhhh
+            execStartConfig: { Detach: false },
+        });
+
+        const input = Stream.never;
+        const output = Sink.collectAll<string>();
+        return yield* Effect.map(Demux.demuxUnknownToSingleSink(socket, input, output), Chunk.join(""));
+    }).pipe(Effect.scoped);
 
 /**
  * Implements the `docker ps` command.
@@ -315,7 +372,9 @@ export const ps = (
  * @since 1.0.0
  * @category Docker
  */
-export const push = (options: Images.ImagePushOptions): Stream.Stream<string, Images.ImagesError, Images.Images> =>
+export const push = (
+    options: Parameters<Images.Images["push"]>[0]
+): Stream.Stream<string, Images.ImagesError, Images.Images> =>
     Stream.unwrap(Images.Images.use((images) => images.push(options)));
 
 /**
@@ -325,7 +384,7 @@ export const push = (options: Images.ImagePushOptions): Stream.Stream<string, Im
  * @category Docker
  */
 export const images = (
-    options?: Images.ImageListOptions | undefined
+    options?: Parameters<Images.Images["list"]>[0]
 ): Effect.Effect<ReadonlyArray<GeneratedSchemas.ImageSummary>, Images.ImagesError, Images.Images> =>
     Images.Images.use((images) => images.list(options));
 
@@ -336,7 +395,7 @@ export const images = (
  * @category Docker
  */
 export const search = (
-    options: Images.ImageSearchOptions
+    options: Parameters<Images.Images["search"]>[0]
 ): Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images> =>
     Images.Images.use((images) => images.search(options));
 

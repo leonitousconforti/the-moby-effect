@@ -1,5 +1,5 @@
 /**
- * Generic Moby engine
+ * Generic Moby engine.
  *
  * @since 1.0.0
  */

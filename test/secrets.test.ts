@@ -1,12 +1,12 @@
 import { expect, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import * as Secrets from "the-moby-effect/endpoints/Secrets";
+import { Secrets } from "the-moby-effect/Endpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
     it.effect("Should see no secrets", () =>
         Effect.gen(function* () {
-            const secrets = yield* Secrets.Secrets;
+            const secrets = yield* Secrets;
             const secretsList = yield* secrets.list();
             expect(secretsList).toBeInstanceOf(Array);
             expect(secretsList).toHaveLength(0);
@@ -15,7 +15,7 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
 
     it.effect("Should create a secret", () =>
         Effect.gen(function* () {
-            const secrets = yield* Secrets.Secrets;
+            const secrets = yield* Secrets;
             const secret = yield* secrets.create({
                 Name: "test-secret",
                 Labels: { testLabel: "test" },
@@ -27,7 +27,7 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
 
     it.effect("Should list and inspect the secret", () =>
         Effect.gen(function* () {
-            const secrets = yield* Secrets.Secrets;
+            const secrets = yield* Secrets;
             const secretsList = yield* secrets.list();
             expect(secretsList).toEqual([
                 {
@@ -46,7 +46,7 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
 
     it.effect("Should update the secret", () =>
         Effect.gen(function* () {
-            const secrets = yield* Secrets.Secrets;
+            const secrets = yield* Secrets;
             const secretsList = yield* secrets.list();
             yield* secrets.update({
                 id: secretsList[0]!.ID!,
@@ -58,7 +58,7 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
 
     it.effect("Should list secrets with the new label", () =>
         Effect.gen(function* () {
-            const secrets = yield* Secrets.Secrets;
+            const secrets = yield* Secrets;
             const secretsList = yield* secrets.list({
                 filters: { label: ["testLabelUpdated=test"] },
             });
@@ -69,7 +69,7 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
 
     it.effect("Should delete the secret", () =>
         Effect.gen(function* () {
-            const secrets = yield* Secrets.Secrets;
+            const secrets = yield* Secrets;
             const secretsList = yield* secrets.list();
             yield* secrets.delete({ id: secretsList[0]!.ID! });
             const secretsAfterDelete = yield* secrets.list();

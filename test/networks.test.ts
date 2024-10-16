@@ -1,12 +1,12 @@
 import { layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import * as Networks from "the-moby-effect/endpoints/Networks";
+import { Networks } from "the-moby-effect/Endpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Networks tests", (it) => {
     it.effect("Should list all the networks", () =>
         Effect.gen(function* () {
-            const networks = yield* Networks.Networks;
+            const networks = yield* Networks;
             yield* networks.list();
         })
     );

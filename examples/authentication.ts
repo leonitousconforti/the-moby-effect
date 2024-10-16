@@ -39,8 +39,8 @@ const dockerHubLogin = {
 // Digest: sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7
 // Status: Downloaded newer image for confo014/hello-world:latest
 const program = Effect.gen(function* () {
-    const images: Images.ImagesImpl = yield* Images.Images;
-    const system: System.SystemsImpl = yield* System.Systems;
+    const images: Images.Images = yield* Images.Images;
+    const system: System.Systems = yield* System.Systems;
 
     // Get an identity token from docker hub
     const authResponse: Schemas.RegistryAuthenticateOKBody = yield* system.auth(dockerHubLogin);

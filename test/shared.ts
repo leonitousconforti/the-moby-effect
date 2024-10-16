@@ -9,13 +9,15 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 
-import * as Containers from "the-moby-effect/endpoints/Containers";
-import * as Images from "the-moby-effect/endpoints/Images";
-import * as Swarms from "the-moby-effect/endpoints/Swarm";
-import * as System from "the-moby-effect/endpoints/System";
-import * as Volumes from "the-moby-effect/endpoints/Volumes";
-import * as DindEngine from "the-moby-effect/engines/Dind";
-import * as MobyEngine from "the-moby-effect/engines/Moby";
+import {
+    ContainersError,
+    ImagesError,
+    Swarm,
+    SwarmsError,
+    SystemsError,
+    VolumesError,
+} from "the-moby-effect/Endpoints";
+import { DindEngine, MobyEngine } from "the-moby-effect/Engines";
 
 const makePlatformDindLayer = Function.pipe(
     Match.value(inject("__PLATFORM_VARIANT")),
@@ -43,15 +45,15 @@ const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
 
 export const testLayer: Layer.Layer<
     Layer.Layer.Success<MobyEngine.MobyLayer>,
-    | Containers.ContainersError
-    | Images.ImagesError
-    | System.SystemsError
-    | Swarms.SwarmsError
-    | Volumes.VolumesError
+    | ContainersError
+    | ImagesError
+    | SwarmsError
+    | SystemsError
+    | VolumesError
     | ParseResult.ParseError
     | PlatformError.PlatformError,
     never
 > = Layer.tap(Layer.provide(testDindLayer, testServices), (context) => {
-    const swarm = Context.get(context, Swarms.Swarm);
+    const swarm = Context.get(context, Swarm);
     return swarm.init({ ListenAddr: "0.0.0.0" });
 });

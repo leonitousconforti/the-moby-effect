@@ -6,7 +6,8 @@ import { defineConfig } from "vite";
 export default defineConfig({
     test: {
         globals: true,
-        globalSetup: "./test/setup.ts",
+        setupFiles: ["./test/setup-file.ts"],
+        globalSetup: "./test/setup-global.ts",
         include: ["./test/**/*.test.ts"],
         reporters: ["default"],
         coverage: {

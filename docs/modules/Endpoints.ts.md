@@ -35,6 +35,8 @@ Added in v1.0.0
   - [SecretsError](#secretserror)
   - [Services](#services)
   - [ServicesError](#serviceserror)
+  - [Sessions](#sessions)
+  - [SessionsError](#sessionserror)
   - [Swarm](#swarm)
   - [SwarmsError](#swarmserror)
   - [Systems](#systems)
@@ -244,6 +246,26 @@ Added in v1.0.0
 
 ```ts
 export declare const ServicesError: typeof ServicesError
+```
+
+Added in v1.0.0
+
+## Sessions
+
+**Signature**
+
+```ts
+export declare const Sessions: typeof Sessions
+```
+
+Added in v1.0.0
+
+## SessionsError
+
+**Signature**
+
+```ts
+export declare const SessionsError: typeof SessionsError
 ```
 
 Added in v1.0.0

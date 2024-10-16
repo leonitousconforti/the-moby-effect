@@ -1,6 +1,6 @@
 ---
 title: engines/Docker.ts
-nav_order: 30
+nav_order: 31
 parent: Modules
 ---
 
@@ -149,7 +149,7 @@ Implements the `docker images` command.
 
 ```ts
 export declare const images: (
-  options?: Images.ImageListOptions | undefined
+  options?: Parameters<Images.Images["list"]>[0]
 ) => Effect.Effect<ReadonlyArray<GeneratedSchemas.ImageSummary>, Images.ImagesError, Images.Images>
 ```
 
@@ -268,7 +268,7 @@ Implements the `docker push` command.
 
 ```ts
 export declare const push: (
-  options: Images.ImagePushOptions
+  options: Parameters<Images.Images["push"]>[0]
 ) => Stream.Stream<string, Images.ImagesError, Images.Images>
 ```
 
@@ -315,7 +315,7 @@ Implements the `docker search` command.
 
 ```ts
 export declare const search: (
-  options: Images.ImageSearchOptions
+  options: Parameters<Images.Images["search"]>[0]
 ) => Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images>
 ```
 

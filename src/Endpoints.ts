@@ -139,6 +139,19 @@ export {
      * @since 1.0.0
      * @category Endpoints
      */
+    Sessions,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    SessionsError,
+} from "./endpoints/Session.js";
+
+export {
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
     Swarm,
     /**
      * @since 1.0.0

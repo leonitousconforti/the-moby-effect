@@ -1,12 +1,12 @@
 import { expect, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import * as Swarm from "the-moby-effect/endpoints/Swarm";
+import { Swarm } from "the-moby-effect/Endpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Swarm tests", (it) => {
     it.effect("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", () =>
         Effect.gen(function* () {
-            const swarm = yield* Swarm.Swarm;
+            const swarm = yield* Swarm;
             const inspect = yield* swarm.inspect();
 
             const spec = inspect.Spec;
