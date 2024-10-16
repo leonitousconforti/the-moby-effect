@@ -57,6 +57,7 @@ jobs:
       - run: pnpm check
       - run: pnpm build
       - run: pnpm lint
+      - run: pnpm circular
 
   # Checks that the docker images build and publishes them to ghcr.io
   docker-build:

@@ -42,6 +42,7 @@ jobs:
       - run: pnpm check
       - run: pnpm lint
       - run: pnpm build
+      - run: pnpm circular
 
       - run: pnpm publish --no-git-checks --access public --registry https://registry.npmjs.org/
         env:
