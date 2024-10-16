@@ -52,8 +52,6 @@ export const maybeAddHeader = (
  * For a given set of filters, returns a function that adds the filters to the
  * http request as a query parameter.
  *
- * TODO: can the type of filters be more specific?
- *
  * @since 1.0.0
  * @category Request Helpers
  * @internal

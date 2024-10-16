@@ -194,7 +194,6 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
 export const connectionOptionsFromUrl = (
     dockerHost: string
 ): Effect.Effect<MobyConnectionOptions, ConfigError.ConfigError, never> => {
-    // TODO: Is this NodeJS only?!?
     const url: URL = new URL(dockerHost);
 
     if (url.protocol === "unix:") {
