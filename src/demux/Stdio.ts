@@ -55,12 +55,18 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
     sockets:
         | BidirectionalRawStreamSocket
         | MultiplexedStreamSocket
+        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+        | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+        | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
         | {
+              stdin: UnidirectionalRawStreamSocket;
               stdout: UnidirectionalRawStreamSocket;
-              stdin?: UnidirectionalRawStreamSocket | undefined;
-              stderr?: UnidirectionalRawStreamSocket | undefined;
+              stderr: UnidirectionalRawStreamSocket;
           },
-    options?: { encoding: string | undefined } | undefined
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ): Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never> =>
     Effect.flatMap(
         Effect.all(
@@ -86,22 +92,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
                 { endOnDone: false }
             );
 
-            const helper = demuxUnknownToSeparateSinks(stdinStream, stdoutSink, stderrSink, options) as (
-                socketOptions:
-                    | BidirectionalRawStreamSocket
-                    | MultiplexedStreamSocket
-                    | {
-                          stdout: UnidirectionalRawStreamSocket;
-                          stdin?: UnidirectionalRawStreamSocket | undefined;
-                          stderr?: UnidirectionalRawStreamSocket | undefined;
-                      }
-            ) => Effect.Effect<
-                void,
-                StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError,
-                never
-            >;
-
-            return helper(sockets);
+            return demuxUnknownToSeparateSinks(sockets, stdinStream, stdoutSink, stderrSink, options);
         }
     );
 
@@ -119,46 +110,28 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
  * @since 1.0.0
  * @category Demux
  */
-export const demuxSocketWithInputToConsole: {
-    <E1, R1>(
-        input: Stream.Stream<string | Uint8Array, E1, R1>,
-        options?: { encoding: string | undefined } | undefined
-    ): (
-        socket: BidirectionalRawStreamSocket
-    ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-    <E1, R1>(
-        input: Stream.Stream<string | Uint8Array, E1, R1>,
-        options?: { encoding: string | undefined } | undefined
-    ): (
-        socket: MultiplexedStreamSocket
-    ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-    <E1, R1>(
-        input: Stream.Stream<string | Uint8Array, E1, R1>,
-        options?: { encoding: string | undefined } | undefined
-    ): (sockets: {
-        stdout: UnidirectionalRawStreamSocket;
-        stdin?: UnidirectionalRawStreamSocket | undefined;
-        stderr?: UnidirectionalRawStreamSocket | undefined;
-    }) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-} = <E1, R1>(
+export const demuxSocketWithInputToConsole = <E1, R1>(
+    sockets:
+        | BidirectionalRawStreamSocket
+        | MultiplexedStreamSocket
+        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
+        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+        | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+        | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
+        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
+        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
+        | {
+              stdin: UnidirectionalRawStreamSocket;
+              stdout: UnidirectionalRawStreamSocket;
+              stderr: UnidirectionalRawStreamSocket;
+          },
     input: Stream.Stream<string | Uint8Array, E1, R1>,
-    options?: { encoding: string | undefined } | undefined
-) =>
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+): Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>> =>
     demuxUnknownToSeparateSinks(
+        sockets,
         input,
         Sink.forEach<string, void, never, never>(Console.log),
         Sink.forEach<string, void, never, never>(Console.error),
         options
-    ) as {
-        (
-            socket: BidirectionalRawStreamSocket
-        ): Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-        (
-            socket: MultiplexedStreamSocket
-        ): Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-        (sockets: {
-            stdout: UnidirectionalRawStreamSocket;
-            stdin?: UnidirectionalRawStreamSocket | undefined;
-            stderr?: UnidirectionalRawStreamSocket | undefined;
-        }): Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>;
-    };
+    );
