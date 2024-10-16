@@ -50,7 +50,7 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * @category Demux
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
-    sockets: Demux.AllSocketOptions,
+    sockets: Demux.AnySocketOptions,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ): Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never> =>
     Effect.flatMap(
@@ -96,7 +96,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
  * @category Demux
  */
 export const demuxSocketWithInputToConsole = <E1, R1>(
-    sockets: Demux.AllSocketOptions,
+    sockets: Demux.AnySocketOptions,
     input: Stream.Stream<string | Uint8Array, E1, R1>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ): Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>> =>

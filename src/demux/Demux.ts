@@ -37,7 +37,7 @@ export declare namespace Demux {
      * @since 1.0.0
      * @category Types
      */
-    export type AllSocketOptions = RawStreamSocket | MultiplexedStreamSocket | StdinStdoutStderrSocketOptions;
+    export type AnySocketOptions = RawStreamSocket | MultiplexedStreamSocket | StdinStdoutStderrSocketOptions;
 }
 
 /**
@@ -449,7 +449,7 @@ export const demuxToSingleSink: {
         "stdout" in arguments_[0] ||
         "stderr" in arguments_[0],
     <A1, E1, E2, R1, R2>(
-        socketOptions: Demux.AllSocketOptions,
+        socketOptions: Demux.AnySocketOptions,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
@@ -487,7 +487,7 @@ export const demuxUnknownToSingleSink: {
         sink: Sink.Sink<A1, string, string, E2, R2>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
     ): (
-        socket: Demux.AllSocketOptions
+        socket: Demux.AnySocketOptions
     ) => Effect.Effect<
         A1,
         E1 | E2 | Socket.SocketError | ParseResult.ParseError,
@@ -495,7 +495,7 @@ export const demuxUnknownToSingleSink: {
     >;
     // Any socket input to one sink, data-first signature.
     <A1, E1, E2, R1, R2>(
-        socket: Demux.AllSocketOptions,
+        socket: Demux.AnySocketOptions,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
@@ -963,7 +963,7 @@ export const demuxAnyToSeparateSinks: {
         "stdout" in arguments_[0] ||
         "stderr" in arguments_[0],
     <A1, A2, E1, E2, E3, R1, R2, R3>(
-        socketOptions: Demux.AllSocketOptions,
+        socketOptions: Demux.AnySocketOptions,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
         sink2: Sink.Sink<A2, string, string, E3, R3>,
@@ -1000,7 +1000,7 @@ export const demuxUnknownToSeparateSinks: {
         sink2: Sink.Sink<A2, string, string, E3, R3>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
     ): (
-        socket: Demux.AllSocketOptions
+        socket: Demux.AnySocketOptions
     ) => Effect.Effect<
         void,
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
@@ -1008,7 +1008,7 @@ export const demuxUnknownToSeparateSinks: {
     >;
     // Any socket input to one sink, data-first signature.
     <A1, A2, E1, E2, E3, R1, R2, R3>(
-        socket: Demux.AllSocketOptions,
+        socket: Demux.AnySocketOptions,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink1: Sink.Sink<A1, string, string, E2, R2>,
         sink2: Sink.Sink<A2, string, string, E3, R3>,
