@@ -1,22 +1,25 @@
 // Run with: tsx examples/authentication.ts
 
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as Console from "effect/Console";
-import * as Effect from "effect/Effect";
-import * as Stream from "effect/Stream";
-
-import * as Connection from "the-moby-effect/Connection";
-import * as Convey from "the-moby-effect/Convey";
-import * as DockerEngine from "the-moby-effect/DockerEngine";
-import * as Images from "the-moby-effect/endpoints/Images";
-import * as System from "the-moby-effect/endpoints/System";
-import * as Schemas from "the-moby-effect/Schemas";
+import { NodeRuntime } from "@effect/platform-node";
+import { Console, Effect, Function, Layer, Stream } from "effect";
+import {
+    DockerEngine,
+    Connection as MobyConnection,
+    Convey as MobyConvey,
+    Endpoints as MobyEndpoints,
+    Schemas as MobySchemas,
+} from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
-const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
-    Connection.SocketConnectionOptions({
-        socketPath: "/var/run/docker.sock",
-    })
+// const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
+//     MobyConnection.SocketConnectionOptions({
+//         socketPath: "/var/run/docker.sock",
+//     })
+// );
+const localDocker = Function.pipe(
+    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+    Effect.map(DockerEngine.layerNodeJS),
+    Layer.unwrapEffect
 );
 
 // Put your docker hub credentials here
@@ -39,11 +42,11 @@ const dockerHubLogin = {
 // Digest: sha256:d37ada95d47ad12224c205a938129df7a3e52345828b4fa27b03a98825d1e2e7
 // Status: Downloaded newer image for confo014/hello-world:latest
 const program = Effect.gen(function* () {
-    const images: Images.Images = yield* Images.Images;
-    const system: System.Systems = yield* System.Systems;
+    const images: MobyEndpoints.Images = yield* MobyEndpoints.Images;
+    const system: MobyEndpoints.Systems = yield* MobyEndpoints.Systems;
 
     // Get an identity token from docker hub
-    const authResponse: Schemas.RegistryAuthenticateOKBody = yield* system.auth(dockerHubLogin);
+    const authResponse: MobySchemas.RegistryAuthenticateOKBody = yield* system.auth(dockerHubLogin);
     yield* Console.log(authResponse);
 
     if (authResponse.Status === "Login Succeeded" && !authResponse.IdentityToken) {
@@ -53,13 +56,13 @@ const program = Effect.gen(function* () {
     }
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<Schemas.JSONMessage, Images.ImagesError, never> = images.create({
+    const pullStream: Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never> = images.create({
         fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
         "X-Registry-Auth": authResponse.IdentityToken || Buffer.from(JSON.stringify(dockerHubLogin)).toString("base64"),
     });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time
-    yield* Convey.followProgressInConsole(pullStream);
+    yield* MobyConvey.followProgressInConsole(pullStream);
 });
 
 program.pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

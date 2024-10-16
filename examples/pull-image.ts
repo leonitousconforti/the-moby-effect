@@ -1,28 +1,35 @@
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as Effect from "effect/Effect";
-import * as Stream from "effect/Stream";
+// Run with: npx tsx examples/pull-image.ts
 
-import * as Connection from "the-moby-effect/Connection";
-import * as Convey from "the-moby-effect/Convey";
-import * as DockerEngine from "the-moby-effect/DockerEngine";
-import * as Images from "the-moby-effect/endpoints/Images";
-import * as Schemas from "the-moby-effect/Schemas";
+import { NodeRuntime } from "@effect/platform-node";
+import { Effect, Function, Layer, Stream } from "effect";
+import {
+    DockerEngine,
+    Connection as MobyConnection,
+    Convey as MobyConvey,
+    Endpoints as MobyEndpoints,
+    Schemas as MobySchemas,
+} from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
-const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
-    Connection.SocketConnectionOptions({
-        socketPath: "/var/run/docker.sock",
-    })
+// const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
+//     MobyConnection.SocketConnectionOptions({
+//         socketPath: "/var/run/docker.sock",
+//     })
+// );
+const localDocker = Function.pipe(
+    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+    Effect.map(DockerEngine.layerNodeJS),
+    Layer.unwrapEffect
 );
 
 // Pull the hello world image, will be removed when the scope is closed
 const program = Effect.gen(function* () {
-    const pullStream: Stream.Stream<Schemas.JSONMessage, Images.ImagesError, Images.Images> =
+    const pullStream: Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
         yield* DockerEngine.pullScoped({
             image: "docker.io/library/hello-world:latest",
         });
 
-    yield* Convey.followProgressInConsole(pullStream);
+    yield* MobyConvey.followProgressInConsole(pullStream);
 });
 
 program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

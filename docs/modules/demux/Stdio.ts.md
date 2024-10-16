@@ -14,7 +14,7 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Demux](#demux)
+- [DemuxStdio](#demuxstdio)
   - [demuxSocketFromStdinToStdoutAndStderr](#demuxsocketfromstdintostdoutandstderr)
   - [demuxSocketWithInputToConsole](#demuxsocketwithinputtoconsole)
 - [Errors](#errors)
@@ -24,7 +24,7 @@ Added in v1.0.0
 
 ---
 
-# Demux
+# DemuxStdio
 
 ## demuxSocketFromStdinToStdoutAndStderr
 
@@ -44,7 +44,7 @@ imports the `@effect/platform-node` package.
 
 ```ts
 export declare const demuxSocketFromStdinToStdoutAndStderr: (
-  sockets: Demux.AllSocketOptions,
+  sockets: Demux.AnySocketOptions,
   options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never>
 ```
@@ -67,7 +67,7 @@ the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
 
 ```ts
 export declare const demuxSocketWithInputToConsole: <E1, R1>(
-  sockets: Demux.AllSocketOptions,
+  sockets: Demux.AnySocketOptions,
   input: Stream.Stream<string | Uint8Array, E1, R1>,
   options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>

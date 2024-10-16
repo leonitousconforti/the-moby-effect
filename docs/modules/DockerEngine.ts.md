@@ -1,12 +1,12 @@
 ---
 title: DockerEngine.ts
-nav_order: 11
+nav_order: 10
 parent: Modules
 ---
 
 ## DockerEngine overview
 
-Docker engine.
+Docker engine shortcut.
 
 Added in v1.0.0
 
@@ -23,7 +23,7 @@ Added in v1.0.0
 
 ## From "./engines/Docker.js"
 
-Docker engine.
+Docker engine shortcut.
 
 **Signature**
 

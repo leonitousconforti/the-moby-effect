@@ -22,7 +22,7 @@ Added in v1.0.0
   - [demuxUnknownToSingleSink](#demuxunknowntosinglesink)
 - [utils](#utils)
   - [Demux (namespace)](#demux-namespace)
-    - [AllSocketOptions (type alias)](#allsocketoptions-type-alias)
+    - [AnySocketOptions (type alias)](#anysocketoptions-type-alias)
     - [StdinStdoutStderrSocketOptions (type alias)](#stdinstdoutstderrsocketoptions-type-alias)
 
 ---
@@ -790,14 +790,14 @@ export declare const demuxUnknownToSeparateSinks: {
     sink2: Sink.Sink<A2, string, string, E3, R3>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
   ): (
-    socket: Demux.AllSocketOptions
+    socket: Demux.AnySocketOptions
   ) => Effect.Effect<
     void,
     E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
   >
   <A1, A2, E1, E2, E3, R1, R2, R3>(
-    socket: Demux.AllSocketOptions,
+    socket: Demux.AnySocketOptions,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink1: Sink.Sink<A1, string, string, E2, R2>,
     sink2: Sink.Sink<A2, string, string, E3, R3>,
@@ -825,14 +825,14 @@ export declare const demuxUnknownToSingleSink: {
     sink: Sink.Sink<A1, string, string, E2, R2>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
   ): (
-    socket: Demux.AllSocketOptions
+    socket: Demux.AnySocketOptions
   ) => Effect.Effect<
     A1,
     E1 | E2 | Socket.SocketError | ParseResult.ParseError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
   >
   <A1, E1, E2, R1, R2>(
-    socket: Demux.AllSocketOptions,
+    socket: Demux.AnySocketOptions,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
@@ -852,12 +852,12 @@ Added in v1.0.0
 
 Added in v1.0.0
 
-### AllSocketOptions (type alias)
+### AnySocketOptions (type alias)
 
 **Signature**
 
 ```ts
-export type AllSocketOptions = RawStreamSocket | MultiplexedStreamSocket | StdinStdoutStderrSocketOptions
+export type AnySocketOptions = RawStreamSocket | MultiplexedStreamSocket | StdinStdoutStderrSocketOptions
 ```
 
 Added in v1.0.0

@@ -1,5 +1,5 @@
 /**
- * Docker engine.
+ * Docker engine shortcut.
  *
  * @since 1.0.0
  */

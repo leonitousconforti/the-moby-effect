@@ -292,7 +292,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Stream.decodeText("utf8"),
                 Stream.map(String.linesIterator),
                 Stream.flattenIterables,
-                Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage)), { unordered: false }),
+                Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
                 Stream.mapError((cause) => new ImagesError({ method: "build", cause }))
             );
 

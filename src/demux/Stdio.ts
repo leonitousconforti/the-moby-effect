@@ -47,7 +47,7 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * imports the `@effect/platform-node` package.
  *
  * @since 1.0.0
- * @category Demux
+ * @category DemuxStdio
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
     sockets: Demux.AnySocketOptions,
@@ -93,7 +93,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
  * the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
  *
  * @since 1.0.0
- * @category Demux
+ * @category DemuxStdio
  */
 export const demuxSocketWithInputToConsole = <E1, R1>(
     sockets: Demux.AnySocketOptions,

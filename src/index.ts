@@ -20,14 +20,7 @@ export * as Convey from "./Convey.js"
 export * as Demux from "./Demux.js"
 
 /**
- * Docker-in-docker engine.
- *
- * @since 1.0.0
- */
-export * as DindEngine from "./DindEngine.js"
-
-/**
- * Docker engine.
+ * Docker engine shortcut.
  *
  * @since 1.0.0
  */
@@ -41,18 +34,11 @@ export * as DockerEngine from "./DockerEngine.js"
 export * as Endpoints from "./Endpoints.js"
 
 /**
- * All engines.
+ * All implemented engines.
  *
  * @since 1.0.0
  */
 export * as Engines from "./Engines.js"
-
-/**
- * Generic Moby engine
- *
- * @since 1.0.0
- */
-export * as MobyEngine from "./MobyEngine.js"
 
 /**
  * Http client layers for all platforms.
@@ -60,13 +46,6 @@ export * as MobyEngine from "./MobyEngine.js"
  * @since 1.0.0
  */
 export * as Platforms from "./Platforms.js"
-
-/**
- * Podman engine.
- *
- * @since 1.0.0
- */
-export * as PodmanEngine from "./PodmanEngine.js"
 
 /**
  * Moby schemas.

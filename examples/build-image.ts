@@ -1,21 +1,20 @@
-// Run with: tsx examples/build-image.ts
+// Run with: npx tsx examples/build-image.ts
 
-import * as NodeContext from "@effect/platform-node/NodeContext";
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as Path from "@effect/platform/Path";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Stream from "effect/Stream";
-
-import * as Connection from "the-moby-effect/Connection";
-import * as Convey from "the-moby-effect/Convey";
-import * as DockerEngine from "the-moby-effect/DockerEngine";
+import { Path } from "@effect/platform";
+import { NodeContext, NodeRuntime } from "@effect/platform-node";
+import { Effect, Function, Layer, Stream } from "effect";
+import { DockerEngine, Connection as MobyConnection, Convey as MobyConvey } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
-const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
-    Connection.SocketConnectionOptions({
-        socketPath: "/var/run/docker.sock",
-    })
+// const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
+//     MobyConnection.SocketConnectionOptions({
+//         socketPath: "/var/run/docker.sock",
+//     })
+// );
+const localDocker = Function.pipe(
+    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+    Effect.map(DockerEngine.layerNodeJS),
+    Layer.unwrapEffect
 );
 
 // Step 1/1 : FROM ubuntu:latest
@@ -52,16 +51,17 @@ const program = Effect.gen(function* () {
 
     const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
     const buildContext = Function.pipe(
-        Convey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
+        MobyConvey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
         Stream.provideLayer(NodeContext.layer)
     );
+
     const buildStream = yield* DockerEngine.buildScoped({
         context: buildContext,
         tag: "mydockerimage:latest",
         dockerfile: "build-image.dockerfile",
     });
 
-    yield* Convey.followProgressInConsole(buildStream);
+    yield* MobyConvey.followProgressInConsole(buildStream);
 });
 
 program
