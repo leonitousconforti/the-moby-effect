@@ -177,6 +177,9 @@ export interface SecretsImpl {
  * @category Tags
  */
 export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoints/Secrets", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

@@ -169,6 +169,9 @@ export interface TasksImpl {
  * @category Tags
  */
 export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/Tasks", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

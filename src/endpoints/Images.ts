@@ -815,6 +815,9 @@ export interface ImagesImpl {
  * @category Tags
  */
 export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints/Images", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

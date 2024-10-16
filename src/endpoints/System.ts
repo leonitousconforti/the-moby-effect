@@ -182,6 +182,9 @@ export interface SystemsImpl {
  * @category Tags
  */
 export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoints/System", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

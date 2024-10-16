@@ -369,6 +369,9 @@ export interface PluginsImpl {
  * @category Tags
  */
 export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoints/Plugins", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

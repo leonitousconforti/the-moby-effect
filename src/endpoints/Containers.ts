@@ -89,6 +89,9 @@ export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTy
  * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Container
  */
 export class Containers extends Effect.Service<Containers>()("@the-moby-effect/endpoints/Containers", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);

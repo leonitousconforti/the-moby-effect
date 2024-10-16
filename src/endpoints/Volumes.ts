@@ -204,6 +204,9 @@ export interface VolumesImpl {
  * @category Tags
  */
 export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoints/Volumes", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

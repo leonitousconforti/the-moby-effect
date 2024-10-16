@@ -74,6 +74,9 @@ export interface SessionsImpl {
  * @category Tags
  */
 export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpoints/Session", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));

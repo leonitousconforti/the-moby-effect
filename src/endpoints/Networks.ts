@@ -226,6 +226,9 @@ export interface NetworksImpl {
  * @category Tags
  */
 export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpoints/Networks", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);

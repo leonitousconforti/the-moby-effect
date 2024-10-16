@@ -143,6 +143,9 @@ export interface SwarmImpl {
  * @category Tags
  */
 export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/Swarm", {
+    accessors: true,
+    dependencies: [],
+
     effect: Effect.gen(function* () {
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
