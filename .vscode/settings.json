@@ -17,6 +17,7 @@
         "cgroups",
         "codegen",
         "compat",
+        "confo",
         "Conforti",
         "conta",
         "containerd",
