@@ -37,7 +37,7 @@
         "build-reflection": "(cd reflection/ && go build)",
         "build-schemas": "(cd src && rm -rf ./generated && mkdir -p generated && ../reflection/reflection) && eslint ./src/generated/ --fix",
         "check": "tsc -b tsconfig.json",
-        "circular": "node ./scripts/circular.js",
+        "circular": "node ./scripts/circular.mjs",
         "clean": "rimraf .tsbuildinfo docs build dist coverage",
         "codegen": "build-utils prepare-v2",
         "coverage": "vitest --coverage",

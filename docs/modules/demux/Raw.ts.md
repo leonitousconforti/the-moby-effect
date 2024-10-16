@@ -6,16 +6,11 @@ parent: Modules
 
 ## Raw overview
 
-Demux utilities for raw sockets. Raw sockets come in two "flavors" -
-unidirectional and bidirectional. In both cases, they are represented as
-bidirectional sockets because even in the unidirectional case data could be
-flowing in either direction. Unlike multiplexed sockets, bidirectional raw
-sockets can not differentiate between stdout and stderr because the data is
-just raw bytes from the process's PTY. However, you can attach multiple
-unidirectional sockets to the same container (one for stdout and one for
-stderr) and then use the demux utilities to separate the streams.
-
-Upcasting and downcasting between the two types is supported, but discouraged
+Demux utilities for raw sockets. Unlike multiplexed sockets, raw sockets can
+not differentiate between stdout and stderr because the data is just raw
+bytes from the process's PTY. However, you can attach multiple raw sockets to
+the same container (one for stdout and one for stderr) and then use the demux
+utilities to separate the streams.
 
 Added in v1.0.0
 
@@ -24,34 +19,26 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Branded Types](#branded-types)
-  - [BidirectionalRawStreamSocket (type alias)](#bidirectionalrawstreamsocket-type-alias)
-- [Casting](#casting)
-  - [downcastBidirectionalToUnidirectional](#downcastbidirectionaltounidirectional)
-  - [upcastUnidirectionalToBidirectional](#upcastunidirectionaltobidirectional)
+  - [RawStreamSocket (type alias)](#rawstreamsocket-type-alias)
 - [Constructors](#constructors)
-  - [makeBidirectionalRawStreamSocket](#makebidirectionalrawstreamsocket)
-  - [makeUnidirectionalRawStreamSocket](#makeunidirectionalrawstreamsocket)
+  - [makeRawStreamSocket](#makerawstreamsocket)
 - [Demux](#demux)
-  - [demuxBidirectionalRawSocket](#demuxbidirectionalrawsocket)
-  - [demuxUnidirectionalRawSockets](#demuxunidirectionalrawsockets)
+  - [demuxRawSocket](#demuxrawsocket)
+  - [demuxRawSockets](#demuxrawsockets)
 - [Predicates](#predicates)
-  - [isBidirectionalRawStreamSocket](#isbidirectionalrawstreamsocket)
-  - [isUnidirectionalRawStreamSocket](#isunidirectionalrawstreamsocket)
+  - [isRawStreamSocket](#israwstreamsocket)
   - [responseIsRawStreamSocketResponse](#responseisrawstreamsocketresponse)
 - [Type ids](#type-ids)
-  - [BidirectionalRawStreamSocketTypeId](#bidirectionalrawstreamsockettypeid)
-  - [BidirectionalRawStreamSocketTypeId (type alias)](#bidirectionalrawstreamsockettypeid-type-alias)
-  - [UnidirectionalRawStreamSocketTypeId](#unidirectionalrawstreamsockettypeid)
-  - [UnidirectionalRawStreamSocketTypeId (type alias)](#unidirectionalrawstreamsockettypeid-type-alias)
+  - [RawStreamSocketTypeId](#rawstreamsockettypeid)
+  - [RawStreamSocketTypeId (type alias)](#rawstreamsockettypeid-type-alias)
 - [Types](#types)
   - [RawStreamSocketContentType](#rawstreamsocketcontenttype)
-  - [UnidirectionalRawStreamSocket (type alias)](#unidirectionalrawstreamsocket-type-alias)
 
 ---
 
 # Branded Types
 
-## BidirectionalRawStreamSocket (type alias)
+## RawStreamSocket (type alias)
 
 When the TTY setting is enabled in POST /containers/create, the stream is not
 multiplexed. The data exchanged over the hijacked connection is simply the
@@ -60,87 +47,48 @@ raw data from the process PTY and client's stdin.
 **Signature**
 
 ```ts
-export type BidirectionalRawStreamSocket = Socket.Socket & {
+export type RawStreamSocket = Socket.Socket & {
   readonly "content-type": typeof RawStreamSocketContentType
-  readonly [BidirectionalRawStreamSocketTypeId]: typeof BidirectionalRawStreamSocketTypeId
+  readonly [RawStreamSocketTypeId]: typeof RawStreamSocketTypeId
 }
-```
-
-Added in v1.0.0
-
-# Casting
-
-## downcastBidirectionalToUnidirectional
-
-**Signature**
-
-```ts
-export declare const downcastBidirectionalToUnidirectional: ({
-  [BidirectionalRawStreamSocketTypeId]: _,
-  ...rest
-}: BidirectionalRawStreamSocket) => UnidirectionalRawStreamSocket
-```
-
-Added in v1.0.0
-
-## upcastUnidirectionalToBidirectional
-
-**Signature**
-
-```ts
-export declare const upcastUnidirectionalToBidirectional: ({
-  [UnidirectionalRawStreamSocketTypeId]: _,
-  ...rest
-}: UnidirectionalRawStreamSocket) => BidirectionalRawStreamSocket
 ```
 
 Added in v1.0.0
 
 # Constructors
 
-## makeBidirectionalRawStreamSocket
+## makeRawStreamSocket
 
 **Signature**
 
 ```ts
-export declare const makeBidirectionalRawStreamSocket: (socket: Socket.Socket) => BidirectionalRawStreamSocket
-```
-
-Added in v1.0.0
-
-## makeUnidirectionalRawStreamSocket
-
-**Signature**
-
-```ts
-export declare const makeUnidirectionalRawStreamSocket: (socket: Socket.Socket) => UnidirectionalRawStreamSocket
+export declare const makeRawStreamSocket: (socket: Socket.Socket) => RawStreamSocket
 ```
 
 Added in v1.0.0
 
 # Demux
 
-## demuxBidirectionalRawSocket
+## demuxRawSocket
 
 Demux a raw socket. When given a raw socket of the remote process's pty,
 there is no way to differentiate between stdout and stderr so they are
 combined on the same sink.
 
-To demux multiple raw sockets, you should use
-{@link demuxUnidirectionalRawSockets}
+To demux multiple raw sockets, you should use {@link demuxRawSockets}
 
 **Signature**
 
 ```ts
-export declare const demuxBidirectionalRawSocket: (<A1, E1, E2, R1, R2>(
+export declare const demuxRawSocket: (<A1, E1, E2, R1, R2>(
   source: Stream.Stream<string | Uint8Array, E1, R1>,
   sink: Sink.Sink<A1, string, string, E2, R2>,
   options?: { encoding?: string | undefined } | undefined
 ) => (
-  socket: BidirectionalRawStreamSocket
+  socket: RawStreamSocket
 ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>) &
   (<A1, E1, E2, R1, R2>(
-    socket: BidirectionalRawStreamSocket,
+    socket: RawStreamSocket,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>,
     options?: { encoding?: string | undefined } | undefined
@@ -149,33 +97,30 @@ export declare const demuxBidirectionalRawSocket: (<A1, E1, E2, R1, R2>(
 
 Added in v1.0.0
 
-## demuxUnidirectionalRawSockets
+## demuxRawSockets
 
-Demux multiple raw sockets, created from multiple container attach websocket
-requests. If no options are provided for a given stream, it will be ignored.
-This is really just an Effect.all wrapper around
-{@link demuxBidirectionalRawSocket}.
+Demux multiple raw sockets, created from multiple container attach requests.
+If no options are provided for a given stream, it will be ignored. This is
+really just an Effect.all wrapper around {@link demuxRawSocket}.
 
-To demux a single raw socket, you should use
-{@link demuxBidirectionalRawSocket}
+To demux a single raw socket, you should use {@link demuxRawSocket}
 
 **Signature**
 
 ```ts
-export declare const demuxUnidirectionalRawSockets: {
+export declare const demuxRawSockets: {
   <
-    O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, UnidirectionalRawStreamSocket],
-    O2 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-    O3 extends readonly [UnidirectionalRawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
-    S = UnidirectionalRawStreamSocket,
-    E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, S] ? E : never,
-    E2 = O2 extends [S, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
-    E3 = O3 extends [S, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
-    R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, S] ? R : never,
-    R2 = O2 extends [S, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
-    R3 = O3 extends [S, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
-    A1 = O2 extends [S, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : void,
-    A2 = O3 extends [S, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : void
+    O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, RawStreamSocket],
+    O2 extends readonly [RawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
+    O3 extends readonly [RawStreamSocket, Sink.Sink<unknown, string, string, unknown, unknown>],
+    E1 = O1 extends [Stream.Stream<string | Uint8Array, infer E, infer _R>, RawStreamSocket] ? E : never,
+    E2 = O2 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
+    E3 = O3 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer E, infer _R>] ? E : never,
+    R1 = O1 extends [Stream.Stream<string | Uint8Array, infer _E, infer R>, RawStreamSocket] ? R : never,
+    R2 = O2 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
+    R3 = O3 extends [RawStreamSocket, Sink.Sink<infer _A, string, string, infer _E, infer R>] ? R : never,
+    A1 = O2 extends [RawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : void,
+    A2 = O3 extends [RawStreamSocket, Sink.Sink<infer A, string, string, infer _E, infer _R>] ? A : void
   >(
     sockets:
       | { stdin: O1; stdout?: never; stderr?: never }
@@ -192,18 +137,7 @@ export declare const demuxUnidirectionalRawSockets: {
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
   >
   <A1, A2, E1, E2, E3, R1, R2, R3>(
-    sockets:
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-      | {
-          stdin: UnidirectionalRawStreamSocket
-          stdout: UnidirectionalRawStreamSocket
-          stderr: UnidirectionalRawStreamSocket
-        },
+    sockets: Demux.StdinStdoutStderrSocketOptions,
     io: {
       stdin: Stream.Stream<string | Uint8Array, E1, R1>
       stdout: Sink.Sink<A1, string, string, E2, R2>
@@ -223,36 +157,14 @@ export declare const demuxUnidirectionalRawSockets: {
     },
     options?: { encoding?: string | undefined } | undefined
   ): (
-    sockets:
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-      | {
-          stdin: UnidirectionalRawStreamSocket
-          stdout: UnidirectionalRawStreamSocket
-          stderr: UnidirectionalRawStreamSocket
-        }
+    sockets: Demux.StdinStdoutStderrSocketOptions
   ) => Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | Socket.SocketError,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
   >
   <A1, E1, E2, R1, R2>(
-    sockets:
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-      | {
-          stdin: UnidirectionalRawStreamSocket
-          stdout: UnidirectionalRawStreamSocket
-          stderr: UnidirectionalRawStreamSocket
-        },
+    sockets: Demux.StdinStdoutStderrSocketOptions,
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>,
     options?: { encoding?: string | undefined } | undefined
@@ -262,18 +174,7 @@ export declare const demuxUnidirectionalRawSockets: {
     sink: Sink.Sink<A1, string, string, E2, R2>,
     options?: { encoding?: string | undefined } | undefined
   ): (
-    sockets:
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-      | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-      | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-      | {
-          stdin: UnidirectionalRawStreamSocket
-          stdout: UnidirectionalRawStreamSocket
-          stderr: UnidirectionalRawStreamSocket
-        }
+    sockets: Demux.StdinStdoutStderrSocketOptions
   ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
 }
 ```
@@ -282,22 +183,12 @@ Added in v1.0.0
 
 # Predicates
 
-## isBidirectionalRawStreamSocket
+## isRawStreamSocket
 
 **Signature**
 
 ```ts
-export declare const isBidirectionalRawStreamSocket: (u: unknown) => u is BidirectionalRawStreamSocket
-```
-
-Added in v1.0.0
-
-## isUnidirectionalRawStreamSocket
-
-**Signature**
-
-```ts
-export declare const isUnidirectionalRawStreamSocket: (u: unknown) => u is UnidirectionalRawStreamSocket
+export declare const isRawStreamSocket: (u: unknown) => u is RawStreamSocket
 ```
 
 Added in v1.0.0
@@ -314,42 +205,22 @@ Added in v1.0.0
 
 # Type ids
 
-## BidirectionalRawStreamSocketTypeId
+## RawStreamSocketTypeId
 
 **Signature**
 
 ```ts
-export declare const BidirectionalRawStreamSocketTypeId: typeof BidirectionalRawStreamSocketTypeId
+export declare const RawStreamSocketTypeId: typeof RawStreamSocketTypeId
 ```
 
 Added in v1.0.0
 
-## BidirectionalRawStreamSocketTypeId (type alias)
+## RawStreamSocketTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type BidirectionalRawStreamSocketTypeId = typeof BidirectionalRawStreamSocketTypeId
-```
-
-Added in v1.0.0
-
-## UnidirectionalRawStreamSocketTypeId
-
-**Signature**
-
-```ts
-export declare const UnidirectionalRawStreamSocketTypeId: typeof UnidirectionalRawStreamSocketTypeId
-```
-
-Added in v1.0.0
-
-## UnidirectionalRawStreamSocketTypeId (type alias)
-
-**Signature**
-
-```ts
-export type UnidirectionalRawStreamSocketTypeId = typeof UnidirectionalRawStreamSocketTypeId
+export type RawStreamSocketTypeId = typeof RawStreamSocketTypeId
 ```
 
 Added in v1.0.0
@@ -362,23 +233,6 @@ Added in v1.0.0
 
 ```ts
 export declare const RawStreamSocketContentType: "application/vnd.docker.raw-stream"
-```
-
-Added in v1.0.0
-
-## UnidirectionalRawStreamSocket (type alias)
-
-When the TTY setting is enabled in POST /containers/create, the stream is not
-multiplexed. The data exchanged over the hijacked connection is simply the
-raw data from the process PTY and client's stdin.
-
-**Signature**
-
-```ts
-export type UnidirectionalRawStreamSocket = Socket.Socket & {
-  readonly "content-type": typeof RawStreamSocketContentType
-  readonly [UnidirectionalRawStreamSocketTypeId]: typeof UnidirectionalRawStreamSocketTypeId
-}
 ```
 
 Added in v1.0.0

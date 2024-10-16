@@ -22,7 +22,7 @@ import * as Scope from "effect/Scope";
 
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
-import { BidirectionalRawStreamSocket } from "../demux/Raw.js";
+import { RawStreamSocket } from "../demux/Raw.js";
 import {
     ContainerExecOptions as ContainerExecStartConfig,
     ContainerExecOptions as ExecConfig,
@@ -85,7 +85,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          * @param id - ID or name of container
          */
         const container_ = (options: {
-            readonly execConfig: Schema.Schema.Type<typeof ExecConfig>;
+            readonly execConfig: Schema.Schema.Encoded<typeof ExecConfig>;
             readonly id: string;
         }): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
             Function.pipe(
@@ -105,17 +105,19 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          */
         const start_ = <T extends boolean | undefined>(
             options: {
-                readonly execStartConfig: Schema.Schema.Type<typeof ContainerExecStartConfig>;
+                readonly execStartConfig: Schema.Schema.Encoded<typeof ContainerExecStartConfig>;
                 readonly id: string;
             } & {
-                execStartConfig: Omit<Schema.Schema.Type<typeof ContainerExecStartConfig>, "Detach"> & { Detach?: T };
+                execStartConfig: Omit<Schema.Schema.Encoded<typeof ContainerExecStartConfig>, "Detach"> & {
+                    Detach?: T;
+                };
             }
         ): T extends true
             ? Effect.Effect<void, ExecsError, never>
-            : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope> => {
+            : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope> => {
             type U = T extends true
                 ? Effect.Effect<void, ExecsError, never>
-                : Effect.Effect<MultiplexedStreamSocket | BidirectionalRawStreamSocket, ExecsError, Scope.Scope>;
+                : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
 
             const response = Function.pipe(
                 HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/start`),

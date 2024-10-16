@@ -13,35 +13,33 @@ import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { demuxUnknownToSeparateSinks } from "./Demux.js";
-import { MultiplexedStreamSocket } from "./Multiplexed.js";
-import { BidirectionalRawStreamSocket, UnidirectionalRawStreamSocket } from "./Raw.js";
+import { Demux, demuxUnknownToSeparateSinks } from "./Demux.js";
 
 /**
  * @since 1.0.0
  * @category Errors
  */
-export class StdinError extends Data.TaggedError("StdinError")<{ message: string }> {}
+export class StdinError extends Data.TaggedError("StdinError")<{ message: string; cause: unknown }> {}
 
 /**
  * @since 1.0.0
  * @category Errors
  */
-export class StdoutError extends Data.TaggedError("StdoutError")<{ message: string }> {}
+export class StdoutError extends Data.TaggedError("StdoutError")<{ message: string; cause: unknown }> {}
 
 /**
  * @since 1.0.0
  * @category Errors
  */
-export class StderrError extends Data.TaggedError("StderrError")<{ message: string }> {}
+export class StderrError extends Data.TaggedError("StderrError")<{ message: string; cause: unknown }> {}
 
 /**
  * Demux either a raw stream socket or a multiplexed stream socket from stdin to
- * stdout and stderr. If given a bidirectional raw stream socket, then stdout
- * and stderr will be combined on the same sink. If given a multiplexed stream
- * socket, then stdout and stderr will be forwarded to different sinks. If given
- * a unidirectional raw stream socket, then you are only required to provide one
- * for stdout but can also provide sockets for stdin and stderr as well.
+ * stdout and stderr. If given a raw stream socket, then stdout and stderr will
+ * be combined on the same sink. If given a multiplexed stream socket, then
+ * stdout and stderr will be forwarded to different sinks. If given multiple raw
+ * stream sockets, then you can provide different individual sockets for stdin,
+ * stdout, and stderr.
  *
  * If you are looking for a way to demux to the console instead of stdin,
  * stdout, and stderr then see {@link demuxSocketWithInputToConsole}. Since we
@@ -52,20 +50,7 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * @category Demux
  */
 export const demuxSocketFromStdinToStdoutAndStderr = (
-    sockets:
-        | BidirectionalRawStreamSocket
-        | MultiplexedStreamSocket
-        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-        | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-        | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-        | {
-              stdin: UnidirectionalRawStreamSocket;
-              stdout: UnidirectionalRawStreamSocket;
-              stderr: UnidirectionalRawStreamSocket;
-          },
+    sockets: Demux.AllSocketOptions,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ): Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never> =>
     Effect.flatMap(
@@ -77,32 +62,32 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
             { concurrency: 2 }
         ),
         ({ NodeSinkLazy, NodeStreamLazy }) => {
-            const stdinStream = NodeStreamLazy.fromReadable(
+            const stdin: Stream.Stream<Uint8Array, StdinError, never> = NodeStreamLazy.fromReadable(
                 () => process.stdin,
-                (error: unknown) => new StdinError({ message: `stdin is not readable: ${error}` })
+                (error: unknown) => new StdinError({ cause: error, message: `stdin is not readable: ${error}` })
             );
-            const stdoutSink = NodeSinkLazy.fromWritable(
+            const stdout: Sink.Sink<void, string | Uint8Array, never, StdoutError, never> = NodeSinkLazy.fromWritable(
                 () => process.stdout,
-                (error: unknown) => new StdoutError({ message: `stdout is not writable: ${error}` }),
+                (error: unknown) => new StdoutError({ cause: error, message: `stdout is not writable: ${error}` }),
                 { endOnDone: false }
             );
-            const stderrSink = NodeSinkLazy.fromWritable(
+            const stderr: Sink.Sink<void, string | Uint8Array, never, StderrError, never> = NodeSinkLazy.fromWritable(
                 () => process.stderr,
-                (error: unknown) => new StderrError({ message: `stderr is not writable: ${error}` }),
+                (error: unknown) => new StderrError({ cause: error, message: `stderr is not writable: ${error}` }),
                 { endOnDone: false }
             );
 
-            return demuxUnknownToSeparateSinks(sockets, stdinStream, stdoutSink, stderrSink, options);
+            return demuxUnknownToSeparateSinks(sockets, stdin, stdout, stderr, options);
         }
     );
 
 /**
  * Demux either a raw stream socket or a multiplexed stream socket to the
- * console. If given a bidirectional raw stream socket, then stdout and stderr
- * will be combined on the same sink. If given a multiplexed stream socket, then
- * stdout and stderr will be forwarded to different sinks. If given a
- * unidirectional raw stream socket, then you are only required to provide one
- * for stdout but can also provide sockets for stdin and stderr as well.
+ * console. If given a raw stream socket, then stdout and stderr will be
+ * combined on the same sink. If given a multiplexed stream socket, then stdout
+ * and stderr will be forwarded to different sinks. If given multiple raw stream
+ * sockets, then you can provide different individual sockets for stdin, stdout,
+ * and stderr.
  *
  * If you are looking for a way to demux to stdin, stdout, and stderr instead of
  * the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
@@ -111,20 +96,7 @@ export const demuxSocketFromStdinToStdoutAndStderr = (
  * @category Demux
  */
 export const demuxSocketWithInputToConsole = <E1, R1>(
-    sockets:
-        | BidirectionalRawStreamSocket
-        | MultiplexedStreamSocket
-        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-        | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-        | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-        | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-        | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-        | {
-              stdin: UnidirectionalRawStreamSocket;
-              stdout: UnidirectionalRawStreamSocket;
-              stderr: UnidirectionalRawStreamSocket;
-          },
+    sockets: Demux.AllSocketOptions,
     input: Stream.Stream<string | Uint8Array, E1, R1>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ): Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>> =>

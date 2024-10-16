@@ -58,6 +58,7 @@ export default [
             "no-case-declarations": "off",
             "codegen/codegen": "error",
             "object-shorthand": "error",
+            "@typescript-eslint/no-namespace": "off",
             "@typescript-eslint/no-empty-object-type": "off",
             "sort-destructure-keys/sort-destructure-keys": "error",
             "@typescript-eslint/array-type": ["warn", { default: "generic", readonly: "generic" }],

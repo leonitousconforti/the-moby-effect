@@ -55,43 +55,9 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const responseToRawStreamSocketOrFailUnsafe: (<
-  SourceIsKnownUnidirectional extends true | undefined = undefined,
-  SourceIsKnownBidirectional extends true | undefined = undefined
->(
-  options?:
-    | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-    | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-    | undefined
-) => (
+export declare const responseToRawStreamSocketOrFailUnsafe: (
   response: HttpClientResponse.HttpClientResponse
-) => Effect.Effect<
-  SourceIsKnownUnidirectional extends true
-    ? UnidirectionalRawStreamSocket
-    : SourceIsKnownBidirectional extends true
-      ? BidirectionalRawStreamSocket
-      : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-  Socket.SocketError,
-  never
->) &
-  (<
-    SourceIsKnownUnidirectional extends true | undefined = undefined,
-    SourceIsKnownBidirectional extends true | undefined = undefined
-  >(
-    response: HttpClientResponse.HttpClientResponse,
-    options?:
-      | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-      | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-      | undefined
-  ) => Effect.Effect<
-    SourceIsKnownUnidirectional extends true
-      ? UnidirectionalRawStreamSocket
-      : SourceIsKnownBidirectional extends true
-        ? BidirectionalRawStreamSocket
-        : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket,
-    Socket.SocketError,
-    never
-  >)
+) => Effect.Effect<RawStreamSocket, Socket.SocketError, never>
 ```
 
 Added in v1.0.0
@@ -109,45 +75,9 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const responseToStreamingSocketOrFailUnsafe: (<
-  SourceIsKnownUnidirectional extends true | undefined = undefined,
-  SourceIsKnownBidirectional extends true | undefined = undefined
->(
-  options?:
-    | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-    | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-    | undefined
-) => (
+export declare const responseToStreamingSocketOrFailUnsafe: (
   response: HttpClientResponse.HttpClientResponse
-) => Effect.Effect<
-  | MultiplexedStreamSocket
-  | (SourceIsKnownUnidirectional extends true
-      ? UnidirectionalRawStreamSocket
-      : SourceIsKnownBidirectional extends true
-        ? BidirectionalRawStreamSocket
-        : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
-  Socket.SocketError,
-  never
->) &
-  (<
-    SourceIsKnownUnidirectional extends true | undefined = undefined,
-    SourceIsKnownBidirectional extends true | undefined = undefined
-  >(
-    response: HttpClientResponse.HttpClientResponse,
-    options?:
-      | { sourceIsKnownUnidirectional: SourceIsKnownUnidirectional }
-      | { sourceIsKnownBidirectional: SourceIsKnownBidirectional }
-      | undefined
-  ) => Effect.Effect<
-    | MultiplexedStreamSocket
-    | (SourceIsKnownUnidirectional extends true
-        ? UnidirectionalRawStreamSocket
-        : SourceIsKnownBidirectional extends true
-          ? BidirectionalRawStreamSocket
-          : UnidirectionalRawStreamSocket | BidirectionalRawStreamSocket),
-    Socket.SocketError,
-    never
-  >)
+) => Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never>
 ```
 
 Added in v1.0.0

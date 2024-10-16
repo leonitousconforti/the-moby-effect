@@ -6,9 +6,8 @@ parent: Modules
 
 ## Multiplexed overview
 
-Demux utilities for multiplexed sockets. Multiplexed sockets come in a single
-"flavor" - they are always bidirectional. You can receive data (both stdout
-and stderr) and send data (stdin) over the same socket.
+Demux utilities for multiplexed sockets. You can receive data (both stdout
+and stderr) distinctly and send data (stdin) all over the same socket.
 
 Added in v1.0.0
 

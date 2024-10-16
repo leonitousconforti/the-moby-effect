@@ -29,11 +29,11 @@ Added in v1.0.0
 ## demuxSocketFromStdinToStdoutAndStderr
 
 Demux either a raw stream socket or a multiplexed stream socket from stdin to
-stdout and stderr. If given a bidirectional raw stream socket, then stdout
-and stderr will be combined on the same sink. If given a multiplexed stream
-socket, then stdout and stderr will be forwarded to different sinks. If given
-a unidirectional raw stream socket, then you are only required to provide one
-for stdout but can also provide sockets for stdin and stderr as well.
+stdout and stderr. If given a raw stream socket, then stdout and stderr will
+be combined on the same sink. If given a multiplexed stream socket, then
+stdout and stderr will be forwarded to different sinks. If given multiple raw
+stream sockets, then you can provide different individual sockets for stdin,
+stdout, and stderr.
 
 If you are looking for a way to demux to the console instead of stdin,
 stdout, and stderr then see {@link demuxSocketWithInputToConsole}. Since we
@@ -44,20 +44,7 @@ imports the `@effect/platform-node` package.
 
 ```ts
 export declare const demuxSocketFromStdinToStdoutAndStderr: (
-  sockets:
-    | BidirectionalRawStreamSocket
-    | MultiplexedStreamSocket
-    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-    | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-    | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-    | {
-        stdin: UnidirectionalRawStreamSocket
-        stdout: UnidirectionalRawStreamSocket
-        stderr: UnidirectionalRawStreamSocket
-      },
+  sockets: Demux.AllSocketOptions,
   options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<void, StdinError | StdoutError | StderrError | Socket.SocketError | ParseResult.ParseError, never>
 ```
@@ -67,11 +54,11 @@ Added in v1.0.0
 ## demuxSocketWithInputToConsole
 
 Demux either a raw stream socket or a multiplexed stream socket to the
-console. If given a bidirectional raw stream socket, then stdout and stderr
-will be combined on the same sink. If given a multiplexed stream socket, then
-stdout and stderr will be forwarded to different sinks. If given a
-unidirectional raw stream socket, then you are only required to provide one
-for stdout but can also provide sockets for stdin and stderr as well.
+console. If given a raw stream socket, then stdout and stderr will be
+combined on the same sink. If given a multiplexed stream socket, then stdout
+and stderr will be forwarded to different sinks. If given multiple raw stream
+sockets, then you can provide different individual sockets for stdin, stdout,
+and stderr.
 
 If you are looking for a way to demux to stdin, stdout, and stderr instead of
 the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
@@ -80,20 +67,7 @@ the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
 
 ```ts
 export declare const demuxSocketWithInputToConsole: <E1, R1>(
-  sockets:
-    | BidirectionalRawStreamSocket
-    | MultiplexedStreamSocket
-    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr?: never }
-    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-    | { stdin?: never; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-    | { stdin: UnidirectionalRawStreamSocket; stdout: UnidirectionalRawStreamSocket; stderr?: never }
-    | { stdin: UnidirectionalRawStreamSocket; stdout?: never; stderr: UnidirectionalRawStreamSocket }
-    | { stdin?: never; stdout: UnidirectionalRawStreamSocket; stderr: UnidirectionalRawStreamSocket }
-    | {
-        stdin: UnidirectionalRawStreamSocket
-        stdout: UnidirectionalRawStreamSocket
-        stderr: UnidirectionalRawStreamSocket
-      },
+  sockets: Demux.AllSocketOptions,
   input: Stream.Stream<string | Uint8Array, E1, R1>,
   options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<void, E1 | Socket.SocketError | ParseResult.ParseError, Exclude<R1, Scope.Scope>>

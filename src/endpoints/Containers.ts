@@ -26,11 +26,7 @@ import * as Tuple from "effect/Tuple";
 
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
-import {
-    BidirectionalRawStreamSocket,
-    makeUnidirectionalRawStreamSocket,
-    UnidirectionalRawStreamSocket,
-} from "../demux/Raw.js";
+import { RawStreamSocket, makeRawStreamSocket } from "../demux/Raw.js";
 import {
     ContainerChange,
     ContainerConfig,
@@ -395,7 +391,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             readonly stdin?: boolean | undefined;
             readonly stdout?: boolean | undefined;
             readonly stderr?: boolean | undefined;
-        }): Effect.Effect<BidirectionalRawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
+        }): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/attach`),
                 HttpClientRequest.setHeader("Upgrade", "tcp"),
@@ -407,7 +403,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
                 maybeUpgradedClient.execute,
-                Effect.flatMap(responseToStreamingSocketOrFailUnsafe({ sourceIsKnownBidirectional: true })),
+                Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
                 Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
             );
 
@@ -419,7 +415,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             readonly stdin?: boolean | undefined;
             readonly stdout?: boolean | undefined;
             readonly stderr?: boolean | undefined;
-        }): Effect.Effect<UnidirectionalRawStreamSocket, ContainersError, Socket.WebSocketConstructor> =>
+        }): Effect.Effect<RawStreamSocket, ContainersError, Socket.WebSocketConstructor> =>
             Function.pipe(
                 HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/attach/ws`),
                 maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
@@ -448,7 +444,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 ),
                 Effect.map((url) => url.toString()),
                 Effect.flatMap(Socket.makeWebSocket),
-                Effect.map(makeUnidirectionalRawStreamSocket),
+                Effect.map(makeRawStreamSocket),
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))
             );
 
