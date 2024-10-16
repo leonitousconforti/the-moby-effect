@@ -28,8 +28,9 @@ layer(Layer.fresh(testLayer))("MobyApi Configs tests", (it) => {
     it.effect("Should see one config", () =>
         Effect.gen(function* () {
             const configs = yield* Configs;
-            expect(configs).toBeInstanceOf(Array);
-            expect(configs).toHaveLength(1);
+            const configsListResponse = yield* configs.list();
+            expect(configsListResponse).toBeInstanceOf(Array);
+            expect(configsListResponse).toHaveLength(1);
         })
     );
 

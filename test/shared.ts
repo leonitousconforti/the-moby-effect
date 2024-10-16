@@ -4,12 +4,14 @@ import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as PlatformError from "@effect/platform/Error";
 import * as Path from "@effect/platform/Path";
 import * as ParseResult from "@effect/schema/ParseResult";
+import * as Context from "effect/Context";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 
 import * as Containers from "the-moby-effect/endpoints/Containers";
 import * as Images from "the-moby-effect/endpoints/Images";
+import * as Swarms from "the-moby-effect/endpoints/Swarm";
 import * as System from "the-moby-effect/endpoints/System";
 import * as Volumes from "the-moby-effect/endpoints/Volumes";
 import * as DindEngine from "the-moby-effect/engines/Dind";
@@ -44,8 +46,12 @@ export const testLayer: Layer.Layer<
     | Containers.ContainersError
     | Images.ImagesError
     | System.SystemsError
+    | Swarms.SwarmsError
     | Volumes.VolumesError
     | ParseResult.ParseError
     | PlatformError.PlatformError,
     never
-> = Layer.provide(testDindLayer, testServices);
+> = Layer.tap(Layer.provide(testDindLayer, testServices), (context) => {
+    const swarm = Context.get(context, Swarms.Swarm);
+    return swarm.init({ ListenAddr: "0.0.0.0" });
+});

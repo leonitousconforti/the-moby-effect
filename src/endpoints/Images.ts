@@ -912,7 +912,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
 
         const inspect_ = (options: ImageInspectOptions): Effect.Effect<Readonly<ImageInspect>, ImagesError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/${encodeURIComponent(options.name)}/json`),
+                HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ImageInspect)),
                 Effect.mapError((cause) => new ImagesError({ method: "inspect", cause })),

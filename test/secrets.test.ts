@@ -29,12 +29,12 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
         Effect.gen(function* () {
             const secrets = yield* Secrets.Secrets;
             const secretsList = yield* secrets.list();
-            expect(secrets).toEqual([
+            expect(secretsList).toEqual([
                 {
                     ID: expect.any(String),
                     Version: { Index: expect.any(Number) },
-                    CreatedAt: expect.any(String),
-                    UpdatedAt: expect.any(String),
+                    CreatedAt: expect.any(Date),
+                    UpdatedAt: expect.any(Date),
                     Spec: { Name: "test-secret", Labels: { testLabel: "test" } },
                 },
             ]);
@@ -60,7 +60,7 @@ layer(Layer.fresh(testLayer))("MobyApi Secrets tests", (it) => {
         Effect.gen(function* () {
             const secrets = yield* Secrets.Secrets;
             const secretsList = yield* secrets.list({
-                filters: JSON.stringify({ label: ["testLabelUpdated=test"] }),
+                filters: { label: ["testLabelUpdated=test"] },
             });
             expect(secretsList).toBeInstanceOf(Array);
             expect(secretsList).toHaveLength(1);

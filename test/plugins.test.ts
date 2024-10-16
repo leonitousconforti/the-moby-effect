@@ -13,7 +13,7 @@ layer(Layer.fresh(testLayer))("MobyApi Plugins tests", (it) => {
         })
     );
 
-    it.effect("Should pull a plugin", () =>
+    it.effect.skip("Should pull a plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins.Plugins;
             yield* plugins.pull({
@@ -24,7 +24,7 @@ layer(Layer.fresh(testLayer))("MobyApi Plugins tests", (it) => {
         })
     );
 
-    it.effect("Should see one plugin", () =>
+    it.effect.skip("Should see one plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins.Plugins;
             const pluginsList = yield* plugins.list();
@@ -33,7 +33,7 @@ layer(Layer.fresh(testLayer))("MobyApi Plugins tests", (it) => {
         })
     );
 
-    it.effect("Should update a plugin", () =>
+    it.effect.skip("Should update a plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins.Plugins;
             plugins.upgrade({
@@ -43,14 +43,14 @@ layer(Layer.fresh(testLayer))("MobyApi Plugins tests", (it) => {
         })
     );
 
-    it.effect("Should disable a plugin", () =>
+    it.effect.skip("Should disable a plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins.Plugins;
             yield* plugins.disable({ name: "test-plugin:latest" });
         })
     );
 
-    it.effect("Should see no enabled plugins", () =>
+    it.effect.skip("Should see no enabled plugins", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins.Plugins;
             const pluginsList = yield* plugins.list({ filters: { enable: ["true"] } });

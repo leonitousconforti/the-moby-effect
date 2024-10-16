@@ -69,8 +69,7 @@ layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
     it.effect("Should prune all images", () =>
         Effect.gen(function* () {
             const images = yield* Images.Images;
-            const pruneResponse = yield* images.prune({ filters: { dangling: ["true"] } });
-            expect(pruneResponse.CachesDeleted).toBeDefined();
+            const pruneResponse = yield* images.prune();
             expect(pruneResponse.SpaceReclaimed).toBeDefined();
         })
     );

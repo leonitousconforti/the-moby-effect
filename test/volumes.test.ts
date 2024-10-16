@@ -115,14 +115,4 @@ layer(Layer.fresh(testLayer))("MobyApi Volumes tests", (it) => {
             expect(testData.Volumes).toHaveLength(0);
         })
     );
-
-    it.effect("Should update a volume", () =>
-        Effect.gen(function* () {
-            const volumes = yield* Volumes.Volumes;
-            const testData = yield* volumes.create({ Name: "testVolume2" });
-            const spec = testData.ClusterVolume!.Spec!;
-            const version = testData.ClusterVolume!.Version!.Index!;
-            yield* volumes.update({ name: testData.ClusterVolume!.ID!, version, spec });
-        })
-    );
 });

@@ -3,7 +3,7 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class ImagePruneResponse extends Schema.Class<ImagePruneResponse>("ImagePruneResponse")(
     {
-        CachesDeleted: Schema.NullOr(Schema.Array(Schema.String)),
+        CachesDeleted: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         SpaceReclaimed: MobySchemas.UInt64,
     },
     {

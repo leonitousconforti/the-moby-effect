@@ -70,7 +70,7 @@ export interface SecretListOptions {
      *
      * FIXME: implement this type
      */
-    readonly filters?: string;
+    readonly filters?: Record<string, string | Array<string>>;
 }
 
 /**
