@@ -127,7 +127,7 @@ const tarEntryFromFilesystem = (
         const header = TarCommon.TarHeader.make({
             filename,
             fileSize: Number(stat.size),
-            fileMode: stat.mode.toString(),
+            fileMode: "0" + (stat.mode & parseInt("777", 8)).toString(8),
             ...(Option.isSome(stat.uid) ? { uid: stat.uid.value } : {}),
             ...(Option.isSome(stat.gid) ? { gid: stat.gid.value } : {}),
             ...(Option.isSome(stat.mtime) ? { mtime: stat.mtime.value } : {}),
