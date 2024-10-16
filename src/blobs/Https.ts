@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import * as BlobConstants from "../blobs/Constants.js";
+import * as BlobConstants from "./Constants.js";
 
 /**
  * @since 1.0.0
