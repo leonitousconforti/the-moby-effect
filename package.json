@@ -109,7 +109,7 @@
         "undici": "^6.20.1",
         "ws": "^8.18.0"
     },
-    "packageManager": "pnpm@9.12.1",
+    "packageManager": "pnpm@9.12.2",
     "engines": {
         "node": ">=18.0.0"
     },
