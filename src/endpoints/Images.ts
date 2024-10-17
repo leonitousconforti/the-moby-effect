@@ -49,7 +49,7 @@ export type ImagesErrorTypeId = typeof ImagesErrorTypeId;
  * @since 1.0.0
  * @category Errors
  */
-export const isDistributionsError = (u: unknown): u is ImagesError => Predicate.hasProperty(u, ImagesErrorTypeId);
+export const isImagesError = (u: unknown): u is ImagesError => Predicate.hasProperty(u, ImagesErrorTypeId);
 
 /**
  * @since 1.0.0

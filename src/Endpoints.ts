@@ -15,6 +15,11 @@ export {
      * @category Endpoints
      */
     ConfigsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isConfigsError,
 } from "./endpoints/Configs.js";
 
 export {
@@ -28,6 +33,11 @@ export {
      * @category Endpoints
      */
     ContainersError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isContainersError,
 } from "./endpoints/Containers.js";
 
 export {
@@ -41,6 +51,11 @@ export {
      * @category Endpoints
      */
     DistributionsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isDistributionsError,
 } from "./endpoints/Distribution.js";
 
 export {
@@ -54,6 +69,11 @@ export {
      * @category Endpoints
      */
     ExecsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isExecsError,
 } from "./endpoints/Execs.js";
 
 export {
@@ -67,6 +87,11 @@ export {
      * @category Endpoints
      */
     ImagesError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isImagesError,
 } from "./endpoints/Images.js";
 
 export {
@@ -80,6 +105,11 @@ export {
      * @category Endpoints
      */
     NetworksError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isNetworksError,
 } from "./endpoints/Networks.js";
 
 export {
@@ -93,6 +123,11 @@ export {
      * @category Endpoints
      */
     NodesError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isNodesError,
 } from "./endpoints/Nodes.js";
 
 export {
@@ -106,6 +141,11 @@ export {
      * @category Endpoints
      */
     PluginsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isPluginsError,
 } from "./endpoints/Plugins.js";
 
 export {
@@ -119,6 +159,11 @@ export {
      * @category Endpoints
      */
     SecretsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isSecretsError,
 } from "./endpoints/Secrets.js";
 
 export {
@@ -132,6 +177,11 @@ export {
      * @category Endpoints
      */
     ServicesError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isServicesError,
 } from "./endpoints/Services.js";
 
 export {
@@ -145,6 +195,11 @@ export {
      * @category Endpoints
      */
     SessionsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isSessionsError,
 } from "./endpoints/Session.js";
 
 export {
@@ -158,6 +213,11 @@ export {
      * @category Endpoints
      */
     SwarmsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isSwarmsError,
 } from "./endpoints/Swarm.js";
 
 export {
@@ -171,6 +231,11 @@ export {
      * @category Endpoints
      */
     SystemsError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isSystemsError,
 } from "./endpoints/System.js";
 
 export {
@@ -184,6 +249,11 @@ export {
      * @category Endpoints
      */
     TasksError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isTasksError,
 } from "./endpoints/Tasks.js";
 
 export {
@@ -197,4 +267,9 @@ export {
      * @category Endpoints
      */
     VolumesError,
+    /**
+     * @since 1.0.0
+     * @category Endpoints
+     */
+    isVolumesError,
 } from "./endpoints/Volumes.js";

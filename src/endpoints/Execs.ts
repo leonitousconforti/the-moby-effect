@@ -47,7 +47,7 @@ export type ExecsErrorTypeId = typeof ExecsErrorTypeId;
  * @since 1.0.0
  * @category Errors
  */
-export const isDistributionsError = (u: unknown): u is ExecsError => Predicate.hasProperty(u, ExecsErrorTypeId);
+export const isExecsError = (u: unknown): u is ExecsError => Predicate.hasProperty(u, ExecsErrorTypeId);
 
 /**
  * @since 1.0.0
