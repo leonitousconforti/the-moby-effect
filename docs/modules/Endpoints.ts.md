@@ -45,6 +45,21 @@ Added in v1.0.0
   - [TasksError](#taskserror)
   - [Volumes](#volumes)
   - [VolumesError](#volumeserror)
+  - [isConfigsError](#isconfigserror)
+  - [isContainersError](#iscontainerserror)
+  - [isDistributionsError](#isdistributionserror)
+  - [isExecsError](#isexecserror)
+  - [isImagesError](#isimageserror)
+  - [isNetworksError](#isnetworkserror)
+  - [isNodesError](#isnodeserror)
+  - [isPluginsError](#ispluginserror)
+  - [isSecretsError](#issecretserror)
+  - [isServicesError](#isserviceserror)
+  - [isSessionsError](#issessionserror)
+  - [isSwarmsError](#isswarmserror)
+  - [isSystemsError](#issystemserror)
+  - [isTasksError](#istaskserror)
+  - [isVolumesError](#isvolumeserror)
 
 ---
 
@@ -346,6 +361,156 @@ Added in v1.0.0
 
 ```ts
 export declare const VolumesError: typeof VolumesError
+```
+
+Added in v1.0.0
+
+## isConfigsError
+
+**Signature**
+
+```ts
+export declare const isConfigsError: (u: unknown) => u is ConfigsError
+```
+
+Added in v1.0.0
+
+## isContainersError
+
+**Signature**
+
+```ts
+export declare const isContainersError: (u: unknown) => u is ContainersError
+```
+
+Added in v1.0.0
+
+## isDistributionsError
+
+**Signature**
+
+```ts
+export declare const isDistributionsError: (u: unknown) => u is DistributionsError
+```
+
+Added in v1.0.0
+
+## isExecsError
+
+**Signature**
+
+```ts
+export declare const isExecsError: (u: unknown) => u is ExecsError
+```
+
+Added in v1.0.0
+
+## isImagesError
+
+**Signature**
+
+```ts
+export declare const isImagesError: (u: unknown) => u is ImagesError
+```
+
+Added in v1.0.0
+
+## isNetworksError
+
+**Signature**
+
+```ts
+export declare const isNetworksError: (u: unknown) => u is NetworksError
+```
+
+Added in v1.0.0
+
+## isNodesError
+
+**Signature**
+
+```ts
+export declare const isNodesError: (u: unknown) => u is NodesError
+```
+
+Added in v1.0.0
+
+## isPluginsError
+
+**Signature**
+
+```ts
+export declare const isPluginsError: (u: unknown) => u is PluginsError
+```
+
+Added in v1.0.0
+
+## isSecretsError
+
+**Signature**
+
+```ts
+export declare const isSecretsError: (u: unknown) => u is SecretsError
+```
+
+Added in v1.0.0
+
+## isServicesError
+
+**Signature**
+
+```ts
+export declare const isServicesError: (u: unknown) => u is ServicesError
+```
+
+Added in v1.0.0
+
+## isSessionsError
+
+**Signature**
+
+```ts
+export declare const isSessionsError: (u: unknown) => u is SessionsError
+```
+
+Added in v1.0.0
+
+## isSwarmsError
+
+**Signature**
+
+```ts
+export declare const isSwarmsError: (u: unknown) => u is SwarmsError
+```
+
+Added in v1.0.0
+
+## isSystemsError
+
+**Signature**
+
+```ts
+export declare const isSystemsError: (u: unknown) => u is SystemsError
+```
+
+Added in v1.0.0
+
+## isTasksError
+
+**Signature**
+
+```ts
+export declare const isTasksError: (u: unknown) => u is TasksError
+```
+
+Added in v1.0.0
+
+## isVolumesError
+
+**Signature**
+
+```ts
+export declare const isVolumesError: (u: unknown) => u is VolumesError
 ```
 
 Added in v1.0.0

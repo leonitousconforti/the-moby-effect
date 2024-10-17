@@ -18,7 +18,7 @@ Added in v1.0.0
   - [ImagesError (class)](#imageserror-class)
   - [ImagesErrorTypeId](#imageserrortypeid)
   - [ImagesErrorTypeId (type alias)](#imageserrortypeid-type-alias)
-  - [isDistributionsError](#isdistributionserror)
+  - [isImagesError](#isimageserror)
 - [Layers](#layers)
   - [layer](#layer)
 - [Params](#params)
@@ -60,12 +60,12 @@ export type ImagesErrorTypeId = typeof ImagesErrorTypeId
 
 Added in v1.0.0
 
-## isDistributionsError
+## isImagesError
 
 **Signature**
 
 ```ts
-export declare const isDistributionsError: (u: unknown) => u is ImagesError
+export declare const isImagesError: (u: unknown) => u is ImagesError
 ```
 
 Added in v1.0.0

@@ -18,7 +18,7 @@ Added in v1.0.0
   - [ExecsError (class)](#execserror-class)
   - [ExecsErrorTypeId](#execserrortypeid)
   - [ExecsErrorTypeId (type alias)](#execserrortypeid-type-alias)
-  - [isDistributionsError](#isdistributionserror)
+  - [isExecsError](#isexecserror)
 - [Layers](#layers)
   - [layer](#layer)
 - [Tags](#tags)
@@ -58,12 +58,12 @@ export type ExecsErrorTypeId = typeof ExecsErrorTypeId
 
 Added in v1.0.0
 
-## isDistributionsError
+## isExecsError
 
 **Signature**
 
 ```ts
-export declare const isDistributionsError: (u: unknown) => u is ExecsError
+export declare const isExecsError: (u: unknown) => u is ExecsError
 ```
 
 Added in v1.0.0
