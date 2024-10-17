@@ -255,6 +255,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
+        // TODO: This needs to error if the build failed
         const build_ = <E1>(options: ImageBuildOptions<E1>): Stream.Stream<JSONMessage, ImagesError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/build`),
