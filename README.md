@@ -15,9 +15,9 @@ The motivation for this project come from working with dockerode and I became fr
 - [x] - streaming, multiplexing, and connection hijacking (just like [dockerode](https://github.com/apocas/dockerode), streams are passed directly through to you)
 - [x] - tests, examples, and in-line JSDoc comments based on the moby api documentation
 - [x] - Strong focus on types and typescript support
-- [x] - support multiple environments: NodeJs, Bun, Deno, and Web are all supported
 - [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __currently only docker is tested against__
 - [x] - Implement all common docker commands except for login/logout because I don't want to interact with credential helpers
+- [] - support multiple environments: NodeJs, Bun, Deno, and Web should all be supported but are laking tests
 
 ## Non-Goals :wastebasket:
 
