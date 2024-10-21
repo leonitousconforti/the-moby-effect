@@ -12,6 +12,7 @@ import * as ConfigError from "effect/ConfigError";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Match from "effect/Match";
 import * as Redacted from "effect/Redacted";
 
 /**
@@ -268,24 +269,17 @@ export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
  * @since 1.0.0
  * @category Constructors
  */
-export const connectionOptionsFromPlatformSystemSocketDefault = (): Effect.Effect<
+export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
     MobyConnectionOptions,
     ConfigError.ConfigError,
     never
-> => {
-    switch (process.platform) {
-        case "linux":
-        case "darwin": {
-            return Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }));
-        }
-        case "win32": {
-            return Effect.succeed(SocketConnectionOptions({ socketPath: "//./pipe/docker_engine" }));
-        }
-        default: {
-            return Effect.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`));
-        }
-    }
-};
+> = Function.pipe(
+    Match.value(process.platform),
+    Match.when("linux", () => Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }))),
+    Match.when("darwin", () => Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }))),
+    Match.when("win32", () => Effect.succeed(SocketConnectionOptions({ socketPath: "//./pipe/docker_engine" }))),
+    Match.orElse(() => Effect.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`)))
+);
 
 /**
  * Creates a MobyApi layer from the platform default system socket location.
@@ -293,7 +287,7 @@ export const connectionOptionsFromPlatformSystemSocketDefault = (): Effect.Effec
  * @since 1.0.0
  * @category Constructors
  */
-export const connectionOptionsFromUserSocketDefault = (): Effect.Effect<MobyConnectionOptions, never, Path.Path> =>
+export const connectionOptionsFromUserSocketDefault: Effect.Effect<MobyConnectionOptions, never, Path.Path> =
     Function.pipe(
         Effect.all(
             {
