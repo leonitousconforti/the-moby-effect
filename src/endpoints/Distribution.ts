@@ -58,7 +58,7 @@ export class DistributionsError extends PlatformError.TypeIdError(DistributionsE
  * @category Tags
  */
 export class Distributions extends Effect.Service<Distributions>()("@the-moby-effect/endpoints/Distributions", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

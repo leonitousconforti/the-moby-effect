@@ -62,7 +62,7 @@ export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "Nod
  * @category Tags
  */
 export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/Nodes", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

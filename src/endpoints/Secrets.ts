@@ -61,7 +61,7 @@ export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, 
  * @category Tags
  */
 export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoints/Secrets", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

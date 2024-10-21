@@ -91,7 +91,7 @@ export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTy
  * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Container
  */
 export class Containers extends Effect.Service<Containers>()("@the-moby-effect/endpoints/Containers", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

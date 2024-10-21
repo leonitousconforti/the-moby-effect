@@ -61,7 +61,7 @@ export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "Tas
  * @category Tags
  */
 export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/Tasks", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

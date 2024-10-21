@@ -63,7 +63,7 @@ export class PluginsError extends PlatformError.TypeIdError(PluginsErrorTypeId, 
  * @category Tags
  */
 export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoints/Plugins", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

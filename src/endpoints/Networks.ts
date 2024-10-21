@@ -68,7 +68,7 @@ export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId
  * @category Tags
  */
 export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpoints/Networks", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

@@ -69,7 +69,7 @@ export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "S
  * @category Tags
  */
 export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/Swarm", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

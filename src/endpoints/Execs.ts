@@ -76,7 +76,7 @@ export class ExecsError extends PlatformError.TypeIdError(ExecsErrorTypeId, "Exe
  * @category Tags
  */
 export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/Execs", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

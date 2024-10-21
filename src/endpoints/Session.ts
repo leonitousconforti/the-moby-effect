@@ -59,7 +59,7 @@ export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId
  * @category Tags
  */
 export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpoints/Session", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

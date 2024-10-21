@@ -66,7 +66,7 @@ export class VolumesError extends PlatformError.TypeIdError(VolumesErrorTypeId, 
  * @category Tags
  */
 export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoints/Volumes", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

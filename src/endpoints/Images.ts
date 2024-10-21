@@ -201,7 +201,7 @@ export interface ImageBuildOptions<E1> {
  * @category Tags
  */
 export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints/Images", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

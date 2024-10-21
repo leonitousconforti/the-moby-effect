@@ -67,7 +67,7 @@ export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId
  * @category Tags
  */
 export class Services extends Effect.Service<Services>()("@the-moby-effect/endpoints/Services", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

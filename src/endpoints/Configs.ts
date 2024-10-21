@@ -66,7 +66,7 @@ export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, 
  * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
  */
 export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoints/Configs", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {

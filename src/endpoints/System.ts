@@ -70,7 +70,7 @@ export class SystemsError extends PlatformError.TypeIdError(SystemsErrorTypeId, 
  * @category Tags
  */
 export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoints/System", {
-    accessors: true,
+    accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {
