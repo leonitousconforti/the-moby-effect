@@ -30,6 +30,7 @@ Added in v1.0.0
   - [run](#run)
   - [runScoped](#runscoped)
   - [search](#search)
+  - [stop](#stop)
   - [version](#version)
 - [Layers](#layers)
   - [DockerLayer (type alias)](#dockerlayer-type-alias)
@@ -317,6 +318,20 @@ Implements the `docker search` command.
 export declare const search: (
   options: Parameters<Images.Images["search"]>[0]
 ) => Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images>
+```
+
+Added in v1.0.0
+
+## stop
+
+Implements the `docker stop` command.
+
+**Signature**
+
+```ts
+export declare const stop: (
+  containerId: string
+) => Effect.Effect<void, Containers.ContainersError, Containers.Containers>
 ```
 
 Added in v1.0.0

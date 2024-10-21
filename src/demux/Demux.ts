@@ -63,7 +63,7 @@ export declare namespace Demux {
  *     import * as DockerEngine from "the-moby-effect/DockerEngine";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -138,7 +138,7 @@ export declare namespace Demux {
  *     import * as DockerEngine from "the-moby-effect/DockerEngine";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -214,7 +214,7 @@ export declare namespace Demux {
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -318,7 +318,7 @@ export declare namespace Demux {
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -524,7 +524,7 @@ export const demuxUnknownToSingleSink: {
  *     import * as DockerEngine from "the-moby-effect/DockerEngine";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -602,7 +602,7 @@ export const demuxUnknownToSingleSink: {
  *     import * as DockerEngine from "the-moby-effect/engines/Docker";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );
@@ -702,7 +702,7 @@ export const demuxUnknownToSingleSink: {
  *     import * as DockerEngine from "the-moby-effect/DockerEngine";
  *
  *     const layer = Function.pipe(
- *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+ *         MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
  *         Effect.map(DockerEngine.layerNodeJS),
  *         Layer.unwrapEffect
  *     );

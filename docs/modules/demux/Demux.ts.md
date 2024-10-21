@@ -196,7 +196,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
@@ -268,7 +268,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/engines/Docker"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
@@ -355,7 +355,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
@@ -486,7 +486,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
@@ -552,7 +552,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
@@ -619,7 +619,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/engines/Docker"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
@@ -714,7 +714,7 @@ import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/engines/Docker"
 
 const layer = Function.pipe(
-  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )

@@ -605,8 +605,54 @@ Creates a MobyApi layer from the platform default system socket location.
 **Signature**
 
 ```ts
-export declare const connectionOptionsFromPlatformSystemSocketDefault: () => Effect.Effect<
-  MobyConnectionOptions,
+export declare const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
+  | { readonly _tag: "socket"; readonly socketPath: string }
+  | {
+      readonly _tag: "ssh"
+      readonly remoteSocketPath: string
+      readonly host: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
+      readonly hostVerifier?:
+        | ssh2.HostVerifier
+        | ssh2.SyncHostVerifier
+        | ssh2.HostFingerprintVerifier
+        | ssh2.SyncHostFingerprintVerifier
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: ssh2.BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: ssh2.Algorithms
+      readonly debug?: ssh2.DebugFunction
+      readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
+    }
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
   ConfigError.ConfigError,
   never
 >
@@ -657,8 +703,54 @@ Creates a MobyApi layer from the platform default system socket location.
 **Signature**
 
 ```ts
-export declare const connectionOptionsFromUserSocketDefault: () => Effect.Effect<
-  MobyConnectionOptions,
+export declare const connectionOptionsFromUserSocketDefault: Effect.Effect<
+  | { readonly _tag: "socket"; readonly socketPath: string }
+  | {
+      readonly _tag: "ssh"
+      readonly remoteSocketPath: string
+      readonly host: string
+      readonly port?: number
+      readonly forceIPv4?: boolean
+      readonly forceIPv6?: boolean
+      readonly hostHash?: string
+      readonly hostVerifier?:
+        | ssh2.HostVerifier
+        | ssh2.SyncHostVerifier
+        | ssh2.HostFingerprintVerifier
+        | ssh2.SyncHostFingerprintVerifier
+      readonly username?: string
+      readonly password?: string
+      readonly agent?: ssh2.BaseAgent | string
+      readonly privateKey?: Buffer | string
+      readonly passphrase?: Buffer | string
+      readonly localHostname?: string
+      readonly localUsername?: string
+      readonly tryKeyboard?: boolean
+      readonly keepaliveInterval?: number
+      readonly keepaliveCountMax?: number
+      readonly readyTimeout?: number
+      readonly strictVendor?: boolean
+      readonly sock?: Readable
+      readonly agentForward?: boolean
+      readonly algorithms?: ssh2.Algorithms
+      readonly debug?: ssh2.DebugFunction
+      readonly authHandler?: ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]
+      readonly localAddress?: string
+      readonly localPort?: number
+      readonly timeout?: number
+      readonly ident?: Buffer | string
+    }
+  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
   never,
   Path.Path
 >
