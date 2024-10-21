@@ -292,7 +292,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.bodyStream(options.context),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.map(String.linesIterator),
                 Stream.flattenIterables,
                 Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
@@ -410,7 +410,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.bodyText(options.inputImage ?? ""),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.map(String.linesIterator),
                 Stream.flattenIterables,
                 Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
@@ -450,7 +450,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapError((cause) => new ImagesError({ method: "push", cause }))
             );
 
@@ -555,7 +555,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/get`),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapError((cause) => new ImagesError({ method: "get", cause }))
             );
 
@@ -567,7 +567,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddQueryParameter("names", Option.fromNullable(options?.names)),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapError((cause) => new ImagesError({ method: "getall", cause }))
             );
 

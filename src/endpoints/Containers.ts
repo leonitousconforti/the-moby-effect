@@ -213,7 +213,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapError((cause) => new ContainersError({ method: "logs", cause }))
             );
 
@@ -247,7 +247,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("one-shot", Option.fromNullable(options["one-shot"])),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapEffect(Schema.decode(Schema.parseJson(ContainerStatsResponse))),
                 Stream.mapError((cause) => new ContainersError({ method: "stats", cause }))
             );

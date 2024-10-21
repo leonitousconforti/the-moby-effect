@@ -190,7 +190,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapError((cause) => new ServicesError({ method: "logs", cause }))
             );
 

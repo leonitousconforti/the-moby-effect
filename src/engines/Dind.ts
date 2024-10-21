@@ -114,7 +114,7 @@ const downloadDindCertificates = (
                 HashMap.findFirst((_stream, header) => header.filename === path),
                 Option.getOrThrow,
                 Tuple.getSecond,
-                Stream.decodeText("utf-8"),
+                Stream.decodeText(),
                 Stream.mkString
             );
 

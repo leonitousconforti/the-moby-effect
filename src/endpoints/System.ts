@@ -164,7 +164,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 ),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.map(String.linesIterator),
                 Stream.flattenIterables,
                 Stream.flatMap(Schema.decode(Schema.parseJson(EventMessage))),

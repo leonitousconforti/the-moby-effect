@@ -124,7 +124,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
                 client.execute,
                 HttpClientResponse.stream,
-                Stream.decodeText("utf8"),
+                Stream.decodeText(),
                 Stream.mapError((cause) => new TasksError({ method: "logs", cause }))
             );
 
