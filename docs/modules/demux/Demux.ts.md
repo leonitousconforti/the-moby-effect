@@ -215,6 +215,7 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
+      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -230,7 +231,7 @@ Effect.gen(function* () {
   })
   assert.ok(MobyDemux.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
 
-  // Demux to a single sink
+  // Demux to a separate sinks
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     socket,
     Stream.concat(Stream.make("a\n"), Stream.never),
@@ -287,6 +288,7 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
+      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -312,7 +314,7 @@ Effect.gen(function* () {
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
   assert.ok(MobyDemux.isRawStreamSocket(stderrSocket), "Expected a raw socket")
 
-  // Demux to a single sink
+  // Demux to a separate sinks
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     {
       stdin: stdinSocket,
@@ -373,7 +375,6 @@ Effect.gen(function* () {
     spec: {
       Image: image,
       // Tty: true,
-      AttachStdout: true,
       Cmd: ["bash", "-c", 'sleep 2s && echo "Hi" && >&2 echo "Hi2"']
     }
   })
@@ -387,7 +388,7 @@ Effect.gen(function* () {
   })
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
 
-  // Demux to a single sink
+  // Demux to a separate sinks
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     { stdout: stdoutSocket },
     Stream.concat(Stream.make("a\n"), Stream.never),
@@ -505,6 +506,7 @@ Effect.gen(function* () {
       Image: image,
       Tty: true,
       OpenStdin: true,
+      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -571,6 +573,7 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
+      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -638,6 +641,7 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
+      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })

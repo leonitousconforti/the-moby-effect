@@ -82,6 +82,7 @@ export declare namespace Demux {
  *                 Image: image,
  *                 Tty: true,
  *                 OpenStdin: true,
+ *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -157,6 +158,7 @@ export declare namespace Demux {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
+ *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -233,6 +235,7 @@ export declare namespace Demux {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
+ *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -543,6 +546,7 @@ export const demuxUnknownToSingleSink: {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
+ *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -563,7 +567,7 @@ export const demuxUnknownToSingleSink: {
  *             "Expected a multiplexed stream socket"
  *         );
  *
- *         // Demux to a single sink
+ *         // Demux to a separate sinks
  *         const [stdoutData, stderrData] =
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 socket,
@@ -621,6 +625,7 @@ export const demuxUnknownToSingleSink: {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
+ *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -658,7 +663,7 @@ export const demuxUnknownToSingleSink: {
  *             "Expected a raw socket"
  *         );
  *
- *         // Demux to a single sink
+ *         // Demux to a separate sinks
  *         const [stdoutData, stderrData] =
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 {
@@ -720,7 +725,6 @@ export const demuxUnknownToSingleSink: {
  *             spec: {
  *                 Image: image,
  *                 // Tty: true,
- *                 AttachStdout: true,
  *                 Cmd: [
  *                     "bash",
  *                     "-c",
@@ -742,7 +746,7 @@ export const demuxUnknownToSingleSink: {
  *             "Expected a raw socket"
  *         );
  *
- *         // Demux to a single sink
+ *         // Demux to a separate sinks
  *         const [stdoutData, stderrData] =
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 { stdout: stdoutSocket },
