@@ -3,20 +3,20 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("ContainerExecOptions")(
     {
-        User: Schema.String,
-        Privileged: Schema.Boolean,
-        Tty: Schema.Boolean,
+        User: Schema.optionalWith(Schema.String, { nullable: true }),
+        Privileged: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        Tty: Schema.optionalWith(Schema.Boolean, { nullable: true }),
         ConsoleSize: Schema.optionalWith(Schema.Array(MobySchemas.UInt64).pipe(Schema.itemsCount(2)), {
             nullable: true,
         }),
-        AttachStdin: Schema.Boolean,
-        AttachStderr: Schema.Boolean,
-        AttachStdout: Schema.Boolean,
-        Detach: Schema.Boolean,
-        DetachKeys: Schema.String,
-        Env: Schema.NullOr(Schema.Array(Schema.String)),
-        WorkingDir: Schema.String,
-        Cmd: Schema.NullOr(Schema.Array(Schema.String)),
+        AttachStdin: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        AttachStderr: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        AttachStdout: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        Detach: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        DetachKeys: Schema.optionalWith(Schema.String, { nullable: true }),
+        Env: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        WorkingDir: Schema.optionalWith(Schema.String, { nullable: true }),
+        Cmd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },
     {
         identifier: "ContainerExecOptions",

@@ -90,7 +90,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          * @param id - ID or name of container
          */
         const container_ = (options: {
-            readonly execConfig: Schema.Schema.Encoded<typeof ExecConfig>;
+            readonly execConfig: typeof ExecConfig.Encoded;
             readonly id: string;
         }): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
             Function.pipe(
@@ -110,10 +110,10 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          */
         const start_ = <T extends boolean | undefined>(
             options: {
-                readonly execStartConfig: Schema.Schema.Encoded<typeof ContainerExecStartConfig>;
+                readonly execStartConfig: typeof ContainerExecStartConfig.Encoded;
                 readonly id: string;
             } & {
-                execStartConfig: Omit<Schema.Schema.Encoded<typeof ContainerExecStartConfig>, "Detach"> & {
+                execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & {
                     Detach?: T;
                 };
             }

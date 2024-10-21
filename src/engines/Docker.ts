@@ -307,12 +307,12 @@ export const execNonBlocking = ({
                 AttachStderr: true,
                 AttachStdout: true,
                 AttachStdin: false,
-            } as any,
+            },
         });
 
         return yield* execs.start({
             id: execId.Id,
-            execStartConfig: { Detach: true } as any,
+            execStartConfig: { Detach: true },
         });
     }).pipe(Effect.scoped);
 
@@ -338,12 +338,11 @@ export const exec = ({
                 AttachStderr: true,
                 AttachStdout: true,
                 AttachStdin: false,
-            } as any,
+            },
         });
 
         const socket = yield* execs.start({
             id: execId.Id,
-            // @ts-expect-error aaaahhhhh
             execStartConfig: { Detach: false },
         });
 

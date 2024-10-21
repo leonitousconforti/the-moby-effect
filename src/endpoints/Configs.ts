@@ -97,7 +97,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigCreate */
         const create_ = (
-            options: Schema.Schema.Encoded<typeof SwarmConfigSpec>
+            options: typeof SwarmConfigSpec.Encoded
         ): Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never> =>
             Function.pipe(
                 Schema.decode(SwarmConfigSpec)(options),
