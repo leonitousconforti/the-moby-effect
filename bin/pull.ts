@@ -4,11 +4,12 @@ import * as Cli from "@effect/cli";
 import * as NodeContext from "@effect/platform-node/NodeContext";
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
-import * as Connection from "the-moby-effect/Connection";
-import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
+import * as MobyConnection from "the-moby-effect/MobyConnection";
+import * as Convey from "the-moby-effect/MobyConvey";
 import PackageJson from "../package.json" assert { type: "json" };
 
 export const command = Cli.Command.make(
@@ -23,8 +24,10 @@ export const command = Cli.Command.make(
         })
 );
 
-const DockerLive = Layer.unwrapEffect(
-    Effect.map(Connection.connectionOptionsFromDockerHostEnvironmentVariable, DockerEngine.layerNodeJS)
+const DockerLive = Function.pipe(
+    MobyConnection.connectionOptionsFromDockerHostEnvironmentVariable,
+    Effect.map(DockerEngine.layerNodeJS),
+    Layer.unwrapEffect
 );
 
 const cli = Cli.Command.run(command, {

@@ -1,6 +1,6 @@
 ---
 title: endpoints/Execs.ts
-nav_order: 16
+nav_order: 12
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [ExecsError (class)](#execserror-class)
-  - [ExecsErrorTypeId](#execserrortypeid)
-  - [ExecsErrorTypeId (type alias)](#execserrortypeid-type-alias)
   - [isExecsError](#isexecserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [ExecsLayer](#execslayer)
 - [Tags](#tags)
   - [Execs (class)](#execs-class)
 
@@ -38,26 +36,6 @@ export declare class ExecsError
 
 Added in v1.0.0
 
-## ExecsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const ExecsErrorTypeId: typeof ExecsErrorTypeId
-```
-
-Added in v1.0.0
-
-## ExecsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type ExecsErrorTypeId = typeof ExecsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isExecsError
 
 **Signature**
@@ -70,12 +48,12 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## ExecsLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<
+export declare const ExecsLayer: Layer.Layer<
   Execs,
   never,
   HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>

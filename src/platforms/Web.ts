@@ -9,7 +9,7 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../Connection.js";
+import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
 
 /**

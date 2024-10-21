@@ -1,10 +1,10 @@
 ---
-title: Convey.ts
-nav_order: 2
+title: MobyConvey.ts
+nav_order: 32
 parent: Modules
 ---
 
-## Convey overview
+## MobyConvey overview
 
 Convenance utilities for Docker input and output streams.
 

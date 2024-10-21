@@ -22,12 +22,14 @@ import { RegistryDistributionInspect } from "../generated/index.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const DistributionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/DistributionsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type DistributionsErrorTypeId = typeof DistributionsErrorTypeId;
 
@@ -82,4 +84,4 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Distributions, never, HttpClient.HttpClient> = Distributions.Default;
+export const DistributionsLayer: Layer.Layer<Distributions, never, HttpClient.HttpClient> = Distributions.Default;

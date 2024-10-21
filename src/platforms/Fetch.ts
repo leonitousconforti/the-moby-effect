@@ -8,7 +8,7 @@ import * as FetchHttpClient from "@effect/platform/FetchHttpClient";
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../Connection.js";
+import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
 
 /**

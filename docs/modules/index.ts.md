@@ -1,12 +1,12 @@
 ---
 title: index.ts
-nav_order: 34
+nav_order: 30
 parent: Modules
 ---
 
 ## index overview
 
-Http, https, ssh, and unix socket connection agents for all platforms.
+Docker engine shortcut.
 
 Added in v1.0.0
 
@@ -15,54 +15,18 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./Connection.js"](#from-connectionjs)
-  - [From "./Convey.js"](#from-conveyjs)
-  - [From "./Demux.js"](#from-demuxjs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
-  - [From "./Endpoints.js"](#from-endpointsjs)
   - [From "./Engines.js"](#from-enginesjs)
-  - [From "./Platforms.js"](#from-platformsjs)
-  - [From "./Schemas.js"](#from-schemasjs)
+  - [From "./MobyConnection.js"](#from-mobyconnectionjs)
+  - [From "./MobyConvey.js"](#from-mobyconveyjs)
+  - [From "./MobyDemux.js"](#from-mobydemuxjs)
+  - [From "./MobyEndpoints.js"](#from-mobyendpointsjs)
+  - [From "./MobyPlatforms.js"](#from-mobyplatformsjs)
+  - [From "./MobySchemas.js"](#from-mobyschemasjs)
 
 ---
 
 # exports
-
-## From "./Connection.js"
-
-Http, https, ssh, and unix socket connection agents for all platforms.
-
-**Signature**
-
-```ts
-export * as Connection from "./Connection.js"
-```
-
-Added in v1.0.0
-
-## From "./Convey.js"
-
-Convenance utilities for Docker input and output streams.
-
-**Signature**
-
-```ts
-export * as Convey from "./Convey.js"
-```
-
-Added in v1.0.0
-
-## From "./Demux.js"
-
-Demux utilities for different types of docker streams.
-
-**Signature**
-
-```ts
-export * as Demux from "./Demux.js"
-```
-
-Added in v1.0.0
 
 ## From "./DockerEngine.js"
 
@@ -72,18 +36,6 @@ Docker engine shortcut.
 
 ```ts
 export * as DockerEngine from "./DockerEngine.js"
-```
-
-Added in v1.0.0
-
-## From "./Endpoints.js"
-
-Moby endpoints.
-
-**Signature**
-
-```ts
-export * as Endpoints from "./Endpoints.js"
 ```
 
 Added in v1.0.0
@@ -100,26 +52,74 @@ export * as Engines from "./Engines.js"
 
 Added in v1.0.0
 
-## From "./Platforms.js"
+## From "./MobyConnection.js"
+
+Http, https, ssh, and unix socket connection agents for all platforms.
+
+**Signature**
+
+```ts
+export * as MobyConnection from "./MobyConnection.js"
+```
+
+Added in v1.0.0
+
+## From "./MobyConvey.js"
+
+Convenance utilities for Docker input and output streams.
+
+**Signature**
+
+```ts
+export * as MobyConvey from "./MobyConvey.js"
+```
+
+Added in v1.0.0
+
+## From "./MobyDemux.js"
+
+Demux utilities for different types of docker streams.
+
+**Signature**
+
+```ts
+export * as MobyDemux from "./MobyDemux.js"
+```
+
+Added in v1.0.0
+
+## From "./MobyEndpoints.js"
+
+Moby endpoints.
+
+**Signature**
+
+```ts
+export * as MobyEndpoints from "./MobyEndpoints.js"
+```
+
+Added in v1.0.0
+
+## From "./MobyPlatforms.js"
 
 Http client layers for all platforms.
 
 **Signature**
 
 ```ts
-export * as Platforms from "./Platforms.js"
+export * as MobyPlatforms from "./MobyPlatforms.js"
 ```
 
 Added in v1.0.0
 
-## From "./Schemas.js"
+## From "./MobySchemas.js"
 
 Moby schemas.
 
 **Signature**
 
 ```ts
-export * as Schemas from "./Schemas.js"
+export * as MobySchemas from "./MobySchemas.js"
 ```
 
 Added in v1.0.0

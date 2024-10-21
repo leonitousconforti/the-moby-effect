@@ -24,12 +24,14 @@ import { maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const SecretsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SecretsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type SecretsErrorTypeId = typeof SecretsErrorTypeId;
 
@@ -144,4 +146,4 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Secrets, never, HttpClient.HttpClient> = Secrets.Default;
+export const SecretsLayer: Layer.Layer<Secrets, never, HttpClient.HttpClient> = Secrets.Default;

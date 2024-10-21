@@ -1,8 +1,8 @@
 import { expect, layer } from "@effect/vitest";
 import { Effect, Layer, Stream } from "effect";
-import * as Convey from "the-moby-effect/Convey";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
-import { Containers } from "the-moby-effect/Endpoints";
+import * as Convey from "the-moby-effect/MobyConvey";
+import { Containers } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Containers tests", (it) => {

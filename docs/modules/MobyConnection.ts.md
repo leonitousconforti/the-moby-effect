@@ -1,10 +1,10 @@
 ---
-title: Connection.ts
-nav_order: 1
+title: MobyConnection.ts
+nav_order: 31
 parent: Modules
 ---
 
-## Connection overview
+## MobyConnection overview
 
 Http, https, ssh, and unix socket connection agents for all platforms.
 
@@ -54,7 +54,7 @@ export declare const HttpConnectionOptions: Data.Case.Constructor<
 **Example**
 
 ```ts
-import { HttpConnectionOptions } from "the-moby-effect/Connection"
+import { HttpConnectionOptions } from "the-moby-effect/MobyConnection"
 const connectionOptions = HttpConnectionOptions({
   host: "host.domain.com",
   port: 2375,
@@ -87,7 +87,7 @@ export declare const HttpsConnectionOptions: Data.Case.Constructor<
 **Example**
 
 ```ts
-import { HttpsConnectionOptions } from "the-moby-effect/Connection"
+import { HttpsConnectionOptions } from "the-moby-effect/MobyConnection"
 const connectionOptions = HttpsConnectionOptions({
   host: "host.domain.com",
   port: 2375,
@@ -115,7 +115,7 @@ export declare const SocketConnectionOptions: Data.Case.Constructor<
 **Example**
 
 ```ts
-import { SocketConnectionOptions } from "the-moby-effect/Connection"
+import { SocketConnectionOptions } from "the-moby-effect/MobyConnection"
 const connectionOptions = SocketConnectionOptions({
   socketPath: "/var/run/docker.sock"
 })
@@ -177,7 +177,7 @@ export declare const SshConnectionOptions: Data.Case.Constructor<
 **Example**
 
 ```ts
-import { SshConnectionOptions } from "the-moby-effect/Connection"
+import { SshConnectionOptions } from "the-moby-effect/MobyConnection"
 const connectionOptions = SshConnectionOptions({
   host: "host.domain.com",
   port: 2222,

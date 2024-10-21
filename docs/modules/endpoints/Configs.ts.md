@@ -1,6 +1,6 @@
 ---
 title: endpoints/Configs.ts
-nav_order: 13
+nav_order: 9
 parent: Modules
 ---
 
@@ -17,11 +17,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [ConfigsError (class)](#configserror-class)
-  - [ConfigsErrorTypeId](#configserrortypeid)
-  - [ConfigsErrorTypeId (type alias)](#configserrortypeid-type-alias)
   - [isConfigsError](#isconfigserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [ConfigsLayer](#configslayer)
 - [Services](#services)
   - [Configs (class)](#configs-class)
 
@@ -39,26 +37,6 @@ export declare class ConfigsError
 
 Added in v1.0.0
 
-## ConfigsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const ConfigsErrorTypeId: typeof ConfigsErrorTypeId
-```
-
-Added in v1.0.0
-
-## ConfigsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type ConfigsErrorTypeId = typeof ConfigsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isConfigsError
 
 **Signature**
@@ -71,7 +49,7 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## ConfigsLayer
 
 Configs are application configurations that can be used by services. Swarm
 mode must be enabled for these endpoints to work.
@@ -79,7 +57,11 @@ mode must be enabled for these endpoints to work.
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Configs, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const ConfigsLayer: Layer.Layer<
+  Configs,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

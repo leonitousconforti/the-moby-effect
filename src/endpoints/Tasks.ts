@@ -24,12 +24,14 @@ import { maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const TasksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/TasksError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type TasksErrorTypeId = typeof TasksErrorTypeId;
 
@@ -138,4 +140,4 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.Default;
+export const TasksLayer: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.Default;

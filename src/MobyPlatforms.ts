@@ -4,12 +4,21 @@
  * @since 1.0.0
  */
 
-import * as AgnosticInternal from "./platforms/Agnostic.js";
-import * as BunInternal from "./platforms/Bun.js";
-import * as DenoInternal from "./platforms/Deno.js";
-import * as NodeInternal from "./platforms/Node.js";
-import * as UndiciInternal from "./platforms/Undici.js";
-import * as WebInternal from "./platforms/Web.js";
+import * as agnosticInternal from "./platforms/Agnostic.js";
+import * as bunInternal from "./platforms/Bun.js";
+import * as denoInternal from "./platforms/Deno.js";
+import * as nodeInternal from "./platforms/Node.js";
+import * as undiciInternal from "./platforms/Undici.js";
+import * as webInternal from "./platforms/Web.js";
+
+/**
+ * Given the moby connection options, it will construct a layer that provides a
+ * http client that you could use to connect to your moby instance.
+ *
+ * @since 1.0.0
+ * @category Connection
+ */
+export const makeAgnosticHttpClientLayer = agnosticInternal.makeAgnosticHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -19,7 +28,7 @@ import * as WebInternal from "./platforms/Web.js";
  * @since 1.0.0
  * @category Connection
  */
-export const makeBunHttpClientLayer = BunInternal.makeBunHttpClientLayer;
+export const makeBunHttpClientLayer = bunInternal.makeBunHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -29,7 +38,7 @@ export const makeBunHttpClientLayer = BunInternal.makeBunHttpClientLayer;
  * @since 1.0.0
  * @category Connection
  */
-export const makeDenoHttpClientLayer = DenoInternal.makeDenoHttpClientLayer;
+export const makeDenoHttpClientLayer = denoInternal.makeDenoHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -38,7 +47,7 @@ export const makeDenoHttpClientLayer = DenoInternal.makeDenoHttpClientLayer;
  * @since 1.0.0
  * @category Connection
  */
-export const makeNodeHttpClientLayer = NodeInternal.makeNodeHttpClientLayer;
+export const makeNodeHttpClientLayer = nodeInternal.makeNodeHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -47,7 +56,7 @@ export const makeNodeHttpClientLayer = NodeInternal.makeNodeHttpClientLayer;
  * @since 1.0.0
  * @category Connection
  */
-export const makeUndiciHttpClientLayer = UndiciInternal.makeUndiciHttpClientLayer;
+export const makeUndiciHttpClientLayer = undiciInternal.makeUndiciHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -56,13 +65,4 @@ export const makeUndiciHttpClientLayer = UndiciInternal.makeUndiciHttpClientLaye
  * @since 1.0.0
  * @category Connection
  */
-export const makeWebHttpClientLayer = WebInternal.makeWebHttpClientLayer;
-
-/**
- * Given the moby connection options, it will construct a layer that provides a
- * http client that you could use to connect to your moby instance.
- *
- * @since 1.0.0
- * @category Connection
- */
-export const makeAgnosticHttpClientLayer = AgnosticInternal.makeAgnosticHttpClientLayer;
+export const makeWebHttpClientLayer = webInternal.makeWebHttpClientLayer;

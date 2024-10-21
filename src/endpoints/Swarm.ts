@@ -32,12 +32,14 @@ import { maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const SwarmsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SwarmsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type SwarmsErrorTypeId = typeof SwarmsErrorTypeId;
 
@@ -179,4 +181,4 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.Default;
+export const SwarmLayer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.Default;

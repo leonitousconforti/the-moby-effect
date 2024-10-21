@@ -7,7 +7,7 @@
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
-import * as Platforms from "../Connection.js";
+import * as Platforms from "../MobyConnection.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Execs from "../endpoints/Execs.js";
 import * as Images from "../endpoints/Images.js";
@@ -48,13 +48,13 @@ export type PodmanLayerWithoutHttpCLient = Layer.Layer<
  * @category Layers
  */
 export const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLient = Layer.mergeAll(
-    Containers.layer,
-    Execs.layer,
-    Images.layer,
-    Networks.layer,
-    Secrets.layer,
-    System.layer,
-    Volumes.layer
+    Containers.ContainersLayer,
+    Execs.ExecsLayer,
+    Images.ImagesLayer,
+    Networks.NetworksLayer,
+    Secrets.SecretsLayer,
+    System.SystemsLayer,
+    Volumes.VolumesLayer
 );
 
 /**

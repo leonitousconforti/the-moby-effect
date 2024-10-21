@@ -22,12 +22,14 @@ import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const SessionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SessionsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type SessionsErrorTypeId = typeof SessionsErrorTypeId;
 
@@ -95,4 +97,4 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;
+export const SessionsLayer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;

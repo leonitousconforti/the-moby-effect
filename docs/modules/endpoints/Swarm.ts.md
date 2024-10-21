@@ -1,6 +1,6 @@
 ---
 title: endpoints/Swarm.ts
-nav_order: 24
+nav_order: 20
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [SwarmsError (class)](#swarmserror-class)
-  - [SwarmsErrorTypeId](#swarmserrortypeid)
-  - [SwarmsErrorTypeId (type alias)](#swarmserrortypeid-type-alias)
   - [isSwarmsError](#isswarmserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [SwarmLayer](#swarmlayer)
 - [Tags](#tags)
   - [Swarm (class)](#swarm-class)
 
@@ -38,26 +36,6 @@ export declare class SwarmsError
 
 Added in v1.0.0
 
-## SwarmsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const SwarmsErrorTypeId: typeof SwarmsErrorTypeId
-```
-
-Added in v1.0.0
-
-## SwarmsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type SwarmsErrorTypeId = typeof SwarmsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isSwarmsError
 
 **Signature**
@@ -70,14 +48,18 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## SwarmLayer
 
 Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Swarm, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const SwarmLayer: Layer.Layer<
+  Swarm,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

@@ -9,6 +9,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 
+import { DindEngine, MobyEngine } from "the-moby-effect/Engines";
 import {
     ContainersError,
     ImagesError,
@@ -16,8 +17,7 @@ import {
     SwarmsError,
     SystemsError,
     VolumesError,
-} from "the-moby-effect/Endpoints";
-import { DindEngine, MobyEngine } from "the-moby-effect/Engines";
+} from "the-moby-effect/MobyEndpoints";
 
 const makePlatformDindLayer = Function.pipe(
     Match.value(inject("__PLATFORM_VARIANT")),

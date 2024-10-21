@@ -1,10 +1,10 @@
 ---
-title: Platforms.ts
+title: MobyPlatforms.ts
 nav_order: 35
 parent: Modules
 ---
 
-## Platforms overview
+## MobyPlatforms overview
 
 Http client layers for all platforms.
 

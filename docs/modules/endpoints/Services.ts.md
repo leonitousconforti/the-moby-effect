@@ -1,6 +1,6 @@
 ---
 title: endpoints/Services.ts
-nav_order: 22
+nav_order: 18
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [ServicesError (class)](#serviceserror-class)
-  - [ServicesErrorTypeId](#serviceserrortypeid)
-  - [ServicesErrorTypeId (type alias)](#serviceserrortypeid-type-alias)
   - [isServicesError](#isserviceserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [ServicesLayer](#serviceslayer)
 - [Tags](#tags)
   - [Services (class)](#services-class)
 
@@ -38,26 +36,6 @@ export declare class ServicesError
 
 Added in v1.0.0
 
-## ServicesErrorTypeId
-
-**Signature**
-
-```ts
-export declare const ServicesErrorTypeId: typeof ServicesErrorTypeId
-```
-
-Added in v1.0.0
-
-## ServicesErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type ServicesErrorTypeId = typeof ServicesErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isServicesError
 
 **Signature**
@@ -70,14 +48,18 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## ServicesLayer
 
 Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Services, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const ServicesLayer: Layer.Layer<
+  Services,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

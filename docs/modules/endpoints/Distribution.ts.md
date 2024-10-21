@@ -1,6 +1,6 @@
 ---
 title: endpoints/Distribution.ts
-nav_order: 15
+nav_order: 11
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [DistributionsError (class)](#distributionserror-class)
-  - [DistributionsErrorTypeId](#distributionserrortypeid)
-  - [DistributionsErrorTypeId (type alias)](#distributionserrortypeid-type-alias)
   - [isDistributionsError](#isdistributionserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [DistributionsLayer](#distributionslayer)
 - [Tags](#tags)
   - [Distributions (class)](#distributions-class)
 
@@ -38,26 +36,6 @@ export declare class DistributionsError
 
 Added in v1.0.0
 
-## DistributionsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const DistributionsErrorTypeId: typeof DistributionsErrorTypeId
-```
-
-Added in v1.0.0
-
-## DistributionsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type DistributionsErrorTypeId = typeof DistributionsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isDistributionsError
 
 **Signature**
@@ -70,12 +48,12 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## DistributionsLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<
+export declare const DistributionsLayer: Layer.Layer<
   Distributions,
   never,
   HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>

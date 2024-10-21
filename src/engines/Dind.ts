@@ -16,7 +16,6 @@ import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Number from "effect/Number";
 import * as Option from "effect/Option";
-import * as Record from "effect/Record";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
@@ -30,12 +29,12 @@ import * as HttpBlob from "../blobs/Http.js";
 import * as HttpsBlob from "../blobs/Https.js";
 import * as SocketBlob from "../blobs/Socket.js";
 import * as SshBlob from "../blobs/Ssh.js";
-import * as Platforms from "../Connection.js";
-import * as Convey from "../Convey.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";
 import * as Volumes from "../endpoints/Volumes.js";
+import * as Platforms from "../MobyConnection.js";
+import * as Convey from "../MobyConvey.js";
 import * as DockerEngine from "./Docker.js";
 
 /**
@@ -106,19 +105,27 @@ const downloadDindCertificates = (
         const containers = yield* Containers;
         const certs = yield* Untar.Untar(containers.archive({ id: dindContainerId, path: "/certs" }));
 
-        const readAndAssemble: <E, R>(
-            _: Option.Option<[TarCommon.TarHeader, Stream.Stream<Uint8Array, E, R>]>
-        ) => Effect.Effect<string, E, R> = Function.flow(
-            Option.getOrThrow,
-            Tuple.getSecond,
-            Stream.decodeText("utf-8"),
-            Stream.mkString
-        );
+        const readAndAssemble = (
+            path: string
+        ): (<E, R>(
+            data: HashMap.HashMap<TarCommon.TarHeader, Stream.Stream<Uint8Array, E, R>>
+        ) => Effect.Effect<string, E, R>) =>
+            Function.flow(
+                HashMap.findFirst((_stream, header) => header.filename === path),
+                Option.getOrThrow,
+                Tuple.getSecond,
+                Stream.decodeText("utf-8"),
+                Stream.mkString
+            );
 
-        const ca = HashMap.findFirst(certs, (_stream, header) => header.filename === "certs/server/ca.pem");
-        const key = HashMap.findFirst(certs, (_stream, header) => header.filename === "certs/server/key.pem");
-        const cert = HashMap.findFirst(certs, (_stream, header) => header.filename === "certs/server/cert.pem");
-        return yield* Effect.all(Record.map({ ca, key, cert }, readAndAssemble), { concurrency: 3 });
+        return yield* Effect.all(
+            {
+                ca: readAndAssemble("certs/server/ca.pem")(certs),
+                key: readAndAssemble("certs/server/key.pem")(certs),
+                cert: readAndAssemble("certs/server/cert.pem")(certs),
+            },
+            { concurrency: 3 }
+        );
     });
 
 /**

@@ -1,6 +1,6 @@
 ---
 title: endpoints/Networks.ts
-nav_order: 18
+nav_order: 14
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [NetworksError (class)](#networkserror-class)
-  - [NetworksErrorTypeId](#networkserrortypeid)
-  - [NetworksErrorTypeId (type alias)](#networkserrortypeid-type-alias)
   - [isNetworksError](#isnetworkserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [NetworksLayer](#networkslayer)
 - [Tags](#tags)
   - [Networks (class)](#networks-class)
 
@@ -38,26 +36,6 @@ export declare class NetworksError
 
 Added in v1.0.0
 
-## NetworksErrorTypeId
-
-**Signature**
-
-```ts
-export declare const NetworksErrorTypeId: typeof NetworksErrorTypeId
-```
-
-Added in v1.0.0
-
-## NetworksErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type NetworksErrorTypeId = typeof NetworksErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isNetworksError
 
 **Signature**
@@ -70,12 +48,16 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## NetworksLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Networks, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const NetworksLayer: Layer.Layer<
+  Networks,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

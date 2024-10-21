@@ -1,6 +1,6 @@
 import { inject, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import { Sessions } from "the-moby-effect/Endpoints";
+import { Sessions } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Session tests", (it) => {

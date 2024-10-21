@@ -36,12 +36,14 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const ImagesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ImagesError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type ImagesErrorTypeId = typeof ImagesErrorTypeId;
 
@@ -607,4 +609,4 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Images, never, HttpClient.HttpClient> = Images.Default;
+export const ImagesLayer: Layer.Layer<Images, never, HttpClient.HttpClient> = Images.Default;

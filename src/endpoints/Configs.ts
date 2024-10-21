@@ -27,12 +27,14 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const ConfigsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ConfigsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type ConfigsErrorTypeId = typeof ConfigsErrorTypeId;
 
@@ -172,4 +174,4 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
  */
-export const layer: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.Default;
+export const ConfigsLayer: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.Default;

@@ -50,12 +50,14 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const ContainersErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ContainersError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type ContainersErrorTypeId = typeof ContainersErrorTypeId;
 
@@ -581,4 +583,4 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Container
  */
-export const layer: Layer.Layer<Containers, never, HttpClient.HttpClient> = Containers.Default;
+export const ContainersLayer: Layer.Layer<Containers, never, HttpClient.HttpClient> = Containers.Default;

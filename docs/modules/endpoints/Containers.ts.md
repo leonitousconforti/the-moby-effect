@@ -1,6 +1,6 @@
 ---
 title: endpoints/Containers.ts
-nav_order: 14
+nav_order: 10
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [ContainersError (class)](#containerserror-class)
-  - [ContainersErrorTypeId](#containerserrortypeid)
-  - [ContainersErrorTypeId (type alias)](#containerserrortypeid-type-alias)
   - [isContainersError](#iscontainerserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [ContainersLayer](#containerslayer)
 - [Services](#services)
   - [Containers (class)](#containers-class)
 
@@ -38,26 +36,6 @@ export declare class ContainersError
 
 Added in v1.0.0
 
-## ContainersErrorTypeId
-
-**Signature**
-
-```ts
-export declare const ContainersErrorTypeId: typeof ContainersErrorTypeId
-```
-
-Added in v1.0.0
-
-## ContainersErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type ContainersErrorTypeId = typeof ContainersErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isContainersError
 
 **Signature**
@@ -70,12 +48,12 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## ContainersLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<
+export declare const ContainersLayer: Layer.Layer<
   Containers,
   never,
   HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>

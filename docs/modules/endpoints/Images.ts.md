@@ -1,6 +1,6 @@
 ---
 title: endpoints/Images.ts
-nav_order: 17
+nav_order: 13
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [ImagesError (class)](#imageserror-class)
-  - [ImagesErrorTypeId](#imageserrortypeid)
-  - [ImagesErrorTypeId (type alias)](#imageserrortypeid-type-alias)
   - [isImagesError](#isimageserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [ImagesLayer](#imageslayer)
 - [Params](#params)
   - [ImageBuildOptions (interface)](#imagebuildoptions-interface)
 - [Tags](#tags)
@@ -40,26 +38,6 @@ export declare class ImagesError
 
 Added in v1.0.0
 
-## ImagesErrorTypeId
-
-**Signature**
-
-```ts
-export declare const ImagesErrorTypeId: typeof ImagesErrorTypeId
-```
-
-Added in v1.0.0
-
-## ImagesErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type ImagesErrorTypeId = typeof ImagesErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isImagesError
 
 **Signature**
@@ -72,12 +50,16 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## ImagesLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Images, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const ImagesLayer: Layer.Layer<
+  Images,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

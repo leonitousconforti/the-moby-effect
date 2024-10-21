@@ -24,18 +24,21 @@ import type { Demux } from "./Demux.js";
 /**
  * @since 1.0.0
  * @category Types
+ * @internal
  */
 export const RawStreamSocketContentType = "application/vnd.docker.raw-stream" as const;
 
 /**
  * @since 1.0.0
  * @category Type ids
+ * @internal
  */
 export const RawStreamSocketTypeId: unique symbol = Symbol.for("the-moby-effect/demux/RawStreamSocket");
 
 /**
  * @since 1.0.0
  * @category Type ids
+ * @internal
  */
 export type RawStreamSocketTypeId = typeof RawStreamSocketTypeId;
 
@@ -55,6 +58,7 @@ export type RawStreamSocket = Socket.Socket & {
 /**
  * @since 1.0.0
  * @category Constructors
+ * @internal
  */
 export const makeRawStreamSocket = (socket: Socket.Socket): RawStreamSocket => ({
     ...socket,
@@ -71,6 +75,7 @@ export const isRawStreamSocket = (u: unknown): u is RawStreamSocket => Predicate
 /**
  * @since 1.0.0
  * @category Predicates
+ * @internal
  */
 export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
     response.headers["content-type"] === RawStreamSocketContentType;
@@ -112,7 +117,7 @@ export const demuxRawSocket = Function.dual<
         Function.pipe(
             source,
             Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
-            Stream.decodeText(options?.encoding ?? "utf-8"),
+            Stream.decodeText(options?.encoding),
             Stream.run(sink)
         )
 );
@@ -275,7 +280,7 @@ export const demuxRawSockets: {
                 Function.pipe(
                     Stream.never,
                     Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
-                    Stream.decodeText(options?.encoding ?? "utf-8")
+                    Stream.decodeText(options?.encoding)
                 );
 
             const mergedStream = Stream.merge(

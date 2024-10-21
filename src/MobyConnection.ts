@@ -105,7 +105,7 @@ export const MobyConnectionOptions = Data.taggedEnum<MobyConnectionOptions>();
  * @since 1.0.0
  * @category Connection Constructors
  * @example
- *     import { SocketConnectionOptions } from "the-moby-effect/Connection";
+ *     import { SocketConnectionOptions } from "the-moby-effect/MobyConnection";
  *     const connectionOptions = SocketConnectionOptions({
  *         socketPath: "/var/run/docker.sock",
  *     });
@@ -122,7 +122,7 @@ export const SocketConnectionOptions = MobyConnectionOptions.socket;
  * @since 1.0.0
  * @category Connection Constructors
  * @example
- *     import { SshConnectionOptions } from "the-moby-effect/Connection";
+ *     import { SshConnectionOptions } from "the-moby-effect/MobyConnection";
  *     const connectionOptions = SshConnectionOptions({
  *         host: "host.domain.com",
  *         port: 2222,
@@ -137,7 +137,7 @@ export const SshConnectionOptions = MobyConnectionOptions.ssh;
  * @since 1.0.0
  * @category Connection Constructors
  * @example
- *     import { HttpConnectionOptions } from "the-moby-effect/Connection";
+ *     import { HttpConnectionOptions } from "the-moby-effect/MobyConnection";
  *     const connectionOptions = HttpConnectionOptions({
  *         host: "host.domain.com",
  *         port: 2375,
@@ -150,7 +150,7 @@ export const HttpConnectionOptions = MobyConnectionOptions.http;
  * @since 1.0.0
  * @category Connection Constructors
  * @example
- *     import { HttpsConnectionOptions } from "the-moby-effect/Connection";
+ *     import { HttpsConnectionOptions } from "the-moby-effect/MobyConnection";
  *     const connectionOptions = HttpsConnectionOptions({
  *         host: "host.domain.com",
  *         port: 2375,

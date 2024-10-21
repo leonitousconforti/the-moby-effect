@@ -1,6 +1,6 @@
 import { layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import { Networks } from "the-moby-effect/Endpoints";
+import { Networks } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Networks tests", (it) => {

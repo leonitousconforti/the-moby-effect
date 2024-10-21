@@ -15,13 +15,13 @@ import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import * as Platforms from "../Connection.js";
-import * as Demux from "../Demux.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Execs from "../endpoints/Execs.js";
 import * as Images from "../endpoints/Images.js";
 import * as System from "../endpoints/System.js";
 import * as GeneratedSchemas from "../generated/index.js";
+import * as Platforms from "../MobyConnection.js";
+import * as Demux from "../MobyDemux.js";
 import * as Moby from "./Moby.js";
 
 /**

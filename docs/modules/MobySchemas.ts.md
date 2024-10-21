@@ -1,10 +1,10 @@
 ---
-title: Schemas.ts
-nav_order: 44
+title: MobySchemas.ts
+nav_order: 36
 parent: Modules
 ---
 
-## Schemas overview
+## MobySchemas overview
 
 Moby schemas.
 

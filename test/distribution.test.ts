@@ -1,6 +1,6 @@
 import { expect, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
-import { Distributions } from "the-moby-effect/Endpoints";
+import { Distributions } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
 layer(Layer.fresh(testLayer))("MobyApi Distribution tests", (it) => {

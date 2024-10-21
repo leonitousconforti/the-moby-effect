@@ -25,6 +25,7 @@ import { CompressedDemuxOutput, compressDemuxOutput } from "./Compressed.js";
 /**
  * @since 1.0.0
  * @category Types
+ * @internal
  */
 export enum MultiplexedStreamSocketHeaderType {
     Stdin = 0,
@@ -35,6 +36,7 @@ export enum MultiplexedStreamSocketHeaderType {
 /**
  * @since 1.0.0
  * @category Types
+ * @internal
  */
 export type MultiplexedStreamSocketAccumulator = {
     headerBytesRead: number;
@@ -48,6 +50,7 @@ export type MultiplexedStreamSocketAccumulator = {
 /**
  * @since 1.0.0
  * @category Types
+ * @internal
  */
 export interface $MultiplexedStreamSocketSchema
     extends Schema.Tuple<
@@ -60,6 +63,7 @@ export interface $MultiplexedStreamSocketSchema
 /**
  * @since 1.0.0
  * @category Schemas
+ * @internal
  */
 export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Schema.Tuple(
     Schema.Enums(MultiplexedStreamSocketHeaderType),
@@ -69,18 +73,21 @@ export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Sch
 /**
  * @since 1.0.0
  * @category Types
+ * @internal
  */
 export const MultiplexedStreamSocketContentType = "application/vnd.docker.multiplexed-stream" as const;
 
 /**
  * @since 1.0.0
  * @category Type ids
+ * @internal
  */
 export const MultiplexedStreamSocketTypeId: unique symbol = Symbol.for("the-moby-effect/demux/MultiplexedStreamSocket");
 
 /**
  * @since 1.0.0
  * @category Type ids
+ * @internal
  */
 export type MultiplexedStreamSocketTypeId = typeof MultiplexedStreamSocketTypeId;
 
@@ -102,6 +109,7 @@ export type MultiplexedStreamSocket = Socket.Socket & {
 /**
  * @since 1.0.0
  * @category Constructors
+ * @internal
  */
 export const makeMultiplexedStreamSocket = (socket: Socket.Socket): MultiplexedStreamSocket => ({
     ...socket,
@@ -119,6 +127,7 @@ export const isMultiplexedStreamSocket = (u: unknown): u is MultiplexedStreamSoc
 /**
  * @since 1.0.0
  * @category Predicates
+ * @internal
  */
 export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse) =>
     response.headers["content-type"] === MultiplexedStreamSocketContentType;
@@ -128,6 +137,7 @@ export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientRe
  *
  * @since 1.0.0
  * @category Demux
+ * @internal
  */
 export const demuxMultiplexedSocketFolderSink: Sink.Sink<
     MultiplexedStreamSocketAccumulator,
@@ -273,7 +283,7 @@ export const demuxMultiplexedSocket: {
             return Function.pipe(
                 untilPartition,
                 Stream.map(Tuple.getSecond),
-                Stream.decodeText(sink2OrOptions?.encoding ?? "utf-8"),
+                Stream.decodeText(sink2OrOptions?.encoding),
                 Stream.run(sink1)
             );
         }
@@ -285,12 +295,12 @@ export const demuxMultiplexedSocket: {
                 Tuple.mapBoth({
                     onFirst: Function.flow(
                         Stream.map(Tuple.getSecond),
-                        Stream.decodeText(options?.encoding ?? "utf-8"),
+                        Stream.decodeText(options?.encoding),
                         Stream.run(sink1)
                     ),
                     onSecond: Function.flow(
                         Stream.map(Tuple.getSecond),
-                        Stream.decodeText(options?.encoding ?? "utf-8"),
+                        Stream.decodeText(options?.encoding),
                         Stream.run(sink2OrOptions)
                     ),
                 })

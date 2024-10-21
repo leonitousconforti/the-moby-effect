@@ -1,6 +1,6 @@
 ---
 title: endpoints/Plugins.ts
-nav_order: 20
+nav_order: 16
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [PluginsError (class)](#pluginserror-class)
-  - [PluginsErrorTypeId](#pluginserrortypeid)
-  - [PluginsErrorTypeId (type alias)](#pluginserrortypeid-type-alias)
   - [isPluginsError](#ispluginserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [PluginsLayer](#pluginslayer)
 - [Tags](#tags)
   - [Plugins (class)](#plugins-class)
 
@@ -38,26 +36,6 @@ export declare class PluginsError
 
 Added in v1.0.0
 
-## PluginsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const PluginsErrorTypeId: typeof PluginsErrorTypeId
-```
-
-Added in v1.0.0
-
-## PluginsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type PluginsErrorTypeId = typeof PluginsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isPluginsError
 
 **Signature**
@@ -70,14 +48,18 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## PluginsLayer
 
 Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Plugins, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const PluginsLayer: Layer.Layer<
+  Plugins,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

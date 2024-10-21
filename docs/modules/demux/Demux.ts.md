@@ -1,6 +1,6 @@
 ---
 title: demux/Demux.ts
-nav_order: 5
+nav_order: 2
 parent: Modules
 ---
 
@@ -189,27 +189,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
-import * as DockerEngine from "the-moby-effect/engines/Docker"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
+import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -223,17 +221,17 @@ Effect.gen(function* () {
 
   // Since the container was started with "tty: false",
   // we should get a multiplexed socket here
-  const socket: DemuxRaw.RawStreamSocket | DemuxMultiplexed.MultiplexedStreamSocket = yield* containers.attach({
+  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
     stdin: true,
     stdout: true,
     stderr: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxMultiplexed.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
+  assert.ok(MobyDemux.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
 
   // Demux to a single sink
-  const [stdoutData, stderrData] = yield* Demux.demuxToSeparateSinks(
+  const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     socket,
     Stream.concat(Stream.make("a\n"), Stream.never),
     Sink.collectAll<string>(),
@@ -263,26 +261,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/engines/Docker"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -296,27 +293,27 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdinSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdinSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stdin: true,
     stream: true,
     id: containerId
   })
-  const stdoutSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stdout: true,
     stream: true,
     id: containerId
   })
-  const stderrSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stderrSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stderr: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxRaw.isRawStreamSocket(stdinSocket), "Expected a raw socket")
-  assert.ok(DemuxRaw.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
-  assert.ok(DemuxRaw.isRawStreamSocket(stderrSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stdinSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stderrSocket), "Expected a raw socket")
 
   // Demux to a single sink
-  const [stdoutData, stderrData] = yield* Demux.demuxToSeparateSinks(
+  const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     {
       stdin: stdinSocket,
       stdout: stdoutSocket,
@@ -351,26 +348,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
-import * as DockerEngine from "the-moby-effect/engines/Docker"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
+import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -384,15 +380,15 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdoutSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stdout: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxRaw.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
 
   // Demux to a single sink
-  const [stdoutData, stderrData] = yield* Demux.demuxToSeparateSinks(
+  const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     { stdout: stdoutSocket },
     Stream.concat(Stream.make("a\n"), Stream.never),
     Sink.collectAll<string>(),
@@ -483,27 +479,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
-import * as DockerEngine from "the-moby-effect/engines/Docker"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
+import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -517,18 +511,18 @@ Effect.gen(function* () {
 
   // Since the container was started with "tty: true",
   // we should get a raw socket here
-  const socket: DemuxRaw.RawStreamSocket | DemuxMultiplexed.MultiplexedStreamSocket = yield* containers.attach({
+  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
     stdin: true,
     stdout: true,
     stderr: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxRaw.isRawStreamSocket(socket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(socket), "Expected a raw socket")
 
   // Demux to a single sink
   const input = Stream.concat(Stream.make("a\n"), Stream.never)
-  const data = yield* Demux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
+  const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
   assert.strictEqual(Chunk.join(data, ""), "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n")
 
   // Wait for the container to exit
@@ -551,27 +545,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxMultiplexed from "the-moby-effect/demux/Multiplexed"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
-import * as DockerEngine from "the-moby-effect/engines/Docker"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
+import * as DockerEngine from "the-moby-effect/DockerEngine"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -585,18 +577,18 @@ Effect.gen(function* () {
 
   // Since the container was started with "tty: false",
   // we should get a multiplexed socket here
-  const socket: DemuxRaw.RawStreamSocket | DemuxMultiplexed.MultiplexedStreamSocket = yield* containers.attach({
+  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
     stdin: true,
     stdout: true,
     stderr: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxMultiplexed.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
+  assert.ok(MobyDemux.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
 
   // Demux to a single sink
   const input = Stream.concat(Stream.make("a\n"), Stream.never)
-  const data = yield* Demux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
+  const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
   assert.strictEqual(Chunk.join(data, ""), "d41d8cd98f00b204e9800998ecf8427e  -\nHi2\n")
 
   // Wait for the container to exit
@@ -620,26 +612,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/engines/Docker"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -653,27 +644,27 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdinSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdinSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stdin: true,
     stream: true,
     id: containerId
   })
-  const stdoutSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stdout: true,
     stream: true,
     id: containerId
   })
-  const stderrSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stderrSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stderr: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxRaw.isRawStreamSocket(stdinSocket), "Expected a raw socket")
-  assert.ok(DemuxRaw.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
-  assert.ok(DemuxRaw.isRawStreamSocket(stderrSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stdinSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stderrSocket), "Expected a raw socket")
 
   // Demux to a single sink
-  const data = yield* Demux.demuxToSingleSink(
+  const data = yield* MobyDemux.demuxToSingleSink(
     {
       stdin: stdinSocket,
       stdout: stdoutSocket,
@@ -716,26 +707,25 @@ import * as Layer from "effect/Layer"
 import * as Sink from "effect/Sink"
 import * as Stream from "effect/Stream"
 
-import * as Connection from "the-moby-effect/Connection"
-import * as Convey from "the-moby-effect/Convey"
-import * as Demux from "the-moby-effect/Demux"
-import * as DemuxRaw from "the-moby-effect/demux/Raw"
-import * as Containers from "the-moby-effect/endpoints/Containers"
+import * as MobyConnection from "the-moby-effect/MobyConnection"
+import * as MobyConvey from "the-moby-effect/MobyConvey"
+import * as MobyDemux from "the-moby-effect/MobyDemux"
+import * as MobyEndpoints from "the-moby-effect/MobyEndpoints"
 import * as DockerEngine from "the-moby-effect/engines/Docker"
 
 const layer = Function.pipe(
-  Connection.connectionOptionsFromPlatformSystemSocketDefault(),
+  MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
   Effect.map(DockerEngine.layerNodeJS),
   Layer.unwrapEffect
 )
 
 Effect.gen(function* () {
   const image = "ubuntu:latest"
-  const containers = yield* Containers.Containers
+  const containers = yield* MobyEndpoints.Containers
 
   // Pull the image, which will be removed when the scope is closed
   const pullStream = DockerEngine.pull({ image })
-  yield* Convey.followProgressInConsole(pullStream)
+  yield* MobyConvey.followProgressInConsole(pullStream)
 
   // Start a container, which will be removed when the scope is closed
   const { Id: containerId } = yield* DockerEngine.runScoped({
@@ -749,15 +739,15 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdoutSocket: DemuxRaw.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
     stdout: true,
     stream: true,
     id: containerId
   })
-  assert.ok(DemuxRaw.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
+  assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
 
   // Demux to a single sink
-  const data = yield* Demux.demuxToSingleSink(
+  const data = yield* MobyDemux.demuxToSingleSink(
     { stdout: stdoutSocket },
     Stream.concat(Stream.make("a\n"), Stream.never),
     Sink.collectAll<string>()

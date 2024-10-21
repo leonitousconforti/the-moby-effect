@@ -2,13 +2,7 @@
 
 import { NodeRuntime, NodeSocket } from "@effect/platform-node";
 import { Console, Effect, Function, Layer } from "effect";
-import {
-    DockerEngine,
-    Connection as MobyConnection,
-    Convey as MobyConvey,
-    Demux as MobyDemux,
-    Endpoints as MobyEndpoints,
-} from "the-moby-effect";
+import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(

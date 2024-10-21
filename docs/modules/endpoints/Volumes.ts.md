@@ -1,6 +1,6 @@
 ---
 title: endpoints/Volumes.ts
-nav_order: 27
+nav_order: 23
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [VolumesError (class)](#volumeserror-class)
-  - [VolumesErrorTypeId](#volumeserrortypeid)
-  - [VolumesErrorTypeId (type alias)](#volumeserrortypeid-type-alias)
   - [isVolumesError](#isvolumeserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [VolumesLayer](#volumeslayer)
 - [Tags](#tags)
   - [Volumes (class)](#volumes-class)
 
@@ -38,26 +36,6 @@ export declare class VolumesError
 
 Added in v1.0.0
 
-## VolumesErrorTypeId
-
-**Signature**
-
-```ts
-export declare const VolumesErrorTypeId: typeof VolumesErrorTypeId
-```
-
-Added in v1.0.0
-
-## VolumesErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type VolumesErrorTypeId = typeof VolumesErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isVolumesError
 
 **Signature**
@@ -70,12 +48,16 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## VolumesLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Volumes, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const VolumesLayer: Layer.Layer<
+  Volumes,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

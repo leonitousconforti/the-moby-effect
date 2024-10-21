@@ -1,6 +1,6 @@
 ---
 title: endpoints/Tasks.ts
-nav_order: 26
+nav_order: 22
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [TasksError (class)](#taskserror-class)
-  - [TasksErrorTypeId](#taskserrortypeid)
-  - [TasksErrorTypeId (type alias)](#taskserrortypeid-type-alias)
   - [isTasksError](#istaskserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [TasksLayer](#taskslayer)
 - [Tags](#tags)
   - [Tasks (class)](#tasks-class)
 
@@ -38,26 +36,6 @@ export declare class TasksError
 
 Added in v1.0.0
 
-## TasksErrorTypeId
-
-**Signature**
-
-```ts
-export declare const TasksErrorTypeId: typeof TasksErrorTypeId
-```
-
-Added in v1.0.0
-
-## TasksErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type TasksErrorTypeId = typeof TasksErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isTasksError
 
 **Signature**
@@ -70,12 +48,16 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## TasksLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Tasks, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const TasksLayer: Layer.Layer<
+  Tasks,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

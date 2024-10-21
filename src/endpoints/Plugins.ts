@@ -26,12 +26,14 @@ import { maybeAddHeader, maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const PluginsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/PluginsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type PluginsErrorTypeId = typeof PluginsErrorTypeId;
 
@@ -236,4 +238,4 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Plugins, never, HttpClient.HttpClient> = Plugins.Default;
+export const PluginsLayer: Layer.Layer<Plugins, never, HttpClient.HttpClient> = Plugins.Default;

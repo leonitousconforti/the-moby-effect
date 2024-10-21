@@ -33,12 +33,14 @@ import { maybeAddQueryParameter } from "./Common.js";
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export const SystemsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SystemsError");
 
 /**
  * @since 1.0.0
  * @category Errors
+ * @internal
  */
 export type SystemsErrorTypeId = typeof SystemsErrorTypeId;
 
@@ -200,4 +202,4 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<Systems, never, HttpClient.HttpClient> = Systems.Default;
+export const SystemsLayer: Layer.Layer<Systems, never, HttpClient.HttpClient> = Systems.Default;

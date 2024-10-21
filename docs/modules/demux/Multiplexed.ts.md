@@ -1,6 +1,6 @@
 ---
 title: demux/Multiplexed.ts
-nav_order: 7
+nav_order: 4
 parent: Modules
 ---
 
@@ -15,38 +15,14 @@ Added in v1.0.0
 
 <h2 class="text-delta">Table of contents</h2>
 
-- [Constructors](#constructors)
-  - [makeMultiplexedStreamSocket](#makemultiplexedstreamsocket)
 - [Demux](#demux)
   - [demuxMultiplexedSocket](#demuxmultiplexedsocket)
-  - [demuxMultiplexedSocketFolderSink](#demuxmultiplexedsocketfoldersink)
 - [Predicates](#predicates)
   - [isMultiplexedStreamSocket](#ismultiplexedstreamsocket)
-  - [responseIsMultiplexedStreamSocketResponse](#responseismultiplexedstreamsocketresponse)
-- [Schemas](#schemas)
-  - [MultiplexedStreamSocketSchema](#multiplexedstreamsocketschema)
-- [Type ids](#type-ids)
-  - [MultiplexedStreamSocketTypeId](#multiplexedstreamsockettypeid)
-  - [MultiplexedStreamSocketTypeId (type alias)](#multiplexedstreamsockettypeid-type-alias)
 - [Types](#types)
-  - [$MultiplexedStreamSocketSchema (interface)](#multiplexedstreamsocketschema-interface)
   - [MultiplexedStreamSocket (type alias)](#multiplexedstreamsocket-type-alias)
-  - [MultiplexedStreamSocketAccumulator (type alias)](#multiplexedstreamsocketaccumulator-type-alias)
-  - [MultiplexedStreamSocketContentType](#multiplexedstreamsocketcontenttype)
 
 ---
-
-# Constructors
-
-## makeMultiplexedStreamSocket
-
-**Signature**
-
-```ts
-export declare const makeMultiplexedStreamSocket: (socket: Socket.Socket) => MultiplexedStreamSocket
-```
-
-Added in v1.0.0
 
 # Demux
 
@@ -113,24 +89,6 @@ export declare const demuxMultiplexedSocket: {
 
 Added in v1.0.0
 
-## demuxMultiplexedSocketFolderSink
-
-Accumulates the header and its message bytes into a single value.
-
-**Signature**
-
-```ts
-export declare const demuxMultiplexedSocketFolderSink: Sink.Sink<
-  MultiplexedStreamSocketAccumulator,
-  number,
-  number,
-  ParseResult.ParseError,
-  never
->
-```
-
-Added in v1.0.0
-
 # Predicates
 
 ## isMultiplexedStreamSocket
@@ -143,66 +101,7 @@ export declare const isMultiplexedStreamSocket: (u: unknown) => u is Multiplexed
 
 Added in v1.0.0
 
-## responseIsMultiplexedStreamSocketResponse
-
-**Signature**
-
-```ts
-export declare const responseIsMultiplexedStreamSocketResponse: (
-  response: HttpClientResponse.HttpClientResponse
-) => boolean
-```
-
-Added in v1.0.0
-
-# Schemas
-
-## MultiplexedStreamSocketSchema
-
-**Signature**
-
-```ts
-export declare const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema
-```
-
-Added in v1.0.0
-
-# Type ids
-
-## MultiplexedStreamSocketTypeId
-
-**Signature**
-
-```ts
-export declare const MultiplexedStreamSocketTypeId: typeof MultiplexedStreamSocketTypeId
-```
-
-Added in v1.0.0
-
-## MultiplexedStreamSocketTypeId (type alias)
-
-**Signature**
-
-```ts
-export type MultiplexedStreamSocketTypeId = typeof MultiplexedStreamSocketTypeId
-```
-
-Added in v1.0.0
-
 # Types
-
-## $MultiplexedStreamSocketSchema (interface)
-
-**Signature**
-
-```ts
-export interface $MultiplexedStreamSocketSchema
-  extends Schema.Tuple<
-    [Schema.Enums<typeof MultiplexedStreamSocketHeaderType>, Schema.Schema<Uint8Array, ReadonlyArray<number>, never>]
-  > {}
-```
-
-Added in v1.0.0
 
 ## MultiplexedStreamSocket (type alias)
 
@@ -219,33 +118,6 @@ export type MultiplexedStreamSocket = Socket.Socket & {
   readonly "content-type": typeof MultiplexedStreamSocketContentType
   readonly [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId
 }
-```
-
-Added in v1.0.0
-
-## MultiplexedStreamSocketAccumulator (type alias)
-
-**Signature**
-
-```ts
-export type MultiplexedStreamSocketAccumulator = {
-  headerBytesRead: number
-  messageBytesRead: number
-  headerBuffer: Chunk.Chunk<number>
-  messageBuffer: Chunk.Chunk<number>
-  messageSize: number | undefined
-  messageType: number | undefined
-}
-```
-
-Added in v1.0.0
-
-## MultiplexedStreamSocketContentType
-
-**Signature**
-
-```ts
-export declare const MultiplexedStreamSocketContentType: "application/vnd.docker.multiplexed-stream"
 ```
 
 Added in v1.0.0

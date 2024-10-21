@@ -1,6 +1,6 @@
 ---
 title: endpoints/Session.ts
-nav_order: 23
+nav_order: 19
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [SessionsError (class)](#sessionserror-class)
-  - [SessionsErrorTypeId](#sessionserrortypeid)
-  - [SessionsErrorTypeId (type alias)](#sessionserrortypeid-type-alias)
   - [isSessionsError](#issessionserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [SessionsLayer](#sessionslayer)
 - [Tags](#tags)
   - [Sessions (class)](#sessions-class)
 
@@ -38,26 +36,6 @@ export declare class SessionsError
 
 Added in v1.0.0
 
-## SessionsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const SessionsErrorTypeId: typeof SessionsErrorTypeId
-```
-
-Added in v1.0.0
-
-## SessionsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type SessionsErrorTypeId = typeof SessionsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isSessionsError
 
 **Signature**
@@ -70,14 +48,14 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## SessionsLayer
 
 Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<
+export declare const SessionsLayer: Layer.Layer<
   Sessions,
   never,
   HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>

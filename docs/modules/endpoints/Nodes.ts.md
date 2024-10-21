@@ -1,6 +1,6 @@
 ---
 title: endpoints/Nodes.ts
-nav_order: 19
+nav_order: 15
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [NodesError (class)](#nodeserror-class)
-  - [NodesErrorTypeId](#nodeserrortypeid)
-  - [NodesErrorTypeId (type alias)](#nodeserrortypeid-type-alias)
   - [isNodesError](#isnodeserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [NodesLayer](#nodeslayer)
 - [Tags](#tags)
   - [Nodes (class)](#nodes-class)
 
@@ -38,26 +36,6 @@ export declare class NodesError
 
 Added in v1.0.0
 
-## NodesErrorTypeId
-
-**Signature**
-
-```ts
-export declare const NodesErrorTypeId: typeof NodesErrorTypeId
-```
-
-Added in v1.0.0
-
-## NodesErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type NodesErrorTypeId = typeof NodesErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isNodesError
 
 **Signature**
@@ -70,14 +48,18 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## NodesLayer
 
 Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Nodes, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const NodesLayer: Layer.Layer<
+  Nodes,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

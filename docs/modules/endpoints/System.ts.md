@@ -1,6 +1,6 @@
 ---
 title: endpoints/System.ts
-nav_order: 25
+nav_order: 21
 parent: Modules
 ---
 
@@ -16,11 +16,9 @@ Added in v1.0.0
 
 - [Errors](#errors)
   - [SystemsError (class)](#systemserror-class)
-  - [SystemsErrorTypeId](#systemserrortypeid)
-  - [SystemsErrorTypeId (type alias)](#systemserrortypeid-type-alias)
   - [isSystemsError](#issystemserror)
 - [Layers](#layers)
-  - [layer](#layer)
+  - [SystemsLayer](#systemslayer)
 - [Tags](#tags)
   - [Systems (class)](#systems-class)
 
@@ -38,26 +36,6 @@ export declare class SystemsError
 
 Added in v1.0.0
 
-## SystemsErrorTypeId
-
-**Signature**
-
-```ts
-export declare const SystemsErrorTypeId: typeof SystemsErrorTypeId
-```
-
-Added in v1.0.0
-
-## SystemsErrorTypeId (type alias)
-
-**Signature**
-
-```ts
-export type SystemsErrorTypeId = typeof SystemsErrorTypeId
-```
-
-Added in v1.0.0
-
 ## isSystemsError
 
 **Signature**
@@ -70,12 +48,16 @@ Added in v1.0.0
 
 # Layers
 
-## layer
+## SystemsLayer
 
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<Systems, never, HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>>
+export declare const SystemsLayer: Layer.Layer<
+  Systems,
+  never,
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
+>
 ```
 
 Added in v1.0.0

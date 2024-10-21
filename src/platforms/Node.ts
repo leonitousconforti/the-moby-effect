@@ -18,7 +18,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
-import { MobyConnectionOptions, SshConnectionOptions } from "../Connection.js";
+import { MobyConnectionOptions, SshConnectionOptions } from "../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
 
 /**

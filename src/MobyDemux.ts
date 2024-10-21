@@ -4,14 +4,14 @@
  * @since 1.0.0
  */
 
-/**
- * @since 1.0.0
- * @category Demux
- */
+/** @since 1.0.0 */
 export * from "./demux/Demux.js";
 
-/**
- * @since 1.0.0
- * @category DemuxStdio
- */
+/** @since 1.0.0 */
+export * from "./demux/Multiplexed.js";
+
+/** @since 1.0.0 */
+export * from "./demux/Raw.js";
+
+/** @since 1.0.0 */
 export * from "./demux/Stdio.js";

@@ -1,6 +1,6 @@
 ---
 title: demux/Raw.ts
-nav_order: 8
+nav_order: 5
 parent: Modules
 ---
 
@@ -20,19 +20,11 @@ Added in v1.0.0
 
 - [Branded Types](#branded-types)
   - [RawStreamSocket (type alias)](#rawstreamsocket-type-alias)
-- [Constructors](#constructors)
-  - [makeRawStreamSocket](#makerawstreamsocket)
 - [Demux](#demux)
   - [demuxRawSocket](#demuxrawsocket)
   - [demuxRawSockets](#demuxrawsockets)
 - [Predicates](#predicates)
   - [isRawStreamSocket](#israwstreamsocket)
-  - [responseIsRawStreamSocketResponse](#responseisrawstreamsocketresponse)
-- [Type ids](#type-ids)
-  - [RawStreamSocketTypeId](#rawstreamsockettypeid)
-  - [RawStreamSocketTypeId (type alias)](#rawstreamsockettypeid-type-alias)
-- [Types](#types)
-  - [RawStreamSocketContentType](#rawstreamsocketcontenttype)
 
 ---
 
@@ -51,18 +43,6 @@ export type RawStreamSocket = Socket.Socket & {
   readonly "content-type": typeof RawStreamSocketContentType
   readonly [RawStreamSocketTypeId]: typeof RawStreamSocketTypeId
 }
-```
-
-Added in v1.0.0
-
-# Constructors
-
-## makeRawStreamSocket
-
-**Signature**
-
-```ts
-export declare const makeRawStreamSocket: (socket: Socket.Socket) => RawStreamSocket
 ```
 
 Added in v1.0.0
@@ -189,50 +169,6 @@ Added in v1.0.0
 
 ```ts
 export declare const isRawStreamSocket: (u: unknown) => u is RawStreamSocket
-```
-
-Added in v1.0.0
-
-## responseIsRawStreamSocketResponse
-
-**Signature**
-
-```ts
-export declare const responseIsRawStreamSocketResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
-```
-
-Added in v1.0.0
-
-# Type ids
-
-## RawStreamSocketTypeId
-
-**Signature**
-
-```ts
-export declare const RawStreamSocketTypeId: typeof RawStreamSocketTypeId
-```
-
-Added in v1.0.0
-
-## RawStreamSocketTypeId (type alias)
-
-**Signature**
-
-```ts
-export type RawStreamSocketTypeId = typeof RawStreamSocketTypeId
-```
-
-Added in v1.0.0
-
-# Types
-
-## RawStreamSocketContentType
-
-**Signature**
-
-```ts
-export declare const RawStreamSocketContentType: "application/vnd.docker.raw-stream"
 ```
 
 Added in v1.0.0

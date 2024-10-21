@@ -7,7 +7,6 @@
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
-import * as Connection from "../Connection.js";
 import * as Configs from "../endpoints/Configs.js";
 import * as Containers from "../endpoints/Containers.js";
 import * as Distributions from "../endpoints/Distribution.js";
@@ -23,7 +22,8 @@ import * as Swarm from "../endpoints/Swarm.js";
 import * as System from "../endpoints/System.js";
 import * as Tasks from "../endpoints/Tasks.js";
 import * as Volumes from "../endpoints/Volumes.js";
-import * as Platforms from "../Platforms.js";
+import * as Connection from "../MobyConnection.js";
+import * as Platforms from "../MobyPlatforms.js";
 
 /**
  * @since 1.0.0
@@ -66,21 +66,21 @@ export type MobyLayer = Layer.Layer<
  * @category Layers
  */
 export const layerWithoutHttpCLient: MobyLayerWithoutHttpClient = Layer.mergeAll(
-    Configs.layer,
-    Containers.layer,
-    Distributions.layer,
-    Execs.layer,
-    Images.layer,
-    Networks.layer,
-    Nodes.layer,
-    Plugins.layer,
-    Secrets.layer,
-    Services.layer,
-    Sessions.layer,
-    Swarm.layer,
-    System.layer,
-    Tasks.layer,
-    Volumes.layer
+    Configs.ConfigsLayer,
+    Containers.ContainersLayer,
+    Distributions.DistributionsLayer,
+    Execs.ExecsLayer,
+    Images.ImagesLayer,
+    Networks.NetworksLayer,
+    Nodes.NodesLayer,
+    Plugins.PluginsLayer,
+    Secrets.SecretsLayer,
+    Services.ServicesLayer,
+    Sessions.SessionsLayer,
+    Swarm.SwarmLayer,
+    System.SystemsLayer,
+    Tasks.TasksLayer,
+    Volumes.VolumesLayer
 );
 
 /**
