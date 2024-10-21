@@ -189,6 +189,15 @@ export const buildScoped = <E1>({
 };
 
 /**
+ * Implements the `docker stop` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const stop = (containerId: string): Effect.Effect<void, Containers.ContainersError, Containers.Containers> =>
+    Containers.Containers.use((containers) => containers.stop({ id: containerId }));
+
+/**
  * Implements `docker run` command.
  *
  * @since 1.0.0
