@@ -12,7 +12,7 @@ import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } 
 //     })
 // );
 const localDocker = Function.pipe(
-    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault(),
+    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
     Layer.unwrapEffect
 );
