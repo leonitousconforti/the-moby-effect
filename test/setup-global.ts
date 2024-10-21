@@ -36,7 +36,7 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
             Config.string("__DOCKER_HOST_CONNECTION_OPTIONS"),
             Config.option,
             Config.map(Option.map(MobyConnection.connectionOptionsFromUrl)),
-            Config.map(Option.getOrElse(MobyConnection.connectionOptionsFromPlatformSystemSocketDefault)),
+            Config.map(Option.getOrElse(() => MobyConnection.connectionOptionsFromPlatformSystemSocketDefault)),
             Effect.flatten
         );
 
