@@ -4,9 +4,9 @@
  * @since 1.0.0
  */
 
-import * as Schema from "@effect/schema/Schema";
 import * as Brand from "effect/Brand";
 import * as Function from "effect/Function";
+import * as Schema from "effect/Schema";
 
 /**
  * @since 1.0.0

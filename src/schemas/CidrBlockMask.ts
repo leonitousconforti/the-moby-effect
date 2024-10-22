@@ -4,8 +4,8 @@
  * @since 1.0.0
  */
 
-import * as Schema from "@effect/schema/Schema";
 import * as Brand from "effect/Brand";
+import * as Schema from "effect/Schema";
 
 /**
  * @since 1.0.0
@@ -44,7 +44,7 @@ export type IPv4CidrMaskEncoded = Schema.Schema.Encoded<$IPv4CidrMask>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import {
  *         IPv4CidrMask,
  *         IPv4CidrMaskBrand,
@@ -104,7 +104,7 @@ export type IPv6CidrMaskEncoded = Schema.Schema.Encoded<$IPv6CidrMask>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import {
  *         IPv6CidrMask,
  *         IPv6CidrMaskBrand,

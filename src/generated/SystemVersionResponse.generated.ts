@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as ComponentVersion from "./ComponentVersion.generated.js";
 
 export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("SystemVersionResponse")(

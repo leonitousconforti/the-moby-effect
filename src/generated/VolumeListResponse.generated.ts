@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as Volume from "./Volume.generated.js";
 
 export class VolumeListResponse extends Schema.Class<VolumeListResponse>("VolumeListResponse")(

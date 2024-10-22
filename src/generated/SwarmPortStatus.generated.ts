@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmPortConfig from "./SwarmPortConfig.generated.js";
 
 export class SwarmPortStatus extends Schema.Class<SwarmPortStatus>("SwarmPortStatus")(

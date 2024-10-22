@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as ClusterVolume from "./ClusterVolume.generated.js";
 import * as VolumeUsageData from "./VolumeUsageData.generated.js";
 

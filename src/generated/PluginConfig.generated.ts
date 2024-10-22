@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as PluginConfigArgs from "./PluginConfigArgs.generated.js";
 import * as PluginConfigInterface from "./PluginConfigInterface.generated.js";
 import * as PluginConfigLinux from "./PluginConfigLinux.generated.js";

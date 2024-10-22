@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as PluginDevice from "./PluginDevice.generated.js";
 
 export class PluginConfigLinux extends Schema.Class<PluginConfigLinux>("PluginConfigLinux")(

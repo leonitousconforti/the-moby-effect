@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 
 export class NetworkCreateResponse extends Schema.Class<NetworkCreateResponse>("NetworkCreateResponse")(
     {

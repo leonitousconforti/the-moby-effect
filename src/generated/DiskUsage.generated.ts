@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
 import * as BuildCache from "./BuildCache.generated.js";
 import * as ContainerListResponseItem from "./ContainerListResponseItem.generated.js";

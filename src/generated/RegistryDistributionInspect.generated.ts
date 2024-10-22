@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as Descriptor from "./Descriptor.generated.js";
 import * as Platform from "./Platform.generated.js";
 

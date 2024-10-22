@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as PluginInterfaceType from "./PluginInterfaceType.generated.js";
 
 export class PluginConfigInterface extends Schema.Class<PluginConfigInterface>("PluginConfigInterface")(

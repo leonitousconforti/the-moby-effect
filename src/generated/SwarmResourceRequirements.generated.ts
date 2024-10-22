@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmLimit from "./SwarmLimit.generated.js";
 import * as SwarmResources from "./SwarmResources.generated.js";
 

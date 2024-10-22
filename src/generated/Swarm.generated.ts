@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmClusterInfo from "./SwarmClusterInfo.generated.js";
 import * as SwarmJoinTokens from "./SwarmJoinTokens.generated.js";
 

@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmConfigReferenceFileTarget from "./SwarmConfigReferenceFileTarget.generated.js";
 import * as SwarmConfigReferenceRuntimeTarget from "./SwarmConfigReferenceRuntimeTarget.generated.js";
 

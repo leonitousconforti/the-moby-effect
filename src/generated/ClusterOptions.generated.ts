@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 
 // Intentionally empty
 export class ClusterOptions extends Schema.Class<ClusterOptions>("ClusterOptions")(

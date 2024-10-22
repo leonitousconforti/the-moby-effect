@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 
 export class VolumeTypeMount extends Schema.Class<VolumeTypeMount>("VolumeTypeMount")(
     {

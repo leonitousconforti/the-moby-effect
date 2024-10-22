@@ -4,9 +4,9 @@
  * @since 1.0.0
  */
 
-import * as Schema from "@effect/schema/Schema";
 import * as Brand from "effect/Brand";
 import * as Function from "effect/Function";
+import * as Schema from "effect/Schema";
 
 /**
  * @since 1.0.0
@@ -32,7 +32,7 @@ export interface $Port extends Schema.Annotable<$Port, PortBrand, Brand.Brand.Un
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import { Port } from "the-moby-effect/schemas/index.js";
  *
  *     const decodePort = Schema.decodeSync(Port);

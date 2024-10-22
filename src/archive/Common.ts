@@ -4,11 +4,11 @@
  * @since 1.0.0
  */
 
-import * as ParseResult from "@effect/schema/ParseResult";
-import * as Schema from "@effect/schema/Schema";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Number from "effect/Number";
+import * as ParseResult from "effect/ParseResult";
+import * as Schema from "effect/Schema";
 
 /** @internal */
 export const BLOCK_SIZE = 512;

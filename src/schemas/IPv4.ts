@@ -4,11 +4,11 @@
  * @since 1.0.0
  */
 
-import * as Schema from "@effect/schema/Schema";
 import * as Array from "effect/Array";
 import * as Brand from "effect/Brand";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Schema from "effect/Schema";
 import * as String from "effect/String";
 
 /**
@@ -108,7 +108,7 @@ export type IPv4Encoded = Schema.Schema.Encoded<$IPv4>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import { IPv4 } from "the-moby-effect/schemas/index.js";
  *
  *     const decodeIPv4 = Schema.decodeSync(IPv4);
@@ -180,7 +180,7 @@ export type IPv4BigintEncoded = Schema.Schema.Encoded<$IPv4Bigint>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import {
  *         IPv4Bigint,
  *         IPv4BigintBrand,

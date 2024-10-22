@@ -1,6 +1,6 @@
-import * as Schema from "@effect/schema/Schema";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
+import * as Schema from "effect/Schema";
 import * as String from "effect/String";
 
 export class RegistryAuthenticateOKBody extends Schema.Class<RegistryAuthenticateOKBody>("RegistryAuthenticateOKBody")(

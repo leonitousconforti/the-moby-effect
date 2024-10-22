@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as NetworkConfigReference from "./NetworkConfigReference.generated.js";
 import * as NetworkIPAM from "./NetworkIPAM.generated.js";
 

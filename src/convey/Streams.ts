@@ -7,8 +7,8 @@
 import * as PlatformError from "@effect/platform/Error";
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
-import * as ParseResult from "@effect/schema/ParseResult";
 import * as HashMap from "effect/HashMap";
+import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 

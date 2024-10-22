@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmEndpointSpec from "./SwarmEndpointSpec.generated.js";
 import * as SwarmEndpointVirtualIP from "./SwarmEndpointVirtualIP.generated.js";
 import * as SwarmPortConfig from "./SwarmPortConfig.generated.js";

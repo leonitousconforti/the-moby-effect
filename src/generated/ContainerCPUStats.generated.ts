@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
 import * as ContainerCPUUsage from "./ContainerCPUUsage.generated.js";
 import * as ContainerThrottlingData from "./ContainerThrottlingData.generated.js";

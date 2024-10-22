@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmSecretReferenceFileTarget from "./SwarmSecretReferenceFileTarget.generated.js";
 
 export class SwarmSecretReference extends Schema.Class<SwarmSecretReference>("SwarmSecretReference")(

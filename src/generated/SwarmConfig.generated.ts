@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmConfigSpec from "./SwarmConfigSpec.generated.js";
 import * as SwarmMeta from "./SwarmMeta.generated.js";
 

@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmAppArmorOpts from "./SwarmAppArmorOpts.generated.js";
 import * as SwarmCredentialSpec from "./SwarmCredentialSpec.generated.js";
 import * as SwarmSELinuxContext from "./SwarmSELinuxContext.generated.js";

@@ -3,11 +3,11 @@ import { inject } from "@effect/vitest";
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
 import * as PlatformError from "@effect/platform/Error";
 import * as Path from "@effect/platform/Path";
-import * as ParseResult from "@effect/schema/ParseResult";
 import * as Context from "effect/Context";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
+import * as ParseResult from "effect/ParseResult";
 
 import { DindEngine, MobyEngine } from "the-moby-effect/Engines";
 import {

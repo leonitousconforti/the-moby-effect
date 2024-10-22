@@ -4,11 +4,11 @@
  * @since 1.0.0
  */
 
-import * as ParseResult from "@effect/schema/ParseResult";
-import * as Schema from "@effect/schema/Schema";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as ParseResult from "effect/ParseResult";
+import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import * as Address from "./Address.js";
 import * as CidrBlockMask from "./CidrBlockMask.js";

@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as NetworkIPAMConfig from "./NetworkIPAMConfig.generated.js";
 
 export class NetworkIPAM extends Schema.Class<NetworkIPAM>("NetworkIPAM")(

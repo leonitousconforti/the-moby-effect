@@ -4,9 +4,9 @@
  * @since 1.0.0
  */
 
-import * as Schema from "@effect/schema/Schema";
 import * as Brand from "effect/Brand";
 import * as Effect from "effect/Effect";
+import * as Schema from "effect/Schema";
 import * as IPv4 from "./IPv4.js";
 
 /**
@@ -111,7 +111,7 @@ export type IPv6Encoded = Schema.Schema.Encoded<$IPv6>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import { IPv6 } from "the-moby-effect/schemas/index.js";
  *
  *     const decodeIPv6 = Schema.decodeSync(IPv6);
@@ -187,7 +187,7 @@ export type IPv6BigintEncoded = Schema.Schema.Encoded<$IPv6Bigint>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import {
  *         IPv6Bigint,
  *         IPv6BigintBrand,

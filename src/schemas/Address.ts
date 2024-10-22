@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as IPv4 from "./IPv4.js";
 import * as IPv6 from "./IPv6.js";
 
@@ -61,7 +61,7 @@ export type AddressEncoded = Schema.Schema.Encoded<$Address>;
  * @since 1.0.0
  * @category Schemas
  * @example
- *     import * as Schema from "@effect/schema/Schema";
+ *     import * as Schema from "effect/Schema";
  *     import { Address } from "the-moby-effect/schemas/index.js";
  *
  *     const decodeAddress = Schema.decodeSync(Address);

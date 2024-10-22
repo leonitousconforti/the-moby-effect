@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as BindOptions from "./BindOptions.generated.js";
 import * as ClusterOptions from "./ClusterOptions.generated.js";
 import * as TmpfsOptions from "./TmpfsOptions.generated.js";

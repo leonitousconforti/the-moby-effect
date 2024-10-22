@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as Driver from "./Driver.generated.js";
 
 export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(

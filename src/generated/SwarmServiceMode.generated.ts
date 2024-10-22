@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmGlobalJob from "./SwarmGlobalJob.generated.js";
 import * as SwarmGlobalService from "./SwarmGlobalService.generated.js";
 import * as SwarmReplicatedJob from "./SwarmReplicatedJob.generated.js";

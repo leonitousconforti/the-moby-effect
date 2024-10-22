@@ -4,12 +4,12 @@
  * @since 1.0.0
  */
 
-import * as ParseResult from "@effect/schema/ParseResult";
 import * as Chunk from "effect/Chunk";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as HashMap from "effect/HashMap";
+import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";

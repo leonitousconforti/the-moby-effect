@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as VolumeTopology from "./VolumeTopology.generated.js";
 
 export class VolumeTopologyRequirement extends Schema.Class<VolumeTopologyRequirement>("VolumeTopologyRequirement")(

@@ -5,11 +5,11 @@
  */
 
 import * as Socket from "@effect/platform/Socket";
-import * as ParseResult from "@effect/schema/ParseResult";
 import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
+import * as ParseResult from "effect/ParseResult";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";

@@ -1,4 +1,4 @@
-import * as Schema from "@effect/schema/Schema";
+import * as Schema from "effect/Schema";
 import * as SwarmDriver from "./SwarmDriver.generated.js";
 import * as SwarmIPAMConfig from "./SwarmIPAMConfig.generated.js";
 
