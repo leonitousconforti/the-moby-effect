@@ -116,7 +116,9 @@ jobs:
       - if: startsWith(matrix.platform-variant, 'node') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: pnpm test
       - if: startsWith(matrix.platform-variant, 'node') && startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: sudo -E pnpm test
+        run: |
+          npm install -g pnpm
+          sudo -E pnpm test
 
       - if: startsWith(matrix.platform-variant, 'bun')
         uses: ./.github/actions/setup-bun
