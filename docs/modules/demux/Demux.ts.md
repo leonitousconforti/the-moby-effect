@@ -20,7 +20,7 @@ Added in v1.0.0
   - [demuxToSingleSink](#demuxtosinglesink)
   - [demuxUnknownToSeparateSinks](#demuxunknowntoseparatesinks)
   - [demuxUnknownToSingleSink](#demuxunknowntosinglesink)
-- [utils](#utils)
+- [Types](#types)
   - [Demux (namespace)](#demux-namespace)
     - [AnySocketOptions (type alias)](#anysocketoptions-type-alias)
     - [StdinStdoutStderrSocketOptions (type alias)](#stdinstdoutstderrsocketoptions-type-alias)
@@ -834,7 +834,7 @@ export declare const demuxUnknownToSingleSink: {
 
 Added in v1.0.0
 
-# utils
+# Types
 
 ## Demux (namespace)
 
