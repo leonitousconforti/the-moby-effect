@@ -285,7 +285,7 @@ export const makeDindLayerFromPlatformConstructor =
 
             // Building a layer here instead of providing it to the final effect
             // prevents conflicting services with the same tag in the final layer
-            const hostDocker = platformLayerConstructorCasted(options.connectionOptionsToHost);
+            const hostDocker = yield* Layer.build(platformLayerConstructorCasted(options.connectionOptionsToHost));
             yield* DockerEngine.pingHead().pipe(Effect.provide(hostDocker));
 
             // Build the docker image for the dind container
@@ -296,7 +296,7 @@ export const makeDindLayerFromPlatformConstructor =
                 buildArgs: { DIND_BASE_IMAGE: options.dindBaseImage },
                 tag: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
                 context: Convey.packBuildContextIntoTarballStream(HashMap.make(["Dockerfile", dindBlob] as const)),
-            }).pipe(Stream.provideSomeLayer(hostDocker));
+            }).pipe(Stream.provideContext(hostDocker));
 
             // Wait for the image to be built
             yield* Convey.waitForProgressToComplete(buildStream);

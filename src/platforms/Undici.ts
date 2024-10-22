@@ -121,13 +121,12 @@ export const getUndiciDispatcher = (
 export const makeUndiciHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, never> => {
-    const undiciDispatcher = getUndiciDispatcher(connectionOptions);
     const undiciLayer = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>
             Layer.provide(
                 nodeHttpClientLazy.layerUndiciWithoutDispatcher,
-                Layer.scoped(nodeHttpClientLazy.Dispatcher, undiciDispatcher)
+                Layer.scoped(nodeHttpClientLazy.Dispatcher, getUndiciDispatcher(connectionOptions))
             )
         ),
         Layer.unwrapEffect
