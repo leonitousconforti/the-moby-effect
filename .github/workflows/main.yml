@@ -117,7 +117,7 @@ jobs:
         run: pnpm test
       - if: startsWith(matrix.platform-variant, 'node') && startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: |
-          npm install -g pnpm
+          sudo -E npm install -g pnpm
           sudo -E pnpm test
 
       - if: startsWith(matrix.platform-variant, 'bun')
@@ -125,14 +125,18 @@ jobs:
       - if: startsWith(matrix.platform-variant, 'bun') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: bun run test
       - if: startsWith(matrix.platform-variant, 'bun') && startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: sudo -E bun run test
+        run: |
+          sudo -E npm install -g bun
+          sudo -E bun run test
 
       - if: startsWith(matrix.platform-variant, 'deno')
         uses: ./.github/actions/setup-deno
       - if: startsWith(matrix.platform-variant, 'deno') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: deno task test --watch=false
       - if: startsWith(matrix.platform-variant, 'deno') && startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: sudo -E deno task test --watch=false
+        run: |
+          sudo -E curl -fsSL https://deno.land/install.sh | sh
+          sudo -E deno task test --watch=false
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
