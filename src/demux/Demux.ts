@@ -18,7 +18,10 @@ import { CompressedDemuxOutput, CompressedStdinStdoutStderrOutput } from "./Comp
 import { demuxMultiplexedSocket, isMultiplexedStreamSocket, MultiplexedStreamSocket } from "./Multiplexed.js";
 import { demuxRawSocket, demuxRawSockets, isRawStreamSocket, RawStreamSocket } from "./Raw.js";
 
-/** @since 1.0.0 */
+/**
+ * @since 1.0.0
+ * @category Types
+ */
 export declare namespace Demux {
     /**
      * @since 1.0.0
