@@ -1,9 +1,9 @@
 import { expect, layer } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Duration, Effect, Layer } from "effect";
 import { Swarm } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
-layer(Layer.fresh(testLayer))("MobyApi Swarm tests", (it) => {
+layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Swarm tests", (it) => {
     it.effect("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", () =>
         Effect.gen(function* () {
             const swarm = yield* Swarm;

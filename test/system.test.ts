@@ -1,9 +1,9 @@
 import { expect, layer } from "@effect/vitest";
-import { Effect, Layer, Stream } from "effect";
+import { Duration, Effect, Layer, Stream } from "effect";
 import { Systems } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
-layer(Layer.fresh(testLayer))("MobyApi System tests", (it) => {
+layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi System tests", (it) => {
     it.effect("Should ping the docker daemon", () =>
         Effect.gen(function* () {
             const system = yield* Systems;

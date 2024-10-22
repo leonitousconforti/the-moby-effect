@@ -1,9 +1,9 @@
 import { expect, layer } from "@effect/vitest";
-import { Effect, Layer } from "effect";
+import { Duration, Effect, Layer } from "effect";
 import { Configs } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
-layer(Layer.fresh(testLayer))("MobyApi Configs tests", (it) => {
+layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Configs tests", (it) => {
     it.effect("Should see no configs", () =>
         Effect.gen(function* () {
             const configs = yield* Configs;

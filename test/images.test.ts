@@ -1,9 +1,9 @@
 import { expect, layer } from "@effect/vitest";
-import { Effect, Layer, Stream } from "effect";
+import { Duration, Effect, Layer, Stream } from "effect";
 import { Images } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
-layer(Layer.fresh(testLayer))("MobyApi Images tests", (it) => {
+layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Images tests", (it) => {
     it.effect(
         "Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)",
         () =>

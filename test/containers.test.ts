@@ -1,11 +1,11 @@
 import { expect, layer } from "@effect/vitest";
-import { Effect, Layer, Stream } from "effect";
+import { Duration, Effect, Layer, Stream } from "effect";
 import * as DockerEngine from "the-moby-effect/DockerEngine";
 import * as Convey from "the-moby-effect/MobyConvey";
 import { Containers } from "the-moby-effect/MobyEndpoints";
 import { testLayer } from "./shared.js";
 
-layer(Layer.fresh(testLayer))("MobyApi Containers tests", (it) => {
+layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Containers tests", (it) => {
     it.effect.skip(
         "Should create, list, pause, unpause, top, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)",
         () =>
