@@ -1,18 +1,17 @@
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
+import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer } from "effect";
 import { Engines, MobyConnection } from "the-moby-effect";
 
 const layer = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map((connectionOptionsToHost) =>
-        Engines.DindEngine.layerNodeJS({
+        Engines.DindEngine.layerUndici({
             connectionOptionsToHost,
-            exposeDindContainerBy: "socket" as const,
+            exposeDindContainerBy: "http" as const,
             dindBaseImage: "docker.io/library/docker:25-dind-rootless" as const,
         })
     ),
-    Layer.unwrapEffect,
-    Layer.provideMerge(NodeContext.layer)
+    Layer.unwrapEffect
 );
 
 Effect.gen(function* () {
