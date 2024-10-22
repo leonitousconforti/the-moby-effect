@@ -213,9 +213,7 @@ Effect.gen(function* () {
   const { Id: containerId } = yield* DockerEngine.runScoped({
     spec: {
       Image: image,
-      // Tty: true,
       OpenStdin: true,
-      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -234,7 +232,7 @@ Effect.gen(function* () {
   // Demux to a separate sinks
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     socket,
-    Stream.concat(Stream.make("a\n"), Stream.never),
+    Stream.make("a\n"),
     Sink.collectAll<string>(),
     Sink.collectAll<string>()
   )
@@ -288,7 +286,6 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
-      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -321,7 +318,7 @@ Effect.gen(function* () {
       stdout: stdoutSocket,
       stderr: stderrSocket
     },
-    Stream.concat(Stream.make("a\n"), Stream.never),
+    Stream.make("a\n"),
     Sink.collectAll<string>(),
     Sink.collectAll<string>()
   )
@@ -391,7 +388,7 @@ Effect.gen(function* () {
   // Demux to a separate sinks
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     { stdout: stdoutSocket },
-    Stream.concat(Stream.make("a\n"), Stream.never),
+    Stream.make("a\n"),
     Sink.collectAll<string>(),
     Sink.collectAll<string>()
   )
@@ -506,7 +503,6 @@ Effect.gen(function* () {
       Image: image,
       Tty: true,
       OpenStdin: true,
-      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -523,7 +519,7 @@ Effect.gen(function* () {
   assert.ok(MobyDemux.isRawStreamSocket(socket), "Expected a raw socket")
 
   // Demux to a single sink
-  const input = Stream.concat(Stream.make("a\n"), Stream.never)
+  const input = Stream.make("a\n")
   const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
   assert.strictEqual(Chunk.join(data, ""), "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n")
 
@@ -573,7 +569,6 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
-      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -590,7 +585,7 @@ Effect.gen(function* () {
   assert.ok(MobyDemux.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
 
   // Demux to a single sink
-  const input = Stream.concat(Stream.make("a\n"), Stream.never)
+  const input = Stream.make("a\n")
   const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
   assert.strictEqual(Chunk.join(data, ""), "d41d8cd98f00b204e9800998ecf8427e  -\nHi2\n")
 
@@ -641,7 +636,6 @@ Effect.gen(function* () {
       Image: image,
       // Tty: true,
       OpenStdin: true,
-      StdinOnce: true,
       Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"']
     }
   })
@@ -674,7 +668,7 @@ Effect.gen(function* () {
       stdout: stdoutSocket,
       stderr: stderrSocket
     },
-    Stream.concat(Stream.make("a\n"), Stream.never),
+    Stream.make("a\n"),
     Sink.collectAll<string>()
   )
 
@@ -753,7 +747,7 @@ Effect.gen(function* () {
   // Demux to a single sink
   const data = yield* MobyDemux.demuxToSingleSink(
     { stdout: stdoutSocket },
-    Stream.concat(Stream.make("a\n"), Stream.never),
+    Stream.make("a\n"),
     Sink.collectAll<string>()
   )
   assert.strictEqual(Chunk.join(data, ""), "Hi\n")

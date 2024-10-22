@@ -61,7 +61,7 @@ To demux multiple raw sockets, you should use {@link demuxRawSockets}
 
 ```ts
 export declare const demuxRawSocket: (<A1, E1, E2, R1, R2>(
-  source: Stream.Stream<string | Uint8Array, E1, R1>,
+  source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
   sink: Sink.Sink<A1, string, string, E2, R2>,
   options?: { encoding?: string | undefined } | undefined
 ) => (
@@ -69,7 +69,7 @@ export declare const demuxRawSocket: (<A1, E1, E2, R1, R2>(
 ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>) &
   (<A1, E1, E2, R1, R2>(
     socket: RawStreamSocket,
-    source: Stream.Stream<string | Uint8Array, E1, R1>,
+    source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
     sink: Sink.Sink<A1, string, string, E2, R2>,
     options?: { encoding?: string | undefined } | undefined
   ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>)

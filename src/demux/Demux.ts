@@ -82,7 +82,6 @@ export declare namespace Demux {
  *                 Image: image,
  *                 Tty: true,
  *                 OpenStdin: true,
- *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -104,7 +103,7 @@ export declare namespace Demux {
  *         );
  *
  *         // Demux to a single sink
- *         const input = Stream.concat(Stream.make("a\n"), Stream.never);
+ *         const input = Stream.make("a\n");
  *         const data = yield* MobyDemux.demuxToSingleSink(
  *             socket,
  *             input,
@@ -158,7 +157,6 @@ export declare namespace Demux {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
- *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -180,7 +178,7 @@ export declare namespace Demux {
  *         );
  *
  *         // Demux to a single sink
- *         const input = Stream.concat(Stream.make("a\n"), Stream.never);
+ *         const input = Stream.make("a\n");
  *         const data = yield* MobyDemux.demuxToSingleSink(
  *             socket,
  *             input,
@@ -235,7 +233,6 @@ export declare namespace Demux {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
- *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -280,7 +277,7 @@ export declare namespace Demux {
  *                 stdout: stdoutSocket,
  *                 stderr: stderrSocket,
  *             },
- *             Stream.concat(Stream.make("a\n"), Stream.never),
+ *             Stream.make("a\n"),
  *             Sink.collectAll<string>()
  *         );
  *
@@ -364,7 +361,7 @@ export declare namespace Demux {
  *         // Demux to a single sink
  *         const data = yield* MobyDemux.demuxToSingleSink(
  *             { stdout: stdoutSocket },
- *             Stream.concat(Stream.make("a\n"), Stream.never),
+ *             Stream.make("a\n"),
  *             Sink.collectAll<string>()
  *         );
  *         assert.strictEqual(Chunk.join(data, ""), "Hi\n");
@@ -458,11 +455,11 @@ export const demuxToSingleSink: {
         }
 
         if (isRawStreamSocket(socketOptions)) {
-            return demuxRawSocket(socketOptions, source, sink, options);
+            return demuxRawSocket(socketOptions, Stream.concat(source, Stream.never), sink, options);
         }
 
         if (isMultiplexedStreamSocket(socketOptions)) {
-            return demuxMultiplexedSocket(socketOptions, source, sink, options);
+            return demuxMultiplexedSocket(socketOptions, Stream.concat(source, Stream.never), sink, options);
         }
 
         return Function.absurd(socketOptions);
@@ -544,9 +541,7 @@ export const demuxUnknownToSingleSink: {
  *         const { Id: containerId } = yield* DockerEngine.runScoped({
  *             spec: {
  *                 Image: image,
- *                 // Tty: true,
  *                 OpenStdin: true,
- *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -571,7 +566,7 @@ export const demuxUnknownToSingleSink: {
  *         const [stdoutData, stderrData] =
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 socket,
- *                 Stream.concat(Stream.make("a\n"), Stream.never),
+ *                 Stream.make("a\n"),
  *                 Sink.collectAll<string>(),
  *                 Sink.collectAll<string>()
  *             );
@@ -625,7 +620,6 @@ export const demuxUnknownToSingleSink: {
  *                 Image: image,
  *                 // Tty: true,
  *                 OpenStdin: true,
- *                 StdinOnce: true,
  *                 Cmd: ["bash", "-c", 'read | md5sum && >&2 echo "Hi2"'],
  *             },
  *         });
@@ -671,7 +665,7 @@ export const demuxUnknownToSingleSink: {
  *                     stdout: stdoutSocket,
  *                     stderr: stderrSocket,
  *                 },
- *                 Stream.concat(Stream.make("a\n"), Stream.never),
+ *                 Stream.make("a\n"),
  *                 Sink.collectAll<string>(),
  *                 Sink.collectAll<string>()
  *             );
@@ -750,7 +744,7 @@ export const demuxUnknownToSingleSink: {
  *         const [stdoutData, stderrData] =
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 { stdout: stdoutSocket },
- *                 Stream.concat(Stream.make("a\n"), Stream.never),
+ *                 Stream.make("a\n"),
  *                 Sink.collectAll<string>(),
  *                 Sink.collectAll<string>()
  *             );
@@ -851,7 +845,7 @@ export const demuxToSeparateSinks: {
             return demuxRawSockets({ ...stdinTuple, ...stdoutTuple, ...stderrTuple });
         }
 
-        return demuxMultiplexedSocket(socketOptions, source, sink1, sink2, options);
+        return demuxMultiplexedSocket(socketOptions, Stream.concat(source, Stream.never), sink1, sink2, options);
     }
 );
 
@@ -968,7 +962,7 @@ export const demuxAnyToSeparateSinks: {
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     > => {
         if (isRawStreamSocket(socketOptions)) {
-            return demuxRawSocket(socketOptions, source, sink1, options);
+            return demuxRawSocket(socketOptions, Stream.concat(source, Stream.never), sink1, options);
         }
 
         if (isMultiplexedStreamSocket(socketOptions)) {

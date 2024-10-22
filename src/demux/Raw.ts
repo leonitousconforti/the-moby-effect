@@ -93,7 +93,7 @@ export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.H
 export const demuxRawSocket = Function.dual<
     // Data-last signature.
     <A1, E1, E2, R1, R2>(
-        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ) => (
@@ -102,7 +102,7 @@ export const demuxRawSocket = Function.dual<
     // Data-first signature.
     <A1, E1, E2, R1, R2>(
         socket: RawStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ) => Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
@@ -110,7 +110,7 @@ export const demuxRawSocket = Function.dual<
     (arguments_) => isRawStreamSocket(arguments_[0]),
     <A1, E1, E2, R1, R2>(
         socket: RawStreamSocket,
-        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, string, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<A1, E1 | E2 | Socket.SocketError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
@@ -211,7 +211,7 @@ export const demuxRawSockets: {
     (arguments_) =>
         !(
             arguments_[0][Stream.StreamTypeId] !== undefined ||
-            ("stdin" in arguments_[0] && arguments_[0]["stdin"][Stream.StreamTypeId] !== undefined)
+            ("stdin" in arguments_[0] && arguments_[0]["stdin"]?.[Stream.StreamTypeId] !== undefined)
         ),
     <
         O1 extends readonly [Stream.Stream<string | Uint8Array, unknown, unknown>, RawStreamSocket],
@@ -254,21 +254,17 @@ export const demuxRawSockets: {
         type S1 = Stream.Stream<string | Uint8Array, E1, R1>;
         type S2 = Sink.Sink<A1, string, string, E2, R2>;
         type S3 = Sink.Sink<A2, string, string, E3, R3>;
-        type StdinEffect = Effect.Effect<void, E1 | Socket.SocketError, Exclude<R1, Scope.Scope>>;
-        type StdoutEffect = Effect.Effect<A1, E2 | Socket.SocketError, Exclude<R2, Scope.Scope>>;
-        type StderrEffect = Effect.Effect<A2, E3 | Socket.SocketError, Exclude<R3, Scope.Scope>>;
-
-        type CombinedInput =
-            | { stdin: O1; stdout?: never; stderr?: never }
-            | { stdin?: never; stdout: O2; stderr?: never }
-            | { stdin?: never; stdout?: never; stderr: O3 }
-            | { stdin: O1; stdout: O2; stderr?: never }
-            | { stdin: O1; stdout?: never; stderr: O3 }
-            | { stdin?: never; stdout: O2; stderr: O3 }
-            | { stdin: O1; stdout: O2; stderr: O3 };
+        type CombinedInput = {
+            stdin?: readonly [S1, RawStreamSocket];
+            stdout?: readonly [RawStreamSocket, S2];
+            stderr?: readonly [RawStreamSocket, S3];
+        };
 
         const willMerge = (sourceOrIoOrOptions as S1 | undefined)?.[Stream.StreamTypeId] !== undefined;
-        const isIoObject = "stdin" in sockets && isRawStreamSocket(sockets["stdin"]);
+        const isIoObject =
+            Predicate.isNotUndefined(sourceOrIoOrOptions) &&
+            "stdin" in sourceOrIoOrOptions &&
+            sourceOrIoOrOptions["stdin"]?.[Stream.StreamTypeId] !== undefined;
 
         // Single sink case
         if (willMerge) {
@@ -278,7 +274,7 @@ export const demuxRawSockets: {
 
             const transformToStream = (socket: RawStreamSocket): Stream.Stream<string, Socket.SocketError, never> =>
                 Function.pipe(
-                    Stream.never,
+                    Stream.empty,
                     Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
                     Stream.decodeText(options?.encoding)
                 );
@@ -288,11 +284,15 @@ export const demuxRawSockets: {
                 Predicate.isNotUndefined(stderr) ? transformToStream(stderr) : Stream.empty
             );
 
-            const runStdin: StdinEffect = Predicate.isNotUndefined(stdin)
-                ? demuxRawSocket(stdin, sourceStream, Sink.drain, options)
+            const runMerged = Stream.run(mergedStream, sinkForBoth);
+            const runStdin = Predicate.isNotUndefined(stdin)
+                ? demuxRawSocket(
+                      stdin,
+                      Stream.concat(sourceStream, Stream.make(new Socket.CloseEvent())),
+                      Sink.drain,
+                      options
+                  )
                 : Effect.void;
-
-            const runMerged: StdoutEffect = Stream.run(mergedStream, sinkForBoth);
 
             return Effect.map(
                 Effect.all({ ranStdin: runStdin, ranMerged: runMerged }, { concurrency: 2 }),
@@ -300,43 +300,35 @@ export const demuxRawSockets: {
             );
         }
 
-        // Multiple sinks case, regular input
-        if (isIoObject) {
-            const { stderr, stdin, stdout } = sockets as Demux.StdinStdoutStderrSocketOptions;
-            const io = sourceOrIoOrOptions as { stdin: S1; stdout: S2; stderr: S3 };
-
-            const runStdin: StdinEffect = Predicate.isNotUndefined(stdin)
-                ? demuxRawSocket(stdin, io.stdin, Sink.drain, options)
-                : Stream.run(io.stdin, Sink.drain);
-
-            const runStdout: StdoutEffect = Predicate.isNotUndefined(stdout)
-                ? demuxRawSocket(stdout, Stream.never, io.stdout, options)
-                : Stream.run(Stream.empty, io.stdout);
-
-            const runStderr: StderrEffect = Predicate.isNotUndefined(stderr)
-                ? demuxRawSocket(stderr, Stream.never, io.stderr, options)
-                : Stream.run(Stream.empty, io.stderr);
-
-            return Effect.map(
-                Effect.all({ ranStdin: runStdin, ranStdout: runStdout, ranStderr: runStderr }, { concurrency: 3 }),
-                ({ ranStderr, ranStdout }) => compressDemuxOutput(Tuple.make(ranStdout, ranStderr))
+        // Multiple sinks case, combined input
+        if (!isIoObject) {
+            const { stderr, stdin, stdout } = sockets as CombinedInput;
+            return demuxRawSockets(
+                { stdin: stdin?.[1], stdout: stdout?.[0], stderr: stderr?.[0] } as Demux.StdinStdoutStderrSocketOptions,
+                {
+                    stdin: (stdin?.[0] ?? Stream.empty) as S1,
+                    stdout: (stdout?.[1] ?? Sink.drain) as S2,
+                    stderr: (stderr?.[1] ?? Sink.drain) as S3,
+                },
+                options
             );
         }
 
-        // Multiple sinks case, combined input
-        const { stderr, stdin, stdout } = sockets as CombinedInput;
+        // Multiple sinks case, regular input
+        const { stderr, stdin, stdout } = sockets as Demux.StdinStdoutStderrSocketOptions;
+        const io = sourceOrIoOrOptions as { stdin: S1; stdout: S2; stderr: S3 };
 
-        const runStdin: StdinEffect = Predicate.isNotUndefined(stdin)
-            ? demuxRawSocket(stdin[1], stdin[0] as S1, Sink.drain, options)
-            : Effect.void;
+        const runStdin = Predicate.isNotUndefined(stdin)
+            ? demuxRawSocket(stdin, Stream.concat(io.stdin, Stream.make(new Socket.CloseEvent())), Sink.drain, options)
+            : Stream.run(io.stdin, Sink.drain);
 
-        const runStdout: StdoutEffect = Predicate.isNotUndefined(stdout)
-            ? demuxRawSocket(stdout[0], Stream.never, stdout[1] as S2, options)
-            : Function.unsafeCoerce(Effect.void);
+        const runStdout = Predicate.isNotUndefined(stdout)
+            ? demuxRawSocket(stdout, Stream.never, io.stdout, options)
+            : Stream.run(Stream.empty, io.stdout);
 
-        const runStderr: StderrEffect = Predicate.isNotUndefined(stderr)
-            ? demuxRawSocket(stderr[0], Stream.never, stderr[1] as S3, options)
-            : Function.unsafeCoerce(Effect.void);
+        const runStderr = Predicate.isNotUndefined(stderr)
+            ? demuxRawSocket(stderr, Stream.never, io.stderr, options)
+            : Stream.run(Stream.empty, io.stderr);
 
         return Effect.map(
             Effect.all({ ranStdin: runStdin, ranStdout: runStdout, ranStderr: runStderr }, { concurrency: 3 }),
