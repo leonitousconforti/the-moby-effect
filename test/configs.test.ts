@@ -41,13 +41,12 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Configs
             expect(configsListResponse).toBeInstanceOf(Array);
             expect(configsListResponse).toHaveLength(1);
             const id = configsListResponse[0]!.ID;
-            const configInspectResponse = yield* configs.inspect({ id });
+            const configInspectResponse = yield* configs.inspect(id);
             expect(configInspectResponse).toBeDefined();
             expect(configInspectResponse.Spec).toBeDefined();
             expect(configInspectResponse.Spec?.Labels).toBeDefined();
             expect(configInspectResponse.Spec?.Labels?.["testLabel"]).toBe("test");
-            yield* configs.update({
-                id,
+            yield* configs.update(id, {
                 version: configInspectResponse.Version!.Index!,
                 spec: { ...configInspectResponse.Spec, Labels: { testLabel: "test2" } },
             });
@@ -70,7 +69,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Configs
             expect(configsListResponse).toBeInstanceOf(Array);
             expect(configsListResponse).toHaveLength(1);
             const id: string = configsListResponse[0]!.ID;
-            yield* configs.delete({ id });
+            yield* configs.delete(id);
         })
     );
 

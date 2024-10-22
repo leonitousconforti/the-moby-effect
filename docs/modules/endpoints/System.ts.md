@@ -6,8 +6,6 @@ parent: Modules
 
 ## System overview
 
-Systems service
-
 Added in v1.0.0
 
 ---
@@ -65,8 +63,6 @@ Added in v1.0.0
 # Tags
 
 ## Systems (class)
-
-Systems service
 
 **Signature**
 

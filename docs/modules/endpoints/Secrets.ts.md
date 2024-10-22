@@ -6,7 +6,8 @@ parent: Modules
 
 ## Secrets overview
 
-Secrets service
+Secrets are sensitive data that can be used by services. Swarm mode must be
+enabled for these endpoints to work.
 
 Added in v1.0.0
 
@@ -50,7 +51,8 @@ Added in v1.0.0
 
 ## SecretsLayer
 
-Configs layer that depends on the MobyConnectionAgent
+Secrets are sensitive data that can be used by services. Swarm mode must be
+enabled for these endpoints to work.
 
 **Signature**
 
@@ -68,7 +70,8 @@ Added in v1.0.0
 
 ## Secrets (class)
 
-Secrets service
+Secrets are sensitive data that can be used by services. Swarm mode must be
+enabled for these endpoints to work.
 
 **Signature**
 

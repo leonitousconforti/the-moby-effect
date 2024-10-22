@@ -1,7 +1,6 @@
 /**
- * Systems service
- *
  * @since 1.0.0
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -64,10 +63,9 @@ export class SystemsError extends PlatformError.TypeIdError(SystemsErrorTypeId, 
 }
 
 /**
- * Systems service
- *
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System
  */
 export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoints/System", {
     accessors: false,
@@ -77,7 +75,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L324-L339
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemAuth */
         const auth_ = (options: RegistryAuthConfig): Effect.Effect<Readonly<AuthResponse>, SystemsError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/auth"),
@@ -88,7 +86,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L60-L110
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemInfo */
         const info_ = (): Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/info"),
@@ -98,7 +96,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        // https://github.com/moby/moby/blob/4ea464d1a763b77d0a82ba3c105108ff536da826/api/server/router/system/system_routes.go#L112-L119
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemVersion */
         const version_ = (): Effect.Effect<Readonly<SystemVersionResponse>, SystemsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/version"),
@@ -108,7 +106,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L31-L49
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemPing */
         const ping_ = (): Effect.Effect<"OK", SystemsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/_ping"),
@@ -119,7 +117,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L31-L49
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemPingHead */
         const pingHead_ = (): Effect.Effect<void, SystemsError, never> =>
             Function.pipe(
                 HttpClientRequest.head("/_ping"),
@@ -129,7 +127,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L225-L303
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemEvents */
         const events_ = (
             options?:
                 | {
@@ -171,7 +169,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Stream.mapError((cause) => new SystemsError({ method: "events", cause }))
             );
 
-        // https://github.com/moby/moby/blob/8b79278316b532d396048bc8c2fa015a85d53a53/api/server/router/system/system_routes.go#L117-L213
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemDataUsage */
         const dataUsage_ = (
             options?:
                 | { readonly type?: Array<"container" | "image" | "volume" | "build-cache"> | undefined }
@@ -201,5 +199,6 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
 /**
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System
  */
 export const SystemsLayer: Layer.Layer<Systems, never, HttpClient.HttpClient> = Systems.Default;

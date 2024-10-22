@@ -6,7 +6,8 @@ parent: Modules
 
 ## Tasks overview
 
-Tasks service
+A task is a container running on a swarm. It is the atomic scheduling unit of
+swarm. Swarm mode must be enabled for these endpoints to work.
 
 Added in v1.0.0
 
@@ -50,6 +51,9 @@ Added in v1.0.0
 
 ## TasksLayer
 
+A task is a container running on a swarm. It is the atomic scheduling unit of
+swarm. Swarm mode must be enabled for these endpoints to work.
+
 **Signature**
 
 ```ts
@@ -66,7 +70,8 @@ Added in v1.0.0
 
 ## Tasks (class)
 
-Tasks service
+A task is a container running on a swarm. It is the atomic scheduling unit of
+swarm. Swarm mode must be enabled for these endpoints to work.
 
 **Signature**
 

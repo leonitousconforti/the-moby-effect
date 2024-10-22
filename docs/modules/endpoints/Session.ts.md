@@ -6,8 +6,6 @@ parent: Modules
 
 ## Session overview
 
-Sessions service
-
 Added in v1.0.0
 
 ---
@@ -50,8 +48,6 @@ Added in v1.0.0
 
 ## SessionsLayer
 
-Configs layer that depends on the MobyConnectionAgent
-
 **Signature**
 
 ```ts
@@ -67,8 +63,6 @@ Added in v1.0.0
 # Tags
 
 ## Sessions (class)
-
-Sessions service
 
 **Signature**
 

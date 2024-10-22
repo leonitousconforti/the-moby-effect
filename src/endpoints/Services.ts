@@ -1,7 +1,9 @@
 /**
- * Services service
+ * Services are the definitions of tasks to run on a swarm. Swarm mode must be
+ * enabled for these endpoints to work.
  *
  * @since 1.0.0
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -61,10 +63,12 @@ export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId
 }
 
 /**
- * Services service
+ * Services are the definitions of tasks to run on a swarm. Swarm mode must be
+ * enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service
  */
 export class Services extends Effect.Service<Services>()("@the-moby-effect/endpoints/Services", {
     accessors: false,
@@ -74,6 +78,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceList */
         const list_ = (
             options?: { readonly filters?: string; readonly status?: boolean } | undefined
         ): Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never> =>
@@ -90,6 +95,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceCreate */
         const create_ = (options: {
             readonly body: SwarmServiceSpec;
             readonly "X-Registry-Auth"?: string;
@@ -104,6 +110,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceDelete */
         const delete_ = (options: { readonly id: string }): Effect.Effect<void, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/services/${encodeURIComponent(options.id)}`),
@@ -113,6 +120,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceInspect */
         const inspect_ = (options: {
             readonly id: string;
             readonly insertDefaults?: boolean;
@@ -126,6 +134,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceUpdate */
         const update_ = (options: {
             readonly id: string;
             readonly body: SwarmServiceSpec;
@@ -169,6 +178,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceLogs */
         const logs_ = (options: {
             readonly id: string;
             readonly details?: boolean;
@@ -206,9 +216,11 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
 }) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
+ * Services are the definitions of tasks to run on a swarm. Swarm mode must be
+ * enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service
  */
 export const ServicesLayer: Layer.Layer<Services, never, HttpClient.HttpClient> = Services.Default;

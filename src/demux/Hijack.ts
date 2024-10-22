@@ -18,6 +18,27 @@ import {
 import { makeRawStreamSocket, RawStreamSocket, responseIsRawStreamSocketResponse } from "./Raw.js";
 
 /**
+ * Hijacks an http response into a socket.
+ *
+ * FIXME: this function relies on a hack to expose the underlying tcp socket
+ * from the http client response. This will only work in NodeJs, not tested in
+ * Bun/Deno yet, and will never work in the browser.
+ *
+ * @since 1.0.0
+ * @category Transformations
+ */
+export const hijackResponseUnsafe = (
+    response: HttpClientResponse.HttpClientResponse
+): Effect.Effect<Socket.Socket, Socket.SocketError, never> =>
+    Effect.flatMap(
+        Effect.promise(() => import("@effect/platform-node/NodeSocket")),
+        (nodeSocketLazy) => {
+            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
+            return nodeSocketLazy.fromDuplex(Effect.sync(() => socket));
+        }
+    );
+
+/**
  * Transforms an http response into a multiplexed stream socket. If the response
  * is not a multiplexed stream socket, then an error will be returned.
  *
@@ -30,20 +51,18 @@ import { makeRawStreamSocket, RawStreamSocket, responseIsRawStreamSocketResponse
  */
 export const responseToMultiplexedStreamSocketOrFailUnsafe = (
     response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> =>
-    Effect.gen(function* () {
-        if (!responseIsMultiplexedStreamSocketResponse(response)) {
-            return yield* new Socket.SocketGenericError({
+): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> => {
+    if (!responseIsMultiplexedStreamSocketResponse(response)) {
+        return Effect.fail(
+            new Socket.SocketGenericError({
                 reason: "Read",
                 cause: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
-            });
-        }
+            })
+        );
+    }
 
-        const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-        const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
-        const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-        return makeMultiplexedStreamSocket(effectSocket);
-    });
+    return Effect.map(hijackResponseUnsafe(response), makeMultiplexedStreamSocket);
+};
 
 /**
  * Transforms an http response into a raw stream socket. If the response is not
@@ -58,20 +77,18 @@ export const responseToMultiplexedStreamSocketOrFailUnsafe = (
  */
 export const responseToRawStreamSocketOrFailUnsafe = (
     response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<RawStreamSocket, Socket.SocketError, never> =>
-    Effect.gen(function* () {
-        if (!responseIsRawStreamSocketResponse(response)) {
-            return yield* new Socket.SocketGenericError({
+): Effect.Effect<RawStreamSocket, Socket.SocketError, never> => {
+    if (!responseIsRawStreamSocketResponse(response)) {
+        return Effect.fail(
+            new Socket.SocketGenericError({
                 reason: "Read",
                 cause: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
-            });
-        }
+            })
+        );
+    }
 
-        const NodeSocketLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeSocket"));
-        const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
-        const effectSocket: Socket.Socket = yield* NodeSocketLazy.fromDuplex(Effect.sync(() => socket));
-        return makeRawStreamSocket(effectSocket);
-    });
+    return Effect.map(hijackResponseUnsafe(response), makeRawStreamSocket);
+};
 
 /**
  * Transforms an http response into a multiplexed stream socket or a raw stream

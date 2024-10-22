@@ -6,8 +6,6 @@ parent: Modules
 
 ## Distribution overview
 
-Distributions service
-
 Added in v1.0.0
 
 ---

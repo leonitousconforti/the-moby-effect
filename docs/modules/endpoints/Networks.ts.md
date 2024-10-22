@@ -6,8 +6,6 @@ parent: Modules
 
 ## Networks overview
 
-Networks service
-
 Added in v1.0.0
 
 ---

@@ -6,8 +6,6 @@ parent: Modules
 
 ## Plugins overview
 
-Plugins service
-
 Added in v1.0.0
 
 ---

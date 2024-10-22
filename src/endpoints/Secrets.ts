@@ -1,7 +1,9 @@
 /**
- * Secrets service
+ * Secrets are sensitive data that can be used by services. Swarm mode must be
+ * enabled for these endpoints to work.
  *
  * @since 1.0.0
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -55,10 +57,12 @@ export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, 
 }
 
 /**
- * Secrets service
+ * Secrets are sensitive data that can be used by services. Swarm mode must be
+ * enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret
  */
 export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoints/Secrets", {
     accessors: false,
@@ -68,6 +72,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretList */
         const list_ = (
             options?: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never> =>
@@ -83,6 +88,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretCreate */
         const create_ = (
             options: SwarmSecretSpec
         ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
@@ -95,6 +101,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretDelete */
         const delete_ = (options: { readonly id: string }): Effect.Effect<void, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/secrets/${encodeURIComponent(options.id)}`),
@@ -104,6 +111,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretInspect */
         const inspect_ = (options: {
             readonly id: string;
         }): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
@@ -115,6 +123,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretUpdate */
         const update_ = (options: {
             readonly id: string;
             readonly spec: SwarmSecretSpec;
@@ -141,9 +150,11 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
 }) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
+ * Secrets are sensitive data that can be used by services. Swarm mode must be
+ * enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret
  */
 export const SecretsLayer: Layer.Layer<Secrets, never, HttpClient.HttpClient> = Secrets.Default;

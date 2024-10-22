@@ -6,8 +6,6 @@ parent: Modules
 
 ## Execs overview
 
-Execs service
-
 Added in v1.0.0
 
 ---

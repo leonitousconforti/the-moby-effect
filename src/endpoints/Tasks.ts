@@ -1,7 +1,9 @@
 /**
- * Tasks service
+ * A task is a container running on a swarm. It is the atomic scheduling unit of
+ * swarm. Swarm mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -47,7 +49,7 @@ export const isTasksError = (u: unknown): u is TasksError => Predicate.hasProper
  */
 export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "TasksError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -55,10 +57,12 @@ export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "Tas
 }
 
 /**
- * Tasks service
+ * A task is a container running on a swarm. It is the atomic scheduling unit of
+ * swarm. Swarm mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task
  */
 export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/Tasks", {
     accessors: false,
@@ -68,6 +72,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskList */
         const list_ = (
             options?:
                 | {
@@ -94,6 +99,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskInspect */
         const inspect_ = (options: { readonly id: string }): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}`),
@@ -103,6 +109,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskLogs */
         const logs_ = (options: {
             readonly id: string;
             readonly details?: boolean;
@@ -137,7 +144,11 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
 }) {}
 
 /**
+ * A task is a container running on a swarm. It is the atomic scheduling unit of
+ * swarm. Swarm mode must be enabled for these endpoints to work.
+ *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task
  */
 export const TasksLayer: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.Default;

@@ -6,7 +6,8 @@ parent: Modules
 
 ## Nodes overview
 
-Nodes service
+Nodes are instances of the Engine participating in a swarm. Swarm mode must
+be enabled for these endpoints to work.
 
 Added in v1.0.0
 
@@ -49,8 +50,6 @@ Added in v1.0.0
 # Layers
 
 ## NodesLayer
-
-Configs layer that depends on the MobyConnectionAgent
 
 **Signature**
 

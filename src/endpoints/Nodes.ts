@@ -1,5 +1,6 @@
 /**
- * Nodes service
+ * Nodes are instances of the Engine participating in a swarm. Swarm mode must
+ * be enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
@@ -60,6 +61,7 @@ export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "Nod
  *
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
  */
 export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/Nodes", {
     accessors: false,
@@ -69,6 +71,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeList */
         const list_ = (
             options?:
                 | {
@@ -95,6 +98,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeDelete */
         const delete_ = (options: {
             readonly id: string;
             readonly force?: boolean | undefined;
@@ -108,6 +112,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeInspect */
         const inspect_ = (options: { readonly id: string }): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/nodes/${encodeURIComponent(options.id)}`),
@@ -117,6 +122,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeUpdate */
         const update_ = (options: {
             readonly body: SwarmNodeSpec;
             readonly id: string;
@@ -142,9 +148,8 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
 }) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
- *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
  */
 export const NodesLayer: Layer.Layer<Nodes, never, HttpClient.HttpClient> = Nodes.Default;

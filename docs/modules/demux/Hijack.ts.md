@@ -19,6 +19,8 @@ Added in v1.0.0
   - [responseToMultiplexedStreamSocketOrFailUnsafe](#responsetomultiplexedstreamsocketorfailunsafe)
   - [responseToRawStreamSocketOrFailUnsafe](#responsetorawstreamsocketorfailunsafe)
   - [responseToStreamingSocketOrFailUnsafe](#responsetostreamingsocketorfailunsafe)
+- [Transformations](#transformations)
+  - [hijackResponseUnsafe](#hijackresponseunsafe)
 
 ---
 
@@ -78,6 +80,26 @@ Bun/Deno yet, and will never work in the browser.
 export declare const responseToStreamingSocketOrFailUnsafe: (
   response: HttpClientResponse.HttpClientResponse
 ) => Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never>
+```
+
+Added in v1.0.0
+
+# Transformations
+
+## hijackResponseUnsafe
+
+Hijacks an http response into a socket.
+
+FIXME: this function relies on a hack to expose the underlying tcp socket
+from the http client response. This will only work in NodeJs, not tested in
+Bun/Deno yet, and will never work in the browser.
+
+**Signature**
+
+```ts
+export declare const hijackResponseUnsafe: (
+  response: HttpClientResponse.HttpClientResponse
+) => Effect.Effect<Socket.Socket, Socket.SocketError, never>
 ```
 
 Added in v1.0.0

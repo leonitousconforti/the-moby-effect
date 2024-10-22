@@ -1,10 +1,8 @@
 /**
- * Sessions service
- *
  * @since 1.0.0
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session
  */
 
-import * as NodeSocket from "@effect/platform-node/NodeSocket";
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientError from "@effect/platform/HttpClientError";
@@ -16,8 +14,7 @@ import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 
-import { HttpClientResponse } from "@effect/platform";
-import { IExposeSocketOnEffectClientResponseHack } from "../platforms/Node.js";
+import { hijackResponseUnsafe } from "../demux/Hijack.js";
 
 /**
  * @since 1.0.0
@@ -45,7 +42,7 @@ export const isSessionsError = (u: unknown): u is SessionsError => Predicate.has
  */
 export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId, "SessionsError")<{
     method: string;
-    cause: HttpClientError.HttpClientError;
+    cause: HttpClientError.HttpClientError | Socket.SocketError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -53,17 +50,17 @@ export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId
 }
 
 /**
- * Sessions service
- *
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session
  */
 export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpoints/Session", {
     accessors: false,
     dependencies: [],
 
     effect: Effect.gen(function* () {
-        const client = yield* HttpClient.HttpClient;
+        const defaultClient = yield* HttpClient.HttpClient;
+        const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
 
         /**
          * Start a new interactive session with a server. Session allows server
@@ -74,6 +71,8 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
          * Upgrade: h2c Connection: Upgrade` The Docker daemon responds with a
          * `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
          * UPGRADED Connection: Upgrade Upgrade: h2c`
+         *
+         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session/operation/Session
          */
         const session_ = (): Effect.Effect<Socket.Socket, SessionsError, Scope.Scope> =>
             Function.pipe(
@@ -81,9 +80,7 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
                 HttpClientRequest.setHeader("Upgrade", "h2c"),
                 HttpClientRequest.setHeader("Connection", "Upgrade"),
                 client.execute,
-                Effect.flatMap(HttpClientResponse.filterStatus((status) => status === 101)),
-                Effect.map((response) => (response as IExposeSocketOnEffectClientResponseHack).source.socket),
-                Effect.flatMap((socket) => NodeSocket.fromDuplex(Effect.sync(() => socket))),
+                Effect.flatMap(hijackResponseUnsafe),
                 Effect.mapError((cause) => new SessionsError({ method: "session", cause }))
             );
 
@@ -92,9 +89,8 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
 }) {}
 
 /**
- * Configs layer that depends on the MobyConnectionAgent
- *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session
  */
 export const SessionsLayer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;

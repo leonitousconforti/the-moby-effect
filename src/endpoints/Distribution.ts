@@ -1,6 +1,4 @@
 /**
- * Distributions service
- *
  * @since 1.0.0
  * @see https://docs.docker.com/engine/api/v1.45/#tag/Distribution
  */
@@ -46,7 +44,7 @@ export const isDistributionsError = (u: unknown): u is DistributionsError =>
  */
 export class DistributionsError extends PlatformError.TypeIdError(DistributionsErrorTypeId, "DistributionsError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -56,6 +54,7 @@ export class DistributionsError extends PlatformError.TypeIdError(DistributionsE
 /**
  * @since 1.0.0
  * @category Tags
+ * @see https://docs.docker.com/engine/api/v1.45/#tag/Distribution
  */
 export class Distributions extends Effect.Service<Distributions>()("@the-moby-effect/endpoints/Distributions", {
     accessors: false,
@@ -65,6 +64,7 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
 
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Distribution/operation/DistributionInspect */
         const inspect_ = (options: {
             readonly name: string;
         }): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
@@ -83,5 +83,6 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
 /**
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/engine/api/v1.45/#tag/Distribution
  */
 export const DistributionsLayer: Layer.Layer<Distributions, never, HttpClient.HttpClient> = Distributions.Default;

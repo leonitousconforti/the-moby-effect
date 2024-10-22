@@ -6,7 +6,8 @@ parent: Modules
 
 ## Services overview
 
-Services service
+Services are the definitions of tasks to run on a swarm. Swarm mode must be
+enabled for these endpoints to work.
 
 Added in v1.0.0
 
@@ -50,7 +51,8 @@ Added in v1.0.0
 
 ## ServicesLayer
 
-Configs layer that depends on the MobyConnectionAgent
+Services are the definitions of tasks to run on a swarm. Swarm mode must be
+enabled for these endpoints to work.
 
 **Signature**
 
@@ -68,7 +70,8 @@ Added in v1.0.0
 
 ## Services (class)
 
-Services service
+Services are the definitions of tasks to run on a swarm. Swarm mode must be
+enabled for these endpoints to work.
 
 **Signature**
 

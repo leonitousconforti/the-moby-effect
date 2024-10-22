@@ -6,8 +6,6 @@ parent: Modules
 
 ## Images overview
 
-Images service
-
 Added in v1.0.0
 
 ---

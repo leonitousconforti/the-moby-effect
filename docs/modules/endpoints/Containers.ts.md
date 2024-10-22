@@ -6,8 +6,6 @@ parent: Modules
 
 ## Containers overview
 
-Create and manage containers
-
 Added in v1.0.0
 
 ---

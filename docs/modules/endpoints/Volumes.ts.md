@@ -6,8 +6,6 @@ parent: Modules
 
 ## Volumes overview
 
-Volumes service
-
 Added in v1.0.0
 
 ---
@@ -65,8 +63,6 @@ Added in v1.0.0
 # Tags
 
 ## Volumes (class)
-
-Volumes service
 
 **Signature**
 

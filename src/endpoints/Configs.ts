@@ -3,7 +3,7 @@
  * mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -63,7 +63,7 @@ export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, 
  *
  * @since 1.0.0
  * @category Services
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config
  */
 export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoints/Configs", {
     accessors: false,
@@ -73,7 +73,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigList */
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigList */
         const list_ = (
             options?:
                 | {
@@ -95,7 +95,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigCreate */
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigCreate */
         const create_ = (
             options: typeof SwarmConfigSpec.Encoded
         ): Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never> =>
@@ -109,45 +109,45 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigDelete */
-        const delete_ = (options: { readonly id: string }): Effect.Effect<void, ConfigsError, never> =>
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigDelete */
+        const delete_ = (id: string): Effect.Effect<void, ConfigsError, never> =>
             Function.pipe(
-                HttpClientRequest.del(`/configs/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.del(`/configs/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigInspect */
-        const inspect_ = (options: {
-            readonly id: string;
-        }): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigInspect */
+        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/configs/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.get(`/configs/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfig)),
                 Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause })),
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config/operation/ConfigUpdate */
-        const update_ = (options: {
-            readonly id: string;
-            /**
-             * The spec of the config to update. Currently, only the Labels
-             * field can be updated. All other fields must remain unchanged from
-             * the ConfigInspect response values.
-             */
-            readonly spec: SwarmConfigSpec;
-            /**
-             * The version number of the config object being updated. This is
-             * required to avoid conflicting writes.
-             */
-            readonly version: number;
-        }): Effect.Effect<void, ConfigsError, never> =>
+        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigUpdate */
+        const update_ = (
+            id: string,
+            options: {
+                /**
+                 * The spec of the config to update. Currently, only the Labels
+                 * field can be updated. All other fields must remain unchanged
+                 * from the ConfigInspect response values.
+                 */
+                readonly spec: SwarmConfigSpec;
+                /**
+                 * The version number of the config object being updated. This
+                 * is required to avoid conflicting writes.
+                 */
+                readonly version: number;
+            }
+        ): Effect.Effect<void, ConfigsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/configs/${encodeURIComponent(options.id)}/update`),
+                HttpClientRequest.post(`/configs/${encodeURIComponent(id)}/update`),
                 maybeAddQueryParameter("version", Option.some(options.version)),
                 HttpClientRequest.schemaBodyJson(SwarmConfigSpec)(options.spec),
                 Effect.flatMap(client.execute),
@@ -172,6 +172,6 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
  *
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.46/#tag/Config
+ * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config
  */
 export const ConfigsLayer: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.Default;

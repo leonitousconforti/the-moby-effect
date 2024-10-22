@@ -6,7 +6,8 @@ parent: Modules
 
 ## Swarm overview
 
-Swarms service
+Engines can be clustered together in a swarm. Refer to the swarm mode
+documentation for more information.
 
 Added in v1.0.0
 
@@ -50,7 +51,8 @@ Added in v1.0.0
 
 ## SwarmLayer
 
-Configs layer that depends on the MobyConnectionAgent
+Engines can be clustered together in a swarm. Refer to the swarm mode
+documentation for more information.
 
 **Signature**
 
@@ -68,7 +70,8 @@ Added in v1.0.0
 
 ## Swarm (class)
 
-Swarms service
+Engines can be clustered together in a swarm. Refer to the swarm mode
+documentation for more information.
 
 **Signature**
 
