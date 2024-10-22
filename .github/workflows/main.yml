@@ -120,13 +120,17 @@ jobs:
 
       - if: startsWith(matrix.platform-variant, 'bun')
         uses: ./.github/actions/setup-bun
-      - if: startsWith(matrix.platform-variant, 'bun')
+      - if: startsWith(matrix.platform-variant, 'bun') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: bun run test
+      - if: startsWith(matrix.platform-variant, 'bun') && startsWith(matrix.docker-engine-connection-variant, 'socket')
+        run: sudo -E bun run test
 
       - if: startsWith(matrix.platform-variant, 'deno')
         uses: ./.github/actions/setup-deno
-      - if: startsWith(matrix.platform-variant, 'deno')
+      - if: startsWith(matrix.platform-variant, 'deno') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: deno task test --watch=false
+      - if: startsWith(matrix.platform-variant, 'deno') && startsWith(matrix.docker-engine-connection-variant, 'socket')
+        run: sudo -E deno task test --watch=false
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
