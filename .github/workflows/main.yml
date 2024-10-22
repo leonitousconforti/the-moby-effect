@@ -113,8 +113,10 @@ jobs:
 
       - if: startsWith(matrix.platform-variant, 'node')
         uses: ./.github/actions/setup-node
-      - if: startsWith(matrix.platform-variant, 'node')
+      - if: startsWith(matrix.platform-variant, 'node') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: pnpm test
+      - if: startsWith(matrix.platform-variant, 'node') && startsWith(matrix.docker-engine-connection-variant, 'socket')
+        run: sudo -E pnpm test
 
       - if: startsWith(matrix.platform-variant, 'bun')
         uses: ./.github/actions/setup-bun
