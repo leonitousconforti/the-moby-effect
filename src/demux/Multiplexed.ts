@@ -271,12 +271,7 @@ export const demuxMultiplexedSocket: {
             Stream.map(({ messageBuffer, messageType }) =>
                 Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))
             ),
-            Stream.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema)),
-            Stream.filter(
-                ([messageType]) =>
-                    messageType === MultiplexedStreamSocketHeaderType.Stdout ||
-                    messageType === MultiplexedStreamSocketHeaderType.Stderr
-            )
+            Stream.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema))
         );
 
         if (!willPartition) {
@@ -290,7 +285,9 @@ export const demuxMultiplexedSocket: {
 
         return Function.pipe(
             untilPartition,
-            Stream.partition(([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stdout, options),
+            Stream.partition(([messageType]) => messageType !== MultiplexedStreamSocketHeaderType.Stderr, {
+                bufferSize: options?.bufferSize,
+            }),
             Effect.map(
                 Tuple.mapBoth({
                     onFirst: Function.flow(
