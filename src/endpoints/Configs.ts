@@ -3,7 +3,7 @@
  * mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -63,7 +63,7 @@ export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, 
  *
  * @since 1.0.0
  * @category Services
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
  */
 export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoints/Configs", {
     accessors: false,
@@ -73,7 +73,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigList */
         const list_ = (
             options?:
                 | {
@@ -95,7 +95,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigCreate */
         const create_ = (
             options: typeof SwarmConfigSpec.Encoded
         ): Effect.Effect<Readonly<SwarmConfigCreateResponse>, ConfigsError, never> =>
@@ -109,7 +109,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigDelete */
         const delete_ = (id: string): Effect.Effect<void, ConfigsError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/configs/${encodeURIComponent(id)}`),
@@ -119,7 +119,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigInspect */
         const inspect_ = (id: string): Effect.Effect<Readonly<SwarmConfig>, ConfigsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/configs/${encodeURIComponent(id)}`),
@@ -129,7 +129,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config/operation/ConfigUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigUpdate */
         const update_ = (
             id: string,
             options: {
@@ -172,6 +172,6 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
  *
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Config
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
  */
 export const ConfigsLayer: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.Default;

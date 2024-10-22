@@ -3,7 +3,7 @@
  * enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -69,7 +69,7 @@ export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId
  *
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
  */
 export class Services extends Effect.Service<Services>()("@the-moby-effect/endpoints/Services", {
     accessors: false,
@@ -79,7 +79,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceList */
         const list_ = (
             options?: { readonly filters?: string; readonly status?: boolean } | undefined
         ): Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never> =>
@@ -96,7 +96,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceCreate */
         const create_ = (options: {
             readonly body: typeof SwarmServiceSpec.Encoded;
             readonly "X-Registry-Auth"?: string;
@@ -112,7 +112,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceDelete */
         const delete_ = (id: string): Effect.Effect<void, ServicesError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/services/${encodeURIComponent(id)}`),
@@ -122,7 +122,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceInspect */
         const inspect_ = (
             id: string,
             options?:
@@ -140,7 +140,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceUpdate */
         const update_ = (
             id: string,
             options: {
@@ -188,7 +188,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service/operation/ServiceLogs */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceLogs */
         const logs_ = (
             id: string,
             options?:
@@ -235,6 +235,6 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
  *
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Service
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
  */
 export const ServicesLayer: Layer.Layer<Services, never, HttpClient.HttpClient> = Services.Default;

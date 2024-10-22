@@ -64,7 +64,7 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
         const contextClient = yield* HttpClient.HttpClient;
         const client = contextClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Distribution/operation/DistributionInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution/operation/DistributionInspect */
         const inspect_ = (
             name: string
         ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>

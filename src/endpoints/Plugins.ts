@@ -69,7 +69,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginList */
         const list_ = (
             options?: { readonly filters?: { compatibility?: [string]; enable?: ["true" | "false"] } } | undefined
         ): Effect.Effect<Readonly<Array<Plugin>>, PluginsError> =>
@@ -85,7 +85,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/GetPluginPrivileges */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/GetPluginPrivileges */
         const getPrivileges_ = (remote: string): Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/plugins/privileges"),
@@ -96,7 +96,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginPull */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginPull */
         const pull_ = (
             remote: string,
             options?:
@@ -119,7 +119,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginInspect */
         const inspect_ = (name: string): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/plugins/${encodeURIComponent(name)}/json`),
@@ -129,7 +129,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginDelete */
         const delete_ = (
             name: string,
             options?:
@@ -147,7 +147,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginEnable */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginEnable */
         const enable_ = (
             name: string,
             options?:
@@ -165,7 +165,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginDisable */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginDisable */
         const disable_ = (
             name: string,
             options?:
@@ -183,7 +183,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginUpgrade */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginUpgrade */
         const upgrade_ = (options: {
             readonly name: string;
             readonly remote: string;
@@ -201,7 +201,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginCreate */
         const create_ = <E1>(
             name: string,
             tarContext: Stream.Stream<Uint8Array, E1, never>
@@ -216,7 +216,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginPush */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginPush */
         const push_ = (name: string): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/plugins/${encodeURIComponent(name)}/push`),
@@ -226,7 +226,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginSet */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginSet */
         const set_ = (
             name: string,
             options?:

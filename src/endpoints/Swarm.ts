@@ -3,7 +3,7 @@
  * documentation for more information.
  *
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -70,7 +70,7 @@ export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "S
  *
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
 export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/Swarm", {
     accessors: false,
@@ -80,7 +80,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInspect */
         const inspect_ = (): Effect.Effect<Readonly<SwarmData>, SwarmsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/swarm"),
@@ -90,7 +90,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmInit */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInit */
         const init_ = (options: typeof SwarmInitRequest.Encoded): Effect.Effect<Readonly<string>, SwarmsError, never> =>
             Function.pipe(
                 Schema.decode(SwarmInitRequest)(options),
@@ -102,7 +102,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmJoin */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmJoin */
         const join_ = (options: typeof SwarmJoinRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
             Function.pipe(
                 Schema.decode(SwarmJoinRequest)(options),
@@ -114,7 +114,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmLeave */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmLeave */
         const leave_ = (options: {
             /**
              * Force leave swarm, even if this is the last manager or that it
@@ -131,7 +131,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUpdate */
         const update_ = (options: {
             readonly spec: SwarmSpec;
             readonly version: number;
@@ -152,7 +152,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmUnlockkey */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlockkey */
         const unlockkey_ = (): Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/swarm/unlockkey"),
@@ -162,7 +162,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm/operation/SwarmUnlock */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlock */
         const unlock_ = (options: typeof SwarmUnlockRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
             Function.pipe(
                 Schema.decode(SwarmUnlockRequest)(options),
@@ -192,6 +192,6 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
  *
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Swarm
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
 export const SwarmLayer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.Default;

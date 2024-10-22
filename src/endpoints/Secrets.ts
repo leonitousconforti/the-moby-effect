@@ -3,7 +3,7 @@
  * enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -63,7 +63,7 @@ export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, 
  *
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
  */
 export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoints/Secrets", {
     accessors: false,
@@ -73,7 +73,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretList */
         const list_ = (
             options?: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never> =>
@@ -89,7 +89,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretCreate */
         const create_ = (
             data: typeof SwarmSecretSpec.Encoded
         ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
@@ -103,7 +103,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretDelete */
         const delete_ = (id: string): Effect.Effect<void, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.del(`/secrets/${encodeURIComponent(id)}`),
@@ -113,7 +113,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretInspect */
         const inspect_ = (id: string): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/secrets/${encodeURIComponent(id)}`),
@@ -123,7 +123,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretUpdate */
         const update_ = (
             id: string,
             options: {
@@ -157,6 +157,6 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
  *
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
  */
 export const SecretsLayer: Layer.Layer<Secrets, never, HttpClient.HttpClient> = Secrets.Default;

@@ -1,6 +1,6 @@
 /**
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -66,7 +66,7 @@ export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId
  *
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
  */
 export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpoints/Networks", {
     accessors: false,
@@ -76,7 +76,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkList */
         const list_ = (
             options?: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<Readonly<Array<NetworkSummary>>, NetworksError> =>
@@ -92,7 +92,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDelete */
         const delete_ = (id: string): Effect.Effect<void, NetworksError> =>
             Function.pipe(
                 HttpClientRequest.del(`/networks/${encodeURIComponent(id)}`),
@@ -102,7 +102,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkInspect */
         const inspect_ = (
             id: string,
             options?:
@@ -122,7 +122,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkCreate */
         const create_ = (
             createRequest: typeof NetworkCreateRequest.Encoded
         ): Effect.Effect<NetworkCreateResponse, NetworksError> =>
@@ -136,7 +136,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkConnect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkConnect */
         const connect_ = (
             id: string,
             connectRequest: typeof NetworkConnectRequest.Encoded
@@ -153,7 +153,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkDisconnect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDisconnect */
         const disconnect_ = (
             id: string,
             disconnectRequest: typeof NetworkDisconnectRequest.Encoded
@@ -170,7 +170,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkPrune */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkPrune */
         const prune_ = (
             options: { readonly filters?: Record<string, string | Array<string>> } | undefined
         ): Effect.Effect<NetworkPruneResponse, NetworksError, never> =>
@@ -201,6 +201,6 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
  */
 export const NetworksLayer: Layer.Layer<Networks, never, HttpClient.HttpClient> = Networks.Default;

@@ -1,6 +1,6 @@
 /**
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -63,7 +63,7 @@ export class VolumesError extends PlatformError.TypeIdError(VolumesErrorTypeId, 
 /**
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
  */
 export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoints/Volumes", {
     accessors: false,
@@ -73,7 +73,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeList */
         const list_ = (
             options?:
                 | {
@@ -98,7 +98,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeCreate */
         const create_ = (
             createOptions: typeof VolumeCreateOptions.Encoded
         ): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
@@ -112,7 +112,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeDelete */
         const delete_ = (
             name: string,
             options?:
@@ -130,7 +130,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeInspect */
         const inspect_ = (name: string): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/volumes/${encodeURIComponent(name)}`),
@@ -140,7 +140,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeUpdate */
         const update_ = (options: {
             readonly name: string;
             readonly spec: ClusterVolumeSpec;
@@ -156,7 +156,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumePrune */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumePrune */
         const prune_ = (
             options?:
                 | {
@@ -193,6 +193,6 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
  */
 export const VolumesLayer: Layer.Layer<Volumes, never, HttpClient.HttpClient> = Volumes.Default;

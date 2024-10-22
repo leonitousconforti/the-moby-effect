@@ -1,6 +1,6 @@
 /**
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -74,7 +74,7 @@ export class ExecsError extends PlatformError.TypeIdError(ExecsErrorTypeId, "Exe
  *
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
 export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/Execs", {
     accessors: false,
@@ -89,7 +89,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          *
          * @param execConfig - Exec configuration
          * @param id - ID or name of container
-         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ContainerExec
+         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ContainerExec
          */
         const container_ = (
             id: string,
@@ -112,7 +112,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          *
          * @param execStartConfig -
          * @param id - Exec instance ID
-         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ExecStart
+         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecStart
          */
         const start_ = <T extends boolean | undefined>(
             id: string,
@@ -150,7 +150,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          * @param id - Exec instance ID
          * @param h - Height of the TTY session in characters
          * @param w - Width of the TTY session in characters
-         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ExecResize
+         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecResize
          */
         const resize_ = (
             id: string,
@@ -171,7 +171,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ExecInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecInspect */
         const inspect_ = (id: string): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/exec/${encodeURIComponent(id)}/json`),
@@ -193,6 +193,6 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
 export const ExecsLayer: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.Default;

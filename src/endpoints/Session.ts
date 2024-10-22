@@ -1,6 +1,6 @@
 /**
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -52,7 +52,7 @@ export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId
 /**
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
  */
 export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpoints/Session", {
     accessors: false,
@@ -72,7 +72,7 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
          * `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
          * UPGRADED Connection: Upgrade Upgrade: h2c`
          *
-         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session/operation/Session
+         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session
          */
         const session_ = (): Effect.Effect<Socket.Socket, SessionsError, Scope.Scope> =>
             Function.pipe(
@@ -91,6 +91,6 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Session
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
  */
 export const SessionsLayer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;

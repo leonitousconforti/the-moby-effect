@@ -3,7 +3,7 @@
  * swarm. Swarm mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -62,7 +62,7 @@ export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "Tas
  *
  * @since 1.0.0
  * @category Tags
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
 export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/Tasks", {
     accessors: false,
@@ -72,7 +72,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskList */
         const list_ = (
             options?:
                 | {
@@ -99,7 +99,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskInspect */
         const inspect_ = (id: string): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/tasks/${encodeURIComponent(id)}`),
@@ -109,7 +109,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskLogs */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskLogs */
         const logs_ = (
             id: string,
             options?:
@@ -153,6 +153,6 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
  *
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
 export const TasksLayer: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.Default;

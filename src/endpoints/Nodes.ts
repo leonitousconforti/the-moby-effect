@@ -71,7 +71,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeList */
         const list_ = (
             options?:
                 | {
@@ -98,7 +98,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeDelete */
         const delete_ = (
             id: string,
             options?:
@@ -116,7 +116,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeInspect */
         const inspect_ = (id: string): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/nodes/${encodeURIComponent(id)}`),
@@ -126,7 +126,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
         const update_ = (
             id: string,
             options: {

@@ -1,6 +1,6 @@
 /**
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -68,7 +68,7 @@ export class ImagesError extends PlatformError.TypeIdError(ImagesErrorTypeId, "I
 /**
  * @since 1.0.0
  * @category Params
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
  */
 export interface ImageBuildOptions<E1> {
     /**
@@ -208,7 +208,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
         const defaultClient = yield* HttpClient.HttpClient;
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageList */
         const list_ = (
             options?:
                 | {
@@ -261,7 +261,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
         /**
          * TODO: This needs to error if the build failed
          *
-         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageBuild
+         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageBuild
          */
         const build_ = <E1>(options: ImageBuildOptions<E1>): Stream.Stream<JSONMessage, ImagesError, never> =>
             Function.pipe(
@@ -304,7 +304,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Stream.mapError((cause) => new ImagesError({ method: "build", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/BuildPrune */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/BuildPrune */
         const buildPrune_ = (
             options?:
                 | {
@@ -336,7 +336,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCreate */
         const create_ = (options: {
             /**
              * Name of the image to pull. The name may include a tag or digest.
@@ -424,7 +424,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Stream.mapError((cause) => new ImagesError({ method: "create", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageInspect */
         const inspect_ = (options: {
             readonly name: string;
         }): Effect.Effect<Readonly<ImageInspect>, ImagesError, never> =>
@@ -436,7 +436,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageHistory */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageHistory */
         const history_ = (options: {
             readonly name: string;
         }): Effect.Effect<ReadonlyArray<ImageHistoryResponseItem>, ImagesError, never> =>
@@ -448,7 +448,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImagePush */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePush */
         const push_ = (options: {
             readonly name: string;
             readonly tag?: string;
@@ -464,7 +464,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Stream.mapError((cause) => new ImagesError({ method: "push", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageTag */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageTag */
         const tag_ = (options: {
             readonly name: string;
             readonly repo?: string;
@@ -480,7 +480,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageDelete */
         const delete_ = (options: {
             readonly name: string;
             readonly force?: boolean;
@@ -496,7 +496,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageSearch */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageSearch */
         const search_ = (options: {
             readonly term: string;
             readonly limit?: number | undefined;
@@ -514,7 +514,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImagePrune */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePrune */
         const prune_ = (
             options?:
                 | {
@@ -538,7 +538,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageCommit */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCommit */
         const commit_ = (options: {
             readonly containerConfig: ContainerConfig;
             readonly container?: string;
@@ -565,7 +565,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageGet */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGet */
         const get_ = (options: { readonly name: string }): Stream.Stream<string, ImagesError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/get`),
@@ -575,7 +575,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Stream.mapError((cause) => new ImagesError({ method: "get", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageGetAll */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGetAll */
         const getall_ = (
             options?: { readonly names?: Array<string> | undefined } | undefined
         ): Stream.Stream<string, ImagesError, never> =>
@@ -588,7 +588,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 Stream.mapError((cause) => new ImagesError({ method: "getall", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image/operation/ImageLoad */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageLoad */
         const load_ = <E1>(options: {
             readonly imagesTarball: Stream.Stream<Uint8Array, E1, never>;
             readonly quiet?: boolean;
@@ -626,6 +626,6 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Image
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
  */
 export const ImagesLayer: Layer.Layer<Images, never, HttpClient.HttpClient> = Images.Default;

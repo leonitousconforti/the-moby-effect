@@ -1,6 +1,6 @@
 /**
  * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
 
 import * as PlatformError from "@effect/platform/Error";
@@ -81,7 +81,7 @@ export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTy
 /**
  * @since 1.0.0
  * @category Services
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
 export class Containers extends Effect.Service<Containers>()("@the-moby-effect/endpoints/Containers", {
     accessors: false,
@@ -94,7 +94,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             HttpClient.filterStatus((status) => (status >= 200 && status < 300) || status === 101)
         );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerList */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerList */
         const list_ = (
             options?:
                 | {
@@ -143,7 +143,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerCreate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerCreate */
         const create_ = (options: {
             readonly name?: string | undefined;
             readonly platform?: string | undefined;
@@ -161,7 +161,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerInspect */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerInspect */
         const inspect_ = (
             id: string,
             options?:
@@ -179,7 +179,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerTop */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerTop */
         const top_ = (
             id: string,
             options?:
@@ -197,7 +197,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerLogs */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerLogs */
         const logs_ = (
             id: string,
             options?:
@@ -227,7 +227,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Stream.mapError((cause) => new ContainersError({ method: "logs", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerChanges */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerChanges */
         const changes_ = (id: string): Effect.Effect<ReadonlyArray<ContainerChange> | null, ContainersError> =>
             Function.pipe(
                 HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/changes`),
@@ -237,7 +237,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerExport */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerExport */
         const export_ = (id: string): Stream.Stream<Uint8Array, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/export`),
@@ -246,7 +246,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Stream.mapError((cause) => new ContainersError({ method: "export", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerStats */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStats */
         const stats_ = (
             id: string,
             options?:
@@ -267,7 +267,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Stream.mapError((cause) => new ContainersError({ method: "stats", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerResize */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerResize */
         const resize_ = (
             id: string,
             options?:
@@ -287,7 +287,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerStart */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStart */
         const start_ = (
             id: string,
             options?:
@@ -305,7 +305,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerStop */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStop */
         const stop_ = (
             id: string,
             options?:
@@ -325,7 +325,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerRestart */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRestart */
         const restart_ = (
             id: string,
             options?:
@@ -345,7 +345,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerKill */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerKill */
         const kill_ = (
             id: string,
             options?:
@@ -363,7 +363,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerUpdate */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUpdate */
         const update_ = (
             id: string,
             options: {
@@ -379,7 +379,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerRename */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRename */
         const rename_ = (
             id: string,
             options: {
@@ -395,7 +395,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerPause */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPause */
         const pause_ = (id: string): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/pause`),
@@ -405,7 +405,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerUnpause */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUnpause */
         const unpause_ = (id: string): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/unpause`),
@@ -435,7 +435,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
          * @param stdin - Attach to `stdin`
          * @param stdout - Attach to `stdout`
          * @param stderr - Attach to `stderr`
-         * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerAttach
+         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerAttach
          */
         const attach_ = (
             id: string,
@@ -465,7 +465,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerAttachWebsocket */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerAttachWebsocket */
         const attachWebsocket_ = (
             id: string,
             options?:
@@ -493,7 +493,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerWait */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerWait */
         const wait_ = (
             id: string,
             options?: { readonly condition?: string | undefined } | undefined
@@ -507,7 +507,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerDelete */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerDelete */
         const delete_ = (
             id: string,
             options?:
@@ -529,7 +529,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerArchive */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchive */
         const archive_ = (
             id: string,
             options: { readonly path: string }
@@ -542,7 +542,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Stream.mapError((cause) => new ContainersError({ method: "archive", cause }))
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerArchiveInfo */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchiveInfo */
         const archiveInfo_ = (
             id: string,
             options: { readonly path: string }
@@ -556,7 +556,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/PutContainerArchive */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/PutContainerArchive */
         const putArchive_ = <E1>(
             id: string,
             options: {
@@ -578,7 +578,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.scoped
             );
 
-        /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerPrune */
+        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPrune */
         const prune_ = (
             options?:
                 | {
@@ -633,6 +633,6 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
 export const ContainersLayer: Layer.Layer<Containers, never, HttpClient.HttpClient> = Containers.Default;
