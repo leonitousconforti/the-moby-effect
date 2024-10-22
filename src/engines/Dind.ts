@@ -165,7 +165,15 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
 
         const tempSocketDirectory = yield* Effect.if(exposeDindBy === "socket", {
             onFalse: () => Effect.succeed(""),
-            onTrue: () => Effect.flatMap(FileSystem.FileSystem, (fs) => fs.makeTempDirectoryScoped()),
+            onTrue: () =>
+                Effect.flatMap(FileSystem.FileSystem, (fs) =>
+                    Effect.gen(function* () {
+                        const tempDirectory = yield* fs.makeTempDirectoryScoped();
+                        yield* fs.chown(tempDirectory, 1000, 1000);
+                        yield* fs.chmod(tempDirectory, 0o777);
+                        return tempDirectory;
+                    })
+                ),
         });
 
         const boundDockerSocket = yield* Effect.if(exposeDindBy === "socket", {

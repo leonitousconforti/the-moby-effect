@@ -1,23 +1,23 @@
-import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
-import * as NodeSocket from "@effect/platform-node/NodeSocket";
-import * as Console from "effect/Console";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
-
-import * as Connection from "the-moby-effect/Connection";
-import * as DockerEngine from "the-moby-effect/engines/Docker";
+import { NodeContext, NodeRuntime } from "@effect/platform-node";
+import { Console, Effect, Function, Layer } from "effect";
+import { Engines, MobyConnection } from "the-moby-effect";
 
 const layer = Function.pipe(
-    Connection.connectionOptionsFromPlatformSystemSocketDefault(),
-    Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
+    Effect.map((connectionOptionsToHost) =>
+        Engines.DindEngine.layerNodeJS({
+            connectionOptionsToHost,
+            exposeDindContainerBy: "socket" as const,
+            dindBaseImage: "docker.io/library/docker:25-dind-rootless" as const,
+        })
+    ),
+    Layer.unwrapEffect,
+    Layer.provideMerge(NodeContext.layer)
 );
 
 Effect.gen(function* () {
-    yield* Console.log(void 0);
+    const data = yield* Engines.DockerEngine.version();
+    yield* Console.log(data);
 })
-    .pipe(Effect.scoped)
     .pipe(Effect.provide(layer))
-    .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
     .pipe(NodeRuntime.runMain);
