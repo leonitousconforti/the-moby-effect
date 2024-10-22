@@ -9,15 +9,7 @@ import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as ParseResult from "effect/ParseResult";
 
-import { DindEngine, MobyEngine } from "the-moby-effect/Engines";
-import {
-    ContainersError,
-    ImagesError,
-    Swarm,
-    SwarmsError,
-    SystemsError,
-    VolumesError,
-} from "the-moby-effect/MobyEndpoints";
+import { DindEngine, MobyEndpoints, MobyEngine } from "the-moby-effect";
 
 const makePlatformDindLayer = Function.pipe(
     Match.value(inject("__PLATFORM_VARIANT")),
@@ -45,15 +37,15 @@ const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
 
 export const testLayer: Layer.Layer<
     Layer.Layer.Success<MobyEngine.MobyLayer>,
-    | ContainersError
-    | ImagesError
-    | SwarmsError
-    | SystemsError
-    | VolumesError
+    | MobyEndpoints.ContainersError
+    | MobyEndpoints.ImagesError
+    | MobyEndpoints.SwarmsError
+    | MobyEndpoints.SystemsError
+    | MobyEndpoints.VolumesError
     | ParseResult.ParseError
     | PlatformError.PlatformError,
     never
 > = Layer.tap(Layer.provide(testDindLayer, testServices), (context) => {
-    const swarm = Context.get(context, Swarm);
+    const swarm = Context.get(context, MobyEndpoints.Swarm);
     return swarm.init({ ListenAddr: "0.0.0.0" });
 });

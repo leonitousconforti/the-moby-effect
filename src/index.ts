@@ -1,16 +1,16 @@
 /**
+ * Docker in docker engine shortcut.
+ *
+ * @since 1.0.0
+ */
+export * as DindEngine from "./DindEngine.js"
+
+/**
  * Docker engine shortcut.
  *
  * @since 1.0.0
  */
 export * as DockerEngine from "./DockerEngine.js"
-
-/**
- * All implemented engines.
- *
- * @since 1.0.0
- */
-export * as Engines from "./Engines.js"
 
 /**
  * Http, https, ssh, and unix socket connection agents for all platforms.
@@ -41,6 +41,13 @@ export * as MobyDemux from "./MobyDemux.js"
 export * as MobyEndpoints from "./MobyEndpoints.js"
 
 /**
+ * Moby engine shortcut.
+ *
+ * @since 1.0.0
+ */
+export * as MobyEngine from "./MobyEngine.js"
+
+/**
  * Http client layers for all platforms.
  *
  * @since 1.0.0
@@ -53,3 +60,10 @@ export * as MobyPlatforms from "./MobyPlatforms.js"
  * @since 1.0.0
  */
 export * as MobySchemas from "./MobySchemas.js"
+
+/**
+ * Podman engine shortcut.
+ *
+ * @since 1.0.0
+ */
+export * as PodmanEngine from "./PodmanEngine.js"
