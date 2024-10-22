@@ -18,6 +18,7 @@ import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
+import * as Tuple from "effect/Tuple";
 
 import {
     RegistryAuthenticateOKBody as AuthResponse,
@@ -55,7 +56,7 @@ export const isSystemsError = (u: unknown): u is SystemsError => Predicate.hasPr
  */
 export class SystemsError extends PlatformError.TypeIdError(SystemsErrorTypeId, "SystemsError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -76,10 +77,13 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
         const client = defaultClient.pipe(HttpClient.filterStatusOk);
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/System/operation/SystemAuth */
-        const auth_ = (options: RegistryAuthConfig): Effect.Effect<Readonly<AuthResponse>, SystemsError, never> =>
+        const auth_ = (
+            authConfig: typeof RegistryAuthConfig.Encoded
+        ): Effect.Effect<Readonly<AuthResponse>, SystemsError, never> =>
             Function.pipe(
-                HttpClientRequest.post("/auth"),
-                HttpClientRequest.schemaBodyJson(RegistryAuthConfig)(options),
+                Schema.decode(RegistryAuthConfig)(authConfig),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/auth"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(RegistryAuthConfig))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(AuthResponse)),
                 Effect.mapError((cause) => new SystemsError({ method: "auth", cause })),

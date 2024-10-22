@@ -39,7 +39,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Secrets
                 },
             ]);
 
-            const secret = yield* secrets.inspect({ id: secretsList[0]!.ID! });
+            const secret = yield* secrets.inspect(secretsList[0]!.ID);
             expect(secret).toEqual(secretsList[0]);
         })
     );
@@ -48,8 +48,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Secrets
         Effect.gen(function* () {
             const secrets = yield* Secrets;
             const secretsList = yield* secrets.list();
-            yield* secrets.update({
-                id: secretsList[0]!.ID!,
+            yield* secrets.update(secretsList[0]!.ID, {
                 version: secretsList[0]!.Version!.Index!,
                 spec: { ...secretsList[0]!.Spec, Labels: { testLabelUpdated: "test" } },
             });
@@ -71,7 +70,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Secrets
         Effect.gen(function* () {
             const secrets = yield* Secrets;
             const secretsList = yield* secrets.list();
-            yield* secrets.delete({ id: secretsList[0]!.ID! });
+            yield* secrets.delete(secretsList[0]!.ID);
             const secretsAfterDelete = yield* secrets.list();
             expect(secretsAfterDelete).toEqual([]);
         })

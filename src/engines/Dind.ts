@@ -157,7 +157,7 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
     Effect.gen(function* () {
         const acquireScopedVolume = Effect.acquireRelease(
             Volumes.Volumes.use((volumes) => volumes.create({})),
-            ({ Name }) => Effect.orDie(Volumes.Volumes.use((volumes) => volumes.delete({ name: Name })))
+            ({ Name }) => Effect.orDie(Volumes.Volumes.use((volumes) => volumes.delete(Name)))
         );
 
         const volume1 = yield* acquireScopedVolume;

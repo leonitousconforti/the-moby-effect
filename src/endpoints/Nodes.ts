@@ -49,7 +49,7 @@ export const isNodesError = (u: unknown): u is NodesError => Predicate.hasProper
  */
 export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "NodesError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -99,13 +99,17 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeDelete */
-        const delete_ = (options: {
-            readonly id: string;
-            readonly force?: boolean | undefined;
-        }): Effect.Effect<void, NodesError, never> =>
+        const delete_ = (
+            id: string,
+            options?:
+                | {
+                      readonly force?: boolean | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, NodesError, never> =>
             Function.pipe(
-                HttpClientRequest.del(`/nodes/${encodeURIComponent(options.id)}`),
-                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                HttpClientRequest.del(`/nodes/${encodeURIComponent(id)}`),
+                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
                 Effect.mapError((cause) => new NodesError({ method: "delete", cause })),
@@ -113,9 +117,9 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeInspect */
-        const inspect_ = (options: { readonly id: string }): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
+        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/nodes/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.get(`/nodes/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmNode)),
                 Effect.mapError((cause) => new NodesError({ method: "inspect", cause })),
@@ -123,13 +127,15 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Node/operation/NodeUpdate */
-        const update_ = (options: {
-            readonly body: SwarmNodeSpec;
-            readonly id: string;
-            readonly version: number;
-        }): Effect.Effect<void, NodesError, never> =>
+        const update_ = (
+            id: string,
+            options: {
+                readonly body: SwarmNodeSpec;
+                readonly version: number;
+            }
+        ): Effect.Effect<void, NodesError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/nodes/${encodeURIComponent(options.id)}/update`),
+                HttpClientRequest.post(`/nodes/${encodeURIComponent(id)}/update`),
                 maybeAddQueryParameter("version", Option.some(options.version)),
                 HttpClientRequest.schemaBodyJson(SwarmNodeSpec)(options.body),
                 Effect.flatMap(client.execute),

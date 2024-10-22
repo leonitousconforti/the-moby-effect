@@ -19,6 +19,7 @@ import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
+import * as Tuple from "effect/Tuple";
 
 import { SwarmSecret, SwarmSecretCreateResponse, SwarmSecretSpec } from "../generated/index.js";
 import { maybeAddQueryParameter } from "./Common.js";
@@ -49,7 +50,7 @@ export const isSecretsError = (u: unknown): u is SecretsError => Predicate.hasPr
  */
 export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, "SecretsError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -90,11 +91,12 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretCreate */
         const create_ = (
-            options: SwarmSecretSpec
+            data: typeof SwarmSecretSpec.Encoded
         ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
             Function.pipe(
-                HttpClientRequest.post("/secrets/create"),
-                HttpClientRequest.schemaBodyJson(SwarmSecretSpec)(options),
+                Schema.decode(SwarmSecretSpec)(data),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/secrets/create"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmSecretSpec))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecretCreateResponse)),
                 Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
@@ -102,9 +104,9 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretDelete */
-        const delete_ = (options: { readonly id: string }): Effect.Effect<void, SecretsError, never> =>
+        const delete_ = (id: string): Effect.Effect<void, SecretsError, never> =>
             Function.pipe(
-                HttpClientRequest.del(`/secrets/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.del(`/secrets/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new SecretsError({ method: "delete", cause })),
@@ -112,11 +114,9 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretInspect */
-        const inspect_ = (options: {
-            readonly id: string;
-        }): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
+        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/secrets/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.get(`/secrets/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecret)),
                 Effect.mapError((cause) => new SecretsError({ method: "inspect", cause })),
@@ -124,13 +124,15 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Secret/operation/SecretUpdate */
-        const update_ = (options: {
-            readonly id: string;
-            readonly spec: SwarmSecretSpec;
-            readonly version: number;
-        }): Effect.Effect<void, SecretsError, never> =>
+        const update_ = (
+            id: string,
+            options: {
+                readonly spec: SwarmSecretSpec;
+                readonly version: number;
+            }
+        ): Effect.Effect<void, SecretsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/secrets/${encodeURIComponent(options.id)}/update`),
+                HttpClientRequest.post(`/secrets/${encodeURIComponent(id)}/update`),
                 maybeAddQueryParameter("version", Option.some(options.version)),
                 HttpClientRequest.schemaBodyJson(SwarmSecretSpec)(options.spec),
                 Effect.flatMap(client.execute),

@@ -47,7 +47,7 @@ export const isPluginsError = (u: unknown): u is PluginsError => Predicate.hasPr
  */
 export class PluginsError extends PlatformError.TypeIdError(PluginsErrorTypeId, "PluginsError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -86,12 +86,10 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/GetPluginPrivileges */
-        const getPrivileges_ = (options: {
-            readonly remote: string;
-        }): Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError, never> =>
+        const getPrivileges_ = (remote: string): Effect.Effect<Readonly<Array<PluginPrivilege>>, PluginsError, never> =>
             Function.pipe(
                 HttpClientRequest.get("/plugins/privileges"),
-                maybeAddQueryParameter("remote", Option.some(options.remote)),
+                maybeAddQueryParameter("remote", Option.some(remote)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(PluginPrivilege))),
                 Effect.mapError((cause) => new PluginsError({ method: "getPrivileges", cause })),
@@ -99,18 +97,22 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginPull */
-        const pull_ = (options: {
-            readonly remote: string;
-            readonly name?: string;
-            readonly "X-Registry-Auth"?: string;
-            readonly body?: Array<PluginPrivilege>;
-        }): Effect.Effect<void, PluginsError, never> =>
+        const pull_ = (
+            remote: string,
+            options?:
+                | {
+                      readonly name?: string;
+                      readonly "X-Registry-Auth"?: string;
+                      readonly body?: Array<PluginPrivilege>;
+                  }
+                | undefined
+        ): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/plugins/pull"),
                 HttpClientRequest.setHeader("X-Registry-Auth", ""),
-                maybeAddQueryParameter("remote", Option.some(options.remote)),
-                maybeAddQueryParameter("name", Option.fromNullable(options.name)),
-                HttpClientRequest.schemaBodyJson(Schema.Array(PluginPrivilege))(options.body ?? []),
+                maybeAddQueryParameter("remote", Option.some(remote)),
+                maybeAddQueryParameter("name", Option.fromNullable(options?.name)),
+                HttpClientRequest.schemaBodyJson(Schema.Array(PluginPrivilege))(options?.body ?? []),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "pull", cause })),
@@ -118,9 +120,9 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginInspect */
-        const inspect_ = (options: { readonly name: string }): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
+        const inspect_ = (name: string): Effect.Effect<Readonly<Plugin>, PluginsError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/plugins/${encodeURIComponent(options.name)}/json`),
+                HttpClientRequest.get(`/plugins/${encodeURIComponent(name)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Plugin)),
                 Effect.mapError((cause) => new PluginsError({ method: "inspect", cause })),
@@ -128,13 +130,17 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginDelete */
-        const delete_ = (options: {
-            readonly name: string;
-            readonly force?: boolean;
-        }): Effect.Effect<void, PluginsError, never> =>
+        const delete_ = (
+            name: string,
+            options?:
+                | {
+                      readonly force?: boolean;
+                  }
+                | undefined
+        ): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
-                HttpClientRequest.del(`/plugins/${encodeURIComponent(options.name)}`),
-                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                HttpClientRequest.del(`/plugins/${encodeURIComponent(name)}`),
+                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "delete", cause })),
@@ -142,13 +148,17 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginEnable */
-        const enable_ = (options: {
-            readonly name: string;
-            readonly timeout?: number;
-        }): Effect.Effect<void, PluginsError, never> =>
+        const enable_ = (
+            name: string,
+            options?:
+                | {
+                      readonly timeout?: number;
+                  }
+                | undefined
+        ): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/enable`),
-                maybeAddQueryParameter("timeout", Option.fromNullable(options.timeout)),
+                HttpClientRequest.post(`/plugins/${encodeURIComponent(name)}/enable`),
+                maybeAddQueryParameter("timeout", Option.fromNullable(options?.timeout)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "enable", cause })),
@@ -156,13 +166,17 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginDisable */
-        const disable_ = (options: {
-            readonly name: string;
-            readonly force?: boolean;
-        }): Effect.Effect<void, PluginsError, never> =>
+        const disable_ = (
+            name: string,
+            options?:
+                | {
+                      readonly force?: boolean;
+                  }
+                | undefined
+        ): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/disable`),
-                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                HttpClientRequest.post(`/plugins/${encodeURIComponent(name)}/disable`),
+                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "disable", cause })),
@@ -188,14 +202,14 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginCreate */
-        const create_ = <E1>(options: {
-            readonly name: string;
-            readonly tarContext: Stream.Stream<Uint8Array, E1, never>;
-        }): Effect.Effect<void, PluginsError, never> =>
+        const create_ = <E1>(
+            name: string,
+            tarContext: Stream.Stream<Uint8Array, E1, never>
+        ): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/plugins/create"),
-                maybeAddQueryParameter("name", Option.some(options.name)),
-                HttpClientRequest.bodyStream(options.tarContext),
+                maybeAddQueryParameter("name", Option.some(name)),
+                HttpClientRequest.bodyStream(tarContext),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "create", cause })),
@@ -203,9 +217,9 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginPush */
-        const push_ = (options: { readonly name: string }): Effect.Effect<void, PluginsError, never> =>
+        const push_ = (name: string): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/push`),
+                HttpClientRequest.post(`/plugins/${encodeURIComponent(name)}/push`),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "push", cause })),
@@ -213,13 +227,17 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Plugin/operation/PluginSet */
-        const set_ = (options: {
-            readonly name: string;
-            readonly body?: Array<string>;
-        }): Effect.Effect<void, PluginsError, never> =>
+        const set_ = (
+            name: string,
+            options?:
+                | {
+                      readonly body?: Array<string>;
+                  }
+                | undefined
+        ): Effect.Effect<void, PluginsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/plugins/${encodeURIComponent(options.name)}/set`),
-                HttpClientRequest.schemaBodyJson(Schema.Array(Schema.String))(options.body ?? []),
+                HttpClientRequest.post(`/plugins/${encodeURIComponent(name)}/set`),
+                HttpClientRequest.schemaBodyJson(Schema.Array(Schema.String))(options?.body ?? []),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
                 Effect.mapError((cause) => new PluginsError({ method: "set", cause })),

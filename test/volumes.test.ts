@@ -37,7 +37,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Volumes
     it.effect("Should inspect the volume", () =>
         Effect.gen(function* () {
             const volumes = yield* Volumes;
-            const testData = yield* volumes.inspect({ name: "testVolume" });
+            const testData = yield* volumes.inspect("testVolume");
             expect(testData.Name).toBe("testVolume");
             expect(testData.Driver).toBe("local");
             expect(testData.Mountpoint).toContain("/docker/volumes/testVolume/_data");
@@ -50,7 +50,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Volumes
     it.effect("Should remove the volume", () =>
         Effect.gen(function* () {
             const volumes = yield* Volumes;
-            yield* volumes.delete({ name: "testVolume" });
+            yield* volumes.delete("testVolume");
         })
     );
 

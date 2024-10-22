@@ -16,6 +16,7 @@ import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
+import * as Tuple from "effect/Tuple";
 
 import {
     NetworkConnectOptions as NetworkConnectRequest,
@@ -53,7 +54,7 @@ export const isNetworksError = (u: unknown): u is NetworksError => Predicate.has
  */
 export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId, "NetworksError")<{
     method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError;
+    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
 }> {
     get message() {
         return `${this.method}`;
@@ -92,9 +93,9 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkDelete */
-        const delete_ = (options: { readonly id: string }): Effect.Effect<void, NetworksError> =>
+        const delete_ = (id: string): Effect.Effect<void, NetworksError> =>
             Function.pipe(
-                HttpClientRequest.del(`/networks/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.del(`/networks/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new NetworksError({ method: "delete", cause })),
@@ -102,15 +103,19 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkInspect */
-        const inspect_ = (options: {
-            readonly id: string;
-            readonly verbose?: boolean;
-            readonly scope?: string;
-        }): Effect.Effect<Readonly<NetworkSummary>, NetworksError> =>
+        const inspect_ = (
+            id: string,
+            options?:
+                | {
+                      readonly verbose?: boolean;
+                      readonly scope?: string;
+                  }
+                | undefined
+        ): Effect.Effect<Readonly<NetworkSummary>, NetworksError> =>
             Function.pipe(
-                HttpClientRequest.get(`/networks/${encodeURIComponent(options.id)}`),
-                maybeAddQueryParameter("verbose", Option.fromNullable(options.verbose)),
-                maybeAddQueryParameter("scope", Option.fromNullable(options.scope)),
+                HttpClientRequest.get(`/networks/${encodeURIComponent(id)}`),
+                maybeAddQueryParameter("verbose", Option.fromNullable(options?.verbose)),
+                maybeAddQueryParameter("scope", Option.fromNullable(options?.scope)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(NetworkSummary)),
                 Effect.mapError((cause) => new NetworksError({ method: "inspect", cause })),
@@ -118,10 +123,13 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkCreate */
-        const create_ = (options: NetworkCreateRequest): Effect.Effect<NetworkCreateResponse, NetworksError> =>
+        const create_ = (
+            createRequest: typeof NetworkCreateRequest.Encoded
+        ): Effect.Effect<NetworkCreateResponse, NetworksError> =>
             Function.pipe(
-                HttpClientRequest.post("/networks/create"),
-                HttpClientRequest.schemaBodyJson(NetworkCreateRequest)(options),
+                Schema.decode(NetworkCreateRequest)(createRequest),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/networks/create"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(NetworkCreateRequest))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(NetworkCreateResponse)),
                 Effect.mapError((cause) => new NetworksError({ method: "create", cause })),
@@ -129,13 +137,16 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkConnect */
-        const connect_ = (options: {
-            readonly id: string;
-            readonly container: NetworkConnectRequest;
-        }): Effect.Effect<void, NetworksError> =>
+        const connect_ = (
+            id: string,
+            connectRequest: typeof NetworkConnectRequest.Encoded
+        ): Effect.Effect<void, NetworksError> =>
             Function.pipe(
-                HttpClientRequest.post(`/networks/${encodeURIComponent(options.id)}/connect`),
-                HttpClientRequest.schemaBodyJson(NetworkConnectRequest)(options.container),
+                Schema.decode(NetworkConnectRequest)(connectRequest),
+                Effect.map((body) =>
+                    Tuple.make(HttpClientRequest.post(`/networks/${encodeURIComponent(id)}/connect`), body)
+                ),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(NetworkConnectRequest))),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
                 Effect.mapError((cause) => new NetworksError({ method: "connect", cause })),
@@ -143,15 +154,16 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Network/operation/NetworkDisconnect */
-        const disconnect_ = (options: {
-            readonly id: string;
-            readonly container: NetworkDisconnectRequest;
-        }): Effect.Effect<void, NetworksError> =>
+        const disconnect_ = (
+            id: string,
+            disconnectRequest: typeof NetworkDisconnectRequest.Encoded
+        ): Effect.Effect<void, NetworksError> =>
             Function.pipe(
-                HttpClientRequest.post(`/networks/${encodeURIComponent(options.id)}/disconnect`),
-                HttpClientRequest.schemaBodyJson(NetworkDisconnectRequest)(
-                    options.container ?? NetworkDisconnectRequest.make({ Container: options.container, Force: false })
+                Schema.decode(NetworkDisconnectRequest)(disconnectRequest),
+                Effect.map((body) =>
+                    Tuple.make(HttpClientRequest.post(`/networks/${encodeURIComponent(id)}/disconnect`), body)
                 ),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(NetworkDisconnectRequest))),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
                 Effect.mapError((cause) => new NetworksError({ method: "disconnect", cause })),

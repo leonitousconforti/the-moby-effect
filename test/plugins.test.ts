@@ -16,11 +16,10 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Plugins
     it.effect.skip("Should pull a plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins;
-            yield* plugins.pull({
-                remote: "docker.io/grafana/loki-docker-driver:main",
+            yield* plugins.pull("docker.io/grafana/loki-docker-driver:main", {
                 name: "test-plugin:latest",
             });
-            yield* plugins.enable({ name: "test-plugin:latest" });
+            yield* plugins.enable("test-plugin:latest");
         })
     );
 
@@ -46,7 +45,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Plugins
     it.effect.skip("Should disable a plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins;
-            yield* plugins.disable({ name: "test-plugin:latest" });
+            yield* plugins.disable("test-plugin:latest");
         })
     );
 

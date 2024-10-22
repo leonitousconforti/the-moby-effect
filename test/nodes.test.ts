@@ -10,6 +10,6 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Nodes t
             const nodesList = yield* nodes.list();
             expect(nodesList).toBeInstanceOf(Array);
             expect(nodesList).toHaveLength(1);
-            yield* nodes.inspect({ id: nodesList[0]!.ID! });
+            yield* nodes.inspect(nodesList[0]!.ID);
         }));
 });

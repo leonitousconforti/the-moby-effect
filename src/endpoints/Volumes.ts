@@ -15,6 +15,8 @@ import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
+import * as Schema from "effect/Schema";
+import * as Tuple from "effect/Tuple";
 
 import {
     ClusterVolumeSpec,
@@ -97,10 +99,13 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeCreate */
-        const create_ = (options: VolumeCreateOptions): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
+        const create_ = (
+            createOptions: typeof VolumeCreateOptions.Encoded
+        ): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
             Function.pipe(
-                HttpClientRequest.post("/volumes/create"),
-                HttpClientRequest.schemaBodyJson(VolumeCreateOptions)(options),
+                Schema.decode(VolumeCreateOptions)(createOptions),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post("/volumes/create"), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(VolumeCreateOptions))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
                 Effect.mapError((cause) => new VolumesError({ method: "create", cause })),
@@ -108,13 +113,17 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeDelete */
-        const delete_ = (options: {
-            readonly name: string;
-            readonly force?: boolean | undefined;
-        }): Effect.Effect<void, VolumesError, never> =>
+        const delete_ = (
+            name: string,
+            options?:
+                | {
+                      readonly force?: boolean | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, VolumesError, never> =>
             Function.pipe(
-                HttpClientRequest.del(`/volumes/${encodeURIComponent(options.name)}`),
-                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
+                HttpClientRequest.del(`/volumes/${encodeURIComponent(name)}`),
+                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new VolumesError({ method: "delete", cause })),
@@ -122,9 +131,9 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Volume/operation/VolumeInspect */
-        const inspect_ = (options: { readonly name: string }): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
+        const inspect_ = (name: string): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/volumes/${encodeURIComponent(options.name)}`),
+                HttpClientRequest.get(`/volumes/${encodeURIComponent(name)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
                 Effect.mapError((cause) => new VolumesError({ method: "inspect", cause })),

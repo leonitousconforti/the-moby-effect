@@ -65,11 +65,11 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
         const client = contextClient.pipe(HttpClient.filterStatusOk);
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Distribution/operation/DistributionInspect */
-        const inspect_ = (options: {
-            readonly name: string;
-        }): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
+        const inspect_ = (
+            name: string
+        ): Effect.Effect<Readonly<RegistryDistributionInspect>, DistributionsError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/distribution/${encodeURIComponent(options.name)}/json`),
+                HttpClientRequest.get(`/distribution/${encodeURIComponent(name)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(RegistryDistributionInspect)),
                 Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),

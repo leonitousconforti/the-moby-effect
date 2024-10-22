@@ -18,6 +18,7 @@ import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as Scope from "effect/Scope";
+import * as Tuple from "effect/Tuple";
 
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/Hijack.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
@@ -90,13 +91,16 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          * @param id - ID or name of container
          * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ContainerExec
          */
-        const container_ = (options: {
-            readonly execConfig: typeof ExecConfig.Encoded;
-            readonly id: string;
-        }): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
+        const container_ = (
+            id: string,
+            execConfig: typeof ExecConfig.Encoded
+        ): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/exec`),
-                HttpClientRequest.schemaBodyJson(ExecConfig)(Schema.decodeSync(ExecConfig)(options.execConfig)),
+                Schema.decode(ExecConfig)(execConfig),
+                Effect.map((body) =>
+                    Tuple.make(HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/exec`), body)
+                ),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(ExecConfig))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
                 Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
@@ -111,13 +115,9 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ExecStart
          */
         const start_ = <T extends boolean | undefined>(
-            options: {
-                readonly execStartConfig: typeof ContainerExecStartConfig.Encoded;
-                readonly id: string;
-            } & {
-                execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & {
-                    Detach?: T;
-                };
+            id: string,
+            execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & {
+                Detach?: T;
             }
         ): T extends true
             ? Effect.Effect<void, ExecsError, never>
@@ -127,10 +127,9 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
 
             const response = Function.pipe(
-                HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/start`),
-                HttpClientRequest.schemaBodyJson(ContainerExecStartConfig)(
-                    Schema.decodeSync(ContainerExecStartConfig)(options.execStartConfig)
-                ),
+                Schema.decode(ContainerExecStartConfig)(execStartConfig),
+                Effect.map((body) => Tuple.make(HttpClientRequest.post(`/exec/${encodeURIComponent(id)}/start`), body)),
+                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(ContainerExecStartConfig))),
                 Effect.flatMap(client.execute),
                 Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
             );
@@ -140,7 +139,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
             );
 
-            return options.execStartConfig.Detach
+            return execStartConfig.Detach
                 ? (Function.pipe(response, Effect.asVoid, Effect.scoped) as U)
                 : (Function.pipe(response, Effect.flatMap(toStreamingSock)) as U);
         };
@@ -153,15 +152,19 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          * @param w - Width of the TTY session in characters
          * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ExecResize
          */
-        const resize_ = (options: {
-            readonly id: string;
-            readonly h?: number;
-            readonly w?: number;
-        }): Effect.Effect<void, ExecsError, never> =>
+        const resize_ = (
+            id: string,
+            options?:
+                | {
+                      readonly h?: number;
+                      readonly w?: number;
+                  }
+                | undefined
+        ): Effect.Effect<void, ExecsError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/exec/${encodeURIComponent(options.id)}/resize`),
-                maybeAddQueryParameter("h", Option.fromNullable(options.h)),
-                maybeAddQueryParameter("w", Option.fromNullable(options.w)),
+                HttpClientRequest.post(`/exec/${encodeURIComponent(id)}/resize`),
+                maybeAddQueryParameter("h", Option.fromNullable(options?.h)),
+                maybeAddQueryParameter("w", Option.fromNullable(options?.w)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
@@ -169,9 +172,9 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Exec/operation/ExecInspect */
-        const inspect_ = (options: { readonly id: string }): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
+        const inspect_ = (id: string): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/exec/${encodeURIComponent(options.id)}/json`),
+                HttpClientRequest.get(`/exec/${encodeURIComponent(id)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ExecInspectResponse)),
                 Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),

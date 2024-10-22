@@ -309,20 +309,14 @@ export const execNonBlocking = ({
 }): Effect.Effect<void, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs> =>
     Effect.gen(function* () {
         const execs = yield* Execs.Execs;
-        const execId = yield* execs.container({
-            id: containerId,
-            execConfig: {
-                Cmd: command,
-                AttachStderr: true,
-                AttachStdout: true,
-                AttachStdin: false,
-            },
+        const execId = yield* execs.container(containerId, {
+            Cmd: command,
+            AttachStderr: true,
+            AttachStdout: true,
+            AttachStdin: false,
         });
 
-        return yield* execs.start({
-            id: execId.Id,
-            execStartConfig: { Detach: true },
-        });
+        return yield* execs.start(execId.Id, { Detach: true });
     }).pipe(Effect.scoped);
 
 /**
@@ -340,20 +334,14 @@ export const exec = ({
 }): Effect.Effect<string, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs> =>
     Effect.gen(function* () {
         const execs = yield* Execs.Execs;
-        const execId = yield* execs.container({
-            id: containerId,
-            execConfig: {
-                Cmd: command,
-                AttachStderr: true,
-                AttachStdout: true,
-                AttachStdin: false,
-            },
+        const execId = yield* execs.container(containerId, {
+            Cmd: command,
+            AttachStderr: true,
+            AttachStdout: true,
+            AttachStdin: false,
         });
 
-        const socket = yield* execs.start({
-            id: execId.Id,
-            execStartConfig: { Detach: false },
-        });
+        const socket = yield* execs.start(execId.Id, { Detach: false });
 
         const input = Stream.never;
         const output = Sink.collectAll<string>();

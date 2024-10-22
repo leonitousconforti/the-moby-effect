@@ -100,9 +100,9 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskInspect */
-        const inspect_ = (options: { readonly id: string }): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
+        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}`),
+                HttpClientRequest.get(`/tasks/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmTask)),
                 Effect.mapError((cause) => new TasksError({ method: "inspect", cause })),
@@ -110,25 +110,29 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Task/operation/TaskLogs */
-        const logs_ = (options: {
-            readonly id: string;
-            readonly details?: boolean;
-            readonly follow?: boolean;
-            readonly stdout?: boolean;
-            readonly stderr?: boolean;
-            readonly since?: number;
-            readonly timestamps?: boolean;
-            readonly tail?: string;
-        }): Stream.Stream<string, TasksError, never> =>
+        const logs_ = (
+            id: string,
+            options?:
+                | {
+                      readonly details?: boolean;
+                      readonly follow?: boolean;
+                      readonly stdout?: boolean;
+                      readonly stderr?: boolean;
+                      readonly since?: number;
+                      readonly timestamps?: boolean;
+                      readonly tail?: string;
+                  }
+                | undefined
+        ): Stream.Stream<string, TasksError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/tasks/${encodeURIComponent(options.id)}/logs`),
-                maybeAddQueryParameter("details", Option.fromNullable(options.details)),
-                maybeAddQueryParameter("follow", Option.fromNullable(options.follow)),
-                maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
-                maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-                maybeAddQueryParameter("since", Option.fromNullable(options.since)),
-                maybeAddQueryParameter("timestamps", Option.fromNullable(options.timestamps)),
-                maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
+                HttpClientRequest.get(`/tasks/${encodeURIComponent(id)}/logs`),
+                maybeAddQueryParameter("details", Option.fromNullable(options?.details)),
+                maybeAddQueryParameter("follow", Option.fromNullable(options?.follow)),
+                maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
+                maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
+                maybeAddQueryParameter("since", Option.fromNullable(options?.since)),
+                maybeAddQueryParameter("timestamps", Option.fromNullable(options?.timestamps)),
+                maybeAddQueryParameter("tail", Option.fromNullable(options?.tail)),
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.decodeText(),
