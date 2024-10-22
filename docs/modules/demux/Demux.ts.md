@@ -220,12 +220,11 @@ Effect.gen(function* () {
 
   // Since the container was started with "tty: false",
   // we should get a multiplexed socket here
-  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
+  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach(containerId, {
     stdin: true,
     stdout: true,
     stderr: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
 
@@ -240,7 +239,7 @@ Effect.gen(function* () {
   assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n")
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
@@ -292,20 +291,17 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdinSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdinSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stdin: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
-  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stdout: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
-  const stderrSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stderrSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stderr: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isRawStreamSocket(stdinSocket), "Expected a raw socket")
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
@@ -326,7 +322,7 @@ Effect.gen(function* () {
   assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n")
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
@@ -378,10 +374,9 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stdout: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
 
@@ -396,7 +391,7 @@ Effect.gen(function* () {
   assert.strictEqual(stderrData, undefined)
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
@@ -509,12 +504,11 @@ Effect.gen(function* () {
 
   // Since the container was started with "tty: true",
   // we should get a raw socket here
-  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
+  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach(containerId, {
     stdin: true,
     stdout: true,
     stderr: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isRawStreamSocket(socket), "Expected a raw socket")
 
@@ -524,7 +518,7 @@ Effect.gen(function* () {
   assert.strictEqual(Chunk.join(data, ""), "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n")
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
@@ -575,12 +569,11 @@ Effect.gen(function* () {
 
   // Since the container was started with "tty: false",
   // we should get a multiplexed socket here
-  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
+  const socket: MobyDemux.RawStreamSocket | MobyDemux.MultiplexedStreamSocket = yield* containers.attach(containerId, {
     stdin: true,
     stdout: true,
     stderr: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isMultiplexedStreamSocket(socket), "Expected a multiplexed stream socket")
 
@@ -590,7 +583,7 @@ Effect.gen(function* () {
   assert.strictEqual(Chunk.join(data, ""), "d41d8cd98f00b204e9800998ecf8427e  -\nHi2\n")
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
@@ -642,20 +635,17 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdinSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdinSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stdin: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
-  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stdout: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
-  const stderrSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stderrSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stderr: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isRawStreamSocket(stdinSocket), "Expected a raw socket")
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
@@ -684,7 +674,7 @@ Effect.gen(function* () {
   )
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
@@ -737,10 +727,9 @@ Effect.gen(function* () {
 
   // It doesn't matter what tty option we start the container
   // with here, we will only get a raw socket
-  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket({
+  const stdoutSocket: MobyDemux.RawStreamSocket = yield* containers.attachWebsocket(containerId, {
     stdout: true,
-    stream: true,
-    id: containerId
+    stream: true
   })
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
 
@@ -753,7 +742,7 @@ Effect.gen(function* () {
   assert.strictEqual(Chunk.join(data, ""), "Hi\n")
 
   // Wait for the container to exit
-  yield* containers.wait({ id: containerId })
+  yield* containers.wait(containerId)
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))

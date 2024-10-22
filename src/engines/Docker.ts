@@ -195,7 +195,7 @@ export const buildScoped = <E1>({
  * @category Docker
  */
 export const stop = (containerId: string): Effect.Effect<void, Containers.ContainersError, Containers.Containers> =>
-    Containers.Containers.use((containers) => containers.stop({ id: containerId }));
+    Containers.Containers.use((containers) => containers.stop(containerId));
 
 /**
  * Implements `docker run` command.
@@ -209,11 +209,11 @@ export const run = (
     Effect.gen(function* () {
         const containers = yield* Containers.Containers;
         const containerCreateResponse = yield* containers.create(containerOptions);
-        yield* containers.start({ id: containerCreateResponse.Id });
+        yield* containers.start(containerCreateResponse.Id);
 
         // Helper to wait until a container is dead or running
         const waitUntilContainerDeadOrRunning = Function.pipe(
-            containers.inspect({ id: containerCreateResponse.Id }),
+            containers.inspect(containerCreateResponse.Id),
             // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
             Effect.flatMap(({ State }) =>
                 Function.pipe(
@@ -237,7 +237,7 @@ export const run = (
 
         // Helper for if the container has a healthcheck, wait for it to report healthy
         const waitUntilContainerHealthy = Function.pipe(
-            containers.inspect({ id: containerCreateResponse.Id }),
+            containers.inspect(containerCreateResponse.Id),
             // Effect.tap(({ State }) =>
             //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
             // ),
@@ -264,7 +264,7 @@ export const run = (
 
         yield* waitUntilContainerDeadOrRunning;
         yield* waitUntilContainerHealthy;
-        return yield* containers.inspect({ id: containerCreateResponse.Id });
+        return yield* containers.inspect(containerCreateResponse.Id);
     });
 
 /**
@@ -287,8 +287,8 @@ export const runScoped = (
             Effect.gen(function* () {
                 const containers = yield* Containers.Containers;
                 // FIXME: this cleanup should be better
-                yield* Effect.catchTag(containers.stop({ id: containerData.Id }), "ContainersError", () => Effect.void);
-                yield* containers.delete({ id: containerData.Id, force: true });
+                yield* Effect.catchTag(containers.stop(containerData.Id), "ContainersError", () => Effect.void);
+                yield* containers.delete(containerData.Id, { force: true });
             })
         );
     return Effect.acquireRelease(acquire, release);

@@ -10,7 +10,6 @@ import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
-import * as UrlParams from "@effect/platform/UrlParams";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -38,11 +37,7 @@ import {
     ContainerUpdateResponse,
     ContainerWaitResponse,
 } from "../generated/index.js";
-import {
-    HttpClientRequestExtension,
-    HttpClientRequestHttpUrl,
-    HttpClientRequestWebsocketUrl,
-} from "../platforms/Agnostic.js";
+import { getWebsocketUrl } from "../platforms/Agnostic.js";
 import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -167,13 +162,17 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerInspect */
-        const inspect_ = (options: {
-            readonly id: string;
-            readonly size?: boolean | undefined;
-        }): Effect.Effect<ContainerInspectResponse, ContainersError, never> =>
+        const inspect_ = (
+            id: string,
+            options?:
+                | {
+                      readonly size?: boolean | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<ContainerInspectResponse, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/json`),
-                maybeAddQueryParameter("size", Option.fromNullable(options.size)),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/json`),
+                maybeAddQueryParameter("size", Option.fromNullable(options?.size)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerInspectResponse)),
                 Effect.mapError((cause) => new ContainersError({ method: "inspect", cause })),
@@ -181,13 +180,17 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerTop */
-        const top_ = (options: {
-            readonly id: string;
-            readonly ps_args?: string | undefined;
-        }): Effect.Effect<ContainerTopResponse, ContainersError, never> =>
+        const top_ = (
+            id: string,
+            options?:
+                | {
+                      readonly ps_args?: string | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<ContainerTopResponse, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/top`),
-                maybeAddQueryParameter("ps_args", Option.fromNullable(options.ps_args)),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/top`),
+                maybeAddQueryParameter("ps_args", Option.fromNullable(options?.ps_args)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerTopResponse)),
                 Effect.mapError((cause) => new ContainersError({ method: "top", cause })),
@@ -195,25 +198,29 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerLogs */
-        const logs_ = (options: {
-            readonly id: string;
-            readonly follow?: boolean | undefined;
-            readonly stdout?: boolean | undefined;
-            readonly stderr?: boolean | undefined;
-            readonly since?: number | undefined;
-            readonly until?: number | undefined;
-            readonly timestamps?: boolean | undefined;
-            readonly tail?: string | undefined;
-        }): Stream.Stream<string, ContainersError, never> =>
+        const logs_ = (
+            id: string,
+            options?:
+                | {
+                      readonly follow?: boolean | undefined;
+                      readonly stdout?: boolean | undefined;
+                      readonly stderr?: boolean | undefined;
+                      readonly since?: number | undefined;
+                      readonly until?: number | undefined;
+                      readonly timestamps?: boolean | undefined;
+                      readonly tail?: string | undefined;
+                  }
+                | undefined
+        ): Stream.Stream<string, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/logs`),
-                maybeAddQueryParameter("follow", Option.fromNullable(options.follow)),
-                maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
-                maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-                maybeAddQueryParameter("since", Option.fromNullable(options.since)),
-                maybeAddQueryParameter("until", Option.fromNullable(options.until)),
-                maybeAddQueryParameter("timestamps", Option.fromNullable(options.timestamps)),
-                maybeAddQueryParameter("tail", Option.fromNullable(options.tail)),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/logs`),
+                maybeAddQueryParameter("follow", Option.fromNullable(options?.follow)),
+                maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
+                maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
+                maybeAddQueryParameter("since", Option.fromNullable(options?.since)),
+                maybeAddQueryParameter("until", Option.fromNullable(options?.until)),
+                maybeAddQueryParameter("timestamps", Option.fromNullable(options?.timestamps)),
+                maybeAddQueryParameter("tail", Option.fromNullable(options?.tail)),
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.decodeText(),
@@ -221,11 +228,9 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerChanges */
-        const changes_ = (options: {
-            readonly id: string;
-        }): Effect.Effect<ReadonlyArray<ContainerChange> | null, ContainersError> =>
+        const changes_ = (id: string): Effect.Effect<ReadonlyArray<ContainerChange> | null, ContainersError> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/changes`),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/changes`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.NullOr(Schema.Array(ContainerChange)))),
                 Effect.mapError((cause) => new ContainersError({ method: "changes", cause })),
@@ -233,24 +238,28 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerExport */
-        const export_ = (options: { readonly id: string }): Stream.Stream<Uint8Array, ContainersError, never> =>
+        const export_ = (id: string): Stream.Stream<Uint8Array, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/export`),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/export`),
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.mapError((cause) => new ContainersError({ method: "export", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerStats */
-        const stats_ = (options: {
-            readonly id: string;
-            readonly stream?: boolean | undefined;
-            readonly "one-shot"?: boolean | undefined;
-        }): Stream.Stream<ContainerStatsResponse, ContainersError, never> =>
+        const stats_ = (
+            id: string,
+            options?:
+                | {
+                      readonly stream?: boolean | undefined;
+                      readonly "one-shot"?: boolean | undefined;
+                  }
+                | undefined
+        ): Stream.Stream<ContainerStatsResponse, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/stats`),
-                maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
-                maybeAddQueryParameter("one-shot", Option.fromNullable(options["one-shot"])),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/stats`),
+                maybeAddQueryParameter("stream", Option.fromNullable(options?.stream)),
+                maybeAddQueryParameter("one-shot", Option.fromNullable(options?.["one-shot"])),
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.decodeText(),
@@ -259,15 +268,19 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerResize */
-        const resize_ = (options: {
-            readonly id: string;
-            readonly h?: number | undefined;
-            readonly w?: number | undefined;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const resize_ = (
+            id: string,
+            options?:
+                | {
+                      readonly h?: number | undefined;
+                      readonly w?: number | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/resize`),
-                maybeAddQueryParameter("h", Option.fromNullable(options.h)),
-                maybeAddQueryParameter("w", Option.fromNullable(options.w)),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/resize`),
+                maybeAddQueryParameter("h", Option.fromNullable(options?.h)),
+                maybeAddQueryParameter("w", Option.fromNullable(options?.w)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "resize", cause })),
@@ -275,13 +288,17 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerStart */
-        const start_ = (options: {
-            readonly id: string;
-            readonly detachKeys?: string | undefined;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const start_ = (
+            id: string,
+            options?:
+                | {
+                      readonly detachKeys?: string | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/start`),
-                maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/start`),
+                maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "start", cause })),
@@ -289,15 +306,19 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerStop */
-        const stop_ = (options: {
-            readonly id: string;
-            readonly signal?: string | undefined;
-            readonly t?: number | undefined;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const stop_ = (
+            id: string,
+            options?:
+                | {
+                      readonly signal?: string | undefined;
+                      readonly t?: number | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/stop`),
-                maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
-                maybeAddQueryParameter("t", Option.fromNullable(options.t)),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/stop`),
+                maybeAddQueryParameter("signal", Option.fromNullable(options?.signal)),
+                maybeAddQueryParameter("t", Option.fromNullable(options?.t)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "stop", cause })),
@@ -305,15 +326,19 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerRestart */
-        const restart_ = (options: {
-            readonly id: string;
-            readonly signal?: string | undefined;
-            readonly t?: number | undefined;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const restart_ = (
+            id: string,
+            options?:
+                | {
+                      readonly signal?: string | undefined;
+                      readonly t?: number | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/restart`),
-                maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
-                maybeAddQueryParameter("t", Option.fromNullable(options.t)),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/restart`),
+                maybeAddQueryParameter("signal", Option.fromNullable(options?.signal)),
+                maybeAddQueryParameter("t", Option.fromNullable(options?.t)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "restart", cause })),
@@ -321,13 +346,17 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerKill */
-        const kill_ = (options: {
-            readonly id: string;
-            readonly signal?: string | undefined;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const kill_ = (
+            id: string,
+            options?:
+                | {
+                      readonly signal?: string | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/kill`),
-                maybeAddQueryParameter("signal", Option.fromNullable(options.signal)),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/kill`),
+                maybeAddQueryParameter("signal", Option.fromNullable(options?.signal)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "kill", cause })),
@@ -335,12 +364,14 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerUpdate */
-        const update_ = (options: {
-            readonly id: string;
-            readonly spec: ContainerConfig;
-        }): Effect.Effect<ContainerUpdateResponse, ContainersError, never> =>
+        const update_ = (
+            id: string,
+            options: {
+                readonly spec: ContainerConfig;
+            }
+        ): Effect.Effect<ContainerUpdateResponse, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/update`),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/update`),
                 HttpClientRequest.schemaBodyJson(ContainerConfig)(options.spec),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerUpdateResponse)),
@@ -349,12 +380,14 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerRename */
-        const rename_ = (options: {
-            readonly id: string;
-            readonly name: string;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const rename_ = (
+            id: string,
+            options: {
+                readonly name: string;
+            }
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/rename`),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/rename`),
                 maybeAddQueryParameter("name", Option.fromNullable(options.name)),
                 client.execute,
                 Effect.asVoid,
@@ -363,9 +396,9 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerPause */
-        const pause_ = (options: { readonly id: string }): Effect.Effect<void, ContainersError, never> =>
+        const pause_ = (id: string): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/pause`),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/pause`),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "pause", cause })),
@@ -373,9 +406,9 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerUnpause */
-        const unpause_ = (options: { readonly id: string }): Effect.Effect<void, ContainersError, never> =>
+        const unpause_ = (id: string): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/unpause`),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/unpause`),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "unpause", cause })),
@@ -404,80 +437,70 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
          * @param stderr - Attach to `stderr`
          * @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerAttach
          */
-        const attach_ = (options: {
-            readonly id: string;
-            readonly detachKeys?: string | undefined;
-            readonly logs?: boolean | undefined;
-            readonly stream?: boolean | undefined;
-            readonly stdin?: boolean | undefined;
-            readonly stdout?: boolean | undefined;
-            readonly stderr?: boolean | undefined;
-        }): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
+        const attach_ = (
+            id: string,
+            options?:
+                | {
+                      readonly detachKeys?: string | undefined;
+                      readonly logs?: boolean | undefined;
+                      readonly stream?: boolean | undefined;
+                      readonly stdin?: boolean | undefined;
+                      readonly stdout?: boolean | undefined;
+                      readonly stderr?: boolean | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/attach`),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/attach`),
                 HttpClientRequest.setHeader("Upgrade", "tcp"),
                 HttpClientRequest.setHeader("Connection", "Upgrade"),
-                maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
-                maybeAddQueryParameter("logs", Option.fromNullable(options.logs)),
-                maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
-                maybeAddQueryParameter("stdin", Option.fromNullable(options.stdin)),
-                maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
-                maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
+                maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
+                maybeAddQueryParameter("logs", Option.fromNullable(options?.logs)),
+                maybeAddQueryParameter("stream", Option.fromNullable(options?.stream)),
+                maybeAddQueryParameter("stdin", Option.fromNullable(options?.stdin)),
+                maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
+                maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
                 maybeUpgradedClient.execute,
                 Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
                 Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerAttachWebsocket */
-        const attachWebsocket_ = (options: {
-            readonly id: string;
-            readonly detachKeys?: string | undefined;
-            readonly logs?: boolean | undefined;
-            readonly stream?: boolean | undefined;
-            readonly stdin?: boolean | undefined;
-            readonly stdout?: boolean | undefined;
-            readonly stderr?: boolean | undefined;
-        }): Effect.Effect<RawStreamSocket, ContainersError, Socket.WebSocketConstructor> =>
+        const attachWebsocket_ = (
+            id: string,
+            options?:
+                | {
+                      readonly detachKeys?: string | undefined;
+                      readonly logs?: boolean | undefined;
+                      readonly stream?: boolean | undefined;
+                      readonly stdin?: boolean | undefined;
+                      readonly stdout?: boolean | undefined;
+                      readonly stderr?: boolean | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<RawStreamSocket, ContainersError, Socket.WebSocketConstructor> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/attach/ws`),
-                maybeAddQueryParameter("detachKeys", Option.fromNullable(options.detachKeys)),
-                maybeAddQueryParameter("logs", Option.fromNullable(options.logs)),
-                maybeAddQueryParameter("stream", Option.fromNullable(options.stream)),
-                maybeAddQueryParameter("stdin", Option.fromNullable(options.stdin)),
-                maybeAddQueryParameter("stdout", Option.fromNullable(options.stdout)),
-                maybeAddQueryParameter("stderr", Option.fromNullable(options.stderr)),
-                (
-                    client as HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope> & {
-                        preprocess: (
-                            request: HttpClientRequest.HttpClientRequest
-                        ) => Effect.Effect<HttpClientRequestExtension>;
-                    }
-                ).preprocess as (
-                    request: HttpClientRequest.HttpClientRequest
-                ) => Effect.Effect<HttpClientRequestExtension>,
-                Effect.flatMap(
-                    ({
-                        hash,
-                        url,
-                        urlParams,
-                        [HttpClientRequestHttpUrl]: httpUrl,
-                        [HttpClientRequestWebsocketUrl]: websocketUrl,
-                    }) => UrlParams.makeUrl(`${url.replace(httpUrl, websocketUrl)}`, urlParams, hash)
-                ),
-                Effect.map((url) => url.toString()),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/attach/ws`),
+                maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
+                maybeAddQueryParameter("logs", Option.fromNullable(options?.logs)),
+                maybeAddQueryParameter("stream", Option.fromNullable(options?.stream)),
+                maybeAddQueryParameter("stdin", Option.fromNullable(options?.stdin)),
+                maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
+                maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
+                getWebsocketUrl(client),
                 Effect.flatMap(Socket.makeWebSocket),
                 Effect.map(makeRawStreamSocket),
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerWait */
-        const wait_ = (options: {
-            readonly id: string;
-            readonly condition?: string | undefined;
-        }): Effect.Effect<ContainerWaitResponse, ContainersError, never> =>
+        const wait_ = (
+            id: string,
+            options?: { readonly condition?: string | undefined } | undefined
+        ): Effect.Effect<ContainerWaitResponse, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.post(`/containers/${encodeURIComponent(options.id)}/wait`),
-                maybeAddQueryParameter("condition", Option.fromNullable(options.condition)),
+                HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/wait`),
+                maybeAddQueryParameter("condition", Option.fromNullable(options?.condition)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerWaitResponse)),
                 Effect.mapError((cause) => new ContainersError({ method: "wait", cause })),
@@ -485,17 +508,21 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerDelete */
-        const delete_ = (options: {
-            readonly id: string;
-            readonly v?: boolean | undefined;
-            readonly force?: boolean | undefined;
-            readonly link?: boolean | undefined;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const delete_ = (
+            id: string,
+            options?:
+                | {
+                      readonly v?: boolean | undefined;
+                      readonly force?: boolean | undefined;
+                      readonly link?: boolean | undefined;
+                  }
+                | undefined
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.del(`/containers/${encodeURIComponent(options.id)}`),
-                maybeAddQueryParameter("v", Option.fromNullable(options.v)),
-                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-                maybeAddQueryParameter("link", Option.fromNullable(options.link)),
+                HttpClientRequest.del(`/containers/${encodeURIComponent(id)}`),
+                maybeAddQueryParameter("v", Option.fromNullable(options?.v)),
+                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
+                maybeAddQueryParameter("link", Option.fromNullable(options?.link)),
                 client.execute,
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "delete", cause })),
@@ -503,12 +530,12 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerArchive */
-        const archive_ = (options: {
-            readonly id: string;
-            readonly path: string;
-        }): Stream.Stream<Uint8Array, ContainersError, never> =>
+        const archive_ = (
+            id: string,
+            options: { readonly path: string }
+        ): Stream.Stream<Uint8Array, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.get(`/containers/${encodeURIComponent(options.id)}/archive`),
+                HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/archive`),
                 maybeAddQueryParameter("path", Option.some(options.path)),
                 client.execute,
                 HttpClientResponse.stream,
@@ -516,12 +543,12 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/ContainerArchiveInfo */
-        const archiveInfo_ = (options: {
-            readonly id: string;
-            readonly path: string;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const archiveInfo_ = (
+            id: string,
+            options: { readonly path: string }
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.head(`/containers/${encodeURIComponent(options.id)}/archive`),
+                HttpClientRequest.head(`/containers/${encodeURIComponent(id)}/archive`),
                 maybeAddQueryParameter("path", Option.some(options.path)),
                 client.execute,
                 Effect.asVoid,
@@ -530,15 +557,17 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/version/v1.47/#tag/Container/operation/PutContainerArchive */
-        const putArchive_ = <E1>(options: {
-            readonly id: string;
-            readonly path: string;
-            readonly noOverwriteDirNonDir?: string | undefined;
-            readonly copyUIDGID?: string | undefined;
-            readonly stream: Stream.Stream<Uint8Array, E1, never>;
-        }): Effect.Effect<void, ContainersError, never> =>
+        const putArchive_ = <E1>(
+            id: string,
+            options: {
+                readonly path: string;
+                readonly noOverwriteDirNonDir?: string | undefined;
+                readonly copyUIDGID?: string | undefined;
+                readonly stream: Stream.Stream<Uint8Array, E1, never>;
+            }
+        ): Effect.Effect<void, ContainersError, never> =>
             Function.pipe(
-                HttpClientRequest.put(`/containers/${encodeURIComponent(options.id)}/archive`),
+                HttpClientRequest.put(`/containers/${encodeURIComponent(id)}/archive`),
                 maybeAddQueryParameter("path", Option.some(options.path)),
                 maybeAddQueryParameter("noOverwriteDirNonDir", Option.fromNullable(options.noOverwriteDirNonDir)),
                 maybeAddQueryParameter("copyUIDGID", Option.fromNullable(options.copyUIDGID)),

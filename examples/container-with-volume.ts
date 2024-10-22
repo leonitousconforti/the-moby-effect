@@ -37,8 +37,8 @@ const program = Effect.gen(function* () {
         },
     });
 
-    yield* containers.wait({ id: containerInspectResponse.Id });
-    yield* containers.delete({ id: containerInspectResponse.Id });
+    yield* containers.wait(containerInspectResponse.Id);
+    yield* containers.delete(containerInspectResponse.Id);
 });
 
 program

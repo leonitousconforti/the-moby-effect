@@ -38,8 +38,7 @@ const program = Effect.gen(function* () {
     });
 
     // Attach to the container
-    const socket = yield* containers.attach({
-        id: containerId,
+    const socket = yield* containers.attach(containerId, {
         stdin: true,
         stdout: true,
         stderr: true,

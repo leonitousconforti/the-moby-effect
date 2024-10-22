@@ -103,7 +103,7 @@ const downloadDindCertificates = (
 > =>
     Effect.gen(function* () {
         const containers = yield* Containers;
-        const certs = yield* Untar.Untar(containers.archive({ id: dindContainerId, path: "/certs" }));
+        const certs = yield* Untar.Untar(containers.archive(dindContainerId, { path: "/certs" }));
 
         const readAndAssemble = (
             path: string
@@ -205,11 +205,10 @@ const makeDindBinds = <ExposeDindBy extends Platforms.MobyConnectionOptions["_ta
 const waitForDindContainerToBeReady = (dindContainerId: string): Effect.Effect<void, ContainersError, Containers> =>
     Function.pipe(
         Containers.use((containers) =>
-            containers.logs({
+            containers.logs(dindContainerId, {
                 follow: true,
                 stdout: true,
                 stderr: true,
-                id: dindContainerId,
             })
         ),
         Stream.unwrap,

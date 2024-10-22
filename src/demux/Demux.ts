@@ -93,13 +93,15 @@ export declare namespace Demux {
  *         // we should get a raw socket here
  *         const socket:
  *             | MobyDemux.RawStreamSocket
- *             | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
- *             stdin: true,
- *             stdout: true,
- *             stderr: true,
- *             stream: true,
- *             id: containerId,
- *         });
+ *             | MobyDemux.MultiplexedStreamSocket = yield* containers.attach(
+ *             containerId,
+ *             {
+ *                 stdin: true,
+ *                 stdout: true,
+ *                 stderr: true,
+ *                 stream: true,
+ *             }
+ *         );
  *         assert.ok(
  *             MobyDemux.isRawStreamSocket(socket),
  *             "Expected a raw socket"
@@ -118,7 +120,7 @@ export declare namespace Demux {
  *         );
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
@@ -168,13 +170,15 @@ export declare namespace Demux {
  *         // we should get a multiplexed socket here
  *         const socket:
  *             | MobyDemux.RawStreamSocket
- *             | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
- *             stdin: true,
- *             stdout: true,
- *             stderr: true,
- *             stream: true,
- *             id: containerId,
- *         });
+ *             | MobyDemux.MultiplexedStreamSocket = yield* containers.attach(
+ *             containerId,
+ *             {
+ *                 stdin: true,
+ *                 stdout: true,
+ *                 stderr: true,
+ *                 stream: true,
+ *             }
+ *         );
  *         assert.ok(
  *             MobyDemux.isMultiplexedStreamSocket(socket),
  *             "Expected a multiplexed stream socket"
@@ -193,7 +197,7 @@ export declare namespace Demux {
  *         );
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
@@ -243,22 +247,19 @@ export declare namespace Demux {
  *         // It doesn't matter what tty option we start the container
  *         // with here, we will only get a raw socket
  *         const stdinSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stdin: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         const stdoutSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stdout: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         const stderrSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stderr: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         assert.ok(
  *             MobyDemux.isRawStreamSocket(stdinSocket),
@@ -296,7 +297,7 @@ export declare namespace Demux {
  *         );
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
@@ -351,10 +352,9 @@ export declare namespace Demux {
  *         // It doesn't matter what tty option we start the container
  *         // with here, we will only get a raw socket
  *         const stdoutSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stdout: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         assert.ok(
  *             MobyDemux.isRawStreamSocket(stdoutSocket),
@@ -370,7 +370,7 @@ export declare namespace Demux {
  *         assert.strictEqual(Chunk.join(data, ""), "Hi\n");
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
@@ -553,13 +553,15 @@ export const demuxUnknownToSingleSink: {
  *         // we should get a multiplexed socket here
  *         const socket:
  *             | MobyDemux.RawStreamSocket
- *             | MobyDemux.MultiplexedStreamSocket = yield* containers.attach({
- *             stdin: true,
- *             stdout: true,
- *             stderr: true,
- *             stream: true,
- *             id: containerId,
- *         });
+ *             | MobyDemux.MultiplexedStreamSocket = yield* containers.attach(
+ *             containerId,
+ *             {
+ *                 stdin: true,
+ *                 stdout: true,
+ *                 stderr: true,
+ *                 stream: true,
+ *             }
+ *         );
  *         assert.ok(
  *             MobyDemux.isMultiplexedStreamSocket(socket),
  *             "Expected a multiplexed stream socket"
@@ -580,7 +582,7 @@ export const demuxUnknownToSingleSink: {
  *         assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n");
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
@@ -630,22 +632,19 @@ export const demuxUnknownToSingleSink: {
  *         // It doesn't matter what tty option we start the container
  *         // with here, we will only get a raw socket
  *         const stdinSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stdin: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         const stdoutSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stdout: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         const stderrSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stderr: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         assert.ok(
  *             MobyDemux.isRawStreamSocket(stdinSocket),
@@ -679,7 +678,7 @@ export const demuxUnknownToSingleSink: {
  *         assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n");
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
@@ -733,10 +732,9 @@ export const demuxUnknownToSingleSink: {
  *         // It doesn't matter what tty option we start the container
  *         // with here, we will only get a raw socket
  *         const stdoutSocket: MobyDemux.RawStreamSocket =
- *             yield* containers.attachWebsocket({
+ *             yield* containers.attachWebsocket(containerId, {
  *                 stdout: true,
  *                 stream: true,
- *                 id: containerId,
  *             });
  *         assert.ok(
  *             MobyDemux.isRawStreamSocket(stdoutSocket),
@@ -755,7 +753,7 @@ export const demuxUnknownToSingleSink: {
  *         assert.strictEqual(stderrData, undefined);
  *
  *         // Wait for the container to exit
- *         yield* containers.wait({ id: containerId });
+ *         yield* containers.wait(containerId);
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))

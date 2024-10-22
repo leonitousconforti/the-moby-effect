@@ -21,6 +21,7 @@ Added in v1.0.0
   - [makeWebsocketRequestUrl](#makewebsocketrequesturl)
 - [Types](#types)
   - [HttpClientRequestExtension (interface)](#httpclientrequestextension-interface)
+  - [getWebsocketUrl](#getwebsocketurl)
 
 ---
 
@@ -78,6 +79,25 @@ export interface HttpClientRequestExtension extends HttpClientRequest.HttpClient
   readonly [HttpClientRequestHttpUrl]: string
   readonly [HttpClientRequestWebsocketUrl]: string
 }
+```
+
+Added in v1.0.0
+
+## getWebsocketUrl
+
+FIXME: this feels very hacky, and is currently only used in one spot where we
+get very desperate, can we do better?
+
+**Signature**
+
+```ts
+export declare const getWebsocketUrl: ((
+  client: HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+) => (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<string, Error, never>) &
+  ((
+    request: HttpClientRequest.HttpClientRequest,
+    client: HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+  ) => Effect.Effect<string, Error, never>)
 ```
 
 Added in v1.0.0

@@ -50,8 +50,7 @@ const program = Effect.gen(function* () {
         },
     });
 
-    const data: MobySchemas.ContainerTopResponse = yield* containers.top({
-        id: containerInspectResponse.Id,
+    const data: MobySchemas.ContainerTopResponse = yield* containers.top(containerInspectResponse.Id, {
         ps_args: "aux",
     });
 
