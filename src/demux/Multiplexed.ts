@@ -82,7 +82,9 @@ export const MultiplexedStreamSocketContentType = "application/vnd.docker.multip
  * @category Type ids
  * @internal
  */
-export const MultiplexedStreamSocketTypeId: unique symbol = Symbol.for("the-moby-effect/demux/MultiplexedStreamSocket");
+export const MultiplexedStreamSocketTypeId: unique symbol = Symbol.for(
+    "the-moby-effect/demux/MultiplexedStreamSocket"
+) as MultiplexedStreamSocketTypeId;
 
 /**
  * @since 1.0.0

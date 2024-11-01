@@ -33,7 +33,9 @@ export const RawStreamSocketContentType = "application/vnd.docker.raw-stream" as
  * @category Type ids
  * @internal
  */
-export const RawStreamSocketTypeId: unique symbol = Symbol.for("the-moby-effect/demux/RawStreamSocket");
+export const RawStreamSocketTypeId: unique symbol = Symbol.for(
+    "the-moby-effect/demux/RawStreamSocket"
+) as RawStreamSocketTypeId;
 
 /**
  * @since 1.0.0
