@@ -35,7 +35,9 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const SystemsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SystemsError");
+export const SystemsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/SystemsError"
+) as SystemsErrorTypeId;
 
 /**
  * @since 1.0.0

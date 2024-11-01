@@ -29,7 +29,9 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const SecretsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SecretsError");
+export const SecretsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/SecretsError"
+) as SecretsErrorTypeId;
 
 /**
  * @since 1.0.0

@@ -22,7 +22,9 @@ import { RegistryDistributionInspect } from "../generated/index.js";
  * @category Errors
  * @internal
  */
-export const DistributionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/DistributionsError");
+export const DistributionsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/DistributionsError"
+) as DistributionsErrorTypeId;
 
 /**
  * @since 1.0.0

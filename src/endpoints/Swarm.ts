@@ -36,7 +36,9 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const SwarmsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SwarmsError");
+export const SwarmsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/SwarmsError"
+) as SwarmsErrorTypeId;
 
 /**
  * @since 1.0.0

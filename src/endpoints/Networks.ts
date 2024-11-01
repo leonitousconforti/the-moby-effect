@@ -33,7 +33,9 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const NetworksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/NetworksError");
+export const NetworksErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/NetworksError"
+) as NetworksErrorTypeId;
 
 /**
  * @since 1.0.0

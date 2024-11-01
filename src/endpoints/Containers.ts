@@ -45,7 +45,9 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const ContainersErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ContainersError");
+export const ContainersErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ContainersError"
+) as ContainersErrorTypeId;
 
 /**
  * @since 1.0.0

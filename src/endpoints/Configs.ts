@@ -29,7 +29,9 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const ConfigsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ConfigsError");
+export const ConfigsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ConfigsError"
+) as ConfigsErrorTypeId;
 
 /**
  * @since 1.0.0
