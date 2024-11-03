@@ -21,7 +21,9 @@ import { hijackResponseUnsafe } from "../demux/Hijack.js";
  * @category Errors
  * @internal
  */
-export const SessionsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/SessionsError");
+export const SessionsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/SessionsError"
+) as SessionsErrorTypeId;
 
 /**
  * @since 1.0.0

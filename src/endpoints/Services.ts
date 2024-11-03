@@ -35,7 +35,9 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const ServicesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ServicesError");
+export const ServicesErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ServicesError"
+) as ServicesErrorTypeId;
 
 /**
  * @since 1.0.0

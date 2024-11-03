@@ -13,7 +13,7 @@ import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { Demux, demuxUnknownToSeparateSinks } from "./Demux.js";
+import { type Demux, demuxUnknownToSeparateSinks } from "./Demux.js";
 
 /**
  * @since 1.0.0

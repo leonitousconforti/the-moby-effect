@@ -32,7 +32,9 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const VolumesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/VolumesError");
+export const VolumesErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/VolumesError"
+) as VolumesErrorTypeId;
 
 /**
  * @since 1.0.0

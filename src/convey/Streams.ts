@@ -12,7 +12,7 @@ import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import * as Tar from "../archive/Tar.js";
+import { TarballFromFilesystem, TarballFromMemory } from "../archive/Tar.js";
 
 /**
  * @since 1.0.0
@@ -42,5 +42,5 @@ export const packBuildContextIntoTarballStream: {
     entries: Array<string> = ["dockerfile"]
 ): U =>
     Predicate.isString(cwdOrEntries)
-        ? (Tar.TarballFromFilesystem(cwdOrEntries, entries) as U)
-        : (Tar.TarballFromMemory(cwdOrEntries) as U);
+        ? (TarballFromFilesystem(cwdOrEntries, entries) as U)
+        : (TarballFromMemory(cwdOrEntries) as U);

@@ -28,7 +28,7 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const NodesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/NodesError");
+export const NodesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/NodesError") as NodesErrorTypeId;
 
 /**
  * @since 1.0.0

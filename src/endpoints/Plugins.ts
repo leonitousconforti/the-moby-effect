@@ -26,7 +26,9 @@ import { maybeAddHeader, maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const PluginsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/PluginsError");
+export const PluginsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/PluginsError"
+) as PluginsErrorTypeId;
 
 /**
  * @since 1.0.0

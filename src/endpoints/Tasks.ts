@@ -28,7 +28,7 @@ import { maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const TasksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/TasksError");
+export const TasksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/TasksError") as TasksErrorTypeId;
 
 /**
  * @since 1.0.0

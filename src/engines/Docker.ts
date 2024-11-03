@@ -14,15 +14,28 @@ import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
-
-import * as Containers from "../endpoints/Containers.js";
-import * as Execs from "../endpoints/Execs.js";
-import * as Images from "../endpoints/Images.js";
-import * as System from "../endpoints/System.js";
-import * as GeneratedSchemas from "../generated/index.js";
-import * as Platforms from "../MobyConnection.js";
-import * as Demux from "../MobyDemux.js";
 import * as Moby from "./Moby.js";
+
+import type {
+    HttpConnectionOptionsTagged,
+    HttpsConnectionOptionsTagged,
+    MobyConnectionOptions,
+} from "../MobyConnection.js";
+
+import { demuxUnknownToSingleSink } from "../demux/Demux.js";
+import { Containers, ContainersError } from "../endpoints/Containers.js";
+import { Execs, ExecsError } from "../endpoints/Execs.js";
+import { Images, ImagesError } from "../endpoints/Images.js";
+import { Systems, SystemsError } from "../endpoints/System.js";
+import {
+    ContainerInspectResponse,
+    ContainerListResponseItem,
+    ImageSummary,
+    JSONMessage,
+    RegistrySearchResponse,
+    SystemInfoResponse,
+    SystemVersionResponse,
+} from "../generated/index.js";
 
 /**
  * @since 1.0.0
@@ -46,40 +59,39 @@ export const layerWithoutHttpCLient: DockerLayerWithoutHttpClient = Moby.layerWi
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerNodeJS;
+export const layerNodeJS: (connectionOptions: MobyConnectionOptions) => DockerLayer = Moby.layerNodeJS;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerBun;
+export const layerBun: (connectionOptions: MobyConnectionOptions) => DockerLayer = Moby.layerBun;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerDeno;
+export const layerDeno: (connectionOptions: MobyConnectionOptions) => DockerLayer = Moby.layerDeno;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer = Moby.layerUndici;
+export const layerUndici: (connectionOptions: MobyConnectionOptions) => DockerLayer = Moby.layerUndici;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb: (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-) => DockerLayer = Moby.layerWeb;
+export const layerWeb: (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged) => DockerLayer =
+    Moby.layerWeb;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
 export const layerAgnostic: (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => DockerLayerWithoutHttpClient = Moby.layerAgnostic;
 
 /**
@@ -97,10 +109,8 @@ export const pull = ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}): Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images> =>
-    Stream.unwrap(
-        Images.Images.use((images) => images.create({ fromImage: image, "X-Registry-Auth": auth, platform }))
-    );
+}): Stream.Stream<JSONMessage, ImagesError, Images> =>
+    Stream.unwrap(Images.use((images) => images.create({ fromImage: image, "X-Registry-Auth": auth, platform })));
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
@@ -118,13 +128,9 @@ export const pullScoped = ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}): Effect.Effect<
-    Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>,
-    never,
-    Images.Images | Scope.Scope
-> => {
+}): Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, never, Images | Scope.Scope> => {
     const acquire = pull({ image, auth, platform });
-    const release = Effect.orDie(Images.Images.use((images) => images.delete({ name: image })));
+    const release = Effect.orDie(Images.use((images) => images.delete({ name: image })));
     return Effect.acquireRelease(Effect.succeed(acquire), () => release);
 };
 
@@ -149,9 +155,9 @@ export const build = <E1>({
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
     buildArgs?: Record<string, string | undefined> | undefined;
-}): Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images> =>
+}): Stream.Stream<JSONMessage, ImagesError, Images> =>
     Stream.unwrap(
-        Images.Images.use((images) =>
+        Images.use((images) =>
             images.build({ context, buildArgs, dockerfile, platform, t: tag, "X-Registry-Config": auth })
         )
     );
@@ -178,13 +184,9 @@ export const buildScoped = <E1>({
     dockerfile?: string | undefined;
     buildArgs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
-}): Effect.Effect<
-    Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>,
-    Images.ImagesError,
-    Scope.Scope | Images.Images
-> => {
+}): Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, ImagesError, Scope.Scope | Images> => {
     const acquire = build({ tag, buildArgs, auth, context, platform, dockerfile });
-    const release = Effect.orDie(Images.Images.use((images) => images.delete({ name: tag })));
+    const release = Effect.orDie(Images.use((images) => images.delete({ name: tag })));
     return Effect.acquireRelease(Effect.succeed(acquire), () => release);
 };
 
@@ -194,8 +196,8 @@ export const buildScoped = <E1>({
  * @since 1.0.0
  * @category Docker
  */
-export const stop = (containerId: string): Effect.Effect<void, Containers.ContainersError, Containers.Containers> =>
-    Containers.Containers.use((containers) => containers.stop(containerId));
+export const stop = (containerId: string): Effect.Effect<void, ContainersError, Containers> =>
+    Containers.use((containers) => containers.stop(containerId));
 
 /**
  * Implements `docker run` command.
@@ -204,10 +206,10 @@ export const stop = (containerId: string): Effect.Effect<void, Containers.Contai
  * @category Docker
  */
 export const run = (
-    containerOptions: Parameters<Containers.Containers["create"]>[0]
-): Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers> =>
+    containerOptions: Parameters<Containers["create"]>[0]
+): Effect.Effect<ContainerInspectResponse, ContainersError, Containers> =>
     Effect.gen(function* () {
-        const containers = yield* Containers.Containers;
+        const containers = yield* Containers;
         const containerCreateResponse = yield* containers.create(containerOptions);
         yield* containers.start(containerCreateResponse.Id);
 
@@ -223,15 +225,11 @@ export const run = (
                     // Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
                     // Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is dead or killed"))
-                ).pipe(
-                    Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", cause: new Error(s) }))
-                )
+                ).pipe(Effect.mapError((s) => new ContainersError({ method: "inspect", cause: new Error(s) })))
             )
         ).pipe(
             Effect.retry(
-                Schedule.spaced(500).pipe(
-                    Schedule.whileInput(({ message }: Containers.ContainersError) => message === "Waiting")
-                )
+                Schedule.spaced(500).pipe(Schedule.whileInput(({ message }: ContainersError) => message === "Waiting"))
             )
         );
 
@@ -250,15 +248,11 @@ export const run = (
                     // Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
                     // Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
                     Match.orElse((_s) => Effect.fail("Container is unhealthy"))
-                ).pipe(
-                    Effect.mapError((s) => new Containers.ContainersError({ method: "inspect", cause: new Error(s) }))
-                )
+                ).pipe(Effect.mapError((s) => new ContainersError({ method: "inspect", cause: new Error(s) })))
             )
         ).pipe(
             Effect.retry(
-                Schedule.spaced(500).pipe(
-                    Schedule.whileInput(({ message }: Containers.ContainersError) => message === "Waiting")
-                )
+                Schedule.spaced(500).pipe(Schedule.whileInput(({ message }: ContainersError) => message === "Waiting"))
             )
         );
 
@@ -275,17 +269,13 @@ export const run = (
  * @category Docker
  */
 export const runScoped = (
-    containerOptions: Parameters<Containers.Containers["create"]>[0]
-): Effect.Effect<
-    GeneratedSchemas.ContainerInspectResponse,
-    Containers.ContainersError,
-    Scope.Scope | Containers.Containers
-> => {
+    containerOptions: Parameters<Containers["create"]>[0]
+): Effect.Effect<ContainerInspectResponse, ContainersError, Scope.Scope | Containers> => {
     const acquire = run(containerOptions);
-    const release = (containerData: GeneratedSchemas.ContainerInspectResponse) =>
+    const release = (containerData: ContainerInspectResponse) =>
         Effect.orDie(
             Effect.gen(function* () {
-                const containers = yield* Containers.Containers;
+                const containers = yield* Containers;
                 // FIXME: this cleanup should be better
                 yield* Effect.catchTag(containers.stop(containerData.Id), "ContainersError", () => Effect.void);
                 yield* containers.delete(containerData.Id, { force: true });
@@ -306,9 +296,9 @@ export const execNonBlocking = ({
 }: {
     containerId: string;
     command: Array<string>;
-}): Effect.Effect<void, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs> =>
+}): Effect.Effect<void, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs> =>
     Effect.gen(function* () {
-        const execs = yield* Execs.Execs;
+        const execs = yield* Execs;
         const execId = yield* execs.container(containerId, {
             Cmd: command,
             AttachStderr: true,
@@ -331,9 +321,9 @@ export const exec = ({
 }: {
     containerId: string;
     command: Array<string>;
-}): Effect.Effect<string, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs> =>
+}): Effect.Effect<string, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs> =>
     Effect.gen(function* () {
-        const execs = yield* Execs.Execs;
+        const execs = yield* Execs;
         const execId = yield* execs.container(containerId, {
             Cmd: command,
             AttachStderr: true,
@@ -345,7 +335,7 @@ export const exec = ({
 
         const input = Stream.never;
         const output = Sink.collectAll<string>();
-        return yield* Effect.map(Demux.demuxUnknownToSingleSink(socket, input, output), Chunk.join(""));
+        return yield* Effect.map(demuxUnknownToSingleSink(socket, input, output), Chunk.join(""));
     }).pipe(Effect.scoped);
 
 /**
@@ -355,12 +345,9 @@ export const exec = ({
  * @category Docker
  */
 export const ps = (
-    options?: Parameters<Containers.Containers["list"]>[0]
-): Effect.Effect<
-    ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
-    Containers.ContainersError,
-    Containers.Containers
-> => Containers.Containers.use((containers) => containers.list(options));
+    options?: Parameters<Containers["list"]>[0]
+): Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, Containers> =>
+    Containers.use((containers) => containers.list(options));
 
 /**
  * Implements the `docker push` command.
@@ -368,10 +355,8 @@ export const ps = (
  * @since 1.0.0
  * @category Docker
  */
-export const push = (
-    options: Parameters<Images.Images["push"]>[0]
-): Stream.Stream<string, Images.ImagesError, Images.Images> =>
-    Stream.unwrap(Images.Images.use((images) => images.push(options)));
+export const push = (options: Parameters<Images["push"]>[0]): Stream.Stream<string, ImagesError, Images> =>
+    Stream.unwrap(Images.use((images) => images.push(options)));
 
 /**
  * Implements the `docker images` command.
@@ -380,9 +365,8 @@ export const push = (
  * @category Docker
  */
 export const images = (
-    options?: Parameters<Images.Images["list"]>[0]
-): Effect.Effect<ReadonlyArray<GeneratedSchemas.ImageSummary>, Images.ImagesError, Images.Images> =>
-    Images.Images.use((images) => images.list(options));
+    options?: Parameters<Images["list"]>[0]
+): Effect.Effect<ReadonlyArray<ImageSummary>, ImagesError, Images> => Images.use((images) => images.list(options));
 
 /**
  * Implements the `docker search` command.
@@ -391,9 +375,9 @@ export const images = (
  * @category Docker
  */
 export const search = (
-    options: Parameters<Images.Images["search"]>[0]
-): Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images> =>
-    Images.Images.use((images) => images.search(options));
+    options: Parameters<Images["search"]>[0]
+): Effect.Effect<ReadonlyArray<RegistrySearchResponse>, ImagesError, Images> =>
+    Images.use((images) => images.search(options));
 
 /**
  * Implements the `docker version` command.
@@ -401,11 +385,9 @@ export const search = (
  * @since 1.0.0
  * @category Docker
  */
-export const version: () => Effect.Effect<
-    Readonly<GeneratedSchemas.SystemVersionResponse>,
-    System.SystemsError,
-    System.Systems
-> = Function.constant(System.Systems.use((systems) => systems.version()));
+export const version: () => Effect.Effect<Readonly<SystemVersionResponse>, SystemsError, Systems> = Function.constant(
+    Systems.use((systems) => systems.version())
+);
 
 /**
  * Implements the `docker info` command.
@@ -413,20 +395,8 @@ export const version: () => Effect.Effect<
  * @since 1.0.0
  * @category Docker
  */
-export const info: () => Effect.Effect<
-    Readonly<GeneratedSchemas.SystemInfoResponse>,
-    System.SystemsError,
-    System.Systems
-> = Function.constant(System.Systems.use((systems) => systems.info()));
-
-/**
- * Implements the `docker ping` command.
- *
- * @since 1.0.0
- * @category Docker
- */
-export const ping: () => Effect.Effect<"OK", System.SystemsError, System.Systems> = Function.constant(
-    System.Systems.use((systems) => systems.ping())
+export const info: () => Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, Systems> = Function.constant(
+    Systems.use((systems) => systems.info())
 );
 
 /**
@@ -435,6 +405,16 @@ export const ping: () => Effect.Effect<"OK", System.SystemsError, System.Systems
  * @since 1.0.0
  * @category Docker
  */
-export const pingHead: () => Effect.Effect<void, System.SystemsError, System.Systems> = Function.constant(
-    System.Systems.use((systems) => systems.ping())
+export const ping: () => Effect.Effect<"OK", SystemsError, Systems> = Function.constant(
+    Systems.use((systems) => systems.ping())
+);
+
+/**
+ * Implements the `docker ping` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const pingHead: () => Effect.Effect<void, SystemsError, Systems> = Function.constant(
+    Systems.use((systems) => systems.ping())
 );

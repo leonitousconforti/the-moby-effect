@@ -6,29 +6,28 @@
 
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
-
-import * as Platforms from "../MobyConnection.js";
-import * as Containers from "../endpoints/Containers.js";
-import * as Execs from "../endpoints/Execs.js";
-import * as Images from "../endpoints/Images.js";
-import * as Networks from "../endpoints/Networks.js";
-import * as Secrets from "../endpoints/Secrets.js";
-import * as System from "../endpoints/System.js";
-import * as Volumes from "../endpoints/Volumes.js";
 import * as Moby from "./Moby.js";
+
+import type {
+    HttpConnectionOptionsTagged,
+    HttpsConnectionOptionsTagged,
+    MobyConnectionOptions,
+} from "../MobyConnection.js";
+
+import { Containers, ContainersLayer } from "../endpoints/Containers.js";
+import { Execs, ExecsLayer } from "../endpoints/Execs.js";
+import { Images, ImagesLayer } from "../endpoints/Images.js";
+import { Networks, NetworksLayer } from "../endpoints/Networks.js";
+import { Secrets, SecretsLayer } from "../endpoints/Secrets.js";
+import { Systems, SystemsLayer } from "../endpoints/System.js";
+import { Volumes, VolumesLayer } from "../endpoints/Volumes.js";
 
 /**
  * @since 1.0.0
  * @category Layers
  */
 export type PodmanLayer = Layer.Layer<
-    | Containers.Containers
-    | Execs.Execs
-    | Images.Images
-    | Networks.Networks
-    | Secrets.Secrets
-    | System.Systems
-    | Volumes.Volumes,
+    Containers | Execs | Images | Networks | Secrets | Systems | Volumes,
     never,
     never
 >;
@@ -48,51 +47,50 @@ export type PodmanLayerWithoutHttpCLient = Layer.Layer<
  * @category Layers
  */
 export const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLient = Layer.mergeAll(
-    Containers.ContainersLayer,
-    Execs.ExecsLayer,
-    Images.ImagesLayer,
-    Networks.NetworksLayer,
-    Secrets.SecretsLayer,
-    System.SystemsLayer,
-    Volumes.VolumesLayer
+    ContainersLayer,
+    ExecsLayer,
+    ImagesLayer,
+    NetworksLayer,
+    SecretsLayer,
+    SystemsLayer,
+    VolumesLayer
 );
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerNodeJS;
+export const layerNodeJS: (connectionOptions: MobyConnectionOptions) => PodmanLayer = Moby.layerNodeJS;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerBun;
+export const layerBun: (connectionOptions: MobyConnectionOptions) => PodmanLayer = Moby.layerBun;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerDeno;
+export const layerDeno: (connectionOptions: MobyConnectionOptions) => PodmanLayer = Moby.layerDeno;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer = Moby.layerUndici;
+export const layerUndici: (connectionOptions: MobyConnectionOptions) => PodmanLayer = Moby.layerUndici;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb: (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-) => PodmanLayer = Moby.layerWeb;
+export const layerWeb: (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged) => PodmanLayer =
+    Moby.layerWeb;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
 export const layerAgnostic: (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => PodmanLayerWithoutHttpCLient = Moby.layerAgnostic;

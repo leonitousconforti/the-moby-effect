@@ -37,7 +37,9 @@ import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
  * @category Errors
  * @internal
  */
-export const ImagesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ImagesError");
+export const ImagesErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ImagesError"
+) as ImagesErrorTypeId;
 
 /**
  * @since 1.0.0
