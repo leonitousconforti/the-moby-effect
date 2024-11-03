@@ -7,44 +7,54 @@
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as Layer from "effect/Layer";
 
-import * as Configs from "../endpoints/Configs.js";
-import * as Containers from "../endpoints/Containers.js";
-import * as Distributions from "../endpoints/Distribution.js";
-import * as Execs from "../endpoints/Execs.js";
-import * as Images from "../endpoints/Images.js";
-import * as Networks from "../endpoints/Networks.js";
-import * as Nodes from "../endpoints/Nodes.js";
-import * as Plugins from "../endpoints/Plugins.js";
-import * as Secrets from "../endpoints/Secrets.js";
-import * as Services from "../endpoints/Services.js";
-import * as Sessions from "../endpoints/Session.js";
-import * as Swarm from "../endpoints/Swarm.js";
-import * as System from "../endpoints/System.js";
-import * as Tasks from "../endpoints/Tasks.js";
-import * as Volumes from "../endpoints/Volumes.js";
-import * as Connection from "../MobyConnection.js";
-import * as Platforms from "../MobyPlatforms.js";
+import type {
+    HttpConnectionOptionsTagged,
+    HttpsConnectionOptionsTagged,
+    MobyConnectionOptions,
+} from "../MobyConnection.js";
+
+import { Configs, ConfigsLayer } from "../endpoints/Configs.js";
+import { Containers, ContainersLayer } from "../endpoints/Containers.js";
+import { Distributions, DistributionsLayer } from "../endpoints/Distribution.js";
+import { Execs, ExecsLayer } from "../endpoints/Execs.js";
+import { Images, ImagesLayer } from "../endpoints/Images.js";
+import { Networks, NetworksLayer } from "../endpoints/Networks.js";
+import { Nodes, NodesLayer } from "../endpoints/Nodes.js";
+import { Plugins, PluginsLayer } from "../endpoints/Plugins.js";
+import { Secrets, SecretsLayer } from "../endpoints/Secrets.js";
+import { Services, ServicesLayer } from "../endpoints/Services.js";
+import { Sessions, SessionsLayer } from "../endpoints/Session.js";
+import { Swarm, SwarmLayer } from "../endpoints/Swarm.js";
+import { Systems, SystemsLayer } from "../endpoints/System.js";
+import { Tasks, TasksLayer } from "../endpoints/Tasks.js";
+import { Volumes, VolumesLayer } from "../endpoints/Volumes.js";
+import { makeAgnosticHttpClientLayer } from "../platforms/Agnostic.js";
+import { makeBunHttpClientLayer } from "../platforms/Bun.js";
+import { makeDenoHttpClientLayer } from "../platforms/Deno.js";
+import { makeNodeHttpClientLayer } from "../platforms/Node.js";
+import { makeUndiciHttpClientLayer } from "../platforms/Undici.js";
+import { makeWebHttpClientLayer } from "../platforms/Web.js";
 
 /**
  * @since 1.0.0
  * @category Layers
  */
 export type MobyLayerWithoutHttpClient = Layer.Layer<
-    | Configs.Configs
-    | Containers.Containers
-    | Distributions.Distributions
-    | Execs.Execs
-    | Images.Images
-    | Networks.Networks
-    | Nodes.Nodes
-    | Plugins.Plugins
-    | Secrets.Secrets
-    | Services.Services
-    | Sessions.Sessions
-    | Swarm.Swarm
-    | System.Systems
-    | Tasks.Tasks
-    | Volumes.Volumes,
+    | Configs
+    | Containers
+    | Distributions
+    | Execs
+    | Images
+    | Networks
+    | Nodes
+    | Plugins
+    | Secrets
+    | Services
+    | Sessions
+    | Swarm
+    | Systems
+    | Tasks
+    | Volumes,
     never,
     HttpClient.HttpClient
 >;
@@ -66,64 +76,62 @@ export type MobyLayer = Layer.Layer<
  * @category Layers
  */
 export const layerWithoutHttpCLient: MobyLayerWithoutHttpClient = Layer.mergeAll(
-    Configs.ConfigsLayer,
-    Containers.ContainersLayer,
-    Distributions.DistributionsLayer,
-    Execs.ExecsLayer,
-    Images.ImagesLayer,
-    Networks.NetworksLayer,
-    Nodes.NodesLayer,
-    Plugins.PluginsLayer,
-    Secrets.SecretsLayer,
-    Services.ServicesLayer,
-    Sessions.SessionsLayer,
-    Swarm.SwarmLayer,
-    System.SystemsLayer,
-    Tasks.TasksLayer,
-    Volumes.VolumesLayer
+    ConfigsLayer,
+    ContainersLayer,
+    DistributionsLayer,
+    ExecsLayer,
+    ImagesLayer,
+    NetworksLayer,
+    NodesLayer,
+    PluginsLayer,
+    SecretsLayer,
+    ServicesLayer,
+    SessionsLayer,
+    SwarmLayer,
+    SystemsLayer,
+    TasksLayer,
+    VolumesLayer
 );
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
-    Layer.provide(layerWithoutHttpCLient, Platforms.makeNodeHttpClientLayer(connectionOptions));
+export const layerNodeJS = (connectionOptions: MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, makeNodeHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
-    Layer.provide(layerWithoutHttpCLient, Platforms.makeBunHttpClientLayer(connectionOptions));
+export const layerBun = (connectionOptions: MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, makeBunHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
-    Layer.provide(layerWithoutHttpCLient, Platforms.makeDenoHttpClientLayer(connectionOptions));
+export const layerDeno = (connectionOptions: MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, makeDenoHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici = (connectionOptions: Connection.MobyConnectionOptions): MobyLayer =>
-    Layer.provide(layerWithoutHttpCLient, Platforms.makeUndiciHttpClientLayer(connectionOptions));
+export const layerUndici = (connectionOptions: MobyConnectionOptions): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, makeUndiciHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb = (
-    connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
-): MobyLayer => Layer.provide(layerWithoutHttpCLient, Platforms.makeWebHttpClientLayer(connectionOptions));
+export const layerWeb = (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, makeWebHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
 export const layerAgnostic = (
-    connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
-): MobyLayerWithoutHttpClient =>
-    Layer.provide(layerWithoutHttpCLient, Platforms.makeAgnosticHttpClientLayer(connectionOptions));
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+): MobyLayerWithoutHttpClient => Layer.provide(layerWithoutHttpCLient, makeAgnosticHttpClientLayer(connectionOptions));
