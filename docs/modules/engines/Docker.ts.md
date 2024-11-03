@@ -69,7 +69,7 @@ export declare const build: <E1>({
   dockerfile?: string | undefined
   context: Stream.Stream<Uint8Array, E1, never>
   buildArgs?: Record<string, string | undefined> | undefined
-}) => Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>
+}) => Stream.Stream<JSONMessage, ImagesError, Images>
 ```
 
 Added in v1.0.0
@@ -97,11 +97,7 @@ export declare const buildScoped: <E1>({
   dockerfile?: string | undefined
   buildArgs?: Record<string, string | undefined> | undefined
   context: Stream.Stream<Uint8Array, E1, never>
-}) => Effect.Effect<
-  Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>,
-  Images.ImagesError,
-  Scope.Scope | Images.Images
->
+}) => Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, ImagesError, Scope.Scope | Images>
 ```
 
 Added in v1.0.0
@@ -119,7 +115,7 @@ export declare const exec: ({
 }: {
   containerId: string
   command: Array<string>
-}) => Effect.Effect<string, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs>
+}) => Effect.Effect<string, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs>
 ```
 
 Added in v1.0.0
@@ -137,7 +133,7 @@ export declare const execNonBlocking: ({
 }: {
   containerId: string
   command: Array<string>
-}) => Effect.Effect<void, Execs.ExecsError | Socket.SocketError | ParseResult.ParseError, Execs.Execs>
+}) => Effect.Effect<void, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs>
 ```
 
 Added in v1.0.0
@@ -150,8 +146,8 @@ Implements the `docker images` command.
 
 ```ts
 export declare const images: (
-  options?: Parameters<Images.Images["list"]>[0]
-) => Effect.Effect<ReadonlyArray<GeneratedSchemas.ImageSummary>, Images.ImagesError, Images.Images>
+  options?: Parameters<Images["list"]>[0]
+) => Effect.Effect<ReadonlyArray<ImageSummary>, ImagesError, Images>
 ```
 
 Added in v1.0.0
@@ -163,11 +159,7 @@ Implements the `docker info` command.
 **Signature**
 
 ```ts
-export declare const info: () => Effect.Effect<
-  Readonly<GeneratedSchemas.SystemInfoResponse>,
-  System.SystemsError,
-  System.Systems
->
+export declare const info: () => Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, Systems>
 ```
 
 Added in v1.0.0
@@ -179,7 +171,7 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const ping: () => Effect.Effect<"OK", System.SystemsError, System.Systems>
+export declare const ping: () => Effect.Effect<"OK", SystemsError, Systems>
 ```
 
 Added in v1.0.0
@@ -191,7 +183,7 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const pingHead: () => Effect.Effect<void, System.SystemsError, System.Systems>
+export declare const pingHead: () => Effect.Effect<void, SystemsError, Systems>
 ```
 
 Added in v1.0.0
@@ -204,12 +196,8 @@ Implements the `docker ps` command.
 
 ```ts
 export declare const ps: (
-  options?: Parameters<Containers.Containers["list"]>[0]
-) => Effect.Effect<
-  ReadonlyArray<GeneratedSchemas.ContainerListResponseItem>,
-  Containers.ContainersError,
-  Containers.Containers
->
+  options?: Parameters<Containers["list"]>[0]
+) => Effect.Effect<ReadonlyArray<ContainerListResponseItem>, ContainersError, Containers>
 ```
 
 Added in v1.0.0
@@ -230,7 +218,7 @@ export declare const pull: ({
   image: string
   auth?: string | undefined
   platform?: string | undefined
-}) => Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>
+}) => Stream.Stream<JSONMessage, ImagesError, Images>
 ```
 
 Added in v1.0.0
@@ -252,11 +240,7 @@ export declare const pullScoped: ({
   image: string
   auth?: string | undefined
   platform?: string | undefined
-}) => Effect.Effect<
-  Stream.Stream<GeneratedSchemas.JSONMessage, Images.ImagesError, Images.Images>,
-  never,
-  Images.Images | Scope.Scope
->
+}) => Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, never, Images | Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -268,9 +252,7 @@ Implements the `docker push` command.
 **Signature**
 
 ```ts
-export declare const push: (
-  options: Parameters<Images.Images["push"]>[0]
-) => Stream.Stream<string, Images.ImagesError, Images.Images>
+export declare const push: (options: Parameters<Images["push"]>[0]) => Stream.Stream<string, ImagesError, Images>
 ```
 
 Added in v1.0.0
@@ -283,8 +265,8 @@ Implements `docker run` command.
 
 ```ts
 export declare const run: (
-  containerOptions: Parameters<Containers.Containers["create"]>[0]
-) => Effect.Effect<GeneratedSchemas.ContainerInspectResponse, Containers.ContainersError, Containers.Containers>
+  containerOptions: Parameters<Containers["create"]>[0]
+) => Effect.Effect<ContainerInspectResponse, ContainersError, Containers>
 ```
 
 Added in v1.0.0
@@ -298,12 +280,8 @@ both the image and the container is removed.
 
 ```ts
 export declare const runScoped: (
-  containerOptions: Parameters<Containers.Containers["create"]>[0]
-) => Effect.Effect<
-  GeneratedSchemas.ContainerInspectResponse,
-  Containers.ContainersError,
-  Scope.Scope | Containers.Containers
->
+  containerOptions: Parameters<Containers["create"]>[0]
+) => Effect.Effect<ContainerInspectResponse, ContainersError, Scope.Scope | Containers>
 ```
 
 Added in v1.0.0
@@ -316,8 +294,8 @@ Implements the `docker search` command.
 
 ```ts
 export declare const search: (
-  options: Parameters<Images.Images["search"]>[0]
-) => Effect.Effect<ReadonlyArray<GeneratedSchemas.RegistrySearchResponse>, Images.ImagesError, Images.Images>
+  options: Parameters<Images["search"]>[0]
+) => Effect.Effect<ReadonlyArray<RegistrySearchResponse>, ImagesError, Images>
 ```
 
 Added in v1.0.0
@@ -329,9 +307,7 @@ Implements the `docker stop` command.
 **Signature**
 
 ```ts
-export declare const stop: (
-  containerId: string
-) => Effect.Effect<void, Containers.ContainersError, Containers.Containers>
+export declare const stop: (containerId: string) => Effect.Effect<void, ContainersError, Containers>
 ```
 
 Added in v1.0.0
@@ -343,11 +319,7 @@ Implements the `docker version` command.
 **Signature**
 
 ```ts
-export declare const version: () => Effect.Effect<
-  Readonly<GeneratedSchemas.SystemVersionResponse>,
-  System.SystemsError,
-  System.Systems
->
+export declare const version: () => Effect.Effect<Readonly<SystemVersionResponse>, SystemsError, Systems>
 ```
 
 Added in v1.0.0
@@ -380,7 +352,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerAgnostic: (
-  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => DockerLayerWithoutHttpClient
 ```
 
@@ -391,7 +363,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
+export declare const layerBun: (connectionOptions: MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -401,7 +373,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
+export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -411,7 +383,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
+export declare const layerNodeJS: (connectionOptions: MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -421,7 +393,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => DockerLayer
+export declare const layerUndici: (connectionOptions: MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -432,7 +404,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: (
-  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => DockerLayer
 ```
 
