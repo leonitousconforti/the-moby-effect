@@ -192,7 +192,7 @@ export const makeLayer =
             const uploadProject = <E1>(project: Stream.Stream<Uint8Array, E1, never>): Effect.Effect<void, E1, never> =>
                 Effect.gen(function* () {
                     const containers = yield* Containers;
-                    containers.putArchive(dindContainerId, { path: "/", stream: project });
+                    containers.putArchive(dindContainerId, { path: "/tmp", stream: project });
                 }).pipe(Effect.provide(hostDocker));
 
             // Helper to run a command in the dind
@@ -328,7 +328,7 @@ export interface DockerComposeProject {
     readonly pull: (options: {}) => Effect.Effect<void, DockerComposeError, never>;
     readonly up: (options: {}) => Effect.Effect<void, DockerComposeError, never>;
     readonly down: (options: {}) => Effect.Effect<void, DockerComposeError, never>;
-    readonly rm: (options: {}) => Effect.Effect<void, DockerComposeError, void>;
+    readonly rm: (options: {}) => Effect.Effect<void, DockerComposeError, never>;
     readonly kill: (options: {}) => Effect.Effect<void, DockerComposeError, never>;
 }
 
