@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 30
+nav_order: 31
 parent: Modules
 ---
 
@@ -16,6 +16,7 @@ Added in v1.0.0
 
 - [exports](#exports)
   - [From "./DindEngine.js"](#from-dindenginejs)
+  - [From "./DockerComposeEngine.js"](#from-dockercomposeenginejs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
   - [From "./MobyConnection.js"](#from-mobyconnectionjs)
   - [From "./MobyConvey.js"](#from-mobyconveyjs)
@@ -38,6 +39,18 @@ Docker in docker engine shortcut.
 
 ```ts
 export * as DindEngine from "./DindEngine.js"
+```
+
+Added in v1.0.0
+
+## From "./DockerComposeEngine.js"
+
+Docker compose engine shortcut.
+
+**Signature**
+
+```ts
+export * as DockerComposeEngine from "./DockerComposeEngine.js"
 ```
 
 Added in v1.0.0
