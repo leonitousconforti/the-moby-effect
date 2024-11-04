@@ -28,11 +28,14 @@ The motivation for this project come from working with dockerode and I became fr
 ## WIP/Todo :construction:
 
 - More examples
+- Enhanced docker compose support
 - Maybe add tests against something else other than docker like podman?
 
 ## Blocked :ambulance:
 
-DockerCompose support. Blocked only because I have no idea where to even start on this. I'm confident it just reuses the moby api's so there are no new api's, but that means I have to rewrite the docker-compose go plugin in TS which I'm not too thrilled about. Unlike this rest of this project, it's not something that I directly need, which is why I am not too interested in supporting this.
+~~DockerCompose support. Blocked only because I have no idea where to even start on this. I'm confident it just reuses the moby api's so there are no new api's, but that means I have to rewrite the docker-compose go plugin in TS which I'm not too thrilled about. Unlike this rest of this project, it's not something that I directly need, which is why I am not too interested in supporting this.~~
+
+Basic docker compose support has been implemented, more to come in the future.
 
 ## Compatibility :closed_lock_with_key:
 
