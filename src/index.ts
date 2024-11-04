@@ -6,6 +6,13 @@
 export * as DindEngine from "./DindEngine.js"
 
 /**
+ * Docker compose engine shortcut.
+ *
+ * @since 1.0.0
+ */
+export * as DockerComposeEngine from "./DockerComposeEngine.js"
+
+/**
  * Docker engine shortcut.
  *
  * @since 1.0.0

@@ -35,13 +35,7 @@ Added in v1.0.0
 
 ```ts
 export type PodmanLayer = Layer.Layer<
-  | Containers.Containers
-  | Execs.Execs
-  | Images.Images
-  | Networks.Networks
-  | Secrets.Secrets
-  | System.Systems
-  | Volumes.Volumes,
+  Containers | Execs | Images | Networks | Secrets | Systems | Volumes,
   never,
   never
 >
@@ -69,7 +63,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerAgnostic: (
-  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => PodmanLayerWithoutHttpCLient
 ```
 
@@ -80,7 +74,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer
+export declare const layerBun: (connectionOptions: MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -90,7 +84,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer
+export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -100,7 +94,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer
+export declare const layerNodeJS: (connectionOptions: MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -110,7 +104,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: Platforms.MobyConnectionOptions) => PodmanLayer
+export declare const layerUndici: (connectionOptions: MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -121,7 +115,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: (
-  connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => PodmanLayer
 ```
 

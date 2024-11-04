@@ -42,7 +42,7 @@ export declare const makeDindLayerFromPlatformConstructor: <
   PlatformLayerConstructor extends (
     connectionOptions: any
   ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
-  SupportedConnectionOptions extends Platforms.MobyConnectionOptions = PlatformLayerConstructor extends (
+  SupportedConnectionOptions extends MobyConnectionOptions = PlatformLayerConstructor extends (
     connectionOptions: infer C
   ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
     ? C
@@ -66,7 +66,7 @@ export type MakeDindLayerFromPlatformConstructor<
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connectionOptions: any
   ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
-  SupportedConnectionOptions extends Platforms.MobyConnectionOptions = PlatformLayerConstructor extends (
+  SupportedConnectionOptions extends MobyConnectionOptions = PlatformLayerConstructor extends (
     connectionOptions: infer C
   ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
     ? C
@@ -91,12 +91,12 @@ export type MakeDindLayerFromPlatformConstructor<
 >(options: {
   exposeDindContainerBy: ConnectionOptionsToDind
   connectionOptionsToHost: ConnectionOptionsToHost
-  dindBaseImage: BlobConstants.RecommendedDindBaseImages
+  dindBaseImage: RecommendedDindBaseImages
 }) => Layer.Layer<
   Layer.Layer.Success<DockerEngine.DockerLayer>,
-  | Images.ImagesError
-  | System.SystemsError
-  | Volumes.VolumesError
+  | ImagesError
+  | SystemsError
+  | VolumesError
   | ParseResult.ParseError
   | ContainersError
   | PlatformLayerConstructorError
@@ -115,7 +115,7 @@ Added in v1.0.0
 ```ts
 export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
   (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
   ) => DockerEngine.DockerLayerWithoutHttpClient,
   | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
   | {
@@ -141,7 +141,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerBun: MakeDindLayerFromPlatformConstructor<
-  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
   | { readonly _tag: "socket"; readonly socketPath: string }
   | {
       readonly _tag: "ssh"
@@ -198,7 +198,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerDeno: MakeDindLayerFromPlatformConstructor<
-  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
   | { readonly _tag: "socket"; readonly socketPath: string }
   | {
       readonly _tag: "ssh"
@@ -255,7 +255,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
-  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
   | { readonly _tag: "socket"; readonly socketPath: string }
   | {
       readonly _tag: "ssh"
@@ -312,7 +312,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerUndici: MakeDindLayerFromPlatformConstructor<
-  (connectionOptions: Platforms.MobyConnectionOptions) => DockerEngine.DockerLayer,
+  (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
   | { readonly _tag: "socket"; readonly socketPath: string }
   | {
       readonly _tag: "ssh"
@@ -369,9 +369,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: MakeDindLayerFromPlatformConstructor<
-  (
-    connectionOptions: Platforms.HttpConnectionOptionsTagged | Platforms.HttpsConnectionOptionsTagged
-  ) => DockerEngine.DockerLayer,
+  (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged) => DockerEngine.DockerLayer,
   | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
   | {
       readonly _tag: "https"

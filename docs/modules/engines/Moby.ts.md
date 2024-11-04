@@ -49,21 +49,21 @@ Added in v1.0.0
 
 ```ts
 export type MobyLayerWithoutHttpClient = Layer.Layer<
-  | Configs.Configs
-  | Containers.Containers
-  | Distributions.Distributions
-  | Execs.Execs
-  | Images.Images
-  | Networks.Networks
-  | Nodes.Nodes
-  | Plugins.Plugins
-  | Secrets.Secrets
-  | Services.Services
-  | Sessions.Sessions
-  | Swarm.Swarm
-  | System.Systems
-  | Tasks.Tasks
-  | Volumes.Volumes,
+  | Configs
+  | Containers
+  | Distributions
+  | Execs
+  | Images
+  | Networks
+  | Nodes
+  | Plugins
+  | Secrets
+  | Services
+  | Sessions
+  | Swarm
+  | Systems
+  | Tasks
+  | Volumes,
   never,
   HttpClient.HttpClient
 >
@@ -77,7 +77,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerAgnostic: (
-  connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => MobyLayerWithoutHttpClient
 ```
 
@@ -88,7 +88,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
+export declare const layerBun: (connectionOptions: MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -98,7 +98,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
+export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -108,7 +108,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
+export declare const layerNodeJS: (connectionOptions: MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -118,7 +118,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: Connection.MobyConnectionOptions) => MobyLayer
+export declare const layerUndici: (connectionOptions: MobyConnectionOptions) => MobyLayer
 ```
 
 Added in v1.0.0
@@ -129,7 +129,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: (
-  connectionOptions: Connection.HttpConnectionOptionsTagged | Connection.HttpsConnectionOptionsTagged
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => MobyLayer
 ```
 
