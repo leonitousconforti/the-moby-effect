@@ -191,7 +191,7 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Execs |
                 Function.pipe(
                     uploadProject(project),
                     Effect.flatMap(() =>
-                        runCommand("docker compose --project-name test --file docker-compose.yml up", "up")
+                        runCommand("docker compose --project-name test --file docker-compose.yml up -d", "up")
                     )
                 ),
 
@@ -337,7 +337,7 @@ const makeProjectLayer = <E1>(
             runCommand("docker compose --project-name test --file docker-compose.yml pull", "pull");
 
         const up = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --project-name test --file docker-compose.yml up", "up");
+            runCommand("docker compose --project-name test --file docker-compose.yml up -d", "up");
 
         const down = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
             runCommand("docker compose --project-name test --file docker-compose.yml down", "down");

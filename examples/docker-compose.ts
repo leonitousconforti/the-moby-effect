@@ -40,9 +40,9 @@ const program = Effect.gen(function* () {
 
     yield* compose.pull({});
     yield* compose.up({});
-    // yield* Effect.sleep("10 seconds");
-    // yield* compose.down({});
-    // yield* compose.rm({});
+    yield* Effect.sleep("10 seconds");
+    yield* compose.down({});
+    yield* compose.rm({});
 });
 
 program.pipe(Effect.provide(dockerComposeProjectLive)).pipe(NodeRuntime.runMain);
