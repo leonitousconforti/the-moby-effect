@@ -12,7 +12,7 @@ const localDockerCompose = Function.pipe(
 );
 
 const project = Effect.Do.pipe(
-    Effect.bind("cwd", () => Effect.flatMap(Path.Path, (path) => path.fromFileUrl(new URL(import.meta.url)))),
+    Effect.bind("cwd", () => Effect.flatMap(Path.Path, (path) => path.fromFileUrl(new URL(".", import.meta.url)))),
     Effect.bind("contents", () => Effect.succeed(Array.make("docker-compose.yml"))),
     Effect.map(({ contents, cwd }) => MobyConvey.packBuildContextIntoTarballStream(cwd, contents)),
     Stream.unwrap,
@@ -26,13 +26,12 @@ const { layer: composeForProjectLayer, tag: composeForProjectTag } = DockerCompo
 
 const dockerComposeProjectLive: Layer.Layer<
     DockerComposeEngine.DockerComposeProject,
-    | ParseResult.ParseError
     | ConfigError.ConfigError
-    | PlatformError.PlatformError
-    | MobyEndpoints.ImagesError
     | MobyEndpoints.SystemsError
-    | MobyEndpoints.VolumesError
-    | MobyEndpoints.ContainersError,
+    | PlatformError.PlatformError
+    | ParseResult.ParseError
+    | MobyEndpoints.ContainersError
+    | DockerComposeEngine.DockerComposeError,
     never
 > = Layer.provide(composeForProjectLayer, localDockerCompose);
 
@@ -41,9 +40,9 @@ const program = Effect.gen(function* () {
 
     yield* compose.pull({});
     yield* compose.up({});
-    yield* Effect.sleep("10 seconds");
-    yield* compose.down({});
-    yield* compose.rm({});
+    // yield* Effect.sleep("10 seconds");
+    // yield* compose.down({});
+    // yield* compose.rm({});
 });
 
 program.pipe(Effect.provide(dockerComposeProjectLive)).pipe(NodeRuntime.runMain);

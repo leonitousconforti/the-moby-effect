@@ -1,27 +1,28 @@
 /**
- * Docker compose engine.
+ * Compose engine.
  *
  * @since 1.0.0
  */
 
 import * as PlatformError from "@effect/platform/Error";
+import * as HttpClient from "@effect/platform/HttpClient";
+import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as Socket from "@effect/platform/Socket";
+import * as Console from "effect/Console";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
+import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
-import * as DindEngine from "./Dind.js";
 import * as DockerEngine from "./Docker.js";
 
-import { Function } from "effect";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
-import { ExecsError } from "../endpoints/Execs.js";
-import { ImagesError } from "../endpoints/Images.js";
-import { SystemsError } from "../endpoints/System.js";
-import { VolumesError } from "../endpoints/Volumes.js";
-import { MobyConnectionOptions } from "../MobyConnection.js";
+import { Execs, ExecsError } from "../endpoints/Execs.js";
+import { Systems, SystemsError } from "../endpoints/System.js";
+import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged, MobyConnectionOptions } from "../MobyConnection.js";
 
 /**
  * @since 1.0.0
@@ -74,7 +75,7 @@ export interface DockerCompose {
 
     readonly forProject: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>
-    ) => Effect.Effect<DockerComposeProject, E1, never>;
+    ) => Effect.Effect<DockerComposeProject, E1 | DockerComposeError, never>;
 }
 
 /**
@@ -121,188 +122,175 @@ export class DockerComposeError extends PlatformError.TypeIdError(DockerComposeE
     }
 }
 
-/**
- * @since 1.0.0
- * @category Layers
- */
-export const makeLayer =
-    <
-        DockerConstructor extends (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            connectionOptions: any
-        ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
-        SupportedConnectionOptions extends MobyConnectionOptions = DockerConstructor extends (
-            connectionOptions: infer C
-        ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
-            ? C
-            : never,
-        DockerConstructorError = ReturnType<DockerConstructor> extends Layer.Layer<
-            Layer.Layer.Success<DockerEngine.DockerLayer>,
-            infer E,
-            infer _R
-        >
-            ? E
-            : never,
-        DockerConstructorContext = ReturnType<DockerConstructor> extends Layer.Layer<
-            Layer.Layer.Success<DockerEngine.DockerLayer>,
-            infer _E,
-            infer R
-        >
-            ? R
-            : never,
-    >(
-        dockerLayerConstructor: DockerConstructor
-    ) =>
-    (
-        connectionOptionsToHost: SupportedConnectionOptions
-    ): Layer.Layer<
-        DockerCompose,
-        ImagesError | SystemsError | VolumesError | ParseResult.ParseError | ContainersError | DockerConstructorError,
-        DockerConstructorContext
-    > =>
-        Effect.gen(function* () {
-            // The generic type of the layer constructor is too wide
-            // since we want to be able to pass it as the only required generic
-            const dockerLayerConstructorCasted = dockerLayerConstructor as (
-                connectionOptions: SupportedConnectionOptions
-            ) => Layer.Layer<
-                Layer.Layer.Success<DockerEngine.DockerLayer>,
-                DockerConstructorError,
-                DockerConstructorContext
-            >;
+const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Execs | Containers | Systems | Scope.Scope> =
+    Effect.gen(function* () {
+        const execs = yield* Execs;
+        const containers = yield* Containers;
+        yield* DockerEngine.pingHead();
 
-            // Building a layer here instead of providing it to the final effect
-            // prevents conflicting services with the same tag in the final layer
-            const hostDocker = yield* Layer.build(dockerLayerConstructorCasted(connectionOptionsToHost));
-            yield* DockerEngine.pingHead().pipe(Effect.provide(hostDocker));
+        const dindContainerId = yield* DockerEngine.runScoped({
+            spec: {
+                Image: "docker.io/library/docker:latest",
+                Cmd: ["sleep", "infinity"],
+                HostConfig: {
+                    Privileged: true,
+                    Binds: ["/var/run/docker.sock:/var/run/docker.sock"],
+                },
+            },
+        }).pipe(Effect.map(({ Id }) => Id));
 
-            // Now spawn a dind
-            const dindDocker = yield* Layer.build(
-                DindEngine.makeDindLayerFromPlatformConstructor(dockerLayerConstructorCasted)({
-                    connectionOptionsToHost,
-                    exposeDindContainerBy: "https" as const,
-                    dindBaseImage: "docker.io/library/docker:dind-rootless" as const,
-                })
+        // Helper to upload the project to the dind
+        const uploadProject = <E1>(
+            project: Stream.Stream<Uint8Array, E1, never>
+        ): Effect.Effect<void, E1 | DockerComposeError, never> =>
+            Effect.catchTag(
+                containers.putArchive(dindContainerId, { path: "/", stream: project }),
+                "ContainersError",
+                (cause) => new DockerComposeError({ method: "uploadProject", cause })
             );
 
-            // FIXME: need to get this somehow
-            const dindContainerId: string = "";
+        // Helper to run a command in the dind
+        const runCommand = (command: string, method: string): Effect.Effect<string, DockerComposeError, never> =>
+            Function.pipe(
+                DockerEngine.exec({ containerId: dindContainerId, command: command.split(" ") }),
+                Effect.tap(Console.log),
+                Effect.mapError((cause) => new DockerComposeError({ method, cause })),
+                Effect.provide(Context.make(Execs, execs))
+            );
 
-            // Helper to upload the project to the dind
-            const uploadProject = <E1>(project: Stream.Stream<Uint8Array, E1, never>): Effect.Effect<void, E1, never> =>
-                Effect.gen(function* () {
-                    const containers = yield* Containers;
-                    containers.putArchive(dindContainerId, { path: "/tmp", stream: project });
-                }).pipe(Effect.provide(hostDocker));
+        // Actual compose implementation
+        return DockerCompose.of({
+            [TypeId]: TypeId,
 
-            // Helper to run a command in the dind
-            const runCommand = (_command: string, method: string): Effect.Effect<string, DockerComposeError, never> =>
+            build: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>,
+                _options: {}
+            ): Effect.Effect<void, E1 | DockerComposeError, never> =>
                 Function.pipe(
-                    DockerEngine.exec({ containerId: dindContainerId, command: ["echo", "Hello, World!"] }),
-                    Effect.provide(dindDocker),
-                    Effect.mapError((cause) => new DockerComposeError({ method, cause }))
-                );
+                    uploadProject(project),
+                    Effect.flatMap(() =>
+                        runCommand("docker compose --project-name test --file docker-compose.yml build", "build")
+                    )
+                ),
 
-            // Actual compose implementation
-            return DockerCompose.of({
-                [TypeId]: TypeId,
+            pull: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>,
+                _options: {}
+            ): Effect.Effect<void, E1 | DockerComposeError, never> =>
+                Function.pipe(
+                    uploadProject(project),
+                    Effect.flatMap(() =>
+                        runCommand("docker compose --project-name test --file docker-compose.yml pull", "pull")
+                    )
+                ),
 
-                build: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>,
-                    _options: {}
-                ): Effect.Effect<void, E1 | DockerComposeError, never> =>
-                    Function.pipe(
-                        uploadProject(project),
-                        Effect.flatMap(() => runCommand("docker compose --file docker-compose.yml build", "build"))
-                    ),
+            up: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>,
+                _options: {}
+            ): Effect.Effect<string, E1 | DockerComposeError, never> =>
+                Function.pipe(
+                    uploadProject(project),
+                    Effect.flatMap(() =>
+                        runCommand("docker compose --project-name test --file docker-compose.yml up", "up")
+                    )
+                ),
 
-                pull: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>,
-                    _options: {}
-                ): Effect.Effect<void, E1 | DockerComposeError, never> =>
-                    Function.pipe(
-                        uploadProject(project),
-                        Effect.flatMap(() => runCommand("docker compose --file docker-compose.yml pull", "pull"))
-                    ),
+            down: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>,
+                _options: {}
+            ): Effect.Effect<string, E1 | DockerComposeError, never> =>
+                Function.pipe(
+                    uploadProject(project),
+                    Effect.flatMap(() =>
+                        runCommand("docker compose --project-name test --file docker-compose.yml down", "down")
+                    )
+                ),
 
-                up: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>,
-                    _options: {}
-                ): Effect.Effect<string, E1 | DockerComposeError, never> =>
-                    Function.pipe(
-                        uploadProject(project),
-                        Effect.flatMap(() => runCommand("docker compose --file docker-compose.yml up", "up"))
-                    ),
+            rm: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>,
+                _options: {}
+            ): Effect.Effect<string, E1 | DockerComposeError, never> =>
+                Function.pipe(
+                    uploadProject(project),
+                    Effect.flatMap(() =>
+                        runCommand("docker compose --project-name test --file docker-compose.yml rm", "rm")
+                    )
+                ),
 
-                down: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>,
-                    _options: {}
-                ): Effect.Effect<string, E1 | DockerComposeError, never> =>
-                    Function.pipe(
-                        uploadProject(project),
-                        Effect.flatMap(() => runCommand("docker compose --file docker-compose.yml down", "down"))
-                    ),
+            kill: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>,
+                _options: {}
+            ): Effect.Effect<string, E1 | DockerComposeError, never> =>
+                Function.pipe(
+                    uploadProject(project),
+                    Effect.flatMap(() =>
+                        runCommand("docker compose --project-name test --file docker-compose.yml kill", "kill")
+                    )
+                ),
 
-                rm: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>,
-                    _options: {}
-                ): Effect.Effect<string, E1 | DockerComposeError, never> =>
-                    Function.pipe(
-                        uploadProject(project),
-                        Effect.flatMap(() => runCommand("docker compose --file docker-compose.yml rm", "rm"))
-                    ),
-
-                kill: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>,
-                    _options: {}
-                ): Effect.Effect<string, E1 | DockerComposeError, never> =>
-                    Function.pipe(
-                        uploadProject(project),
-                        Effect.flatMap(() => runCommand("docker compose --file docker-compose.yml kill", "kill"))
-                    ),
-
-                forProject: <E1>(
-                    project: Stream.Stream<Uint8Array, E1, never>
-                ): Effect.Effect<DockerComposeProject, E1, never> =>
-                    makeProjectLayer(project, uploadProject, runCommand),
-            });
-        }).pipe(Layer.scoped(DockerCompose));
+            forProject: <E1>(
+                project: Stream.Stream<Uint8Array, E1, never>
+            ): Effect.Effect<DockerComposeProject, E1 | DockerComposeError, never> =>
+                makeProjectLayer(project, uploadProject, runCommand),
+        });
+    });
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS = makeLayer(DockerEngine.layerNodeJS);
+export const layerNodeJS = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, never> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerNodeJS(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun = makeLayer(DockerEngine.layerBun);
+export const layerBun = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, never> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerBun(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno = makeLayer(DockerEngine.layerDeno);
+export const layerDeno = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, never> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerDeno(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici = makeLayer(DockerEngine.layerUndici);
+export const layerUndici = (
+    connectionOptions: MobyConnectionOptions
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, never> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerUndici(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb = makeLayer(DockerEngine.layerWeb);
+export const layerWeb = (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, never> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerWeb(connectionOptions));
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerAgnostic = makeLayer(DockerEngine.layerAgnostic);
+export const layerAgnostic = (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+): Layer.Layer<
+    DockerCompose,
+    SystemsError | ContainersError,
+    HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+> => Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerAgnostic(connectionOptions));
 
 /**
  * @since 1.0.0
@@ -332,32 +320,33 @@ export interface DockerComposeProject {
     readonly kill: (options: {}) => Effect.Effect<void, DockerComposeError, never>;
 }
 
-/** @internal */
-export const makeProjectLayer = <E1>(
+const makeProjectLayer = <E1>(
     project: Stream.Stream<Uint8Array, E1, never>,
-    uploadProject: (project: Stream.Stream<Uint8Array, E1, never>) => Effect.Effect<void, E1, never>,
+    uploadProject: (
+        project: Stream.Stream<Uint8Array, E1, never>
+    ) => Effect.Effect<void, E1 | DockerComposeError, never>,
     runCommand: (command: string, method: string) => Effect.Effect<string, DockerComposeError, never>
-): Effect.Effect<DockerComposeProject, E1, never> =>
+): Effect.Effect<DockerComposeProject, E1 | DockerComposeError, never> =>
     Effect.gen(function* () {
         yield* uploadProject(project);
 
         const build = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --file docker-compose.yml build", "build");
+            runCommand("docker compose --project-name test --file docker-compose.yml build", "build");
 
         const pull = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --file docker-compose.yml pull", "pull");
+            runCommand("docker compose --project-name test --file docker-compose.yml pull", "pull");
 
         const up = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --file docker-compose.yml up", "up");
+            runCommand("docker compose --project-name test --file docker-compose.yml up", "up");
 
         const down = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --file docker-compose.yml down", "down");
+            runCommand("docker compose --project-name test --file docker-compose.yml down", "down");
 
         const rm = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --file docker-compose.yml rm", "rm");
+            runCommand("docker compose --project-name test --file docker-compose.yml rm", "rm");
 
         const kill = (_options: {}): Effect.Effect<void, DockerComposeError, never> =>
-            runCommand("docker compose --file docker-compose.yml kill", "kill");
+            runCommand("docker compose --project-name test --file docker-compose.yml kill", "kill");
 
         return {
             [DockerComposeProjectTypeId]: DockerComposeProjectTypeId,
@@ -379,7 +368,7 @@ export const layerProject: <E1>(
     tagIdentifier: string
 ) => {
     readonly tag: Context.Tag<DockerComposeProject, DockerComposeProject>;
-    readonly layer: Layer.Layer<DockerComposeProject, E1, DockerCompose>;
+    readonly layer: Layer.Layer<DockerComposeProject, E1 | DockerComposeError, DockerCompose>;
 } = <E1>(project: Stream.Stream<Uint8Array, E1, never>, tagIdentifier: string) => {
     const tag = Context.GenericTag<DockerComposeProject>(tagIdentifier);
     const effect = Effect.flatMap(DockerCompose, ({ forProject }) => forProject(project));
