@@ -23,36 +23,56 @@ import { makeAgnosticLayer } from "./Agnostic.js";
  *
  * @internal
  */
-export function makeUndiciSshConnector(
-    ssh2Lazy: typeof ssh2,
+export const makeUndiciSshConnector = (
     connectionOptions: SshConnectionOptions
-): undici.buildConnector.connector {
-    const sshClient = new ssh2Lazy.Client();
-
-    return (_opts: undici.buildConnector.Options, callback: undici.buildConnector.Callback) => {
-        sshClient
-            .on("ready", () => {
-                sshClient.openssh_forwardOutStreamLocal(
-                    connectionOptions.remoteSocketPath,
-                    (error: Error | undefined, socket: ssh2.ClientChannel) => {
-                        if (error) {
-                            return callback(error, null);
-                        }
-
-                        socket.once("close", () => {
-                            socket.end();
-                            socket.destroy();
-                            sshClient.end();
-                        });
-
-                        callback(null, socket as unknown as net.Socket);
-                    }
-                );
+): Effect.Effect<undici.buildConnector.connector, never, Scope.Scope> =>
+    Effect.Do.pipe(
+        Effect.bind("ssh2Lazy", () => Effect.promise(() => import("ssh2"))),
+        Effect.let("acquire", ({ ssh2Lazy }) => Effect.sync(() => new ssh2Lazy.Client())),
+        Effect.let(
+            "release",
+            () => (client: ssh2.Client) =>
+                Effect.sync(() => {
+                    client.end();
+                    client.destroy();
+                })
+        ),
+        Effect.flatMap(({ acquire, release }) => Effect.acquireRelease(acquire, release)),
+        Effect.flatMap((sshClient) =>
+            Effect.async<ssh2.Client, Error>((resume) => {
+                sshClient
+                    .once("ready", () => {
+                        sshClient.removeAllListeners("error");
+                        sshClient.removeAllListeners("ready");
+                        resume(Effect.succeed(sshClient));
+                    })
+                    .once("error", (error) => {
+                        sshClient.removeAllListeners("error");
+                        sshClient.removeAllListeners("ready");
+                        resume(Effect.fail(error));
+                    })
+                    .connect(connectionOptions);
             })
-            .on("error", (error) => callback(error, null))
-            .connect(connectionOptions);
-    };
-}
+        ),
+        Effect.map((sshClient) => (_opts: undici.buildConnector.Options, callback: undici.buildConnector.Callback) => {
+            sshClient.openssh_forwardOutStreamLocal(
+                connectionOptions.remoteSocketPath,
+                (error: Error | undefined, socket: ssh2.ClientChannel) => {
+                    if (error) {
+                        return callback(error, null);
+                    }
+
+                    socket.once("close", () => {
+                        socket.end();
+                        socket.destroy();
+                    });
+
+                    return callback(null, socket as unknown as net.Socket);
+                }
+            );
+        }),
+        Effect.orDie
+    );
 
 /**
  * Given the moby connection options, it will construct a scoped effect that
@@ -99,12 +119,14 @@ export const getUndiciDispatcher = (
                     ),
                 ssh: (options) =>
                     Effect.map(
-                        Effect.promise(() => import("ssh2")),
-                        (ssh2Lazy) => new undiciLazy.Agent({ connect: makeUndiciSshConnector(ssh2Lazy, options) })
+                        makeUndiciSshConnector(options),
+                        (connector) => new undiciLazy.Agent({ connect: connector })
                     ),
             });
 
-            const releaseUndiciDispatcher = (dispatcher: undici.Dispatcher) => Effect.sync(() => dispatcher.destroy());
+            const releaseUndiciDispatcher = (dispatcher: undici.Dispatcher) =>
+                Effect.promise(() => dispatcher.destroy());
+
             return Effect.acquireRelease(AcquireUndiciDispatcher(connectionOptions), releaseUndiciDispatcher);
         }
     );

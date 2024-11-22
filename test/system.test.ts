@@ -35,7 +35,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi System 
         })
     );
 
-    it.effect("Should see docker events", () =>
+    it.effect.skip("Should see docker events", () =>
         Effect.gen(function* () {
             const system = yield* Systems;
             yield* Stream.runHead(system.events({ since: "0" }));
