@@ -135,8 +135,8 @@ jobs:
         run: deno task test --watch=false
       - if: startsWith(matrix.platform-variant, 'deno') && startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: |
-          curl -fsSL https://deno.land/install.sh | sh
-          deno task test --watch=false
+          sudo -E curl -fsSL https://deno.land/install.sh | sh
+          sudo -E deno task test --watch=false
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
