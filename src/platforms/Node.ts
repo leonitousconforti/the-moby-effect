@@ -71,7 +71,7 @@ export const makeNodeSshAgent = (
          */
         public createConnection(
             _options: http.ClientRequestArgs,
-            callback: (error: Error | undefined, socket?: stream.Duplex) => void
+            callback: (error: Error | undefined, socket?: stream.Duplex | undefined) => void
         ): void {
             this.sshClient
                 .on("ready", () => {
@@ -93,7 +93,7 @@ export const makeNodeSshAgent = (
                         }
                     );
                 })
-                .on("error", (error) => callback(error))
+                .on("error", (error) => callback(error, undefined))
                 .connect(this.connectConfig);
         }
     })(connectionOptions);
