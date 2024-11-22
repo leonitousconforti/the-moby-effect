@@ -19,6 +19,9 @@ importers:
       '@effect/platform-browser':
         specifier: 0.48.25
         version: 0.48.25(@effect/platform@0.69.25(effect@3.10.16))(effect@3.10.16)
+      '@effect/platform-bun':
+        specifier: 0.49.27
+        version: 0.49.27(@effect/platform@0.69.25(effect@3.10.16))(effect@3.10.16)
       '@effect/platform-node':
         specifier: 0.64.27
         version: 0.64.27(@effect/platform@0.69.25(effect@3.10.16))(effect@3.10.16)
@@ -312,6 +315,12 @@ packages:
 
   '@effect/platform-browser@0.48.25':
     resolution: {integrity: sha512-MxBte5Qh4cQxIXYWFOyPW0Gmwq2aHPWMANrALfllYocY1i4BVS2NyHBHfydHt7g0Kw6g5x0xChV6pBo+cTeORQ==}
+    peerDependencies:
+      '@effect/platform': ^0.69.25
+      effect: ^3.10.16
+
+  '@effect/platform-bun@0.49.27':
+    resolution: {integrity: sha512-MK2tKWpSv9U+eMVbxp4cbNaCKoEDVYqWems+Ki/YKYCyOjiZgIjDOe//QW41AMIhNzBgmLRjSiAm0ltJJp3KUg==}
     peerDependencies:
       '@effect/platform': ^0.69.25
       effect: ^3.10.16
@@ -3271,6 +3280,13 @@ snapshots:
       '@effect/platform': 0.69.25(effect@3.10.16)
       effect: 3.10.16
       multipasta: 0.2.5
+    optional: true
+
+  '@effect/platform-bun@0.49.27(@effect/platform@0.69.25(effect@3.10.16))(effect@3.10.16)':
+    dependencies:
+      '@effect/platform': 0.69.25(effect@3.10.16)
+      '@effect/platform-node-shared': 0.19.26(@effect/platform@0.69.25(effect@3.10.16))(effect@3.10.16)
+      effect: 3.10.16
     optional: true
 
   '@effect/platform-node-shared@0.19.26(@effect/platform@0.69.25(effect@3.10.16))(effect@3.10.16)':
