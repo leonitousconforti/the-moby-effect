@@ -116,7 +116,7 @@ Added in v1.0.0
 export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
   (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-  ) => DockerEngine.DockerLayerWithoutHttpClient,
+  ) => DockerEngine.DockerLayerWithoutHttpClientOrWebsocketConstructor,
   | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
   | {
       readonly _tag: "https"
@@ -129,7 +129,7 @@ export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
       readonly passphrase?: string | undefined
     },
   never,
-  HttpClient<HttpClientError, Scope.Scope>
+  WebSocketConstructor | HttpClient<HttpClientError, Scope.Scope>
 >
 ```
 

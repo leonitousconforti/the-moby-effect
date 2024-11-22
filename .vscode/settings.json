@@ -8,6 +8,7 @@
         "behaviour",
         "Blkio",
         "buildargs",
+        "buildx",
         "cachefrom",
         "cachemount",
         "CERTDIR",

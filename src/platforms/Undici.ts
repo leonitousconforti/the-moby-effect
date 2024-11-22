@@ -9,13 +9,14 @@ import type * as ssh2 from "ssh2";
 import type * as undici from "undici";
 
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
 import { MobyConnectionOptions, SshConnectionOptions } from "../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
+import { makeAgnosticLayer } from "./Agnostic.js";
 
 /**
  * An undici connector that connects to remote moby instances over ssh.
@@ -120,7 +121,7 @@ export const getUndiciDispatcher = (
  */
 export const makeUndiciHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
-): Layer.Layer<HttpClient.HttpClient, never, never> => {
+): Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> => {
     const undiciLayer = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>
@@ -132,6 +133,6 @@ export const makeUndiciHttpClientLayer = (
         Layer.unwrapEffect
     );
 
-    const agnosticHttpClientLayer = makeAgnosticHttpClientLayer(connectionOptions);
+    const agnosticHttpClientLayer = makeAgnosticLayer(connectionOptions);
     return Layer.provide(agnosticHttpClientLayer, undiciLayer);
 };

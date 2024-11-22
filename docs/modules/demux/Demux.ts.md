@@ -251,7 +251,6 @@ Effect.gen(function* () {
 ```ts
 // Demux multiple raw sockets to two sinks
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
-import * as NodeSocket from "@effect/platform-node/NodeSocket"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Function from "effect/Function"
@@ -326,7 +325,6 @@ Effect.gen(function* () {
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
-  .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
   .pipe(NodeRuntime.runMain)
 ```
 
@@ -335,7 +333,6 @@ Effect.gen(function* () {
 ```ts
 // Demux single raw socket to two sinks
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
-import * as NodeSocket from "@effect/platform-node/NodeSocket"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Function from "effect/Function"
@@ -395,7 +392,6 @@ Effect.gen(function* () {
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
-  .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
   .pipe(NodeRuntime.runMain)
 ```
 
@@ -595,7 +591,6 @@ Effect.gen(function* () {
 ```ts
 // Demux multiple raw sockets to one sink
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
-import * as NodeSocket from "@effect/platform-node/NodeSocket"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Function from "effect/Function"
@@ -678,7 +673,6 @@ Effect.gen(function* () {
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
-  .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
   .pipe(NodeRuntime.runMain)
 ```
 
@@ -687,7 +681,6 @@ Effect.gen(function* () {
 ```ts
 // Demux a single raw socket to one sink
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime"
-import * as NodeSocket from "@effect/platform-node/NodeSocket"
 import * as Chunk from "effect/Chunk"
 import * as Effect from "effect/Effect"
 import * as Function from "effect/Function"
@@ -746,7 +739,6 @@ Effect.gen(function* () {
 })
   .pipe(Effect.scoped)
   .pipe(Effect.provide(layer))
-  .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
   .pipe(NodeRuntime.runMain)
 ```
 

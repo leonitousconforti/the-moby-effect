@@ -5,6 +5,7 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 
 import type {
@@ -39,7 +40,7 @@ import { makeWebHttpClientLayer } from "../platforms/Web.js";
  * @since 1.0.0
  * @category Layers
  */
-export type MobyLayerWithoutHttpClient = Layer.Layer<
+export type MobyLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
     | Configs
     | Containers
     | Distributions
@@ -56,7 +57,7 @@ export type MobyLayerWithoutHttpClient = Layer.Layer<
     | Tasks
     | Volumes,
     never,
-    HttpClient.HttpClient
+    HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**
@@ -64,9 +65,12 @@ export type MobyLayerWithoutHttpClient = Layer.Layer<
  * @category Layers
  */
 export type MobyLayer = Layer.Layer<
-    Layer.Layer.Success<MobyLayerWithoutHttpClient>,
-    Layer.Layer.Error<MobyLayerWithoutHttpClient>,
-    Exclude<Layer.Layer.Context<MobyLayerWithoutHttpClient>, HttpClient.HttpClient>
+    Layer.Layer.Success<MobyLayerWithoutHttpClientOrWebsocketConstructor>,
+    Layer.Layer.Error<MobyLayerWithoutHttpClientOrWebsocketConstructor>,
+    Exclude<
+        Layer.Layer.Context<MobyLayerWithoutHttpClientOrWebsocketConstructor>,
+        HttpClient.HttpClient | Socket.WebSocketConstructor
+    >
 >;
 
 /**
@@ -75,7 +79,7 @@ export type MobyLayer = Layer.Layer<
  * @since 1.0.0
  * @category Layers
  */
-export const layerWithoutHttpCLient: MobyLayerWithoutHttpClient = Layer.mergeAll(
+export const layerWithoutHttpCLient: MobyLayerWithoutHttpClientOrWebsocketConstructor = Layer.mergeAll(
     ConfigsLayer,
     ContainersLayer,
     DistributionsLayer,
@@ -134,4 +138,5 @@ export const layerWeb = (connectionOptions: HttpConnectionOptionsTagged | HttpsC
  */
 export const layerAgnostic = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): MobyLayerWithoutHttpClient => Layer.provide(layerWithoutHttpCLient, makeAgnosticHttpClientLayer(connectionOptions));
+): MobyLayerWithoutHttpClientOrWebsocketConstructor =>
+    Layer.provide(layerWithoutHttpCLient, makeAgnosticHttpClientLayer(connectionOptions));

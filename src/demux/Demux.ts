@@ -206,7 +206,6 @@ export declare namespace Demux {
  * @example
  *     // Demux multiple raw sockets to one sink
  *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
- *     import * as NodeSocket from "@effect/platform-node/NodeSocket";
  *     import * as Chunk from "effect/Chunk";
  *     import * as Effect from "effect/Effect";
  *     import * as Function from "effect/Function";
@@ -301,13 +300,11 @@ export declare namespace Demux {
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
- *         .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
  *         .pipe(NodeRuntime.runMain);
  *
  * @example
  *     // Demux a single raw socket to one sink
  *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
- *     import * as NodeSocket from "@effect/platform-node/NodeSocket";
  *     import * as Chunk from "effect/Chunk";
  *     import * as Effect from "effect/Effect";
  *     import * as Function from "effect/Function";
@@ -374,7 +371,6 @@ export declare namespace Demux {
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
- *         .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
  *         .pipe(NodeRuntime.runMain);
  */
 export const demuxToSingleSink: {
@@ -591,7 +587,6 @@ export const demuxUnknownToSingleSink: {
  * @example
  *     // Demux multiple raw sockets to two sinks
  *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
- *     import * as NodeSocket from "@effect/platform-node/NodeSocket";
  *     import * as Chunk from "effect/Chunk";
  *     import * as Effect from "effect/Effect";
  *     import * as Function from "effect/Function";
@@ -682,13 +677,11 @@ export const demuxUnknownToSingleSink: {
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
- *         .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
  *         .pipe(NodeRuntime.runMain);
  *
  * @example
  *     // Demux single raw socket to two sinks
  *     import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
- *     import * as NodeSocket from "@effect/platform-node/NodeSocket";
  *     import * as Chunk from "effect/Chunk";
  *     import * as Effect from "effect/Effect";
  *     import * as Function from "effect/Function";
@@ -757,7 +750,6 @@ export const demuxUnknownToSingleSink: {
  *     })
  *         .pipe(Effect.scoped)
  *         .pipe(Effect.provide(layer))
- *         .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
  *         .pipe(NodeRuntime.runMain);
  */
 export const demuxToSeparateSinks: {

@@ -69,11 +69,7 @@ Added in v1.0.0
 ```ts
 export declare const layerAgnostic: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer.Layer<
-  DockerCompose,
-  SystemsError | ContainersError,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
->
+) => Layer.Layer<DockerCompose, SystemsError | ContainersError, HttpClient.HttpClient | Socket.WebSocketConstructor>
 ```
 
 Added in v1.0.0

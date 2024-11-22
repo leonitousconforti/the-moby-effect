@@ -6,10 +6,11 @@
 
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient";
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 
 import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
+import { makeAgnosticLayer } from "./Agnostic.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -23,5 +24,5 @@ import { makeAgnosticHttpClientLayer } from "./Agnostic.js";
  */
 export const makeFetchHttpClientLayer = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): Layer.Layer<HttpClient.HttpClient, never, never> =>
-    Layer.provide(makeAgnosticHttpClientLayer(connectionOptions), FetchHttpClient.layer);
+): Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =>
+    Layer.provide(makeAgnosticLayer(connectionOptions), FetchHttpClient.layer);

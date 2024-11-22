@@ -16,12 +16,8 @@ Added in v1.0.0
 
 - [Agnostic](#agnostic)
   - [makeAgnosticHttpClientLayer](#makeagnostichttpclientlayer)
-- [Helpers](#helpers)
-  - [makeHttpRequestUrl](#makehttprequesturl)
-  - [makeWebsocketRequestUrl](#makewebsocketrequesturl)
-- [Types](#types)
-  - [HttpClientRequestExtension (interface)](#httpclientrequestextension-interface)
-  - [getWebsocketUrl](#getwebsocketurl)
+  - [makeAgnosticLayer](#makeagnosticlayer)
+  - [makeAgnosticWebsocketLayer](#makeagnosticwebsocketlayer)
 
 ---
 
@@ -43,61 +39,29 @@ export declare const makeAgnosticHttpClientLayer: (
 
 Added in v1.0.0
 
-# Helpers
-
-## makeHttpRequestUrl
+## makeAgnosticLayer
 
 **Signature**
 
 ```ts
-export declare const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string
+export declare const makeAgnosticLayer: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Socket.WebSocketConstructor | HttpClient.HttpClient, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0
 
-## makeWebsocketRequestUrl
+## makeAgnosticWebsocketLayer
+
+Given the moby connection options, it will construct a layer that provides a
+websocket constructor that you could use to connect to your moby instance.
 
 **Signature**
 
 ```ts
-export declare const makeWebsocketRequestUrl: (connectionOptions: MobyConnectionOptions) => string
-```
-
-Added in v1.0.0
-
-# Types
-
-## HttpClientRequestExtension (interface)
-
-FIXME: this feels very hacky, and is currently only used in one spot where we
-get very desperate, can we do better?
-
-**Signature**
-
-```ts
-export interface HttpClientRequestExtension extends HttpClientRequest.HttpClientRequest {
-  readonly [HttpClientRequestHttpUrl]: string
-  readonly [HttpClientRequestWebsocketUrl]: string
-}
-```
-
-Added in v1.0.0
-
-## getWebsocketUrl
-
-FIXME: this feels very hacky, and is currently only used in one spot where we
-get very desperate, can we do better?
-
-**Signature**
-
-```ts
-export declare const getWebsocketUrl: ((
-  client: HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
-) => (request: HttpClientRequest.HttpClientRequest) => Effect.Effect<string, Error, never>) &
-  ((
-    request: HttpClientRequest.HttpClientRequest,
-    client: HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
-  ) => Effect.Effect<string, Error, never>)
+export declare const makeAgnosticWebsocketLayer: (
+  connectionOptions: MobyConnectionOptions
+) => Layer.Layer<Socket.WebSocketConstructor, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

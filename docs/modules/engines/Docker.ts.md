@@ -34,7 +34,7 @@ Added in v1.0.0
   - [version](#version)
 - [Layers](#layers)
   - [DockerLayer (type alias)](#dockerlayer-type-alias)
-  - [DockerLayerWithoutHttpClient (type alias)](#dockerlayerwithouthttpclient-type-alias)
+  - [DockerLayerWithoutHttpClientOrWebsocketConstructor (type alias)](#dockerlayerwithouthttpclientorwebsocketconstructor-type-alias)
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -336,12 +336,12 @@ export type DockerLayer = Moby.MobyLayer
 
 Added in v1.0.0
 
-## DockerLayerWithoutHttpClient (type alias)
+## DockerLayerWithoutHttpClientOrWebsocketConstructor (type alias)
 
 **Signature**
 
 ```ts
-export type DockerLayerWithoutHttpClient = Moby.MobyLayerWithoutHttpClient
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Moby.MobyLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0
@@ -353,7 +353,7 @@ Added in v1.0.0
 ```ts
 export declare const layerAgnostic: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => DockerLayerWithoutHttpClient
+) => DockerLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0
@@ -415,7 +415,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerWithoutHttpCLient: Moby.MobyLayerWithoutHttpClient
+export declare const layerWithoutHttpCLient: Moby.MobyLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0

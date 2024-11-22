@@ -47,13 +47,13 @@ export type DockerLayer = Moby.MobyLayer;
  * @since 1.0.0
  * @category Layers
  */
-export type DockerLayerWithoutHttpClient = Moby.MobyLayerWithoutHttpClient;
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Moby.MobyLayerWithoutHttpClientOrWebsocketConstructor;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWithoutHttpCLient: DockerLayerWithoutHttpClient = Moby.layerWithoutHttpCLient;
+export const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketConstructor = Moby.layerWithoutHttpCLient;
 
 /**
  * @since 1.0.0
@@ -92,7 +92,7 @@ export const layerWeb: (connectionOptions: HttpConnectionOptionsTagged | HttpsCo
  */
 export const layerAgnostic: (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => DockerLayerWithoutHttpClient = Moby.layerAgnostic;
+) => DockerLayerWithoutHttpClientOrWebsocketConstructor = Moby.layerAgnostic;
 
 /**
  * Implements the `docker pull` command. It does not have all the flags that the

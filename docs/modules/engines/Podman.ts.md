@@ -16,7 +16,7 @@ Added in v1.0.0
 
 - [Layers](#layers)
   - [PodmanLayer (type alias)](#podmanlayer-type-alias)
-  - [PodmanLayerWithoutHttpCLient (type alias)](#podmanlayerwithouthttpclient-type-alias)
+  - [PodmanLayerWithoutHttpCLientOrWebsocketConstructor (type alias)](#podmanlayerwithouthttpclientorwebsocketconstructor-type-alias)
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -43,15 +43,15 @@ export type PodmanLayer = Layer.Layer<
 
 Added in v1.0.0
 
-## PodmanLayerWithoutHttpCLient (type alias)
+## PodmanLayerWithoutHttpCLientOrWebsocketConstructor (type alias)
 
 **Signature**
 
 ```ts
-export type PodmanLayerWithoutHttpCLient = Layer.Layer<
+export type PodmanLayerWithoutHttpCLientOrWebsocketConstructor = Layer.Layer<
   Layer.Layer.Success<PodmanLayer>,
   Layer.Layer.Error<PodmanLayer>,
-  Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient
+  Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >
 ```
 
@@ -64,7 +64,7 @@ Added in v1.0.0
 ```ts
 export declare const layerAgnostic: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => PodmanLayerWithoutHttpCLient
+) => PodmanLayerWithoutHttpCLientOrWebsocketConstructor
 ```
 
 Added in v1.0.0
@@ -126,7 +126,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLient
+export declare const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLientOrWebsocketConstructor
 ```
 
 Added in v1.0.0

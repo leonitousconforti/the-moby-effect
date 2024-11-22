@@ -52,7 +52,7 @@ different than the Node implementation currently.
 ```ts
 export declare const makeBunHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient, never, never>
+) => Layer<HttpClient | WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -68,7 +68,7 @@ different than the Node implementation currently.
 ```ts
 export declare const makeDenoHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient, never, never>
+) => Layer<HttpClient | WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -83,7 +83,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeNodeHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient, never, never>
+) => Layer<HttpClient | WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -98,7 +98,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeUndiciHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient, never, never>
+) => Layer<HttpClient | WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -113,7 +113,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeWebHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer<HttpClient, never, never>
+) => Layer<HttpClient | WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0

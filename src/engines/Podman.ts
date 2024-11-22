@@ -5,6 +5,7 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 import * as Moby from "./Moby.js";
 
@@ -36,17 +37,17 @@ export type PodmanLayer = Layer.Layer<
  * @since 1.0.0
  * @category Layers
  */
-export type PodmanLayerWithoutHttpCLient = Layer.Layer<
+export type PodmanLayerWithoutHttpCLientOrWebsocketConstructor = Layer.Layer<
     Layer.Layer.Success<PodmanLayer>,
     Layer.Layer.Error<PodmanLayer>,
-    Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient
+    Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLient = Layer.mergeAll(
+export const layerWithoutHttpCLient: PodmanLayerWithoutHttpCLientOrWebsocketConstructor = Layer.mergeAll(
     ContainersLayer,
     ExecsLayer,
     ImagesLayer,
@@ -93,4 +94,4 @@ export const layerWeb: (connectionOptions: HttpConnectionOptionsTagged | HttpsCo
  */
 export const layerAgnostic: (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => PodmanLayerWithoutHttpCLient = Moby.layerAgnostic;
+) => PodmanLayerWithoutHttpCLientOrWebsocketConstructor = Moby.layerAgnostic;

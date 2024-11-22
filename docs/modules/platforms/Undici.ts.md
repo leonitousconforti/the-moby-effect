@@ -53,7 +53,7 @@ This function will dynamically import the `@effect/platform-node` and
 ```ts
 export declare const makeUndiciHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0

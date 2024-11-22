@@ -5,6 +5,7 @@
  */
 
 import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 
 import { MobyConnectionOptions } from "../MobyConnection.js";
@@ -22,4 +23,4 @@ import { makeNodeHttpClientLayer } from "./Node.js";
  */
 export const makeBunHttpClientLayer: (
     connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient, never, never> = makeNodeHttpClientLayer;
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> = makeNodeHttpClientLayer;

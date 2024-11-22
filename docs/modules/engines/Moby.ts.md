@@ -16,7 +16,7 @@ Added in v1.0.0
 
 - [Layers](#layers)
   - [MobyLayer (type alias)](#mobylayer-type-alias)
-  - [MobyLayerWithoutHttpClient (type alias)](#mobylayerwithouthttpclient-type-alias)
+  - [MobyLayerWithoutHttpClientOrWebsocketConstructor (type alias)](#mobylayerwithouthttpclientorwebsocketconstructor-type-alias)
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -35,20 +35,23 @@ Added in v1.0.0
 
 ```ts
 export type MobyLayer = Layer.Layer<
-  Layer.Layer.Success<MobyLayerWithoutHttpClient>,
-  Layer.Layer.Error<MobyLayerWithoutHttpClient>,
-  Exclude<Layer.Layer.Context<MobyLayerWithoutHttpClient>, HttpClient.HttpClient>
+  Layer.Layer.Success<MobyLayerWithoutHttpClientOrWebsocketConstructor>,
+  Layer.Layer.Error<MobyLayerWithoutHttpClientOrWebsocketConstructor>,
+  Exclude<
+    Layer.Layer.Context<MobyLayerWithoutHttpClientOrWebsocketConstructor>,
+    HttpClient.HttpClient | Socket.WebSocketConstructor
+  >
 >
 ```
 
 Added in v1.0.0
 
-## MobyLayerWithoutHttpClient (type alias)
+## MobyLayerWithoutHttpClientOrWebsocketConstructor (type alias)
 
 **Signature**
 
 ```ts
-export type MobyLayerWithoutHttpClient = Layer.Layer<
+export type MobyLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
   | Configs
   | Containers
   | Distributions
@@ -65,7 +68,7 @@ export type MobyLayerWithoutHttpClient = Layer.Layer<
   | Tasks
   | Volumes,
   never,
-  HttpClient.HttpClient
+  HttpClient.HttpClient | Socket.WebSocketConstructor
 >
 ```
 
@@ -78,7 +81,7 @@ Added in v1.0.0
 ```ts
 export declare const layerAgnostic: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => MobyLayerWithoutHttpClient
+) => MobyLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0
@@ -142,7 +145,7 @@ Merges all the layers into a single layer
 **Signature**
 
 ```ts
-export declare const layerWithoutHttpCLient: MobyLayerWithoutHttpClient
+export declare const layerWithoutHttpCLient: MobyLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0

@@ -54,7 +54,7 @@ Added in v1.0.0
 export declare const ContainersLayer: Layer.Layer<
   Containers,
   never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
+  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope> | Socket.WebSocketConstructor
 >
 ```
 

@@ -6,7 +6,6 @@
 
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as Socket from "@effect/platform/Socket";
 import * as Console from "effect/Console";
 import * as Context from "effect/Context";
@@ -286,11 +285,8 @@ export const layerWeb = (
  */
 export const layerAgnostic = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-): Layer.Layer<
-    DockerCompose,
-    SystemsError | ContainersError,
-    HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
-> => Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerAgnostic(connectionOptions));
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, HttpClient.HttpClient | Socket.WebSocketConstructor> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerAgnostic(connectionOptions));
 
 /**
  * @since 1.0.0

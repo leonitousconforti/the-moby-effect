@@ -33,7 +33,7 @@ This function will dynamically import the `@effect/platform-browser` package.
 ```ts
 export declare const makeWebHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer.Layer<HttpClient.HttpClient, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0

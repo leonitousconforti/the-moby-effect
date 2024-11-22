@@ -37,7 +37,7 @@ import {
     ContainerUpdateResponse,
     ContainerWaitResponse,
 } from "../generated/index.js";
-import { getWebsocketUrl } from "../platforms/Agnostic.js";
+import { websocketRequest } from "../platforms/Agnostic.js";
 import { maybeAddFilters, maybeAddQueryParameter } from "./Common.js";
 
 /**
@@ -95,6 +95,8 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
         const maybeUpgradedClient = contextClient.pipe(
             HttpClient.filterStatus((status) => (status >= 200 && status < 300) || status === 101)
         );
+
+        const websocketConstructor = yield* Socket.WebSocketConstructor;
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerList */
         const list_ = (
@@ -480,7 +482,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                       readonly stderr?: boolean | undefined;
                   }
                 | undefined
-        ): Effect.Effect<RawStreamSocket, ContainersError, Socket.WebSocketConstructor> =>
+        ): Effect.Effect<RawStreamSocket, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/attach/ws`),
                 maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
@@ -489,9 +491,10 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdin", Option.fromNullable(options?.stdin)),
                 maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
-                getWebsocketUrl(client),
-                Effect.flatMap(Socket.makeWebSocket),
+                websocketRequest,
                 Effect.map(makeRawStreamSocket),
+                Effect.provideService(HttpClient.HttpClient, contextClient),
+                Effect.provideService(Socket.WebSocketConstructor, websocketConstructor),
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))
             );
 
@@ -637,4 +640,5 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
-export const ContainersLayer: Layer.Layer<Containers, never, HttpClient.HttpClient> = Containers.Default;
+export const ContainersLayer: Layer.Layer<Containers, never, HttpClient.HttpClient | Socket.WebSocketConstructor> =
+    Containers.Default;

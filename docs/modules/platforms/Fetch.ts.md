@@ -34,7 +34,7 @@ as its base http layer.
 ```ts
 export declare const makeFetchHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer.Layer<HttpClient.HttpClient, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0

@@ -1,6 +1,6 @@
 // Run with: npx tsx examples/container-attach.ts
 
-import { NodeRuntime, NodeSocket } from "@effect/platform-node";
+import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer } from "effect";
 import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
 
@@ -49,8 +49,4 @@ const program = Effect.gen(function* () {
     yield* Console.log("Disconnected from container");
 });
 
-program
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.provide(NodeSocket.layerWebSocketConstructor))
-    .pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
