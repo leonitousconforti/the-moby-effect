@@ -4,7 +4,7 @@ Moby API client and CLI client built using [effect-ts](http://effect.website). I
 
 ## Motivation/ideation :bulb:
 
-The motivation for this project come from working with dockerode and I became frustrated with the incorrect types sometimes and the error handling - I did not want to wrap every docker call in a try/catch. Those are the two main reasons why I build the-moby-effect with effect-ts. I also wanted to see if I could build a moby api client that could be used in a web/frontend environment.
+The motivation for this project come from working with dockerode and I became frustrated with the incorrect types sometimes and the error handling - I did not want to wrap every docker call in a try/catch. Those are the two main reasons why I built the-moby-effect with effect-ts. I also wanted to see if I could build a moby api client that could be used in a web/frontend environment.
 
 ## Goals :white_check_mark:
 
