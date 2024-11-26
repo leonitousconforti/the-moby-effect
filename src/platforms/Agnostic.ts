@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import * as assert from "assert";
+import * as assert from "node:assert";
 
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientError from "@effect/platform/HttpClientError";
@@ -120,7 +120,7 @@ export const makeAgnosticHttpClientLayer = (
  */
 export const makeAgnosticWebsocketLayer = (
     connectionOptions: MobyConnectionOptions
-): Layer.Layer<Socket.WebSocketConstructor, never, HttpClient.HttpClient> =>
+): Layer.Layer<Socket.WebSocketConstructor, never, never> =>
     Layer.effect(
         Socket.WebSocketConstructor,
         Effect.gen(function* () {
@@ -141,5 +141,5 @@ export const makeAgnosticLayer = (
 ): Layer.Layer<Socket.WebSocketConstructor | HttpClient.HttpClient, never, HttpClient.HttpClient> => {
     const httpClientLayer = makeAgnosticHttpClientLayer(connectionOptions);
     const websocketLayer = makeAgnosticWebsocketLayer(connectionOptions);
-    return Layer.provideMerge(websocketLayer, httpClientLayer);
+    return Layer.merge(websocketLayer, httpClientLayer);
 };
