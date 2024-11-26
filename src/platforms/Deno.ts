@@ -9,7 +9,8 @@ import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 
 import { MobyConnectionOptions } from "../MobyConnection.js";
-import { makeNodeHttpClientLayer } from "./Node.js";
+import { makeUndiciHttpClientLayer } from "./Undici.js";
+// import { makeNodeHttpClientLayer } from "./Node.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -18,9 +19,13 @@ import { makeNodeHttpClientLayer } from "./Node.js";
  *
  * This function will dynamically import the `@effect/platform-node` package.
  *
+ * FIXME: https://github.com/denoland/deno/issues/21436?
+ *
+ * Will fallback to using undici for now because that seems to work
+ *
  * @since 1.0.0
  * @category Deno
  */
 export const makeDenoHttpClientLayer: (
     connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> = makeNodeHttpClientLayer;
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> = makeUndiciHttpClientLayer;
