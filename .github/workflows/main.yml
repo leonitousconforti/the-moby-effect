@@ -113,32 +113,18 @@ jobs:
 
       - if: startsWith(matrix.platform-variant, 'node')
         uses: ./.github/actions/setup-node
-      - if: startsWith(matrix.platform-variant, 'node') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
+      - if: startsWith(matrix.platform-variant, 'node')
         run: pnpm test
-      - if: startsWith(matrix.platform-variant, 'node') && startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: |
-          sudo -E npm install -g pnpm
-          sudo -E pnpm test
-
-      - if: startsWith(matrix.platform-variant, 'bun')
-        uses: ./.github/actions/setup-bun
-      - if: startsWith(matrix.platform-variant, 'bun') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: bunx vitest
-      - if: startsWith(matrix.platform-variant, 'bun') && startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: |
-          sudo -E npm install -g bun
-          sudo -E bunx vitest
-          # https://github.com/oven-sh/bun/issues/4145
-          # sudo -E bunx --bun vitest
 
       - if: startsWith(matrix.platform-variant, 'deno')
         uses: ./.github/actions/setup-deno
-      - if: startsWith(matrix.platform-variant, 'deno') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
+      - if: startsWith(matrix.platform-variant, 'deno')
         run: deno task test --watch=false
-      - if: startsWith(matrix.platform-variant, 'deno') && startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: |
-          sudo -E curl -fsSL https://deno.land/install.sh | sh
-          sudo -E deno task test --watch=false
+
+      - if: startsWith(matrix.platform-variant, 'bun')
+        uses: ./.github/actions/setup-bun
+      - if: startsWith(matrix.platform-variant, 'bun')
+        run: bunx vitest # bunx --bun vitest blocked by https://github.com/oven-sh/bun/issues/4145
 
   # https://github.com/orgs/community/discussions/26822
   pr-can-merge:
