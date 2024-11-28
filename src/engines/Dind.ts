@@ -292,7 +292,7 @@ export const makeDindLayerFromPlatformConstructor =
             const hostDocker = yield* Layer.build(platformLayerConstructorCasted(options.connectionOptionsToHost));
             yield* Function.pipe(
                 DockerEngine.pingHead(),
-                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => 3000))),
+                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => "3 seconds"))),
                 Effect.provide(hostDocker)
             );
 
@@ -386,7 +386,7 @@ export const makeDindLayerFromPlatformConstructor =
             // Test that the dind container is reachable
             yield* Function.pipe(
                 DockerEngine.pingHead(),
-                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => 3000))),
+                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => "3 seconds"))),
                 Effect.provide(layer)
             );
 
