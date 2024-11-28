@@ -290,7 +290,11 @@ export const makeDindLayerFromPlatformConstructor =
             // Building a layer here instead of providing it to the final effect
             // prevents conflicting services with the same tag in the final layer
             const hostDocker = yield* Layer.build(platformLayerConstructorCasted(options.connectionOptionsToHost));
-            yield* DockerEngine.pingHead().pipe(Effect.provide(hostDocker));
+            yield* Function.pipe(
+                DockerEngine.pingHead(),
+                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => 3000))),
+                Effect.provide(hostDocker)
+            );
 
             // Build the docker image for the dind container
             const dindTag = Array.lastNonEmpty(String.split(options.dindBaseImage, ":"));
@@ -382,7 +386,7 @@ export const makeDindLayerFromPlatformConstructor =
             // Test that the dind container is reachable
             yield* Function.pipe(
                 DockerEngine.pingHead(),
-                Effect.retry(Schedule.recurs(3).pipe(Schedule.addDelay(() => 2000))),
+                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => 3000))),
                 Effect.provide(layer)
             );
 

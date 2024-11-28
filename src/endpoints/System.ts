@@ -17,7 +17,6 @@ import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
-import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 
 import {
@@ -169,8 +168,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.decodeText(),
-                Stream.map(String.linesIterator),
-                Stream.flattenIterables,
+                Stream.splitLines,
                 Stream.flatMap(Schema.decode(Schema.parseJson(EventMessage))),
                 Stream.mapError((cause) => new SystemsError({ method: "events", cause }))
             );

@@ -17,7 +17,6 @@ import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
-import * as String from "effect/String";
 
 import {
     ContainerConfig,
@@ -300,8 +299,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.decodeText(),
-                Stream.map(String.linesIterator),
-                Stream.flattenIterables,
+                Stream.splitLines,
                 Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
                 Stream.mapError((cause) => new ImagesError({ method: "build", cause }))
             );
@@ -420,8 +418,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 client.execute,
                 HttpClientResponse.stream,
                 Stream.decodeText(),
-                Stream.map(String.linesIterator),
-                Stream.flattenIterables,
+                Stream.splitLines,
                 Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))),
                 Stream.mapError((cause) => new ImagesError({ method: "create", cause }))
             );
