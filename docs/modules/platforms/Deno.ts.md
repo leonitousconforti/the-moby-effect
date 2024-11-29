@@ -29,6 +29,10 @@ different than the Node implementation currently.
 
 This function will dynamically import the `@effect/platform-node` package.
 
+FIXME: https://github.com/denoland/deno/issues/21436?
+
+Will fallback to using undici for now because that seems to work
+
 **Signature**
 
 ```ts

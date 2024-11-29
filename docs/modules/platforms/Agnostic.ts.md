@@ -61,7 +61,7 @@ websocket constructor that you could use to connect to your moby instance.
 ```ts
 export declare const makeAgnosticWebsocketLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer.Layer<Socket.WebSocketConstructor, never, HttpClient.HttpClient>
+) => Layer.Layer<Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
