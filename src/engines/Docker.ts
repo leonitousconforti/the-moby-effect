@@ -128,11 +128,19 @@ export const pullScoped = ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}): Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, never, Images | Scope.Scope> => {
-    const acquire = pull({ image, auth, platform });
-    const release = Effect.orDie(Images.use((images) => images.delete({ name: image })));
-    return Effect.acquireRelease(Effect.succeed(acquire), () => release);
-};
+}): Effect.Effect<Stream.Stream<JSONMessage, ImagesError, never>, never, Images | Scope.Scope> =>
+    Effect.Do.pipe(
+        Effect.bind("images", () => Images),
+        Effect.let("stream", () => pull({ image, auth, platform })),
+        Effect.let("acquire", ({ images, stream }) => Stream.provideService(stream, Images, images)),
+        Effect.let("release", ({ images }) => images.delete({ name: image })),
+        Effect.flatMap(({ acquire, release }) =>
+            Effect.acquireRelease(
+                Effect.sync(() => acquire),
+                () => Effect.orDie(release)
+            )
+        )
+    );
 
 /**
  * Implements the `docker build` command. It doesn't have all the flags that the
@@ -184,11 +192,19 @@ export const buildScoped = <E1>({
     dockerfile?: string | undefined;
     buildArgs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
-}): Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, ImagesError, Scope.Scope | Images> => {
-    const acquire = build({ tag, buildArgs, auth, context, platform, dockerfile });
-    const release = Effect.orDie(Images.use((images) => images.delete({ name: tag })));
-    return Effect.acquireRelease(Effect.succeed(acquire), () => release);
-};
+}): Effect.Effect<Stream.Stream<JSONMessage, ImagesError, never>, never, Scope.Scope | Images> =>
+    Effect.Do.pipe(
+        Effect.bind("images", () => Images),
+        Effect.let("stream", () => build({ tag, buildArgs, auth, context, platform, dockerfile })),
+        Effect.let("acquire", ({ images, stream }) => Stream.provideService(stream, Images, images)),
+        Effect.let("release", ({ images }) => images.delete({ name: tag })),
+        Effect.flatMap(({ acquire, release }) =>
+            Effect.acquireRelease(
+                Effect.sync(() => acquire),
+                () => Effect.orDie(release)
+            )
+        )
+    );
 
 /**
  * Implements the `docker stop` command.
