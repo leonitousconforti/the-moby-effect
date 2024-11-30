@@ -5,7 +5,6 @@
  */
 
 import * as Socket from "@effect/platform/Socket";
-import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
@@ -207,6 +206,15 @@ export const buildScoped = <E1>({
     );
 
 /**
+ * Implements the `docker start` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const start = (containerId: string): Effect.Effect<void, ContainersError, Containers> =>
+    Containers.use((containers) => containers.start(containerId));
+
+/**
  * Implements the `docker stop` command.
  *
  * @since 1.0.0
@@ -350,8 +358,8 @@ export const exec = ({
         const socket = yield* execs.start(execId.Id, { Detach: false });
 
         const input = Stream.never;
-        const output = Sink.collectAll<string>();
-        return yield* Effect.map(demuxUnknownToSingleSink(socket, input, output), Chunk.join(""));
+        const output = Sink.mkString;
+        return yield* demuxUnknownToSingleSink(socket, input, output);
     }).pipe(Effect.scoped);
 
 /**
