@@ -5,11 +5,18 @@
  */
 
 import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Stream from "effect/Stream";
-import * as DockerEngine from "./Docker.js";
+import * as DockerEngine from "the-moby-effect/DockerEngine";
 
-export const promiseClient = async (layer: DockerEngine.DockerLayer) => {
+export const promiseClient = async <E>(
+    layer: Layer.Layer<
+        Layer.Layer.Success<DockerEngine.DockerLayer>,
+        E | Layer.Layer.Error<DockerEngine.DockerLayer>,
+        Layer.Layer.Context<DockerEngine.DockerLayer>
+    >
+) => {
     const managedRuntime = ManagedRuntime.make(layer);
     const runtime = await managedRuntime.runtime();
 
