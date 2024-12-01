@@ -1,4 +1,11 @@
 /**
+ * Docker engine callbacks api
+ *
+ * @since 1.0.0
+ */
+export * as Callbacks from "./Callbacks.js"
+
+/**
  * Docker in docker engine shortcut.
  *
  * @since 1.0.0
@@ -74,3 +81,10 @@ export * as MobySchemas from "./MobySchemas.js"
  * @since 1.0.0
  */
 export * as PodmanEngine from "./PodmanEngine.js"
+
+/**
+ * Docker engine promises api
+ *
+ * @since 1.0.0
+ */
+export * as Promises from "./Promises.js"
