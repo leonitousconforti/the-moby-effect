@@ -120,9 +120,6 @@
         "provenance": false
     },
     "pnpm": {
-        "overrides": {
-            "undici": "^7.0.0"
-        },
         "patchedDependencies": {
             "@effect/build-utils@0.7.8": "patches/@effect__build-utils@0.7.8.patch",
             "babel-plugin-annotate-pure-calls@0.4.0": "patches/babel-plugin-annotate-pure-calls@0.4.0.patch"
