@@ -232,11 +232,11 @@ Effect.gen(function* () {
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     socket,
     Stream.make("a\n"),
-    Sink.collectAll<string>(),
-    Sink.collectAll<string>()
+    Sink.mkString,
+    Sink.mkString
   )
-  assert.strictEqual(Chunk.join(stdoutData, ""), "d41d8cd98f00b204e9800998ecf8427e  -\n")
-  assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n")
+  assert.strictEqual(stdoutData, "d41d8cd98f00b204e9800998ecf8427e  -\n")
+  assert.strictEqual(stderrData, "Hi2\n")
 
   // Wait for the container to exit
   yield* containers.wait(containerId)
@@ -314,11 +314,11 @@ Effect.gen(function* () {
       stderr: stderrSocket
     },
     Stream.make("a\n"),
-    Sink.collectAll<string>(),
-    Sink.collectAll<string>()
+    Sink.mkString,
+    Sink.mkString
   )
-  assert.strictEqual(Chunk.join(stdoutData, ""), "d41d8cd98f00b204e9800998ecf8427e  -\n")
-  assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n")
+  assert.strictEqual(stdoutData, "d41d8cd98f00b204e9800998ecf8427e  -\n")
+  assert.strictEqual(stderrData, "Hi2\n")
 
   // Wait for the container to exit
   yield* containers.wait(containerId)
@@ -381,10 +381,10 @@ Effect.gen(function* () {
   const [stdoutData, stderrData] = yield* MobyDemux.demuxToSeparateSinks(
     { stdout: stdoutSocket },
     Stream.make("a\n"),
-    Sink.collectAll<string>(),
-    Sink.collectAll<string>()
+    Sink.mkString,
+    Sink.mkString
   )
-  assert.strictEqual(Chunk.join(stdoutData, ""), "Hi\n")
+  assert.strictEqual(stdoutData, "Hi\n")
   assert.strictEqual(stderrData, undefined)
 
   // Wait for the container to exit
@@ -510,8 +510,8 @@ Effect.gen(function* () {
 
   // Demux to a single sink
   const input = Stream.make("a\n")
-  const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
-  assert.strictEqual(Chunk.join(data, ""), "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n")
+  const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.mkString)
+  assert.strictEqual(data, "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n")
 
   // Wait for the container to exit
   yield* containers.wait(containerId)
@@ -575,8 +575,8 @@ Effect.gen(function* () {
 
   // Demux to a single sink
   const input = Stream.make("a\n")
-  const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.collectAll<string>())
-  assert.strictEqual(Chunk.join(data, ""), "d41d8cd98f00b204e9800998ecf8427e  -\nHi2\n")
+  const data = yield* MobyDemux.demuxToSingleSink(socket, input, Sink.mkString)
+  assert.strictEqual(data, "d41d8cd98f00b204e9800998ecf8427e  -\nHi2\n")
 
   // Wait for the container to exit
   yield* containers.wait(containerId)
@@ -654,7 +654,7 @@ Effect.gen(function* () {
       stderr: stderrSocket
     },
     Stream.make("a\n"),
-    Sink.collectAll<string>()
+    Sink.mkString
   )
 
   assert.ok(
@@ -665,7 +665,7 @@ Effect.gen(function* () {
       // When tty: true
       "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n",
       "a\r\nHi2\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\n"
-    ].includes(Chunk.join(data, ""))
+    ].includes(data)
   )
 
   // Wait for the container to exit
@@ -727,12 +727,8 @@ Effect.gen(function* () {
   assert.ok(MobyDemux.isRawStreamSocket(stdoutSocket), "Expected a raw socket")
 
   // Demux to a single sink
-  const data = yield* MobyDemux.demuxToSingleSink(
-    { stdout: stdoutSocket },
-    Stream.make("a\n"),
-    Sink.collectAll<string>()
-  )
-  assert.strictEqual(Chunk.join(data, ""), "Hi\n")
+  const data = yield* MobyDemux.demuxToSingleSink({ stdout: stdoutSocket }, Stream.make("a\n"), Sink.mkString)
+  assert.strictEqual(data, "Hi\n")
 
   // Wait for the container to exit
   yield* containers.wait(containerId)

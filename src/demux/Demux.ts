@@ -112,10 +112,10 @@ export declare namespace Demux {
  *         const data = yield* MobyDemux.demuxToSingleSink(
  *             socket,
  *             input,
- *             Sink.collectAll<string>()
+ *             Sink.mkString
  *         );
  *         assert.strictEqual(
- *             Chunk.join(data, ""),
+ *             data,
  *             "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n"
  *         );
  *
@@ -189,10 +189,10 @@ export declare namespace Demux {
  *         const data = yield* MobyDemux.demuxToSingleSink(
  *             socket,
  *             input,
- *             Sink.collectAll<string>()
+ *             Sink.mkString
  *         );
  *         assert.strictEqual(
- *             Chunk.join(data, ""),
+ *             data,
  *             "d41d8cd98f00b204e9800998ecf8427e  -\nHi2\n"
  *         );
  *
@@ -281,7 +281,7 @@ export declare namespace Demux {
  *                 stderr: stderrSocket,
  *             },
  *             Stream.make("a\n"),
- *             Sink.collectAll<string>()
+ *             Sink.mkString
  *         );
  *
  *         assert.ok(
@@ -292,7 +292,7 @@ export declare namespace Demux {
  *                 // When tty: true
  *                 "a\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\nHi2\r\n",
  *                 "a\r\nHi2\r\nd41d8cd98f00b204e9800998ecf8427e  -\r\n",
- *             ].includes(Chunk.join(data, ""))
+ *             ].includes(data)
  *         );
  *
  *         // Wait for the container to exit
@@ -362,9 +362,9 @@ export declare namespace Demux {
  *         const data = yield* MobyDemux.demuxToSingleSink(
  *             { stdout: stdoutSocket },
  *             Stream.make("a\n"),
- *             Sink.collectAll<string>()
+ *             Sink.mkString
  *         );
- *         assert.strictEqual(Chunk.join(data, ""), "Hi\n");
+ *         assert.strictEqual(data, "Hi\n");
  *
  *         // Wait for the container to exit
  *         yield* containers.wait(containerId);
@@ -568,14 +568,14 @@ export const demuxUnknownToSingleSink: {
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 socket,
  *                 Stream.make("a\n"),
- *                 Sink.collectAll<string>(),
- *                 Sink.collectAll<string>()
+ *                 Sink.mkString,
+ *                 Sink.mkString
  *             );
  *         assert.strictEqual(
- *             Chunk.join(stdoutData, ""),
+ *             stdoutData,
  *             "d41d8cd98f00b204e9800998ecf8427e  -\n"
  *         );
- *         assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n");
+ *         assert.strictEqual(stderrData, "Hi2\n");
  *
  *         // Wait for the container to exit
  *         yield* containers.wait(containerId);
@@ -663,14 +663,14 @@ export const demuxUnknownToSingleSink: {
  *                     stderr: stderrSocket,
  *                 },
  *                 Stream.make("a\n"),
- *                 Sink.collectAll<string>(),
- *                 Sink.collectAll<string>()
+ *                 Sink.mkString,
+ *                 Sink.mkString
  *             );
  *         assert.strictEqual(
- *             Chunk.join(stdoutData, ""),
+ *             stdoutData,
  *             "d41d8cd98f00b204e9800998ecf8427e  -\n"
  *         );
- *         assert.strictEqual(Chunk.join(stderrData, ""), "Hi2\n");
+ *         assert.strictEqual(stderrData, "Hi2\n");
  *
  *         // Wait for the container to exit
  *         yield* containers.wait(containerId);
@@ -739,10 +739,10 @@ export const demuxUnknownToSingleSink: {
  *             yield* MobyDemux.demuxToSeparateSinks(
  *                 { stdout: stdoutSocket },
  *                 Stream.make("a\n"),
- *                 Sink.collectAll<string>(),
- *                 Sink.collectAll<string>()
+ *                 Sink.mkString,
+ *                 Sink.mkString
  *             );
- *         assert.strictEqual(Chunk.join(stdoutData, ""), "Hi\n");
+ *         assert.strictEqual(stdoutData, "Hi\n");
  *         assert.strictEqual(stderrData, undefined);
  *
  *         // Wait for the container to exit
