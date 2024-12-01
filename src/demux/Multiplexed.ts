@@ -287,7 +287,7 @@ export const demuxMultiplexedSocket: {
 
         return Function.pipe(
             untilPartition,
-            Stream.partition(([messageType]) => messageType !== MultiplexedStreamSocketHeaderType.Stderr, {
+            Stream.partition(([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stderr, {
                 bufferSize: options?.bufferSize,
             }),
             Effect.map(
