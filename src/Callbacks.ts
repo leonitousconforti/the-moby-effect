@@ -12,7 +12,7 @@ import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Predicate from "effect/Predicate";
 import * as Runtime from "effect/Runtime";
 import * as Stream from "effect/Stream";
-import * as DockerEngine from "the-moby-effect/DockerEngine";
+import * as DockerEngine from "./engines/Docker.js";
 
 /** @internal */
 export const runCallbackForEffect =
@@ -98,6 +98,12 @@ export function runCallback<R = never>(runtime: Runtime.Runtime<R>, arity?: 0 | 
     };
 }
 
+/**
+ * Create a callback client for the docker engine
+ *
+ * @since 1.0.0
+ * @category Callbacks
+ */
 export const callbackClient = async <E>(
     layer: Layer.Layer<
         Layer.Layer.Success<DockerEngine.DockerLayer>,
@@ -119,7 +125,7 @@ export const callbackClient = async <E>(
         pull: Function.compose(DockerEngine.pull, Stream.toReadableStreamRuntime(runtime)),
         build: Function.compose(DockerEngine.build, Stream.toReadableStreamRuntime(runtime)),
         stop: runCallbackSingle(DockerEngine.stop),
-        // start: runCallbackSingle(DockerEngine.start),
+        start: runCallbackSingle(DockerEngine.start),
         run: runCallbackSingle(DockerEngine.run),
         exec: runCallbackSingle(DockerEngine.exec),
         execNonBlocking: runCallbackSingle(DockerEngine.execNonBlocking),

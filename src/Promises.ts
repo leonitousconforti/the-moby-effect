@@ -8,8 +8,14 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Stream from "effect/Stream";
-import * as DockerEngine from "the-moby-effect/DockerEngine";
+import * as DockerEngine from "./engines/Docker.js";
 
+/**
+ * Create a promise client for the docker engine
+ *
+ * @since 1.0.0
+ * @category Promises
+ */
 export const promiseClient = async <E>(
     layer: Layer.Layer<
         Layer.Layer.Success<DockerEngine.DockerLayer>,
