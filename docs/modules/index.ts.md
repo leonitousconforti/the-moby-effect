@@ -1,12 +1,12 @@
 ---
 title: index.ts
-nav_order: 31
+nav_order: 32
 parent: Modules
 ---
 
 ## index overview
 
-Docker in docker engine shortcut.
+Docker engine callbacks api
 
 Added in v1.0.0
 
@@ -15,6 +15,7 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
+  - [From "./Callbacks.js"](#from-callbacksjs)
   - [From "./DindEngine.js"](#from-dindenginejs)
   - [From "./DockerComposeEngine.js"](#from-dockercomposeenginejs)
   - [From "./DockerEngine.js"](#from-dockerenginejs)
@@ -26,10 +27,23 @@ Added in v1.0.0
   - [From "./MobyPlatforms.js"](#from-mobyplatformsjs)
   - [From "./MobySchemas.js"](#from-mobyschemasjs)
   - [From "./PodmanEngine.js"](#from-podmanenginejs)
+  - [From "./Promises.js"](#from-promisesjs)
 
 ---
 
 # exports
+
+## From "./Callbacks.js"
+
+Docker engine callbacks api
+
+**Signature**
+
+```ts
+export * as Callbacks from "./Callbacks.js"
+```
+
+Added in v1.0.0
 
 ## From "./DindEngine.js"
 
@@ -159,6 +173,18 @@ Podman engine shortcut.
 
 ```ts
 export * as PodmanEngine from "./PodmanEngine.js"
+```
+
+Added in v1.0.0
+
+## From "./Promises.js"
+
+Docker engine promises api
+
+**Signature**
+
+```ts
+export * as Promises from "./Promises.js"
 ```
 
 Added in v1.0.0

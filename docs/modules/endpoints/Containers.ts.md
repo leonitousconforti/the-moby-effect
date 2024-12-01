@@ -1,6 +1,6 @@
 ---
 title: endpoints/Containers.ts
-nav_order: 12
+nav_order: 13
 parent: Modules
 ---
 
@@ -54,7 +54,7 @@ Added in v1.0.0
 export declare const ContainersLayer: Layer.Layer<
   Containers,
   never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope> | Socket.WebSocketConstructor
+  Socket.WebSocketConstructor | HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
 >
 ```
 

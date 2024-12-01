@@ -1,6 +1,6 @@
 ---
 title: engines/Dind.ts
-nav_order: 26
+nav_order: 27
 parent: Modules
 ---
 
@@ -129,7 +129,7 @@ export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
       readonly passphrase?: string | undefined
     },
   never,
-  WebSocketConstructor | HttpClient<HttpClientError, Scope.Scope>
+  HttpClient<HttpClientError, Scope.Scope> | WebSocketConstructor
 >
 ```
 

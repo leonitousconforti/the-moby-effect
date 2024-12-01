@@ -1,6 +1,6 @@
 ---
 title: engines/Docker.ts
-nav_order: 27
+nav_order: 28
 parent: Modules
 ---
 
@@ -30,6 +30,7 @@ Added in v1.0.0
   - [run](#run)
   - [runScoped](#runscoped)
   - [search](#search)
+  - [start](#start)
   - [stop](#stop)
   - [version](#version)
 - [Layers](#layers)
@@ -97,7 +98,7 @@ export declare const buildScoped: <E1>({
   dockerfile?: string | undefined
   buildArgs?: Record<string, string | undefined> | undefined
   context: Stream.Stream<Uint8Array, E1, never>
-}) => Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, ImagesError, Scope.Scope | Images>
+}) => Effect.Effect<Stream.Stream<JSONMessage, ImagesError, never>, never, Scope.Scope | Images>
 ```
 
 Added in v1.0.0
@@ -240,7 +241,7 @@ export declare const pullScoped: ({
   image: string
   auth?: string | undefined
   platform?: string | undefined
-}) => Effect.Effect<Stream.Stream<JSONMessage, ImagesError, Images>, never, Images | Scope.Scope>
+}) => Effect.Effect<Stream.Stream<JSONMessage, ImagesError, never>, never, Images | Scope.Scope>
 ```
 
 Added in v1.0.0
@@ -296,6 +297,18 @@ Implements the `docker search` command.
 export declare const search: (
   options: Parameters<Images["search"]>[0]
 ) => Effect.Effect<ReadonlyArray<RegistrySearchResponse>, ImagesError, Images>
+```
+
+Added in v1.0.0
+
+## start
+
+Implements the `docker start` command.
+
+**Signature**
+
+```ts
+export declare const start: (containerId: string) => Effect.Effect<void, ContainersError, Containers>
 ```
 
 Added in v1.0.0
