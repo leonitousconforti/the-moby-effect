@@ -29,8 +29,8 @@ importers:
         specifier: ^1.16.0
         version: 1.16.0
       undici:
-        specifier: ^7.0.0
-        version: 7.0.0
+        specifier: ^6.21.0
+        version: 6.21.0
       ws:
         specifier: ^8.18.0
         version: 8.18.0
@@ -2936,10 +2936,6 @@ packages:
   undici@6.21.0:
     resolution: {integrity: sha512-BUgJXc752Kou3oOIuU1i+yZZypyZRqNPW0vqoMPl8VaoalSfeR0D8/t4iAS3yirs79SSMTxTag+ZC86uswv+Cw==}
     engines: {node: '>=18.17'}
-
-  undici@7.0.0:
-    resolution: {integrity: sha512-c4xi3kWnQJrb7h2q8aJYKvUzmz7boCgz1cUCC6OwdeM5Tr2P0hDuthr2iut4ggqsz+Cnh20U/LoTzbKIdDS/Nw==}
-    engines: {node: '>=20.18.1'}
 
   unist-util-stringify-position@2.0.3:
     resolution: {integrity: sha512-3faScn5I+hy9VleOq/qNbAd6pAx7iH5jYBMS9I1HgQVijz/4mv5Bvw5iw1sC/90CODiKo81G/ps8AJrISn687g==}
@@ -5918,9 +5914,6 @@ snapshots:
   undici-types@6.20.0: {}
 
   undici@6.21.0:
-    optional: true
-
-  undici@7.0.0:
     optional: true
 
   unist-util-stringify-position@2.0.3:

@@ -149,12 +149,7 @@ export const makeUndiciHttpClientLayer = (
         Effect.map((nodeHttpClientLazy) =>
             Layer.provide(
                 nodeHttpClientLazy.layerUndiciWithoutDispatcher,
-                Layer.scoped(
-                    nodeHttpClientLazy.Dispatcher,
-                    // FIXME: https://github.com/Effect-TS/effect/pull/4031
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    getUndiciDispatcher(connectionOptions) as Effect.Effect<any, never, Scope.Scope>
-                )
+                Layer.scoped(nodeHttpClientLazy.Dispatcher, getUndiciDispatcher(connectionOptions))
             )
         ),
         Layer.unwrapEffect
