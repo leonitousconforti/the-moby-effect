@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/pull-image.ts
+// Run with: npx tsx examples/effect/pull-image.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Effect, Function, Layer, Stream } from "effect";

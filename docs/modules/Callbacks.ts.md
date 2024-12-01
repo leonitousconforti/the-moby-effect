@@ -35,7 +35,11 @@ export declare const callbackClient: <E>(
     Layer.Layer.Context<DockerEngine.DockerLayer>
   >
 ) => Promise<{
-  pull: (a: { image: string; auth?: string | undefined; platform?: string | undefined }) => ReadableStream<JSONMessage>
+  pull: (a_0: {
+    image: string
+    auth?: string | undefined
+    platform?: string | undefined
+  }) => ReadableStream<MobySchemas.JSONMessage>
   build: <E1>(a: {
     tag: string
     auth?: string | undefined
@@ -43,7 +47,7 @@ export declare const callbackClient: <E>(
     dockerfile?: string | undefined
     context: Stream.Stream<Uint8Array, E1, never>
     buildArgs?: Record<string, string | undefined> | undefined
-  }) => ReadableStream<JSONMessage>
+  }) => ReadableStream<MobySchemas.JSONMessage>
   stop: (z: string, callback: (exit: Exit.Exit<void, ContainersError>) => void) => void
   start: (z: string, callback: (exit: Exit.Exit<void, ContainersError>) => void) => void
   run: (
@@ -307,7 +311,7 @@ export declare const callbackClient: <E>(
           | undefined
       }
     },
-    callback: (exit: Exit.Exit<ContainerInspectResponse, ContainersError>) => void
+    callback: (exit: Exit.Exit<MobySchemas.ContainerInspectResponse, ContainersError>) => void
   ) => void
   exec: (
     z: { containerId: string; command: Array<string> },
@@ -344,7 +348,7 @@ export declare const callbackClient: <E>(
             | undefined
         }
       | undefined,
-    callback: (exit: Exit.Exit<readonly ContainerListResponseItem[], ContainersError>) => void
+    callback: (exit: Exit.Exit<readonly MobySchemas.ContainerListResponseItem[], ContainersError>) => void
   ) => void
   push: (a: {
     readonly name: string
@@ -360,7 +364,7 @@ export declare const callbackClient: <E>(
           readonly digests?: boolean | undefined
         }
       | undefined,
-    callback: (exit: Exit.Exit<readonly ImageSummary[], ImagesError>) => void
+    callback: (exit: Exit.Exit<readonly MobySchemas.ImageSummary[], ImagesError>) => void
   ) => void
   search: (
     z: {
@@ -369,12 +373,29 @@ export declare const callbackClient: <E>(
       readonly stars?: number | undefined
       readonly "is-official"?: boolean | undefined
     },
-    callback: (exit: Exit.Exit<readonly RegistrySearchResponse[], ImagesError>) => void
+    callback: (exit: Exit.Exit<readonly MobySchemas.RegistrySearchResponse[], ImagesError>) => void
   ) => void
-  version: (callback: (exit: Exit.Exit<Readonly<SystemVersionResponse>, SystemsError>) => void) => void
-  info: (callback: (exit: Exit.Exit<Readonly<SystemInfoResponse>, SystemsError>) => void) => void
+  version: (callback: (exit: Exit.Exit<Readonly<MobySchemas.SystemVersionResponse>, SystemsError>) => void) => void
+  info: (callback: (exit: Exit.Exit<Readonly<MobySchemas.SystemInfoResponse>, SystemsError>) => void) => void
   ping: (callback: (exit: Exit.Exit<"OK", SystemsError>) => void) => void
   pingHead: (callback: (exit: Exit.Exit<void, SystemsError>) => void) => void
+  packBuildContextIntoTarballStream: {
+    (
+      cwd: string,
+      entries?: Array<string> | undefined
+    ): Stream.Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
+    (entries: HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseError, never>
+  }
+  followProgressInConsole: (
+    y: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
+    z: (error: unknown) => unknown,
+    callback: (exit: Exit.Exit<readonly MobySchemas.JSONMessage[], unknown>) => void
+  ) => void
+  waitForProgressToComplete: (
+    y: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
+    z: (error: unknown) => unknown,
+    callback: (exit: Exit.Exit<readonly MobySchemas.JSONMessage[], unknown>) => void
+  ) => void
 }>
 ```
 

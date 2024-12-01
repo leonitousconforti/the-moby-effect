@@ -4,6 +4,7 @@
  * @since 1.0.0
  */
 
+import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
 import * as Function from "effect/Function";
@@ -13,6 +14,8 @@ import * as Predicate from "effect/Predicate";
 import * as Runtime from "effect/Runtime";
 import * as Stream from "effect/Stream";
 import * as DockerEngine from "./engines/Docker.js";
+import * as MobyConvey from "./MobyConvey.js";
+import * as MobySchemas from "./MobySchemas.js";
 
 /** @internal */
 export const runCallbackForEffect =
@@ -116,13 +119,13 @@ export const callbackClient = async <E>(
 
     const runCallbackZero = runCallback(runtime, 0);
     const runCallbackSingle = runCallback(runtime, 1);
-    // const runCallbackDouble = runCallback(runtime, 2);
+    const runCallbackDouble = runCallback(runtime, 2);
     // const runCallbackTriple = runCallback(runtime, 3);
     // const runCallbackQuadruple = runCallback(runtime, 4);
     // const runCallbackQuintuple = runCallback(runtime, 5);
 
     return {
-        pull: Function.compose(DockerEngine.pull, Stream.toReadableStreamRuntime(runtime)),
+        pull: Function.flow(DockerEngine.pull, Stream.toReadableStreamRuntime(runtime)),
         build: Function.compose(DockerEngine.build, Stream.toReadableStreamRuntime(runtime)),
         stop: runCallbackSingle(DockerEngine.stop),
         start: runCallbackSingle(DockerEngine.start),
@@ -137,5 +140,22 @@ export const callbackClient = async <E>(
         info: runCallbackZero(DockerEngine.info),
         ping: runCallbackZero(DockerEngine.ping),
         pingHead: runCallbackZero(DockerEngine.pingHead),
+        packBuildContextIntoTarballStream: MobyConvey.packBuildContextIntoTarballStream,
+        followProgressInConsole: Function.pipe(
+            Function.flow(
+                Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
+                MobyConvey.followProgressInConsole<unknown, Layer.Layer.Success<typeof layer>>,
+                Effect.map(Chunk.toReadonlyArray)
+            ),
+            runCallbackDouble
+        ),
+        waitForProgressToComplete: Function.pipe(
+            Function.flow(
+                Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
+                MobyConvey.waitForProgressToComplete<unknown, Layer.Layer.Success<typeof layer>>,
+                Effect.map(Chunk.toReadonlyArray)
+            ),
+            runCallbackDouble
+        ),
     };
 };

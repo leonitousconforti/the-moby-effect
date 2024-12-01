@@ -1,8 +1,7 @@
-// Run with: npx tsx examples/container-with-volume.ts
+// Run with: npx tsx examples/effect/container-top.ts
 
-import { Path } from "@effect/platform";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Effect, Function, Layer } from "effect";
+import { NodeRuntime } from "@effect/platform-node";
+import { Console, Effect, Function, Layer } from "effect";
 import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
@@ -17,32 +16,45 @@ const localDocker = Function.pipe(
     Layer.unwrapEffect
 );
 
-// Recommended reading: https://blog.logrocket.com/docker-volumes-vs-bind-mounts/
+// {
+//   Titles: [
+//     'USER',    'PID',
+//     '%CPU',    '%MEM',
+//     'VSZ',     'RSS',
+//     'TTY',     'STAT',
+//     'START',   'TIME',
+//     'COMMAND'
+//   ],
+//   Processes: [
+//     [
+//       'root',           '19886',
+//       '3.0',            '0.0',
+//       '2788',           '1020',
+//       '?',              'Ss',
+//       '22:26',          '0:00',
+//       'sleep infinity'
+//     ]
+//   ]
+// }
 const program = Effect.gen(function* () {
-    const path: Path.Path = yield* Path.Path;
     const containers = yield* MobyEndpoints.Containers;
 
     // Pull the image, will be removed when the scope is closed
     const pullStream = yield* DockerEngine.pullScoped({ image: "ubuntu:latest" });
     yield* MobyConvey.followProgressInConsole(pullStream);
 
-    const testDocument: string = yield* path.fromFileUrl(new URL("container-with-volume.txt", import.meta.url));
     const containerInspectResponse: MobySchemas.ContainerInspectResponse = yield* DockerEngine.runScoped({
         spec: {
             Image: "ubuntu:latest",
-            Cmd: ["echo", "/app/test.txt"],
-            HostConfig: {
-                Binds: [`${testDocument}:/app/test.txt`],
-            },
+            Cmd: ["sleep", "infinity"],
         },
     });
 
-    yield* containers.wait(containerInspectResponse.Id);
-    yield* containers.delete(containerInspectResponse.Id);
+    const data: MobySchemas.ContainerTopResponse = yield* containers.top(containerInspectResponse.Id, {
+        ps_args: "aux",
+    });
+
+    yield* Console.log(data);
 });
 
-program
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.provide(NodeContext.layer))
-    .pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

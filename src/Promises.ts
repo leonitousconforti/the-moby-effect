@@ -4,11 +4,15 @@
  * @since 1.0.0
  */
 
+import * as Chunk from "effect/Chunk";
+import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Stream from "effect/Stream";
 import * as DockerEngine from "./engines/Docker.js";
+import * as MobyConvey from "./MobyConvey.js";
+import * as MobySchemas from "./MobySchemas.js";
 
 /**
  * Create a promise client for the docker engine
@@ -42,5 +46,18 @@ export const promiseClient = async <E>(
         info: Function.flow(DockerEngine.info, managedRuntime.runPromise),
         ping: Function.flow(DockerEngine.ping, managedRuntime.runPromise),
         pingHead: Function.flow(DockerEngine.pingHead, managedRuntime.runPromise),
+        packBuildContextIntoTarballStream: MobyConvey.packBuildContextIntoTarballStream,
+        followProgressInConsole: Function.flow(
+            Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
+            MobyConvey.followProgressInConsole<unknown, Layer.Layer.Success<typeof layer>>,
+            Effect.map(Chunk.toReadonlyArray),
+            managedRuntime.runPromise
+        ),
+        waitForProgressToComplete: Function.flow(
+            Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
+            MobyConvey.waitForProgressToComplete<unknown, Layer.Layer.Success<typeof layer>>,
+            Effect.map(Chunk.toReadonlyArray),
+            managedRuntime.runPromise
+        ),
     };
 };

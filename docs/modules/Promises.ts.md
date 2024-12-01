@@ -35,7 +35,11 @@ export declare const promiseClient: <E>(
     Layer.Layer.Context<DockerEngine.DockerLayer>
   >
 ) => Promise<{
-  pull: (a: { image: string; auth?: string | undefined; platform?: string | undefined }) => ReadableStream<JSONMessage>
+  pull: (a: {
+    image: string
+    auth?: string | undefined
+    platform?: string | undefined
+  }) => ReadableStream<MobySchemas.JSONMessage>
   build: <E1>(a: {
     tag: string
     auth?: string | undefined
@@ -43,7 +47,7 @@ export declare const promiseClient: <E>(
     dockerfile?: string | undefined
     context: Stream.Stream<Uint8Array, E1, never>
     buildArgs?: Record<string, string | undefined> | undefined
-  }) => ReadableStream<JSONMessage>
+  }) => ReadableStream<MobySchemas.JSONMessage>
   stop: (containerId: string) => Promise<void>
   start: (containerId: string) => Promise<void>
   run: (containerOptions: {
@@ -302,7 +306,7 @@ export declare const promiseClient: <E>(
         | null
         | undefined
     }
-  }) => Promise<ContainerInspectResponse>
+  }) => Promise<MobySchemas.ContainerInspectResponse>
   exec: (a_0: { containerId: string; command: Array<string> }) => Promise<string>
   execNonBlocking: (a_0: { containerId: string; command: Array<string> }) => Promise<void>
   ps: (
@@ -332,7 +336,7 @@ export declare const promiseClient: <E>(
             | undefined
         }
       | undefined
-  ) => Promise<readonly ContainerListResponseItem[]>
+  ) => Promise<readonly MobySchemas.ContainerListResponseItem[]>
   push: (options: {
     readonly name: string
     readonly tag?: string
@@ -347,17 +351,32 @@ export declare const promiseClient: <E>(
           readonly digests?: boolean | undefined
         }
       | undefined
-  ) => Promise<readonly ImageSummary[]>
+  ) => Promise<readonly MobySchemas.ImageSummary[]>
   search: (options: {
     readonly term: string
     readonly limit?: number | undefined
     readonly stars?: number | undefined
     readonly "is-official"?: boolean | undefined
-  }) => Promise<readonly RegistrySearchResponse[]>
-  version: () => Promise<Readonly<SystemVersionResponse>>
-  info: () => Promise<Readonly<SystemInfoResponse>>
+  }) => Promise<readonly MobySchemas.RegistrySearchResponse[]>
+  version: () => Promise<Readonly<MobySchemas.SystemVersionResponse>>
+  info: () => Promise<Readonly<MobySchemas.SystemInfoResponse>>
   ping: () => Promise<"OK">
   pingHead: () => Promise<void>
+  packBuildContextIntoTarballStream: {
+    (
+      cwd: string,
+      entries?: Array<string> | undefined
+    ): Stream.Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
+    (entries: HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseError, never>
+  }
+  followProgressInConsole: (
+    evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
+    onError: (error: unknown) => unknown
+  ) => Promise<readonly MobySchemas.JSONMessage[]>
+  waitForProgressToComplete: (
+    evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
+    onError: (error: unknown) => unknown
+  ) => Promise<readonly MobySchemas.JSONMessage[]>
 }>
 ```
 

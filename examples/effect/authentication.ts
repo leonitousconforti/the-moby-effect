@@ -1,4 +1,4 @@
-// Run with: tsx examples/authentication.ts
+// Run with: tsx examples/effect/authentication.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer, Stream } from "effect";

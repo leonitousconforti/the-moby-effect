@@ -1,9 +1,12 @@
-// Run with: npx tsx examples/build-image.ts
+/* eslint-disable no-console */
 
-import { Path } from "@effect/platform";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
+// Run with: npx tsx examples/callbacks/build-image.ts
+
+import * as url from "node:url";
+
+import { NodeContext } from "@effect/platform-node";
 import { Effect, Function, Layer, Stream } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
+import { Callbacks, DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -16,6 +19,9 @@ const localDocker = Function.pipe(
     Effect.map(DockerEngine.layerNodeJS),
     Layer.unwrapEffect
 );
+
+// Create a callbacks client from the local docker engine
+const callbacksClient = await Callbacks.callbackClient(localDocker);
 
 // Step 1/1 : FROM ubuntu:latest
 // Pulling from library/ubuntu
@@ -46,26 +52,23 @@ const localDocker = Function.pipe(
 // sha256:35a88802559dd2077e584394471ddaa1a2c5bfd16893b829ea57619301eb3908
 // Successfully built 35a88802559d
 // Successfully tagged mydockerimage:latest
-const program = Effect.gen(function* () {
-    const path: Path.Path = yield* Path.Path;
 
-    const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
-    const buildContext = Function.pipe(
-        MobyConvey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
-        Stream.provideLayer(NodeContext.layer)
-    );
+const cwd = url.fileURLToPath(new URL(".", import.meta.url));
+const buildContext = Function.pipe(
+    MobyConvey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
+    Stream.provideLayer(NodeContext.layer)
+);
 
-    const buildStream = yield* DockerEngine.buildScoped({
-        context: buildContext,
-        tag: "mydockerimage:latest",
-        dockerfile: "build-image.dockerfile",
-    });
-
-    yield* MobyConvey.followProgressInConsole(buildStream);
+const buildStream = callbacksClient.build({
+    context: buildContext,
+    tag: "mydockerimage:latest",
+    dockerfile: "build-image.dockerfile",
 });
 
-program
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.provide(NodeContext.layer))
-    .pipe(NodeRuntime.runMain);
+callbacksClient.followProgressInConsole(
+    () => buildStream,
+    (error) => error,
+    (exit) => {
+        console.log(exit);
+    }
+);

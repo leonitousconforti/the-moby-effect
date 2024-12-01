@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/container-attach.ts
+// Run with: npx tsx examples/effect/container-attach.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer } from "effect";
@@ -38,16 +38,12 @@ const program = Effect.gen(function* () {
     });
 
     // Attach to the container
-    const socket = yield* containers.attach(containerId, {
-        stdin: true,
-        stdout: true,
-        stderr: true,
-        stream: true,
-        detachKeys: "ctrl-e",
-    });
+    const stdin = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
+    const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
+    const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
 
     // Demux the socket to stdin, stdout and stderr
-    yield* MobyDemux.demuxSocketFromStdinToStdoutAndStderr(socket);
+    yield* MobyDemux.demuxSocketFromStdinToStdoutAndStderr({ stdin, stdout, stderr });
 
     // Done
     yield* Console.log("Disconnected from container");
