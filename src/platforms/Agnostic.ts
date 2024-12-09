@@ -13,9 +13,9 @@ import * as Socket from "@effect/platform/Socket";
 import * as UrlParams from "@effect/platform/UrlParams";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
+import * as Types from "effect/Types";
 
 import { MobyConnectionOptions } from "../MobyConnection.js";
 
@@ -83,7 +83,7 @@ export const websocketRequest = (
 export const makeAgnosticHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> =>
-    Function.pipe(
+    Layer.map(
         Layer.function(
             HttpClient.HttpClient,
             HttpClient.HttpClient,
@@ -93,22 +93,12 @@ export const makeAgnosticHttpClientLayer = (
                 return urlPrepended;
             })
         ),
-        Layer.map((context) => {
-            const tag: Context.Tag<
-                HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>,
-                HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
-            > = HttpClient.HttpClient;
+        (context) => {
+            const tag = HttpClient.HttpClient;
             const oldClient = Context.get(context, tag);
-            type Mutable<T> = { -readonly [P in keyof T]: T[P] };
-            (oldClient as Mutable<HttpClientExtension>)[HttpClientMobyConnectionOptions] = connectionOptions;
+            (oldClient as Types.Mutable<HttpClientExtension>)[HttpClientMobyConnectionOptions] = connectionOptions;
             return Context.make(tag, oldClient);
-        }),
-        Layer.tap((context) => {
-            const client = Context.get(context, HttpClient.HttpClient);
-            const { [HttpClientMobyConnectionOptions]: savedConnectionOptions } = client as HttpClientExtension;
-            assert.deepStrictEqual(savedConnectionOptions, connectionOptions);
-            return Effect.void;
-        })
+        }
     );
 
 /**
@@ -124,6 +114,7 @@ export const makeAgnosticWebsocketLayer = (
     Layer.effect(
         Socket.WebSocketConstructor,
         Effect.gen(function* () {
+            // Only the ws package supports unix socket connection options
             if (MobyConnectionOptions.$is("socket")(connectionOptions)) {
                 const ws = yield* Effect.promise(() => import("ws"));
                 return (url, protocols) => new ws.WebSocket(url, protocols) as unknown as globalThis.WebSocket;

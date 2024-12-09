@@ -32,6 +32,7 @@ import { Volumes, VolumesLayer } from "../endpoints/Volumes.js";
 import { makeAgnosticHttpClientLayer } from "../platforms/Agnostic.js";
 import { makeBunHttpClientLayer } from "../platforms/Bun.js";
 import { makeDenoHttpClientLayer } from "../platforms/Deno.js";
+import { makeFetchHttpClientLayer } from "../platforms/Fetch.js";
 import { makeNodeHttpClientLayer } from "../platforms/Node.js";
 import { makeUndiciHttpClientLayer } from "../platforms/Undici.js";
 import { makeWebHttpClientLayer } from "../platforms/Web.js";
@@ -131,6 +132,13 @@ export const layerUndici = (connectionOptions: MobyConnectionOptions): MobyLayer
  */
 export const layerWeb = (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged): MobyLayer =>
     Layer.provide(layerWithoutHttpCLient, makeWebHttpClientLayer(connectionOptions));
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerFetch = (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged): MobyLayer =>
+    Layer.provide(layerWithoutHttpCLient, makeFetchHttpClientLayer(connectionOptions));
 
 /**
  * @since 1.0.0

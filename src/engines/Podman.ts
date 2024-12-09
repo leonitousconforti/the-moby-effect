@@ -92,6 +92,14 @@ export const layerWeb: (connectionOptions: HttpConnectionOptionsTagged | HttpsCo
  * @since 1.0.0
  * @category Layers
  */
+export const layerFetch: (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => PodmanLayer = Moby.layerFetch;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
 export const layerAgnostic: (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => PodmanLayerWithoutHttpCLientOrWebsocketConstructor = Moby.layerAgnostic;

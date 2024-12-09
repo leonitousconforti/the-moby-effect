@@ -89,6 +89,14 @@ export const layerWeb: (connectionOptions: HttpConnectionOptionsTagged | HttpsCo
  * @since 1.0.0
  * @category Layers
  */
+export const layerFetch: (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => DockerLayer = Moby.layerFetch;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
 export const layerAgnostic: (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => DockerLayerWithoutHttpClientOrWebsocketConstructor = Moby.layerAgnostic;

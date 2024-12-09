@@ -27,12 +27,22 @@ import * as Redacted from "effect/Redacted";
  * @category Connection Types
  */
 export type MobyConnectionOptions = Data.TaggedEnum<{
-    socket: { readonly socketPath: string };
-    ssh: { readonly remoteSocketPath: string; host: string } & Exclude<ssh2.ConnectConfig, "host">;
-    http: { readonly host: string; readonly port: number; readonly path?: string | undefined };
+    socket: { readonly socketPath: string; readonly version?: string | undefined };
+    ssh: {
+        readonly remoteSocketPath: string;
+        readonly host: string;
+        readonly version?: string | undefined;
+    } & Exclude<ssh2.ConnectConfig, "host">;
+    http: {
+        readonly host: string;
+        readonly port: number;
+        readonly path?: string | undefined;
+        readonly version?: string | undefined;
+    };
     https: {
         readonly host: string;
         readonly port: number;
+        readonly version?: string | undefined;
         readonly path?: string | undefined;
         readonly cert?: string | undefined;
         readonly ca?: string | undefined;

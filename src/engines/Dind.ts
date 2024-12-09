@@ -432,5 +432,12 @@ export const layerWeb: MakeDindLayerFromPlatformConstructor<typeof DockerEngine.
  * @since 1.0.0
  * @category Layers
  */
+export const layerFetch: MakeDindLayerFromPlatformConstructor<typeof DockerEngine.layerFetch> =
+    makeDindLayerFromPlatformConstructor(DockerEngine.layerFetch);
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
 export const layerAgnostic: MakeDindLayerFromPlatformConstructor<typeof DockerEngine.layerAgnostic> =
     makeDindLayerFromPlatformConstructor(DockerEngine.layerAgnostic);

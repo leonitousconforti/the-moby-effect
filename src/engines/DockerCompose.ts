@@ -283,6 +283,15 @@ export const layerWeb = (
  * @since 1.0.0
  * @category Layers
  */
+export const layerFetch = (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+): Layer.Layer<DockerCompose, SystemsError | ContainersError, never> =>
+    Layer.provide(Layer.scoped(DockerCompose, make), DockerEngine.layerFetch(connectionOptions));
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
 export const layerAgnostic = (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ): Layer.Layer<DockerCompose, SystemsError | ContainersError, HttpClient.HttpClient | Socket.WebSocketConstructor> =>
