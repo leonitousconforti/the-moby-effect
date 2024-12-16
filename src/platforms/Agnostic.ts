@@ -13,32 +13,35 @@ import * as Socket from "@effect/platform/Socket";
 import * as UrlParams from "@effect/platform/UrlParams";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
+import * as Predicate from "effect/Predicate";
 import * as Scope from "effect/Scope";
 import * as Types from "effect/Types";
 
 import { MobyConnectionOptions } from "../MobyConnection.js";
 
-/**
- * @since 1.0.0
- * @category Helpers
- */
+/** @internal */
+const makeVersionPath = (connectionOptions: MobyConnectionOptions): string =>
+    Predicate.isNotUndefined(connectionOptions.version) ? `/v${connectionOptions.version}` : "";
+
+/** @internal */
 const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
-    ssh: () => "http://0.0.0.0" as const,
-    socket: () => "http://0.0.0.0" as const,
-    http: (options) => `http://${options.host}:${options.port}${options.path ?? ""}` as const,
-    https: (options) => `https://${options.host}:${options.port}${options.path ?? ""}` as const,
+    ssh: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
+    socket: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
+    http: (options) =>
+        `http://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+    https: (options) =>
+        `https://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
 });
 
-/**
- * @since 1.0.0
- * @category Helpers
- */
+/** @internal */
 const makeWebsocketRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
-    ssh: () => "ws://0.0.0.0" as const,
-    socket: (options) => `ws+unix://${options.socketPath}:` as const,
-    http: (options) => `ws://${options.host}:${options.port}${options.path ?? ""}` as const,
-    https: (options) => `wss://${options.host}:${options.port}${options.path ?? ""}` as const,
+    ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}` as const,
+    socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:` as const,
+    http: (options) => `ws://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+    https: (options) =>
+        `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
 });
 
 /** @internal */
@@ -83,7 +86,7 @@ export const websocketRequest = (
 export const makeAgnosticHttpClientLayer = (
     connectionOptions: MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> =>
-    Layer.map(
+    Function.pipe(
         Layer.function(
             HttpClient.HttpClient,
             HttpClient.HttpClient,
@@ -93,12 +96,12 @@ export const makeAgnosticHttpClientLayer = (
                 return urlPrepended;
             })
         ),
-        (context) => {
+        Layer.map((context) => {
             const tag = HttpClient.HttpClient;
             const oldClient = Context.get(context, tag);
             (oldClient as Types.Mutable<HttpClientExtension>)[HttpClientMobyConnectionOptions] = connectionOptions;
             return Context.make(tag, oldClient);
-        }
+        })
     );
 
 /**
