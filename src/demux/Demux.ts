@@ -495,9 +495,41 @@ export const demuxUnknownToSingleSink: {
         E1 | E2 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
     >;
-} =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    demuxToSingleSink as any;
+} = Function.dual(
+    /**
+     * We are data-first if the first argument is a socket or if the first
+     * argument is an object with a "stdout", "stderr", or "stdin" key.
+     */
+    (arguments_) =>
+        arguments_[0][Socket.TypeId] !== undefined ||
+        "stdin" in arguments_[0] ||
+        "stdout" in arguments_[0] ||
+        "stderr" in arguments_[0],
+    <A1, E1, E2, R1, R2>(
+        socketOptions: Demux.AnySocketOptions,
+        source: Stream.Stream<string | Uint8Array, E1, R1>,
+        sink: Sink.Sink<A1, string, string, E2, R2>,
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    ): Effect.Effect<
+        A1,
+        E1 | E2 | Socket.SocketError | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>
+    > => {
+        if ("stdin" in socketOptions || "stdout" in socketOptions || "stderr" in socketOptions) {
+            return demuxToSingleSink(socketOptions, source, sink, options);
+        }
+
+        if (isRawStreamSocket(socketOptions)) {
+            return demuxToSingleSink(socketOptions, source, sink, options);
+        }
+
+        if (isMultiplexedStreamSocket(socketOptions)) {
+            return demuxToSingleSink(socketOptions, source, sink, options);
+        }
+
+        return Function.absurd(socketOptions);
+    }
+);
 
 /**
  * Demux either a multiplexed socket or multiple raw socket to separate sinks.
@@ -999,6 +1031,4 @@ export const demuxUnknownToSeparateSinks: {
         E1 | E2 | E3 | Socket.SocketError | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
-} =
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    demuxAnyToSeparateSinks as any;
+} = demuxAnyToSeparateSinks;
