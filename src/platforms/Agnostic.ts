@@ -4,8 +4,6 @@
  * @since 1.0.0
  */
 
-import * as assert from "node:assert";
-
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
@@ -64,7 +62,9 @@ export const websocketRequest = (
 
         const { hash, url, urlParams } = request;
         const { [HttpClientMobyConnectionOptions]: connectionOptions } = client as HttpClientExtension;
-        assert.ok(connectionOptions);
+        if (Predicate.isUndefined(connectionOptions)) {
+            return yield* Effect.dieMessage("What happened to the connection options?");
+        }
 
         const websocketUrl = yield* UrlParams.makeUrl(
             `${makeWebsocketRequestUrl(connectionOptions)}${url}`,
