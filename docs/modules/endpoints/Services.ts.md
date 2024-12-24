@@ -57,11 +57,7 @@ enabled for these endpoints to work.
 **Signature**
 
 ```ts
-export declare const ServicesLayer: Layer.Layer<
-  Services,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const ServicesLayer: Layer.Layer<Services, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

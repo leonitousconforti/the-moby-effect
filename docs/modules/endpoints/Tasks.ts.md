@@ -57,11 +57,7 @@ swarm. Swarm mode must be enabled for these endpoints to work.
 **Signature**
 
 ```ts
-export declare const TasksLayer: Layer.Layer<
-  Tasks,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const TasksLayer: Layer.Layer<Tasks, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

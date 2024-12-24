@@ -57,11 +57,7 @@ mode must be enabled for these endpoints to work.
 **Signature**
 
 ```ts
-export declare const ConfigsLayer: Layer.Layer<
-  Configs,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const ConfigsLayer: Layer.Layer<Configs, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

@@ -51,11 +51,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SessionsLayer: Layer.Layer<
-  Sessions,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
->
+export declare const SessionsLayer: Layer.Layer<Sessions, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

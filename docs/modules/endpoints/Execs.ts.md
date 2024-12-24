@@ -51,11 +51,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ExecsLayer: Layer.Layer<
-  Execs,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope.Scope>
->
+export declare const ExecsLayer: Layer.Layer<Execs, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

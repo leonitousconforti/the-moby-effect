@@ -137,7 +137,7 @@ export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
       readonly passphrase?: string | undefined
     },
   never,
-  HttpClient<HttpClientError, Scope.Scope> | WebSocketConstructor
+  HttpClient | WebSocketConstructor
 >
 ```
 

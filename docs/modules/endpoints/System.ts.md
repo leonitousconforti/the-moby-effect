@@ -51,11 +51,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const SystemsLayer: Layer.Layer<
-  Systems,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const SystemsLayer: Layer.Layer<Systems, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

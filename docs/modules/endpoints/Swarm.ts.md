@@ -57,11 +57,7 @@ documentation for more information.
 **Signature**
 
 ```ts
-export declare const SwarmLayer: Layer.Layer<
-  Swarm,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const SwarmLayer: Layer.Layer<Swarm, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

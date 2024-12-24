@@ -49,7 +49,7 @@ const HttpClientMobyConnectionOptions: unique symbol = Symbol.for(
 
 /** @internal */
 interface HttpClientExtension<E = HttpClientError.HttpClientError, R = Scope.Scope>
-    extends HttpClient.HttpClient<E, R> {
+    extends HttpClient.HttpClient.With<E, R> {
     readonly [HttpClientMobyConnectionOptions]: MobyConnectionOptions;
 }
 

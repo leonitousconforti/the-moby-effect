@@ -53,11 +53,7 @@ Configs layer that depends on the MobyConnectionAgent
 **Signature**
 
 ```ts
-export declare const PluginsLayer: Layer.Layer<
-  Plugins,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const PluginsLayer: Layer.Layer<Plugins, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

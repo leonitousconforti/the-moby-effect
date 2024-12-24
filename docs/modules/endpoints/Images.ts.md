@@ -53,11 +53,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ImagesLayer: Layer.Layer<
-  Images,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const ImagesLayer: Layer.Layer<Images, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

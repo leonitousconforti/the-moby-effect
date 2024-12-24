@@ -54,11 +54,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const NodesLayer: Layer.Layer<
-  Nodes,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const NodesLayer: Layer.Layer<Nodes, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0

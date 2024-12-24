@@ -57,11 +57,7 @@ enabled for these endpoints to work.
 **Signature**
 
 ```ts
-export declare const SecretsLayer: Layer.Layer<
-  Secrets,
-  never,
-  HttpClient.HttpClient<HttpClientError.HttpClientError, Scope>
->
+export declare const SecretsLayer: Layer.Layer<Secrets, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0
