@@ -39,6 +39,7 @@ Added in v1.0.0
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
+  - [layerFetch](#layerfetch)
   - [layerNodeJS](#layernodejs)
   - [layerUndici](#layerundici)
   - [layerWeb](#layerweb)
@@ -387,6 +388,18 @@ Added in v1.0.0
 
 ```ts
 export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => DockerLayer
+```
+
+Added in v1.0.0
+
+## layerFetch
+
+**Signature**
+
+```ts
+export declare const layerFetch: (
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => DockerLayer
 ```
 
 Added in v1.0.0

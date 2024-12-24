@@ -21,6 +21,7 @@ Added in v1.0.0
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
+  - [layerFetch](#layerfetch)
   - [layerNodeJS](#layernodejs)
   - [layerUndici](#layerundici)
   - [layerWeb](#layerweb)
@@ -117,11 +118,18 @@ export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
   (
     connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
   ) => DockerEngine.DockerLayerWithoutHttpClientOrWebsocketConstructor,
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -142,11 +150,12 @@ Added in v1.0.0
 ```ts
 export declare const layerBun: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -174,11 +183,18 @@ export declare const layerBun: MakeDindLayerFromPlatformConstructor<
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -199,11 +215,12 @@ Added in v1.0.0
 ```ts
 export declare const layerDeno: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -231,11 +248,50 @@ export declare const layerDeno: MakeDindLayerFromPlatformConstructor<
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
+      readonly path?: string | undefined
+      readonly cert?: string | undefined
+      readonly ca?: string | undefined
+      readonly key?: string | undefined
+      readonly passphrase?: string | undefined
+    },
+  never,
+  never
+>
+```
+
+Added in v1.0.0
+
+## layerFetch
+
+**Signature**
+
+```ts
+export declare const layerFetch: MakeDindLayerFromPlatformConstructor<
+  (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged) => DockerEngine.DockerLayer,
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
+  | {
+      readonly _tag: "https"
+      readonly host: string
+      readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -256,11 +312,12 @@ Added in v1.0.0
 ```ts
 export declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -288,11 +345,18 @@ export declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -313,11 +377,12 @@ Added in v1.0.0
 ```ts
 export declare const layerUndici: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -345,11 +410,18 @@ export declare const layerUndici: MakeDindLayerFromPlatformConstructor<
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -370,11 +442,18 @@ Added in v1.0.0
 ```ts
 export declare const layerWeb: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged) => DockerEngine.DockerLayer,
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined

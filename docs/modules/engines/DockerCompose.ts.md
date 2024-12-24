@@ -21,6 +21,7 @@ Added in v1.0.0
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
+  - [layerFetch](#layerfetch)
   - [layerNodeJS](#layernodejs)
   - [layerProject](#layerproject)
   - [layerUndici](#layerundici)
@@ -93,6 +94,18 @@ Added in v1.0.0
 ```ts
 export declare const layerDeno: (
   connectionOptions: MobyConnectionOptions
+) => Layer.Layer<DockerCompose, SystemsError | ContainersError, never>
+```
+
+Added in v1.0.0
+
+## layerFetch
+
+**Signature**
+
+```ts
+export declare const layerFetch: (
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
 ) => Layer.Layer<DockerCompose, SystemsError | ContainersError, never>
 ```
 

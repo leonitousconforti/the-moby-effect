@@ -46,7 +46,13 @@ Added in v1.0.0
 
 ```ts
 export declare const HttpConnectionOptions: Data.Case.Constructor<
-  { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined },
+  {
+    readonly _tag: "http"
+    readonly host: string
+    readonly port: number
+    readonly path?: string | undefined
+    readonly version?: string | undefined
+  },
   "_tag"
 >
 ```
@@ -74,6 +80,7 @@ export declare const HttpsConnectionOptions: Data.Case.Constructor<
     readonly _tag: "https"
     readonly host: string
     readonly port: number
+    readonly version?: string | undefined
     readonly path?: string | undefined
     readonly cert?: string | undefined
     readonly ca?: string | undefined
@@ -107,7 +114,7 @@ Added in v1.0.0
 
 ```ts
 export declare const SocketConnectionOptions: Data.Case.Constructor<
-  { readonly _tag: "socket"; readonly socketPath: string },
+  { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined },
   "_tag"
 >
 ```
@@ -139,6 +146,7 @@ export declare const SshConnectionOptions: Data.Case.Constructor<
     readonly _tag: "ssh"
     readonly remoteSocketPath: string
     readonly host: string
+    readonly version?: string | undefined
     readonly port?: number
     readonly forceIPv4?: boolean
     readonly forceIPv6?: boolean
@@ -244,12 +252,16 @@ path, cert, ca, key, and passphrase.
 
 ```ts
 export declare const MobyConnectionOptions: {
-  readonly socket: Data.Case.Constructor<{ readonly _tag: "socket"; readonly socketPath: string }, "_tag">
+  readonly socket: Data.Case.Constructor<
+    { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined },
+    "_tag"
+  >
   readonly ssh: Data.Case.Constructor<
     {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -284,7 +296,13 @@ export declare const MobyConnectionOptions: {
     "_tag"
   >
   readonly http: Data.Case.Constructor<
-    { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined },
+    {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    },
     "_tag"
   >
   readonly https: Data.Case.Constructor<
@@ -292,6 +310,7 @@ export declare const MobyConnectionOptions: {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -305,11 +324,12 @@ export declare const MobyConnectionOptions: {
   ) => (
     u: unknown
   ) => u is Extract<
-    | { readonly _tag: "socket"; readonly socketPath: string }
+    | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
     | {
         readonly _tag: "ssh"
         readonly remoteSocketPath: string
         readonly host: string
+        readonly version?: string | undefined
         readonly port?: number
         readonly forceIPv4?: boolean
         readonly forceIPv6?: boolean
@@ -341,11 +361,18 @@ export declare const MobyConnectionOptions: {
         readonly timeout?: number
         readonly ident?: Buffer | string
       }
-    | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+    | {
+        readonly _tag: "http"
+        readonly host: string
+        readonly port: number
+        readonly path?: string | undefined
+        readonly version?: string | undefined
+      }
     | {
         readonly _tag: "https"
         readonly host: string
         readonly port: number
+        readonly version?: string | undefined
         readonly path?: string | undefined
         readonly cert?: string | undefined
         readonly ca?: string | undefined
@@ -359,11 +386,12 @@ export declare const MobyConnectionOptions: {
       cases: Cases
     ): (
       value:
-        | { readonly _tag: "socket"; readonly socketPath: string }
+        | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
             readonly host: string
+            readonly version?: string | undefined
             readonly port?: number
             readonly forceIPv4?: boolean
             readonly forceIPv6?: boolean
@@ -395,11 +423,18 @@ export declare const MobyConnectionOptions: {
             readonly timeout?: number
             readonly ident?: Buffer | string
           }
-        | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+        | {
+            readonly _tag: "http"
+            readonly host: string
+            readonly port: number
+            readonly path?: string | undefined
+            readonly version?: string | undefined
+          }
         | {
             readonly _tag: "https"
             readonly host: string
             readonly port: number
+            readonly version?: string | undefined
             readonly path?: string | undefined
             readonly cert?: string | undefined
             readonly ca?: string | undefined
@@ -409,11 +444,12 @@ export declare const MobyConnectionOptions: {
     ) => Unify<ReturnType<Cases["socket" | "ssh" | "http" | "https"]>>
     <Cases>(
       value:
-        | { readonly _tag: "socket"; readonly socketPath: string }
+        | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
         | {
             readonly _tag: "ssh"
             readonly remoteSocketPath: string
             readonly host: string
+            readonly version?: string | undefined
             readonly port?: number
             readonly forceIPv4?: boolean
             readonly forceIPv6?: boolean
@@ -445,11 +481,18 @@ export declare const MobyConnectionOptions: {
             readonly timeout?: number
             readonly ident?: Buffer | string
           }
-        | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+        | {
+            readonly _tag: "http"
+            readonly host: string
+            readonly port: number
+            readonly path?: string | undefined
+            readonly version?: string | undefined
+          }
         | {
             readonly _tag: "https"
             readonly host: string
             readonly port: number
+            readonly version?: string | undefined
             readonly path?: string | undefined
             readonly cert?: string | undefined
             readonly ca?: string | undefined
@@ -477,12 +520,22 @@ path, cert, ca, key, and passphrase.
 
 ```ts
 export type MobyConnectionOptions = Data.TaggedEnum<{
-  socket: { readonly socketPath: string }
-  ssh: { readonly remoteSocketPath: string; host: string } & Exclude<ssh2.ConnectConfig, "host">
-  http: { readonly host: string; readonly port: number; readonly path?: string | undefined }
+  socket: { readonly socketPath: string; readonly version?: string | undefined }
+  ssh: {
+    readonly remoteSocketPath: string
+    readonly host: string
+    readonly version?: string | undefined
+  } & Exclude<ssh2.ConnectConfig, "host">
+  http: {
+    readonly host: string
+    readonly port: number
+    readonly path?: string | undefined
+    readonly version?: string | undefined
+  }
   https: {
     readonly host: string
     readonly port: number
+    readonly version?: string | undefined
     readonly path?: string | undefined
     readonly cert?: string | undefined
     readonly ca?: string | undefined
@@ -544,11 +597,12 @@ Creates a MobyApi layer from the DOCKER_HOST environment variable as a url.
 
 ```ts
 export declare const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -580,11 +634,18 @@ export declare const connectionOptionsFromDockerHostEnvironmentVariable: Effect.
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -606,11 +667,12 @@ Creates a MobyApi layer from the platform default system socket location.
 
 ```ts
 export declare const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -642,11 +704,18 @@ export declare const connectionOptionsFromPlatformSystemSocketDefault: Effect.Ef
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined
@@ -704,11 +773,12 @@ Creates a MobyApi layer from the platform default system socket location.
 
 ```ts
 export declare const connectionOptionsFromUserSocketDefault: Effect.Effect<
-  | { readonly _tag: "socket"; readonly socketPath: string }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
+      readonly version?: string | undefined
       readonly port?: number
       readonly forceIPv4?: boolean
       readonly forceIPv6?: boolean
@@ -740,11 +810,18 @@ export declare const connectionOptionsFromUserSocketDefault: Effect.Effect<
       readonly timeout?: number
       readonly ident?: Buffer | string
     }
-  | { readonly _tag: "http"; readonly host: string; readonly port: number; readonly path?: string | undefined }
+  | {
+      readonly _tag: "http"
+      readonly host: string
+      readonly port: number
+      readonly path?: string | undefined
+      readonly version?: string | undefined
+    }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
+      readonly version?: string | undefined
       readonly path?: string | undefined
       readonly cert?: string | undefined
       readonly ca?: string | undefined

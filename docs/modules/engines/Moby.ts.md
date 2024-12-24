@@ -20,6 +20,7 @@ Added in v1.0.0
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
+  - [layerFetch](#layerfetch)
   - [layerNodeJS](#layernodejs)
   - [layerUndici](#layerundici)
   - [layerWeb](#layerweb)
@@ -102,6 +103,18 @@ Added in v1.0.0
 
 ```ts
 export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => MobyLayer
+```
+
+Added in v1.0.0
+
+## layerFetch
+
+**Signature**
+
+```ts
+export declare const layerFetch: (
+  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => MobyLayer
 ```
 
 Added in v1.0.0
