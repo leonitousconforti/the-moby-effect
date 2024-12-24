@@ -7,7 +7,6 @@ export type PLATFORM_VARIANT =
     | "node-22.x"
     | "bun"
     | "deno"
-    | "node-18.x-undici"
     | "node-20.x-undici"
     | "node-22.x-undici"
     | "bun-undici"

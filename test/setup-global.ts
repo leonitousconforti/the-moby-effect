@@ -18,7 +18,6 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
             "node-22.x",
             "bun-undici",
             "deno-undici",
-            "node-18.x-undici",
             "node-20.x-undici",
             "node-22.x-undici"
         )("__PLATFORM_VARIANT");
