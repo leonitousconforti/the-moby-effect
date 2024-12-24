@@ -1,5 +1,11 @@
 name: "Setup Deno"
 
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+    default: "20.x"
+
 runs:
   using: "composite"
   steps:
