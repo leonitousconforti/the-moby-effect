@@ -140,7 +140,7 @@ export const callbackClient = async <E>(
         info: runCallbackZero(DockerEngine.info),
         ping: runCallbackZero(DockerEngine.ping),
         pingHead: runCallbackZero(DockerEngine.pingHead),
-        packBuildContextIntoTarballStream: MobyConvey.packBuildContextIntoTarballStream,
+        packBuildContextIntoTarballStream: MobyConvey.packIntoTarballStream,
         followProgressInConsole: Function.pipe(
             Function.flow(
                 Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,

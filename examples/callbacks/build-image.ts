@@ -55,7 +55,7 @@ const callbacksClient = await Callbacks.callbackClient(localDocker);
 
 const cwd = url.fileURLToPath(new URL(".", import.meta.url));
 const buildContext = Function.pipe(
-    MobyConvey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
+    MobyConvey.packIntoTarballStream(cwd, ["build-image.dockerfile"]),
     Stream.provideLayer(NodeContext.layer)
 );
 

@@ -13,7 +13,7 @@ export const command = Command.make(
     ({ context, dockerfile, tag }) =>
         Effect.gen(function* () {
             const contextStream = Stream.provideSomeLayer(
-                MobyConvey.packBuildContextIntoTarballStream(context, [dockerfile]),
+                MobyConvey.packIntoTarballStream(context, [dockerfile]),
                 NodeContext.layer
             );
 

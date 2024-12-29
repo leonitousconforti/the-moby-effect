@@ -18,7 +18,7 @@ import { TarballFromFilesystem, TarballFromMemory } from "../archive/Tar.js";
  * @since 1.0.0
  * @category Conveyance Streams
  */
-export const packBuildContextIntoTarballStream: {
+export const packIntoTarballStream: {
     (
         cwd: string,
         entries?: Array<string> | undefined

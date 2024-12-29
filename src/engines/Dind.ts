@@ -31,7 +31,7 @@ import { content as HttpsBlob } from "../blobs/Https.js";
 import { content as SocketBlob } from "../blobs/Socket.js";
 import { content as SshBlob } from "../blobs/Ssh.js";
 import { waitForProgressToComplete } from "../convey/Sinks.js";
-import { packBuildContextIntoTarballStream } from "../convey/Streams.js";
+import { packIntoTarballStream } from "../convey/Streams.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
 import { ImagesError } from "../endpoints/Images.js";
 import { SystemsError } from "../endpoints/System.js";
@@ -303,7 +303,7 @@ export const makeDindLayerFromPlatformConstructor =
                 dockerfile: "Dockerfile",
                 buildArgs: { DIND_BASE_IMAGE: options.dindBaseImage },
                 tag: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
-                context: packBuildContextIntoTarballStream(HashMap.make(["Dockerfile", dindBlob] as const)),
+                context: packIntoTarballStream(HashMap.make(["Dockerfile", dindBlob] as const)),
             }).pipe(Stream.provideContext(hostDocker));
 
             // Wait for the image to be built

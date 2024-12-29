@@ -18,7 +18,7 @@ Added in v1.0.0
   - [followProgressInConsole](#followprogressinconsole)
   - [waitForProgressToComplete](#waitforprogresstocomplete)
 - [Conveyance Streams](#conveyance-streams)
-  - [packBuildContextIntoTarballStream](#packbuildcontextintotarballstream)
+  - [packIntoTarballStream](#packintotarballstream)
 
 ---
 
@@ -50,12 +50,12 @@ Added in v1.0.0
 
 # Conveyance Streams
 
-## packBuildContextIntoTarballStream
+## packIntoTarballStream
 
 **Signature**
 
 ```ts
-export declare const packBuildContextIntoTarballStream: {
+export declare const packIntoTarballStream: {
   (cwd: string, entries?: Array<string> | undefined): Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
   <E1 = never, R1 = never>(
     entries: HashMap<string, string | Uint8Array | readonly [contentSize: number, stream: Stream<Uint8Array, E1, R1>]>

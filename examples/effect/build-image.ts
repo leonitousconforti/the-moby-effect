@@ -51,7 +51,7 @@ const program = Effect.gen(function* () {
 
     const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
     const buildContext = Function.pipe(
-        MobyConvey.packBuildContextIntoTarballStream(cwd, ["build-image.dockerfile"]),
+        MobyConvey.packIntoTarballStream(cwd, ["build-image.dockerfile"]),
         Stream.provideLayer(NodeContext.layer)
     );
 
