@@ -27,16 +27,28 @@ export const packBuildContextIntoTarballStream: {
         PlatformError.PlatformError | ParseResult.ParseError,
         Path.Path | FileSystem.FileSystem
     >;
-    (entries: HashMap.HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseResult.ParseError, never>;
+    <E1 = never, R1 = never>(
+        entries: HashMap.HashMap<
+            string,
+            string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
+        >
+    ): Stream.Stream<Uint8Array, ParseResult.ParseError | E1, R1>;
 } = <
-    T extends string | HashMap.HashMap<string, string | Uint8Array>,
+    E1,
+    R1,
+    T extends
+        | string
+        | HashMap.HashMap<
+              string,
+              string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
+          >,
     U extends T extends string
         ? Stream.Stream<
               Uint8Array,
               PlatformError.PlatformError | ParseResult.ParseError,
               Path.Path | FileSystem.FileSystem
           >
-        : Stream.Stream<Uint8Array, ParseResult.ParseError, never>,
+        : Stream.Stream<Uint8Array, ParseResult.ParseError | E1, R1>,
 >(
     cwdOrEntries: T,
     entries: Array<string> = ["dockerfile"]

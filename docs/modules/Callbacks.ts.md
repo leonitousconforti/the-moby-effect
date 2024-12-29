@@ -384,7 +384,12 @@ export declare const callbackClient: <E>(
       cwd: string,
       entries?: Array<string> | undefined
     ): Stream.Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
-    (entries: HashMap<string, string | Uint8Array>): Stream.Stream<Uint8Array, ParseError, never>
+    <E1 = never, R1 = never>(
+      entries: HashMap<
+        string,
+        string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
+      >
+    ): Stream.Stream<Uint8Array, ParseError | E1, R1>
   }
   followProgressInConsole: (
     y: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,

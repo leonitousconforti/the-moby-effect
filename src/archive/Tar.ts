@@ -86,21 +86,37 @@ export const Tarball = <E1 = never, R1 = never>(
  * @since 1.0.0
  * @category Tar
  */
-export const TarballFromMemory = (
-    entries: HashMap.HashMap<string, string | Uint8Array>
-): Stream.Stream<Uint8Array, ParseResult.ParseError, never> =>
+export const TarballFromMemory = <E1 = never, R1 = never>(
+    entries: HashMap.HashMap<
+        string,
+        string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
+    >
+): Stream.Stream<Uint8Array, ParseResult.ParseError | E1, R1> =>
     Function.pipe(
         entries,
         HashMap.toEntries,
-        Array.map(([filename, contents]) =>
-            Tuple.make(
-                TarCommon.TarHeader.make({
-                    filename,
-                    fileSize: Number(contents.length),
-                }),
-                contents
-            )
-        ),
+        Array.map(([filename, data]) => {
+            const contents = Function.pipe(
+                Match.value(data),
+                Match.when(Predicate.isString, (str) => str),
+                Match.when(Predicate.isUint8Array, (bytes) => bytes),
+                Match.orElse(([_, stream]) => stream)
+            );
+
+            const contentLength = Function.pipe(
+                Match.value(data),
+                Match.when(Predicate.isString, (str) => str.length),
+                Match.when(Predicate.isUint8Array, (bytes) => bytes.length),
+                Match.orElse(([size, _]) => size)
+            );
+
+            const header = TarCommon.TarHeader.make({
+                filename,
+                fileSize: contentLength,
+            });
+
+            return Tuple.make(header, contents);
+        }),
         HashMap.fromIterable,
         Tarball
     );
