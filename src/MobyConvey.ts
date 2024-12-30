@@ -24,3 +24,9 @@ export const waitForProgressToComplete = sinksInternal.waitForProgressToComplete
  * @category Conveyance Streams
  */
 export const packIntoTarballStream = streamsInternal.packIntoTarballStream;
+
+/**
+ * @since 1.0.0
+ * @category Conveyance Streams
+ */
+export const mergeTarballsStream = streamsInternal.mergeTarballs;

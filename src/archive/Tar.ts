@@ -31,7 +31,7 @@ const padUint8Array = (arr: Uint8Array): Uint8Array => {
 };
 
 /** @internal */
-const padStream = <E1, R1>(stream: Stream.Stream<Uint8Array, E1, R1>): Stream.Stream<Uint8Array, E1, R1> =>
+export const padStream = <E1, R1>(stream: Stream.Stream<Uint8Array, E1, R1>): Stream.Stream<Uint8Array, E1, R1> =>
     Function.pipe(
         stream,
         Stream.mapConcat(Function.identity),
@@ -70,7 +70,7 @@ const convertSingleEntry = <E1, R1>(
  * @since 1.0.0
  * @category Tar
  */
-export const Tarball = <E1 = never, R1 = never>(
+export const tarball = <E1 = never, R1 = never>(
     entries: HashMap.HashMap<TarCommon.TarHeader, string | Uint8Array | Stream.Stream<Uint8Array, E1, R1>>
 ): Stream.Stream<Uint8Array, ParseResult.ParseError | E1, R1> =>
     Function.pipe(
@@ -86,7 +86,7 @@ export const Tarball = <E1 = never, R1 = never>(
  * @since 1.0.0
  * @category Tar
  */
-export const TarballFromMemory = <E1 = never, R1 = never>(
+export const tarballFromMemory = <E1 = never, R1 = never>(
     entries: HashMap.HashMap<
         string,
         string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
@@ -118,7 +118,7 @@ export const TarballFromMemory = <E1 = never, R1 = never>(
             return Tuple.make(header, contents);
         }),
         HashMap.fromIterable,
-        Tarball
+        tarball
     );
 
 /**
@@ -155,7 +155,7 @@ const tarEntryFromFilesystem = (
  * @since 1.0.0
  * @category Tar
  */
-export const TarballFromFilesystem = (
+export const tarballFromFilesystem = (
     base: string,
     entries: Array<string>
 ): Stream.Stream<Uint8Array, PlatformError.PlatformError | ParseResult.ParseError, Path.Path | FileSystem.FileSystem> =>
@@ -164,6 +164,6 @@ export const TarballFromFilesystem = (
         Array.map((file) => tarEntryFromFilesystem(file, base)),
         Effect.allWith({ concurrency: "unbounded" }),
         Effect.map(HashMap.fromIterable),
-        Effect.map(Tarball),
+        Effect.map(tarball),
         Stream.unwrap
     );

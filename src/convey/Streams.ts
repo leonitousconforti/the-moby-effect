@@ -7,12 +7,16 @@
 import * as PlatformError from "@effect/platform/Error";
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
+import * as Array from "effect/Array";
+import * as Chunk from "effect/Chunk";
+import * as Function from "effect/Function";
 import * as HashMap from "effect/HashMap";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 
-import { TarballFromFilesystem, TarballFromMemory } from "../archive/Tar.js";
+import { emptyBlock } from "../archive/Common.js";
+import { padStream, tarballFromFilesystem, tarballFromMemory } from "../archive/Tar.js";
 
 /**
  * @since 1.0.0
@@ -54,5 +58,20 @@ export const packIntoTarballStream: {
     entries: Array<string> = ["dockerfile"]
 ): U =>
     Predicate.isString(cwdOrEntries)
-        ? (TarballFromFilesystem(cwdOrEntries, entries) as U)
-        : (TarballFromMemory(cwdOrEntries) as U);
+        ? (tarballFromFilesystem(cwdOrEntries, entries) as U)
+        : (tarballFromMemory(cwdOrEntries) as U);
+
+/**
+ * @since 1.0.0
+ * @category Conveyance Streams
+ */
+export const mergeTarballs = <E1, R1>(
+    tarballs: Array<Stream.Stream<Uint8Array, ParseResult.ParseError | E1, R1>>
+): Stream.Stream<Uint8Array, ParseResult.ParseError | E1, R1> =>
+    Function.pipe(
+        tarballs,
+        Array.map(padStream),
+        Chunk.fromIterable,
+        Stream.concatAll,
+        Stream.concat(Stream.make(emptyBlock))
+    );
