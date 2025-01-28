@@ -28,14 +28,17 @@ typescript-build:
   stage: build
   timeout: 10 minutes
   tags:
-    - ubuntu-latest
+    - ubuntu-24.04
   script:
-    - npm install -g pnpm
+    - corepack install
+    - corepack enable
     - pnpm install
     - pnpm check
-    - pnpm build
     - pnpm lint
     - pnpm circular
+    - sudo usermod -aG docker $USER # FIXME: add this to the runner images
+    - newgrp docker # FIXME: add this to the runner images
+    - pnpm build
 # docker-build:
 #   image: docker:latest
 #   stage: build
