@@ -26,8 +26,9 @@ stages:
 
 typescript-build:
   stage: build
-  image: node:20
   timeout: 10 minutes
+  tags:
+    - ubuntu-latest
   script:
     - npm install -g pnpm
     - pnpm install
