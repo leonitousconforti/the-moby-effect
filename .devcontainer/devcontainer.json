@@ -24,7 +24,8 @@
                 "eamodio.gitlens",
                 "mutantdino.resourcemonitor",
                 "GitHub.vscode-github-actions",
-                "yoavbls.pretty-ts-errors"
+                "yoavbls.pretty-ts-errors",
+                "GitLab.gitlab-workflow"
             ],
             "settings": {
                 "cSpell.enabled": true,
@@ -56,5 +57,5 @@
         }
     },
 
-    "postCreateCommand": "bash -i -c '/workspaces/the-moby-effect/.devcontainer/setup.sh'"
+    "postCreateCommand": "bash -i -c './.devcontainer/setup.sh'"
 }
