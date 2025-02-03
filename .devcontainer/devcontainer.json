@@ -24,9 +24,7 @@
                 "eamodio.gitlens",
                 "mutantdino.resourcemonitor",
                 "GitHub.vscode-github-actions",
-                "yoavbls.pretty-ts-errors",
-                "GitLab.gitlab-workflow",
-                "redhat.vscode-yaml"
+                "yoavbls.pretty-ts-errors"
             ],
             "settings": {
                 "cSpell.enabled": true,

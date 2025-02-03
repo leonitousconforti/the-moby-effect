@@ -4,9 +4,10 @@ set -eo pipefail
 echo "🚀 Setting up the-moby-effect devcontainer..."
 
 echo "🕳️ Initializing submodules"
-git submodule update --init --recursive
+git submodule update --init --recursive --depth 1
 
 echo "📦 Installing repo dependencies..."
+npm install -g corepack@latest
 corepack install
 corepack enable
 pnpm install
