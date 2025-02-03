@@ -99,8 +99,8 @@
         "ws": "8.18.0"
     },
     "peerDependencies": {
-        "@effect/platform": "0.72.1",
-        "effect": "3.12.1"
+        "@effect/platform": "0.75.1",
+        "effect": "3.12.7"
     },
     "optionalDependencies": {
         "@effect/platform-browser": "0.54.1",
