@@ -30,6 +30,7 @@ typescript-build:
   tags:
     - ubuntu-24.04
   script:
+    - npm install -g corepack@latest
     - corepack install
     - corepack enable
     - pnpm install
