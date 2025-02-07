@@ -24,7 +24,8 @@ export default [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:@effect/recommended",
+        // FIXME: Enable this when the plugin is available
+        // "plugin:@effect/recommended",
         "plugin:prettier/recommended"
     ),
     {

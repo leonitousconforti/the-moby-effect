@@ -51,23 +51,23 @@
         "@babel/core": "7.26.7",
         "@babel/plugin-transform-export-namespace-from": "7.25.9",
         "@babel/plugin-transform-modules-commonjs": "7.26.3",
-        "@effect/build-utils": "0.7.8",
-        "@effect/cli": "0.54.1",
+        "@effect/build-utils": "0.7.9",
+        "@effect/cli": "0.54.4",
         "@effect/docgen": "0.5.2",
-        "@effect/eslint-plugin": "0.2.0",
+        "@effect/eslint-plugin": "0.3.0",
         "@effect/language-service": "0.2.0",
-        "@effect/platform": "0.75.1",
-        "@effect/platform-browser": "0.54.1",
-        "@effect/platform-bun": "0.55.1",
-        "@effect/platform-node": "0.71.1",
-        "@effect/printer": "0.40.7",
-        "@effect/printer-ansi": "0.40.7",
-        "@effect/typeclass": "0.31.7",
-        "@effect/vitest": "0.17.3",
+        "@effect/platform": "0.75.4",
+        "@effect/platform-browser": "0.54.4",
+        "@effect/platform-bun": "0.55.4",
+        "@effect/platform-node": "0.71.4",
+        "@effect/printer": "0.40.10",
+        "@effect/printer-ansi": "0.40.10",
+        "@effect/typeclass": "0.31.10",
+        "@effect/vitest": "0.17.6",
         "@eslint/compat": "1.2.6",
         "@eslint/eslintrc": "3.2.0",
         "@eslint/js": "9.19.0",
-        "@types/node": "22.13.0",
+        "@types/node": "22.13.1",
         "@types/ssh2": "1.15.4",
         "@types/ws": "8.5.14",
         "@typescript-eslint/eslint-plugin": "8.23.0",
@@ -75,7 +75,7 @@
         "@typescript-eslint/utils": "8.23.0",
         "@vitest/coverage-v8": "2.1.9",
         "babel-plugin-annotate-pure-calls": "0.5.0",
-        "effect": "3.12.7",
+        "effect": "3.12.10",
         "eslint": "9.19.0",
         "eslint-config-prettier": "10.0.1",
         "eslint-import-resolver-typescript": "3.7.0",
@@ -93,24 +93,24 @@
         "ssh2": "1.16.0",
         "tsx": "4.19.2",
         "typescript": "5.7.3",
-        "undici": "7.2.0",
-        "vite": "6.0.11",
+        "undici": "7.3.0",
+        "vite": "6.1.0",
         "vitest": "2.1.9",
         "ws": "8.18.0"
     },
     "peerDependencies": {
-        "@effect/platform": "0.75.1",
-        "effect": "3.12.7"
+        "@effect/platform": "0.75.4",
+        "effect": "3.12.10"
     },
     "optionalDependencies": {
-        "@effect/platform-browser": "0.54.1",
-        "@effect/platform-bun": "0.55.1",
-        "@effect/platform-node": "0.71.1",
+        "@effect/platform-browser": "0.54.4",
+        "@effect/platform-bun": "0.55.4",
+        "@effect/platform-node": "0.71.4",
         "ssh2": "^1.16.0",
         "undici": "^7.3.0",
         "ws": "^8.18.0"
     },
-    "packageManager": "pnpm@9.15.5",
+    "packageManager": "pnpm@10.2.1",
     "engines": {
         "node": ">=18.0.0"
     },
@@ -121,7 +121,7 @@
     },
     "pnpm": {
         "patchedDependencies": {
-            "@effect/build-utils@0.7.8": "patches/@effect__build-utils@0.7.8.patch"
+            "@effect/build-utils": "patches/@effect__build-utils.patch"
         }
     }
 }

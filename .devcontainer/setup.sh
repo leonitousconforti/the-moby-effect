@@ -16,8 +16,7 @@ echo "🏗️ Building..."
 pnpm build
 
 echo "🧪 Testing..."
-pnpm test
+pnpm test --run
 
 echo "✅ Devcontainer setup complete!"
 echo "🙏 Thank you for contributing to the-moby-effect!"
-echo "📝 P.S Don't forget to configure your git credentials with 'git config --global user.name you' and 'git config --global user.email you@z.com'"
