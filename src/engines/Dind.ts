@@ -21,10 +21,10 @@ import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
+import * as TarCommon from "eftar/Common";
+import * as Untar from "eftar/Untar";
 import * as DockerEngine from "./Docker.js";
 
-import { TarHeader } from "../archive/Common.js";
-import { Untar } from "../archive/Untar.js";
 import { RecommendedDindBaseImages } from "../blobs/Constants.js";
 import { content as HttpBlob } from "../blobs/Http.js";
 import { content as HttpsBlob } from "../blobs/Https.js";
@@ -110,11 +110,13 @@ const downloadDindCertificates = (
 > =>
     Effect.gen(function* () {
         const containers = yield* Containers;
-        const certs = yield* Untar(containers.archive(dindContainerId, { path: "/certs" }));
+        const certs = yield* Untar.Untar(containers.archive(dindContainerId, { path: "/certs" }));
 
         const readAndAssemble = (
             path: string
-        ): (<E, R>(data: HashMap.HashMap<TarHeader, Stream.Stream<Uint8Array, E, R>>) => Effect.Effect<string, E, R>) =>
+        ): (<E, R>(
+            data: HashMap.HashMap<TarCommon.TarHeader, Stream.Stream<Uint8Array, E, R>>
+        ) => Effect.Effect<string, E, R>) =>
             Function.flow(
                 HashMap.findFirst((_stream, header) => header.filename === path),
                 Option.getOrThrow,
