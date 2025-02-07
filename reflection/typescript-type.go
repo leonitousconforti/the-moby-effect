@@ -151,7 +151,7 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	buffer.WriteString(fmt.Sprintln(") {}"))
 
 	outString := buffer.String()
-	fmt.Fprintf(w, "import * as Schema from \"@effect/schema/Schema\";\n")
+	fmt.Fprintf(w, "import * as Schema from \"effect/Schema\";\n")
 	if strings.Contains(outString, "MobySchemas.") {
 		fmt.Fprintf(w, "import * as MobySchemas from \"../schemas/index.js\";\n")
 	}
