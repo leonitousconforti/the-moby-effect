@@ -11,7 +11,7 @@
             "groupName": "Effect-ts",
             "groupSlug": "effect-ts",
             "matchDatasources": ["npm"],
-            "matchPackageNames": ["@effect/**", "effect"]
+            "matchPackageNames": ["@effect/**", "effect", "eftar"]
         },
         {
             "matchUpdateTypes": ["minor", "patch"],
