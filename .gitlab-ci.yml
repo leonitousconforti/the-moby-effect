@@ -1,10 +1,22 @@
+stages:
+  - build
+  - test
+
 variables:
+  GIT_SUBMODULE_DEPTH: 1
+  GIT_SUBMODULE_STRATEGY: recursive
   DOCKER_ENGINE_CONNECTION_VARIANTS: '["ssh", "http", "https", "socket"]'
   PLATFORM_VARIANTS: '["node-18.x", "node-20.x", "node-22.x", "bun", "deno", "node-18.x-undici", "node-20.x-undici", "node-22.x-undici", "bun-undici", "deno-undici"]'
   DOCKER_ENGINE_VERSIONS: '["docker.io/library/docker:23-dind-rootless", "docker.io/library/docker:24-dind-rootless", "docker.io/library/docker:25-dind-rootless", "docker.io/library/docker:26-dind-rootless", "docker.io/library/docker:27-dind-rootless"]'
 
-stages:
-  - build
+include:
+  - template: Security/Secret-Detection.gitlab-ci.yml
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^renovate\/.+$/i
 
 # Workflow settings
 # workflow:
