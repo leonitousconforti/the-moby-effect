@@ -16,7 +16,7 @@ echo "🏗️ Building..."
 pnpm build
 
 echo "🧪 Testing..."
-pnpm test --run
+pnpm test -- --run
 
 echo "✅ Devcontainer setup complete!"
 echo "🙏 Thank you for contributing to the-moby-effect!"
