@@ -18,7 +18,6 @@ Added in v1.0.0
   - [followProgressInConsole](#followprogressinconsole)
   - [waitForProgressToComplete](#waitforprogresstocomplete)
 - [Conveyance Streams](#conveyance-streams)
-  - [mergeTarballsStream](#mergetarballsstream)
   - [packIntoTarballStream](#packintotarballstream)
 
 ---
@@ -50,18 +49,6 @@ export declare const waitForProgressToComplete: <E1, R1>(
 Added in v1.0.0
 
 # Conveyance Streams
-
-## mergeTarballsStream
-
-**Signature**
-
-```ts
-export declare const mergeTarballsStream: <E1, R1>(
-  tarballs: Array<Stream<Uint8Array, ParseError | E1, R1>>
-) => Stream<Uint8Array, ParseError | E1, R1>
-```
-
-Added in v1.0.0
 
 ## packIntoTarballStream
 
