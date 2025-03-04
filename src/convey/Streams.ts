@@ -18,6 +18,10 @@ import * as Tar from "eftar/Tar";
  * @category Conveyance Streams
  */
 export const packIntoTarballStream: {
+    /**
+     * @since 1.0.0
+     * @category Conveyance Streams
+     */
     (
         cwd: string,
         entries?: Array<string> | undefined
@@ -26,6 +30,10 @@ export const packIntoTarballStream: {
         PlatformError.PlatformError | ParseResult.ParseError,
         Path.Path | FileSystem.FileSystem
     >;
+    /**
+     * @since 1.0.0
+     * @category Conveyance Streams
+     */
     <E1 = never, R1 = never>(
         entries: HashMap.HashMap<
             string,

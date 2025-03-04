@@ -18,6 +18,7 @@
         "Cgroupns",
         "cgroups",
         "codegen",
+        "codemod",
         "codemods",
         "compat",
         "confo",
