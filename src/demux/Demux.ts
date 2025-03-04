@@ -4,6 +4,8 @@
  * @since 1.0.0
  */
 
+/* eslint-disable @typescript-eslint/unified-signatures */
+
 import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";

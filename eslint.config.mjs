@@ -61,6 +61,7 @@ export default tseslint.config(
             "simple-import-sort/imports": "off",
             "@typescript-eslint/array-type": ["warn", { default: "generic", readonly: "generic" }],
             "@typescript-eslint/consistent-type-imports": "off",
+            "@typescript-eslint/no-invalid-void-type": "off",
             "@typescript-eslint/no-unused-vars": [
                 "error",
                 {

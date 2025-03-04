@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import type ssh2 from "ssh2";
+import type * as ssh2 from "ssh2";
 
 import * as Path from "@effect/platform/Path";
 import * as Config from "effect/Config";
