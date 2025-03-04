@@ -17,6 +17,7 @@ import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
 import * as Schedule from "effect/Schedule";
+import * as Schema from "effect/Schema";
 import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
@@ -115,7 +116,10 @@ const downloadDindCertificates = (
         const readAndAssemble = (
             path: string
         ): (<E, R>(
-            data: HashMap.HashMap<TarCommon.TarHeader, Stream.Stream<Uint8Array, E, R>>
+            data: HashMap.HashMap<
+                Schema.Schema.Type<(typeof TarCommon.TarHeader)["non-full"]>,
+                Stream.Stream<Uint8Array, E, R>
+            >
         ) => Effect.Effect<string, E, R>) =>
             Function.flow(
                 HashMap.findFirst((_stream, header) => header.filename === path),
