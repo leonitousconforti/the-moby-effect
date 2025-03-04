@@ -1,67 +1,64 @@
-import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
-import tsParser from "@typescript-eslint/parser";
-import codegen from "eslint-plugin-codegen";
-import prettierPlugin from "eslint-plugin-prettier";
+import * as effectEslint from "@effect/eslint-plugin";
+import eslint from "@eslint/js";
+import * as tsResolver from "eslint-import-resolver-typescript";
+import importPlugin from "eslint-plugin-import-x";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import sortDestructureKeys from "eslint-plugin-sort-destructure-keys";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import * as Path from "node:path";
+import * as Url from "node:url";
+import tseslint from "typescript-eslint";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all,
-});
+const __filename = Url.fileURLToPath(import.meta.url);
+const __dirname = Path.dirname(__filename);
 
-export default [
+export default tseslint.config(
     {
-        ignores: ["**/dist", "**/build", "**/docs", "**/*.md", "src/index.ts"],
+        ignores: ["**/dist", "**/build", "**/docs", "**/*.md"],
     },
-    ...compat.extends(
-        "eslint:recommended",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        // FIXME: Enable this when the plugin is available
-        // "plugin:@effect/recommended",
-        "plugin:prettier/recommended"
-    ),
+    eslint.configs.recommended,
+    tseslint.configs.strict,
+    importPlugin.flatConfigs.recommended,
+    importPlugin.flatConfigs.typescript,
+    effectEslint.configs.dprint,
     {
         plugins: {
-            "sort-destructure-keys": sortDestructureKeys,
             "simple-import-sort": simpleImportSort,
-            prettier: prettierPlugin,
-            codegen,
+            "sort-destructure-keys": sortDestructureKeys,
         },
 
         languageOptions: {
-            parser: tsParser,
-            ecmaVersion: 2022,
+            parser: tseslint.parser,
+            ecmaVersion: 2018,
             sourceType: "module",
         },
 
         settings: {
-            "import/parsers": {
-                "@typescript-eslint/parser": [".ts", ".tsx"],
-            },
-
-            "import/resolver": {
-                typescript: {
+            "import-x/resolver": {
+                name: "tsResolver",
+                resolver: tsResolver,
+                options: {
                     alwaysTryTypes: true,
                 },
             },
         },
 
         rules: {
-            "no-console": "warn",
-            "no-case-declarations": "off",
-            "codegen/codegen": "error",
+            "no-console": "error",
             "object-shorthand": "error",
             "@typescript-eslint/no-namespace": "off",
             "@typescript-eslint/no-empty-object-type": "off",
+            "@typescript-eslint/no-non-null-assertion": "warn",
             "sort-destructure-keys/sort-destructure-keys": "error",
+            "prefer-destructuring": "off",
+            "sort-imports": "off",
+            "import-x/export": "off",
+            "import-x/first": "error",
+            "import-x/newline-after-import": "error",
+            "import-x/no-duplicates": "error",
+            "import-x/no-named-as-default-member": "off",
+            "import-x/no-unresolved": "off",
+            "import-x/order": "off",
+            "simple-import-sort/imports": "off",
             "@typescript-eslint/array-type": ["warn", { default: "generic", readonly: "generic" }],
             "@typescript-eslint/consistent-type-imports": "off",
             "@typescript-eslint/no-unused-vars": [
@@ -71,7 +68,22 @@ export default [
                     varsIgnorePattern: "^_",
                 },
             ],
+
             "@effect/dprint": "off",
+            // "@effect/dprint": [
+            //     "error",
+            //     {
+            //         config: {
+            //             indentWidth: 2,
+            //             lineWidth: 120,
+            //             semiColons: "asi",
+            //             quoteStyle: "alwaysDouble",
+            //             trailingCommas: "never",
+            //             operatorPosition: "maintain",
+            //             "arrowFunction.useParentheses": "force",
+            //         },
+            //     },
+            // ],
         },
-    },
-];
+    }
+);
