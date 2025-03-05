@@ -5,7 +5,7 @@ import { DindEngine, DockerEngine, MobyConnection } from "the-moby-effect";
 const layer = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map((connectionOptionsToHost) =>
-        DindEngine.layerUndici({
+        DindEngine.layerNodeJS({
             connectionOptionsToHost,
             exposeDindContainerBy: "ssh" as const,
             dindBaseImage: "docker.io/library/docker:25-dind-rootless" as const,
