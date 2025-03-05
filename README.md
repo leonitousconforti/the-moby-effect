@@ -2,6 +2,8 @@
 
 Moby API client and CLI client built using [effect-ts](http://effect.website). If you want documentation, please consider reading [The Docker API documentation](https://docs.docker.com/engine/api/latest), it is very well written and there is nothing in this library that wouldn't be in there (plus I would just do a worse job if I tried to write my interpretation of their documentation here). If you are just looking for some examples to get your feet underneath you quickly with effect integration, then I do have some of those [here](./examples/).
 
+[![pipeline status](https://git.ltgk.net/leoconforti/the-moby-effect/badges/main/pipeline.svg)](https://git.ltgk.net/leoconforti/the-moby-effect/-/commits/main) [![coverage report](https://git.ltgk.net/leoconforti/the-moby-effect/badges/main/coverage.svg?job=build_job)](https://git.ltgk.net/leoconforti/the-moby-effect/-/commits/main) [![Latest Release](https://git.ltgk.net/leoconforti/the-moby-effect/-/badges/release.svg)](https://git.ltgk.net/leoconforti/the-moby-effect/-/releases)
+
 ## Motivation/ideation :bulb:
 
 The motivation for this project come from working with dockerode and I became frustrated with the incorrect types sometimes and the error handling - I did not want to wrap every docker call in a try/catch. Those are the two main reasons why I built the-moby-effect with effect-ts. I also wanted to see if I could build a moby api client that could be used in a web/frontend environment.
@@ -59,7 +61,7 @@ This package does not follow semantic versioning, instead the major and minor pa
 
 ## Library docs :card_file_box:
 
-[https://leonitousconforti.github.io/the-moby-effect/](https://leonitousconforti.github.io/the-moby-effect/)
+[https://leoconforti.pages.ltgk.net/the-moby-effect/](https://leoconforti.pages.ltgk.net/the-moby-effect/)
 
 ## Contributing and getting help :speech_balloon: :beers:
 
