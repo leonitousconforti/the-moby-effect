@@ -64,8 +64,8 @@ importers:
         specifier: 0.41.6
         version: 0.41.6(@effect/platform-node@0.73.6(@effect/platform@0.77.6(effect@3.13.6))(effect@3.13.6))(@effect/platform@0.77.6(effect@3.13.6))(effect@3.13.6)(ws@8.18.1)
       '@effect/language-service':
-        specifier: 0.3.2
-        version: 0.3.2
+        specifier: 0.4.0
+        version: 0.4.0
       '@effect/platform':
         specifier: 0.77.6
         version: 0.77.6(effect@3.13.6)
@@ -431,8 +431,8 @@ packages:
       ws:
         optional: true
 
-  '@effect/language-service@0.3.2':
-    resolution: {integrity: sha512-0Ztw20JB622U8Ht0hj3ChdBjyIyh5UlDBlCkEz2aHasSBDUDYjJx9vNaG0AGmdpgOq8d0CLvt568K8UOrse9Bw==}
+  '@effect/language-service@0.4.0':
+    resolution: {integrity: sha512-J27e4KWkeACHI0jrvc656R/SOTuA+oUDLOOf5HYjRz3xb8dO+xlbDVujIFtgIc9K0rvXrpVGlG+qjuGGaGVsfg==}
 
   '@effect/markdown-toc@0.1.0':
     resolution: {integrity: sha512-IRfvvwqQLabVTIw9hhIj4scOGIYPfa13QuEFv+dBWE6p47R+RR0J8jQvfDINFf0Vn80XXVjNRtZxkZpkKXLx2A==}
@@ -3222,7 +3222,7 @@ snapshots:
       '@effect/platform-node': 0.73.6(@effect/platform@0.77.6(effect@3.13.6))(effect@3.13.6)
       ws: 8.18.1
 
-  '@effect/language-service@0.3.2': {}
+  '@effect/language-service@0.4.0': {}
 
   '@effect/markdown-toc@0.1.0':
     dependencies:
