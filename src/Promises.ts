@@ -46,7 +46,6 @@ export const promiseClient = async <E>(
         info: Function.flow(DockerEngine.info, managedRuntime.runPromise),
         ping: Function.flow(DockerEngine.ping, managedRuntime.runPromise),
         pingHead: Function.flow(DockerEngine.pingHead, managedRuntime.runPromise),
-        packBuildContextIntoTarballStream: MobyConvey.packIntoTarballStream,
         followProgressInConsole: Function.flow(
             Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
             MobyConvey.followProgressInConsole<unknown, Layer.Layer.Success<typeof layer>>,

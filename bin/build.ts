@@ -1,6 +1,7 @@
 import { Args, Command, Options } from "@effect/cli";
 import { NodeContext } from "@effect/platform-node";
 import { Effect, Stream } from "effect";
+import { Tar } from "eftar";
 import { DockerEngine, MobyConvey } from "the-moby-effect";
 
 export const command = Command.make(
@@ -13,7 +14,7 @@ export const command = Command.make(
     ({ context, dockerfile, tag }) =>
         Effect.gen(function* () {
             const contextStream = Stream.provideSomeLayer(
-                MobyConvey.packIntoTarballStream(context, [dockerfile]),
+                Tar.tarballFromFilesystem(context, [dockerfile]),
                 NodeContext.layer
             );
 

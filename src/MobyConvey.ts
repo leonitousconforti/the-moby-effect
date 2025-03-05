@@ -5,7 +5,6 @@
  */
 
 import * as sinksInternal from "./convey/Sinks.js";
-import * as streamsInternal from "./convey/Streams.js";
 
 /**
  * @since 1.0.0
@@ -18,9 +17,3 @@ export const followProgressInConsole = sinksInternal.followProgressInConsole;
  * @category Conveyance Sinks
  */
 export const waitForProgressToComplete = sinksInternal.waitForProgressToComplete;
-
-/**
- * @since 1.0.0
- * @category Conveyance Streams
- */
-export const packIntoTarballStream = streamsInternal.packIntoTarballStream;

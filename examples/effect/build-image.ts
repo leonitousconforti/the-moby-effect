@@ -3,6 +3,7 @@
 import { Path } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Effect, Function, Layer, Stream } from "effect";
+import { Tar } from "eftar";
 import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
@@ -51,7 +52,7 @@ const program = Effect.gen(function* () {
 
     const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
     const buildContext = Function.pipe(
-        MobyConvey.packIntoTarballStream(cwd, ["build-image.dockerfile"]),
+        Tar.tarballFromFilesystem(cwd, ["build-image.dockerfile"]),
         Stream.provideLayer(NodeContext.layer)
     );
 

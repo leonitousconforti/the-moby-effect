@@ -6,7 +6,8 @@ import * as url from "node:url";
 
 import { NodeContext } from "@effect/platform-node";
 import { Effect, Function, Layer, Stream } from "effect";
-import { Callbacks, DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
+import { Tar } from "eftar";
+import { Callbacks, DockerEngine, MobyConnection } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -55,7 +56,7 @@ const callbacksClient = await Callbacks.callbackClient(localDocker);
 
 const cwd = url.fileURLToPath(new URL(".", import.meta.url));
 const buildContext = Function.pipe(
-    MobyConvey.packIntoTarballStream(cwd, ["build-image.dockerfile"]),
+    Tar.tarballFromFilesystem(cwd, ["build-image.dockerfile"]),
     Stream.provideLayer(NodeContext.layer)
 );
 

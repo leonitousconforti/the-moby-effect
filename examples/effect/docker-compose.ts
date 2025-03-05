@@ -3,7 +3,8 @@
 import { Path, Error as PlatformError } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Array, ConfigError, Effect, Function, Layer, ParseResult, Stream } from "effect";
-import { DockerComposeEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
+import { Tar } from "eftar";
+import { DockerComposeEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
 
 const localDockerCompose = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
@@ -13,8 +14,8 @@ const localDockerCompose = Function.pipe(
 
 const project = Effect.Do.pipe(
     Effect.bind("cwd", () => Effect.flatMap(Path.Path, (path) => path.fromFileUrl(new URL(".", import.meta.url)))),
-    Effect.bind("contents", () => Effect.succeed(Array.make("docker-compose.yml"))),
-    Effect.map(({ contents, cwd }) => MobyConvey.packIntoTarballStream(cwd, contents)),
+    Effect.bind("entries", () => Effect.succeed(Array.make("docker-compose.yml"))),
+    Effect.map(({ cwd, entries }) => Tar.tarballFromFilesystem(cwd, entries)),
     Stream.unwrap,
     Stream.provideLayer(NodeContext.layer)
 );

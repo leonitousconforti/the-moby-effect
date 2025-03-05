@@ -23,6 +23,7 @@ import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 import * as TarCommon from "eftar/Common";
+import * as Tar from "eftar/Tar";
 import * as Untar from "eftar/Untar";
 import * as DockerEngine from "./Docker.js";
 
@@ -32,7 +33,6 @@ import { content as HttpsBlob } from "../blobs/Https.js";
 import { content as SocketBlob } from "../blobs/Socket.js";
 import { content as SshBlob } from "../blobs/Ssh.js";
 import { waitForProgressToComplete } from "../convey/Sinks.js";
-import { packIntoTarballStream } from "../convey/Streams.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
 import { ImagesError } from "../endpoints/Images.js";
 import { SystemsError } from "../endpoints/System.js";
@@ -309,7 +309,7 @@ export const makeDindLayerFromPlatformConstructor =
                 dockerfile: "Dockerfile",
                 buildArgs: { DIND_BASE_IMAGE: options.dindBaseImage },
                 tag: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
-                context: packIntoTarballStream(HashMap.make(["Dockerfile", dindBlob] as const)),
+                context: Tar.tarballFromMemory(HashMap.make(["Dockerfile", dindBlob] as const)),
             }).pipe(Stream.provideContext(hostDocker));
 
             // Wait for the image to be built
