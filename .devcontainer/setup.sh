@@ -27,7 +27,7 @@ pnpm circular
 pnpm build
 
 echo "🧪 Testing..."
-__CONNECTION_VARIANT="socket" __PLATFORM_VARIANT="node-22.x" __DOCKER_ENGINE_VERSION="docker.io/library/docker:dind-rootless" pnpm coverage --run
+# __CONNECTION_VARIANT="socket" __PLATFORM_VARIANT="node-22.x" __DOCKER_ENGINE_VERSION="docker.io/library/docker:dind-rootless" pnpm coverage --run
 
 echo "✅ Devcontainer setup complete!"
 echo "🙏 Thank you for contributing to the-moby-effect!"
