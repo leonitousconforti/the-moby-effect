@@ -379,18 +379,6 @@ export declare const callbackClient: <E>(
   info: (callback: (exit: Exit.Exit<Readonly<MobySchemas.SystemInfoResponse>, SystemsError>) => void) => void
   ping: (callback: (exit: Exit.Exit<"OK", SystemsError>) => void) => void
   pingHead: (callback: (exit: Exit.Exit<void, SystemsError>) => void) => void
-  packBuildContextIntoTarballStream: {
-    (
-      cwd: string,
-      entries?: Array<string> | undefined
-    ): Stream.Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
-    <E1 = never, R1 = never>(
-      entries: HashMap<
-        string,
-        string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
-      >
-    ): Stream.Stream<Uint8Array, ParseError | E1, R1>
-  }
   followProgressInConsole: (
     y: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
     z: (error: unknown) => unknown,

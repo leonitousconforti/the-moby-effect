@@ -362,18 +362,6 @@ export declare const promiseClient: <E>(
   info: () => Promise<Readonly<MobySchemas.SystemInfoResponse>>
   ping: () => Promise<"OK">
   pingHead: () => Promise<void>
-  packBuildContextIntoTarballStream: {
-    (
-      cwd: string,
-      entries?: Array<string> | undefined
-    ): Stream.Stream<Uint8Array, PlatformError | ParseError, Path | FileSystem>
-    <E1 = never, R1 = never>(
-      entries: HashMap<
-        string,
-        string | Uint8Array | readonly [contentSize: number, stream: Stream.Stream<Uint8Array, E1, R1>]
-      >
-    ): Stream.Stream<Uint8Array, ParseError | E1, R1>
-  }
   followProgressInConsole: (
     evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
     onError: (error: unknown) => unknown
