@@ -44,11 +44,15 @@ jobs:
           node-version: 20.x
 
       - uses: pnpm/action-setup@v4
+      - run: npm install -g corepack@latest
+      - run: corepack install
+      - run: corepack enable
       - run: pnpm install
       - run: pnpm check
-      - run: pnpm build
+      - run: pnpm check
       - run: pnpm lint
       - run: pnpm circular
+      - run: pnpm build
 
   # Checks that the docker images build and publishes them to ghcr.io
   docker-build:
