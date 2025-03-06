@@ -20,7 +20,7 @@ env:
       'node-20.x',
       'node-22.x',
       'node-20.x-undici',
-      'node-22.x-undici'
+      'node-22.x-undici',
       'bun',
       'bun-undici',
       'deno',
