@@ -14,22 +14,21 @@ env:
       'https',
       'socket'
     ]"
+  # missing: 'bun', 'deno', 'node-20.x-undici', 'node-22.x-undici', 'bun-undici', 'deno-undici'
   platform-variants:
     "[
       'node-18.x',
       'node-20.x',
       'node-22.x'
     ]"
-  # platform-variants: "['node-18.x', 'node-20.x', 'node-22.x', 'bun', 'deno', 'node-20.x-undici', 'node-22.x-undici', 'bun-undici', 'deno-undici']"
+  # missing: 'docker.io/library/docker:28-dind-rootless', 'docker.io/library/docker:dind-rootless'
   docker-engine-versions:
     "[
       'docker.io/library/docker:23-dind-rootless',
       'docker.io/library/docker:24-dind-rootless',
       'docker.io/library/docker:25-dind-rootless',
       'docker.io/library/docker:26-dind-rootless',
-      'docker.io/library/docker:27-dind-rootless',
-      'docker.io/library/docker:28-dind-rootless',
-      'docker.io/library/docker:dind-rootless'
+      'docker.io/library/docker:27-dind-rootless'
     ]"
 
 concurrency:
