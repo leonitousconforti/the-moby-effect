@@ -28,7 +28,8 @@ export const setup = async function ({ provide }: GlobalSetupContext): Promise<v
             "docker.io/library/docker:24-dind-rootless",
             "docker.io/library/docker:25-dind-rootless",
             "docker.io/library/docker:26-dind-rootless",
-            "docker.io/library/docker:27-dind-rootless"
+            "docker.io/library/docker:27-dind-rootless",
+            "docker.io/library/docker:28-dind-rootless"
         )("__DOCKER_ENGINE_VERSION");
 
         const connectionOptions: MobyConnection.MobyConnectionOptions = yield* Function.pipe(
