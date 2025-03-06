@@ -1,4 +1,5 @@
-# https://rootlesscontaine.rs/getting-started/common/apparmor/
+# https://docs.docker.com/engine/security/rootless/#prerequisites
+# https://github.com/rootless-containers/rootlesskit/issues/172
 
 name: "AppArmor rootless containers setup for ubuntu24"
 description: "Setup AppArmor for rootless containers on ubuntu24"
