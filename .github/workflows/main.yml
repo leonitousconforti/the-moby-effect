@@ -14,12 +14,17 @@ env:
       'https',
       'socket'
     ]"
-  # missing: 'bun', 'deno', 'node-20.x-undici', 'node-22.x-undici', 'bun-undici', 'deno-undici'
   platform-variants:
     "[
       'node-18.x',
       'node-20.x',
-      'node-22.x'
+      'node-22.x',
+      'node-20.x-undici',
+      'node-22.x-undici'
+      'bun',
+      'bun-undici',
+      'deno',
+      'deno-undici'
     ]"
   # missing: 'docker.io/library/docker:28-dind-rootless', 'docker.io/library/docker:dind-rootless'
   docker-engine-versions:
@@ -149,13 +154,11 @@ jobs:
       - if: startsWith(matrix.platform-variant, 'bun')
         uses: ./.github/actions/setup-bun
       - if: startsWith(matrix.platform-variant, 'bun') && !startsWith(matrix.docker-engine-connection-variant, 'socket')
-        run: bunx vitest
+        run: bunx --bun vitest
       - if: startsWith(matrix.platform-variant, 'bun') && startsWith(matrix.docker-engine-connection-variant, 'socket')
         run: |
           sudo -E npm install -g bun
-          sudo -E bunx vitest
-          # https://github.com/oven-sh/bun/issues/4145
-          # sudo -E bunx --bun vitest
+          sudo -E bunx --bun vitest
 
       - if: startsWith(matrix.platform-variant, 'deno')
         uses: ./.github/actions/setup-deno
