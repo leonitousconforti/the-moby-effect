@@ -99,6 +99,7 @@
         "resolv",
         "rize",
         "rootfs",
+        "rootlesscontainers",
         "rprivate",
         "rshared",
         "rslave",

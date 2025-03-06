@@ -1,0 +1,23 @@
+# https://rootlesscontaine.rs/getting-started/common/apparmor/
+
+name: "AppArmor rootless containers setup for ubuntu24"
+description: "Setup AppArmor for rootless containers on ubuntu24"
+
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      if: ${{ runner.os == 'Linux' }} && ${{ runner.os_version == '24' }}
+      run: |
+        cat <<EOT | sudo tee "/etc/apparmor.d/usr.local.bin.rootlesskit"
+        abi <abi/4.0>,
+        include <tunables/global>
+
+        /usr/bin/rootlesskit flags=(unconfined) {
+          userns,
+
+          # Site-specific additions and overrides. See local/README for details.
+          include if exists <local/usr.local.bin.rootlesskit>
+        }
+        EOT
+        sudo systemctl restart apparmor.service

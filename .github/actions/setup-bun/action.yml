@@ -1,4 +1,5 @@
 name: "Setup Bun"
+description: "Setup Bun"
 
 runs:
   using: "composite"

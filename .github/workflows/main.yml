@@ -111,6 +111,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: ./.github/actions/rootlesscontainers-apparmor
       - run: docker pull ${{ matrix.docker-engine-version }}
 
       - if: startsWith(matrix.platform-variant, 'node')
@@ -150,4 +152,3 @@ jobs:
     steps:
       - run: exit 1
         if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
-

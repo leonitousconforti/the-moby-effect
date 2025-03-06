@@ -1,4 +1,5 @@
 name: "Setup Deno"
+description: "Setup Deno"
 
 inputs:
   node-version:

@@ -1,4 +1,5 @@
 name: "Setup Node"
+description: "Setup Node"
 
 inputs:
   node-version:
