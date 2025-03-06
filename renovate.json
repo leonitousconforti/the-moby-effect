@@ -11,7 +11,10 @@
             "groupName": "Effect-ts",
             "groupSlug": "effect-ts",
             "matchDatasources": ["npm"],
-            "matchPackageNames": ["@effect/**", "effect", "eftar"]
+            "matchPackageNames": ["@effect/**", "effect", "eftar"],
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
         },
         {
             "matchUpdateTypes": ["minor", "patch"],
