@@ -48,7 +48,7 @@
         "update-blobs": "tsx ./scripts/update-blobs.ts"
     },
     "dependencies": {
-        "eftar": "0.0.18"
+        "eftar": "0.0.19"
     },
     "devDependencies": {
         "@babel/cli": "7.26.4",
@@ -56,15 +56,15 @@
         "@babel/plugin-transform-export-namespace-from": "7.25.9",
         "@babel/plugin-transform-modules-commonjs": "7.26.3",
         "@effect/build-utils": "0.7.9",
-        "@effect/cli": "0.56.7",
+        "@effect/cli": "0.57.0",
         "@effect/docgen": "0.5.2",
         "@effect/eslint-plugin": "0.3.0",
-        "@effect/experimental": "0.41.7",
+        "@effect/experimental": "0.42.0",
         "@effect/language-service": "0.4.0",
-        "@effect/platform": "0.77.7",
-        "@effect/platform-browser": "0.56.7",
-        "@effect/platform-bun": "0.57.7",
-        "@effect/platform-node": "0.73.7",
+        "@effect/platform": "0.78.0",
+        "@effect/platform-browser": "0.57.0",
+        "@effect/platform-bun": "0.58.0",
+        "@effect/platform-node": "0.74.0",
         "@effect/printer": "0.41.7",
         "@effect/printer-ansi": "0.41.7",
         "@effect/typeclass": "0.32.7",
@@ -107,14 +107,14 @@
         "ws": "8.18.1"
     },
     "peerDependencies": {
-        "@effect/experimental": "0.41.7",
-        "@effect/platform": "0.77.7",
+        "@effect/experimental": "0.42.0",
+        "@effect/platform": "0.78.0",
         "effect": "3.13.7"
     },
     "optionalDependencies": {
-        "@effect/platform-browser": "0.56.7",
-        "@effect/platform-bun": "0.57.7",
-        "@effect/platform-node": "0.73.7",
+        "@effect/platform-browser": "0.57.0",
+        "@effect/platform-bun": "0.58.0",
+        "@effect/platform-node": "0.74.0",
         "ssh2": "^1.16.0",
         "undici": "^7.4.0",
         "ws": "^8.18.1"
