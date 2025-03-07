@@ -71,7 +71,7 @@
         "@effect/vitest": "0.19.5",
         "@eslint/compat": "1.2.7",
         "@eslint/eslintrc": "3.3.0",
-        "@eslint/js": "9.21.0",
+        "@eslint/js": "9.22.0",
         "@types/node": "22.13.9",
         "@types/ssh2": "1.15.4",
         "@types/ws": "8.18.0",
