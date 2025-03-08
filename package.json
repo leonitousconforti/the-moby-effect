@@ -82,7 +82,7 @@
         "ast-types": "0.14.2",
         "babel-plugin-annotate-pure-calls": "0.5.0",
         "effect": "3.13.7",
-        "eslint": "9.21.0",
+        "eslint": "9.22.0",
         "eslint-config-prettier": "10.1.1",
         "eslint-import-resolver-typescript": "3.8.3",
         "eslint-plugin-import-x": "4.6.1",
