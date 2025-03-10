@@ -314,12 +314,14 @@ export declare const callbackClient: <E>(
     callback: (exit: Exit.Exit<MobySchemas.ContainerInspectResponse, ContainersError>) => void
   ) => void
   exec: (
-    z: { containerId: string; command: Array<string> },
-    callback: (exit: Exit.Exit<string, ExecsError | SocketError | ParseError>) => void
+    z: { containerId: string; command: string | Array<string> },
+    callback: (
+      exit: Exit.Exit<readonly [exitCode: number, output: string], ExecsError | SocketError | ParseError>
+    ) => void
   ) => void
-  execNonBlocking: (
-    z: { containerId: string; command: Array<string> },
-    callback: (exit: Exit.Exit<void, ExecsError | SocketError | ParseError>) => void
+  execWebsockets: (
+    z: { command: string | Array<string>; containerId: string },
+    callback: (exit: Exit.Exit<readonly [stdout: string, stderr: string], ContainersError | SocketError>) => void
   ) => void
   ps: (
     z:

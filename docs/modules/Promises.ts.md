@@ -1,6 +1,6 @@
 ---
 title: Promises.ts
-nav_order: 49
+nav_order: 50
 parent: Modules
 ---
 
@@ -307,8 +307,14 @@ export declare const promiseClient: <E>(
         | undefined
     }
   }) => Promise<MobySchemas.ContainerInspectResponse>
-  exec: (a_0: { containerId: string; command: Array<string> }) => Promise<string>
-  execNonBlocking: (a_0: { containerId: string; command: Array<string> }) => Promise<void>
+  exec: (a_0: {
+    containerId: string
+    command: string | Array<string>
+  }) => Promise<readonly [exitCode: number, output: string]>
+  execWebsockets: (a_0: {
+    command: string | Array<string>
+    containerId: string
+  }) => Promise<readonly [stdout: string, stderr: string]>
   ps: (
     options?:
       | {

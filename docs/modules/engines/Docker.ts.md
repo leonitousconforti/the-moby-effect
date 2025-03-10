@@ -1,6 +1,6 @@
 ---
 title: engines/Docker.ts
-nav_order: 28
+nav_order: 29
 parent: Modules
 ---
 
@@ -19,6 +19,8 @@ Added in v1.0.0
   - [buildScoped](#buildscoped)
   - [exec](#exec)
   - [execNonBlocking](#execnonblocking)
+  - [execWebsockets](#execwebsockets)
+  - [execWebsocketsNonBlocking](#execwebsocketsnonblocking)
   - [images](#images)
   - [info](#info)
   - [ping](#ping)
@@ -106,7 +108,8 @@ Added in v1.0.0
 
 ## exec
 
-Implements the `docker exec` command in a blocking fashion.
+Implements the `docker exec` command in a blocking fashion. Incompatible with
+web.
 
 **Signature**
 
@@ -116,26 +119,83 @@ export declare const exec: ({
   containerId
 }: {
   containerId: string
-  command: Array<string>
-}) => Effect.Effect<string, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs>
+  command: string | Array<string>
+}) => Effect.Effect<
+  readonly [exitCode: number, output: string],
+  ExecsError | Socket.SocketError | ParseResult.ParseError,
+  Execs
+>
 ```
 
 Added in v1.0.0
 
 ## execNonBlocking
 
-Implements the `docker exec` command in a non blocking fashion.
+Implements the `docker exec` command in a non blocking fashion. Incompatible
+with web when not detached.
 
 **Signature**
 
 ```ts
-export declare const execNonBlocking: ({
+export declare const execNonBlocking: <T extends boolean | undefined>({
+  command,
+  containerId,
+  detach
+}: {
+  detach?: T
+  containerId: string
+  command: string | Array<string>
+}) => T extends true
+  ? Effect.Effect<void, ExecsError, Execs>
+  : Effect.Effect<
+      readonly [socket: MultiplexedStreamSocket | RawStreamSocket, execId: string],
+      ExecsError | Socket.SocketError | ParseResult.ParseError,
+      Execs | Scope.Scope
+    >
+```
+
+Added in v1.0.0
+
+## execWebsockets
+
+Implements the `docker exec` command in a blocking fashion with websockets as
+the underlying transport instead of the docker engine exec apis so that is
+can be compatible with web.
+
+**Signature**
+
+```ts
+export declare const execWebsockets: ({
   command,
   containerId
 }: {
+  command: string | Array<string>
   containerId: string
-  command: Array<string>
-}) => Effect.Effect<void, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs>
+}) => Effect.Effect<readonly [stdout: string, stderr: string], ContainersError | Socket.SocketError, Containers>
+```
+
+Added in v1.0.0
+
+## execWebsocketsNonBlocking
+
+Implements the `docker exec` command in a non blocking fashion with
+websockets as the underlying transport instead of the docker engine exec apis
+so that is can be compatible with web.
+
+**Signature**
+
+```ts
+export declare const execWebsocketsNonBlocking: ({
+  command,
+  containerId
+}: {
+  command: string | Array<string>
+  containerId: string
+}) => Effect.Effect<
+  { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket },
+  ContainersError | Socket.SocketError,
+  Containers | Scope.Scope
+>
 ```
 
 Added in v1.0.0
