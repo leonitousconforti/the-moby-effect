@@ -2,6 +2,7 @@ export * as AddressSchemas from "./Address.js";
 export * as CidrBlockSchemas from "./CidrBlock.js";
 export * as CidrBlockMaskSchemas from "./CidrBlockMask.js";
 export * as FamilySchemas from "./Family.js";
+export * as IdSchemas from "./Id.js";
 export * as Int16Schemas from "./Int16.js";
 export * as Int32Schemas from "./Int32.js";
 export * as Int64Schemas from "./Int64.js";
@@ -26,6 +27,19 @@ export {
 } from "./CidrBlock.js";
 export { IPv4CidrMask, IPv6CidrMask } from "./CidrBlockMask.js";
 export { Family } from "./Family.js";
+export {
+    ConfigId,
+    ContainerId,
+    ExecId,
+    ImageId,
+    NetworkId,
+    NodeId,
+    PluginId,
+    SecretId,
+    ServiceId,
+    TaskId,
+    VolumeId,
+} from "./Id.js";
 export { Int16 } from "./Int16.js";
 export { Int32 } from "./Int32.js";
 export { Int64 } from "./Int64.js";
