@@ -5,14 +5,20 @@
  */
 
 import * as Socket from "@effect/platform/Socket";
+import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Global from "effect/GlobalValue";
 import * as Match from "effect/Match";
+import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
+import * as Predicate from "effect/Predicate";
 import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
+import * as String from "effect/String";
+import * as Tuple from "effect/Tuple";
 import * as Moby from "./Moby.js";
 
 import type {
@@ -21,7 +27,10 @@ import type {
     MobyConnectionOptions,
 } from "../MobyConnection.js";
 
-import { demuxUnknownToSingleSink } from "../demux/Demux.js";
+import { MutableHashMap } from "effect";
+import { demuxToSeparateSinks, demuxUnknownToSingleSink } from "../demux/Demux.js";
+import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
+import { demuxRawSocket, RawStreamSocket } from "../demux/Raw.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
 import { Execs, ExecsError } from "../endpoints/Execs.js";
 import { Images, ImagesError } from "../endpoints/Images.js";
@@ -317,32 +326,49 @@ export const runScoped = (
 };
 
 /**
- * Implements the `docker exec` command in a non blocking fashion.
+ * Implements the `docker exec` command in a non blocking fashion. Incompatible
+ * with web when not detached.
  *
  * @since 1.0.0
  * @category Docker
  */
-export const execNonBlocking = ({
+export const execNonBlocking = <T extends boolean | undefined>({
     command,
     containerId,
+    detach,
 }: {
+    detach?: T;
     containerId: string;
-    command: Array<string>;
-}): Effect.Effect<void, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs> =>
+    command: string | Array<string>;
+}): T extends true
+    ? Effect.Effect<void, ExecsError, Execs>
+    : Effect.Effect<
+          readonly [socket: MultiplexedStreamSocket | RawStreamSocket, execId: string],
+          ExecsError | Socket.SocketError | ParseResult.ParseError,
+          Execs | Scope.Scope
+      > =>
     Effect.gen(function* () {
         const execs = yield* Execs;
         const execId = yield* execs.container(containerId, {
-            Cmd: command,
             AttachStderr: true,
             AttachStdout: true,
             AttachStdin: false,
+            Cmd: Predicate.isString(command) ? command.split(" ") : command,
         });
 
-        return yield* execs.start(execId.Id, { Detach: true });
-    }).pipe(Effect.scoped);
+        const socket = yield* execs.start<T>(execId.Id, { Detach: detach as T });
+        return Tuple.make(socket, execId.Id);
+    }) as T extends true
+        ? Effect.Effect<void, ExecsError, Execs>
+        : Effect.Effect<
+              readonly [socket: MultiplexedStreamSocket | RawStreamSocket, execId: string],
+              ExecsError | Socket.SocketError | ParseResult.ParseError,
+              Execs | Scope.Scope
+          >;
 
 /**
- * Implements the `docker exec` command in a blocking fashion.
+ * Implements the `docker exec` command in a blocking fashion. Incompatible with
+ * web.
  *
  * @since 1.0.0
  * @category Docker
@@ -352,23 +378,92 @@ export const exec = ({
     containerId,
 }: {
     containerId: string;
-    command: Array<string>;
-}): Effect.Effect<string, ExecsError | Socket.SocketError | ParseResult.ParseError, Execs> =>
+    command: string | Array<string>;
+}): Effect.Effect<
+    readonly [exitCode: number, output: string],
+    ExecsError | Socket.SocketError | ParseResult.ParseError,
+    Execs
+> =>
     Effect.gen(function* () {
-        const execs = yield* Execs;
-        const execId = yield* execs.container(containerId, {
-            Cmd: command,
-            AttachStderr: true,
-            AttachStdout: true,
-            AttachStdin: false,
-        });
-
-        const socket = yield* execs.start(execId.Id, { Detach: false });
-
-        const input = Stream.never;
-        const output = Sink.mkString;
-        return yield* demuxUnknownToSingleSink(socket, input, output);
+        const [socket, execId] = yield* execNonBlocking({ command, containerId, detach: false });
+        const output = yield* demuxUnknownToSingleSink(socket, Stream.never, Sink.mkString);
+        const execInspectResponse = yield* Execs.use((execs) => execs.inspect(execId));
+        if (execInspectResponse.Running === true) {
+            return yield* new ExecsError({ method: "exec", cause: new Error("Exec is still running") });
+        } else {
+            return Tuple.make(execInspectResponse.ExitCode, output);
+        }
     }).pipe(Effect.scoped);
+
+/** @internal */
+export const execWebsocketsRegistry = Global.globalValue("the-moby-effect/engines/docker/execWebsocketsRegistry", () =>
+    MutableHashMap.empty<string, Effect.Semaphore>()
+);
+
+/**
+ * Implements the `docker exec` command in a non blocking fashion with
+ * websockets as the underlying transport instead of the docker engine exec apis
+ * so that is can be compatible with web.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const execWebsocketsNonBlocking = ({
+    command,
+    containerId,
+}: {
+    command: string | Array<string>;
+    containerId: string;
+}): Effect.Effect<
+    { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket },
+    ContainersError | Socket.SocketError,
+    Containers | Scope.Scope
+> => {
+    const mutex = MutableHashMap.get(execWebsocketsRegistry, containerId).pipe(
+        Option.getOrElse(() => {
+            const semaphore = Effect.unsafeMakeSemaphore(1);
+            MutableHashMap.set(execWebsocketsRegistry, containerId, semaphore);
+            return semaphore;
+        })
+    );
+
+    const acquire = mutex.take(1);
+    const release = mutex.release(1);
+
+    const use = Effect.gen(function* () {
+        const containers = yield* Containers;
+        const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
+        const input = Stream.mapConcat(Stream.make(cmd), String.split(" "));
+        const stdin = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
+        const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
+        const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
+        yield* demuxRawSocket(stdin, input, Sink.succeed(void 0));
+        return { stdin, stdout, stderr };
+    });
+
+    return Effect.acquireRelease(Effect.andThen(acquire, use), () => release);
+};
+
+/**
+ * Implements the `docker exec` command in a blocking fashion with websockets as
+ * the underlying transport instead of the docker engine exec apis so that is
+ * can be compatible with web.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const execWebsockets = ({
+    command,
+    containerId,
+}: {
+    command: string | Array<string>;
+    containerId: string;
+}): Effect.Effect<readonly [stdout: string, stderr: string], ContainersError | Socket.SocketError, Containers> =>
+    Function.pipe(
+        execWebsocketsNonBlocking({ command, containerId }),
+        Effect.flatMap((sockets) => demuxToSeparateSinks(sockets, Stream.empty, Sink.mkString, Sink.mkString)),
+        Effect.scoped
+    );
 
 /**
  * Implements the `docker ps` command.

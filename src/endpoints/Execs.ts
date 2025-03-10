@@ -116,9 +116,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
          */
         const start_ = <T extends boolean | undefined>(
             id: string,
-            execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & {
-                Detach?: T;
-            }
+            execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & { Detach?: T }
         ): T extends true
             ? Effect.Effect<void, ExecsError, never>
             : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope> => {
