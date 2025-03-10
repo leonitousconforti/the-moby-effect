@@ -19,8 +19,9 @@ The motivation for this project come from working with dockerode and I became fr
 - [x] - Strong focus on types and typescript support
 - [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __currently only docker is tested against__
 - [x] - Implement all common docker commands except for login/logout because I don't want to interact with credential helpers
-- [] - support multiple environments: NodeJs, Bun, Deno, and Web should all be supported but are laking tests
-- [] - Callbacks, promise, and effect apis making everyone happy
+- [X] - support multiple environments: NodeJs, Bun, Deno, and Web should all be supported but are laking tests
+- [X] - Callbacks, promise, and effect apis making everyone happy
+- [X] - Docker compose support
 
 ## Non-Goals :wastebasket:
 
@@ -31,9 +32,7 @@ The motivation for this project come from working with dockerode and I became fr
 ## WIP/Todo :construction:
 
 - More examples
-- Enhanced docker compose support
-- Callbacks and promise based apis
-- Maybe add tests against something else other than docker like podman?
+- Maybe add tests against something else other than docker, like podman?
 
 ## Blocked :ambulance:
 

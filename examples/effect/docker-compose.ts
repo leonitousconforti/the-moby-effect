@@ -4,14 +4,24 @@ import { Path, Error as PlatformError } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Array, ConfigError, Effect, Function, Layer, ParseResult, Stream } from "effect";
 import { Tar } from "eftar";
-import { DockerComposeEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { DockerComposeEngine, DockerEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
 
-const localDockerCompose = Function.pipe(
+// Connect to the local docker engine at "/var/run/docker.sock"
+// const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
+//     MobyConnection.SocketConnectionOptions({
+//         socketPath: "/var/run/docker.sock",
+//     })
+// );
+const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
-    Effect.map(DockerComposeEngine.layerNodeJS),
+    Effect.map(DockerEngine.layerNodeJS),
     Layer.unwrapEffect
 );
 
+// Create a docker compose layer, using the local docker engine layer
+const localDockerCompose = Layer.provide(DockerComposeEngine.layer, localDocker);
+
+// Get the docker compose project as a tarball
 const project = Effect.Do.pipe(
     Effect.bind("cwd", () => Effect.flatMap(Path.Path, (path) => path.fromFileUrl(new URL(".", import.meta.url)))),
     Effect.bind("entries", () => Effect.succeed(Array.make("docker-compose.yml"))),
@@ -20,11 +30,13 @@ const project = Effect.Do.pipe(
     Stream.provideLayer(NodeContext.layer)
 );
 
+// Create a layer for the specific docker compose project
 const { layer: composeForProjectLayer, tag: composeForProjectTag } = DockerComposeEngine.layerProject(
     project,
     "MyDockerComposeProject"
 );
 
+// Provide the local docker compose engine to the specific docker compose project layer
 const dockerComposeProjectLive: Layer.Layer<
     DockerComposeEngine.DockerComposeProject,
     | ConfigError.ConfigError
@@ -39,11 +51,11 @@ const dockerComposeProjectLive: Layer.Layer<
 const program = Effect.gen(function* () {
     const compose = yield* composeForProjectTag;
 
-    yield* compose.pull({});
-    yield* compose.up({});
+    yield* compose.pull();
+    yield* compose.up();
     yield* Effect.sleep("10 seconds");
-    yield* compose.down({});
-    yield* compose.rm({});
+    yield* compose.down();
+    yield* compose.rm();
 });
 
 program.pipe(Effect.provide(dockerComposeProjectLive)).pipe(NodeRuntime.runMain);
