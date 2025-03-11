@@ -340,13 +340,11 @@ export const execNonBlocking = <T extends boolean | undefined>({
     detach?: T;
     containerId: string;
     command: string | Array<string>;
-}): T extends true
-    ? Effect.Effect<void, ExecsError, Execs>
-    : Effect.Effect<
-          readonly [socket: MultiplexedStreamSocket | RawStreamSocket, execId: string],
-          ExecsError | Socket.SocketError | ParseResult.ParseError,
-          Execs | Scope.Scope
-      > =>
+}): Effect.Effect<
+    [socket: T extends true ? void : RawStreamSocket | MultiplexedStreamSocket, execId: string],
+    ExecsError,
+    Execs
+> =>
     Effect.gen(function* () {
         const execs = yield* Execs;
         const execId = yield* execs.container(containerId, {
@@ -358,13 +356,7 @@ export const execNonBlocking = <T extends boolean | undefined>({
 
         const socket = yield* execs.start<T>(execId.Id, { Detach: detach as T });
         return Tuple.make(socket, execId.Id);
-    }) as T extends true
-        ? Effect.Effect<void, ExecsError, Execs>
-        : Effect.Effect<
-              readonly [socket: MultiplexedStreamSocket | RawStreamSocket, execId: string],
-              ExecsError | Socket.SocketError | ParseResult.ParseError,
-              Execs | Scope.Scope
-          >;
+    });
 
 /**
  * Implements the `docker exec` command in a blocking fashion. Incompatible with
@@ -393,7 +385,7 @@ export const exec = ({
         } else {
             return Tuple.make(execInspectResponse.ExitCode, output);
         }
-    }).pipe(Effect.scoped);
+    });
 
 /** @internal */
 export const execWebsocketsRegistry = Global.globalValue("the-moby-effect/engines/docker/execWebsocketsRegistry", () =>

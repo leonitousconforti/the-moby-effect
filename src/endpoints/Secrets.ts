@@ -87,8 +87,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmSecret))),
-                Effect.mapError((cause) => new SecretsError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SecretsError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretCreate */
@@ -101,8 +100,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmSecretSpec))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecretCreateResponse)),
-                Effect.mapError((cause) => new SecretsError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SecretsError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretDelete */
@@ -111,8 +109,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 HttpClientRequest.del(`/secrets/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new SecretsError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SecretsError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretInspect */
@@ -121,8 +118,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 HttpClientRequest.get(`/secrets/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecret)),
-                Effect.mapError((cause) => new SecretsError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SecretsError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretUpdate */
@@ -139,8 +135,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
                 HttpClientRequest.schemaBodyJson(SwarmSecretSpec)(options.spec),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new SecretsError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SecretsError({ method: "update", cause }))
             );
 
         return {

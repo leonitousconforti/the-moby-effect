@@ -90,8 +90,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(NetworkSummary))),
-                Effect.mapError((cause) => new NetworksError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDelete */
@@ -100,8 +99,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 HttpClientRequest.del(`/networks/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new NetworksError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkInspect */
@@ -120,8 +118,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 maybeAddQueryParameter("scope", Option.fromNullable(options?.scope)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(NetworkSummary)),
-                Effect.mapError((cause) => new NetworksError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkCreate */
@@ -134,8 +131,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(NetworkCreateRequest))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(NetworkCreateResponse)),
-                Effect.mapError((cause) => new NetworksError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkConnect */
@@ -151,8 +147,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(NetworkConnectRequest))),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new NetworksError({ method: "connect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "connect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDisconnect */
@@ -168,8 +163,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(NetworkDisconnectRequest))),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new NetworksError({ method: "disconnect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "disconnect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkPrune */
@@ -184,8 +178,7 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(NetworkPruneResponse)),
-                Effect.mapError((cause) => new NetworksError({ method: "prune", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NetworksError({ method: "prune", cause }))
             );
 
         return {

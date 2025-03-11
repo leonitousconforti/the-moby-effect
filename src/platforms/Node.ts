@@ -31,8 +31,10 @@ import { makeAgnosticLayer } from "./Agnostic.js";
  * @category NodeJS
  */
 export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
-    source: {
-        socket: net.Socket;
+    original: {
+        source: {
+            socket: net.Socket;
+        };
     };
 }
 

@@ -17,7 +17,6 @@ import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
-import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
@@ -143,8 +142,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddFilters(options?.filters),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ContainerListResponseItem))),
-                Effect.mapError((cause) => new ContainersError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerCreate */
@@ -161,8 +159,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(ContainerCreateRequest))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerCreateResponse)),
-                Effect.mapError((cause) => new ContainersError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerInspect */
@@ -179,8 +176,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("size", Option.fromNullable(options?.size)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerInspectResponse)),
-                Effect.mapError((cause) => new ContainersError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerTop */
@@ -197,8 +193,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("ps_args", Option.fromNullable(options?.ps_args)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerTopResponse)),
-                Effect.mapError((cause) => new ContainersError({ method: "top", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "top", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerLogs */
@@ -237,8 +232,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/changes`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.NullOr(Schema.Array(ContainerChange)))),
-                Effect.mapError((cause) => new ContainersError({ method: "changes", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "changes", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerExport */
@@ -287,8 +281,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("w", Option.fromNullable(options?.w)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "resize", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "resize", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStart */
@@ -305,8 +298,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "start", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "start", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStop */
@@ -325,8 +317,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("t", Option.fromNullable(options?.t)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "stop", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "stop", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRestart */
@@ -345,8 +336,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("t", Option.fromNullable(options?.t)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "restart", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "restart", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerKill */
@@ -363,8 +353,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("signal", Option.fromNullable(options?.signal)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "kill", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "kill", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUpdate */
@@ -379,8 +368,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 HttpClientRequest.schemaBodyJson(ContainerConfig)(options.spec),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerUpdateResponse)),
-                Effect.mapError((cause) => new ContainersError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "update", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRename */
@@ -395,8 +383,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("name", Option.fromNullable(options.name)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "rename", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "rename", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPause */
@@ -405,8 +392,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/pause`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "pause", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "pause", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUnpause */
@@ -415,8 +401,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/unpause`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "unpause", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "unpause", cause }))
             );
 
         /**
@@ -453,7 +438,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                       readonly stderr?: boolean | undefined;
                   }
                 | undefined
-        ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, Scope.Scope> =>
+        ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/attach`),
                 HttpClientRequest.setHeader("Upgrade", "tcp"),
@@ -508,8 +493,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("condition", Option.fromNullable(options?.condition)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerWaitResponse)),
-                Effect.mapError((cause) => new ContainersError({ method: "wait", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "wait", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerDelete */
@@ -530,8 +514,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("link", Option.fromNullable(options?.link)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchive */
@@ -557,8 +540,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("path", Option.some(options.path)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "archiveInfo", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "archiveInfo", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/PutContainerArchive */
@@ -579,8 +561,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 HttpClientRequest.bodyStream(options.stream),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ContainersError({ method: "putArchive", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "putArchive", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPrune */
@@ -601,8 +582,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddFilters(options?.filters),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ContainerPruneResponse)),
-                Effect.mapError((cause) => new ContainersError({ method: "prune", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ContainersError({ method: "prune", cause }))
             );
 
         return {

@@ -87,8 +87,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(RegistryAuthConfig))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(AuthResponse)),
-                Effect.mapError((cause) => new SystemsError({ method: "auth", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SystemsError({ method: "auth", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemInfo */
@@ -97,8 +96,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 HttpClientRequest.get("/info"),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SystemInfoResponse)),
-                Effect.mapError((cause) => new SystemsError({ method: "info", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SystemsError({ method: "info", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemVersion */
@@ -107,8 +105,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 HttpClientRequest.get("/version"),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SystemVersionResponse)),
-                Effect.mapError((cause) => new SystemsError({ method: "version", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SystemsError({ method: "version", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemPing */
@@ -118,8 +115,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 client.execute,
                 Effect.flatMap((response) => response.text),
                 Effect.flatMap(Schema.decodeUnknown(Schema.Literal("OK"))),
-                Effect.mapError((cause) => new SystemsError({ method: "ping", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SystemsError({ method: "ping", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemPingHead */
@@ -128,8 +124,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 HttpClientRequest.head("/_ping"),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new SystemsError({ method: "pingHead", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SystemsError({ method: "pingHead", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemEvents */
@@ -184,8 +179,7 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
                 maybeAddQueryParameter("type", Option.fromNullable(options?.type)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(DiskUsage)),
-                Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause }))
             );
 
         return {

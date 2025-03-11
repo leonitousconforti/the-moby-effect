@@ -94,8 +94,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
-                Effect.mapError((cause) => new NodesError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NodesError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeDelete */
@@ -112,8 +111,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
-                Effect.mapError((cause) => new NodesError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NodesError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeInspect */
@@ -122,8 +120,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 HttpClientRequest.get(`/nodes/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmNode)),
-                Effect.mapError((cause) => new NodesError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NodesError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
@@ -140,8 +137,7 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
                 HttpClientRequest.schemaBodyJson(SwarmNodeSpec)(options.body),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new NodesError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new NodesError({ method: "update", cause }))
             );
 
         return {

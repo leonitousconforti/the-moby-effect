@@ -83,8 +83,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(Plugin))),
-                Effect.mapError((cause) => new PluginsError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/GetPluginPrivileges */
@@ -94,8 +93,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 maybeAddQueryParameter("remote", Option.some(remote)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(PluginPrivilege))),
-                Effect.mapError((cause) => new PluginsError({ method: "getPrivileges", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "getPrivileges", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginPull */
@@ -117,8 +115,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpClientRequest.schemaBodyJson(Schema.Array(PluginPrivilege))(options?.body ?? []),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "pull", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "pull", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginInspect */
@@ -127,8 +124,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpClientRequest.get(`/plugins/${encodeURIComponent(name)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Plugin)),
-                Effect.mapError((cause) => new PluginsError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginDelete */
@@ -145,8 +141,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginEnable */
@@ -163,8 +158,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 maybeAddQueryParameter("timeout", Option.fromNullable(options?.timeout)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "enable", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "enable", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginDisable */
@@ -181,8 +175,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "disable", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "disable", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginUpgrade */
@@ -199,8 +192,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpClientRequest.schemaBodyJson(Schema.Array(PluginPrivilege))(options.body ?? []),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "upgrade", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "upgrade", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginCreate */
@@ -214,8 +206,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpClientRequest.bodyStream(tarContext),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginPush */
@@ -224,8 +215,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpClientRequest.post(`/plugins/${encodeURIComponent(name)}/push`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "push", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "push", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginSet */
@@ -242,8 +232,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpClientRequest.schemaBodyJson(Schema.Array(Schema.String))(options?.body ?? []),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new PluginsError({ method: "set", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new PluginsError({ method: "set", cause }))
             );
 
         return {

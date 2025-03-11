@@ -95,8 +95,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmTask))),
-                Effect.mapError((cause) => new TasksError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new TasksError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskInspect */
@@ -105,8 +104,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 HttpClientRequest.get(`/tasks/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmTask)),
-                Effect.mapError((cause) => new TasksError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new TasksError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskLogs */

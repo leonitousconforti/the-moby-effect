@@ -93,8 +93,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 maybeAddFilters(options?.filters),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmConfig))),
-                Effect.mapError((cause) => new ConfigsError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ConfigsError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigCreate */
@@ -107,8 +106,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmConfigSpec))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfigCreateResponse)),
-                Effect.mapError((cause) => new ConfigsError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ConfigsError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigDelete */
@@ -117,8 +115,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 HttpClientRequest.del(`/configs/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ConfigsError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ConfigsError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigInspect */
@@ -127,8 +124,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 HttpClientRequest.get(`/configs/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmConfig)),
-                Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ConfigsError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigUpdate */
@@ -154,8 +150,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
                 HttpClientRequest.schemaBodyJson(SwarmConfigSpec)(options.spec),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new ConfigsError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ConfigsError({ method: "update", cause }))
             );
 
         return {

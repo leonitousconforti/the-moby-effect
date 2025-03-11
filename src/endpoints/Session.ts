@@ -12,7 +12,6 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
-import * as Scope from "effect/Scope";
 
 import { hijackResponseUnsafe } from "../demux/Hijack.js";
 
@@ -76,7 +75,7 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
          *
          * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session
          */
-        const session_ = (): Effect.Effect<Socket.Socket, SessionsError, Scope.Scope> =>
+        const session_ = (): Effect.Effect<Socket.Socket, SessionsError, never> =>
             Function.pipe(
                 HttpClientRequest.post("/session"),
                 HttpClientRequest.setHeader("Upgrade", "h2c"),

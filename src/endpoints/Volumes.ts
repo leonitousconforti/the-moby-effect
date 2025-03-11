@@ -96,8 +96,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumeListResponse)),
-                Effect.mapError((cause) => new VolumesError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new VolumesError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeCreate */
@@ -110,8 +109,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(VolumeCreateOptions))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
-                Effect.mapError((cause) => new VolumesError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new VolumesError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeDelete */
@@ -128,8 +126,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new VolumesError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new VolumesError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeInspect */
@@ -138,8 +135,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 HttpClientRequest.get(`/volumes/${encodeURIComponent(name)}`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
-                Effect.mapError((cause) => new VolumesError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new VolumesError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeUpdate */
@@ -154,8 +150,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 HttpClientRequest.schemaBodyJson(ClusterVolumeSpec)(options.spec),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new VolumesError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new VolumesError({ method: "update", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumePrune */
@@ -177,8 +172,7 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumePruneResponse)),
-                Effect.mapError((cause) => new VolumesError({ method: "prune", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new VolumesError({ method: "prune", cause }))
             );
 
         return {

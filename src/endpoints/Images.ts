@@ -255,8 +255,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddQueryParameter("digests", Option.fromNullable(options?.digests)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSummary))),
-                Effect.mapError((cause) => new ImagesError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "list", cause }))
             );
 
         /**
@@ -332,8 +331,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddFilters(options?.filters),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
-                Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "buildPrune", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCreate */
@@ -431,8 +429,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ImageInspect)),
-                Effect.mapError((cause) => new ImagesError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageHistory */
@@ -443,8 +440,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.get(`/images/${encodeURIComponent(options.name)}/history`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageHistoryResponseItem))),
-                Effect.mapError((cause) => new ImagesError({ method: "history", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "history", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePush */
@@ -475,8 +471,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddQueryParameter("tag", Option.fromNullable(options.tag)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ImagesError({ method: "tag", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "tag", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageDelete */
@@ -491,8 +486,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddQueryParameter("noprune", Option.fromNullable(options.noprune)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageDeleteResponseItem))),
-                Effect.mapError((cause) => new ImagesError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageSearch */
@@ -509,8 +503,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 maybeAddFilters({ stars: options.stars, "is-official": options["is-official"] }),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(ImageSearchResponseItem))),
-                Effect.mapError((cause) => new ImagesError({ method: "search", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "search", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePrune */
@@ -533,8 +526,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 ),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ImagePruneResponse)),
-                Effect.mapError((cause) => new ImagesError({ method: "prune", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "prune", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCommit */
@@ -560,8 +552,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.schemaBodyJson(ContainerConfig)(options.containerConfig),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
-                Effect.mapError((cause) => new ImagesError({ method: "commit", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "commit", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGet */
@@ -598,8 +589,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpClientRequest.bodyStream(options.imagesTarball),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ImagesError({ method: "load", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ImagesError({ method: "load", cause }))
             );
 
         return {
