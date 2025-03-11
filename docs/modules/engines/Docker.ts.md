@@ -145,13 +145,11 @@ export declare const execNonBlocking: <T extends boolean | undefined>({
   detach?: T
   containerId: string
   command: string | Array<string>
-}) => T extends true
-  ? Effect.Effect<void, ExecsError, Execs>
-  : Effect.Effect<
-      readonly [socket: MultiplexedStreamSocket | RawStreamSocket, execId: string],
-      ExecsError | Socket.SocketError | ParseResult.ParseError,
-      Execs | Scope.Scope
-    >
+}) => Effect.Effect<
+  [socket: T extends true ? void : RawStreamSocket | MultiplexedStreamSocket, execId: string],
+  ExecsError,
+  Execs
+>
 ```
 
 Added in v1.0.0

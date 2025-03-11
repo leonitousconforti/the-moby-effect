@@ -14,7 +14,6 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
-import * as Scope from "effect/Scope";
 import * as Types from "effect/Types";
 
 import { MobyConnectionOptions } from "../MobyConnection.js";
@@ -48,8 +47,7 @@ const HttpClientMobyConnectionOptions: unique symbol = Symbol.for(
 );
 
 /** @internal */
-interface HttpClientExtension<E = HttpClientError.HttpClientError, R = Scope.Scope>
-    extends HttpClient.HttpClient.With<E, R> {
+interface HttpClientExtension<E = HttpClientError.HttpClientError, R = never> extends HttpClient.HttpClient.With<E, R> {
     readonly [HttpClientMobyConnectionOptions]: MobyConnectionOptions;
 }
 

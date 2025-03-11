@@ -33,7 +33,7 @@ export const hijackResponseUnsafe = (
     Effect.flatMap(
         Effect.promise(() => import("@effect/platform-node/NodeSocket")),
         (nodeSocketLazy) => {
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
+            const socket = (response as IExposeSocketOnEffectClientResponseHack).original.source.socket;
             return nodeSocketLazy.fromDuplex(Effect.sync(() => socket));
         }
     );

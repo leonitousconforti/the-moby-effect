@@ -74,8 +74,7 @@ export class Distributions extends Effect.Service<Distributions>()("@the-moby-ef
                 HttpClientRequest.get(`/distribution/${encodeURIComponent(name)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(RegistryDistributionInspect)),
-                Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new DistributionsError({ method: "inspect", cause }))
             );
 
         return { inspect: inspect_ };

@@ -7,6 +7,7 @@
 import * as PlatformError from "@effect/platform/Error";
 import * as Socket from "@effect/platform/Socket";
 import * as Array from "effect/Array";
+import * as Console from "effect/Console";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -917,7 +918,12 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Contain
         const dindContainerId = yield* DockerEngine.runScoped({
             spec: {
                 Image: "docker.io/library/docker:latest",
-                Cmd: ["/bin/bash"],
+                Entrypoint: ["/bin/sh"],
+                Tty: false,
+                OpenStdin: true,
+                AttachStdin: true,
+                AttachStdout: true,
+                AttachStderr: true,
                 HostConfig: {
                     Privileged: true,
                     Binds: ["/var/run/docker.sock:/var/run/docker.sock"],
@@ -993,7 +999,8 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Contain
                 Stream.scoped,
                 Stream.flatMap(({ stderr, stdout }) => interleaveToStream(stdout, stderr)),
                 Stream.mapError((cause) => new DockerComposeError({ method, cause })),
-                Stream.provideService(Containers, containers)
+                Stream.provideService(Containers, containers),
+                Stream.tap(Console.log)
             );
 
         // Actual compose implementation

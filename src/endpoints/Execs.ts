@@ -17,7 +17,6 @@ import * as Option from "effect/Option";
 import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
-import * as Scope from "effect/Scope";
 import * as Tuple from "effect/Tuple";
 
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/Hijack.js";
@@ -103,8 +102,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(ExecConfig))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
-                Effect.mapError((cause) => new ExecsError({ method: "container", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ExecsError({ method: "container", cause }))
             );
 
         /**
@@ -117,12 +115,12 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
         const start_ = <T extends boolean | undefined>(
             id: string,
             execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & { Detach?: T }
-        ): T extends true
-            ? Effect.Effect<void, ExecsError, never>
-            : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope> => {
-            type U = T extends true
-                ? Effect.Effect<void, ExecsError, never>
-                : Effect.Effect<MultiplexedStreamSocket | RawStreamSocket, ExecsError, Scope.Scope>;
+        ): Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError, never> => {
+            type U = Effect.Effect<
+                T extends true ? void : MultiplexedStreamSocket | RawStreamSocket,
+                ExecsError,
+                never
+            >;
 
             const response = Function.pipe(
                 Schema.decode(ContainerExecStartConfig)(execStartConfig),
@@ -138,7 +136,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
             );
 
             return execStartConfig.Detach
-                ? (Function.pipe(response, Effect.asVoid, Effect.scoped) as U)
+                ? (Function.pipe(response, Effect.asVoid) as U)
                 : (Function.pipe(response, Effect.flatMap(toStreamingSock)) as U);
         };
 
@@ -165,8 +163,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 maybeAddQueryParameter("w", Option.fromNullable(options?.w)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ExecsError({ method: "resize", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ExecsError({ method: "resize", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecInspect */
@@ -175,8 +172,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 HttpClientRequest.get(`/exec/${encodeURIComponent(id)}/json`),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(ExecInspectResponse)),
-                Effect.mapError((cause) => new ExecsError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ExecsError({ method: "inspect", cause }))
             );
 
         return {

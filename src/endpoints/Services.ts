@@ -94,8 +94,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 maybeAddQueryParameter("status", Option.fromNullable(options?.status)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmService))),
-                Effect.mapError((cause) => new ServicesError({ method: "list", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ServicesError({ method: "list", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceCreate */
@@ -110,8 +109,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 Effect.map(HttpClientRequest.setHeader("X-Registry-Auth", "")),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmServiceCreateResponse)),
-                Effect.mapError((cause) => new ServicesError({ method: "create", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ServicesError({ method: "create", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceDelete */
@@ -120,8 +118,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 HttpClientRequest.del(`/services/${encodeURIComponent(id)}`),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new ServicesError({ method: "delete", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ServicesError({ method: "delete", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceInspect */
@@ -138,8 +135,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 maybeAddQueryParameter("insertDefaults", Option.fromNullable(options?.insertDefaults)),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmService)),
-                Effect.mapError((cause) => new ServicesError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ServicesError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceUpdate */
@@ -186,8 +182,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 HttpClientRequest.schemaBodyJson(SwarmServiceSpec)(options.body),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmServiceUpdateResponse)),
-                Effect.mapError((cause) => new ServicesError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new ServicesError({ method: "update", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceLogs */

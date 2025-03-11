@@ -33,8 +33,10 @@ will only work when using the NodeJS http layer.
 
 ```ts
 export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
-  source: {
-    socket: net.Socket
+  original: {
+    source: {
+      socket: net.Socket
+    }
   }
 }
 ```

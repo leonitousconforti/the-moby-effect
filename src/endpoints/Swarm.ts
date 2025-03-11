@@ -88,8 +88,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 HttpClientRequest.get("/swarm"),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmData)),
-                Effect.mapError((cause) => new SwarmsError({ method: "inspect", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "inspect", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInit */
@@ -100,8 +99,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmInitRequest))),
                 Effect.flatMap(client.execute),
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.String)),
-                Effect.mapError((cause) => new SwarmsError({ method: "init", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "init", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmJoin */
@@ -112,8 +110,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmJoinRequest))),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "join", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "join", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmLeave */
@@ -129,8 +126,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 maybeAddQueryParameter("force", Option.fromNullable(options.force)),
                 client.execute,
                 Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "leave", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "leave", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUpdate */
@@ -150,8 +146,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 HttpClientRequest.schemaBodyJson(SwarmSpec)(options.spec),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "update", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "update", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlockkey */
@@ -160,8 +155,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 HttpClientRequest.get("/swarm/unlockkey"),
                 client.execute,
                 Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmUnlockKeyResponse)),
-                Effect.mapError((cause) => new SwarmsError({ method: "unlockkey", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "unlockkey", cause }))
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlock */
@@ -172,8 +166,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                 Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmUnlockRequest))),
                 Effect.flatMap(client.execute),
                 Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "unlock", cause })),
-                Effect.scoped
+                Effect.mapError((cause) => new SwarmsError({ method: "unlock", cause }))
             );
 
         return {
