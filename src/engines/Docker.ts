@@ -437,7 +437,7 @@ export const execWebsocketsNonBlocking = ({
         return { stdin, stdout, stderr };
     });
 
-    return Effect.acquireRelease(Effect.andThen(acquire, use), release);
+    return Effect.acquireRelease(acquire, release).pipe(Effect.andThen(use));
 };
 
 /**
