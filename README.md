@@ -32,6 +32,7 @@ The motivation for this project come from working with dockerode and I became fr
 ## WIP/Todo :construction:
 
 - More examples
+- Fix tests for deno and bun
 - Maybe add tests against something else other than docker, like podman?
 
 ## Blocked :ambulance:
