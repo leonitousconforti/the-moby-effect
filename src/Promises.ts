@@ -37,9 +37,12 @@ export const promiseClient = async <E>(
         start: Function.flow(DockerEngine.start, managedRuntime.runPromise),
         run: Function.flow(DockerEngine.run, managedRuntime.runPromise),
         exec: Function.flow(DockerEngine.exec, managedRuntime.runPromise),
-        // execNonBlocking: Function.flow(DockerEngine.execNonBlocking, managedRuntime.runPromise),
+        execNonBlocking: Function.flow(DockerEngine.execNonBlocking, managedRuntime.runPromise),
         execWebsockets: Function.flow(DockerEngine.execWebsockets, managedRuntime.runPromise),
-        // execWebsocketsNonBlocking: Function.flow(DockerEngine.execWebsocketsNonBlocking, managedRuntime.runPromise),
+        execWebsocketsNonBlocking: Function.compose(
+            DockerEngine.execWebsocketsNonBlocking,
+            Stream.toReadableStreamRuntime(runtime)
+        ),
         ps: Function.flow(DockerEngine.ps, managedRuntime.runPromise),
         push: Function.flow(DockerEngine.push, Stream.toReadableStreamRuntime(runtime)),
         images: Function.flow(DockerEngine.images, managedRuntime.runPromise),

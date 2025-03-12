@@ -311,10 +311,19 @@ export declare const promiseClient: <E>(
     containerId: string
     command: string | Array<string>
   }) => Promise<readonly [exitCode: number, output: string]>
+  execNonBlocking: <T extends boolean | undefined>(a_0: {
+    detach?: T
+    containerId: string
+    command: string | Array<string>
+  }) => Promise<[socket: T extends true ? void : RawStreamSocket | MultiplexedStreamSocket, execId: string]>
   execWebsockets: (a_0: {
     command: string | Array<string>
     containerId: string
   }) => Promise<readonly [stdout: string, stderr: string]>
+  execWebsocketsNonBlocking: (a: {
+    command: string | Array<string>
+    containerId: string
+  }) => ReadableStream<{ _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array }>
   ps: (
     options?:
       | {
