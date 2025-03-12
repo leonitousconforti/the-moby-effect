@@ -83,6 +83,14 @@ export const responseIsRawStreamSocketResponse = (response: HttpClientResponse.H
     response.headers["content-type"] === RawStreamSocketContentType;
 
 /**
+ * @since 1.0.0
+ * @category Conversions
+ * @internal
+ */
+export const rawSocketToStream = (socket: RawStreamSocket): Stream.Stream<Uint8Array, Socket.SocketError, never> =>
+    Stream.pipeThroughChannelOrFail(Stream.empty, Socket.toChannel(socket));
+
+/**
  * Demux a raw socket. When given a raw socket of the remote process's pty,
  * there is no way to differentiate between stdout and stderr so they are
  * combined on the same sink.
@@ -274,19 +282,13 @@ export const demuxRawSockets: {
             const sourceStream = sourceOrIoOrOptions as S1;
             const { stderr, stdin, stdout } = sockets as Demux.StdinStdoutStderrSocketOptions;
 
-            const transformToStream = (socket: RawStreamSocket): Stream.Stream<string, Socket.SocketError, never> =>
-                Function.pipe(
-                    Stream.empty,
-                    Stream.pipeThroughChannelOrFail(Socket.toChannel(socket)),
-                    Stream.decodeText(options?.encoding)
-                );
+            const runMerged = Stream.merge(
+                Predicate.isNotUndefined(stdout) ? rawSocketToStream(stdout) : Stream.empty,
+                Predicate.isNotUndefined(stderr) ? rawSocketToStream(stderr) : Stream.empty
+            )
+                .pipe(Stream.decodeText(options?.encoding))
+                .pipe(Stream.run(sinkForBoth));
 
-            const mergedStream = Stream.merge(
-                Predicate.isNotUndefined(stdout) ? transformToStream(stdout) : Stream.empty,
-                Predicate.isNotUndefined(stderr) ? transformToStream(stderr) : Stream.empty
-            );
-
-            const runMerged = Stream.run(mergedStream, sinkForBoth);
             const runStdin = Predicate.isNotUndefined(stdin)
                 ? demuxRawSocket(
                       stdin,
