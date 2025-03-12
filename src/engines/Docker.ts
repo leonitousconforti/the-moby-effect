@@ -28,6 +28,7 @@ import type {
 
 import { MutableHashMap } from "effect";
 import { demuxUnknownToSingleSink } from "../demux/Demux.js";
+import { interleaveToTaggedStream } from "../demux/Interleave.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import { demuxRawSocket, RawStreamSocket } from "../demux/Raw.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
@@ -471,11 +472,7 @@ export const execWebsocketsNonBlocking = ({
         const stdoutSocket = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
         const stderrSocket = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
         const stdinStream = Stream.fromEffect(demuxRawSocket(stdinSocket, input, Sink.drain));
-        const stdoutStream = Stream.pipeThroughChannelOrFail(Stream.empty, Socket.toChannel(stdoutSocket));
-        const stderrStream = Stream.pipeThroughChannelOrFail(Stream.empty, Socket.toChannel(stderrSocket));
-        const outputConcurrency = { concurrency: "unbounded" } as const;
-        const outputsTagged = { stdout: stdoutStream, stderr: stderrStream } as const;
-        const outputStream = Stream.mergeWithTag(outputsTagged, outputConcurrency);
+        const outputStream = interleaveToTaggedStream(stdoutSocket, stderrSocket);
         return Stream.mergeLeft(outputStream, stdinStream);
     });
 
