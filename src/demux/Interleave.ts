@@ -60,7 +60,7 @@ export const interleaveToStream: {
 ): Stream.Stream<Uint8Array, Socket.SocketError, never> => {
     const stdoutChannel = Socket.toChannel<never>(stdout);
     const stderrChannel = Socket.toChannel<never>(stderr);
-    const stdoutStream = Stream.pipeThroughChannelOrFail(Stream.never, stdoutChannel);
-    const stderrStream = Stream.pipeThroughChannelOrFail(Stream.never, stderrChannel);
+    const stdoutStream = Stream.pipeThroughChannelOrFail(Stream.empty, stdoutChannel);
+    const stderrStream = Stream.pipeThroughChannelOrFail(Stream.empty, stderrChannel);
     return Stream.interleave(stdoutStream, stderrStream);
 };
