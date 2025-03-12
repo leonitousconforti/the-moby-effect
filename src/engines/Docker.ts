@@ -387,8 +387,30 @@ export const exec = ({
     });
 
 /** @internal */
-export const execWebsocketsRegistry = Global.globalValue("the-moby-effect/engines/docker/execWebsocketsRegistry", () =>
+const execWebsocketsRegistry = Global.globalValue("the-moby-effect/engines/docker/execWebsocketsRegistry", () =>
     MutableHashMap.empty<string, Effect.Semaphore>()
+);
+
+/** @internal */
+const validShellEntrypoints = Global.globalValue(
+    "the-moby-effect/engines/docker/execWebsocketsValidShellEntrypoints",
+    () =>
+        new Set([
+            "/bin/sh", // Basic shell available in most containers
+            "/bin/bash", // Bash shell (common in many Linux distributions)
+            "/usr/bin/bash", // Alternative location for bash
+            "/bin/dash", // Debian Almquist shell (lightweight shell)
+            "/bin/ash", // Lightweight shell used in Alpine Linux
+            "/bin/zsh", // Z shell
+            "/usr/bin/zsh", // Alternative location for zsh
+            "/bin/ksh", // Korn shell
+            "/bin/tcsh", // TENEX C shell
+            "/bin/csh", // C shell
+            "/usr/bin/fish", // Friendly interactive shell
+            "/usr/local/bin/bash", // Alternative location for bash
+            "/usr/local/bin/sh", // Alternative location for sh
+            "/busybox/sh", // Busybox shell
+        ])
 );
 
 /**
@@ -418,7 +440,22 @@ export const execWebsocketsNonBlocking = ({
         })
     );
 
-    const acquire = mutex.take(1);
+    const acquire = Effect.gen(function* () {
+        const containers = yield* Containers;
+        const inspect = yield* containers.inspect(containerId);
+        const command = Array.join(inspect.Config?.Cmd ?? [], " ");
+        const entrypoint = Array.join(inspect.Config?.Entrypoint ?? [], " ");
+        if (!validShellEntrypoints.has(command) && !validShellEntrypoints.has(entrypoint)) {
+            return yield* new ContainersError({
+                method: "exec",
+                cause: new Error(
+                    `The underlying container must have a shell entrypoint/command in order to use execWebsocket, your containers command was: ${command} and entrypoint is: ${entrypoint}`
+                ),
+            });
+        }
+        yield* mutex.take(1);
+    });
+
     const release = Effect.fnUntraced(function* () {
         const containers = yield* Containers;
         yield* mutex.release(1);

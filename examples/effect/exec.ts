@@ -29,9 +29,6 @@ const program = Effect.gen(function* () {
             Entrypoint: ["/bin/sh"],
             Tty: false,
             OpenStdin: true,
-            AttachStdin: true,
-            AttachStdout: true,
-            AttachStderr: true,
         },
     });
 
