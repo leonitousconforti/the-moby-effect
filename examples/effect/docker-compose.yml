@@ -1,3 +1,5 @@
+name: test_project
+
 services:
   postgres:
     container_name: postgres

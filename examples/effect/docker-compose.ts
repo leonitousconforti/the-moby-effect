@@ -2,7 +2,7 @@
 
 import { Path, Error as PlatformError } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Array, ConfigError, Effect, Function, Layer, ParseResult, Stream } from "effect";
+import { Array, ConfigError, Console, Effect, Function, Layer, ParseResult, Stream } from "effect";
 import { Tar } from "eftar";
 import { DockerComposeEngine, DockerEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
 
@@ -51,8 +51,9 @@ const dockerComposeProjectLive: Layer.Layer<
 const program = Effect.gen(function* () {
     const compose = yield* composeForProjectTag;
 
-    yield* compose.pull();
-    yield* compose.up();
+    const pullStream = compose.pull();
+    yield* Stream.runForEach(pullStream, Console.log);
+    yield* compose.up(undefined, { detach: true });
     yield* Effect.sleep("10 seconds");
     yield* compose.down();
     yield* compose.rm();

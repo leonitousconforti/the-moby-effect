@@ -35,21 +35,19 @@ const program = Effect.gen(function* () {
         },
     });
 
-    const [a, b] = yield* DockerEngine.execWebsockets({
+    const data1 = yield* DockerEngine.execWebsockets({
         containerId,
         command: ["echo", "Hello, World1!"],
     });
 
-    yield* Console.log(`a: ${a}`);
-    yield* Console.log(`b: ${b}`);
+    yield* Console.log(`data1: ${data1}`);
 
-    const [c, d] = yield* DockerEngine.execWebsockets({
+    const data2 = yield* DockerEngine.execWebsockets({
         containerId,
         command: ["echo", "Hello, World2!"],
     });
 
-    yield* Console.log(`c: ${c}`);
-    yield* Console.log(`d: ${d}`);
+    yield* Console.log(`data2: ${data2}`);
 });
 
 program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

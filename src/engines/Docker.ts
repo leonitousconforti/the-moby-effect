@@ -27,7 +27,7 @@ import type {
 } from "../MobyConnection.js";
 
 import { MutableHashMap } from "effect";
-import { demuxToSeparateSinks, demuxUnknownToSingleSink } from "../demux/Demux.js";
+import { demuxUnknownToSingleSink } from "../demux/Demux.js";
 import { MultiplexedStreamSocket } from "../demux/Multiplexed.js";
 import { demuxRawSocket, RawStreamSocket } from "../demux/Raw.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
@@ -405,10 +405,10 @@ export const execWebsocketsNonBlocking = ({
 }: {
     command: string | Array<string>;
     containerId: string;
-}): Effect.Effect<
-    { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket },
+}): Stream.Stream<
+    { _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array },
     ContainersError | Socket.SocketError,
-    Containers | Scope.Scope
+    Containers
 > => {
     const mutex = MutableHashMap.get(execWebsocketsRegistry, containerId).pipe(
         Option.getOrElse(() => {
@@ -429,15 +429,20 @@ export const execWebsocketsNonBlocking = ({
     const use = Effect.gen(function* () {
         const containers = yield* Containers;
         const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
-        const input = Stream.concat(Stream.succeed(cmd), Stream.make(new Socket.CloseEvent()));
-        const stdin = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
-        const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
-        const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
-        yield* demuxRawSocket(stdin, input, Sink.drain);
-        return { stdin, stdout, stderr };
+        const input = Stream.concat(Stream.succeed(`${cmd}; exit\n`), Stream.make(new Socket.CloseEvent()));
+        const stdinSocket = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
+        const stdoutSocket = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
+        const stderrSocket = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
+        const stdinStream = Stream.fromEffect(demuxRawSocket(stdinSocket, input, Sink.drain));
+        const stdoutStream = Stream.pipeThroughChannelOrFail(Stream.empty, Socket.toChannel(stdoutSocket));
+        const stderrStream = Stream.pipeThroughChannelOrFail(Stream.empty, Socket.toChannel(stderrSocket));
+        const outputConcurrency = { concurrency: "unbounded" } as const;
+        const outputsTagged = { stdout: stdoutStream, stderr: stderrStream } as const;
+        const outputStream = Stream.mergeWithTag(outputsTagged, outputConcurrency);
+        return Stream.mergeLeft(outputStream, stdinStream);
     });
 
-    return Effect.acquireRelease(acquire, release).pipe(Effect.andThen(use));
+    return Stream.acquireRelease(acquire, release).pipe(Stream.flatMap(() => Stream.unwrap(use)));
 };
 
 /**
@@ -457,9 +462,17 @@ export const execWebsockets = ({
 }): Effect.Effect<readonly [stdout: string, stderr: string], ContainersError | Socket.SocketError, Containers> =>
     Function.pipe(
         execWebsocketsNonBlocking({ command, containerId }),
-        Effect.flatMap((sockets) =>
-            demuxToSeparateSinks(sockets, Stream.succeed("; exit\n"), Sink.mkString, Sink.mkString)
+        Stream.partition(({ _tag }) => _tag === "stderr"),
+        Effect.map(
+            Tuple.map(
+                Function.flow(
+                    Stream.map(({ value }) => value),
+                    Stream.decodeText(),
+                    Stream.run(Sink.mkString)
+                )
+            )
         ),
+        Effect.flatMap(Effect.allWith({ concurrency: 2 })),
         Effect.scoped
     );
 

@@ -7,7 +7,6 @@
 import * as PlatformError from "@effect/platform/Error";
 import * as Socket from "@effect/platform/Socket";
 import * as Array from "effect/Array";
-import * as Console from "effect/Console";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -22,7 +21,6 @@ import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 import * as DockerEngine from "./Docker.js";
 
-import { interleaveToStream } from "../demux/Interleave.js";
 import { Containers, ContainersError } from "../endpoints/Containers.js";
 import { ExecsError } from "../endpoints/Execs.js";
 import { Systems, SystemsError } from "../endpoints/System.js";
@@ -795,7 +793,7 @@ export interface DockerCompose {
         project: Stream.Stream<Uint8Array, E1, never>,
         services?: Array<string> | undefined,
         options?: PullOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
 
     readonly push: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
@@ -971,7 +969,7 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Contain
                         return Function.absurd(value as never);
                     }
                 }),
-                Array.map(([key, value]) => `--${camelToKebab(key)} ${value}`),
+                Array.map(([key, value]) => `--${camelToKebab(key)}=${value}`),
                 Array.join(" ")
             );
 
@@ -994,13 +992,13 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Contain
             Function.pipe(
                 DockerEngine.execWebsocketsNonBlocking({
                     containerId: dindContainerId,
-                    command: `docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
+                    command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
                 }),
-                Stream.scoped,
-                Stream.flatMap(({ stderr, stdout }) => interleaveToStream(stdout, stderr)),
+                Stream.flatMap(({ _tag, value }) =>
+                    _tag === "stdout" ? Stream.succeed(value) : Stream.fail(new TextDecoder().decode(value))
+                ),
                 Stream.mapError((cause) => new DockerComposeError({ method, cause })),
-                Stream.provideService(Containers, containers),
-                Stream.tap(Console.log)
+                Stream.provideService(Containers, containers)
             );
 
         // Actual compose implementation
@@ -1165,12 +1163,13 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Contain
                 project: Stream.Stream<Uint8Array, E1, never>,
                 services?: Array<string> | undefined,
                 options?: PullOptions | undefined
-            ): Effect.Effect<void, E1 | DockerComposeError, never> =>
+            ): Stream.Stream<string, E1 | DockerComposeError, never> =>
                 Function.pipe(
                     uploadProject(project),
                     Effect.map(() => runCommand("pull", services, { ...options })),
                     Stream.unwrap,
-                    Stream.runDrain
+                    Stream.decodeText(),
+                    Stream.splitLines
                 ),
 
             push: <E1>(
@@ -1409,7 +1408,7 @@ export interface DockerComposeProject {
     readonly pull: (
         services?: Array<string> | undefined,
         options?: PullOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    ) => Stream.Stream<string, DockerComposeError, never>;
 
     readonly push: (
         services?: Array<string> | undefined,
@@ -1482,23 +1481,6 @@ export const makeProjectLayer = <E1>(
     Effect.gen(function* () {
         yield* uploadProject(project);
 
-        const mutex = yield* Effect.makeSemaphore(1);
-        const runCommandWithMutex = (
-            method: string,
-            services: ReadonlyArray<string> | undefined = [],
-            options:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined = {}
-        ) => Stream.unwrap(mutex.withPermits(1)(Effect.sync(() => runCommand(method, services, options))));
-
         return {
             [DockerComposeProjectTypeId]: DockerComposeProjectTypeId,
 
@@ -1506,18 +1488,14 @@ export const makeProjectLayer = <E1>(
                 services?: Array<string> | undefined,
                 options?: BuildOptions | undefined
             ): Stream.Stream<string, DockerComposeError, never> =>
-                Function.pipe(
-                    runCommandWithMutex("build", services, { ...options }),
-                    Stream.decodeText(),
-                    Stream.splitLines
-                ),
+                Function.pipe(runCommand("build", services, { ...options }), Stream.decodeText(), Stream.splitLines),
 
             config: (
                 services?: Array<string> | undefined,
                 options?: ConfigOptions | undefined
             ): Effect.Effect<string, DockerComposeError, never> =>
                 Function.pipe(
-                    runCommandWithMutex("config", services, { ...options }),
+                    runCommand("config", services, { ...options }),
                     Stream.decodeText(),
                     Stream.splitLines,
                     Stream.run(Sink.mkString)
@@ -1535,13 +1513,13 @@ export const makeProjectLayer = <E1>(
                 services?: Array<string> | undefined,
                 options?: CreateOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("create", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("create", services, { ...options }), Stream.runDrain),
 
             down: (
                 services?: Array<string> | undefined,
                 options?: DownOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("down", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("down", services, { ...options }), Stream.runDrain),
 
             // events: (
             //
@@ -1561,33 +1539,25 @@ export const makeProjectLayer = <E1>(
                 services?: Array<string> | undefined,
                 options?: ImagesOptions | undefined
             ): Stream.Stream<string, DockerComposeError, never> =>
-                Function.pipe(
-                    runCommandWithMutex("images", services, { ...options }),
-                    Stream.decodeText(),
-                    Stream.splitLines
-                ),
+                Function.pipe(runCommand("images", services, { ...options }), Stream.decodeText(), Stream.splitLines),
 
             kill: (
                 services?: Array<string> | undefined,
                 options?: KillOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("kill", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("kill", services, { ...options }), Stream.runDrain),
 
             logs: (
                 services?: Array<string> | undefined,
                 options?: LogsOptions | undefined
             ): Stream.Stream<string, DockerComposeError, never> =>
-                Function.pipe(
-                    runCommandWithMutex("logs", services, { ...options }),
-                    Stream.decodeText(),
-                    Stream.splitLines
-                ),
+                Function.pipe(runCommand("logs", services, { ...options }), Stream.decodeText(), Stream.splitLines),
 
             ls: (options?: ListOptions | undefined): Stream.Stream<string, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("ls", [], { ...options }), Stream.decodeText(), Stream.splitLines),
+                Function.pipe(runCommand("ls", [], { ...options }), Stream.decodeText(), Stream.splitLines),
 
             pause: (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("pause", services), Stream.runDrain),
+                Function.pipe(runCommand("pause", services), Stream.runDrain),
 
             // port: (
             //
@@ -1600,35 +1570,31 @@ export const makeProjectLayer = <E1>(
                 services?: Array<string> | undefined,
                 options?: PsOptions | undefined
             ): Stream.Stream<string, DockerComposeError, never> =>
-                Function.pipe(
-                    runCommandWithMutex("ps", services, { ...options }),
-                    Stream.decodeText(),
-                    Stream.splitLines
-                ),
+                Function.pipe(runCommand("ps", services, { ...options }), Stream.decodeText(), Stream.splitLines),
 
             pull: (
                 services?: Array<string> | undefined,
                 options?: PullOptions | undefined
-            ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("pull", services, { ...options }), Stream.runDrain),
+            ): Stream.Stream<string, DockerComposeError, never> =>
+                Function.pipe(runCommand("pull", services, { ...options }), Stream.decodeText(), Stream.splitLines),
 
             push: (
                 services?: Array<string> | undefined,
                 options?: PushOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("push", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("push", services, { ...options }), Stream.runDrain),
 
             restart: (
                 services?: Array<string> | undefined,
                 options?: RestartOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("restart", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("restart", services, { ...options }), Stream.runDrain),
 
             rm: (
                 services?: Array<string> | undefined,
                 options?: RmOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("rm", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("rm", services, { ...options }), Stream.runDrain),
 
             // run: (
             //
@@ -1639,29 +1605,29 @@ export const makeProjectLayer = <E1>(
             // ): Stream.Stream<Uint8Array, DockerComposeError, never> => {},
 
             start: (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("start", services), Stream.runDrain),
+                Function.pipe(runCommand("start", services), Stream.runDrain),
 
             stop: (
                 services?: Array<string> | undefined,
                 options?: StopOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("stop", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("stop", services, { ...options }), Stream.runDrain),
 
             top: (services?: Array<string> | undefined): Stream.Stream<string, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("top", services), Stream.decodeText(), Stream.splitLines),
+                Function.pipe(runCommand("top", services), Stream.decodeText(), Stream.splitLines),
 
             unpause: (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("unpause", services), Stream.runDrain),
+                Function.pipe(runCommand("unpause", services), Stream.runDrain),
 
             up: (
                 services?: Array<string> | undefined,
                 options?: UpOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("up", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("up", services, { ...options }), Stream.runDrain),
 
             version: (options?: VersionOptions | undefined): Effect.Effect<string, DockerComposeError, never> =>
                 Function.pipe(
-                    runCommandWithMutex("version", [], { ...options }),
+                    runCommand("version", [], { ...options }),
                     Stream.decodeText(),
                     Stream.run(Sink.mkString)
                 ),
@@ -1670,7 +1636,7 @@ export const makeProjectLayer = <E1>(
                 services: Array.NonEmptyReadonlyArray<string>,
                 options?: WaitOptions | undefined
             ): Effect.Effect<void, DockerComposeError, never> =>
-                Function.pipe(runCommandWithMutex("wait", services, { ...options }), Stream.runDrain),
+                Function.pipe(runCommand("wait", services, { ...options }), Stream.runDrain),
         };
     });
 
