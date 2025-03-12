@@ -15,45 +15,45 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Interleave](#interleave)
-  - [interleaveBackToSocket](#interleavebacktosocket)
   - [interleaveToStream](#interleavetostream)
+  - [interleaveToTaggedStream](#interleavetotaggedstream)
 
 ---
 
 # Interleave
 
-## interleaveBackToSocket
+## interleaveToStream
 
-Interleave stdout and stderr streams back into a socket.
+Interleaves an stdout socket with an stderr socket.
 
 **Signature**
 
 ```ts
-export declare const interleaveBackToSocket: {
-  (stdout: RawStreamSocket, stderr: RawStreamSocket): Effect.Effect<RawStreamSocket, never, never>
-  (
-    stdout: MultiplexedStreamSocket,
-    stderr: MultiplexedStreamSocket
-  ): Effect.Effect<MultiplexedStreamSocket, never, never>
-}
+export declare const interleaveToStream: (
+  stdout: RawStreamSocket,
+  stderr: RawStreamSocket
+) => Stream.Stream<Uint8Array, Socket.SocketError, never>
 ```
 
 Added in v1.0.0
 
-## interleaveToStream
+## interleaveToTaggedStream
 
-Interleave stdout and stderr streams.
+Interleaves an stdout socket with an stderr socket and tags the output
+stream.
 
 **Signature**
 
 ```ts
-export declare const interleaveToStream: {
-  (stdout: RawStreamSocket, stderr: RawStreamSocket): Stream.Stream<Uint8Array, Socket.SocketError, never>
-  (
-    stdout: MultiplexedStreamSocket,
-    stderr: MultiplexedStreamSocket
-  ): Stream.Stream<Uint8Array, Socket.SocketError, never>
-}
+export declare const interleaveToTaggedStream: (
+  stdout: RawStreamSocket,
+  stderr: RawStreamSocket,
+  options?: { bufferSize?: number | undefined } | undefined
+) => Stream.Stream<
+  { _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array },
+  Socket.SocketError,
+  never
+>
 ```
 
 Added in v1.0.0

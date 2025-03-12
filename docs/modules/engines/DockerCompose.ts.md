@@ -226,7 +226,7 @@ export interface DockerCompose {
     project: Stream.Stream<Uint8Array, E1, never>,
     services?: Array<string> | undefined,
     options?: PullOptions | undefined
-  ) => Effect.Effect<void, E1 | DockerComposeError, never>
+  ) => Stream.Stream<string, E1 | DockerComposeError, never>
 
   readonly push: <E1>(
     project: Stream.Stream<Uint8Array, E1, never>,
@@ -380,7 +380,7 @@ export interface DockerComposeProject {
   readonly pull: (
     services?: Array<string> | undefined,
     options?: PullOptions | undefined
-  ) => Effect.Effect<void, DockerComposeError, never>
+  ) => Stream.Stream<string, DockerComposeError, never>
 
   readonly push: (
     services?: Array<string> | undefined,

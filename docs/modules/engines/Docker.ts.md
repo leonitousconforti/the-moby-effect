@@ -189,10 +189,10 @@ export declare const execWebsocketsNonBlocking: ({
 }: {
   command: string | Array<string>
   containerId: string
-}) => Effect.Effect<
-  { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket },
+}) => Stream.Stream<
+  { _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array },
   ContainersError | Socket.SocketError,
-  Containers | Scope.Scope
+  Containers
 >
 ```
 
