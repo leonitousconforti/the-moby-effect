@@ -17,7 +17,6 @@ import * as Schedule from "effect/Schedule";
 import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
-import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 import * as Moby from "./Moby.js";
 
@@ -348,9 +347,9 @@ export const execNonBlocking = <T extends boolean | undefined>({
     Effect.gen(function* () {
         const execs = yield* Execs;
         const execId = yield* execs.container(containerId, {
+            AttachStdin: true,
             AttachStderr: true,
             AttachStdout: true,
-            AttachStdin: false,
             Cmd: Predicate.isString(command) ? command.split(" ") : command,
         });
 
@@ -420,20 +419,25 @@ export const execWebsocketsNonBlocking = ({
     );
 
     const acquire = mutex.take(1);
-    const release = mutex.release(1);
+    const release = Effect.fnUntraced(function* () {
+        const containers = yield* Containers;
+        yield* mutex.release(1);
+        yield* containers.wait(containerId, { condition: "not-running" });
+        yield* containers.start(containerId);
+    }, Effect.orDie);
 
     const use = Effect.gen(function* () {
         const containers = yield* Containers;
         const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
-        const input = Stream.mapConcat(Stream.make(cmd), String.split(" "));
+        const input = Stream.concat(Stream.succeed(cmd), Stream.make(new Socket.CloseEvent()));
         const stdin = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
         const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
         const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
-        yield* demuxRawSocket(stdin, input, Sink.succeed(void 0));
+        yield* demuxRawSocket(stdin, input, Sink.drain);
         return { stdin, stdout, stderr };
     });
 
-    return Effect.acquireRelease(Effect.andThen(acquire, use), () => release);
+    return Effect.acquireRelease(Effect.andThen(acquire, use), release);
 };
 
 /**
@@ -453,7 +457,9 @@ export const execWebsockets = ({
 }): Effect.Effect<readonly [stdout: string, stderr: string], ContainersError | Socket.SocketError, Containers> =>
     Function.pipe(
         execWebsocketsNonBlocking({ command, containerId }),
-        Effect.flatMap((sockets) => demuxToSeparateSinks(sockets, Stream.empty, Sink.mkString, Sink.mkString)),
+        Effect.flatMap((sockets) =>
+            demuxToSeparateSinks(sockets, Stream.succeed("; exit\n"), Sink.mkString, Sink.mkString)
+        ),
         Effect.scoped
     );
 

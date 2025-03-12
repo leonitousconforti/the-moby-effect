@@ -35,20 +35,21 @@ const program = Effect.gen(function* () {
         },
     });
 
-    const [stderr, stdout] = yield* DockerEngine.execWebsockets({ containerId, command: ["echo", "Hello, World!"] });
-    yield* Console.log(`stderr: ${stderr}`);
-    yield* Console.log(`stdout: ${stdout}`);
+    const [a, b] = yield* DockerEngine.execWebsockets({
+        containerId,
+        command: ["echo", "Hello, World1!"],
+    });
 
-    // // Attach to the container
-    // const stdin = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
-    // const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
-    // const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
+    yield* Console.log(`a: ${a}`);
+    yield* Console.log(`b: ${b}`);
 
-    // // Demux the socket to stdin, stdout and stderr
-    // yield* MobyDemux.demuxSocketFromStdinToStdoutAndStderr({ stdin, stdout, stderr });
+    const [c, d] = yield* DockerEngine.execWebsockets({
+        containerId,
+        command: ["echo", "Hello, World2!"],
+    });
 
-    // // Done
-    // yield* Console.log("Disconnected from container");
+    yield* Console.log(`c: ${c}`);
+    yield* Console.log(`d: ${d}`);
 });
 
 program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
