@@ -1,7 +1,7 @@
 remote_theme: mikearnaldi/just-the-docs
 
-baseurl: "/the-wireguard-effect"
-repository: "leonitousconforti/the-wireguard-effect"
+baseurl: "/the-moby-effect"
+repository: "leonitousconforti/the-moby-effect"
 
 # Enable or disable the site search
 search_enabled: true
