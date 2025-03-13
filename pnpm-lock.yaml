@@ -127,8 +127,8 @@ importers:
         specifier: 10.1.1
         version: 10.1.1(eslint@9.22.0)
       eslint-import-resolver-typescript:
-        specifier: 3.8.6
-        version: 3.8.6(eslint-plugin-import-x@4.6.1(eslint@9.22.0)(typescript@5.8.2))(eslint@9.22.0)
+        specifier: 3.8.7
+        version: 3.8.7(eslint-plugin-import-x@4.6.1(eslint@9.22.0)(typescript@5.8.2))(eslint@9.22.0)
       eslint-plugin-import-x:
         specifier: 4.6.1
         version: 4.6.1(eslint@9.22.0)(typescript@5.8.2)
@@ -1544,8 +1544,8 @@ packages:
   eslint-import-resolver-node@0.3.9:
     resolution: {integrity: sha512-WFj2isz22JahUv+B788TlO3N6zL3nNJGU8CcZbPZvVEkBPaJdCV4vy5wyghty5ROFbCRnm132v8BScu5/1BQ8g==}
 
-  eslint-import-resolver-typescript@3.8.6:
-    resolution: {integrity: sha512-d9UjvYpj/REmUoZvOtDEmayPlwyP4zOwwMBgtC6RtrpZta8u1AIVmxgZBYJIcCKKXwAcLs+DX2yn2LeMaTqKcQ==}
+  eslint-import-resolver-typescript@3.8.7:
+    resolution: {integrity: sha512-U7k84gOzrfl09c33qrIbD3TkWTWu3nt3dK5sDajHSekfoLlYGusIwSdPlPzVeA6TFpi0Wpj+ZdBD8hX4hxPoww==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       eslint: '*'
@@ -4337,7 +4337,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.8.6(eslint-plugin-import-x@4.6.1(eslint@9.22.0)(typescript@5.8.2))(eslint@9.22.0):
+  eslint-import-resolver-typescript@3.8.7(eslint-plugin-import-x@4.6.1(eslint@9.22.0)(typescript@5.8.2))(eslint@9.22.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0
