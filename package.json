@@ -84,7 +84,7 @@
         "effect": "3.13.10",
         "eslint": "9.22.0",
         "eslint-config-prettier": "10.1.1",
-        "eslint-import-resolver-typescript": "3.8.7",
+        "eslint-import-resolver-typescript": "3.9.0",
         "eslint-plugin-import-x": "4.7.0",
         "eslint-plugin-prettier": "5.2.3",
         "eslint-plugin-simple-import-sort": "12.1.1",
