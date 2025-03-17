@@ -14,18 +14,18 @@ importers:
   .:
     dependencies:
       eftar:
-        specifier: 0.0.24
-        version: 0.0.24(@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1))(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.0.25
+        version: 0.0.25(@effect/experimental@0.43.3(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)(ws@8.18.1))(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
     optionalDependencies:
       '@effect/platform-browser':
-        specifier: 0.58.2
-        version: 0.58.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.58.3
+        version: 0.58.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
       '@effect/platform-bun':
-        specifier: 0.59.2
-        version: 0.59.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.59.3
+        version: 0.59.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
       '@effect/platform-node':
-        specifier: 0.75.2
-        version: 0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.75.3
+        version: 0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
       ssh2:
         specifier: ^1.16.0
         version: 1.16.0
@@ -52,8 +52,8 @@ importers:
         specifier: 0.7.9
         version: 0.7.9(patch_hash=l5kgl23lx2gxuhhyvqfmhjtllq)
       '@effect/cli':
-        specifier: 0.58.2
-        version: 0.58.2(@effect/platform@0.79.2(effect@3.13.11))(@effect/printer-ansi@0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11))(@effect/printer@0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.58.3
+        version: 0.58.3(@effect/platform@0.79.3(effect@3.13.12))(@effect/printer-ansi@0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12))(@effect/printer@0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12))(effect@3.13.12)
       '@effect/docgen':
         specifier: 0.5.2
         version: 0.5.2(tsx@4.19.3)(typescript@5.8.2)
@@ -61,26 +61,26 @@ importers:
         specifier: 0.3.0
         version: 0.3.0
       '@effect/experimental':
-        specifier: 0.43.2
-        version: 0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1)
+        specifier: 0.43.3
+        version: 0.43.3(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)(ws@8.18.1)
       '@effect/language-service':
         specifier: 0.4.0
         version: 0.4.0
       '@effect/platform':
-        specifier: 0.79.2
-        version: 0.79.2(effect@3.13.11)
+        specifier: 0.79.3
+        version: 0.79.3(effect@3.13.12)
       '@effect/printer':
-        specifier: 0.41.11
-        version: 0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.41.12
+        version: 0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)
       '@effect/printer-ansi':
-        specifier: 0.41.11
-        version: 0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.41.12
+        version: 0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)
       '@effect/typeclass':
-        specifier: 0.32.11
-        version: 0.32.11(effect@3.13.11)
+        specifier: 0.32.12
+        version: 0.32.12(effect@3.13.12)
       '@effect/vitest':
-        specifier: 0.19.9
-        version: 0.19.9(effect@3.13.11)(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.10)(tsx@4.19.3)(yaml@2.7.0))
+        specifier: 0.19.10
+        version: 0.19.10(effect@3.13.12)(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.10)(tsx@4.19.3)(yaml@2.7.0))
       '@eslint/compat':
         specifier: 1.2.7
         version: 1.2.7(eslint@9.22.0)
@@ -118,8 +118,8 @@ importers:
         specifier: 0.5.0
         version: 0.5.0(@babel/core@7.26.10)
       effect:
-        specifier: 3.13.11
-        version: 3.13.11
+        specifier: 3.13.12
+        version: 3.13.12
       eslint:
         specifier: 9.22.0
         version: 9.22.0
@@ -393,13 +393,13 @@ packages:
     engines: {node: '>=16.17.1'}
     hasBin: true
 
-  '@effect/cli@0.58.2':
-    resolution: {integrity: sha512-agOCHoGlDXincnWgbeZ204PRra/dmuw39YKJ8CIP+K+ol7Uz08TER8GGwZyqn6r3e1neRAocsZiykJ3fyIL4qA==}
+  '@effect/cli@0.58.3':
+    resolution: {integrity: sha512-b7fw1UlFQ6Oz22LjZLFSGI5lSRLx4YWrqFivvoO4YfnrO8FdkydSOc3lOWO7Lu9Hq2dpvFmD5tO0F3p025qRUg==}
     peerDependencies:
-      '@effect/platform': ^0.79.2
-      '@effect/printer': ^0.41.11
-      '@effect/printer-ansi': ^0.41.11
-      effect: ^3.13.11
+      '@effect/platform': ^0.79.3
+      '@effect/printer': ^0.41.12
+      '@effect/printer-ansi': ^0.41.12
+      effect: ^3.13.12
 
   '@effect/docgen@0.5.2':
     resolution: {integrity: sha512-gqBxAhp58R18vT5+ORobWRQ/2MaF5vH0k1zggSct54J41k8TKF5mYIW1qG5tkOVCejet+8K5MKsWK3gzIkaoMw==}
@@ -412,12 +412,12 @@ packages:
   '@effect/eslint-plugin@0.3.0':
     resolution: {integrity: sha512-feNIhQXE0SGkyIKUlTHY7m/AMOxwfpBs3QBwDX7qSl8sShyxWmGWzES4R0u/9hUmHj1o2+Ie49UkN/lOp6728A==}
 
-  '@effect/experimental@0.43.2':
-    resolution: {integrity: sha512-LpK8XokpLohD4MZQcYn3Yz2froq+v3wxK0YZC4AJv1gkJfmY20gf264wjOZecK/8/qSJDWAq6IUWtkXhpWVbRw==}
+  '@effect/experimental@0.43.3':
+    resolution: {integrity: sha512-pxunzq/LdxisO+dkQZGDrGMtn4UbRbB6sr8fC9CpJVMvrL2Rb6vMv23Bnd7wZv503D2xNa9HRAnzQ1BDSLBz0Q==}
     peerDependencies:
-      '@effect/platform': ^0.79.2
-      '@effect/platform-node': ^0.75.2
-      effect: ^3.13.11
+      '@effect/platform': ^0.79.3
+      '@effect/platform-node': ^0.75.3
+      effect: ^3.13.12
       ioredis: ^5
       lmdb: ^3
       ws: ^8
@@ -439,56 +439,56 @@ packages:
     engines: {node: '>=0.10.0'}
     hasBin: true
 
-  '@effect/platform-browser@0.58.2':
-    resolution: {integrity: sha512-4P1AOWPxOpJxqBBtR9WfdNOj7K/xLf92piw4+jc49dEDZvT0Rf4fFnUpaE9eB2KwPV31EltFDsDh93P+GpoWZA==}
+  '@effect/platform-browser@0.58.3':
+    resolution: {integrity: sha512-InuOalOzYc7HQmSCK9xpzqy5Pqj0OH4TVGXb0kmACS57iTPmeOuNZ3w0qGa95vwvAmPXPFQ28DnJQObpRiY4Sg==}
     peerDependencies:
-      '@effect/platform': ^0.79.2
-      effect: ^3.13.11
+      '@effect/platform': ^0.79.3
+      effect: ^3.13.12
 
-  '@effect/platform-bun@0.59.2':
-    resolution: {integrity: sha512-bVLg541rjqGpXeXWDV98KbjdFJqeWLbvtYi/GwAr833dM5EPuqf4SbiZD9V3HaoKGO5zGGgor44Yq6uaMeGe7g==}
+  '@effect/platform-bun@0.59.3':
+    resolution: {integrity: sha512-B2d3F56uGQ1Wr/RgUdeQn2sXb4nP8ZpL+YLu2Q7LIjkxTX/L5MAV02CcJc8wTMdEEoY8z/FZmVuLaE/RpevnSg==}
     peerDependencies:
-      '@effect/platform': ^0.79.2
-      effect: ^3.13.11
+      '@effect/platform': ^0.79.3
+      effect: ^3.13.12
 
-  '@effect/platform-node-shared@0.29.2':
-    resolution: {integrity: sha512-C6BOxC9F/7lVFTTQ9jXNa6I8Gio9HMsVUvJButPNd2XiHKURXmSK41Z0QwjG2Km2MVSyCGeqqsQzbWDJ2DDMKg==}
+  '@effect/platform-node-shared@0.29.3':
+    resolution: {integrity: sha512-fqAnLIIGbkfLQ7X50FRuuJgEvzQhqlQYWk4gxGN9T20+YmH8Uv/zyhpDTsN2bCLB/epmmqBvwWcdD39jkqhiMA==}
     peerDependencies:
-      '@effect/platform': ^0.79.2
-      effect: ^3.13.11
+      '@effect/platform': ^0.79.3
+      effect: ^3.13.12
 
-  '@effect/platform-node@0.75.2':
-    resolution: {integrity: sha512-zwnarHHtHGtE3665q1kCcgcWvtmI288NENHyDRqiNMEE08kQIOHfWpzz5pmdtV5lb0sLRVu3eCC9RUpn+sxsyA==}
+  '@effect/platform-node@0.75.3':
+    resolution: {integrity: sha512-NYmoHO7mnLU7egHK27XLNoxtxhLyPCssGp329fIxTQFUGNBwaIICIm5rOJOOmNtNP8in8D4e1yfGFfldAKqJRg==}
     peerDependencies:
-      '@effect/platform': ^0.79.2
-      effect: ^3.13.11
+      '@effect/platform': ^0.79.3
+      effect: ^3.13.12
 
-  '@effect/platform@0.79.2':
-    resolution: {integrity: sha512-0GXLenj1Auwx5fDqwJrKGFiEXroouUcwTmQG1Cbld64AFPhxCYXFuKkSrC3g4m/MGDugMYb1D4TNBe0hJ1rzWg==}
+  '@effect/platform@0.79.3':
+    resolution: {integrity: sha512-oABDV66SmrUVP+xWL/a+WPvz53m8ckNkv9Cgk09rhOXgzL3eusjDj8VFaIzz0OPgInjRTRoMVemILW0voTYjYA==}
     peerDependencies:
-      effect: ^3.13.11
+      effect: ^3.13.12
 
-  '@effect/printer-ansi@0.41.11':
-    resolution: {integrity: sha512-iSA6Ld5LJ2sWG//vlzKRW+oEhGILfMM3g5uZfaDc9Sl3Fwy3BbjW4SaKPFpWw9d4ocmaVstzs1iEMSeQ+1sH+Q==}
+  '@effect/printer-ansi@0.41.12':
+    resolution: {integrity: sha512-y9zG+T4TIAdzGvaNeDRFLsQl+umWbxTYbJCwpth4dWB1pADV7J4ag6BE15e8zfxeJ9ebRin4YueUblM4xMMgUA==}
     peerDependencies:
-      '@effect/typeclass': ^0.32.11
-      effect: ^3.13.11
+      '@effect/typeclass': ^0.32.12
+      effect: ^3.13.12
 
-  '@effect/printer@0.41.11':
-    resolution: {integrity: sha512-ysGDtssV8vKLzBo3FAl0+fa5V9N8osoIsvP6XVmkpCZTbzMSrymL7PW5aCo+nc2Fz55edDifcip9BOKfEILFnw==}
+  '@effect/printer@0.41.12':
+    resolution: {integrity: sha512-kuPQQkbfS3od/8REwywsS0FMFD7DZw+nTKBspPTbzNub/aiqPD8xJvADxIQum3/Q9VTZl3CTX8yuUvw2/l0ciQ==}
     peerDependencies:
-      '@effect/typeclass': ^0.32.11
-      effect: ^3.13.11
+      '@effect/typeclass': ^0.32.12
+      effect: ^3.13.12
 
-  '@effect/typeclass@0.32.11':
-    resolution: {integrity: sha512-3CnKC5IUJ1NvhOZQls5SJ15IbX65rjcqhhXRUIecuy3cXvdKyrHgcBLBtQ8/kLTq9fJhVaK8huHtEqj3mSAaMg==}
+  '@effect/typeclass@0.32.12':
+    resolution: {integrity: sha512-ttBWRHcgxMdJUoxuvShkIezJ5tS4ZTfpLa/JQj02mDRjS6LklcBaDuG/ZgfXlEVzQ00yYNgWkFT5uF3Xc1uWdA==}
     peerDependencies:
-      effect: ^3.13.11
+      effect: ^3.13.12
 
-  '@effect/vitest@0.19.9':
-    resolution: {integrity: sha512-IkKphKypVsUJQUA4CuI+Nt73PUNry6YOLXgxlDpqHJbF/jxvQOieMtNY1VKuO4XalA0CnySntA8qNU7ogePPlg==}
+  '@effect/vitest@0.19.10':
+    resolution: {integrity: sha512-eV+Vu/3mqqpzAzo2Cb5/ZpBnUwIeDMOy4vAGCUv5bRzKq4HiTK23yYCEB9g5G+ZkPyQ63oOSO/7GHxS5f1sNtg==}
     peerDependencies:
-      effect: ^3.13.11
+      effect: ^3.13.12
       vitest: ^3.0.0
 
   '@emnapi/core@1.3.1':
@@ -1516,17 +1516,17 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect@3.13.11:
-    resolution: {integrity: sha512-SOUwX2E1ciNDPZDbSfx+YszGfIIg90sluKyx0BB6VwLIt8+NOA6tEAR3N2XI9MEOWfO/EpWzbARLnXI2hXcvaQ==}
+  effect@3.13.12:
+    resolution: {integrity: sha512-XHvZA8lOX7vxk+ME3Q+4BN6EVYsyo8csdHmHsD4oYEtWPb2Ou3WPkpavlHOD+DNap8QIwfZjmDtshcGlgV34hA==}
 
-  eftar@0.0.24:
-    resolution: {integrity: sha512-3X2Msq4mR6IsHxWeRLgwLsrqtn0dbSfuqUEMhqFiFgA20UsHl8RV76DLv7QMvqQcgGN58A+1VaZ5SZHuKQvIFw==}
+  eftar@0.0.25:
+    resolution: {integrity: sha512-fiyKcIHC7b4SBEgT2KQL2a/73XLFv4RVBTHUwb/09UGHT0Tu9jdya/SMieYuUa5tJIhdELVN6QDllSf5TQ4YSg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
-      '@effect/experimental': 0.43.2
-      '@effect/platform': 0.79.2
-      '@effect/platform-node': 0.75.2
-      effect: 3.13.11
+      '@effect/experimental': 0.43.3
+      '@effect/platform': 0.79.3
+      '@effect/platform-node': 0.75.3
+      effect: 3.13.12
 
   electron-to-chromium@1.5.119:
     resolution: {integrity: sha512-Ku4NMzUjz3e3Vweh7PhApPrZSS4fyiCIbcIrG9eKrriYVLmbMepETR/v6SU7xPm98QTqMSYiCwfO89QNjXLkbQ==}
@@ -3267,12 +3267,12 @@ snapshots:
 
   '@effect/build-utils@0.7.9(patch_hash=l5kgl23lx2gxuhhyvqfmhjtllq)': {}
 
-  '@effect/cli@0.58.2(@effect/platform@0.79.2(effect@3.13.11))(@effect/printer-ansi@0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11))(@effect/printer@0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11))(effect@3.13.11)':
+  '@effect/cli@0.58.3(@effect/platform@0.79.3(effect@3.13.12))(@effect/printer-ansi@0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12))(@effect/printer@0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/platform': 0.79.2(effect@3.13.11)
-      '@effect/printer': 0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)
-      '@effect/printer-ansi': 0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/platform': 0.79.3(effect@3.13.12)
+      '@effect/printer': 0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)
+      '@effect/printer-ansi': 0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)
+      effect: 3.13.12
       ini: 4.1.3
       toml: 3.0.0
       yaml: 2.7.0
@@ -3292,14 +3292,14 @@ snapshots:
       '@dprint/typescript': 0.91.8
       prettier-linter-helpers: 1.0.0
 
-  '@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1)':
+  '@effect/experimental@0.43.3(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)(ws@8.18.1)':
     dependencies:
-      '@effect/platform': 0.79.2(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/platform': 0.79.3(effect@3.13.12)
+      effect: 3.13.12
       msgpackr: 1.11.2
       uuid: 11.1.0
     optionalDependencies:
-      '@effect/platform-node': 0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
+      '@effect/platform-node': 0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
       ws: 8.18.1
 
   '@effect/language-service@0.4.0': {}
@@ -3319,33 +3319,33 @@ snapshots:
       repeat-string: 1.6.1
       strip-color: 0.1.0
 
-  '@effect/platform-browser@0.58.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)':
+  '@effect/platform-browser@0.58.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/platform': 0.79.2(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/platform': 0.79.3(effect@3.13.12)
+      effect: 3.13.12
       multipasta: 0.2.5
     optional: true
 
-  '@effect/platform-bun@0.59.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)':
+  '@effect/platform-bun@0.59.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/platform': 0.79.2(effect@3.13.11)
-      '@effect/platform-node-shared': 0.29.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/platform': 0.79.3(effect@3.13.12)
+      '@effect/platform-node-shared': 0.29.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
+      effect: 3.13.12
       multipasta: 0.2.5
     optional: true
 
-  '@effect/platform-node-shared@0.29.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)':
+  '@effect/platform-node-shared@0.29.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/platform': 0.79.2(effect@3.13.11)
+      '@effect/platform': 0.79.3(effect@3.13.12)
       '@parcel/watcher': 2.5.1
-      effect: 3.13.11
+      effect: 3.13.12
       multipasta: 0.2.5
 
-  '@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)':
+  '@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/platform': 0.79.2(effect@3.13.11)
-      '@effect/platform-node-shared': 0.29.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/platform': 0.79.3(effect@3.13.12)
+      '@effect/platform-node-shared': 0.29.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
+      effect: 3.13.12
       mime: 3.0.0
       undici: 7.5.0
       ws: 8.18.1
@@ -3353,30 +3353,30 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform@0.79.2(effect@3.13.11)':
+  '@effect/platform@0.79.3(effect@3.13.12)':
     dependencies:
-      effect: 3.13.11
+      effect: 3.13.12
       find-my-way-ts: 0.1.5
       multipasta: 0.2.5
 
-  '@effect/printer-ansi@0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)':
+  '@effect/printer-ansi@0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/printer': 0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)
-      '@effect/typeclass': 0.32.11(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/printer': 0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)
+      '@effect/typeclass': 0.32.12(effect@3.13.12)
+      effect: 3.13.12
 
-  '@effect/printer@0.41.11(@effect/typeclass@0.32.11(effect@3.13.11))(effect@3.13.11)':
+  '@effect/printer@0.41.12(@effect/typeclass@0.32.12(effect@3.13.12))(effect@3.13.12)':
     dependencies:
-      '@effect/typeclass': 0.32.11(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/typeclass': 0.32.12(effect@3.13.12)
+      effect: 3.13.12
 
-  '@effect/typeclass@0.32.11(effect@3.13.11)':
+  '@effect/typeclass@0.32.12(effect@3.13.12)':
     dependencies:
-      effect: 3.13.11
+      effect: 3.13.12
 
-  '@effect/vitest@0.19.9(effect@3.13.11)(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.10)(tsx@4.19.3)(yaml@2.7.0))':
+  '@effect/vitest@0.19.10(effect@3.13.12)(vitest@3.0.9(@types/debug@4.1.12)(@types/node@22.13.10)(tsx@4.19.3)(yaml@2.7.0))':
     dependencies:
-      effect: 3.13.11
+      effect: 3.13.12
       vitest: 3.0.9(@types/debug@4.1.12)(@types/node@22.13.10)(tsx@4.19.3)(yaml@2.7.0)
 
   '@emnapi/core@1.3.1':
@@ -4298,17 +4298,17 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect@3.13.11:
+  effect@3.13.12:
     dependencies:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2
 
-  eftar@0.0.24(@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1))(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11):
+  eftar@0.0.25(@effect/experimental@0.43.3(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)(ws@8.18.1))(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12):
     dependencies:
-      '@effect/experimental': 0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1)
-      '@effect/platform': 0.79.2(effect@3.13.11)
-      '@effect/platform-node': 0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
-      effect: 3.13.11
+      '@effect/experimental': 0.43.3(@effect/platform-node@0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12))(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)(ws@8.18.1)
+      '@effect/platform': 0.79.3(effect@3.13.12)
+      '@effect/platform-node': 0.75.3(@effect/platform@0.79.3(effect@3.13.12))(effect@3.13.12)
+      effect: 3.13.12
 
   electron-to-chromium@1.5.119: {}
 

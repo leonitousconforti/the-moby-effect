@@ -48,7 +48,7 @@
         "update-blobs": "tsx ./scripts/update-blobs.ts"
     },
     "dependencies": {
-        "eftar": "0.0.24"
+        "eftar": "0.0.25"
     },
     "devDependencies": {
         "@babel/cli": "7.26.4",
@@ -56,19 +56,19 @@
         "@babel/plugin-transform-export-namespace-from": "7.25.9",
         "@babel/plugin-transform-modules-commonjs": "7.26.3",
         "@effect/build-utils": "0.7.9",
-        "@effect/cli": "0.58.2",
+        "@effect/cli": "0.58.3",
         "@effect/docgen": "0.5.2",
         "@effect/eslint-plugin": "0.3.0",
-        "@effect/experimental": "0.43.2",
+        "@effect/experimental": "0.43.3",
         "@effect/language-service": "0.4.0",
-        "@effect/platform": "0.79.2",
-        "@effect/platform-browser": "0.58.2",
-        "@effect/platform-bun": "0.59.2",
-        "@effect/platform-node": "0.75.2",
-        "@effect/printer": "0.41.11",
-        "@effect/printer-ansi": "0.41.11",
-        "@effect/typeclass": "0.32.11",
-        "@effect/vitest": "0.19.9",
+        "@effect/platform": "0.79.3",
+        "@effect/platform-browser": "0.58.3",
+        "@effect/platform-bun": "0.59.3",
+        "@effect/platform-node": "0.75.3",
+        "@effect/printer": "0.41.12",
+        "@effect/printer-ansi": "0.41.12",
+        "@effect/typeclass": "0.32.12",
+        "@effect/vitest": "0.19.10",
         "@eslint/compat": "1.2.7",
         "@eslint/eslintrc": "3.3.0",
         "@eslint/js": "9.22.0",
@@ -81,7 +81,7 @@
         "@vitest/coverage-v8": "3.0.9",
         "ast-types": "0.14.2",
         "babel-plugin-annotate-pure-calls": "0.5.0",
-        "effect": "3.13.11",
+        "effect": "3.13.12",
         "eslint": "9.22.0",
         "eslint-config-prettier": "10.1.1",
         "eslint-import-resolver-typescript": "4.1.1",
@@ -107,14 +107,14 @@
         "ws": "8.18.1"
     },
     "peerDependencies": {
-        "@effect/experimental": "0.43.2",
-        "@effect/platform": "0.79.2",
-        "effect": "3.13.11"
+        "@effect/experimental": "0.43.3",
+        "@effect/platform": "0.79.3",
+        "effect": "3.13.12"
     },
     "optionalDependencies": {
-        "@effect/platform-browser": "0.58.2",
-        "@effect/platform-bun": "0.59.2",
-        "@effect/platform-node": "0.75.2",
+        "@effect/platform-browser": "0.58.3",
+        "@effect/platform-bun": "0.59.3",
+        "@effect/platform-node": "0.75.3",
         "ssh2": "^1.16.0",
         "undici": "^7.4.0",
         "ws": "^8.18.1"
