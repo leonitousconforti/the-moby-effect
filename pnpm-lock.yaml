@@ -14,8 +14,8 @@ importers:
   .:
     dependencies:
       eftar:
-        specifier: 0.0.23
-        version: 0.0.23(@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1))(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
+        specifier: 0.0.24
+        version: 0.0.24(@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1))(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)
     optionalDependencies:
       '@effect/platform-browser':
         specifier: 0.58.2
@@ -1519,8 +1519,8 @@ packages:
   effect@3.13.11:
     resolution: {integrity: sha512-SOUwX2E1ciNDPZDbSfx+YszGfIIg90sluKyx0BB6VwLIt8+NOA6tEAR3N2XI9MEOWfO/EpWzbARLnXI2hXcvaQ==}
 
-  eftar@0.0.23:
-    resolution: {integrity: sha512-Pal+EblWVpQuGd9IvUwlmL5Mlfd0qreH5GJx8s1KYcBADOnXFrUSgA5tmnkS9eKjPozm1bSO3JyzRmHErAw8bQ==}
+  eftar@0.0.24:
+    resolution: {integrity: sha512-3X2Msq4mR6IsHxWeRLgwLsrqtn0dbSfuqUEMhqFiFgA20UsHl8RV76DLv7QMvqQcgGN58A+1VaZ5SZHuKQvIFw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@effect/experimental': 0.43.2
@@ -4303,7 +4303,7 @@ snapshots:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2
 
-  eftar@0.0.23(@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1))(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11):
+  eftar@0.0.24(@effect/experimental@0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1))(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11):
     dependencies:
       '@effect/experimental': 0.43.2(@effect/platform-node@0.75.2(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11))(@effect/platform@0.79.2(effect@3.13.11))(effect@3.13.11)(ws@8.18.1)
       '@effect/platform': 0.79.2(effect@3.13.11)
