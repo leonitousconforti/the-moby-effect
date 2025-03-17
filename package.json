@@ -48,7 +48,7 @@
         "update-blobs": "tsx ./scripts/update-blobs.ts"
     },
     "dependencies": {
-        "eftar": "0.0.23"
+        "eftar": "0.0.24"
     },
     "devDependencies": {
         "@babel/cli": "7.26.4",
