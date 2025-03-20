@@ -148,8 +148,8 @@ importers:
         specifier: 11.0.1
         version: 11.0.1
       jscodeshift:
-        specifier: 17.1.2
-        version: 17.1.2
+        specifier: 17.2.0
+        version: 17.2.0
       madge:
         specifier: 8.0.0
         version: 8.0.0(typescript@5.8.2)
@@ -2032,8 +2032,8 @@ packages:
     resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
     hasBin: true
 
-  jscodeshift@17.1.2:
-    resolution: {integrity: sha512-uime4vFOiZ1o3ICT4Sm/AbItHEVw2oCxQ3a0egYVy3JMMOctxe07H3SKL1v175YqjMt27jn1N+3+Bj9SKDNgdQ==}
+  jscodeshift@17.2.0:
+    resolution: {integrity: sha512-ZQeKdRmrUhk3vmESbWCUch6BQIngO6Sx6mgLJsR8QD9kqY0xyN9J8Vzkee4tULjekBnV9SiKf9m8ybNURh9s+g==}
     engines: {node: '>=16'}
     hasBin: true
     peerDependencies:
@@ -4861,7 +4861,7 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
-  jscodeshift@17.1.2:
+  jscodeshift@17.2.0:
     dependencies:
       '@babel/core': 7.26.10
       '@babel/parser': 7.26.10
