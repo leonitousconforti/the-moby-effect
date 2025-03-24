@@ -21,7 +21,6 @@ import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
 import { compressDemuxOutput, type CompressedDemuxOutput } from "./compressed.js";
-import { type Demux } from "./demux.js";
 
 /**
  * @since 1.0.0
@@ -62,6 +61,9 @@ export type RawStreamChannelTypeId = typeof RawStreamChannelTypeId;
  * multiplexed. The data exchanged over the hijacked connection is simply the
  * raw data from the process PTY and client's stdin.
  *
+ * Note for Leo: This exists because the input error type "IE" might not be
+ * known at the time of converting the Socket to a Channel.
+ *
  * @since 1.0.0
  * @category Branded Types
  */
@@ -75,6 +77,11 @@ export type RawStreamSocket = {
  * When the TTY setting is enabled in POST /containers/create, the stream is not
  * multiplexed. The data exchanged over the hijacked connection is simply the
  * raw data from the process PTY and client's stdin.
+ *
+ * Note for Leo: This exists because there is no way to convert from a Channel
+ * to a Socket. In fact, with my current effect knowledge, I believe it is
+ * impossible to implement. This is still needed though for the pack and fan
+ * implementations which seek to return these types.
  *
  * @since 1.0.0
  * @category Branded Types
@@ -92,6 +99,150 @@ export type RawStreamChannel<IE = unknown, OE = Socket.SocketError, R = never> =
         R
     >;
 };
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+export type EitherRawInput<IE, OE, R> = RawStreamSocket | RawStreamChannel<IE, OE, R>;
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type AnyRawInput = EitherRawInput<any, any, any>;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+export type HomogeneousStdioRawSocketInput =
+    | { stdin: RawStreamSocket; stdout?: never; stderr?: never }
+    | { stdin?: never; stdout: RawStreamSocket; stderr?: never }
+    | { stdin?: never; stdout?: never; stderr: RawStreamSocket }
+    | { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr?: never }
+    | { stdin: RawStreamSocket; stdout?: never; stderr: RawStreamSocket }
+    | { stdin?: never; stdout: RawStreamSocket; stderr: RawStreamSocket }
+    | { stdin: RawStreamSocket; stdout: RawStreamSocket; stderr: RawStreamSocket };
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+export type HomogeneousStdioRawChannelInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
+    | { stdin: RawStreamChannel<IE1, OE1, R1>; stdout?: never; stderr?: never }
+    | { stdin?: never; stdout: RawStreamChannel<IE2, OE2, R2>; stderr?: never }
+    | { stdin?: never; stdout?: never; stderr: RawStreamChannel<IE3, OE3, R3> }
+    | { stdin: RawStreamChannel<IE1, OE1, R1>; stdout: RawStreamChannel<IE2, OE2, R2>; stderr?: never }
+    | { stdin: RawStreamChannel<IE1, OE1, R1>; stdout?: never; stderr: RawStreamChannel<IE3, OE3, R3> }
+    | { stdin?: never; stdout: RawStreamChannel<IE2, OE2, R2>; stderr: RawStreamChannel<IE3, OE3, R3> }
+    | {
+          stdin: RawStreamChannel<IE1, OE1, R1>;
+          stdout: RawStreamChannel<IE2, OE2, R2>;
+          stderr: RawStreamChannel<IE3, OE3, R3>;
+      };
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+export type HeterogeneousStdioRawInput<
+    IE1 = never,
+    IE2 = never,
+    IE3 = never,
+    OE1 = Socket.SocketError,
+    OE2 = Socket.SocketError,
+    OE3 = Socket.SocketError,
+    R1 = never,
+    R2 = never,
+    R3 = never,
+> =
+    | { stdin: EitherRawInput<IE1, OE1, R1>; stdout?: never; stderr?: never }
+    | { stdin?: never; stdout: EitherRawInput<IE2, OE2, R2>; stderr?: never }
+    | { stdin?: never; stdout?: never; stderr: EitherRawInput<IE3, OE3, R3> }
+    | { stdin: EitherRawInput<IE1, OE1, R1>; stdout: EitherRawInput<IE2, OE2, R2>; stderr?: never }
+    | { stdin: EitherRawInput<IE1, OE1, R1>; stdout?: never; stderr: EitherRawInput<IE3, OE3, R3> }
+    | { stdin?: never; stdout: EitherRawInput<IE2, OE2, R2>; stderr: EitherRawInput<IE3, OE3, R3> }
+    | {
+          stdin: EitherRawInput<IE1, OE1, R1>;
+          stdout: EitherRawInput<IE2, OE2, R2>;
+          stderr: EitherRawInput<IE3, OE3, R3>;
+      };
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+export type HeterogeneousStdioTupledRawInput<
+    A1,
+    A2,
+    L1,
+    L2,
+    E1,
+    E2,
+    E3,
+    R1,
+    R2,
+    R3,
+    IE1 = never,
+    IE2 = never,
+    IE3 = never,
+    OE1 = Socket.SocketError,
+    OE2 = Socket.SocketError,
+    OE3 = Socket.SocketError,
+    R4 = never,
+    R5 = never,
+    R6 = never,
+> =
+    | {
+          stdin: readonly [
+              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+              EitherRawInput<E1 | IE1, OE1, R4>,
+          ];
+          stdout?: never;
+          stderr?: never;
+      }
+    | {
+          stdin?: never;
+          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
+          stderr?: never;
+      }
+    | {
+          stdin?: never;
+          stdout?: never;
+          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
+      }
+    | {
+          stdin: readonly [
+              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+              EitherRawInput<E1 | IE1, OE1, R4>,
+          ];
+          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
+          stderr?: never;
+      }
+    | {
+          stdin: readonly [
+              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+              EitherRawInput<E1 | IE1, OE1, R4>,
+          ];
+          stdout?: never;
+          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
+      }
+    | {
+          stdin?: never;
+          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
+          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
+      }
+    | {
+          stdin: readonly [
+              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+              EitherRawInput<E1 | IE1, OE1, R4>,
+          ];
+          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
+          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
+      };
 
 /**
  * @since 1.0.0
@@ -204,22 +355,22 @@ export const fromSink = <E, R>(
  */
 export const demuxRawSocket = Function.dual<
     // Data-last signature.
-    <A1, E1, E2, R1, R2>(
+    <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: RawStreamSocket | RawStreamChannel<E1 | IE, OE, R3>
+        socket: EitherRawInput<E1 | IE, OE, R3>
     ) => Effect.Effect<
         A1,
         E1 | E2 | IE | OE,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >,
     // Data-first signature.
-    <A1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: RawStreamSocket | RawStreamChannel<E1 | IE, OE, R3>,
+    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherRawInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ) => Effect.Effect<
         A1,
@@ -228,10 +379,10 @@ export const demuxRawSocket = Function.dual<
     >
 >(
     (arguments_) => isRawStreamSocket(arguments_[0]) || isRawStreamChannel(arguments_[0]),
-    <A1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: RawStreamSocket | RawStreamChannel<E1 | IE, OE, R3>,
+    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherRawInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         A1,
@@ -264,142 +415,10 @@ export const demuxRawSocket = Function.dual<
 export const demuxRawSockets: {
     // Multiple sinks, data-first combined signature.
     <
-        O1 extends readonly [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, unknown, unknown>,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Demux.AnyRawInput<any, any, any>,
-        ],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        O2 extends readonly [Demux.AnyRawInput<any, any, any>, Sink.Sink<unknown, string, never, unknown, unknown>],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        O3 extends readonly [Demux.AnyRawInput<any, any, any>, Sink.Sink<unknown, string, never, unknown, unknown>],
-        E1 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer E, infer _R1>,
-            Demux.AnyRawInput<infer E | infer _IE, infer _OE, infer _R2>,
-        ]
-            ? E
-            : never,
-        E2 = O2 extends [
-            Demux.AnyRawInput<infer _IE | E1, infer _OE, infer _R1>,
-            Sink.Sink<infer _A, string, never, infer E, infer _R2>,
-        ]
-            ? E
-            : never,
-        E3 = O3 extends [
-            Demux.AnyRawInput<infer _IE | E1, infer _OE, infer _R1>,
-            Sink.Sink<infer _A, string, never, infer E, infer _R2>,
-        ]
-            ? E
-            : never,
-        IE1 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer _R1>,
-            RawStreamChannel<infer _E | infer IE, infer _OE, infer _R2>,
-        ]
-            ? IE
-            : never,
-        IE2 = O2 extends [
-            RawStreamChannel<E1 | infer IE, infer _OE, infer _R1>,
-            Sink.Sink<infer _A, string, never, infer _E, infer _R2>,
-        ]
-            ? IE
-            : never,
-        IE3 = O3 extends [
-            RawStreamChannel<E1 | infer IE, infer _OE, infer _R1>,
-            Sink.Sink<infer _A, string, never, infer _E, infer _R2>,
-        ]
-            ? IE
-            : never,
-        OE1 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer _R1>,
-            RawStreamChannel<infer _E | infer _IE, infer OE, infer _R2>,
-        ]
-            ? OE
-            : Socket.SocketError,
-        OE2 = O2 extends [
-            RawStreamChannel<infer _E | infer _IE, infer OE, infer _R1>,
-            Sink.Sink<infer _A, string, never, infer _E, infer _R2>,
-        ]
-            ? OE
-            : Socket.SocketError,
-        OE3 = O3 extends [
-            RawStreamChannel<infer _E | infer _IE, infer OE, infer _R1>,
-            Sink.Sink<infer _A, string, never, infer _E, infer _R2>,
-        ]
-            ? OE
-            : Socket.SocketError,
-        R1 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer R>,
-            Demux.AnyRawInput<infer _E | infer _IE, infer _OE, infer _R>,
-        ]
-            ? R
-            : never,
-        R2 = O2 extends [
-            Demux.AnyRawInput<infer _E | infer _IE, infer _OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        R3 = O3 extends [
-            Demux.AnyRawInput<infer _E | infer _IE, infer _OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        R4 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer _R>,
-            RawStreamChannel<infer _E | infer _IE, infer _OE, infer R>,
-        ]
-            ? R
-            : never,
-        R5 = O2 extends [
-            RawStreamChannel<infer _E | infer _IE, infer _OE, infer R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        R6 = O3 extends [
-            RawStreamChannel<infer _IE, infer _OE, infer R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        A1 = O2 extends [
-            Demux.AnyRawInput<infer _IE, infer _OE, infer _R>,
-            Sink.Sink<infer A, string, never, infer _E, infer _R>,
-        ]
-            ? A
-            : void,
-        A2 = O3 extends [
-            Demux.AnyRawInput<infer _IE, infer _OE, infer _R>,
-            Sink.Sink<infer A, string, never, infer _E, infer _R>,
-        ]
-            ? A
-            : void,
-    >(
-        sockets:
-            | { stdin: O1; stdout?: never; stderr?: never }
-            | { stdin?: never; stdout: O2; stderr?: never }
-            | { stdin?: never; stdout?: never; stderr: O3 }
-            | { stdin: O1; stdout: O2; stderr?: never }
-            | { stdin: O1; stdout?: never; stderr: O3 }
-            | { stdin?: never; stdout: O2; stderr: O3 }
-            | { stdin: O1; stdout: O2; stderr: O3 },
-        options?: { encoding?: string | undefined } | undefined
-    ): Effect.Effect<
-        CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
-        | Exclude<R1, Scope.Scope>
-        | Exclude<R2, Scope.Scope>
-        | Exclude<R3, Scope.Scope>
-        | Exclude<R4, Scope.Scope>
-        | Exclude<R5, Scope.Scope>
-        | Exclude<R6, Scope.Scope>
-    >;
-
-    // Multiple sinks, data-first signature.
-    <
         A1,
         A2,
+        L1,
+        L2,
         E1,
         E2,
         E3,
@@ -416,11 +435,66 @@ export const demuxRawSockets: {
         R5 = never,
         R6 = never,
     >(
-        sockets: Demux.HeterogeneousStdioRawInput<E1 | IE1, E2 | IE2, E3 | IE3, OE1, OE2, OE3, R4, R5, R6>,
+        sockets: HeterogeneousStdioTupledRawInput<
+            A1,
+            A2,
+            L1,
+            L2,
+            E1,
+            E2,
+            E3,
+            R1,
+            R2,
+            R3,
+            IE1,
+            IE2,
+            IE3,
+            OE1,
+            OE2,
+            OE3,
+            R4,
+            R5,
+            R6
+        >,
+        options?: { encoding?: string | undefined } | undefined
+    ): Effect.Effect<
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
+        | Exclude<R1, Scope.Scope>
+        | Exclude<R2, Scope.Scope>
+        | Exclude<R3, Scope.Scope>
+        | Exclude<R4, Scope.Scope>
+        | Exclude<R5, Scope.Scope>
+        | Exclude<R6, Scope.Scope>
+    >;
+
+    // Multiple sinks, data-first signature.
+    <
+        A1,
+        A2,
+        L1,
+        L2,
+        E1,
+        E2,
+        E3,
+        R1,
+        R2,
+        R3,
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R4 = never,
+        R5 = never,
+        R6 = never,
+    >(
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>,
         io: {
             stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
-            stdout: Sink.Sink<A1, string, never, E2, R2>;
-            stderr: Sink.Sink<A2, string, never, E3, R3>;
+            stdout: Sink.Sink<A1, string, L1, E2, R2>;
+            stderr: Sink.Sink<A2, string, L2, E3, R3>;
         },
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
@@ -434,11 +508,11 @@ export const demuxRawSockets: {
         | Exclude<R6, Scope.Scope>
     >;
     // Multiple sinks, data-last signature.
-    <A1, A2, E1, E2, E3, R1, R2, R3>(
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
         io: {
             stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
-            stdout: Sink.Sink<A1, string, never, E2, R2>;
-            stderr: Sink.Sink<A2, string, never, E3, R3>;
+            stdout: Sink.Sink<A1, string, L1, E2, R2>;
+            stderr: Sink.Sink<A2, string, L2, E3, R3>;
         },
         options?: { encoding?: string | undefined } | undefined
     ): <
@@ -452,7 +526,7 @@ export const demuxRawSockets: {
         R5 = never,
         R6 = never,
     >(
-        sockets: Demux.HeterogeneousStdioRawInput<IE1 | E1, IE2 | E2, IE3 | E3, OE1, OE2, OE3, R4, R5, R6>
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>
     ) => Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
@@ -467,9 +541,9 @@ export const demuxRawSockets: {
     // Single sink, data-first signature.
     <
         A1,
+        L1,
         E1,
         E2,
-        E3,
         R1,
         R2,
         IE1 = never,
@@ -482,13 +556,13 @@ export const demuxRawSockets: {
         R4 = never,
         R5 = never,
     >(
-        sockets: Demux.HeterogeneousStdioRawInput<IE1 | E1, IE2 | E2, IE3 | E3, OE1, OE2, OE3, R3, R4, R5>,
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         A1,
-        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
+        E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
         | Exclude<R1, Scope.Scope>
         | Exclude<R2, Scope.Scope>
         | Exclude<R3, Scope.Scope>
@@ -496,31 +570,30 @@ export const demuxRawSockets: {
         | Exclude<R5, Scope.Scope>
     >;
     // Single sink, data-last signature.
-    <A1, E1, E2, R1, R2>(
+    <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ): <
         IE1 = never,
         IE2 = never,
         IE3 = never,
-        E3 = Socket.SocketError,
         OE1 = Socket.SocketError,
         OE2 = Socket.SocketError,
         OE3 = Socket.SocketError,
+        R3 = never,
         R4 = never,
         R5 = never,
-        R6 = never,
     >(
-        sockets: Demux.HeterogeneousStdioRawInput<IE1 | E1, IE2 | E2, IE3 | E3, OE1, OE2, OE3, R4, R5, R6>
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>
     ) => Effect.Effect<
         A1,
-        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
+        E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
         | Exclude<R1, Scope.Scope>
         | Exclude<R2, Scope.Scope>
+        | Exclude<R3, Scope.Scope>
         | Exclude<R4, Scope.Scope>
         | Exclude<R5, Scope.Scope>
-        | Exclude<R6, Scope.Scope>
     >;
 } = Function.dual(
     (arguments_) =>
@@ -529,129 +602,63 @@ export const demuxRawSockets: {
             ("stdin" in arguments_[0] && arguments_[0]["stdin"]?.[Stream.StreamTypeId] !== undefined)
         ),
     <
-        O1 extends readonly [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, unknown, unknown>,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Demux.AnyRawInput<any, any, any>,
-        ],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        O2 extends readonly [Demux.AnyRawInput<any, any, any>, Sink.Sink<unknown, string, never, unknown, unknown>],
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        O3 extends readonly [Demux.AnyRawInput<any, any, any>, Sink.Sink<unknown, string, never, unknown, unknown>],
-        E1 = O1 extends [Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer E, infer _R>, RawStreamSocket]
-            ? E
-            : O1 extends [
-                    Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer E, infer _R>,
-                    RawStreamChannel<infer E, infer _OE, infer _R>,
-                ]
-              ? E
-              : never,
-        E2 = O2 extends [RawStreamSocket, Sink.Sink<infer _A, string, never, infer E, infer _R>]
-            ? E
-            : O2 extends [
-                    RawStreamChannel<infer E, infer _OE, infer _R>,
-                    Sink.Sink<infer _A, string, never, infer E, infer _R>,
-                ]
-              ? E
-              : never,
-        E3 = O3 extends [RawStreamSocket, Sink.Sink<infer _A, string, never, infer E, infer _R>]
-            ? E
-            : O3 extends [
-                    RawStreamChannel<infer E, infer _OE, infer _R>,
-                    Sink.Sink<infer _A, string, never, infer E, infer _R>,
-                ]
-              ? E
-              : never,
-        OE1 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer _R>,
-            RawStreamChannel<infer _E, infer OE, infer _R>,
-        ]
-            ? OE
-            : Socket.SocketError,
-        OE2 = O2 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, infer OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer _R>,
-        ]
-            ? OE
-            : Socket.SocketError,
-        OE3 = O3 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, infer OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer _R>,
-        ]
-            ? OE
-            : Socket.SocketError,
-        R1 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer R>,
-            RawStreamSocket | RawStreamChannel<infer _E, infer _OE, infer _R>,
-        ]
-            ? R
-            : never,
-        R2 = O2 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, infer _OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        R3 = O3 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, infer _OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        R4 = O1 extends [
-            Stream.Stream<string | Uint8Array | Socket.CloseEvent, infer _E, infer _R>,
-            RawStreamChannel<infer _E, infer _OE, infer R>,
-        ]
-            ? R
-            : never,
-        R5 = O2 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, infer _OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        R6 = O3 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, infer _OE, infer _R>,
-            Sink.Sink<infer _A, string, never, infer _E, infer R>,
-        ]
-            ? R
-            : never,
-        A1 = O2 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, Socket.SocketError>,
-            Sink.Sink<infer A, string, never, infer _E, infer _R>,
-        ]
-            ? A
-            : void,
-        A2 = O3 extends [
-            RawStreamSocket | RawStreamChannel<infer _E, Socket.SocketError>,
-            Sink.Sink<infer A, string, never, infer _E, infer _R>,
-        ]
-            ? A
-            : void,
+        A1,
+        A2,
+        L1,
+        L2,
+        E1,
+        E2,
+        E3,
+        R1,
+        R2,
+        R3,
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R4 = never,
+        R5 = never,
+        R6 = never,
     >(
         sockets:
-            | { stdin: O1; stdout?: never; stderr?: never }
-            | { stdin?: never; stdout: O2; stderr?: never }
-            | { stdin?: never; stdout?: never; stderr: O3 }
-            | { stdin: O1; stdout: O2; stderr?: never }
-            | { stdin: O1; stdout?: never; stderr: O3 }
-            | { stdin?: never; stdout: O2; stderr: O3 }
-            | { stdin: O1; stdout: O2; stderr: O3 }
-            | Demux.HeterogeneousStdioRawInput<E1, E2, E3, OE1, OE2, OE3, R4, R5, R6>,
+            | HeterogeneousStdioTupledRawInput<
+                  A1,
+                  A2,
+                  L1,
+                  L2,
+                  E1,
+                  E2,
+                  E3,
+                  R1,
+                  R2,
+                  R3,
+                  IE1,
+                  IE2,
+                  IE3,
+                  OE1,
+                  OE2,
+                  OE3,
+                  R4,
+                  R5,
+                  R6
+              >
+            | HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>,
         sourceOrIoOrOptions?:
             | Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>
             | {
                   stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
-                  stdout: Sink.Sink<A1, string, never, E2, R2>;
-                  stderr: Sink.Sink<A2, string, never, E3, R3>;
+                  stdout: Sink.Sink<A1, string, L1, E2, R2>;
+                  stderr: Sink.Sink<A2, string, L2, E3, R3>;
               }
             | { encoding?: string | undefined }
             | undefined,
-        sinkOrOptions?: Sink.Sink<A1, string, never, E2, R2> | { encoding?: string | undefined } | undefined,
+        sinkOrOptions?: Sink.Sink<A1, string, L1, E2, R2> | { encoding?: string | undefined } | undefined,
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         A1 | CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | OE1 | OE2 | OE3,
+        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
         | Exclude<R1, Scope.Scope>
         | Exclude<R2, Scope.Scope>
         | Exclude<R3, Scope.Scope>
@@ -660,13 +667,8 @@ export const demuxRawSockets: {
         | Exclude<R6, Scope.Scope>
     > => {
         type S1 = Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
-        type S2 = Sink.Sink<A1, string, never, E2, R2>;
-        type S3 = Sink.Sink<A2, string, never, E3, R3>;
-        type CombinedInput = {
-            stdin?: readonly [S1, RawStreamSocket | RawStreamChannel<E1, OE1, R4>];
-            stdout?: readonly [RawStreamSocket | RawStreamChannel<E2, OE2, R5>, S2];
-            stderr?: readonly [RawStreamSocket | RawStreamChannel<E3, OE3, R6>, S3];
-        };
+        type S2 = Sink.Sink<A1, string, L1, E2, R2>;
+        type S3 = Sink.Sink<A2, string, L2, E3, R3>;
 
         const willMerge = (sourceOrIoOrOptions as S1 | undefined)?.[Stream.StreamTypeId] !== undefined;
         const isIoObject =
@@ -678,10 +680,10 @@ export const demuxRawSockets: {
         if (willMerge) {
             const sinkForBoth = sinkOrOptions as S2;
             const sourceStream = sourceOrIoOrOptions as S1;
-            const { stderr, stdin, stdout } = sockets as Demux.HeterogeneousStdioRawInput<
-                E1,
-                E2,
-                E3,
+            const { stderr, stdin, stdout } = sockets as HeterogeneousStdioRawInput<
+                IE1 | E1,
+                IE2,
+                IE3,
                 OE1,
                 OE2,
                 OE3,
@@ -727,12 +729,32 @@ export const demuxRawSockets: {
 
         // Multiple sinks case, combined input
         if (!isIoObject) {
-            const { stderr, stdin, stdout } = sockets as CombinedInput;
+            const { stderr, stdin, stdout } = sockets as HeterogeneousStdioTupledRawInput<
+                A1,
+                A2,
+                L1,
+                L2,
+                E1,
+                E2,
+                E3,
+                R1,
+                R2,
+                R3,
+                IE1,
+                IE2,
+                IE3,
+                OE1,
+                OE2,
+                OE3,
+                R4,
+                R5,
+                R6
+            >;
             return demuxRawSockets(
-                { stdin: stdin?.[1], stdout: stdout?.[0], stderr: stderr?.[0] } as Demux.HeterogeneousStdioRawInput<
-                    E1,
-                    E2,
-                    E3,
+                { stdin: stdin?.[1], stdout: stdout?.[0], stderr: stderr?.[0] } as HeterogeneousStdioRawInput<
+                    IE1 | E1,
+                    IE2,
+                    IE3,
                     OE1,
                     OE2,
                     OE3,
@@ -750,10 +772,10 @@ export const demuxRawSockets: {
         }
 
         // Multiple sinks case, regular input
-        const { stderr, stdin, stdout } = sockets as Demux.HeterogeneousStdioRawInput<
-            E1,
-            E2,
-            E3,
+        const { stderr, stdin, stdout } = sockets as HeterogeneousStdioRawInput<
+            IE1 | E1,
+            IE2,
+            IE3,
             OE1,
             OE2,
             OE3,
