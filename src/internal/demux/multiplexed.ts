@@ -64,6 +64,9 @@ export type MultiplexedStreamChannelTypeId = typeof MultiplexedStreamChannelType
  * and stderr. The stream consists of a series of frames, each containing a
  * header and a payload.
  *
+ * Note for Leo: This exists because the input error type "IE" might not be
+ * known at the time of converting the Socket to a Channel.
+ *
  * @since 1.0.0
  * @category Branded Types
  */
@@ -74,11 +77,30 @@ export type MultiplexedStreamSocket = {
 };
 
 /**
+ * @since 1.0.0
+ * @category Types
+ */
+export type EitherMultiplexedInput<IE, OE, R> = MultiplexedStreamSocket | MultiplexedStreamChannel<IE, OE, R>;
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/**
  * When the TTY setting is disabled in POST /containers/create, the HTTP
  * Content-Type header is set to application/vnd.docker.multiplexed-stream and
  * the stream over the hijacked connected is multiplexed to separate out stdout
  * and stderr. The stream consists of a series of frames, each containing a
  * header and a payload.
+ *
+ * Note for Leo: This exists because there is no way to convert from a Channel
+ * to a Socket. In fact, with my current effect knowledge, I believe it is
+ * impossible to implement. This is still needed though for the pack and fan
+ * implementations which seek to return these types.
  *
  * @since 1.0.0
  * @category Branded Types
@@ -328,10 +350,10 @@ export const aggregate = <E, R>(
  */
 export const demuxMultiplexedSocket: {
     // One sink, data-first signature.
-    <A1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: MultiplexedStreamSocket | MultiplexedStreamChannel<E1 | IE, OE, R3>,
+    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         CompressedDemuxOutput<A1, never>,
@@ -339,12 +361,12 @@ export const demuxMultiplexedSocket: {
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
     // One sink, data-last signature.
-    <A1, E1, E2, R1, R2>(
+    <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, never, E2, R2>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ): <IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: MultiplexedStreamSocket | MultiplexedStreamChannel<E1 | IE, OE, R3>
+        socket: EitherMultiplexedInput<E1 | IE, OE, R3>
     ) => Effect.Effect<
         CompressedDemuxOutput<A1, never>,
         E1 | E2 | IE | OE | ParseResult.ParseError,
@@ -352,11 +374,11 @@ export const demuxMultiplexedSocket: {
     >;
 
     // Two sinks, data-first signature.
-    <A1, A2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
-        socket: MultiplexedStreamSocket | MultiplexedStreamChannel<E1 | IE, OE, R4>,
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R4>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink1: Sink.Sink<A1, string, never, E2, R2>,
-        sink2: Sink.Sink<A2, string, never, E3, R3>,
+        sink1: Sink.Sink<A1, string, L1, E2, R2>,
+        sink2: Sink.Sink<A2, string, L2, E3, R3>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
     ): Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
@@ -364,13 +386,13 @@ export const demuxMultiplexedSocket: {
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
     >;
     // Two sinks, data-last signature.
-    <A1, A2, E1, E2, E3, R1, R2, R3>(
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink1: Sink.Sink<A1, string, never, E2, R2>,
-        sink2: Sink.Sink<A2, string, never, E3, R3>,
+        sink1: Sink.Sink<A1, string, L1, E2, R2>,
+        sink2: Sink.Sink<A2, string, L2, E3, R3>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
     ): <IE = never, OE = Socket.SocketError, R4 = never>(
-        socket: MultiplexedStreamSocket | MultiplexedStreamChannel<E1 | IE, OE, R4>
+        socket: EitherMultiplexedInput<E1 | IE, OE, R4>
     ) => Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
@@ -378,11 +400,11 @@ export const demuxMultiplexedSocket: {
     >;
 } = Function.dual(
     (arguments_) => isMultiplexedStreamSocket(arguments_[0]) || isMultiplexedStreamChannel(arguments_[0]),
-    <A1, A2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
-        socket: MultiplexedStreamSocket | MultiplexedStreamChannel<E1 | IE, OE, R4>,
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R4>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink1: Sink.Sink<A1, string, never, E2, R2>,
-        sink2OrOptions?: Sink.Sink<A2, string, never, E3, R3> | { encoding: string | undefined } | undefined,
+        sink1: Sink.Sink<A1, string, L1, E2, R2>,
+        sink2OrOptions?: Sink.Sink<A2, string, L2, E3, R3> | { encoding: string | undefined } | undefined,
         options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
     ): Effect.Effect<
         A1 | CompressedDemuxOutput<A1, A2>,
