@@ -1,8 +1,10 @@
 // Run with: npx tsx examples/effect/exec.ts
 
 import { NodeRuntime } from "@effect/platform-node";
-import { Console, Effect, Function, Layer } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
+import { Effect, Function, Layer, Sink, Stream } from "effect";
+import * as assert from "node:assert";
+import { DockerEngine, MobyConnection, MobyConvey, MobyDemux } from "the-moby-effect";
+import { demuxMultiplexedSocket, isMultiplexedStreamSocket } from "the-moby-effect/internal/demux/multiplexed";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -18,33 +20,63 @@ const localDocker = Function.pipe(
 
 const program = Effect.gen(function* () {
     // Pull the image, will be removed when the scope is closed
-    const image = "docker.io/library/alpine:latest";
-    const pullStream = yield* DockerEngine.pullScoped({ image });
+    const image = "docker.io/library/ubuntu:latest";
+    const pullStream = DockerEngine.pull({ image });
     yield* MobyConvey.followProgressInConsole(pullStream);
 
     // Run the container, will be removed when the scope is closed
     const { Id: containerId } = yield* DockerEngine.runScoped({
         spec: {
             Image: image,
-            Entrypoint: ["/bin/sh"],
+            Entrypoint: ["/bin/bash"],
             Tty: false,
             OpenStdin: true,
         },
     });
 
-    const data1 = yield* DockerEngine.execWebsockets({
+    const [multiplexed] = yield* DockerEngine.execNonBlocking({
         containerId,
-        command: ["echo", "Hello, World1!"],
+        command: ["cat"],
     });
 
-    yield* Console.log(`data1: ${data1}`);
+    assert.ok(isMultiplexedStreamSocket(multiplexed));
 
-    const data2 = yield* DockerEngine.execWebsockets({
-        containerId,
-        command: ["echo", "Hello, World2!"],
-    });
+    const fanned = yield* MobyDemux.fan(multiplexed);
 
-    yield* Console.log(`data2: ${data2}`);
+    // const [data1, data2] = yield* demuxRawSockets(fanned, {
+    //     stdin: Stream.make("ah\n"),
+    //     stdout: Sink.mkString,
+    //     stderr: Sink.mkString,
+    // });
+
+    const packed = yield* MobyDemux.pack(fanned);
+
+    const [data1, data2] = yield* demuxMultiplexedSocket(
+        packed,
+        // Stream.make("ah\n").pipe(Stream.concat(Stream.make(new Socket.CloseEvent()))),
+        Stream.empty,
+        Sink.mkString,
+        Sink.mkString
+    );
+
+    console.log(`data1: ${data1}`);
+    console.log(`data2: ${data2}`);
+
+    // console.log(multiplexed);
+
+    // const data1 = yield* DockerEngine.execWebsockets({
+    //     containerId,
+    //     command: ["echo", "Hello, World1!"],
+    // });
+
+    // yield* Console.log(`data1: ${data1}`);
+
+    // const data2 = yield* DockerEngine.execWebsockets({
+    //     containerId,
+    //     command: ["echo", "Hello, World2!"],
+    // });
+
+    // yield* Console.log(`data2: ${data2}`);
 });
 
 program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

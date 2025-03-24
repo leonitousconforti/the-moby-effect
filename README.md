@@ -14,7 +14,7 @@ The motivation for this project come from working with dockerode and I became fr
 - [x] - http and https connections
 - [x] - ssh connections
 - [x] - `DOCKER_HOST` environment variable support
-- [x] - streaming, multiplexing, and connection hijacking (just like [dockerode](https://github.com/apocas/dockerode), streams are passed directly through to you)
+- [x] - streaming, multiplexing, demultiplexing, and connection hijacking (this is more than just [dockerode](https://github.com/apocas/dockerode) passing streams directly through to you)
 - [x] - tests, examples, and in-line JSDoc comments based on the moby api documentation
 - [x] - Strong focus on types and typescript support
 - [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __currently only docker is tested against__

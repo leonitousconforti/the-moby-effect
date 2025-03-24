@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import * as sinksInternal from "./convey/Sinks.js";
+import * as sinksInternal from "./internal/convey/sinks.js";
 
 /**
  * @since 1.0.0

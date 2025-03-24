@@ -5,4 +5,4 @@
  */
 
 /** @since 1.0.0 */
-export * from "./generated/index.js";
+export * from "./internal/generated/index.js";

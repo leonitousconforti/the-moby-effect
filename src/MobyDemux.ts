@@ -5,13 +5,22 @@
  */
 
 /** @since 1.0.0 */
-export * from "./demux/Demux.js";
+export * from "./internal/demux/demux.js";
 
 /** @since 1.0.0 */
-export * from "./demux/Multiplexed.js";
+// export * from "./internal/demux/multiplexed.js";
 
 /** @since 1.0.0 */
-export * from "./demux/Raw.js";
+// export * from "./internal/demux/raw.js";
 
 /** @since 1.0.0 */
-export * from "./demux/Stdio.js";
+export * from "./internal/demux/stdio.js";
+
+/** @since 1.0.0 */
+export * from "./internal/demux/fan.js";
+
+/** @since 1.0.0 */
+export * from "./internal/demux/interleave.js";
+
+/** @since 1.0.0 */
+export * from "./internal/demux/pack.js";

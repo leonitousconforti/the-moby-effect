@@ -4,12 +4,12 @@
  * @since 1.0.0
  */
 
-import * as agnosticInternal from "./platforms/Agnostic.js";
-import * as bunInternal from "./platforms/Bun.js";
-import * as denoInternal from "./platforms/Deno.js";
-import * as nodeInternal from "./platforms/Node.js";
-import * as undiciInternal from "./platforms/Undici.js";
-import * as webInternal from "./platforms/Web.js";
+import * as agnosticInternal from "./internal/platforms/agnostic.js";
+import * as bunInternal from "./internal/platforms/bun.js";
+import * as denoInternal from "./internal/platforms/deno.js";
+import * as nodeInternal from "./internal/platforms/node.js";
+import * as undiciInternal from "./internal/platforms/undici.js";
+import * as webInternal from "./internal/platforms/web.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

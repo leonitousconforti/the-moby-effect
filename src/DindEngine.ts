@@ -5,4 +5,4 @@
  */
 
 /** @since 1.0.0 */
-export * from "./engines/Dind.js";
+export * from "./internal/engines/dind.js";
