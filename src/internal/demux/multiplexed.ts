@@ -418,7 +418,7 @@ export const demuxMultiplexedSocket: {
             ? (socket as MultiplexedStreamChannel<E1 | IE, OE, R4>)
             : (asMultiplexedStreamChannel<E1 | IE>(socket) as unknown as MultiplexedStreamChannel<E1 | IE, OE, R4>);
 
-        const untilPartition = Function.pipe(source, Stream.pipeThroughChannelOrFail(underlying), aggregate);
+        const untilPartition = source.pipe(Stream.pipeThroughChannelOrFail(underlying), aggregate);
 
         if (!willPartition) {
             return Function.pipe(
