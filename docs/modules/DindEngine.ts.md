@@ -1,6 +1,6 @@
 ---
 title: DindEngine.ts
-nav_order: 9
+nav_order: 2
 parent: Modules
 ---
 
@@ -15,20 +15,20 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./engines/Dind.js"](#from-enginesdindjs)
+  - [From "./internal/engines/dind.js"](#from-internalenginesdindjs)
 
 ---
 
 # exports
 
-## From "./engines/Dind.js"
+## From "./internal/engines/dind.js"
 
 Docker in docker engine shortcut.
 
 **Signature**
 
 ```ts
-export * from "./engines/Dind.js"
+export * from "./internal/engines/dind.js"
 ```
 
 Added in v1.0.0

@@ -1,6 +1,6 @@
 ---
 title: Promises.ts
-nav_order: 50
+nav_order: 14
 parent: Modules
 ---
 
@@ -31,7 +31,7 @@ Create a promise client for the docker engine
 export declare const promiseClient: <E>(
   layer: Layer.Layer<
     Layer.Layer.Success<DockerEngine.DockerLayer>,
-    E | Layer.Layer.Error<DockerEngine.DockerLayer>,
+    Layer.Layer.Error<DockerEngine.DockerLayer> | E,
     Layer.Layer.Context<DockerEngine.DockerLayer>
   >
 ) => Promise<{
@@ -311,11 +311,11 @@ export declare const promiseClient: <E>(
     containerId: string
     command: string | Array<string>
   }) => Promise<readonly [exitCode: number, output: string]>
-  execNonBlocking: <T extends boolean | undefined>(a_0: {
+  execNonBlocking: <T extends boolean | undefined = undefined>(a_0: {
     detach?: T
     containerId: string
     command: string | Array<string>
-  }) => Promise<[socket: T extends true ? void : RawStreamSocket | MultiplexedStreamSocket, execId: string]>
+  }) => Promise<[socket: T extends true ? void : RawSocket | MultiplexedSocket, execId: string]>
   execWebsockets: (a_0: {
     command: string | Array<string>
     containerId: string
@@ -323,7 +323,7 @@ export declare const promiseClient: <E>(
   execWebsocketsNonBlocking: (a: {
     command: string | Array<string>
     containerId: string
-  }) => ReadableStream<{ _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array }>
+  }) => ReadableStream<MultiplexedChannel<never, ContainersError | SocketError>>
   ps: (
     options?:
       | {

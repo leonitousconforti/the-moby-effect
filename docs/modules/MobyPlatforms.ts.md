@@ -1,6 +1,6 @@
 ---
 title: MobyPlatforms.ts
-nav_order: 39
+nav_order: 11
 parent: Modules
 ---
 
@@ -36,7 +36,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeAgnosticHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient, never, HttpClient>
+) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient>
 ```
 
 Added in v1.0.0
@@ -52,7 +52,7 @@ different than the Node implementation currently.
 ```ts
 export declare const makeBunHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient | WebSocketConstructor, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -68,7 +68,7 @@ different than the Node implementation currently.
 ```ts
 export declare const makeDenoHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient | WebSocketConstructor, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -83,7 +83,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeNodeHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient | WebSocketConstructor, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -98,7 +98,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeUndiciHttpClientLayer: (
   connectionOptions: MobyConnectionOptions
-) => Layer<HttpClient | WebSocketConstructor, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0
@@ -113,7 +113,7 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeWebHttpClientLayer: (
   connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => Layer<HttpClient | WebSocketConstructor, never, never>
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
 Added in v1.0.0

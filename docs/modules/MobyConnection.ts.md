@@ -1,6 +1,6 @@
 ---
 title: MobyConnection.ts
-nav_order: 34
+nav_order: 6
 parent: Modules
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: MobySchemas.ts
-nav_order: 40
+nav_order: 12
 parent: Modules
 ---
 
@@ -15,20 +15,20 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [exports](#exports)
-  - [From "./generated/index.js"](#from-generatedindexjs)
+  - [From "./internal/generated/index.js"](#from-internalgeneratedindexjs)
 
 ---
 
 # exports
 
-## From "./generated/index.js"
+## From "./internal/generated/index.js"
 
 Moby schemas.
 
 **Signature**
 
 ```ts
-export * from "./generated/index.js"
+export * from "./internal/generated/index.js"
 ```
 
 Added in v1.0.0

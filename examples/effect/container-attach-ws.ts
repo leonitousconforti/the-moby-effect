@@ -2,7 +2,7 @@
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
+import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -42,8 +42,12 @@ const program = Effect.gen(function* () {
     const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
     const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
 
+    console.log(stdin);
+    console.log(stdout);
+    console.log(stderr);
+
     // Demux the socket to stdin, stdout and stderr
-    yield* MobyDemux.demuxFromStdinToStdoutAndStderr({ stdin, stdout, stderr });
+    // yield* MobyDemux.demuxFromStdinToStdoutAndStderr({ stdin, stdout, stderr });
 
     // Done
     yield* Console.log("Disconnected from container");

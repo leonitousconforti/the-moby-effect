@@ -319,23 +319,22 @@ export declare const callbackClient: <E>(
       exit: Exit.Exit<readonly [exitCode: number, output: string], ExecsError | SocketError | ParseError>
     ) => void
   ) => void
-  execNonBlocking: <T extends boolean | undefined>(
+  execNonBlocking: <T extends boolean | undefined = undefined>(
     z: { detach?: T; containerId: string; command: string | Array<string> },
     callback: (
-      exit: Exit.Exit<
-        [socket: T extends true ? void : RawStreamSocket | MultiplexedStreamSocket, execId: string],
-        ExecsError
-      >
+      exit: Exit.Exit<[socket: T extends true ? void : RawSocket | MultiplexedSocket, execId: string], ExecsError>
     ) => void
   ) => void
   execWebsockets: (
     z: { command: string | Array<string>; containerId: string },
-    callback: (exit: Exit.Exit<readonly [stdout: string, stderr: string], ContainersError | SocketError>) => void
+    callback: (
+      exit: Exit.Exit<readonly [stdout: string, stderr: string], ContainersError | SocketError | ParseError>
+    ) => void
   ) => void
   execWebsocketsNonBlocking: (a: {
     command: string | Array<string>
     containerId: string
-  }) => ReadableStream<{ _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array }>
+  }) => ReadableStream<MultiplexedChannel<never, ContainersError | SocketError>>
   ps: (
     z:
       | {
