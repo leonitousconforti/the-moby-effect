@@ -1,3 +1,10 @@
+/**
+ * Demux utilities for "packing" several independent raw sockets into a single
+ * multiplexed socket.
+ *
+ * @since 1.0.0
+ */
+
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
 import * as Chunk from "effect/Chunk";
@@ -13,14 +20,13 @@ import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { type Demux } from "./demux.js";
 import {
-    fromStreamWith,
-    makeMultiplexedStreamChannel,
-    MultiplexedStreamChannel,
-    MultiplexedStreamSocketHeaderType,
+    makeMultiplexedChannel,
+    MultiplexedChannel,
+    multiplexedFromStreamWith,
+    MultiplexedHeaderType,
 } from "./multiplexed.js";
-import { demuxRawSockets } from "./raw.js";
+import { demuxStdioRawToSeparateSinks, HeterogeneousStdioRawInput } from "./raw.js";
 
 /**
  * @since 1.0.0
@@ -37,10 +43,10 @@ export const pack: <
     R2 = never,
     R3 = never,
 >(
-    stdio: Demux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
+    stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<
-    MultiplexedStreamChannel<IE1, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3>,
+    MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
     never,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
 > = Effect.fnUntraced(function* <
@@ -54,7 +60,7 @@ export const pack: <
     R2 = never,
     R3 = never,
 >(
-    stdio: Demux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
+    stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
     options?: { encoding?: string | undefined } | undefined
 ) {
     const mutex = yield* Effect.makeSemaphore(1);
@@ -72,7 +78,7 @@ export const pack: <
 
     // Demux everything to and fro the correct places. We can touch
     // this more than once because it is wrapped in the mutex.
-    const mother = demuxRawSockets(
+    const mother = demuxStdioRawToSeparateSinks(
         stdio,
         {
             stdin: Function.pipe(
@@ -105,7 +111,7 @@ export const pack: <
     // Convert the streams to the multiplexed streams
     const textEncoder = new TextEncoder();
     const mapEntry =
-        (type: MultiplexedStreamSocketHeaderType) =>
+        (type: MultiplexedHeaderType) =>
         (data: Uint8Array | string | Socket.CloseEvent): Uint8Array => {
             const encoded = Function.pipe(
                 Match.value(data),
@@ -121,29 +127,30 @@ export const pack: <
             return new Uint8Array([...header, ...encoded]);
         };
 
-    const mapStdin = mapEntry(MultiplexedStreamSocketHeaderType.Stdin);
-    const mapStdout = mapEntry(MultiplexedStreamSocketHeaderType.Stdout);
-    const mapStderr = mapEntry(MultiplexedStreamSocketHeaderType.Stderr);
+    const mapStdin = mapEntry(MultiplexedHeaderType.Stdin);
+    const mapStdout = mapEntry(MultiplexedHeaderType.Stdout);
+    const mapStderr = mapEntry(MultiplexedHeaderType.Stderr);
 
     const independentStdinChannel = Channel.toQueue(stdinProducerQueue)
         .pipe(Channel.mapInput(Function.constVoid))
-        .pipe(Channel.mapInputIn((input: Uint8Array | string | Socket.CloseEvent) => Chunk.of(mapStdin(input))))
+        .pipe(Channel.mapInputError((x: IE1 | IE2 | IE3) => x))
+        .pipe(
+            Channel.mapInputIn((input: Chunk.Chunk<Uint8Array | string | Socket.CloseEvent>) =>
+                Chunk.map(input, mapStdin)
+            )
+        )
         .pipe(Channel.zipLeft(mother, { concurrent: true }));
 
     const { underlying: independentStdoutChannel } = Stream.fromQueue(stdoutConsumerQueue)
         .pipe(Stream.encodeText)
         .pipe(Stream.map(mapStdout))
-        .pipe(fromStreamWith<IE2>());
+        .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
 
     const { underlying: independentStderrChannel } = Stream.fromQueue(stderrConsumerQueue)
         .pipe(Stream.encodeText)
         .pipe(Stream.map(mapStderr))
-        .pipe(fromStreamWith<IE3>());
+        .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
 
-    const outputChannel = Channel.zip(independentStdoutChannel, independentStderrChannel, { concurrent: true });
-
-    const a = Channel.zip(independentStdinChannel, outputChannel, { concurrent: true });
-    const b = makeMultiplexedStreamChannel<IE1, IE2 | IE3 | OE1 | OE2 | OE3, never>(a);
-
-    return {} as MultiplexedStreamChannel<IE1, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3>;
+    const mixedOutputChannel = Channel.zip(independentStdoutChannel, independentStderrChannel, { concurrent: true });
+    return makeMultiplexedChannel(Channel.zip(independentStdinChannel, mixedOutputChannel, { concurrent: true }));
 });

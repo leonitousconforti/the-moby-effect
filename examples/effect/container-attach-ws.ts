@@ -43,7 +43,7 @@ const program = Effect.gen(function* () {
     const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
 
     // Demux the socket to stdin, stdout and stderr
-    yield* MobyDemux.demuxSocketFromStdinToStdoutAndStderr({ stdin, stdout, stderr });
+    yield* MobyDemux.demuxFromStdinToStdoutAndStderr({ stdin, stdout, stderr });
 
     // Done
     yield* Console.log("Disconnected from container");

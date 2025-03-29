@@ -22,7 +22,7 @@ import * as Tuple from "effect/Tuple";
 import * as DockerEngine from "./docker.js";
 
 import { fan } from "../demux/fan.js";
-import { interleaveToTaggedStream } from "../demux/interleave.js";
+import { mergeToTaggedStream } from "../demux/raw.js";
 import { Containers, ContainersError } from "../endpoints/containers.js";
 import { ExecsError } from "../endpoints/execs.js";
 import { Systems, SystemsError } from "../endpoints/system.js";
@@ -995,7 +995,7 @@ const make: Effect.Effect<DockerCompose, SystemsError | ContainersError, Contain
                     command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
                 }),
                 Effect.flatMap(fan),
-                Effect.map(({ stderr, stdout }) => interleaveToTaggedStream(stdout, stderr)),
+                Effect.map(({ stderr, stdout }) => mergeToTaggedStream(stdout, stderr)),
                 Stream.unwrapScoped,
                 Stream.flatMap(({ _tag, value }) =>
                     _tag === "stdout" ? Stream.succeed(value) : Stream.fail(new TextDecoder().decode(value))

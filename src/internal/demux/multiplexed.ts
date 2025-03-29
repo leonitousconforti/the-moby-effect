@@ -27,35 +27,35 @@ import { compressDemuxOutput, CompressedDemuxOutput } from "./compressed.js";
  * @since 1.0.0
  * @category Types
  */
-export const MultiplexedStreamContentType = "application/vnd.docker.multiplexed-stream" as const;
+export const MultiplexedContentType = "application/vnd.docker.multiplexed-stream" as const;
 
 /**
  * @since 1.0.0
  * @category Type ids
  */
-export const MultiplexedStreamSocketTypeId: unique symbol = Symbol.for(
-    "the-moby-effect/demux/MultiplexedStreamSocket"
-) as MultiplexedStreamSocketTypeId;
+export const MultiplexedSocketTypeId: unique symbol = Symbol.for(
+    "the-moby-effect/demux/MultiplexedSocket"
+) as MultiplexedSocketTypeId;
 
 /**
  * @since 1.0.0
  * @category Type ids
  */
-export type MultiplexedStreamSocketTypeId = typeof MultiplexedStreamSocketTypeId;
+export type MultiplexedSocketTypeId = typeof MultiplexedSocketTypeId;
 
 /**
  * @since 1.0.0
  * @category Type ids
  */
-export const MultiplexedStreamChannelTypeId: unique symbol = Symbol.for(
-    "the-moby-effect/demux/MultiplexedStreamChannel"
-) as MultiplexedStreamChannelTypeId;
+export const MultiplexedChannelTypeId: unique symbol = Symbol.for(
+    "the-moby-effect/demux/MultiplexedChannel"
+) as MultiplexedChannelTypeId;
 
 /**
  * @since 1.0.0
  * @category Type ids
  */
-export type MultiplexedStreamChannelTypeId = typeof MultiplexedStreamChannelTypeId;
+export type MultiplexedChannelTypeId = typeof MultiplexedChannelTypeId;
 
 /**
  * When the TTY setting is disabled in POST /containers/create, the HTTP
@@ -70,25 +70,11 @@ export type MultiplexedStreamChannelTypeId = typeof MultiplexedStreamChannelType
  * @since 1.0.0
  * @category Branded Types
  */
-export type MultiplexedStreamSocket = {
-    readonly "content-type": typeof MultiplexedStreamContentType;
-    readonly [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId;
+export type MultiplexedSocket = {
+    readonly "content-type": typeof MultiplexedContentType;
+    readonly [MultiplexedSocketTypeId]: MultiplexedSocketTypeId;
     readonly underlying: Socket.Socket;
 };
-
-/**
- * @since 1.0.0
- * @category Types
- */
-export type EitherMultiplexedInput<IE, OE, R> = MultiplexedStreamSocket | MultiplexedStreamChannel<IE, OE, R>;
-
-/**
- * @since 1.0.0
- * @category Types
- */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * When the TTY setting is disabled in POST /containers/create, the HTTP
@@ -105,9 +91,9 @@ export type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>;
  * @since 1.0.0
  * @category Branded Types
  */
-export type MultiplexedStreamChannel<IE = unknown, OE = Socket.SocketError, R = never> = {
-    readonly "content-type": typeof MultiplexedStreamContentType;
-    readonly [MultiplexedStreamChannelTypeId]: MultiplexedStreamChannelTypeId;
+export type MultiplexedChannel<IE = unknown, OE = Socket.SocketError, R = never> = {
+    readonly "content-type": typeof MultiplexedContentType;
+    readonly [MultiplexedChannelTypeId]: MultiplexedChannelTypeId;
     readonly underlying: Channel.Channel<
         Chunk.Chunk<Uint8Array>,
         Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
@@ -121,19 +107,33 @@ export type MultiplexedStreamChannel<IE = unknown, OE = Socket.SocketError, R = 
 
 /**
  * @since 1.0.0
+ * @category Types
+ */
+export type EitherMultiplexedInput<IE, OE, R> = MultiplexedSocket | MultiplexedChannel<IE, OE, R>;
+
+/**
+ * @since 1.0.0
+ * @category Types
+ */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>;
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/**
+ * @since 1.0.0
  * @category Constructors
  */
-export const makeMultiplexedStreamSocket = (underlying: Socket.Socket): MultiplexedStreamSocket => ({
+export const makeMultiplexedSocket = (underlying: Socket.Socket): MultiplexedSocket => ({
     underlying,
-    "content-type": MultiplexedStreamContentType,
-    [MultiplexedStreamSocketTypeId]: MultiplexedStreamSocketTypeId,
+    "content-type": MultiplexedContentType,
+    [MultiplexedSocketTypeId]: MultiplexedSocketTypeId,
 });
 
 /**
  * @since 1.0.0
  * @category Constructors
  */
-export const makeMultiplexedStreamChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
+export const makeMultiplexedChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
     underlying: Channel.Channel<
         Chunk.Chunk<Uint8Array>,
         Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
@@ -143,39 +143,39 @@ export const makeMultiplexedStreamChannel = <IE = unknown, OE = Socket.SocketErr
         unknown,
         R
     >
-): MultiplexedStreamChannel<IE, OE, R> => ({
+): MultiplexedChannel<IE, OE, R> => ({
     underlying,
-    "content-type": MultiplexedStreamContentType,
-    [MultiplexedStreamChannelTypeId]: MultiplexedStreamChannelTypeId,
+    "content-type": MultiplexedContentType,
+    [MultiplexedChannelTypeId]: MultiplexedChannelTypeId,
 });
 
 /**
  * @since 1.0.0
  * @category Predicates
  */
-export const isMultiplexedStreamSocket = (u: unknown): u is MultiplexedStreamSocket =>
-    Predicate.hasProperty(u, MultiplexedStreamSocketTypeId);
+export const isMultiplexedSocket = (u: unknown): u is MultiplexedSocket =>
+    Predicate.hasProperty(u, MultiplexedSocketTypeId);
 
 /**
  * @since 1.0.0
  * @category Predicates
  */
-export const isMultiplexedStreamChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
+export const isMultiplexedChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
     u: unknown
-): u is MultiplexedStreamChannel<IE, OE, R> => Predicate.hasProperty(u, MultiplexedStreamChannelTypeId);
+): u is MultiplexedChannel<IE, OE, R> => Predicate.hasProperty(u, MultiplexedChannelTypeId);
 
 /**
  * @since 1.0.0
  * @category Predicates
  */
-export const responseIsMultiplexedStreamSocketResponse = (response: HttpClientResponse.HttpClientResponse): boolean =>
-    response.headers["content-type"] === MultiplexedStreamContentType;
+export const responseIsMultiplexedResponse = (response: HttpClientResponse.HttpClientResponse): boolean =>
+    response.headers["content-type"] === MultiplexedContentType;
 
 /**
  * @since 1.0.0
  * @category Types
  */
-export enum MultiplexedStreamSocketHeaderType {
+export enum MultiplexedHeaderType {
     Stdin = 0,
     Stdout = 1,
     Stderr = 2,
@@ -185,7 +185,7 @@ export enum MultiplexedStreamSocketHeaderType {
  * @since 1.0.0
  * @category Types
  */
-export type MultiplexedStreamSocketAccumulator = {
+export type MultiplexedAccumulator = {
     headerBytesRead: number;
     messageBytesRead: number;
     headerBuffer: Chunk.Chunk<number>;
@@ -198,20 +198,17 @@ export type MultiplexedStreamSocketAccumulator = {
  * @since 1.0.0
  * @category Types
  */
-export interface $MultiplexedStreamSocketSchema
+export interface $MultiplexedSchema
     extends Schema.Tuple<
-        [
-            Schema.Enums<typeof MultiplexedStreamSocketHeaderType>,
-            Schema.Schema<Uint8Array, ReadonlyArray<number>, never>,
-        ]
+        [Schema.Enums<typeof MultiplexedHeaderType>, Schema.Schema<Uint8Array, ReadonlyArray<number>, never>]
     > {}
 
 /**
  * @since 1.0.0
  * @category Schemas
  */
-export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Schema.Tuple(
-    Schema.Enums(MultiplexedStreamSocketHeaderType),
+export const MultiplexedSchema: $MultiplexedSchema = Schema.Tuple(
+    Schema.Enums(MultiplexedHeaderType),
     Schema.Uint8Array
 );
 
@@ -219,53 +216,65 @@ export const MultiplexedStreamSocketSchema: $MultiplexedStreamSocketSchema = Sch
  * @since 1.0.0
  * @category Conversions
  */
-export const asMultiplexedStreamChannel = <IE>(
-    input: MultiplexedStreamSocket
-): MultiplexedStreamChannel<IE, Socket.SocketError, never> =>
-    makeMultiplexedStreamChannel<IE, Socket.SocketError, never>(Socket.toChannel<IE>(input.underlying));
+export const asMultiplexedChannel = <IE = never, OE = Socket.SocketError, R = never>(
+    input: EitherMultiplexedInput<IE, OE, R>
+): MultiplexedChannel<IE, OE, R> =>
+    isMultiplexedSocket(input)
+        ? (makeMultiplexedChannel(Socket.toChannel<IE>(input.underlying)) as unknown as MultiplexedChannel<IE, OE, R>)
+        : (input as MultiplexedChannel<IE, OE, R>);
 
 /**
  * @since 1.0.0
  * @category Conversions
  */
-export const toStream = <IE, OE, R>(
-    input: MultiplexedStreamChannel<IE, OE, R>
+export const multiplexedToStream = <IE = never, OE = Socket.SocketError, R = never>(
+    input: EitherMultiplexedInput<IE, OE, R>
 ): Stream.Stream<Uint8Array, IE | OE, R> =>
     Channel.toStream(
-        input.underlying as Channel.Channel<Chunk.Chunk<Uint8Array>, unknown, IE | OE, unknown, void, unknown, R>
+        asMultiplexedChannel(input).underlying as Channel.Channel<
+            Chunk.Chunk<Uint8Array>,
+            unknown,
+            IE | OE,
+            unknown,
+            void,
+            unknown,
+            R
+        >
     );
 
 /**
  * @since 1.0.0
  * @category Conversions
  */
-export const toSink = <IE, OE, R>(
-    input: MultiplexedStreamChannel<IE, OE, R>
-): Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R> => Channel.toSink(input.underlying);
+export const multiplexedToSink = <IE = never, OE = Socket.SocketError, R = never>(
+    input: EitherMultiplexedInput<IE, OE, R>
+): Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R> =>
+    Channel.toSink(asMultiplexedChannel(input).underlying);
 
 /**
  * @since 1.0.0
  * @category Conversions
  */
-export const fromStreamWith =
+export const multiplexedFromStreamWith =
     <IE>() =>
-    <E, R>(input: Stream.Stream<Uint8Array, IE | E, R>): MultiplexedStreamChannel<IE, E, R> =>
-        makeMultiplexedStreamChannel<IE, E, R>(Stream.toChannel(input));
+    <E, R>(input: Stream.Stream<Uint8Array, IE | E, R>): MultiplexedChannel<IE, E, R> =>
+        makeMultiplexedChannel<IE, E, R>(Stream.toChannel(input));
 
 /**
  * @since 1.0.0
  * @category Conversions
  */
-export const fromStream = <E, R>(input: Stream.Stream<Uint8Array, E, R>): MultiplexedStreamChannel<unknown, E, R> =>
-    fromStreamWith<unknown>()(input);
+export const multiplexedFromStream = <E, R>(
+    input: Stream.Stream<Uint8Array, E, R>
+): MultiplexedChannel<unknown, E, R> => multiplexedFromStreamWith<unknown>()(input);
 
 /**
  * @since 1.0.0
  * @category Conversions
  */
-export const fromSink = <E, R>(
+export const multiplexedFromSink = <E, R>(
     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-): MultiplexedStreamChannel<never, E, R> => makeMultiplexedStreamChannel<never, E, R>(Sink.toChannel(input));
+): MultiplexedChannel<never, E, R> => makeMultiplexedChannel<never, E, R>(Sink.toChannel(input));
 
 /**
  * Accumulates the header and its message bytes into a single value.
@@ -273,13 +282,7 @@ export const fromSink = <E, R>(
  * @since 1.0.0
  * @category Demux
  */
-export const demuxMultiplexedSocketFolderSink: Sink.Sink<
-    MultiplexedStreamSocketAccumulator,
-    number,
-    number,
-    ParseResult.ParseError,
-    never
-> = Sink.fold(
+export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, number, number, never, never> = Sink.fold(
     {
         headerBytesRead: 0,
         messageBytesRead: 0,
@@ -327,14 +330,60 @@ export const demuxMultiplexedSocketFolderSink: Sink.Sink<
  */
 export const aggregate = <E, R>(
     multiplexedStream: Stream.Stream<Uint8Array, E, R>
-): Stream.Stream<readonly [MultiplexedStreamSocketHeaderType, Uint8Array], ParseResult.ParseError | E, R> =>
+): Stream.Stream<readonly [MultiplexedHeaderType, Uint8Array], ParseResult.ParseError | E, R> =>
     Function.pipe(
         multiplexedStream,
         Stream.mapConcat(Function.identity),
-        Stream.aggregateWithin(demuxMultiplexedSocketFolderSink, Schedule.fixed(Duration.infinity)),
+        Stream.aggregateWithin(demuxMultiplexedFolderSink, Schedule.fixed(Duration.infinity)),
         Stream.map(({ messageBuffer, messageType }) => Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))),
-        Stream.flatMap(Schema.decodeUnknown(MultiplexedStreamSocketSchema))
+        Stream.flatMap(Schema.decodeUnknown(MultiplexedSchema))
     );
+
+/**
+ * Demux a multiplexed socket, all output goes to a single sink.
+ *
+ * @since 1.0.0
+ * @category Demux
+ */
+export const demuxMultiplexedToSingleSink = Function.dual<
+    // One sink, data-last signature.
+    <A1, L1, E1, E2, R1, R2>(
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ) => <IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R3>
+    ) => Effect.Effect<
+        A1,
+        E1 | E2 | IE | OE | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+    >,
+    // One sink, data-first signature.
+    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R3>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ) => Effect.Effect<
+        A1,
+        E1 | E2 | IE | OE | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+    >
+>(
+    (arguments_) => isMultiplexedSocket(arguments_[0]) || isMultiplexedChannel(arguments_[0]),
+    (socket, source, sink, options) => {
+        const { underlying } = asMultiplexedChannel(socket);
+        const textDecoder = new TextDecoder(options?.encoding);
+        const toStrings = Tuple.mapSecond((bytes: Uint8Array) => textDecoder.decode(bytes, { stream: true }));
+        return Function.pipe(
+            source,
+            Stream.pipeThroughChannelOrFail(underlying),
+            aggregate,
+            Stream.map(toStrings),
+            Stream.run(sink)
+        );
+    }
+);
 
 /**
  * Demux a multiplexed socket. When given a multiplexed socket, we must parse
@@ -348,31 +397,20 @@ export const aggregate = <E, R>(
  * @since 1.0.0
  * @category Demux
  */
-export const demuxMultiplexedSocket: {
-    // One sink, data-first signature.
-    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: EitherMultiplexedInput<E1 | IE, OE, R3>,
+export const demuxMultiplexedToSeparateSinks = Function.dual<
+    // Two sinks, data-last signature.
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
-    ): Effect.Effect<
-        CompressedDemuxOutput<A1, never>,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >;
-    // One sink, data-last signature.
-    <A1, L1, E1, E2, R1, R2>(
-        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
-    ): <IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: EitherMultiplexedInput<E1 | IE, OE, R3>
+        sink1: Sink.Sink<A1, string, L1, E2, R2>,
+        sink2: Sink.Sink<A2, string, L2, E3, R3>,
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    ) => <IE = never, OE = Socket.SocketError, R4 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R4>
     ) => Effect.Effect<
-        CompressedDemuxOutput<A1, never>,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >;
-
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
+    >,
     // Two sinks, data-first signature.
     <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
         socket: EitherMultiplexedInput<E1 | IE, OE, R4>,
@@ -380,61 +418,21 @@ export const demuxMultiplexedSocket: {
         sink1: Sink.Sink<A1, string, L1, E2, R2>,
         sink2: Sink.Sink<A2, string, L2, E3, R3>,
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-    ): Effect.Effect<
-        CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
-    >;
-    // Two sinks, data-last signature.
-    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
-        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink1: Sink.Sink<A1, string, L1, E2, R2>,
-        sink2: Sink.Sink<A2, string, L2, E3, R3>,
-        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-    ): <IE = never, OE = Socket.SocketError, R4 = never>(
-        socket: EitherMultiplexedInput<E1 | IE, OE, R4>
     ) => Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
-    >;
-} = Function.dual(
-    (arguments_) => isMultiplexedStreamSocket(arguments_[0]) || isMultiplexedStreamChannel(arguments_[0]),
-    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
-        socket: EitherMultiplexedInput<E1 | IE, OE, R4>,
-        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink1: Sink.Sink<A1, string, L1, E2, R2>,
-        sink2OrOptions?: Sink.Sink<A2, string, L2, E3, R3> | { encoding: string | undefined } | undefined,
-        options?: { bufferSize?: number | undefined; encoding: string | undefined } | undefined
-    ): Effect.Effect<
-        A1 | CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
-    > => {
-        const partitionOptions = { bufferSize: options?.bufferSize } as const;
-        const willPartition = Predicate.hasProperty(sink2OrOptions, Sink.SinkTypeId);
-
-        const { underlying } = isMultiplexedStreamChannel<E1 | IE, OE, R4>(socket)
-            ? (socket as MultiplexedStreamChannel<E1 | IE, OE, R4>)
-            : (asMultiplexedStreamChannel<E1 | IE>(socket) as unknown as MultiplexedStreamChannel<E1 | IE, OE, R4>);
-
-        const untilPartition = source.pipe(Stream.pipeThroughChannelOrFail(underlying), aggregate);
-
-        if (!willPartition) {
-            return Function.pipe(
-                untilPartition,
-                Stream.map(Tuple.getSecond),
-                Stream.decodeText(sink2OrOptions?.encoding),
-                Stream.run(sink1)
-            );
-        }
-
-        return Function.pipe(
-            untilPartition,
-            Stream.partition(
-                ([messageType]) => messageType === MultiplexedStreamSocketHeaderType.Stderr,
-                partitionOptions
-            ),
+    >
+>(
+    (arguments_) => isMultiplexedSocket(arguments_[0]) || isMultiplexedChannel(arguments_[0]),
+    (socket, source, sink1, sink2, options) =>
+        Function.pipe(
+            source,
+            Stream.pipeThroughChannelOrFail(asMultiplexedChannel(socket).underlying),
+            aggregate,
+            Stream.partition(([messageType]) => messageType === MultiplexedHeaderType.Stderr, {
+                bufferSize: options?.bufferSize,
+            }),
             Effect.map(
                 Tuple.mapBoth({
                     onFirst: Function.flow(
@@ -445,7 +443,7 @@ export const demuxMultiplexedSocket: {
                     onSecond: Function.flow(
                         Stream.map(Tuple.getSecond),
                         Stream.decodeText(options?.encoding),
-                        Stream.run(sink2OrOptions)
+                        Stream.run(sink2)
                     ),
                 })
             ),
@@ -453,6 +451,5 @@ export const demuxMultiplexedSocket: {
             Effect.flatten,
             Effect.map(compressDemuxOutput),
             Effect.scoped
-        );
-    }
+        )
 );

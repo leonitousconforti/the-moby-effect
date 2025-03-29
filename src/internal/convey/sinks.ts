@@ -28,6 +28,8 @@ export const waitForProgressToComplete = <E1, R1>(
 /**
  * Consumes the progress stream and logs it to the console.
  *
+ * TODO: make this output prettier
+ *
  * @since 1.0.0
  * @category Conveyance Sinks
  */

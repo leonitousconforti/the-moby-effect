@@ -7,13 +7,11 @@
 import type * as ssh2 from "ssh2";
 
 import * as Path from "@effect/platform/Path";
-import * as Config from "effect/Config";
 import * as ConfigError from "effect/ConfigError";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Match from "effect/Match";
-import * as Redacted from "effect/Redacted";
+
+import * as internal from "./internal/platforms/connection.js";
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a
@@ -110,7 +108,7 @@ export type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOpt
  * @since 1.0.0
  * @category Connection Types
  */
-export const MobyConnectionOptions = Data.taggedEnum<MobyConnectionOptions>();
+export const MobyConnectionOptions = internal.MobyConnectionOptions;
 
 /**
  * @since 1.0.0
@@ -121,7 +119,7 @@ export const MobyConnectionOptions = Data.taggedEnum<MobyConnectionOptions>();
  *         socketPath: "/var/run/docker.sock",
  *     });
  */
-export const SocketConnectionOptions = MobyConnectionOptions.socket;
+export const SocketConnectionOptions = internal.SocketConnectionOptions;
 
 /**
  * Connects to a remote machine over ssh. This specific ssh implementation uses
@@ -142,7 +140,7 @@ export const SocketConnectionOptions = MobyConnectionOptions.socket;
  *         remoteSocketPath: "/var/run/docker.sock",
  *     });
  */
-export const SshConnectionOptions = MobyConnectionOptions.ssh;
+export const SshConnectionOptions = internal.SshConnectionOptions;
 
 /**
  * @since 1.0.0
@@ -155,7 +153,7 @@ export const SshConnectionOptions = MobyConnectionOptions.ssh;
  *         path: "/proxy-path",
  *     });
  */
-export const HttpConnectionOptions = MobyConnectionOptions.http;
+export const HttpConnectionOptions = internal.HttpConnectionOptions;
 
 /**
  * @since 1.0.0
@@ -172,7 +170,7 @@ export const HttpConnectionOptions = MobyConnectionOptions.http;
  *         // cert: fs.readFileSync("cert.pem"),
  *     });
  */
-export const HttpsConnectionOptions = MobyConnectionOptions.https;
+export const HttpsConnectionOptions = internal.HttpsConnectionOptions;
 
 /**
  * From
@@ -202,61 +200,9 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
  * @since 1.0.0
  * @category Constructors
  */
-export const connectionOptionsFromUrl = (
+export const connectionOptionsFromUrl: (
     dockerHost: string
-): Effect.Effect<MobyConnectionOptions, ConfigError.ConfigError, never> => {
-    const url: URL = new URL(dockerHost);
-
-    if (url.protocol === "unix:") {
-        return Effect.succeed(SocketConnectionOptions({ socketPath: url.pathname }));
-    }
-
-    if (url.protocol === "ssh:") {
-        return Effect.succeed(
-            SshConnectionOptions({
-                host: url.hostname,
-                username: url.username,
-                password: url.password,
-                remoteSocketPath: url.pathname,
-                port: url.port ? Number.parseInt(url.port) : 22,
-            })
-        );
-    }
-
-    if (url.protocol === "http:") {
-        return Effect.succeed(
-            HttpConnectionOptions({
-                host: url.hostname ?? "127.0.0.1",
-                port: url.port ? Number.parseInt(url.port) : 2375,
-                path: url.pathname,
-            })
-        );
-    }
-
-    if (url.protocol === "https:") {
-        return Effect.succeed(
-            HttpConnectionOptions({
-                host: url.hostname ?? "127.0.0.1",
-                port: url.port ? Number.parseInt(url.port) : 2376,
-                path: url.pathname,
-            })
-        );
-    }
-
-    if (url.protocol === "tcp:") {
-        const path: string = url.pathname;
-        const host: string = url.hostname ?? "127.0.0.0.1";
-        const port: number = url.port ? Number.parseInt(url.port) : 2375;
-        if (port === 2376) {
-            return Effect.succeed(HttpsConnectionOptions({ host, port, path }));
-        } else {
-            return Effect.succeed(HttpConnectionOptions({ host, port, path }));
-        }
-    }
-
-    // Any other protocols are not supported
-    return Effect.fail(ConfigError.InvalidData([""], `Unsupported protocol ${url.protocol}`));
-};
+) => Effect.Effect<MobyConnectionOptions, ConfigError.ConfigError, never> = internal.connectionOptionsFromUrl;
 
 /**
  * Creates a MobyApi layer from the DOCKER_HOST environment variable as a url.
@@ -268,10 +214,7 @@ export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
     MobyConnectionOptions,
     ConfigError.ConfigError,
     never
-> = Config.redacted("DOCKER_HOST")
-    .pipe(Config.withDefault(Redacted.make("unix:///var/run/docker.sock")))
-    .pipe(Config.map(Redacted.value))
-    .pipe(Effect.flatMap(connectionOptionsFromUrl));
+> = internal.connectionOptionsFromDockerHostEnvironmentVariable;
 
 /**
  * Creates a MobyApi layer from the platform default system socket location.
@@ -283,13 +226,7 @@ export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
     MobyConnectionOptions,
     ConfigError.ConfigError,
     never
-> = Function.pipe(
-    Match.value(process.platform),
-    Match.when("linux", () => Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }))),
-    Match.when("darwin", () => Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }))),
-    Match.when("win32", () => Effect.succeed(SocketConnectionOptions({ socketPath: "//./pipe/docker_engine" }))),
-    Match.orElse(() => Effect.fail(ConfigError.InvalidData([""], `Unsupported platform ${process.platform}`)))
-);
+> = internal.connectionOptionsFromPlatformSystemSocketDefault;
 
 /**
  * Creates a MobyApi layer from the platform default system socket location.
@@ -298,17 +235,4 @@ export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
  * @category Constructors
  */
 export const connectionOptionsFromUserSocketDefault: Effect.Effect<MobyConnectionOptions, never, Path.Path> =
-    Function.pipe(
-        Effect.all(
-            {
-                pathLazy: Path.Path,
-                osLazy: Effect.promise(() => import("node:os")),
-            },
-            { concurrency: 2 }
-        ),
-        Effect.map(({ osLazy, pathLazy }) =>
-            SocketConnectionOptions({
-                socketPath: pathLazy.join(osLazy.homedir(), ".docker", "run", "docker.sock"),
-            })
-        )
-    );
+    internal.connectionOptionsFromUserSocketDefault;

@@ -27,6 +27,7 @@ import * as Tar from "eftar/Tar";
 import * as Untar from "eftar/Untar";
 import * as DockerEngine from "./docker.js";
 
+import type { MobyConnectionOptions } from "../../MobyConnection.js";
 import { RecommendedDindBaseImages } from "../blobs/constants.js";
 import { content as HttpBlob } from "../blobs/http.js";
 import { content as HttpsBlob } from "../blobs/https.js";
@@ -40,7 +41,6 @@ import { Volumes, VolumesError } from "../endpoints/volumes.js";
 import {
     HttpConnectionOptions,
     HttpsConnectionOptions,
-    MobyConnectionOptions,
     SocketConnectionOptions,
     SshConnectionOptions,
 } from "../platforms/connection.js";

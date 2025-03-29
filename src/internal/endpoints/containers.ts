@@ -21,8 +21,8 @@ import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.js";
-import { MultiplexedStreamSocket } from "../demux/multiplexed.js";
-import { makeRawStreamSocket, RawStreamSocket } from "../demux/raw.js";
+import { MultiplexedSocket } from "../demux/multiplexed.js";
+import { makeRawSocket, RawSocket } from "../demux/raw.js";
 import {
     ContainerChange,
     ContainerConfig,
@@ -436,7 +436,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                       readonly stderr?: boolean | undefined;
                   }
                 | undefined
-        ): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, ContainersError, never> =>
+        ): Effect.Effect<RawSocket | MultiplexedSocket, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/attach`),
                 HttpClientRequest.setHeader("Upgrade", "tcp"),
@@ -465,7 +465,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                       readonly stderr?: boolean | undefined;
                   }
                 | undefined
-        ): Effect.Effect<RawStreamSocket, ContainersError, never> =>
+        ): Effect.Effect<RawSocket, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/attach/ws`),
                 maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
@@ -475,7 +475,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
                 websocketRequest,
-                Effect.map(makeRawStreamSocket),
+                Effect.map(makeRawSocket),
                 Effect.provideService(HttpClient.HttpClient, contextClient),
                 Effect.provideService(Socket.WebSocketConstructor, websocketConstructor),
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))

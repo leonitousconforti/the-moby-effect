@@ -15,8 +15,9 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
+import type { MobyConnectionOptions, SshConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticLayer } from "./agnostic.js";
-import { MobyConnectionOptions, SshConnectionOptions } from "./connection.js";
+import * as internalConnection from "./connection.js";
 
 /**
  * An undici connector that connects to remote moby instances over ssh.
@@ -90,7 +91,7 @@ export const getUndiciDispatcher = (
     Effect.flatMap(
         Effect.promise(() => import("undici")),
         (undiciLazy) => {
-            const AcquireUndiciDispatcher = MobyConnectionOptions.$match({
+            const AcquireUndiciDispatcher = internalConnection.MobyConnectionOptions.$match({
                 socket: (options) =>
                     Effect.succeed(
                         new undiciLazy.Agent({

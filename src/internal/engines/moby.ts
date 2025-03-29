@@ -12,7 +12,7 @@ import type {
     HttpConnectionOptionsTagged,
     HttpsConnectionOptionsTagged,
     MobyConnectionOptions,
-} from "../platforms/connection.js";
+} from "../../MobyConnection.js";
 
 import { Configs, ConfigsLayer } from "../endpoints/configs.js";
 import { Containers, ContainersLayer } from "../endpoints/containers.js";

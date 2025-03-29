@@ -13,7 +13,7 @@ import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { type Demux, demuxUnknownToSeparateSinks } from "./demux.js";
+import { demuxMultiplexedToSeparateSinks, EitherMultiplexedInput } from "./multiplexed.js";
 
 /**
  * @since 1.0.0
@@ -49,24 +49,11 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * @since 1.0.0
  * @category DemuxStdio
  */
-export const demuxSocketFromStdinToStdoutAndStderr = <
-    IE1 = never,
-    IE2 = never,
-    IE3 = never,
-    OE1 = Socket.SocketError,
-    OE2 = Socket.SocketError,
-    OE3 = Socket.SocketError,
-    R1 = never,
-    R2 = never,
-    R3 = never,
->(
-    sockets: Demux.AnyStdioInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
+export const demuxFromStdinToStdoutAndStderr = <E, IE = never, OE = Socket.SocketError, R = never>(
+    sockets: EitherMultiplexedInput<E | IE, OE, R>,
+    onStdinError: (error: StdinError) => E,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-): Effect.Effect<
-    void,
-    IE1 | IE2 | IE3 | OE1 | OE2 | OE3 | StdinError | StdoutError | StderrError | ParseResult.ParseError,
-    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-> =>
+): Effect.Effect<void, E | IE | OE | StdoutError | StderrError | ParseResult.ParseError, Exclude<R, Scope.Scope>> =>
     Effect.flatMap(
         Effect.all(
             {
@@ -78,20 +65,26 @@ export const demuxSocketFromStdinToStdoutAndStderr = <
         ({ NodeSinkLazy, NodeStreamLazy }) => {
             const stdin: Stream.Stream<Uint8Array, StdinError, never> = NodeStreamLazy.fromReadable(
                 () => process.stdin,
-                (error: unknown) => new StdinError({ cause: error, message: `stdin is not readable: ${error}` })
+                (cause: unknown) => new StdinError({ cause, message: "stdin is not readable" })
             );
             const stdout: Sink.Sink<void, string | Uint8Array, never, StdoutError, never> = NodeSinkLazy.fromWritable(
                 () => process.stdout,
-                (error: unknown) => new StdoutError({ cause: error, message: `stdout is not writable: ${error}` }),
+                (cause: unknown) => new StdoutError({ cause, message: "stdout is not writable" }),
                 { endOnDone: false }
             );
             const stderr: Sink.Sink<void, string | Uint8Array, never, StderrError, never> = NodeSinkLazy.fromWritable(
                 () => process.stderr,
-                (error: unknown) => new StderrError({ cause: error, message: `stderr is not writable: ${error}` }),
+                (cause: unknown) => new StderrError({ cause, message: "stderr is not writable" }),
                 { endOnDone: false }
             );
 
-            return demuxUnknownToSeparateSinks(sockets, stdin, stdout, stderr, options);
+            return demuxMultiplexedToSeparateSinks(
+                sockets,
+                Stream.mapError(stdin, onStdinError),
+                stdout,
+                stderr,
+                options
+            );
         }
     );
 
@@ -109,27 +102,12 @@ export const demuxSocketFromStdinToStdoutAndStderr = <
  * @since 1.0.0
  * @category DemuxStdio
  */
-export const demuxSocketWithInputToConsole = <
-    E1,
-    R1,
-    IE2 = never,
-    IE3 = never,
-    OE1 = Socket.SocketError,
-    OE2 = Socket.SocketError,
-    OE3 = Socket.SocketError,
-    R2 = never,
-    R3 = never,
-    R4 = never,
->(
-    sockets: Demux.AnyStdioInput<E1, IE2, IE3, OE1, OE2, OE3, R2, R3, R4>,
-    input: Stream.Stream<string | Uint8Array, E1, R1>,
+export const demuxWithInputToConsole = <E, R1, IE = never, OE = Socket.SocketError, R2 = never>(
+    sockets: EitherMultiplexedInput<E | IE, OE, R2>,
+    input: Stream.Stream<string | Uint8Array, E, R1>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-): Effect.Effect<
-    void,
-    E1 | IE2 | IE3 | OE1 | OE2 | OE3 | ParseResult.ParseError,
-    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
-> =>
-    demuxUnknownToSeparateSinks(
+): Effect.Effect<void, E | IE | OE | ParseResult.ParseError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
+    demuxMultiplexedToSeparateSinks(
         sockets,
         input,
         Sink.forEach<string, void, never, never>(Console.log),

@@ -9,8 +9,8 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 
+import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../../MobyConnection.js";
 import { makeAgnosticLayer } from "./agnostic.js";
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "./connection.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

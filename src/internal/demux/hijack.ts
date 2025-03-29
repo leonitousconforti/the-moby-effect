@@ -10,12 +10,8 @@ import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 
 import { IExposeSocketOnEffectClientResponseHack } from "../platforms/node.js";
-import {
-    makeMultiplexedStreamSocket,
-    MultiplexedStreamSocket,
-    responseIsMultiplexedStreamSocketResponse,
-} from "./multiplexed.js";
-import { makeRawStreamSocket, RawStreamSocket, responseIsRawStreamSocketResponse } from "./raw.js";
+import { makeMultiplexedSocket, MultiplexedSocket, responseIsMultiplexedResponse } from "./multiplexed.js";
+import { makeRawSocket, RawSocket, responseIsRawResponse } from "./raw.js";
 
 /**
  * Hijacks an http response into a socket.
@@ -51,8 +47,8 @@ export const hijackResponseUnsafe = (
  */
 export const responseToMultiplexedStreamSocketOrFailUnsafe = (
     response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<MultiplexedStreamSocket, Socket.SocketError, never> => {
-    if (!responseIsMultiplexedStreamSocketResponse(response)) {
+): Effect.Effect<MultiplexedSocket, Socket.SocketError, never> => {
+    if (!responseIsMultiplexedResponse(response)) {
         return Effect.fail(
             new Socket.SocketGenericError({
                 reason: "Read",
@@ -61,7 +57,7 @@ export const responseToMultiplexedStreamSocketOrFailUnsafe = (
         );
     }
 
-    return Effect.map(hijackResponseUnsafe(response), makeMultiplexedStreamSocket);
+    return Effect.map(hijackResponseUnsafe(response), makeMultiplexedSocket);
 };
 
 /**
@@ -77,8 +73,8 @@ export const responseToMultiplexedStreamSocketOrFailUnsafe = (
  */
 export const responseToRawStreamSocketOrFailUnsafe = (
     response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<RawStreamSocket, Socket.SocketError, never> => {
-    if (!responseIsRawStreamSocketResponse(response)) {
+): Effect.Effect<RawSocket, Socket.SocketError, never> => {
+    if (!responseIsRawResponse(response)) {
         return Effect.fail(
             new Socket.SocketGenericError({
                 reason: "Read",
@@ -87,7 +83,7 @@ export const responseToRawStreamSocketOrFailUnsafe = (
         );
     }
 
-    return Effect.map(hijackResponseUnsafe(response), makeRawStreamSocket);
+    return Effect.map(hijackResponseUnsafe(response), makeRawSocket);
 };
 
 /**
@@ -104,12 +100,12 @@ export const responseToRawStreamSocketOrFailUnsafe = (
  */
 export const responseToStreamingSocketOrFailUnsafe = (
     response: HttpClientResponse.HttpClientResponse
-): Effect.Effect<RawStreamSocket | MultiplexedStreamSocket, Socket.SocketError, never> => {
-    if (responseIsMultiplexedStreamSocketResponse(response)) {
+): Effect.Effect<RawSocket | MultiplexedSocket, Socket.SocketError, never> => {
+    if (responseIsMultiplexedResponse(response)) {
         return responseToMultiplexedStreamSocketOrFailUnsafe(response);
     }
 
-    if (responseIsRawStreamSocketResponse(response)) {
+    if (responseIsRawResponse(response)) {
         return responseToRawStreamSocketOrFailUnsafe(response);
     }
 

@@ -4,8 +4,6 @@
  * @since 1.0.0
  */
 
-import type * as ssh2 from "ssh2";
-
 import * as Path from "@effect/platform/Path";
 import * as Config from "effect/Config";
 import * as ConfigError from "effect/ConfigError";
@@ -15,89 +13,7 @@ import * as Function from "effect/Function";
 import * as Match from "effect/Match";
 import * as Redacted from "effect/Redacted";
 
-/**
- * Connection options for how to connect to your moby/docker instance. Can be a
- * unix socket on the current machine. Can be an ssh connection to a remote
- * machine with a remote user, remote machine, remote port, and remote socket
- * path. Can be an http connection to a remote machine with a host, port, and
- * path. Or it can be an https connection to a remote machine with a host, port,
- * path, cert, ca, key, and passphrase.
- *
- * @since 1.0.0
- * @category Connection Types
- */
-export type MobyConnectionOptions = Data.TaggedEnum<{
-    socket: { readonly socketPath: string; readonly version?: string | undefined };
-    ssh: {
-        readonly host: string;
-        readonly remoteSocketPath: string;
-        readonly version?: string | undefined;
-    } & Exclude<ssh2.ConnectConfig, "host">;
-    http: {
-        readonly host: string;
-        readonly port: number;
-        readonly path?: string | undefined;
-        readonly version?: string | undefined;
-    };
-    https: {
-        readonly host: string;
-        readonly port: number;
-        readonly version?: string | undefined;
-        readonly path?: string | undefined;
-        readonly cert?: string | undefined;
-        readonly ca?: string | undefined;
-        readonly key?: string | undefined;
-        readonly passphrase?: string | undefined;
-    };
-}>;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type SocketConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "socket">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type SocketConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "socket">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type HttpConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "http">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type HttpConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "http">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type HttpsConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "https">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type HttpsConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "https">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type SshConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "ssh">;
-
-/**
- * @since 1.0.0
- * @category Connection Types
- */
-export type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "ssh">;
+import type * as MobyConnection from "../../MobyConnection.js";
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a
@@ -110,7 +26,7 @@ export type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOpt
  * @since 1.0.0
  * @category Connection Types
  */
-export const MobyConnectionOptions = Data.taggedEnum<MobyConnectionOptions>();
+export const MobyConnectionOptions = Data.taggedEnum<MobyConnection.MobyConnectionOptions>();
 
 /**
  * @since 1.0.0
@@ -204,7 +120,7 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
  */
 export const connectionOptionsFromUrl = (
     dockerHost: string
-): Effect.Effect<MobyConnectionOptions, ConfigError.ConfigError, never> => {
+): Effect.Effect<MobyConnection.MobyConnectionOptions, ConfigError.ConfigError, never> => {
     const url: URL = new URL(dockerHost);
 
     if (url.protocol === "unix:") {
@@ -265,7 +181,7 @@ export const connectionOptionsFromUrl = (
  * @category Constructors
  */
 export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
-    MobyConnectionOptions,
+    MobyConnection.MobyConnectionOptions,
     ConfigError.ConfigError,
     never
 > = Config.redacted("DOCKER_HOST")
@@ -280,7 +196,7 @@ export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
  * @category Constructors
  */
 export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
-    MobyConnectionOptions,
+    MobyConnection.MobyConnectionOptions,
     ConfigError.ConfigError,
     never
 > = Function.pipe(
@@ -297,18 +213,21 @@ export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
  * @since 1.0.0
  * @category Constructors
  */
-export const connectionOptionsFromUserSocketDefault: Effect.Effect<MobyConnectionOptions, never, Path.Path> =
-    Function.pipe(
-        Effect.all(
-            {
-                pathLazy: Path.Path,
-                osLazy: Effect.promise(() => import("node:os")),
-            },
-            { concurrency: 2 }
-        ),
-        Effect.map(({ osLazy, pathLazy }) =>
-            SocketConnectionOptions({
-                socketPath: pathLazy.join(osLazy.homedir(), ".docker", "run", "docker.sock"),
-            })
-        )
-    );
+export const connectionOptionsFromUserSocketDefault: Effect.Effect<
+    MobyConnection.MobyConnectionOptions,
+    never,
+    Path.Path
+> = Function.pipe(
+    Effect.all(
+        {
+            pathLazy: Path.Path,
+            osLazy: Effect.promise(() => import("node:os")),
+        },
+        { concurrency: 2 }
+    ),
+    Effect.map(({ osLazy, pathLazy }) =>
+        SocketConnectionOptions({
+            socketPath: pathLazy.join(osLazy.homedir(), ".docker", "run", "docker.sock"),
+        })
+    )
+);

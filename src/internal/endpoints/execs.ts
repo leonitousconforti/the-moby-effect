@@ -20,8 +20,8 @@ import * as Schema from "effect/Schema";
 import * as Tuple from "effect/Tuple";
 
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.js";
-import { MultiplexedStreamSocket } from "../demux/multiplexed.js";
-import { RawStreamSocket } from "../demux/raw.js";
+import { MultiplexedSocket } from "../demux/multiplexed.js";
+import { RawSocket } from "../demux/raw.js";
 import {
     ContainerExecOptions as ContainerExecStartConfig,
     ContainerExecOptions as ExecConfig,
@@ -116,12 +116,8 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
         const start_ = <T extends boolean | undefined = undefined>(
             id: string,
             execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & { Detach?: T }
-        ): Effect.Effect<T extends true ? void : MultiplexedStreamSocket | RawStreamSocket, ExecsError, never> => {
-            type U = Effect.Effect<
-                T extends true ? void : MultiplexedStreamSocket | RawStreamSocket,
-                ExecsError,
-                never
-            >;
+        ): Effect.Effect<T extends true ? void : MultiplexedSocket | RawSocket, ExecsError, never> => {
+            type U = Effect.Effect<T extends true ? void : MultiplexedSocket | RawSocket, ExecsError, never>;
 
             const response = Function.pipe(
                 Schema.decode(ContainerExecStartConfig)(execStartConfig),

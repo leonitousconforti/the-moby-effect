@@ -16,30 +16,34 @@ import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Types from "effect/Types";
 
-import { MobyConnectionOptions } from "./connection.js";
+import type { MobyConnectionOptions } from "../../MobyConnection.js";
+import * as internalConnection from "./connection.js";
 
 /** @internal */
 const makeVersionPath = (connectionOptions: MobyConnectionOptions): string =>
     Predicate.isNotUndefined(connectionOptions.version) ? `/v${connectionOptions.version}` : "";
 
 /** @internal */
-const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
-    ssh: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
-    socket: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
-    http: (options) =>
-        `http://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
-    https: (options) =>
-        `https://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
-});
+const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string =
+    internalConnection.MobyConnectionOptions.$match({
+        ssh: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
+        socket: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
+        http: (options) =>
+            `http://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+        https: (options) =>
+            `https://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+    });
 
 /** @internal */
-const makeWebsocketRequestUrl: (connectionOptions: MobyConnectionOptions) => string = MobyConnectionOptions.$match({
-    ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}` as const,
-    socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:` as const,
-    http: (options) => `ws://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
-    https: (options) =>
-        `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
-});
+const makeWebsocketRequestUrl: (connectionOptions: MobyConnectionOptions) => string =
+    internalConnection.MobyConnectionOptions.$match({
+        ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}` as const,
+        socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:` as const,
+        http: (options) =>
+            `ws://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+        https: (options) =>
+            `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+    });
 
 /** @internal */
 const HttpClientMobyConnectionOptions: unique symbol = Symbol.for(
@@ -116,7 +120,7 @@ export const makeAgnosticWebsocketLayer = (
         Socket.WebSocketConstructor,
         Effect.gen(function* () {
             // Only the ws package supports unix socket connection options
-            if (MobyConnectionOptions.$is("socket")(connectionOptions)) {
+            if (internalConnection.MobyConnectionOptions.$is("socket")(connectionOptions)) {
                 const ws = yield* Effect.promise(() => import("ws"));
                 return (url, protocols) => new ws.WebSocket(url, protocols) as unknown as globalThis.WebSocket;
             }

@@ -23,7 +23,7 @@ import * as MobySchemas from "./MobySchemas.js";
 export const promiseClient = async <E>(
     layer: Layer.Layer<
         Layer.Layer.Success<DockerEngine.DockerLayer>,
-        E | Layer.Layer.Error<DockerEngine.DockerLayer>,
+        Layer.Layer.Error<DockerEngine.DockerLayer> | E,
         Layer.Layer.Context<DockerEngine.DockerLayer>
     >
 ) => {

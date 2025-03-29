@@ -8,7 +8,7 @@ import * as HttpClient from "@effect/platform/HttpClient";
 import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
 
-import { MobyConnectionOptions } from "./connection.js";
+import type { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeNodeHttpClientLayer } from "./node.js";
 
 /**

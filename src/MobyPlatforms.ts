@@ -4,6 +4,16 @@
  * @since 1.0.0
  */
 
+import * as HttpClient from "@effect/platform/HttpClient";
+import * as Socket from "@effect/platform/Socket";
+import * as Layer from "effect/Layer";
+
+import type {
+    HttpConnectionOptionsTagged,
+    HttpsConnectionOptionsTagged,
+    MobyConnectionOptions,
+} from "./MobyConnection.js";
+
 import * as agnosticInternal from "./internal/platforms/agnostic.js";
 import * as bunInternal from "./internal/platforms/bun.js";
 import * as denoInternal from "./internal/platforms/deno.js";
@@ -18,7 +28,9 @@ import * as webInternal from "./internal/platforms/web.js";
  * @since 1.0.0
  * @category Connection
  */
-export const makeAgnosticHttpClientLayer = agnosticInternal.makeAgnosticHttpClientLayer;
+export const makeAgnosticHttpClientLayer: (
+    connectionOptions: MobyConnectionOptions
+) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> = agnosticInternal.makeAgnosticHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -28,7 +40,10 @@ export const makeAgnosticHttpClientLayer = agnosticInternal.makeAgnosticHttpClie
  * @since 1.0.0
  * @category Connection
  */
-export const makeBunHttpClientLayer = bunInternal.makeBunHttpClientLayer;
+export const makeBunHttpClientLayer: (
+    connectionOptions: MobyConnectionOptions
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
+    bunInternal.makeBunHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -38,7 +53,10 @@ export const makeBunHttpClientLayer = bunInternal.makeBunHttpClientLayer;
  * @since 1.0.0
  * @category Connection
  */
-export const makeDenoHttpClientLayer = denoInternal.makeDenoHttpClientLayer;
+export const makeDenoHttpClientLayer: (
+    connectionOptions: MobyConnectionOptions
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
+    denoInternal.makeDenoHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -47,7 +65,10 @@ export const makeDenoHttpClientLayer = denoInternal.makeDenoHttpClientLayer;
  * @since 1.0.0
  * @category Connection
  */
-export const makeNodeHttpClientLayer = nodeInternal.makeNodeHttpClientLayer;
+export const makeNodeHttpClientLayer: (
+    connectionOptions: MobyConnectionOptions
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
+    nodeInternal.makeNodeHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -56,7 +77,10 @@ export const makeNodeHttpClientLayer = nodeInternal.makeNodeHttpClientLayer;
  * @since 1.0.0
  * @category Connection
  */
-export const makeUndiciHttpClientLayer = undiciInternal.makeUndiciHttpClientLayer;
+export const makeUndiciHttpClientLayer: (
+    connectionOptions: MobyConnectionOptions
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
+    undiciInternal.makeUndiciHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -65,4 +89,7 @@ export const makeUndiciHttpClientLayer = undiciInternal.makeUndiciHttpClientLaye
  * @since 1.0.0
  * @category Connection
  */
-export const makeWebHttpClientLayer = webInternal.makeWebHttpClientLayer;
+export const makeWebHttpClientLayer: (
+    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
+    webInternal.makeWebHttpClientLayer;

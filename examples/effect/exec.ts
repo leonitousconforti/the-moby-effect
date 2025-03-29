@@ -4,7 +4,7 @@ import { NodeRuntime } from "@effect/platform-node";
 import { Effect, Function, Layer, Sink, Stream } from "effect";
 import * as assert from "node:assert";
 import { DockerEngine, MobyConnection, MobyConvey, MobyDemux } from "the-moby-effect";
-import { demuxMultiplexedSocket, isMultiplexedStreamSocket } from "the-moby-effect/internal/demux/multiplexed";
+import { demuxMultiplexedToSeparateSinks, isMultiplexedSocket } from "the-moby-effect/MobyDemux";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -39,7 +39,7 @@ const program = Effect.gen(function* () {
         command: ["cat"],
     });
 
-    assert.ok(isMultiplexedStreamSocket(multiplexed));
+    assert.ok(isMultiplexedSocket(multiplexed));
 
     const fanned = yield* MobyDemux.fan(multiplexed);
 
@@ -51,7 +51,7 @@ const program = Effect.gen(function* () {
 
     const packed = yield* MobyDemux.pack(fanned);
 
-    const [data1, data2] = yield* demuxMultiplexedSocket(
+    const [data1, data2] = yield* demuxMultiplexedToSeparateSinks(
         packed,
         // Stream.make("ah\n").pipe(Stream.concat(Stream.make(new Socket.CloseEvent()))),
         Stream.empty,

@@ -26,17 +26,17 @@ import type {
     HttpConnectionOptionsTagged,
     HttpsConnectionOptionsTagged,
     MobyConnectionOptions,
-} from "../platforms/connection.js";
+} from "../../MobyConnection.js";
 
-import { demuxUnknownToSingleSink } from "../demux/demux.js";
+import { demuxToSingleSink } from "../demux/demux.js";
 import {
-    demuxMultiplexedSocket,
-    makeMultiplexedStreamChannel,
-    MultiplexedStreamChannel,
-    MultiplexedStreamSocket,
+    demuxMultiplexedToSeparateSinks,
+    makeMultiplexedChannel,
+    MultiplexedChannel,
+    MultiplexedSocket,
 } from "../demux/multiplexed.js";
 import { pack } from "../demux/pack.js";
-import { demuxRawSocket, RawStreamSocket } from "../demux/raw.js";
+import { demuxRawToSingleSink, RawSocket } from "../demux/raw.js";
 import { Containers, ContainersError } from "../endpoints/containers.js";
 import { Execs, ExecsError } from "../endpoints/execs.js";
 import { Images, ImagesError } from "../endpoints/images.js";
@@ -346,11 +346,7 @@ export const execNonBlocking = <T extends boolean | undefined = undefined>({
     detach?: T;
     containerId: string;
     command: string | Array<string>;
-}): Effect.Effect<
-    [socket: T extends true ? void : RawStreamSocket | MultiplexedStreamSocket, execId: string],
-    ExecsError,
-    Execs
-> =>
+}): Effect.Effect<[socket: T extends true ? void : RawSocket | MultiplexedSocket, execId: string], ExecsError, Execs> =>
     Effect.gen(function* () {
         const execs = yield* Execs;
         const execId = yield* execs.container(containerId, {
@@ -384,7 +380,7 @@ export const exec = ({
 > =>
     Effect.gen(function* () {
         const [socket, execId] = yield* execNonBlocking({ command, containerId, detach: false });
-        const output = yield* demuxUnknownToSingleSink(socket, Stream.never, Sink.mkString);
+        const output = yield* demuxToSingleSink(socket, Stream.never, Sink.mkString);
         const execInspectResponse = yield* Execs.use((execs) => execs.inspect(execId));
         if (execInspectResponse.Running === true) {
             return yield* new ExecsError({ method: "exec", cause: new Error("Exec is still running") });
@@ -434,7 +430,7 @@ export const execWebsocketsNonBlocking = ({
 }: {
     command: string | Array<string>;
     containerId: string;
-}): Effect.Effect<MultiplexedStreamChannel<never, Socket.SocketError | ContainersError>, never, Containers> =>
+}): Effect.Effect<MultiplexedChannel<never, Socket.SocketError | ContainersError>, never, Containers> =>
     Effect.gen(function* () {
         const containers = yield* Containers;
 
@@ -477,7 +473,7 @@ export const execWebsocketsNonBlocking = ({
             const stdoutSocket = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
             const stderrSocket = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
             const multiplexedSocket = yield* pack({ stdin: stdinSocket, stdout: stdoutSocket, stderr: stderrSocket });
-            const producer = Channel.fromEffect(demuxRawSocket(stdinSocket, input, Sink.drain));
+            const producer = Channel.fromEffect(demuxRawToSingleSink(stdinSocket, input, Sink.drain));
             const consumer = multiplexedSocket.underlying;
             const zipped = Channel.zipLeft(consumer, producer);
             return zipped;
@@ -488,7 +484,7 @@ export const execWebsocketsNonBlocking = ({
             .pipe(Channel.unwrapScoped)
             .pipe(Channel.provideService(Containers, containers));
 
-        return makeMultiplexedStreamChannel(multiplexedChannel);
+        return makeMultiplexedChannel(multiplexedChannel);
     });
 
 /**
@@ -512,7 +508,7 @@ export const execWebsockets = ({
 > =>
     Function.pipe(
         execWebsocketsNonBlocking({ command, containerId }),
-        Effect.flatMap(demuxMultiplexedSocket(Stream.empty, Sink.mkString, Sink.mkString))
+        Effect.flatMap(demuxMultiplexedToSeparateSinks(Stream.empty, Sink.mkString, Sink.mkString))
     );
 
 /**

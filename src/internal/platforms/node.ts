@@ -19,8 +19,9 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Scope from "effect/Scope";
 
+import type { MobyConnectionOptions, SshConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticLayer } from "./agnostic.js";
-import { MobyConnectionOptions, SshConnectionOptions } from "./connection.js";
+import * as internalConnection from "./connection.js";
 
 /**
  * Helper interface to expose the underlying socket from the effect HttpClient
@@ -124,7 +125,7 @@ export const getNodeAgent = (
             { concurrency: 3 }
         ),
         Effect.flatMap(({ httpLazy, httpsLazy, nodeHttpClientLazy }) => {
-            const AcquireNodeHttpAgent = MobyConnectionOptions.$match({
+            const AcquireNodeHttpAgent = internalConnection.MobyConnectionOptions.$match({
                 http: (options) => Effect.succeed(new httpLazy.Agent({ host: options.host, port: options.port })),
                 socket: (options) =>
                     Effect.succeed(new httpLazy.Agent({ socketPath: options.socketPath } as http.AgentOptions)),

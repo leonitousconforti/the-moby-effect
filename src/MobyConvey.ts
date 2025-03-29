@@ -4,16 +4,16 @@
  * @since 1.0.0
  */
 
-import * as sinksInternal from "./internal/convey/sinks.js";
+export {
+    /**
+     * @since 1.0.0
+     * @category Conveyance Sinks
+     */
+    followProgressInConsole,
 
-/**
- * @since 1.0.0
- * @category Conveyance Sinks
- */
-export const followProgressInConsole = sinksInternal.followProgressInConsole;
-
-/**
- * @since 1.0.0
- * @category Conveyance Sinks
- */
-export const waitForProgressToComplete = sinksInternal.waitForProgressToComplete;
+    /**
+     * @since 1.0.0
+     * @category Conveyance Sinks
+     */
+    waitForProgressToComplete,
+} from "./internal/convey/sinks.js";
