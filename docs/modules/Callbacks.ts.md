@@ -31,7 +31,7 @@ Create a callback client for the docker engine
 export declare const callbackClient: <E>(
   layer: Layer.Layer<
     Layer.Layer.Success<DockerEngine.DockerLayer>,
-    E | Layer.Layer.Error<DockerEngine.DockerLayer>,
+    Layer.Layer.Error<DockerEngine.DockerLayer> | E,
     Layer.Layer.Context<DockerEngine.DockerLayer>
   >
 ) => Promise<{

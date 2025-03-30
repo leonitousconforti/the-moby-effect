@@ -1,9 +1,3 @@
-/**
- * Compressing utilities for demuxing.
- *
- * @since 1.0.0
- */
-
 import * as Predicate from "effect/Predicate";
 
 /**

@@ -16,6 +16,7 @@ Added in v1.0.0
 
 - [Conveyance Sinks](#conveyance-sinks)
   - [followProgressInConsole](#followprogressinconsole)
+  - [followProgressSink](#followprogresssink)
   - [waitForProgressToComplete](#waitforprogresstocomplete)
 
 ---
@@ -24,24 +25,40 @@ Added in v1.0.0
 
 ## followProgressInConsole
 
+Tracks the progress stream in the console and returns the result.
+
 **Signature**
 
 ```ts
 export declare const followProgressInConsole: <E1, R1>(
-  stream: Stream<JSONMessage, E1, R1>
-) => Effect<Chunk<JSONMessage>, E1, Exclude<R1, Scope>>
+  stream: Stream.Stream<JSONMessage, E1, R1>
+) => Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>>
+```
+
+Added in v1.0.0
+
+## followProgressSink
+
+Consumes the progress stream and logs it to the console.
+
+**Signature**
+
+```ts
+export declare const followProgressSink: Sink.Sink<void, JSONMessage, never, never, never>
 ```
 
 Added in v1.0.0
 
 ## waitForProgressToComplete
 
+Waits for the progress stream to complete and returns the result.
+
 **Signature**
 
 ```ts
 export declare const waitForProgressToComplete: <E1, R1>(
-  stream: Stream<JSONMessage, E1, R1>
-) => Effect<Chunk<JSONMessage>, E1, Exclude<R1, Scope>>
+  stream: Stream.Stream<JSONMessage, E1, R1>
+) => Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>>
 ```
 
 Added in v1.0.0

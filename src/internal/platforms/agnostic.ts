@@ -1,11 +1,8 @@
-/**
- * Connection agents in a platform agnostic way.
- *
- * @since 1.0.0
- */
+import type * as HttpClientError from "@effect/platform/HttpClientError";
+import type * as Types from "effect/Types";
+import type * as MobyConnection from "../../MobyConnection.js";
 
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Socket from "@effect/platform/Socket";
 import * as UrlParams from "@effect/platform/UrlParams";
@@ -14,17 +11,14 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
-import * as Types from "effect/Types";
-
-import type { MobyConnectionOptions } from "../../MobyConnection.js";
 import * as internalConnection from "./connection.js";
 
 /** @internal */
-const makeVersionPath = (connectionOptions: MobyConnectionOptions): string =>
+const makeVersionPath = (connectionOptions: MobyConnection.MobyConnectionOptions): string =>
     Predicate.isNotUndefined(connectionOptions.version) ? `/v${connectionOptions.version}` : "";
 
 /** @internal */
-const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string =
+const makeHttpRequestUrl: (connectionOptions: MobyConnection.MobyConnectionOptions) => string =
     internalConnection.MobyConnectionOptions.$match({
         ssh: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
         socket: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
@@ -35,7 +29,7 @@ const makeHttpRequestUrl: (connectionOptions: MobyConnectionOptions) => string =
     });
 
 /** @internal */
-const makeWebsocketRequestUrl: (connectionOptions: MobyConnectionOptions) => string =
+const makeWebsocketRequestUrl: (connectionOptions: MobyConnection.MobyConnectionOptions) => string =
     internalConnection.MobyConnectionOptions.$match({
         ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}` as const,
         socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:` as const,
@@ -52,7 +46,7 @@ const HttpClientMobyConnectionOptions: unique symbol = Symbol.for(
 
 /** @internal */
 interface HttpClientExtension<E = HttpClientError.HttpClientError, R = never> extends HttpClient.HttpClient.With<E, R> {
-    readonly [HttpClientMobyConnectionOptions]: MobyConnectionOptions;
+    readonly [HttpClientMobyConnectionOptions]: MobyConnection.MobyConnectionOptions;
 }
 
 /** @internal */
@@ -77,16 +71,9 @@ export const websocketRequest = (
         return yield* Socket.makeWebSocket(websocketUrl.toString());
     });
 
-/**
- * Given the moby connection options, it will construct a layer that provides a
- * http client that you could use to connect to your moby instance and requires
- * an http client to transform from.
- *
- * @since 1.0.0
- * @category Agnostic
- */
-export const makeAgnosticHttpClientLayer = (
-    connectionOptions: MobyConnectionOptions
+/** @internal */
+export const makeAgnosticHttpLayer = (
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> =>
     Function.pipe(
         Layer.function(
@@ -106,15 +93,9 @@ export const makeAgnosticHttpClientLayer = (
         })
     );
 
-/**
- * Given the moby connection options, it will construct a layer that provides a
- * websocket constructor that you could use to connect to your moby instance.
- *
- * @since 1.0.0
- * @category Agnostic
- */
+/** @internal */
 export const makeAgnosticWebsocketLayer = (
-    connectionOptions: MobyConnectionOptions
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ): Layer.Layer<Socket.WebSocketConstructor, never, never> =>
     Layer.effect(
         Socket.WebSocketConstructor,
@@ -128,14 +109,11 @@ export const makeAgnosticWebsocketLayer = (
         })
     );
 
-/**
- * @since 1.0.0
- * @category Agnostic
- */
-export const makeAgnosticLayer = (
-    connectionOptions: MobyConnectionOptions
+/** @internal */
+export const makeAgnosticHttpClientLayer = (
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ): Layer.Layer<Socket.WebSocketConstructor | HttpClient.HttpClient, never, HttpClient.HttpClient> => {
-    const httpClientLayer = makeAgnosticHttpClientLayer(connectionOptions);
+    const httpClientLayer = makeAgnosticHttpLayer(connectionOptions);
     const websocketLayer = makeAgnosticWebsocketLayer(connectionOptions);
     return Layer.merge(websocketLayer, httpClientLayer);
 };

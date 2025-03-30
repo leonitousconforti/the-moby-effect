@@ -4,237 +4,343 @@
  * @since 1.0.0
  */
 
-export {
-    /**
-     * Implements the `docker build` command. It doesn't have all the flags that
-     * the images build endpoint exposes.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    build,
+import type * as Socket from "@effect/platform/Socket";
+import type * as Effect from "effect/Effect";
+import type * as ParseResult from "effect/ParseResult";
+import type * as Scope from "effect/Scope";
+import type * as Stream from "effect/Stream";
+import type * as Endpoints from "./MobyEndpoints.js";
+import type * as Schemas from "./MobySchemas.js";
 
-    /**
-     * Implements the `docker build` command as a scoped effect. When the scope
-     * is closed, the built image is removed. It doesn't have all the flags that
-     * the images build endpoint exposes.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    buildScoped,
+import * as internal from "./internal/engines/docker.js";
 
-    /**
-     * Implements the `docker exec` command in a blocking fashion. Incompatible
-     * with web.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    exec,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export type DockerLayer = internal.DockerLayer;
 
-    /**
-     * Implements the `docker exec` command in a non blocking fashion.
-     * Incompatible with web when not detached.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    execNonBlocking,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor =
+    internal.DockerLayerWithoutHttpClientOrWebsocketConstructor;
 
-    /**
-     * Implements the `docker exec` command in a blocking fashion with
-     * websockets as the underlying transport instead of the docker engine exec
-     * apis so that is can be compatible with web.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    execWebsockets,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerAgnostic = internal.layerAgnostic;
 
-    /**
-     * Implements the `docker exec` command in a non blocking fashion with
-     * websockets as the underlying transport instead of the docker engine exec
-     * apis so that is can be compatible with web.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    execWebsocketsNonBlocking,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerBun = internal.layerBun;
 
-    /**
-     * Implements the `docker images` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    images,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerDeno = internal.layerDeno;
 
-    /**
-     * Implements the `docker info` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    info,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerFetch = internal.layerFetch;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerAgnostic,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerNodeJS = internal.layerNodeJS;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerBun,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerUndici = internal.layerUndici;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerDeno,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerWeb = internal.layerWeb;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerFetch,
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const layerWithoutHttpCLient = internal.layerWithoutHttpCLient;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerNodeJS,
+/**
+ * Implements the `docker build` command. It doesn't have all the flags that the
+ * images build endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const build: <E1>({
+    auth,
+    buildArgs,
+    context,
+    dockerfile,
+    platform,
+    tag,
+}: {
+    tag: string;
+    auth?: string | undefined;
+    platform?: string | undefined;
+    dockerfile?: string | undefined;
+    context: Stream.Stream<Uint8Array, E1, never>;
+    buildArgs?: Record<string, string | undefined> | undefined;
+}) => Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, Endpoints.Images> = internal.build;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerUndici,
+/**
+ * Implements the `docker build` command as a scoped effect. When the scope is
+ * closed, the built image is removed. It doesn't have all the flags that the
+ * images build endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const buildScoped: <E1>({
+    auth,
+    buildArgs,
+    context,
+    dockerfile,
+    platform,
+    tag,
+}: {
+    tag: string;
+    auth?: string | undefined;
+    platform?: string | undefined;
+    dockerfile?: string | undefined;
+    buildArgs?: Record<string, string | undefined> | undefined;
+    context: Stream.Stream<Uint8Array, E1, never>;
+}) => Effect.Effect<
+    Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, never>,
+    never,
+    Scope.Scope | Endpoints.Images
+> = internal.buildScoped;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerWeb,
+/**
+ * Implements the `docker exec` command in a blocking fashion. Incompatible with
+ * web.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const exec: ({
+    command,
+    containerId,
+}: {
+    containerId: string;
+    command: string | Array<string>;
+}) => Effect.Effect<
+    readonly [exitCode: number, output: string],
+    Endpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
+    Endpoints.Execs
+> = internal.exec;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    layerWithoutHttpCLient,
+/**
+ * Implements the `docker exec` command in a non blocking fashion. Incompatible
+ * with web when not detached.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const execNonBlocking = internal.execNonBlocking;
 
-    /**
-     * Implements the `docker ping` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    ping,
+/**
+ * Implements the `docker exec` command in a blocking fashion with websockets as
+ * the underlying transport instead of the docker engine exec apis so that is
+ * can be compatible with web.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const execWebsockets: ({
+    command,
+    containerId,
+}: {
+    command: string | Array<string>;
+    containerId: string;
+}) => Effect.Effect<
+    readonly [stdout: string, stderr: string],
+    Endpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
+    Endpoints.Containers
+> = internal.execWebsockets;
 
-    /**
-     * Implements the `docker ping` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    pingHead,
+/**
+ * Implements the `docker exec` command in a non blocking fashion with
+ * websockets as the underlying transport instead of the docker engine exec apis
+ * so that is can be compatible with web.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const execWebsocketsNonBlocking = internal.execWebsocketsNonBlocking;
 
-    /**
-     * Implements the `docker ps` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    ps,
+/**
+ * Implements the `docker images` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const images: (
+    options?: Parameters<Endpoints.Images["list"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, Endpoints.ImagesError, Endpoints.Images> = internal.images;
 
-    /**
-     * Implements the `docker pull` command. It does not have all the flags that
-     * the images create endpoint exposes.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    pull,
+/**
+ * Implements the `docker info` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const info: () => Effect.Effect<
+    Readonly<Schemas.SystemInfoResponse>,
+    Endpoints.SystemsError,
+    Endpoints.Systems
+> = internal.info;
 
-    /**
-     * Implements the `docker pull` command as a scoped effect. When the scope
-     * is closed, the pulled image is removed. It doesn't have all the flags
-     * that the images create endpoint exposes.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    pullScoped,
+/**
+ * Implements the `docker ping` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const ping: () => Effect.Effect<"OK", Endpoints.SystemsError, Endpoints.Systems> = internal.ping;
 
-    /**
-     * Implements the `docker push` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    push,
+/**
+ * Implements the `docker ping` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const pingHead: () => Effect.Effect<void, Endpoints.SystemsError, Endpoints.Systems> = internal.pingHead;
 
-    /**
-     * Implements `docker run` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    run,
+/**
+ * Implements the `docker ps` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const ps: (
+    options?: Parameters<Endpoints.Containers["list"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.ContainerListResponseItem>, Endpoints.ContainersError, Endpoints.Containers> =
+    internal.ps;
 
-    /**
-     * Implements `docker run` command as a scoped effect. When the scope is
-     * closed, both the image and the container is removed.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    runScoped,
+/**
+ * Implements the `docker pull` command. It does not have all the flags that the
+ * images create endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const pull: ({
+    auth,
+    image,
+    platform,
+}: {
+    image: string;
+    auth?: string | undefined;
+    platform?: string | undefined;
+}) => Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, Endpoints.Images> = internal.pull;
 
-    /**
-     * Implements the `docker search` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    search,
+/**
+ * Implements the `docker pull` command as a scoped effect. When the scope is
+ * closed, the pulled image is removed. It doesn't have all the flag =
+ * internal.flags that the images create endpoint exposes.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const pullScoped: ({
+    auth,
+    image,
+    platform,
+}: {
+    image: string;
+    auth?: string | undefined;
+    platform?: string | undefined;
+}) => Effect.Effect<
+    Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, never>,
+    never,
+    Endpoints.Images | Scope.Scope
+> = internal.pullScoped;
 
-    /**
-     * Implements the `docker start` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    start,
+/**
+ * Implements the `docker push` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const push: (
+    options: Parameters<Endpoints.Images["push"]>[0]
+) => Stream.Stream<string, Endpoints.ImagesError, Endpoints.Images> = internal.push;
 
-    /**
-     * Implements the `docker stop` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    stop,
+/**
+ * Implements `docker run` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const run: (
+    containerOptions: Parameters<Endpoints.Containers["create"]>[0]
+) => Effect.Effect<Schemas.ContainerInspectResponse, Endpoints.ContainersError, Endpoints.Containers> = internal.run;
 
-    /**
-     * Implements the `docker version` command.
-     *
-     * @since 1.0.0
-     * @category Docker
-     */
-    version,
+/**
+ * Implements `docker run` command as a scoped effect. When the scope is closed,
+ * both the image and the container is removed = internal.removed.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const runScoped: (
+    containerOptions: Parameters<Endpoints.Containers["create"]>[0]
+) => Effect.Effect<Schemas.ContainerInspectResponse, Endpoints.ContainersError, Scope.Scope | Endpoints.Containers> =
+    internal.runScoped;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    type DockerLayer,
+/**
+ * Implements the `docker search` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const search: (
+    options: Parameters<Endpoints.Images["search"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, Endpoints.ImagesError, Endpoints.Images> =
+    internal.search;
 
-    /**
-     * @since 1.0.0
-     * @category Layers
-     */
-    type DockerLayerWithoutHttpClientOrWebsocketConstructor,
-} from "./internal/engines/docker.js";
+/**
+ * Implements the `docker start` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const start: (containerId: string) => Effect.Effect<void, Endpoints.ContainersError, Endpoints.Containers> =
+    internal.start;
+
+/**
+ * Implements the `docker stop` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const stop: (containerId: string) => Effect.Effect<void, Endpoints.ContainersError, Endpoints.Containers> =
+    internal.stop;
+
+/**
+ * Implements the `docker version` command.
+ *
+ * @since 1.0.0
+ * @category Docker
+ */
+export const version: () => Effect.Effect<
+    Readonly<Schemas.SystemVersionResponse>,
+    Endpoints.SystemsError,
+    Endpoints.Systems
+> = internal.version;

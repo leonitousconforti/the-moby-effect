@@ -1,6 +1,6 @@
 ---
 title: PodmanEngine.ts
-nav_order: 13
+nav_order: 12
 parent: Modules
 ---
 
@@ -36,7 +36,13 @@ Added in v1.0.0
 
 ```ts
 export type PodmanLayer = Layer.Layer<
-  Containers | Execs | Images | Networks | Secrets | Systems | Volumes,
+  | Endpoints.Containers
+  | Endpoints.Execs
+  | Endpoints.Images
+  | Endpoints.Networks
+  | Endpoints.Secrets
+  | Endpoints.Systems
+  | Endpoints.Volumes,
   never,
   never
 >
@@ -64,7 +70,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerAgnostic: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+  connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => PodmanLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
@@ -75,7 +81,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: MobyConnectionOptions) => PodmanLayer
+export declare const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -85,7 +91,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => PodmanLayer
+export declare const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -96,7 +102,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerFetch: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+  connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => PodmanLayer
 ```
 
@@ -107,7 +113,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: MobyConnectionOptions) => PodmanLayer
+export declare const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -117,7 +123,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: MobyConnectionOptions) => PodmanLayer
+export declare const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
 Added in v1.0.0
@@ -128,7 +134,7 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+  connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => PodmanLayer
 ```
 

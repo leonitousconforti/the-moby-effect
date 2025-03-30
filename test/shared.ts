@@ -9,7 +9,7 @@ import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as ParseResult from "effect/ParseResult";
 
-import { DindEngine, MobyEndpoints, MobyEngine } from "the-moby-effect";
+import { DindEngine, DockerEngine, MobyEndpoints } from "the-moby-effect";
 
 const makePlatformDindLayer = Function.pipe(
     Match.value(inject("__PLATFORM_VARIANT")),
@@ -29,7 +29,7 @@ const testDindLayer = makePlatformDindLayer({
 const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
 
 export const testLayer: Layer.Layer<
-    Layer.Layer.Success<MobyEngine.MobyLayer>,
+    Layer.Layer.Success<DockerEngine.DockerLayer>,
     | MobyEndpoints.ContainersError
     | MobyEndpoints.ImagesError
     | MobyEndpoints.SwarmsError

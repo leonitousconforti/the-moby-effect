@@ -1,10 +1,3 @@
-/**
- * Demux utilities for "packing" several independent raw sockets into a single
- * multiplexed socket.
- *
- * @since 1.0.0
- */
-
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
 import * as Chunk from "effect/Chunk";

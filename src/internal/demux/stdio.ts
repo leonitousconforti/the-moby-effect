@@ -1,9 +1,3 @@
-/**
- * Demux utilities for stdin, stdout/console.log, and stderr/console.error
- *
- * @since 1.0.0
- */
-
 import * as Socket from "@effect/platform/Socket";
 import * as Console from "effect/Console";
 import * as Data from "effect/Data";

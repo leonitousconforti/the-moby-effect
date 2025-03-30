@@ -23,7 +23,6 @@ Added in v1.0.0
   - [From "./MobyConvey.js"](#from-mobyconveyjs)
   - [From "./MobyDemux.js"](#from-mobydemuxjs)
   - [From "./MobyEndpoints.js"](#from-mobyendpointsjs)
-  - [From "./MobyEngine.js"](#from-mobyenginejs)
   - [From "./MobyPlatforms.js"](#from-mobyplatformsjs)
   - [From "./MobySchemas.js"](#from-mobyschemasjs)
   - [From "./PodmanEngine.js"](#from-podmanenginejs)
@@ -125,18 +124,6 @@ Moby endpoints.
 
 ```ts
 export * as MobyEndpoints from "./MobyEndpoints.js"
-```
-
-Added in v1.0.0
-
-## From "./MobyEngine.js"
-
-Moby engine shortcut.
-
-**Signature**
-
-```ts
-export * as MobyEngine from "./MobyEngine.js"
 ```
 
 Added in v1.0.0

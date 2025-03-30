@@ -1,28 +1,13 @@
-/**
- * Http and https connection methods for fetch.
- *
- * @since 1.0.0
- */
+import type * as HttpClient from "@effect/platform/HttpClient";
+import type * as Socket from "@effect/platform/Socket";
+import type * as MobyConnection from "../../MobyConnection.js";
 
 import * as FetchHttpClient from "@effect/platform/FetchHttpClient";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as Socket from "@effect/platform/Socket";
 import * as Layer from "effect/Layer";
+import * as internalAgnostic from "./agnostic.js";
 
-import { HttpConnectionOptionsTagged, HttpsConnectionOptionsTagged } from "../../MobyConnection.js";
-import { makeAgnosticLayer } from "./agnostic.js";
-
-/**
- * Given the moby connection options, it will construct a layer that provides a
- * http client that you could use to connect to your moby instance. By only
- * supporting http and https connection options, this function does not rely on
- * any specific platform package and uses the `@effect/platform/FetchHttpClient`
- * as its base http layer.
- *
- * @since 1.0.0
- * @category Fetch
- */
+/** @internal */
 export const makeFetchHttpClientLayer = (
-    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+    connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ): Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =>
-    Layer.provide(makeAgnosticLayer(connectionOptions), FetchHttpClient.layer);
+    Layer.provide(internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions), FetchHttpClient.layer);

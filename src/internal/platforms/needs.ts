@@ -1,55 +1,30 @@
-/**
- * Helper types for requiring certain packages to be installed.
- *
- * @since 1.0.0
- */
-
 import type * as Effect from "effect/Effect";
 import type * as Layer from "effect/Layer";
 
-/**
- * @since 1.0.0
- * @category Types
- * @internal
- */
+/** @internal */
 export type HasPackage<T> = [unknown] extends [T] ? "no" : "yes";
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsSSH2<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > = HasPackage<typeof import("ssh2")> extends "yes" ? Dependent : 'Missing "ssh2" package';
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsUndici<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > = HasPackage<typeof import("undici")> extends "yes" ? Dependent : 'Missing "undici" package';
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsNodeHttp<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > = HasPackage<typeof import("node:http")> extends "yes" ? Dependent : 'Missing "node:http" package';
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsNodeHttps<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > = HasPackage<typeof import("node:https")> extends "yes" ? Dependent : 'Missing "node:https" package';
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsPlatformNode<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > =
@@ -57,10 +32,7 @@ export type NeedsPlatformNode<
         ? Dependent
         : 'Missing "@effect/platform-node" package';
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsPlatformBun<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > =
@@ -68,10 +40,7 @@ export type NeedsPlatformBun<
         ? Dependent
         : 'Missing "@effect/platform-bun" package';
 
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export type NeedsPlatformBrowser<
     Dependent extends Effect.Effect<unknown, unknown, unknown> | Layer.Layer<unknown, unknown, unknown>,
 > =

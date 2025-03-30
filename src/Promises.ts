@@ -4,13 +4,14 @@
  * @since 1.0.0
  */
 
+import type * as Layer from "effect/Layer";
+
 import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
 import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Stream from "effect/Stream";
-import * as DockerEngine from "./internal/engines/docker.js";
+import * as DockerEngine from "./DockerEngine.js";
 import * as MobyConvey from "./MobyConvey.js";
 import * as MobySchemas from "./MobySchemas.js";
 
@@ -53,13 +54,13 @@ export const promiseClient = async <E>(
         pingHead: Function.flow(DockerEngine.pingHead, managedRuntime.runPromise),
         followProgressInConsole: Function.flow(
             Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
-            MobyConvey.followProgressInConsole<unknown, Layer.Layer.Success<typeof layer>>,
+            MobyConvey.followProgressInConsole,
             Effect.map(Chunk.toReadonlyArray),
             managedRuntime.runPromise
         ),
         waitForProgressToComplete: Function.flow(
             Stream.fromReadableStream<MobySchemas.JSONMessage, unknown>,
-            MobyConvey.waitForProgressToComplete<unknown, Layer.Layer.Success<typeof layer>>,
+            MobyConvey.waitForProgressToComplete,
             Effect.map(Chunk.toReadonlyArray),
             managedRuntime.runPromise
         ),

@@ -1,15 +1,6 @@
-/**
- * Https docker content
- *
- * @since 1.0.0
- */
-
 import * as BlobConstants from "./constants.js";
 
-/**
- * @since 1.0.0
- * @category Blobs
- */
+/** @internal */
 export const content = `ARG DIND_BASE_IMAGE="${BlobConstants.DefaultDindBaseImage}"
 FROM \${DIND_BASE_IMAGE}
 

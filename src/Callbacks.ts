@@ -13,7 +13,8 @@ import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Predicate from "effect/Predicate";
 import * as Runtime from "effect/Runtime";
 import * as Stream from "effect/Stream";
-import * as DockerEngine from "./internal/engines/docker.js";
+
+import * as DockerEngine from "./DockerEngine.js";
 import * as MobyConvey from "./MobyConvey.js";
 import * as MobySchemas from "./MobySchemas.js";
 
@@ -110,7 +111,7 @@ export function runCallback<R = never>(runtime: Runtime.Runtime<R>, arity?: 0 | 
 export const callbackClient = async <E>(
     layer: Layer.Layer<
         Layer.Layer.Success<DockerEngine.DockerLayer>,
-        E | Layer.Layer.Error<DockerEngine.DockerLayer>,
+        Layer.Layer.Error<DockerEngine.DockerLayer> | E,
         Layer.Layer.Context<DockerEngine.DockerLayer>
     >
 ) => {

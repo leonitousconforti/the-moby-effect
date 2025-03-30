@@ -1,10 +1,3 @@
-/**
- * Utilities for hijacking a connection and transforming it into a raw stream.
- * Only works on "server-side" platforms.
- *
- * @since 1.0.0
- */
-
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";

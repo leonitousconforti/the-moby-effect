@@ -1,8 +1,4 @@
-/**
- * Http, https, ssh, and unix socket connection agents for all platforms.
- *
- * @since 1.0.0
- */
+import type * as MobyConnection from "../../MobyConnection.js";
 
 import * as Path from "@effect/platform/Path";
 import * as Config from "effect/Config";
@@ -12,8 +8,6 @@ import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
 import * as Redacted from "effect/Redacted";
-
-import type * as MobyConnection from "../../MobyConnection.js";
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a

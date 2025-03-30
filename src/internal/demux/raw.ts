@@ -1,13 +1,3 @@
-/**
- * Demux utilities for raw sockets. Unlike multiplexed sockets, raw sockets can
- * not differentiate between stdout and stderr because the data is just raw
- * bytes from the process's PTY. However, you can attach multiple raw sockets to
- * the same container (one for stdout and one for stderr) and then use the demux
- * utilities to separate the streams.
- *
- * @since 1.0.0
- */
-
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";

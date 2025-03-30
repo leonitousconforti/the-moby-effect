@@ -4,22 +4,18 @@
  * @since 1.0.0
  */
 
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as Socket from "@effect/platform/Socket";
-import * as Layer from "effect/Layer";
+import type * as HttpClient from "@effect/platform/HttpClient";
+import type * as Socket from "@effect/platform/Socket";
+import type * as Layer from "effect/Layer";
 
-import type {
-    HttpConnectionOptionsTagged,
-    HttpsConnectionOptionsTagged,
-    MobyConnectionOptions,
-} from "./MobyConnection.js";
-
-import * as agnosticInternal from "./internal/platforms/agnostic.js";
-import * as bunInternal from "./internal/platforms/bun.js";
-import * as denoInternal from "./internal/platforms/deno.js";
-import * as nodeInternal from "./internal/platforms/node.js";
-import * as undiciInternal from "./internal/platforms/undici.js";
-import * as webInternal from "./internal/platforms/web.js";
+import * as MobyConnection from "./MobyConnection.js";
+import * as internalAgnostic from "./internal/platforms/agnostic.js";
+import * as internalBun from "./internal/platforms/bun.js";
+import * as internalDeno from "./internal/platforms/deno.js";
+import * as internalFetch from "./internal/platforms/fetch.js";
+import * as internalNode from "./internal/platforms/node.js";
+import * as internalUndici from "./internal/platforms/undici.js";
+import * as internalWeb from "./internal/platforms/web.js";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
@@ -29,67 +25,97 @@ import * as webInternal from "./internal/platforms/web.js";
  * @category Connection
  */
 export const makeAgnosticHttpClientLayer: (
-    connectionOptions: MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> = agnosticInternal.makeAgnosticHttpClientLayer;
+    connectionOptions: MobyConnection.MobyConnectionOptions
+) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> = internalAgnostic.makeAgnosticHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance. This is no
  * different than the Node implementation currently.
+ *
+ * This function will dynamically import the `@effect/platform-node` package.
  *
  * @since 1.0.0
  * @category Connection
  */
 export const makeBunHttpClientLayer: (
-    connectionOptions: MobyConnectionOptions
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
-    bunInternal.makeBunHttpClientLayer;
+    internalBun.makeBunHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance. This is no
  * different than the Node implementation currently.
  *
+ * This function will dynamically import the `@effect/platform-node` package.
+ *
+ * FIXME: https://github.com/denoland/deno/issues/21436?
+ *
+ * Will fallback to using undici for now because that seems to work
+ *
  * @since 1.0.0
- * @category Connection
+ * @category Deno
  */
 export const makeDenoHttpClientLayer: (
-    connectionOptions: MobyConnectionOptions
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
-    denoInternal.makeDenoHttpClientLayer;
+    internalDeno.makeDenoHttpClientLayer;
+
+/**
+ * Given the moby connection options, it will construct a layer that provides a
+ * http client that you could use to connect to your moby instance. By only
+ * supporting http and https connection options, this function does not rely on
+ * any specific platform package and uses the `@effect/platform/FetchHttpClient`
+ * as its base http layer.
+ *
+ * @since 1.0.0
+ * @category Fetch
+ */
+export const makeFetchHttpClientLayer: (
+    connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
+    internalFetch.makeFetchHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance.
  *
+ * This function will dynamically import the `@effect/platform-node` package.
+ *
  * @since 1.0.0
- * @category Connection
+ * @category NodeJS
  */
 export const makeNodeHttpClientLayer: (
-    connectionOptions: MobyConnectionOptions
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
-    nodeInternal.makeNodeHttpClientLayer;
+    internalNode.makeNodeHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance.
  *
+ * This function will dynamically import the `@effect/platform-node` and
+ * `undici` packages.
+ *
  * @since 1.0.0
- * @category Connection
+ * @category Undici
  */
 export const makeUndiciHttpClientLayer: (
-    connectionOptions: MobyConnectionOptions
+    connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
-    undiciInternal.makeUndiciHttpClientLayer;
+    internalUndici.makeUndiciHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
  * http client that you could use to connect to your moby instance.
  *
+ * This function will dynamically import the `@effect/platform-browser` package.
+ *
  * @since 1.0.0
- * @category Connection
+ * @category Browser
  */
 export const makeWebHttpClientLayer: (
-    connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
+    connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =
-    webInternal.makeWebHttpClientLayer;
+    internalWeb.makeWebHttpClientLayer;

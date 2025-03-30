@@ -55,13 +55,6 @@ export * as MobyDemux from "./MobyDemux.js"
 export * as MobyEndpoints from "./MobyEndpoints.js"
 
 /**
- * Moby engine shortcut.
- *
- * @since 1.0.0
- */
-export * as MobyEngine from "./MobyEngine.js"
-
-/**
  * Http client layers for all platforms.
  *
  * @since 1.0.0

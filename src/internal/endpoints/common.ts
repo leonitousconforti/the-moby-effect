@@ -17,8 +17,6 @@ import * as Tuple from "effect/Tuple";
  * key and value to the query parameters of a request if the value was a Some or
  * does nothing to the request if the value is a None.
  *
- * @since 1.0.0
- * @category Request Helpers
  * @internal
  */
 export const maybeAddQueryParameter = (
@@ -35,8 +33,6 @@ export const maybeAddQueryParameter = (
  * key and value to the headers of a request if the value was a Some or does
  * nothing to the request if the values is a None.
  *
- * @since 1.0.0
- * @category Request Helpers
  * @internal
  */
 export const maybeAddHeader = (
@@ -52,8 +48,6 @@ export const maybeAddHeader = (
  * For a given set of filters, returns a function that adds the filters to the
  * http request as a query parameter.
  *
- * @since 1.0.0
- * @category Request Helpers
  * @internal
  */
 export const maybeAddFilters = (

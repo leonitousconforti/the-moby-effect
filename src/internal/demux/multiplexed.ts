@@ -1,10 +1,3 @@
-/**
- * Demux utilities for multiplexed sockets. You can receive data (both stdout
- * and stderr) distinctly and send data (stdin) all over the same socket.
- *
- * @since 1.0.0
- */
-
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
