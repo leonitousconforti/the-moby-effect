@@ -1,14 +1,15 @@
-import * as Socket from "@effect/platform/Socket";
+import type * as Socket from "@effect/platform/Socket";
+import type * as Chunk from "effect/Chunk";
+import type * as ParseResult from "effect/ParseResult";
+import type * as Scope from "effect/Scope";
+
 import * as Channel from "effect/Channel";
-import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Either from "effect/Either";
 import * as Exit from "effect/Exit";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
-import * as ParseResult from "effect/ParseResult";
 import * as Queue from "effect/Queue";
-import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 

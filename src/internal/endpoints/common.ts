@@ -1,9 +1,3 @@
-/**
- * Common request helpers
- *
- * @since 1.0.0
- */
-
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Array from "effect/Array";
 import * as Function from "effect/Function";

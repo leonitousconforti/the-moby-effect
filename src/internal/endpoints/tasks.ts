@@ -1,11 +1,3 @@
-/**
- * A task is a container running on a swarm. It is the atomic scheduling unit of
- * swarm. Swarm mode must be enabled for these endpoints to work.
- *
- * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
- */
-
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientError from "@effect/platform/HttpClientError";

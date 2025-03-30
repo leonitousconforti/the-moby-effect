@@ -1,11 +1,12 @@
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
+import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
+import type * as Chunk from "effect/Chunk";
+import type * as Scope from "effect/Scope";
+
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
-import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Predicate from "effect/Predicate";
-import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";

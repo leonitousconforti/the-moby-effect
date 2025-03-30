@@ -1,8 +1,3 @@
-/**
- * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
- */
-
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";

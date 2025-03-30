@@ -1,3 +1,5 @@
+import type * as Scope from "effect/Scope";
+
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
 import * as Chunk from "effect/Chunk";
@@ -9,7 +11,6 @@ import * as Match from "effect/Match";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Queue from "effect/Queue";
-import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 

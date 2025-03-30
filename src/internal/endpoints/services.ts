@@ -1,11 +1,3 @@
-/**
- * Services are the definitions of tasks to run on a swarm. Swarm mode must be
- * enabled for these endpoints to work.
- *
- * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
- */
-
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";

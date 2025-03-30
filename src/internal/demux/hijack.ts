@@ -1,4 +1,5 @@
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
+import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
+
 import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 

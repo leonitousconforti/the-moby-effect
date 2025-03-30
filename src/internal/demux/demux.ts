@@ -1,10 +1,11 @@
-import * as Socket from "@effect/platform/Socket";
-import * as Effect from "effect/Effect";
+import type * as Socket from "@effect/platform/Socket";
+import type * as Effect from "effect/Effect";
+import type * as ParseResult from "effect/ParseResult";
+import type * as Scope from "effect/Scope";
+import type * as Stream from "effect/Stream";
+
 import * as Function from "effect/Function";
-import * as ParseResult from "effect/ParseResult";
-import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
-import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 
 import {

@@ -18,14 +18,12 @@ import * as DockerEngine from "./DockerEngine.js";
 import * as MobyConvey from "./MobyConvey.js";
 import * as MobySchemas from "./MobySchemas.js";
 
-/** @internal */
 export const runCallbackForEffect =
     <R = never>(runtime: Runtime.Runtime<R>) =>
     <A = void, E = never>(effect: Effect.Effect<A, E, R>) =>
     (callback: (exit: Exit.Exit<A, E>) => void) =>
         Runtime.runCallback(runtime)(effect, { onExit: callback });
 
-/** @internal */
 export function runCallback<R = never>(
     runtime: Runtime.Runtime<R>,
     arity: 0

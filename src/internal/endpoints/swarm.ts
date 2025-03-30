@@ -1,11 +1,3 @@
-/**
- * Engines can be clustered together in a swarm. Refer to the swarm mode
- * documentation for more information.
- *
- * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
- */
-
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";

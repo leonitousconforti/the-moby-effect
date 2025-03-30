@@ -1,8 +1,3 @@
-/**
- * @since 1.0.0
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
- */
-
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientError from "@effect/platform/HttpClientError";
