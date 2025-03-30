@@ -16,6 +16,8 @@ Added in v1.0.0
 
 - [Callbacks](#callbacks)
   - [callbackClient](#callbackclient)
+  - [runCallback](#runcallback)
+  - [runCallbackForEffect](#runcallbackforeffect)
 
 ---
 
@@ -404,6 +406,63 @@ export declare const callbackClient: <E>(
     callback: (exit: Exit.Exit<readonly MobySchemas.JSONMessage[], unknown>) => void
   ) => void
 }>
+```
+
+Added in v1.0.0
+
+## runCallback
+
+**Signature**
+
+```ts
+export declare function runCallback<R = never>(
+  runtime: Runtime.Runtime<R>,
+  arity: 0
+): <A = void, E = never>(function_: () => Effect.Effect<A, E, R>) => (callback: (exit: Exit.Exit<A, E>) => void) => void
+export declare function runCallback<R = never>(
+  runtime: Runtime.Runtime<R>,
+  arity: 1
+): <Z, A = void, E = never>(
+  function_: (z: Z) => Effect.Effect<A, E, R>
+) => (z: Z, callback: (exit: Exit.Exit<A, E>) => void) => void
+export declare function runCallback<R = never>(
+  runtime: Runtime.Runtime<R>,
+  arity: 2
+): <Y, Z, A = void, E = never>(
+  function_: (y: Y, z: Z) => Effect.Effect<A, E, R>
+) => (y: Y, z: Z, callback: (exit: Exit.Exit<A, E>) => void) => void
+export declare function runCallback<R = never>(
+  runtime: Runtime.Runtime<R>,
+  arity: 3
+): <X, Y, Z, A = void, E = never>(
+  function_: (x: X, y: Y, z: Z) => Effect.Effect<A, E, R>
+) => (x: X, y: Y, z: Z, callback: (exit: Exit.Exit<A, E>) => void) => void
+export declare function runCallback<R = never>(
+  runtime: Runtime.Runtime<R>,
+  arity: 4
+): <W, X, Y, Z, A = void, E = never>(
+  function_: (w: W, x: X, y: Y, z: Z) => Effect.Effect<A, E, R>
+) => (w: W, x: X, y: Y, z: Z, callback: (exit: Exit.Exit<A, E>) => void) => void
+export declare function runCallback<R = never>(
+  runtime: Runtime.Runtime<R>,
+  arity: 5
+): <V, W, X, Y, Z, A = void, E = never>(
+  function_: (v: V, w: W, x: X, y: Y, z: Z) => Effect.Effect<A, E, R>
+) => (v: V, w: W, x: X, y: Y, z: Z, callback: (exit: Exit.Exit<A, E>) => void) => void
+```
+
+Added in v1.0.0
+
+## runCallbackForEffect
+
+**Signature**
+
+```ts
+export declare const runCallbackForEffect: <R = never>(
+  runtime: Runtime.Runtime<R>
+) => <A = void, E = never>(
+  effect: Effect.Effect<A, E, R>
+) => (callback: (exit: Exit.Exit<A, E>) => void) => Runtime.Cancel<A, E>
 ```
 
 Added in v1.0.0

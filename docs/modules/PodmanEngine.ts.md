@@ -15,8 +15,6 @@ Added in v1.0.0
 <h2 class="text-delta">Table of contents</h2>
 
 - [Layers](#layers)
-  - [PodmanLayer (type alias)](#podmanlayer-type-alias)
-  - [PodmanLayerWithoutHttpClientOrWebsocketConstructor (type alias)](#podmanlayerwithouthttpclientorwebsocketconstructor-type-alias)
   - [layerAgnostic](#layeragnostic)
   - [layerBun](#layerbun)
   - [layerDeno](#layerdeno)
@@ -25,44 +23,13 @@ Added in v1.0.0
   - [layerUndici](#layerundici)
   - [layerWeb](#layerweb)
   - [layerWithoutHttpCLient](#layerwithouthttpclient)
+- [Types](#types)
+  - [PodmanLayer (type alias)](#podmanlayer-type-alias)
+  - [PodmanLayerWithoutHttpClientOrWebsocketConstructor (type alias)](#podmanlayerwithouthttpclientorwebsocketconstructor-type-alias)
 
 ---
 
 # Layers
-
-## PodmanLayer (type alias)
-
-**Signature**
-
-```ts
-export type PodmanLayer = Layer.Layer<
-  | Endpoints.Containers
-  | Endpoints.Execs
-  | Endpoints.Images
-  | Endpoints.Networks
-  | Endpoints.Secrets
-  | Endpoints.Systems
-  | Endpoints.Volumes,
-  never,
-  never
->
-```
-
-Added in v1.0.0
-
-## PodmanLayerWithoutHttpClientOrWebsocketConstructor (type alias)
-
-**Signature**
-
-```ts
-export type PodmanLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
-  Layer.Layer.Success<PodmanLayer>,
-  Layer.Layer.Error<PodmanLayer>,
-  Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
->
-```
-
-Added in v1.0.0
 
 ## layerAgnostic
 
@@ -146,6 +113,42 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWithoutHttpCLient: PodmanLayerWithoutHttpClientOrWebsocketConstructor
+```
+
+Added in v1.0.0
+
+# Types
+
+## PodmanLayer (type alias)
+
+**Signature**
+
+```ts
+export type PodmanLayer = Layer.Layer<
+  | Endpoints.Containers
+  | Endpoints.Execs
+  | Endpoints.Images
+  | Endpoints.Networks
+  | Endpoints.Secrets
+  | Endpoints.Systems
+  | Endpoints.Volumes,
+  never,
+  never
+>
+```
+
+Added in v1.0.0
+
+## PodmanLayerWithoutHttpClientOrWebsocketConstructor (type alias)
+
+**Signature**
+
+```ts
+export type PodmanLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
+  Layer.Layer.Success<PodmanLayer>,
+  Layer.Layer.Error<PodmanLayer>,
+  Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
+>
 ```
 
 Added in v1.0.0
