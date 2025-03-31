@@ -1,9 +1,3 @@
-/**
- * Docker in docker engine
- *
- * @since 1.0.0
- */
-
 import type * as PlatformError from "@effect/platform/Error";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";

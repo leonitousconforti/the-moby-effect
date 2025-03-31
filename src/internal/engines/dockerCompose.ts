@@ -142,7 +142,7 @@ export const make: Effect.Effect<
                 containerId: dindContainerId,
                 command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
             }),
-            Effect.flatMap(MobyDemux.fan),
+            Effect.flatMap(MobyDemux.fan({ requestedCapacity: 16 })),
             Effect.map(({ stderr, stdout }) => MobyDemux.mergeToTaggedStream(stdout, stderr)),
             Stream.unwrapScoped,
             Stream.flatMap(({ _tag, value }) =>
