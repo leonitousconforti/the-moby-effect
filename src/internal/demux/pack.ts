@@ -136,16 +136,27 @@ export const pack = Function.dual<
             Match.when(Socket.isCloseEvent, () => new Uint8Array()),
             Match.exhaustive
         );
-
         const mapOutEntry =
             (type: MultiplexedHeaderType) =>
             (data: CanReceive): Uint8Array => {
                 const encoded = encode(data);
                 const size = encoded.length;
-                const header = new Uint8Array(8);
-                header.set([type, 0, 0, 0]);
-                header.set(new Uint8Array(new Uint32Array([size]).buffer), 4);
-                return new Uint8Array([...header, ...encoded]);
+                const result = new Uint8Array(8 + encoded.length);
+
+                // Set the header
+                result[0] = type;
+                result[1] = 0;
+                result[2] = 0;
+                result[3] = 0;
+
+                // Set the size bytes in big-endian order
+                result[4] = (size >>> 24) & 0xff;
+                result[5] = (size >>> 16) & 0xff;
+                result[6] = (size >>> 8) & 0xff;
+                result[7] = size & 0xff;
+
+                result.set(encoded, 8);
+                return result;
             };
 
         const concurrency = { concurrent: true } as const;
@@ -161,7 +172,6 @@ export const pack = Function.dual<
             .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
 
         const { underlying: independentStderrChannel } = Stream.fromQueue(stderrConsumerQueue)
-            .pipe(Stream.tap(Effect.log))
             .pipe(Stream.encodeText)
             .pipe(Stream.map(mapOutEntry(MultiplexedHeaderType.Stderr)))
             .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
