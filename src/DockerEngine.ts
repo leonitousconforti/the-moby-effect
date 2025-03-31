@@ -4,76 +4,152 @@
  * @since 1.0.0
  */
 
+import type * as HttpClient from "@effect/platform/HttpClient";
 import type * as Socket from "@effect/platform/Socket";
 import type * as Effect from "effect/Effect";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
-import type * as Endpoints from "./MobyEndpoints.js";
+import type * as MobyConnection from "./MobyConnection.js";
 import type * as Schemas from "./MobySchemas.js";
 
-import * as internal from "./internal/engines/docker.js";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as MobyEndpoints from "./MobyEndpoints.js";
+import * as internalDocker from "./internal/engines/docker.js";
+import * as internalAgnostic from "./internal/platforms/agnostic.js";
+import * as internalBun from "./internal/platforms/bun.js";
+import * as internalDeno from "./internal/platforms/deno.js";
+import * as internalFetch from "./internal/platforms/fetch.js";
+import * as internalNode from "./internal/platforms/node.js";
+import * as internalUndici from "./internal/platforms/undici.js";
+import * as internalWeb from "./internal/platforms/web.js";
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export type DockerLayer = internal.DockerLayer;
+export type DockerLayer = Layer.Layer<
+    Layer.Layer.Success<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
+    Layer.Layer.Error<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
+    Exclude<
+        Layer.Layer.Context<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
+        HttpClient.HttpClient | Socket.WebSocketConstructor
+    >
+>;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export type DockerLayerWithoutHttpClientOrWebsocketConstructor =
-    internal.DockerLayerWithoutHttpClientOrWebsocketConstructor;
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
+    | MobyEndpoints.Configs
+    | MobyEndpoints.Containers
+    | MobyEndpoints.Distributions
+    | MobyEndpoints.Execs
+    | MobyEndpoints.Images
+    | MobyEndpoints.Networks
+    | MobyEndpoints.Nodes
+    | MobyEndpoints.Plugins
+    | MobyEndpoints.Secrets
+    | MobyEndpoints.Services
+    | MobyEndpoints.Sessions
+    | MobyEndpoints.Swarm
+    | MobyEndpoints.Systems
+    | MobyEndpoints.Tasks
+    | MobyEndpoints.Volumes,
+    never,
+    HttpClient.HttpClient | Socket.WebSocketConstructor
+>;
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerAgnostic = internal.layerAgnostic;
+export const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.mergeAll(
+    MobyEndpoints.ConfigsLayer,
+    MobyEndpoints.ContainersLayer,
+    MobyEndpoints.DistributionsLayer,
+    MobyEndpoints.ExecsLayer,
+    MobyEndpoints.ImagesLayer,
+    MobyEndpoints.NetworksLayer,
+    MobyEndpoints.NodesLayer,
+    MobyEndpoints.PluginsLayer,
+    MobyEndpoints.SecretsLayer,
+    MobyEndpoints.ServicesLayer,
+    MobyEndpoints.SessionsLayer,
+    MobyEndpoints.SwarmLayer,
+    MobyEndpoints.SystemsLayer,
+    MobyEndpoints.TasksLayer,
+    MobyEndpoints.VolumesLayer
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerBun = internal.layerBun;
+export const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
+    internalNode.makeNodeHttpClientLayer,
+    (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerDeno = internal.layerDeno;
+export const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
+    internalBun.makeBunHttpClientLayer,
+    (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerFetch = internal.layerFetch;
+export const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
+    internalDeno.makeDenoHttpClientLayer,
+    (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerNodeJS = internal.layerNodeJS;
+export const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
+    internalUndici.makeUndiciHttpClientLayer,
+    (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerUndici = internal.layerUndici;
+export const layerWeb: (
+    connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => DockerLayer = Function.compose(internalWeb.makeWebHttpClientLayer, (httpClientLayer) =>
+    Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWeb = internal.layerWeb;
+export const layerFetch: (
+    connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => DockerLayer = Function.compose(internalFetch.makeFetchHttpClientLayer, (httpClientLayer) =>
+    Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layerWithoutHttpCLient = internal.layerWithoutHttpCLient;
+export const layerAgnostic: (
+    connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => DockerLayerWithoutHttpClientOrWebsocketConstructor = Function.compose(
+    internalAgnostic.makeAgnosticHttpClientLayer,
+    (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
+);
 
 /**
  * Implements the `docker build` command. It doesn't have all the flags that the
@@ -96,7 +172,7 @@ export const build: <E1>({
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
     buildArgs?: Record<string, string | undefined> | undefined;
-}) => Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, Endpoints.Images> = internal.build;
+}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.build;
 
 /**
  * Implements the `docker build` command as a scoped effect. When the scope is
@@ -121,10 +197,10 @@ export const buildScoped: <E1>({
     buildArgs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }) => Effect.Effect<
-    Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, never>,
+    Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
-    Scope.Scope | Endpoints.Images
-> = internal.buildScoped;
+    Scope.Scope | MobyEndpoints.Images
+> = internalDocker.buildScoped;
 
 /**
  * Implements the `docker exec` command in a blocking fashion. Incompatible with
@@ -141,9 +217,9 @@ export const exec: ({
     command: string | Array<string>;
 }) => Effect.Effect<
     readonly [exitCode: number, output: string],
-    Endpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
-    Endpoints.Execs
-> = internal.exec;
+    MobyEndpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
+    MobyEndpoints.Execs
+> = internalDocker.exec;
 
 /**
  * Implements the `docker exec` command in a non blocking fashion. Incompatible
@@ -152,7 +228,7 @@ export const exec: ({
  * @since 1.0.0
  * @category Docker
  */
-export const execNonBlocking = internal.execNonBlocking;
+export const execNonBlocking = internalDocker.execNonBlocking;
 
 /**
  * Implements the `docker exec` command in a blocking fashion with websockets as
@@ -170,9 +246,9 @@ export const execWebsockets: ({
     containerId: string;
 }) => Effect.Effect<
     readonly [stdout: string, stderr: string],
-    Endpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
-    Endpoints.Containers
-> = internal.execWebsockets;
+    MobyEndpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> = internalDocker.execWebsockets;
 
 /**
  * Implements the `docker exec` command in a non blocking fashion with
@@ -182,7 +258,7 @@ export const execWebsockets: ({
  * @since 1.0.0
  * @category Docker
  */
-export const execWebsocketsNonBlocking = internal.execWebsocketsNonBlocking;
+export const execWebsocketsNonBlocking = internalDocker.execWebsocketsNonBlocking;
 
 /**
  * Implements the `docker images` command.
@@ -191,8 +267,9 @@ export const execWebsocketsNonBlocking = internal.execWebsocketsNonBlocking;
  * @category Docker
  */
 export const images: (
-    options?: Parameters<Endpoints.Images["list"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, Endpoints.ImagesError, Endpoints.Images> = internal.images;
+    options?: Parameters<MobyEndpoints.Images["list"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
+    internalDocker.images;
 
 /**
  * Implements the `docker info` command.
@@ -202,9 +279,9 @@ export const images: (
  */
 export const info: () => Effect.Effect<
     Readonly<Schemas.SystemInfoResponse>,
-    Endpoints.SystemsError,
-    Endpoints.Systems
-> = internal.info;
+    MobyEndpoints.SystemsError,
+    MobyEndpoints.Systems
+> = internalDocker.info;
 
 /**
  * Implements the `docker ping` command.
@@ -212,7 +289,7 @@ export const info: () => Effect.Effect<
  * @since 1.0.0
  * @category Docker
  */
-export const ping: () => Effect.Effect<"OK", Endpoints.SystemsError, Endpoints.Systems> = internal.ping;
+export const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEndpoints.Systems> = internalDocker.ping;
 
 /**
  * Implements the `docker ping` command.
@@ -220,7 +297,8 @@ export const ping: () => Effect.Effect<"OK", Endpoints.SystemsError, Endpoints.S
  * @since 1.0.0
  * @category Docker
  */
-export const pingHead: () => Effect.Effect<void, Endpoints.SystemsError, Endpoints.Systems> = internal.pingHead;
+export const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, MobyEndpoints.Systems> =
+    internalDocker.pingHead;
 
 /**
  * Implements the `docker ps` command.
@@ -229,9 +307,12 @@ export const pingHead: () => Effect.Effect<void, Endpoints.SystemsError, Endpoin
  * @category Docker
  */
 export const ps: (
-    options?: Parameters<Endpoints.Containers["list"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.ContainerListResponseItem>, Endpoints.ContainersError, Endpoints.Containers> =
-    internal.ps;
+    options?: Parameters<MobyEndpoints.Containers["list"]>[0]
+) => Effect.Effect<
+    ReadonlyArray<Schemas.ContainerListResponseItem>,
+    MobyEndpoints.ContainersError,
+    MobyEndpoints.Containers
+> = internalDocker.ps;
 
 /**
  * Implements the `docker pull` command. It does not have all the flags that the
@@ -248,12 +329,12 @@ export const pull: ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}) => Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, Endpoints.Images> = internal.pull;
+}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.pull;
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
  * closed, the pulled image is removed. It doesn't have all the flag =
- * internal.flags that the images create endpoint exposes.
+ * internalDocker.flags that the images create endpoint exposes.
  *
  * @since 1.0.0
  * @category Docker
@@ -267,10 +348,10 @@ export const pullScoped: ({
     auth?: string | undefined;
     platform?: string | undefined;
 }) => Effect.Effect<
-    Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, never>,
+    Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
-    Endpoints.Images | Scope.Scope
-> = internal.pullScoped;
+    MobyEndpoints.Images | Scope.Scope
+> = internalDocker.pullScoped;
 
 /**
  * Implements the `docker push` command.
@@ -279,8 +360,8 @@ export const pullScoped: ({
  * @category Docker
  */
 export const push: (
-    options: Parameters<Endpoints.Images["push"]>[0]
-) => Stream.Stream<string, Endpoints.ImagesError, Endpoints.Images> = internal.push;
+    options: Parameters<MobyEndpoints.Images["push"]>[0]
+) => Stream.Stream<string, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.push;
 
 /**
  * Implements `docker run` command.
@@ -289,20 +370,24 @@ export const push: (
  * @category Docker
  */
 export const run: (
-    containerOptions: Parameters<Endpoints.Containers["create"]>[0]
-) => Effect.Effect<Schemas.ContainerInspectResponse, Endpoints.ContainersError, Endpoints.Containers> = internal.run;
+    containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
+) => Effect.Effect<Schemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =
+    internalDocker.run;
 
 /**
  * Implements `docker run` command as a scoped effect. When the scope is closed,
- * both the image and the container is removed = internal.removed.
+ * both the image and the container is removed = internalDocker.removed.
  *
  * @since 1.0.0
  * @category Docker
  */
 export const runScoped: (
-    containerOptions: Parameters<Endpoints.Containers["create"]>[0]
-) => Effect.Effect<Schemas.ContainerInspectResponse, Endpoints.ContainersError, Scope.Scope | Endpoints.Containers> =
-    internal.runScoped;
+    containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
+) => Effect.Effect<
+    Schemas.ContainerInspectResponse,
+    MobyEndpoints.ContainersError,
+    Scope.Scope | MobyEndpoints.Containers
+> = internalDocker.runScoped;
 
 /**
  * Implements the `docker search` command.
@@ -311,9 +396,9 @@ export const runScoped: (
  * @category Docker
  */
 export const search: (
-    options: Parameters<Endpoints.Images["search"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, Endpoints.ImagesError, Endpoints.Images> =
-    internal.search;
+    options: Parameters<MobyEndpoints.Images["search"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
+    internalDocker.search;
 
 /**
  * Implements the `docker start` command.
@@ -321,8 +406,9 @@ export const search: (
  * @since 1.0.0
  * @category Docker
  */
-export const start: (containerId: string) => Effect.Effect<void, Endpoints.ContainersError, Endpoints.Containers> =
-    internal.start;
+export const start: (
+    containerId: string
+) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> = internalDocker.start;
 
 /**
  * Implements the `docker stop` command.
@@ -330,8 +416,9 @@ export const start: (containerId: string) => Effect.Effect<void, Endpoints.Conta
  * @since 1.0.0
  * @category Docker
  */
-export const stop: (containerId: string) => Effect.Effect<void, Endpoints.ContainersError, Endpoints.Containers> =
-    internal.stop;
+export const stop: (
+    containerId: string
+) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> = internalDocker.stop;
 
 /**
  * Implements the `docker version` command.
@@ -341,6 +428,6 @@ export const stop: (containerId: string) => Effect.Effect<void, Endpoints.Contai
  */
 export const version: () => Effect.Effect<
     Readonly<Schemas.SystemVersionResponse>,
-    Endpoints.SystemsError,
-    Endpoints.Systems
-> = internal.version;
+    MobyEndpoints.SystemsError,
+    MobyEndpoints.Systems
+> = internalDocker.version;

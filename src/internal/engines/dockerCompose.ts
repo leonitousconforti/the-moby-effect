@@ -19,7 +19,7 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
-import * as DockerEngine from "./docker.js";
+import * as DockerEngine from "../../DockerEngine.js";
 
 import { fan } from "../demux/fan.js";
 import { mergeToTaggedStream } from "../demux/raw.js";

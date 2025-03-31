@@ -4,7 +4,11 @@
  * @since 1.0.0
  */
 
-import * as PlatformError from "@effect/platform/Error";
+import type * as PlatformError from "@effect/platform/Error";
+import type * as ParseResult from "effect/ParseResult";
+import type * as Scope from "effect/Scope";
+import type * as MobyConnection from "../../MobyConnection.js";
+
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
 import * as Array from "effect/Array";
@@ -15,19 +19,16 @@ import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Number from "effect/Number";
 import * as Option from "effect/Option";
-import * as ParseResult from "effect/ParseResult";
 import * as Schedule from "effect/Schedule";
 import * as Schema from "effect/Schema";
-import * as Scope from "effect/Scope";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 import * as TarCommon from "eftar/Common";
 import * as Tar from "eftar/Tar";
 import * as Untar from "eftar/Untar";
-import * as DockerEngine from "./docker.js";
+import * as DockerEngine from "../../DockerEngine.js";
 
-import type { MobyConnectionOptions } from "../../MobyConnection.js";
 import { RecommendedDindBaseImages } from "../blobs/constants.js";
 import { content as HttpBlob } from "../blobs/http.js";
 import { content as HttpsBlob } from "../blobs/https.js";
@@ -54,7 +55,7 @@ export type MakeDindLayerFromPlatformConstructor<
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         connectionOptions: any
     ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
-    SupportedConnectionOptions extends MobyConnectionOptions = PlatformLayerConstructor extends (
+    SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (
         connectionOptions: infer C
     ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
         ? C
@@ -144,8 +145,8 @@ const downloadDindCertificates = (
  * @category Helpers
  * @internal
  */
-const blobForExposeBy: (exposeDindContainerBy: MobyConnectionOptions["_tag"]) => string = Function.pipe(
-    Match.type<MobyConnectionOptions["_tag"]>(),
+const blobForExposeBy: (exposeDindContainerBy: MobyConnection.MobyConnectionOptions["_tag"]) => string = Function.pipe(
+    Match.type<MobyConnection.MobyConnectionOptions["_tag"]>(),
     Match.when("ssh", () => SshBlob),
     Match.when("http", () => HttpBlob),
     Match.when("https", () => HttpsBlob),
@@ -158,7 +159,7 @@ const blobForExposeBy: (exposeDindContainerBy: MobyConnectionOptions["_tag"]) =>
  * @category Helpers
  * @internal
  */
-const makeDindBinds = <ExposeDindBy extends MobyConnectionOptions["_tag"]>(
+const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions["_tag"]>(
     exposeDindBy: ExposeDindBy
 ): Effect.Effect<
     readonly [boundDockerSocket: string, binds: Array<string>],
@@ -241,7 +242,7 @@ export const makeDindLayerFromPlatformConstructor =
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             connectionOptions: any
         ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
-        SupportedConnectionOptions extends MobyConnectionOptions = PlatformLayerConstructor extends (
+        SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (
             connectionOptions: infer C
         ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
             ? C
@@ -362,7 +363,7 @@ export const makeDindLayerFromPlatformConstructor =
 
             // Get the host from the connection options
             const host = Function.pipe(
-                Match.value<MobyConnectionOptions>(options.connectionOptionsToHost),
+                Match.value<MobyConnection.MobyConnectionOptions>(options.connectionOptionsToHost),
                 Match.tag("socket", () => "localhost" as const),
                 Match.orElse(({ host }) => host)
             );
@@ -378,7 +379,7 @@ export const makeDindLayerFromPlatformConstructor =
 
             // Craft the connection options
             const connectionOptions = Function.pipe(
-                Match.value<MobyConnectionOptions["_tag"]>(options.exposeDindContainerBy),
+                Match.value<MobyConnection.MobyConnectionOptions["_tag"]>(options.exposeDindContainerBy),
                 Match.when("http", () => HttpConnectionOptions({ host, port: httpPort })),
                 Match.when("https", () => HttpsConnectionOptions({ host, port: httpsPort, ca, key, cert })),
                 Match.when("socket", () => SocketConnectionOptions({ socketPath: boundDockerSocket })),
