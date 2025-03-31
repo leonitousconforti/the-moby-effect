@@ -1,4 +1,6 @@
 import type * as Socket from "@effect/platform/Socket";
+import type * as Channel from "effect/Channel";
+import type * as Chunk from "effect/Chunk";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 
@@ -8,7 +10,12 @@ import * as Effect from "effect/Effect";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import { demuxMultiplexedToSeparateSinks, EitherMultiplexedInput } from "./multiplexed.js";
+import {
+    asMultiplexedChannel,
+    demuxMultiplexedToSeparateSinks,
+    EitherMultiplexedInput,
+    makeMultiplexedChannel,
+} from "./multiplexed.js";
 
 /**
  * @since 1.0.0
@@ -44,11 +51,14 @@ export class StderrError extends Data.TaggedError("StderrError")<{ message: stri
  * @since 1.0.0
  * @category DemuxStdio
  */
-export const demuxFromStdinToStdoutAndStderr = <E, IE = never, OE = Socket.SocketError, R = never>(
-    sockets: EitherMultiplexedInput<E | IE, OE, R>,
-    onStdinError: (error: StdinError) => E,
+export const demuxFromStdinToStdoutAndStderr = <IE = never, OE = Socket.SocketError, R = never>(
+    sockets: EitherMultiplexedInput<IE, OE, R>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-): Effect.Effect<void, E | IE | OE | StdoutError | StderrError | ParseResult.ParseError, Exclude<R, Scope.Scope>> =>
+): Effect.Effect<
+    void,
+    IE | OE | StdinError | StdoutError | StderrError | ParseResult.ParseError,
+    Exclude<R, Scope.Scope>
+> =>
     Effect.flatMap(
         Effect.all(
             {
@@ -73,13 +83,20 @@ export const demuxFromStdinToStdoutAndStderr = <E, IE = never, OE = Socket.Socke
                 { endOnDone: false }
             );
 
-            return demuxMultiplexedToSeparateSinks(
-                sockets,
-                Stream.mapError(stdin, onStdinError),
-                stdout,
-                stderr,
-                options
+            const { underlying } = asMultiplexedChannel(sockets);
+            const multiplexedChannel = makeMultiplexedChannel<IE | StdinError, IE | OE | StdinError, R>(
+                underlying as Channel.Channel<
+                    Chunk.Chunk<Uint8Array>,
+                    Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+                    IE | OE | StdinError,
+                    IE | StdinError,
+                    void,
+                    unknown,
+                    R
+                >
             );
+
+            return demuxMultiplexedToSeparateSinks(multiplexedChannel, stdin, stdout, stderr, options);
         }
     );
 

@@ -36,12 +36,12 @@ const program = Effect.gen(function* () {
 
     const [multiplexed] = yield* DockerEngine.execNonBlocking({
         containerId,
-        command: ["cat"],
+        command: ["echo", "Hello, World!"],
     });
 
     assert.ok(isMultiplexedSocket(multiplexed));
 
-    const fanned = yield* MobyDemux.fan(multiplexed);
+    const fanned = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
 
     // const [data1, data2] = yield* demuxRawSockets(fanned, {
     //     stdin: Stream.make("ah\n"),
@@ -49,7 +49,7 @@ const program = Effect.gen(function* () {
     //     stderr: Sink.mkString,
     // });
 
-    const packed = yield* MobyDemux.pack(fanned);
+    const packed = yield* MobyDemux.pack(fanned, { requestedCapacity: 16 });
 
     const [data1, data2] = yield* demuxMultiplexedToSeparateSinks(
         packed,

@@ -86,11 +86,12 @@ export const pack = Function.dual<
             Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
         >();
 
-        const stdoutConsumerQueue = yield* Queue.bounded<string>(options.requestedCapacity);
-        const stderrConsumerQueue = yield* Queue.bounded<string>(options.requestedCapacity);
-        const stdinProducerQueue = yield* Queue.bounded<
-            Either.Either<Chunk.Chunk<Uint8Array | string | Socket.CloseEvent>, Exit.Exit<void, IE1>>
-        >(options.requestedCapacity);
+        const capacity = options.requestedCapacity;
+        type CanReceive = Uint8Array | string | Socket.CloseEvent;
+        const stdoutConsumerQueue = yield* Queue.bounded<string>(capacity);
+        const stderrConsumerQueue = yield* Queue.bounded<string>(capacity);
+        const stdinProducerQueue =
+            yield* Queue.bounded<Either.Either<Chunk.Chunk<CanReceive>, Exit.Exit<void, IE1>>>(capacity);
 
         // Demux everything to and fro the correct places. We can touch
         // this more than once because it is wrapped in the mutex.
@@ -119,7 +120,7 @@ export const pack = Function.dual<
             },
             {
                 encoding: options?.encoding,
-            } as const
+            }
         )
             .pipe(mutex.withPermitsIfAvailable(1))
             .pipe(Effect.asVoid)
@@ -128,16 +129,18 @@ export const pack = Function.dual<
 
         // Convert the streams to the multiplexed streams
         const textEncoder = new TextEncoder();
-        const mapEntry =
+        const encode = Function.pipe(
+            Match.type<Uint8Array | string | Socket.CloseEvent>(),
+            Match.when(Predicate.isUint8Array, (data) => data),
+            Match.when(Predicate.isString, (data) => textEncoder.encode(data)),
+            Match.when(Socket.isCloseEvent, () => new Uint8Array()),
+            Match.exhaustive
+        );
+
+        const mapOutEntry =
             (type: MultiplexedHeaderType) =>
-            (data: Uint8Array | string | Socket.CloseEvent): Uint8Array => {
-                const encoded = Function.pipe(
-                    Match.value(data),
-                    Match.when(Predicate.isUint8Array, (data) => data),
-                    Match.when(Predicate.isString, (data) => textEncoder.encode(data)),
-                    Match.when(Socket.isCloseEvent, () => new Uint8Array()),
-                    Match.exhaustive
-                );
+            (data: CanReceive): Uint8Array => {
+                const encoded = encode(data);
                 const size = encoded.length;
                 const header = new Uint8Array(8);
                 header.set([type, 0, 0, 0]);
@@ -145,33 +148,25 @@ export const pack = Function.dual<
                 return new Uint8Array([...header, ...encoded]);
             };
 
-        const mapStdin = mapEntry(MultiplexedHeaderType.Stdin);
-        const mapStdout = mapEntry(MultiplexedHeaderType.Stdout);
-        const mapStderr = mapEntry(MultiplexedHeaderType.Stderr);
-
+        const concurrency = { concurrent: true } as const;
         const independentStdinChannel = Channel.toQueue(stdinProducerQueue)
             .pipe(Channel.mapInput(Function.constVoid))
             .pipe(Channel.mapInputError(Function.unsafeCoerce<unknown, IE1 | IE2 | IE3>))
-            .pipe(
-                Channel.mapInputIn((input: Chunk.Chunk<Uint8Array | string | Socket.CloseEvent>) =>
-                    Chunk.map(input, mapStdin)
-                )
-            )
-            .pipe(Channel.zipLeft(mother, { concurrent: true }));
+            .pipe(Channel.mapInputIn((input: Chunk.Chunk<CanReceive>) => Chunk.map(input, encode)))
+            .pipe(Channel.zipLeft(mother, concurrency));
 
         const { underlying: independentStdoutChannel } = Stream.fromQueue(stdoutConsumerQueue)
             .pipe(Stream.encodeText)
-            .pipe(Stream.map(mapStdout))
+            .pipe(Stream.map(mapOutEntry(MultiplexedHeaderType.Stdout)))
             .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
 
         const { underlying: independentStderrChannel } = Stream.fromQueue(stderrConsumerQueue)
+            .pipe(Stream.tap(Effect.log))
             .pipe(Stream.encodeText)
-            .pipe(Stream.map(mapStderr))
+            .pipe(Stream.map(mapOutEntry(MultiplexedHeaderType.Stderr)))
             .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
 
-        const mixedOutputChannel = Channel.zip(independentStdoutChannel, independentStderrChannel, {
-            concurrent: true,
-        });
-        return makeMultiplexedChannel(Channel.zip(independentStdinChannel, mixedOutputChannel, { concurrent: true }));
+        const mixedOutputChannel = Channel.zip(independentStdoutChannel, independentStderrChannel, concurrency);
+        return makeMultiplexedChannel(Channel.zip(independentStdinChannel, mixedOutputChannel, concurrency));
     })
 );

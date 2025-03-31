@@ -95,7 +95,7 @@ export const fan = Function.dual<
             {
                 bufferSize: 32,
                 encoding: options.encoding,
-            } as const
+            }
         )
             .pipe(mutex.withPermitsIfAvailable(1))
             .pipe(Effect.asVoid)
