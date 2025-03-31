@@ -41,6 +41,8 @@ const program = Effect.gen(function* () {
     const stdin = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
     const stdout = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
     const stderr = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
+
+    // Pack the three websockets into a single multiplexed socket
     const packed = yield* MobyDemux.pack({ stdin, stdout, stderr }, { requestedCapacity: 16 });
 
     // Demux the socket to stdin, stdout and stderr
