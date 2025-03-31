@@ -25,11 +25,6 @@ export const MobyConnectionOptions = Data.taggedEnum<MobyConnection.MobyConnecti
 /**
  * @since 1.0.0
  * @category Connection Constructors
- * @example
- *     import { SocketConnectionOptions } from "the-moby-effect/MobyConnection";
- *     const connectionOptions = SocketConnectionOptions({
- *         socketPath: "/var/run/docker.sock",
- *     });
  */
 export const SocketConnectionOptions = MobyConnectionOptions.socket;
 
@@ -42,45 +37,18 @@ export const SocketConnectionOptions = MobyConnectionOptions.socket;
  *
  * @since 1.0.0
  * @category Connection Constructors
- * @example
- *     import { SshConnectionOptions } from "the-moby-effect/MobyConnection";
- *     const connectionOptions = SshConnectionOptions({
- *         host: "host.domain.com",
- *         port: 2222,
- *         username: "user",
- *         password: "password",
- *         remoteSocketPath: "/var/run/docker.sock",
- *     });
  */
 export const SshConnectionOptions = MobyConnectionOptions.ssh;
 
 /**
  * @since 1.0.0
  * @category Connection Constructors
- * @example
- *     import { HttpConnectionOptions } from "the-moby-effect/MobyConnection";
- *     const connectionOptions = HttpConnectionOptions({
- *         host: "host.domain.com",
- *         port: 2375,
- *         path: "/proxy-path",
- *     });
  */
 export const HttpConnectionOptions = MobyConnectionOptions.http;
 
 /**
  * @since 1.0.0
  * @category Connection Constructors
- * @example
- *     import { HttpsConnectionOptions } from "the-moby-effect/MobyConnection";
- *     const connectionOptions = HttpsConnectionOptions({
- *         host: "host.domain.com",
- *         port: 2375,
- *         path: "/proxy-path",
- *         // passphrase: "password",
- *         // ca: fs.readFileSync("ca.pem"),
- *         // key: fs.readFileSync("key.pem"),
- *         // cert: fs.readFileSync("cert.pem"),
- *     });
  */
 export const HttpsConnectionOptions = MobyConnectionOptions.https;
 

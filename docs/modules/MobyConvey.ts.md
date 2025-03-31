@@ -31,8 +31,8 @@ Tracks the progress stream in the console and returns the result.
 
 ```ts
 export declare const followProgressInConsole: <E1, R1>(
-  stream: Stream.Stream<JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>>
+  stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
+) => Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>>
 ```
 
 Added in v1.0.0
@@ -44,7 +44,7 @@ Consumes the progress stream and logs it to the console.
 **Signature**
 
 ```ts
-export declare const followProgressSink: Sink.Sink<void, JSONMessage, never, never, never>
+export declare const followProgressSink: Sink.Sink<void, MobySchemas.JSONMessage, never, never, never>
 ```
 
 Added in v1.0.0
@@ -57,8 +57,8 @@ Waits for the progress stream to complete and returns the result.
 
 ```ts
 export declare const waitForProgressToComplete: <E1, R1>(
-  stream: Stream.Stream<JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>>
+  stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
+) => Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>>
 ```
 
 Added in v1.0.0

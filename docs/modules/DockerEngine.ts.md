@@ -6,7 +6,7 @@ parent: Modules
 
 ## DockerEngine overview
 
-Docker engine shortcut.
+Docker engine.
 
 Added in v1.0.0
 
@@ -198,7 +198,7 @@ export declare const execWebsocketsNonBlocking: ({
   command: string | Array<string>
   containerId: string
 }) => Effect.Effect<
-  MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError>,
+  MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
   never,
   MobyEndpoints.Containers
 >

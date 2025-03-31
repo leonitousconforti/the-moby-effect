@@ -46,7 +46,7 @@ Added in v1.0.0
 
 ## From "./DindEngine.js"
 
-Docker in docker engine shortcut.
+Docker in docker engine.
 
 **Signature**
 
@@ -70,7 +70,7 @@ Added in v1.0.0
 
 ## From "./DockerEngine.js"
 
-Docker engine shortcut.
+Docker engine.
 
 **Signature**
 

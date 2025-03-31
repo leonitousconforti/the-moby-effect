@@ -6,7 +6,7 @@
 export * as Callbacks from "./Callbacks.js"
 
 /**
- * Docker in docker engine shortcut.
+ * Docker in docker engine.
  *
  * @since 1.0.0
  */
@@ -20,7 +20,7 @@ export * as DindEngine from "./DindEngine.js"
 export * as DockerComposeEngine from "./DockerComposeEngine.js"
 
 /**
- * Docker engine shortcut.
+ * Docker engine.
  *
  * @since 1.0.0
  */
