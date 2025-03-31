@@ -349,7 +349,7 @@ export const execWebsocketsNonBlocking = ({
             const multiplexedSocket = yield* MobyDemux.pack(sockets, { requestedCapacity: 16 });
             const producer = Channel.fromEffect(MobyDemux.demuxRawToSingleSink(stdinSocket, input, Sink.drain));
             const consumer = multiplexedSocket.underlying;
-            const zipped = Channel.zipLeft(consumer, producer);
+            const zipped = Channel.zipLeft(consumer, producer, { concurrent: true });
             return zipped;
         });
 
