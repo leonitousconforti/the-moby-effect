@@ -5,13 +5,13 @@
  */
 
 import type * as Array from "effect/Array";
+import type * as Context from "effect/Context";
 import type * as Effect from "effect/Effect";
 import type * as Layer from "effect/Layer";
 import type * as Stream from "effect/Stream";
 import type * as DockerEngine from "./DockerEngine.js";
 import type * as MobyEndpoints from "./MobyEndpoints.js";
 
-import * as Context from "effect/Context";
 import * as internal from "./internal/engines/dockerCompose.js";
 
 /**
