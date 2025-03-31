@@ -58,7 +58,7 @@ Added in v1.0.0
 
 ## From "./DockerComposeEngine.js"
 
-Docker compose engine shortcut.
+Docker compose engine.
 
 **Signature**
 

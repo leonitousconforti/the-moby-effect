@@ -125,13 +125,13 @@ Added in v1.0.0
 
 ```ts
 export type PodmanLayer = Layer.Layer<
-  | Endpoints.Containers
-  | Endpoints.Execs
-  | Endpoints.Images
-  | Endpoints.Networks
-  | Endpoints.Secrets
-  | Endpoints.Systems
-  | Endpoints.Volumes,
+  | MobyEndpoints.Containers
+  | MobyEndpoints.Execs
+  | MobyEndpoints.Images
+  | MobyEndpoints.Networks
+  | MobyEndpoints.Secrets
+  | MobyEndpoints.Systems
+  | MobyEndpoints.Volumes,
   never,
   never
 >

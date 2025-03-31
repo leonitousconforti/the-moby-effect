@@ -13,7 +13,7 @@ export * as Callbacks from "./Callbacks.js"
 export * as DindEngine from "./DindEngine.js"
 
 /**
- * Docker compose engine shortcut.
+ * Docker compose engine.
  *
  * @since 1.0.0
  */

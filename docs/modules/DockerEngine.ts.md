@@ -73,7 +73,7 @@ export declare const build: <E1>({
   dockerfile?: string | undefined
   context: Stream.Stream<Uint8Array, E1, never>
   buildArgs?: Record<string, string | undefined> | undefined
-}) => Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, Endpoints.Images>
+}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -102,9 +102,9 @@ export declare const buildScoped: <E1>({
   buildArgs?: Record<string, string | undefined> | undefined
   context: Stream.Stream<Uint8Array, E1, never>
 }) => Effect.Effect<
-  Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, never>,
+  Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
   never,
-  Scope.Scope | Endpoints.Images
+  Scope.Scope | MobyEndpoints.Images
 >
 ```
 
@@ -126,8 +126,8 @@ export declare const exec: ({
   command: string | Array<string>
 }) => Effect.Effect<
   readonly [exitCode: number, output: string],
-  Endpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
-  Endpoints.Execs
+  MobyEndpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
+  MobyEndpoints.Execs
 >
 ```
 
@@ -151,8 +151,8 @@ export declare const execNonBlocking: <T extends boolean | undefined = undefined
   command: string | Array<string>
 }) => Effect.Effect<
   [socket: T extends true ? void : RawSocket | MultiplexedSocket, execId: string],
-  Endpoints.ExecsError,
-  Endpoints.Execs
+  MobyEndpoints.ExecsError,
+  MobyEndpoints.Execs
 >
 ```
 
@@ -175,8 +175,8 @@ export declare const execWebsockets: ({
   containerId: string
 }) => Effect.Effect<
   readonly [stdout: string, stderr: string],
-  Endpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
-  Endpoints.Containers
+  MobyEndpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
+  MobyEndpoints.Containers
 >
 ```
 
@@ -198,9 +198,9 @@ export declare const execWebsocketsNonBlocking: ({
   command: string | Array<string>
   containerId: string
 }) => Effect.Effect<
-  MultiplexedChannel<never, Socket.SocketError | Endpoints.ContainersError>,
+  MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError>,
   never,
-  Endpoints.Containers
+  MobyEndpoints.Containers
 >
 ```
 
@@ -214,8 +214,8 @@ Implements the `docker images` command.
 
 ```ts
 export declare const images: (
-  options?: Parameters<Endpoints.Images["list"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, Endpoints.ImagesError, Endpoints.Images>
+  options?: Parameters<MobyEndpoints.Images["list"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -229,8 +229,8 @@ Implements the `docker info` command.
 ```ts
 export declare const info: () => Effect.Effect<
   Readonly<Schemas.SystemInfoResponse>,
-  Endpoints.SystemsError,
-  Endpoints.Systems
+  MobyEndpoints.SystemsError,
+  MobyEndpoints.Systems
 >
 ```
 
@@ -243,7 +243,7 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const ping: () => Effect.Effect<"OK", Endpoints.SystemsError, Endpoints.Systems>
+export declare const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEndpoints.Systems>
 ```
 
 Added in v1.0.0
@@ -255,7 +255,7 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const pingHead: () => Effect.Effect<void, Endpoints.SystemsError, Endpoints.Systems>
+export declare const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, MobyEndpoints.Systems>
 ```
 
 Added in v1.0.0
@@ -268,8 +268,12 @@ Implements the `docker ps` command.
 
 ```ts
 export declare const ps: (
-  options?: Parameters<Endpoints.Containers["list"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.ContainerListResponseItem>, Endpoints.ContainersError, Endpoints.Containers>
+  options?: Parameters<MobyEndpoints.Containers["list"]>[0]
+) => Effect.Effect<
+  ReadonlyArray<Schemas.ContainerListResponseItem>,
+  MobyEndpoints.ContainersError,
+  MobyEndpoints.Containers
+>
 ```
 
 Added in v1.0.0
@@ -290,7 +294,7 @@ export declare const pull: ({
   image: string
   auth?: string | undefined
   platform?: string | undefined
-}) => Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, Endpoints.Images>
+}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -299,7 +303,7 @@ Added in v1.0.0
 
 Implements the `docker pull` command as a scoped effect. When the scope is
 closed, the pulled image is removed. It doesn't have all the flag =
-internal.flags that the images create endpoint exposes.
+internalDocker.flags that the images create endpoint exposes.
 
 **Signature**
 
@@ -313,9 +317,9 @@ export declare const pullScoped: ({
   auth?: string | undefined
   platform?: string | undefined
 }) => Effect.Effect<
-  Stream.Stream<Schemas.JSONMessage, Endpoints.ImagesError, never>,
+  Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
   never,
-  Endpoints.Images | Scope.Scope
+  MobyEndpoints.Images | Scope.Scope
 >
 ```
 
@@ -329,8 +333,8 @@ Implements the `docker push` command.
 
 ```ts
 export declare const push: (
-  options: Parameters<Endpoints.Images["push"]>[0]
-) => Stream.Stream<string, Endpoints.ImagesError, Endpoints.Images>
+  options: Parameters<MobyEndpoints.Images["push"]>[0]
+) => Stream.Stream<string, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -343,8 +347,8 @@ Implements `docker run` command.
 
 ```ts
 export declare const run: (
-  containerOptions: Parameters<Endpoints.Containers["create"]>[0]
-) => Effect.Effect<Schemas.ContainerInspectResponse, Endpoints.ContainersError, Endpoints.Containers>
+  containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
+) => Effect.Effect<Schemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
 Added in v1.0.0
@@ -352,14 +356,18 @@ Added in v1.0.0
 ## runScoped
 
 Implements `docker run` command as a scoped effect. When the scope is closed,
-both the image and the container is removed = internal.removed.
+both the image and the container is removed = internalDocker.removed.
 
 **Signature**
 
 ```ts
 export declare const runScoped: (
-  containerOptions: Parameters<Endpoints.Containers["create"]>[0]
-) => Effect.Effect<Schemas.ContainerInspectResponse, Endpoints.ContainersError, Scope.Scope | Endpoints.Containers>
+  containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
+) => Effect.Effect<
+  Schemas.ContainerInspectResponse,
+  MobyEndpoints.ContainersError,
+  Scope.Scope | MobyEndpoints.Containers
+>
 ```
 
 Added in v1.0.0
@@ -372,8 +380,8 @@ Implements the `docker search` command.
 
 ```ts
 export declare const search: (
-  options: Parameters<Endpoints.Images["search"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, Endpoints.ImagesError, Endpoints.Images>
+  options: Parameters<MobyEndpoints.Images["search"]>[0]
+) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -387,7 +395,7 @@ Implements the `docker start` command.
 ```ts
 export declare const start: (
   containerId: string
-) => Effect.Effect<void, Endpoints.ContainersError, Endpoints.Containers>
+) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
 Added in v1.0.0
@@ -399,7 +407,9 @@ Implements the `docker stop` command.
 **Signature**
 
 ```ts
-export declare const stop: (containerId: string) => Effect.Effect<void, Endpoints.ContainersError, Endpoints.Containers>
+export declare const stop: (
+  containerId: string
+) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
 Added in v1.0.0
@@ -413,8 +423,8 @@ Implements the `docker version` command.
 ```ts
 export declare const version: () => Effect.Effect<
   Readonly<Schemas.SystemVersionResponse>,
-  Endpoints.SystemsError,
-  Endpoints.Systems
+  MobyEndpoints.SystemsError,
+  MobyEndpoints.Systems
 >
 ```
 
@@ -427,7 +437,14 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DockerLayer = internal.DockerLayer
+export type DockerLayer = Layer.Layer<
+  Layer.Layer.Success<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
+  Layer.Layer.Error<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
+  Exclude<
+    Layer.Layer.Context<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
+    HttpClient.HttpClient | Socket.WebSocketConstructor
+  >
+>
 ```
 
 Added in v1.0.0
@@ -437,8 +454,25 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DockerLayerWithoutHttpClientOrWebsocketConstructor =
-  internal.DockerLayerWithoutHttpClientOrWebsocketConstructor
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
+  | MobyEndpoints.Configs
+  | MobyEndpoints.Containers
+  | MobyEndpoints.Distributions
+  | MobyEndpoints.Execs
+  | MobyEndpoints.Images
+  | MobyEndpoints.Networks
+  | MobyEndpoints.Nodes
+  | MobyEndpoints.Plugins
+  | MobyEndpoints.Secrets
+  | MobyEndpoints.Services
+  | MobyEndpoints.Sessions
+  | MobyEndpoints.Swarm
+  | MobyEndpoints.Systems
+  | MobyEndpoints.Tasks
+  | MobyEndpoints.Volumes,
+  never,
+  HttpClient.HttpClient | Socket.WebSocketConstructor
+>
 ```
 
 Added in v1.0.0
@@ -449,8 +483,8 @@ Added in v1.0.0
 
 ```ts
 export declare const layerAgnostic: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => internal.DockerLayerWithoutHttpClientOrWebsocketConstructor
+  connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => DockerLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0
@@ -460,7 +494,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: MobyConnectionOptions) => internal.DockerLayer
+export declare const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -470,7 +504,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: MobyConnectionOptions) => internal.DockerLayer
+export declare const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -481,8 +515,8 @@ Added in v1.0.0
 
 ```ts
 export declare const layerFetch: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => internal.DockerLayer
+  connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -492,7 +526,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: MobyConnectionOptions) => internal.DockerLayer
+export declare const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -502,7 +536,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: MobyConnectionOptions) => internal.DockerLayer
+export declare const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -513,8 +547,8 @@ Added in v1.0.0
 
 ```ts
 export declare const layerWeb: (
-  connectionOptions: HttpConnectionOptionsTagged | HttpsConnectionOptionsTagged
-) => internal.DockerLayer
+  connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
+) => DockerLayer
 ```
 
 Added in v1.0.0
@@ -524,7 +558,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layerWithoutHttpCLient: MobyLayerWithoutHttpClientOrWebsocketConstructor
+export declare const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
 Added in v1.0.0
