@@ -151,7 +151,7 @@ export const pack = Function.dual<
 
         const independentStdinChannel = Channel.toQueue(stdinProducerQueue)
             .pipe(Channel.mapInput(Function.constVoid))
-            .pipe(Channel.mapInputError((x: IE1 | IE2 | IE3) => x))
+            .pipe(Channel.mapInputError((error: IE1 | IE2 | IE3) => error))
             .pipe(
                 Channel.mapInputIn((input: Chunk.Chunk<Uint8Array | string | Socket.CloseEvent>) =>
                     Chunk.map(input, mapStdin)
