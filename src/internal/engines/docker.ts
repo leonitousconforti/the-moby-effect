@@ -330,9 +330,9 @@ export const execWebsocketsNonBlocking = ({
                 });
             }
             yield* mutex.take(1);
-            return yield* Effect.void;
         });
 
+        // TODO: should this be un-interuptible?
         const release = Effect.fnUntraced(function* () {
             yield* mutex.release(1);
             yield* containers.wait(containerId, { condition: "not-running" });
@@ -341,7 +341,7 @@ export const execWebsocketsNonBlocking = ({
 
         const use = Effect.gen(function* () {
             const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
-            const input = Stream.concat(Stream.succeed(`${cmd}; exit\n`), Stream.make(new Socket.CloseEvent()));
+            const input = Stream.succeed(`${cmd}; exit\n`);
             const stdinSocket = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
             const stdoutSocket = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
             const stderrSocket = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
@@ -349,7 +349,7 @@ export const execWebsocketsNonBlocking = ({
             const multiplexedSocket = yield* MobyDemux.pack(sockets, { requestedCapacity: 16 });
             const producer = Channel.fromEffect(MobyDemux.demuxRawToSingleSink(stdinSocket, input, Sink.drain));
             const consumer = multiplexedSocket.underlying;
-            const zipped = Channel.zipLeft(consumer, producer, { concurrent: true });
+            const zipped = Channel.zipLeft(producer, consumer, { concurrent: true });
             return zipped;
         });
 
