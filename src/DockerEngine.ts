@@ -15,15 +15,9 @@ import type * as Schemas from "./MobySchemas.js";
 
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyEndpoints from "./MobyEndpoints.js";
 import * as internalDocker from "./internal/engines/docker.js";
-import * as internalAgnostic from "./internal/platforms/agnostic.js";
-import * as internalBun from "./internal/platforms/bun.js";
-import * as internalDeno from "./internal/platforms/deno.js";
-import * as internalFetch from "./internal/platforms/fetch.js";
-import * as internalNode from "./internal/platforms/node.js";
-import * as internalUndici from "./internal/platforms/undici.js";
-import * as internalWeb from "./internal/platforms/web.js";
+import * as MobyEndpoints from "./MobyEndpoints.js";
+import * as MobyPlatforms from "./MobyPlatforms.js";
 
 /**
  * @since 1.0.0
@@ -89,7 +83,7 @@ export const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketCons
  * @category Layers
  */
 export const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
-    internalNode.makeNodeHttpClientLayer,
+    MobyPlatforms.makeNodeHttpClientLayer,
     (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
@@ -98,7 +92,7 @@ export const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptio
  * @category Layers
  */
 export const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
-    internalBun.makeBunHttpClientLayer,
+    MobyPlatforms.makeBunHttpClientLayer,
     (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
@@ -107,7 +101,7 @@ export const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions)
  * @category Layers
  */
 export const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
-    internalDeno.makeDenoHttpClientLayer,
+    MobyPlatforms.makeDenoHttpClientLayer,
     (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
@@ -116,7 +110,7 @@ export const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions
  * @category Layers
  */
 export const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer = Function.compose(
-    internalUndici.makeUndiciHttpClientLayer,
+    MobyPlatforms.makeUndiciHttpClientLayer,
     (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
@@ -126,7 +120,7 @@ export const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptio
  */
 export const layerWeb: (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
-) => DockerLayer = Function.compose(internalWeb.makeWebHttpClientLayer, (httpClientLayer) =>
+) => DockerLayer = Function.compose(MobyPlatforms.makeWebHttpClientLayer, (httpClientLayer) =>
     Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
@@ -136,7 +130,7 @@ export const layerWeb: (
  */
 export const layerFetch: (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
-) => DockerLayer = Function.compose(internalFetch.makeFetchHttpClientLayer, (httpClientLayer) =>
+) => DockerLayer = Function.compose(MobyPlatforms.makeFetchHttpClientLayer, (httpClientLayer) =>
     Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
@@ -147,7 +141,7 @@ export const layerFetch: (
 export const layerAgnostic: (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => DockerLayerWithoutHttpClientOrWebsocketConstructor = Function.compose(
-    internalAgnostic.makeAgnosticHttpClientLayer,
+    MobyPlatforms.makeAgnosticHttpClientLayer,
     (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 

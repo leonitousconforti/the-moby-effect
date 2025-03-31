@@ -4,10 +4,10 @@
  * @since 1.0.0
  */
 
+import type * as ConfigError from "effect/ConfigError";
 import type * as ssh2 from "ssh2";
 
 import * as Path from "@effect/platform/Path";
-import * as ConfigError from "effect/ConfigError";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 

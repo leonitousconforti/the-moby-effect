@@ -5,6 +5,7 @@
  */
 
 import type * as Layer from "effect/Layer";
+import type * as MobySchemas from "./MobySchemas.js";
 
 import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
@@ -13,7 +14,6 @@ import * as ManagedRuntime from "effect/ManagedRuntime";
 import * as Stream from "effect/Stream";
 import * as DockerEngine from "./DockerEngine.js";
 import * as MobyConvey from "./MobyConvey.js";
-import * as MobySchemas from "./MobySchemas.js";
 
 /**
  * Create a promise client for the docker engine
