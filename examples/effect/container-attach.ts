@@ -1,8 +1,9 @@
 // Run with: npx tsx examples/effect/container-attach.ts
 
 import { NodeRuntime } from "@effect/platform-node";
+import * as assert from "assert";
 import { Console, Effect, Function, Layer } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
+import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -46,10 +47,9 @@ const program = Effect.gen(function* () {
         detachKeys: "ctrl-e",
     });
 
-    console.log(socket);
-
     // Demux the socket to stdin, stdout and stderr
-    // yield* MobyDemux.demuxSocketFromStdinToStdoutAndStderr(socket);
+    assert.ok(MobyDemux.isMultiplexedSocket(socket));
+    yield* MobyDemux.demuxFromStdinToStdoutAndStderr(socket);
 
     // Done
     yield* Console.log("Disconnected from container");
