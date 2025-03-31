@@ -16,10 +16,8 @@ import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
 import * as DockerEngine from "../../DockerEngine.js";
+import * as MobyDemux from "../../MobyDemux.js";
 import * as MobyEndpoints from "../../MobyEndpoints.js";
-
-import { fan } from "../demux/fan.js";
-import { mergeToTaggedStream } from "../demux/raw.js";
 
 /** @internal */
 export const DockerComposeErrorTypeId: DockerComposeEngine.DockerComposeErrorTypeId = Symbol.for(
@@ -144,8 +142,8 @@ export const make: Effect.Effect<
                 containerId: dindContainerId,
                 command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
             }),
-            Effect.flatMap(fan),
-            Effect.map(({ stderr, stdout }) => mergeToTaggedStream(stdout, stderr)),
+            Effect.flatMap(MobyDemux.fan),
+            Effect.map(({ stderr, stdout }) => MobyDemux.mergeToTaggedStream(stdout, stderr)),
             Stream.unwrapScoped,
             Stream.flatMap(({ _tag, value }) =>
                 _tag === "stdout" ? Stream.succeed(value) : Stream.fail(new TextDecoder().decode(value))
