@@ -1,6 +1,5 @@
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
-import type * as MobySchemas from "../../MobySchemas.js";
 
 import * as Socket from "@effect/platform/Socket";
 import * as Array from "effect/Array";
@@ -13,11 +12,13 @@ import * as MutableHashMap from "effect/MutableHashMap";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
 import * as Schedule from "effect/Schedule";
+import * as Schema from "effect/Schema";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 import * as MobyDemux from "../../MobyDemux.js";
 import * as MobyEndpoints from "../../MobyEndpoints.js";
+import * as MobySchemas from "../../MobySchemas.js";
 
 /** @internal */
 export const pull = ({
@@ -273,28 +274,6 @@ const execWebsocketsRegistry = Global.globalValue("the-moby-effect/engines/docke
 );
 
 /** @internal */
-const validShellEntrypoints = Global.globalValue(
-    "the-moby-effect/engines/docker/execWebsocketsValidShellEntrypoints",
-    () =>
-        new Set([
-            "/bin/sh", // Basic shell available in most containers
-            "/bin/bash", // Bash shell (common in many Linux distributions)
-            "/usr/bin/bash", // Alternative location for bash
-            "/bin/dash", // Debian Almquist shell (lightweight shell)
-            "/bin/ash", // Lightweight shell used in Alpine Linux
-            "/bin/zsh", // Z shell
-            "/usr/bin/zsh", // Alternative location for zsh
-            "/bin/ksh", // Korn shell
-            "/bin/tcsh", // TENEX C shell
-            "/bin/csh", // C shell
-            "/usr/bin/fish", // Friendly interactive shell
-            "/usr/local/bin/bash", // Alternative location for bash
-            "/usr/local/bin/sh", // Alternative location for sh
-            "/busybox/sh", // Busybox shell
-        ])
-);
-
-/** @internal */
 export const execWebsocketsNonBlocking = ({
     command,
     containerId,
@@ -320,15 +299,27 @@ export const execWebsocketsNonBlocking = ({
         const acquire = Effect.gen(function* () {
             const inspect = yield* containers.inspect(containerId);
             const command = Array.join(inspect.Config?.Cmd ?? [], " ");
-            const entrypoint = Array.join(inspect.Config?.Entrypoint ?? [], " ");
-            if (!validShellEntrypoints.has(command) && !validShellEntrypoints.has(entrypoint)) {
-                return yield* new MobyEndpoints.ContainersError({
-                    method: "exec",
-                    cause: new Error(
-                        `The underlying container must have a shell entrypoint/command in order to use execWebsocket, your containers command was: ${command} and entrypoint is: ${entrypoint} neither of which are valid shell entrypoints`
-                    ),
-                });
-            }
+            yield* Effect.mapError(
+                Schema.decodeUnknown(
+                    Schema.Literal(
+                        "/bin/sh", // Basic shell available in most containers
+                        "/bin/bash", // Bash shell (common in many Linux distributions)
+                        "/usr/bin/bash", // Alternative location for bash
+                        "/bin/dash", // Debian Almquist shell (lightweight shell)
+                        "/bin/ash", // Lightweight shell used in Alpine Linux
+                        "/bin/zsh", // Z shell
+                        "/usr/bin/zsh", // Alternative location for zsh
+                        "/bin/ksh", // Korn shell
+                        "/bin/tcsh", // TENEX C shell
+                        "/bin/csh", // C shell
+                        "/usr/bin/fish", // Friendly interactive shell
+                        "/usr/local/bin/bash", // Alternative location for bash
+                        "/usr/local/bin/sh", // Alternative location for sh
+                        "/busybox/sh" // Busybox shell
+                    )
+                )(command),
+                (cause) => new MobyEndpoints.ContainersError({ method: "exec", cause })
+            );
             yield* mutex.take(1);
         });
 
