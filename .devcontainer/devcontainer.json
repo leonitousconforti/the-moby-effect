@@ -9,7 +9,7 @@
         "ghcr.io/devcontainers/features/node:1.6.2": {},
         "ghcr.io/devcontainers/features/github-cli:1.0.14": {},
         "ghcr.io/devcontainers/features/common-utils:2.5.3": {},
-        "ghcr.io/devcontainers/features/docker-in-docker:2.12.1": {}
+        "ghcr.io/devcontainers/features/docker-in-docker:2.12.2": {}
     },
 
     "customizations": {
