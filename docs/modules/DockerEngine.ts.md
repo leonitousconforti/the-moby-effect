@@ -73,7 +73,7 @@ export declare const build: <E1>({
   dockerfile?: string | undefined
   context: Stream.Stream<Uint8Array, E1, never>
   buildArgs?: Record<string, string | undefined> | undefined
-}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
+}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -102,7 +102,7 @@ export declare const buildScoped: <E1>({
   buildArgs?: Record<string, string | undefined> | undefined
   context: Stream.Stream<Uint8Array, E1, never>
 }) => Effect.Effect<
-  Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+  Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
   never,
   Scope.Scope | MobyEndpoints.Images
 >
@@ -215,7 +215,7 @@ Implements the `docker images` command.
 ```ts
 export declare const images: (
   options?: Parameters<MobyEndpoints.Images["list"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
+) => Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -228,7 +228,7 @@ Implements the `docker info` command.
 
 ```ts
 export declare const info: () => Effect.Effect<
-  Readonly<Schemas.SystemInfoResponse>,
+  Readonly<MobySchemas.SystemInfoResponse>,
   MobyEndpoints.SystemsError,
   MobyEndpoints.Systems
 >
@@ -270,7 +270,7 @@ Implements the `docker ps` command.
 export declare const ps: (
   options?: Parameters<MobyEndpoints.Containers["list"]>[0]
 ) => Effect.Effect<
-  ReadonlyArray<Schemas.ContainerListResponseItem>,
+  ReadonlyArray<MobySchemas.ContainerListResponseItem>,
   MobyEndpoints.ContainersError,
   MobyEndpoints.Containers
 >
@@ -294,7 +294,7 @@ export declare const pull: ({
   image: string
   auth?: string | undefined
   platform?: string | undefined
-}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
+}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -317,7 +317,7 @@ export declare const pullScoped: ({
   auth?: string | undefined
   platform?: string | undefined
 }) => Effect.Effect<
-  Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+  Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
   never,
   MobyEndpoints.Images | Scope.Scope
 >
@@ -348,7 +348,7 @@ Implements `docker run` command.
 ```ts
 export declare const run: (
   containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
-) => Effect.Effect<Schemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
+) => Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
 Added in v1.0.0
@@ -364,7 +364,7 @@ both the image and the container is removed = internalDocker.removed.
 export declare const runScoped: (
   containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
 ) => Effect.Effect<
-  Schemas.ContainerInspectResponse,
+  MobySchemas.ContainerInspectResponse,
   MobyEndpoints.ContainersError,
   Scope.Scope | MobyEndpoints.Containers
 >
@@ -381,7 +381,7 @@ Implements the `docker search` command.
 ```ts
 export declare const search: (
   options: Parameters<MobyEndpoints.Images["search"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
+) => Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
 Added in v1.0.0
@@ -422,7 +422,7 @@ Implements the `docker version` command.
 
 ```ts
 export declare const version: () => Effect.Effect<
-  Readonly<Schemas.SystemVersionResponse>,
+  Readonly<MobySchemas.SystemVersionResponse>,
   MobyEndpoints.SystemsError,
   MobyEndpoints.Systems
 >
