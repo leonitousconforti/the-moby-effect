@@ -6,6 +6,7 @@ import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Pipeable from "effect/Pipeable";
 import * as Predicate from "effect/Predicate";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
@@ -54,11 +55,11 @@ export type RawChannelTypeId = typeof RawChannelTypeId;
  * @since 1.0.0
  * @category Branded Types
  */
-export type RawSocket = {
+export interface RawSocket extends Pipeable.Pipeable {
     readonly "content-type": typeof RawContentType;
     readonly [RawSocketTypeId]: typeof RawSocketTypeId;
     readonly underlying: Socket.Socket;
-};
+}
 
 /**
  * When the TTY setting is enabled in POST /containers/create, the stream is not
@@ -73,7 +74,7 @@ export type RawSocket = {
  * @since 1.0.0
  * @category Branded Types
  */
-export type RawChannel<IE = unknown, OE = Socket.SocketError, R = never> = {
+export interface RawChannel<IE = unknown, OE = Socket.SocketError, R = never> extends Pipeable.Pipeable {
     readonly "content-type": typeof RawContentType;
     readonly [RawChannelTypeId]: typeof RawChannelTypeId;
     readonly underlying: Channel.Channel<
@@ -85,7 +86,7 @@ export type RawChannel<IE = unknown, OE = Socket.SocketError, R = never> = {
         unknown,
         R
     >;
-};
+}
 
 /**
  * @since 1.0.0
@@ -225,6 +226,10 @@ export const makeRawSocket = (underlying: Socket.Socket): RawSocket => ({
     underlying,
     "content-type": RawContentType,
     [RawSocketTypeId]: RawSocketTypeId,
+    pipe() {
+        // eslint-disable-next-line prefer-rest-params
+        return Pipeable.pipeArguments(this, arguments);
+    },
 });
 
 /**
@@ -245,6 +250,10 @@ export const makeRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>
     underlying,
     "content-type": RawContentType,
     [RawChannelTypeId]: RawChannelTypeId,
+    pipe() {
+        // eslint-disable-next-line prefer-rest-params
+        return Pipeable.pipeArguments(this, arguments);
+    },
 });
 
 /**

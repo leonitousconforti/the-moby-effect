@@ -102,9 +102,6 @@ export const fan = Function.dual<
             .pipe(Channel.fromEffect)
             .pipe(Channel.provideContext(context));
 
-        // Helper because we can't .pipe RawStreamChannels
-        const fromStreamAsChannel = Function.compose(rawFromStreamWith<IE>(), ({ underlying }) => underlying);
-
         // Any one of these will kick off the mother demux, but only one will
         const independentStdinChannel = Channel.toQueue(stdinProducerQueue)
             .pipe(Channel.mapInput(Function.constVoid))
@@ -114,14 +111,16 @@ export const fan = Function.dual<
         // Any one of these will kick off the mother demux, but only one will
         const independentStdoutChannel = Stream.fromQueue(stdoutConsumerQueue)
             .pipe(Stream.encodeText)
-            .pipe(fromStreamAsChannel)
+            .pipe(rawFromStreamWith<IE>())
+            .pipe(({ underlying }) => underlying)
             .pipe(Channel.zipLeft(motherChannel, { concurrent: true }))
             .pipe(makeRawChannel<IE, OE | ParseResult.ParseError, never>);
 
         // Any one of these will kick off the mother demux, but only one will
         const independentStderrChannel = Stream.fromQueue(stderrConsumerQueue)
             .pipe(Stream.encodeText)
-            .pipe(fromStreamAsChannel)
+            .pipe(rawFromStreamWith<IE>())
+            .pipe(({ underlying }) => underlying)
             .pipe(Channel.zipLeft(motherChannel, { concurrent: true }))
             .pipe(makeRawChannel<IE, OE | ParseResult.ParseError, never>);
 

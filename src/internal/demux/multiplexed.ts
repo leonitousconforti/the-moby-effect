@@ -8,6 +8,7 @@ import * as Chunk from "effect/Chunk";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
+import * as Pipeable from "effect/Pipeable";
 import * as Predicate from "effect/Predicate";
 import * as Schedule from "effect/Schedule";
 import * as Schema from "effect/Schema";
@@ -64,11 +65,11 @@ export type MultiplexedChannelTypeId = typeof MultiplexedChannelTypeId;
  * @since 1.0.0
  * @category Branded Types
  */
-export type MultiplexedSocket = {
+export interface MultiplexedSocket extends Pipeable.Pipeable {
     readonly "content-type": typeof MultiplexedContentType;
     readonly [MultiplexedSocketTypeId]: MultiplexedSocketTypeId;
     readonly underlying: Socket.Socket;
-};
+}
 
 /**
  * When the TTY setting is disabled in POST /containers/create, the HTTP
@@ -85,7 +86,7 @@ export type MultiplexedSocket = {
  * @since 1.0.0
  * @category Branded Types
  */
-export type MultiplexedChannel<IE = unknown, OE = Socket.SocketError, R = never> = {
+export interface MultiplexedChannel<IE = unknown, OE = Socket.SocketError, R = never> extends Pipeable.Pipeable {
     readonly "content-type": typeof MultiplexedContentType;
     readonly [MultiplexedChannelTypeId]: MultiplexedChannelTypeId;
     readonly underlying: Channel.Channel<
@@ -97,7 +98,7 @@ export type MultiplexedChannel<IE = unknown, OE = Socket.SocketError, R = never>
         unknown,
         R
     >;
-};
+}
 
 /**
  * @since 1.0.0
@@ -121,6 +122,10 @@ export const makeMultiplexedSocket = (underlying: Socket.Socket): MultiplexedSoc
     underlying,
     "content-type": MultiplexedContentType,
     [MultiplexedSocketTypeId]: MultiplexedSocketTypeId,
+    pipe() {
+        // eslint-disable-next-line prefer-rest-params
+        return Pipeable.pipeArguments(this, arguments);
+    },
 });
 
 /**
@@ -141,6 +146,10 @@ export const makeMultiplexedChannel = <IE = unknown, OE = Socket.SocketError, R 
     underlying,
     "content-type": MultiplexedContentType,
     [MultiplexedChannelTypeId]: MultiplexedChannelTypeId,
+    pipe() {
+        // eslint-disable-next-line prefer-rest-params
+        return Pipeable.pipeArguments(this, arguments);
+    },
 });
 
 /**

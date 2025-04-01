@@ -95,6 +95,7 @@
         "packagejson",
         "percpu",
         "Pids",
+        "Pipeable",
         "privs",
         "rechunk",
         "Refail",
