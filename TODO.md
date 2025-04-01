@@ -1,2 +1,1 @@
-- [ ] refactor demux exports from internal
 - [ ] rework go reflection for type generation
