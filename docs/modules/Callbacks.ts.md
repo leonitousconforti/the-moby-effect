@@ -462,7 +462,9 @@ export declare const runCallbackForEffect: <R = never>(
   runtime: Runtime.Runtime<R>
 ) => <A = void, E = never>(
   effect: Effect.Effect<A, E, R>
-) => (callback: (exit: Exit.Exit<A, E>) => void) => Runtime.Cancel<A, E>
+) => (
+  callback: (exit: Exit.Exit<A, E>) => void
+) => (fiberId?: FiberId, options?: Runtime.RunCallbackOptions<A, E> | undefined) => void
 ```
 
 Added in v1.0.0
