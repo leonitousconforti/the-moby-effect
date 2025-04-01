@@ -1,8 +1,8 @@
-import type * as Socket from "@effect/platform/Socket";
 import type * as ParseResult from "effect/ParseResult";
 import type * as DockerComposeEngine from "../../DockerComposeEngine.js";
 
 import * as PlatformError from "@effect/platform/Error";
+import * as Socket from "@effect/platform/Socket";
 import * as Array from "effect/Array";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
@@ -153,14 +153,19 @@ export const make: Effect.Effect<
 
             return streamFailableEnsuring(
                 MobyDemux.mergeToTaggedStream(stdout, stderr),
-                MobyDemux.demuxRawToSingleSink(stdin, Stream.empty, Sink.drain)
+                MobyDemux.demuxRawToSingleSink(stdin, Stream.make(new Socket.CloseEvent()), Sink.drain)
             );
         }).pipe(
             Stream.unwrap,
-            Stream.flatMap(({ _tag, value }) =>
-                _tag === "stdout" ? Stream.succeed(value) : Stream.fail(new TextDecoder().decode(value))
-            ),
-            Stream.mapError((cause) => new DockerComposeError({ method: "", cause })),
+            Stream.mapEffect((entry) => {
+                if (Predicate.isTagged(entry, "stdout")) {
+                    return Effect.succeed(entry.value);
+                } else {
+                    const decoded = new TextDecoder("utf-8").decode(entry.value);
+                    return Effect.fail(new DockerComposeError({ method, cause: decoded }));
+                }
+            }),
+            Stream.mapError((cause) => new DockerComposeError({ method, cause })),
             Stream.provideService(MobyEndpoints.Containers, containers)
         );
 
