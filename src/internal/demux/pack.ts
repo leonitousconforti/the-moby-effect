@@ -1,4 +1,5 @@
 import type * as Scope from "effect/Scope";
+import type * as MobyDemux from "../../MobyDemux.js";
 
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
@@ -14,18 +15,10 @@ import * as Queue from "effect/Queue";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import {
-    makeMultiplexedChannel,
-    MultiplexedChannel,
-    multiplexedFromStreamWith,
-    MultiplexedHeaderType,
-} from "./multiplexed.js";
-import { demuxStdioRawToSeparateSinks, HeterogeneousStdioRawInput } from "./raw.js";
+import { makeMultiplexedChannel, multiplexedFromStreamWith, MultiplexedHeaderType } from "./multiplexed.js";
+import { demuxStdioRawToSeparateSinks } from "./raw.js";
 
-/**
- * @since 1.0.0
- * @category Packing
- */
+/** @internal */
 export const pack = Function.dual<
     <
         IE1 = never,
@@ -41,9 +34,9 @@ export const pack = Function.dual<
         requestedCapacity: number;
         encoding?: string | undefined;
     }) => (
-        stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
+        stdio: MobyDemux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
     ) => Effect.Effect<
-        MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+        MobyDemux.MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >,
@@ -58,10 +51,10 @@ export const pack = Function.dual<
         R2 = never,
         R3 = never,
     >(
-        stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
+        stdio: MobyDemux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
         options: { requestedCapacity: number; encoding?: string | undefined }
     ) => Effect.Effect<
-        MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+        MobyDemux.MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >
@@ -78,7 +71,7 @@ export const pack = Function.dual<
         R2 = never,
         R3 = never,
     >(
-        stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
+        stdio: MobyDemux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
         options: { requestedCapacity: number; encoding?: string | undefined }
     ) {
         const mutex = yield* Effect.makeSemaphore(1);

@@ -1,6 +1,7 @@
 import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import type * as Chunk from "effect/Chunk";
 import type * as Scope from "effect/Scope";
+import type * as MobyDemux from "../../MobyDemux.js";
 
 import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
@@ -11,218 +12,23 @@ import * as Predicate from "effect/Predicate";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
+import * as internalCompressed from "./compressed.js";
 
-import { compressDemuxOutput, type CompressedDemuxOutput } from "./compressed.js";
-
-/**
- * @since 1.0.0
- * @category Types
- */
+/** @internal */
 export const RawContentType = "application/vnd.docker.raw-stream" as const;
 
-/**
- * @since 1.0.0
- * @category Type ids
- */
-export const RawSocketTypeId: unique symbol = Symbol.for("the-moby-effect/demux/RawSocket") as RawSocketTypeId;
+/** @internal */
+export const RawSocketTypeId: MobyDemux.RawSocketTypeId = Symbol.for(
+    "the-moby-effect/demux/RawSocket"
+) as MobyDemux.RawSocketTypeId;
 
-/**
- * @since 1.0.0
- * @category Type ids
- */
-export type RawSocketTypeId = typeof RawSocketTypeId;
+/** @internal */
+export const RawChannelTypeId: MobyDemux.RawChannelTypeId = Symbol.for(
+    "the-moby-effect/demux/RawChannel"
+) as MobyDemux.RawChannelTypeId;
 
-/**
- * @since 1.0.0
- * @category Type ids
- */
-export const RawChannelTypeId: unique symbol = Symbol.for("the-moby-effect/demux/RawChannel") as RawChannelTypeId;
-
-/**
- * @since 1.0.0
- * @category Type ids
- */
-export type RawChannelTypeId = typeof RawChannelTypeId;
-
-/**
- * When the TTY setting is enabled in POST /containers/create, the stream is not
- * multiplexed. The data exchanged over the hijacked connection is simply the
- * raw data from the process PTY and client's stdin.
- *
- * Note for Leo: This exists because the input error type "IE" might not be
- * known at the time of converting the Socket to a Channel.
- *
- * @since 1.0.0
- * @category Branded Types
- */
-export interface RawSocket extends Pipeable.Pipeable {
-    readonly "content-type": typeof RawContentType;
-    readonly [RawSocketTypeId]: typeof RawSocketTypeId;
-    readonly underlying: Socket.Socket;
-}
-
-/**
- * When the TTY setting is enabled in POST /containers/create, the stream is not
- * multiplexed. The data exchanged over the hijacked connection is simply the
- * raw data from the process PTY and client's stdin.
- *
- * Note for Leo: This exists because there is no way to convert from a Channel
- * to a Socket. In fact, with my current effect knowledge, I believe it is
- * impossible to implement. This is still needed though for the pack and fan
- * implementations which seek to return these types.
- *
- * @since 1.0.0
- * @category Branded Types
- */
-export interface RawChannel<IE = unknown, OE = Socket.SocketError, R = never> extends Pipeable.Pipeable {
-    readonly "content-type": typeof RawContentType;
-    readonly [RawChannelTypeId]: typeof RawChannelTypeId;
-    readonly underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
-        IE | OE,
-        IE,
-        void,
-        unknown,
-        R
-    >;
-}
-
-/**
- * @since 1.0.0
- * @category Types
- */
-export type EitherRawInput<IE, OE, R> = RawSocket | RawChannel<IE, OE, R>;
-
-/**
- * @since 1.0.0
- * @category Types
- */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export type AnyRawInput = EitherRawInput<any, any, any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
-
-/**
- * @since 1.0.0
- * @category Types
- */
-export type HomogeneousStdioRawSocketInput =
-    | { stdin: RawSocket; stdout?: never; stderr?: never }
-    | { stdin?: never; stdout: RawSocket; stderr?: never }
-    | { stdin?: never; stdout?: never; stderr: RawSocket }
-    | { stdin: RawSocket; stdout: RawSocket; stderr?: never }
-    | { stdin: RawSocket; stdout?: never; stderr: RawSocket }
-    | { stdin?: never; stdout: RawSocket; stderr: RawSocket }
-    | { stdin: RawSocket; stdout: RawSocket; stderr: RawSocket };
-
-/**
- * @since 1.0.0
- * @category Types
- */
-export type HomogeneousStdioRawChannelInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
-    | { stdin: RawChannel<IE1, OE1, R1>; stdout?: never; stderr?: never }
-    | { stdin?: never; stdout: RawChannel<IE2, OE2, R2>; stderr?: never }
-    | { stdin?: never; stdout?: never; stderr: RawChannel<IE3, OE3, R3> }
-    | { stdin: RawChannel<IE1, OE1, R1>; stdout: RawChannel<IE2, OE2, R2>; stderr?: never }
-    | { stdin: RawChannel<IE1, OE1, R1>; stdout?: never; stderr: RawChannel<IE3, OE3, R3> }
-    | { stdin?: never; stdout: RawChannel<IE2, OE2, R2>; stderr: RawChannel<IE3, OE3, R3> }
-    | { stdin: RawChannel<IE1, OE1, R1>; stdout: RawChannel<IE2, OE2, R2>; stderr: RawChannel<IE3, OE3, R3> };
-
-/**
- * @since 1.0.0
- * @category Types
- */
-export type HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
-    | { stdin: EitherRawInput<IE1, OE1, R1>; stdout?: never; stderr?: never }
-    | { stdin?: never; stdout: EitherRawInput<IE2, OE2, R2>; stderr?: never }
-    | { stdin?: never; stdout?: never; stderr: EitherRawInput<IE3, OE3, R3> }
-    | { stdin: EitherRawInput<IE1, OE1, R1>; stdout: EitherRawInput<IE2, OE2, R2>; stderr?: never }
-    | { stdin: EitherRawInput<IE1, OE1, R1>; stdout?: never; stderr: EitherRawInput<IE3, OE3, R3> }
-    | { stdin?: never; stdout: EitherRawInput<IE2, OE2, R2>; stderr: EitherRawInput<IE3, OE3, R3> }
-    | {
-          stdin: EitherRawInput<IE1, OE1, R1>;
-          stdout: EitherRawInput<IE2, OE2, R2>;
-          stderr: EitherRawInput<IE3, OE3, R3>;
-      };
-
-/**
- * @since 1.0.0
- * @category Types
- */
-export type HeterogeneousStdioTupledRawInput<
-    A1,
-    A2,
-    L1,
-    L2,
-    E1,
-    E2,
-    E3,
-    R1,
-    R2,
-    R3,
-    IE1,
-    IE2,
-    IE3,
-    OE1,
-    OE2,
-    OE3,
-    R4,
-    R5,
-    R6,
-> =
-    | {
-          stdin: readonly [
-              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-              EitherRawInput<E1 | IE1, OE1, R4>,
-          ];
-          stdout?: never;
-          stderr?: never;
-      }
-    | {
-          stdin?: never;
-          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
-          stderr?: never;
-      }
-    | {
-          stdin?: never;
-          stdout?: never;
-          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
-      }
-    | {
-          stdin: readonly [
-              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-              EitherRawInput<E1 | IE1, OE1, R4>,
-          ];
-          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
-          stderr?: never;
-      }
-    | {
-          stdin: readonly [
-              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-              EitherRawInput<E1 | IE1, OE1, R4>,
-          ];
-          stdout?: never;
-          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
-      }
-    | {
-          stdin?: never;
-          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
-          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
-      }
-    | {
-          stdin: readonly [
-              Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-              EitherRawInput<E1 | IE1, OE1, R4>,
-          ];
-          stdout: readonly [EitherRawInput<IE2, OE2, R5>, Sink.Sink<A1, string, L1, E2, R2>];
-          stderr: readonly [EitherRawInput<IE3, OE3, R6>, Sink.Sink<A2, string, L2, E3, R3>];
-      };
-
-/**
- * @since 1.0.0
- * @category Constructors
- */
-export const makeRawSocket = (underlying: Socket.Socket): RawSocket => ({
+/** @internal */
+export const makeRawSocket = (underlying: Socket.Socket): MobyDemux.RawSocket => ({
     underlying,
     "content-type": RawContentType,
     [RawSocketTypeId]: RawSocketTypeId,
@@ -232,21 +38,18 @@ export const makeRawSocket = (underlying: Socket.Socket): RawSocket => ({
     },
 });
 
-/**
- * @since 1.0.0
- * @category Constructors
- */
+/** @internal */
 export const makeRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
     underlying: Channel.Channel<
         Chunk.Chunk<Uint8Array>,
         Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
-        IE | OE,
+        OE,
         IE,
         void,
         unknown,
         R
     >
-): RawChannel<IE, OE, R> => ({
+): MobyDemux.RawChannel<IE, IE | OE, R> => ({
     underlying,
     "content-type": RawContentType,
     [RawChannelTypeId]: RawChannelTypeId,
@@ -256,44 +59,29 @@ export const makeRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>
     },
 });
 
-/**
- * @since 1.0.0
- * @category Predicates
- */
-export const isRawSocket = (u: unknown): u is RawSocket => Predicate.hasProperty(u, RawSocketTypeId);
+/** @internal */
+export const isRawSocket = (u: unknown): u is MobyDemux.RawSocket => Predicate.hasProperty(u, RawSocketTypeId);
 
-/**
- * @since 1.0.0
- * @category Predicates
- */
+/** @internal */
 export const isRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
     u: unknown
-): u is RawChannel<IE, OE, R> => Predicate.hasProperty(u, RawChannelTypeId);
+): u is MobyDemux.RawChannel<IE, IE | OE, R> => Predicate.hasProperty(u, RawChannelTypeId);
 
-/**
- * @since 1.0.0
- * @category Predicates
- */
+/** @internal */
 export const responseIsRawResponse = (response: HttpClientResponse.HttpClientResponse): boolean =>
     response.headers["content-type"] === RawContentType;
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
+/** @internal */
 export const asRawChannel = <IE = never, OE = Socket.SocketError, R = never>(
-    input: EitherRawInput<IE, OE, R>
-): RawChannel<IE, OE, R> =>
+    input: MobyDemux.EitherRawInput<IE, OE, R>
+): MobyDemux.RawChannel<IE, OE, R> =>
     isRawSocket(input)
-        ? (makeRawChannel(Socket.toChannel<IE>(input.underlying)) as unknown as RawChannel<IE, OE, R>)
-        : (input as RawChannel<IE, OE, R>);
+        ? (makeRawChannel(Socket.toChannel<IE>(input.underlying)) as unknown as MobyDemux.RawChannel<IE, OE, R>)
+        : (input as MobyDemux.RawChannel<IE, OE, R>);
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
+/** @internal */
 export const rawToStream = <IE = never, OE = Socket.SocketError, R = never>(
-    input: EitherRawInput<IE, OE, R>
+    input: MobyDemux.EitherRawInput<IE, OE, R>
 ): Stream.Stream<Uint8Array, IE | OE, R> =>
     Channel.toStream(
         asRawChannel(input).underlying as Channel.Channel<
@@ -307,46 +95,29 @@ export const rawToStream = <IE = never, OE = Socket.SocketError, R = never>(
         >
     );
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
+/** @internal */
 export const rawToSink = <IE = never, OE = Socket.SocketError, R = never>(
-    input: EitherRawInput<IE, OE, R>
+    input: MobyDemux.EitherRawInput<IE, OE, R>
 ): Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R> =>
     Channel.toSink(asRawChannel(input).underlying);
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
+/** @internal */
 export const rawFromStreamWith =
     <IE>() =>
-    <E, R>(input: Stream.Stream<Uint8Array, IE | E, R>): RawChannel<IE, E, R> =>
-        makeRawChannel<IE, E, R>(Stream.toChannel(input));
+    <E, R>(input: Stream.Stream<Uint8Array, IE | E, R>): MobyDemux.RawChannel<IE, IE | E, R> =>
+        makeRawChannel<IE, IE | E, R>(Stream.toChannel(input));
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
-export const rawFromStream = <E, R>(input: Stream.Stream<Uint8Array, E, R>): RawChannel<unknown, E, R> =>
-    rawFromStreamWith<unknown>()(input);
+/** @internal */
+export const rawFromStream = <E, R>(input: Stream.Stream<Uint8Array, E, R>): MobyDemux.RawChannel<never, E, R> =>
+    rawFromStreamWith<never>()(input);
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
+/** @internal */
 export const rawFromSink = <E, R>(
     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-): RawChannel<never, E, R> => makeRawChannel<never, E, R>(Sink.toChannel(input));
+): MobyDemux.RawChannel<never, E, R> => makeRawChannel<never, E, R>(Sink.toChannel(input));
 
-/**
- * Interleaves an stdout socket with an stderr socket.
- *
- * @since 1.0.0
- * @category Interleave
- */
-export const interleaveToStream = <
+/** @internal */
+export const interleaveRaw = <
     IE1 = never,
     IE2 = never,
     OE1 = Socket.SocketError,
@@ -354,19 +125,14 @@ export const interleaveToStream = <
     R1 = never,
     R2 = never,
 >(
-    stdout: EitherRawInput<IE1, OE1, R1>,
-    stderr: EitherRawInput<IE2, OE2, R2>
+    stdout: MobyDemux.EitherRawInput<IE1, OE1, R1>,
+    stderr: MobyDemux.EitherRawInput<IE2, OE2, R2>
 ): Stream.Stream<Uint8Array, IE1 | IE2 | OE1 | OE2, R1 | R2> => {
     return Stream.interleave(rawToStream(stdout), rawToStream(stderr));
 };
 
-/**
- * Merge an stdout socket with an stderr socket and tags the output stream.
- *
- * @since 1.0.0
- * @category Merging
- */
-export const mergeToTaggedStream = <
+/** @internal */
+export const mergeRawToTaggedStream = <
     IE1 = never,
     IE2 = never,
     OE1 = Socket.SocketError,
@@ -374,8 +140,8 @@ export const mergeToTaggedStream = <
     R1 = never,
     R2 = never,
 >(
-    stdout: EitherRawInput<IE1, OE1, R1>,
-    stderr: EitherRawInput<IE2, OE2, R2>,
+    stdout: MobyDemux.EitherRawInput<IE1, OE1, R1>,
+    stderr: MobyDemux.EitherRawInput<IE2, OE2, R2>,
     options?: { bufferSize?: number | undefined } | undefined
 ): Stream.Stream<
     { _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array },
@@ -393,14 +159,7 @@ export const mergeToTaggedStream = <
         } as const
     );
 
-/**
- * Demux a raw socket. When given a raw socket of the remote process's pty,
- * there is no way to differentiate between stdout and stderr so they are
- * combined on the same sink.
- *
- * @since 1.0.0
- * @category Demux
- */
+/** @internal */
 export const demuxRawToSingleSink = Function.dual<
     // Data-last signature.
     <A1, L1, E1, E2, R1, R2>(
@@ -408,7 +167,7 @@ export const demuxRawToSingleSink = Function.dual<
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: EitherRawInput<E1 | IE, OE, R3>
+        socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>
     ) => Effect.Effect<
         A1,
         E1 | E2 | IE | OE,
@@ -416,7 +175,7 @@ export const demuxRawToSingleSink = Function.dual<
     >,
     // Data-first signature.
     <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: EitherRawInput<E1 | IE, OE, R3>,
+        socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
@@ -436,16 +195,7 @@ export const demuxRawToSingleSink = Function.dual<
         )
 );
 
-/**
- * Demux multiple raw sockets, created from multiple container attach requests.
- * If no options are provided for a given stream, it will be ignored. This is
- * really just an Effect.all wrapper around {@link demuxRawSingleSink}.
- *
- * To demux a single raw socket, you should use {@link demuxRawSingleSink}
- *
- * @since 1.0.0
- * @category Demux
- */
+/** @internal */
 export const demuxStdioRawTupled: <
     A1 = void,
     A2 = void,
@@ -467,7 +217,7 @@ export const demuxStdioRawTupled: <
     R5 = never,
     R6 = never,
 >(
-    sockets: HeterogeneousStdioTupledRawInput<
+    sockets: MobyDemux.HeterogeneousStdioTupledRawInput<
         A1,
         A2,
         L1,
@@ -490,7 +240,7 @@ export const demuxStdioRawTupled: <
     >,
     options?: { encoding?: string | undefined } | undefined
 ) => Effect.Effect<
-    CompressedDemuxOutput<A1, A2>,
+    MobyDemux.CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
     | Exclude<R1, Scope.Scope>
     | Exclude<R2, Scope.Scope>
@@ -524,16 +274,7 @@ export const demuxStdioRawTupled: <
     );
 });
 
-/**
- * Demux multiple raw sockets, created from multiple container attach requests.
- * If no options are provided for a given stream, it will be ignored. This is
- * really just an Effect.all wrapper around {@link demuxRawSingleSink}.
- *
- * To demux a single raw socket, you should use {@link demuxRawSingleSink}
- *
- * @since 1.0.0
- * @category Demux
- */
+/** @internal */
 export const demuxStdioRawToSingleSink = Function.dual<
     // Single sink, data-last signature.
     <A1, L1, E1, E2, R1, R2>(
@@ -551,7 +292,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
         R4 = never,
         R5 = never,
     >(
-        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>
+        sockets: MobyDemux.HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>
     ) => Effect.Effect<
         A1,
         E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
@@ -579,7 +320,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
         R4 = never,
         R5 = never,
     >(
-        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>,
+        sockets: MobyDemux.HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
@@ -615,16 +356,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
     })
 );
 
-/**
- * Demux multiple raw sockets, created from multiple container attach requests.
- * If no options are provided for a given stream, it will be ignored. This is
- * really just an Effect.all wrapper around {@link demuxRawSingleSink}.
- *
- * To demux a single raw socket, you should use {@link demuxRawSingleSink}
- *
- * @since 1.0.0
- * @category Demux
- */
+/** @internal */
 export const demuxStdioRawToSeparateSinks = Function.dual<
     // Multiple sinks, data-last signature.
     <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
@@ -645,9 +377,9 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
         R5 = never,
         R6 = never,
     >(
-        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>
+        sockets: MobyDemux.HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>
     ) => Effect.Effect<
-        CompressedDemuxOutput<A1, A2>,
+        MobyDemux.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
         | Exclude<R1, Scope.Scope>
         | Exclude<R2, Scope.Scope>
@@ -678,7 +410,7 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
         R5 = never,
         R6 = never,
     >(
-        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>,
+        sockets: MobyDemux.HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>,
         io: {
             stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
             stdout: Sink.Sink<A1, string, L1, E2, R2>;
@@ -686,7 +418,7 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
         },
         options?: { encoding?: string | undefined } | undefined
     ) => Effect.Effect<
-        CompressedDemuxOutput<A1, A2>,
+        MobyDemux.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
         | Exclude<R1, Scope.Scope>
         | Exclude<R2, Scope.Scope>
@@ -714,7 +446,7 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
 
         return yield* Effect.map(
             Effect.all({ ranStdin: runStdin, ranStdout: runStdout, ranStderr: runStderr }, { concurrency: 3 }),
-            ({ ranStderr, ranStdout }) => compressDemuxOutput(Tuple.make(ranStdout, ranStderr))
+            ({ ranStderr, ranStdout }) => internalCompressed.compressDemuxOutput(Tuple.make(ranStdout, ranStderr))
         );
     })
 );

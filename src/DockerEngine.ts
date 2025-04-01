@@ -11,13 +11,14 @@ import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
 import type * as MobyConnection from "./MobyConnection.js";
-import type * as Schemas from "./MobySchemas.js";
+import type * as MobySchemas from "./MobySchemas.js";
 
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as internalDocker from "./internal/engines/docker.js";
 import * as MobyEndpoints from "./MobyEndpoints.js";
 import * as MobyPlatforms from "./MobyPlatforms.js";
+
+import * as internalDocker from "./internal/engines/docker.js";
 
 /**
  * @since 1.0.0
@@ -166,7 +167,7 @@ export const build: <E1>({
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
     buildArgs?: Record<string, string | undefined> | undefined;
-}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.build;
+}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.build;
 
 /**
  * Implements the `docker build` command as a scoped effect. When the scope is
@@ -191,7 +192,7 @@ export const buildScoped: <E1>({
     buildArgs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }) => Effect.Effect<
-    Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
     Scope.Scope | MobyEndpoints.Images
 > = internalDocker.buildScoped;
@@ -262,7 +263,7 @@ export const execWebsocketsNonBlocking = internalDocker.execWebsocketsNonBlockin
  */
 export const images: (
     options?: Parameters<MobyEndpoints.Images["list"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
+) => Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
     internalDocker.images;
 
 /**
@@ -272,7 +273,7 @@ export const images: (
  * @category Docker
  */
 export const info: () => Effect.Effect<
-    Readonly<Schemas.SystemInfoResponse>,
+    Readonly<MobySchemas.SystemInfoResponse>,
     MobyEndpoints.SystemsError,
     MobyEndpoints.Systems
 > = internalDocker.info;
@@ -303,7 +304,7 @@ export const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, Mob
 export const ps: (
     options?: Parameters<MobyEndpoints.Containers["list"]>[0]
 ) => Effect.Effect<
-    ReadonlyArray<Schemas.ContainerListResponseItem>,
+    ReadonlyArray<MobySchemas.ContainerListResponseItem>,
     MobyEndpoints.ContainersError,
     MobyEndpoints.Containers
 > = internalDocker.ps;
@@ -323,7 +324,7 @@ export const pull: ({
     image: string;
     auth?: string | undefined;
     platform?: string | undefined;
-}) => Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.pull;
+}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.pull;
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
@@ -342,7 +343,7 @@ export const pullScoped: ({
     auth?: string | undefined;
     platform?: string | undefined;
 }) => Effect.Effect<
-    Stream.Stream<Schemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
     MobyEndpoints.Images | Scope.Scope
 > = internalDocker.pullScoped;
@@ -365,7 +366,7 @@ export const push: (
  */
 export const run: (
     containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
-) => Effect.Effect<Schemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =
+) => Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =
     internalDocker.run;
 
 /**
@@ -378,7 +379,7 @@ export const run: (
 export const runScoped: (
     containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
 ) => Effect.Effect<
-    Schemas.ContainerInspectResponse,
+    MobySchemas.ContainerInspectResponse,
     MobyEndpoints.ContainersError,
     Scope.Scope | MobyEndpoints.Containers
 > = internalDocker.runScoped;
@@ -391,7 +392,7 @@ export const runScoped: (
  */
 export const search: (
     options: Parameters<MobyEndpoints.Images["search"]>[0]
-) => Effect.Effect<ReadonlyArray<Schemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
+) => Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
     internalDocker.search;
 
 /**
@@ -421,7 +422,7 @@ export const stop: (
  * @category Docker
  */
 export const version: () => Effect.Effect<
-    Readonly<Schemas.SystemVersionResponse>,
+    Readonly<MobySchemas.SystemVersionResponse>,
     MobyEndpoints.SystemsError,
     MobyEndpoints.Systems
 > = internalDocker.version;

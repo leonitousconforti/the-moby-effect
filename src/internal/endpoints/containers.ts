@@ -14,10 +14,8 @@ import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
+import * as MobyDemux from "../../MobyDemux.js";
 
-import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.js";
-import { MultiplexedSocket } from "../demux/multiplexed.js";
-import { makeRawSocket, RawSocket } from "../demux/raw.js";
 import {
     ContainerChange,
     ContainerConfig,
@@ -431,7 +429,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                       readonly stderr?: boolean | undefined;
                   }
                 | undefined
-        ): Effect.Effect<RawSocket | MultiplexedSocket, ContainersError, never> =>
+        ): Effect.Effect<MobyDemux.RawSocket | MobyDemux.MultiplexedSocket, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/attach`),
                 HttpClientRequest.setHeader("Upgrade", "tcp"),
@@ -443,7 +441,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
                 maybeUpgradedClient.execute,
-                Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
+                Effect.flatMap(MobyDemux.responseToStreamingSocketOrFailUnsafe),
                 Effect.mapError((cause) => new ContainersError({ method: "attach", cause }))
             );
 
@@ -460,7 +458,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                       readonly stderr?: boolean | undefined;
                   }
                 | undefined
-        ): Effect.Effect<RawSocket, ContainersError, never> =>
+        ): Effect.Effect<MobyDemux.RawSocket, ContainersError, never> =>
             Function.pipe(
                 HttpClientRequest.get(`/containers/${encodeURIComponent(id)}/attach/ws`),
                 maybeAddQueryParameter("detachKeys", Option.fromNullable(options?.detachKeys)),
@@ -470,7 +468,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
                 maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
                 websocketRequest,
-                Effect.map(makeRawSocket),
+                Effect.map(MobyDemux.makeRawSocket),
                 Effect.provideService(HttpClient.HttpClient, contextClient),
                 Effect.provideService(Socket.WebSocketConstructor, websocketConstructor),
                 Effect.mapError((cause) => new ContainersError({ method: "attachWebsocket", cause }))

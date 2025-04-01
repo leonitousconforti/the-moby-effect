@@ -1,7 +1,10 @@
 /** @internal */
 export const DefaultDindBaseImage: RecommendedDindBaseImages = "docker.io/library/docker:dind-rootless" as const;
 
-/** @internal */
+/**
+ * @since 1.0.0
+ * @category Types
+ */
 export type RecommendedDindBaseImages =
     | "docker.io/library/docker:dind-rootless"
     | "docker.io/library/docker:23-dind-rootless"

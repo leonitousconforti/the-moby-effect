@@ -152,7 +152,7 @@ export const make: Effect.Effect<
                 Stream.flatMap(stream, (a: A) => Stream.fromEffect(Effect.map(effect, Function.constant(a))));
 
             return streamFailableEnsuring(
-                MobyDemux.mergeToTaggedStream(stdout, stderr),
+                MobyDemux.mergeRawToTaggedStream(stdout, stderr),
                 MobyDemux.demuxRawToSingleSink(stdin, Stream.make(new Socket.CloseEvent()), Sink.drain)
             );
         }).pipe(

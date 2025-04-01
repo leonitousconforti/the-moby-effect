@@ -2,6 +2,7 @@ import type * as Socket from "@effect/platform/Socket";
 import type * as Chunk from "effect/Chunk";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
+import type * as MobyDemux from "../../MobyDemux.js";
 
 import * as Channel from "effect/Channel";
 import * as Effect from "effect/Effect";
@@ -13,41 +14,31 @@ import * as Queue from "effect/Queue";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
-import {
-    demuxMultiplexedToSeparateSinks,
-    EitherMultiplexedInput,
-    isMultiplexedChannel,
-    isMultiplexedSocket,
-    MultiplexedChannel,
-    MultiplexedSocket,
-} from "./multiplexed.js";
-import { makeRawChannel, RawChannel, rawFromStreamWith } from "./raw.js";
+import { demuxMultiplexedToSeparateSinks, isMultiplexedChannel, isMultiplexedSocket } from "./multiplexed.js";
+import { makeRawChannel, rawFromStreamWith } from "./raw.js";
 
-/**
- * @since 1.0.0
- * @category Fanning
- */
+/** @internal */
 export const fan = Function.dual<
     <IE = never, OE = Socket.SocketError, R = never>(options: {
         requestedCapacity: number;
         encoding?: string | undefined;
-    }) => (multiplexedInput: EitherMultiplexedInput<IE, OE, R>) => Effect.Effect<
+    }) => (multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>) => Effect.Effect<
         {
-            stdin: RawChannel<IE, OE | ParseResult.ParseError, never>;
-            stdout: RawChannel<IE, OE | ParseResult.ParseError, never>;
-            stderr: RawChannel<IE, OE | ParseResult.ParseError, never>;
+            stdin: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stdout: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stderr: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
         },
         never,
         Exclude<R, Scope.Scope>
     >,
     <IE = never, OE = Socket.SocketError, R = never>(
-        multiplexedInput: EitherMultiplexedInput<IE, OE, R>,
+        multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
         options: { requestedCapacity: number; encoding?: string | undefined }
     ) => Effect.Effect<
         {
-            stdin: RawChannel<IE, OE | ParseResult.ParseError, never>;
-            stdout: RawChannel<IE, OE | ParseResult.ParseError, never>;
-            stderr: RawChannel<IE, OE | ParseResult.ParseError, never>;
+            stdin: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stdout: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stderr: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
         },
         never,
         Exclude<R, Scope.Scope>
@@ -55,7 +46,7 @@ export const fan = Function.dual<
 >(
     (arguments_) => isMultiplexedChannel(arguments_[0]) || isMultiplexedSocket(arguments_[0]),
     Effect.fnUntraced(function* <IE = never, OE = Socket.SocketError, R = never>(
-        multiplexedInput: MultiplexedSocket | MultiplexedChannel<IE, OE, R>,
+        multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
         options: { requestedCapacity: number; encoding?: string | undefined }
     ) {
         const mutex = yield* Effect.makeSemaphore(1);
@@ -106,7 +97,7 @@ export const fan = Function.dual<
         const independentStdinChannel = Channel.toQueue(stdinProducerQueue)
             .pipe(Channel.mapInput(Function.constVoid))
             .pipe(Channel.zipLeft(motherChannel, { concurrent: true }))
-            .pipe(makeRawChannel<IE, OE | ParseResult.ParseError, never>);
+            .pipe(makeRawChannel<IE, IE | OE | ParseResult.ParseError, never>);
 
         // Any one of these will kick off the mother demux, but only one will
         const independentStdoutChannel = Stream.fromQueue(stdoutConsumerQueue)
@@ -114,7 +105,7 @@ export const fan = Function.dual<
             .pipe(rawFromStreamWith<IE>())
             .pipe(({ underlying }) => underlying)
             .pipe(Channel.zipLeft(motherChannel, { concurrent: true }))
-            .pipe(makeRawChannel<IE, OE | ParseResult.ParseError, never>);
+            .pipe(makeRawChannel<IE, IE | OE | ParseResult.ParseError, never>);
 
         // Any one of these will kick off the mother demux, but only one will
         const independentStderrChannel = Stream.fromQueue(stderrConsumerQueue)
@@ -122,7 +113,7 @@ export const fan = Function.dual<
             .pipe(rawFromStreamWith<IE>())
             .pipe(({ underlying }) => underlying)
             .pipe(Channel.zipLeft(motherChannel, { concurrent: true }))
-            .pipe(makeRawChannel<IE, OE | ParseResult.ParseError, never>);
+            .pipe(makeRawChannel<IE, IE | OE | ParseResult.ParseError, never>);
 
         return {
             stdin: independentStdinChannel,
