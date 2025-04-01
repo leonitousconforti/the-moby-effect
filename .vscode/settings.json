@@ -47,6 +47,7 @@
         "endport",
         "etwlogs",
         "extrahosts",
+        "Failable",
         "fluentd",
         "forcerm",
         "gelf",

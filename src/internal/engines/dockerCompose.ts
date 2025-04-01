@@ -137,19 +137,30 @@ export const make: Effect.Effect<
               >
             | undefined = {}
     ): Stream.Stream<Uint8Array, DockerComposeError, never> =>
-        Function.pipe(
-            DockerEngine.execWebsocketsNonBlocking({
+        Effect.gen(function* () {
+            const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({
                 containerId: dindContainerId,
                 command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
-            }),
-            Effect.flatMap(MobyDemux.fan({ requestedCapacity: 16 })),
-            Effect.tap(({ stdin }) => MobyDemux.demuxRawToSingleSink(stdin, Stream.empty, Sink.drain)),
-            Effect.map(({ stderr, stdout }) => MobyDemux.mergeToTaggedStream(stdout, stderr)),
-            Stream.unwrapScoped,
+            });
+
+            const { stderr, stdin, stdout } = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
+
+            const streamFailableEnsuring = <A, X, E1, E2, R1, R2>(
+                stream: Stream.Stream<A, E1, R1>,
+                effect: Effect.Effect<X, E2, R2>
+            ): Stream.Stream<A, E1 | E2, R1 | R2> =>
+                Stream.flatMap(stream, (a: A) => Stream.fromEffect(Effect.map(effect, Function.constant(a))));
+
+            return streamFailableEnsuring(
+                MobyDemux.mergeToTaggedStream(stdout, stderr),
+                MobyDemux.demuxRawToSingleSink(stdin, Stream.empty, Sink.drain)
+            );
+        }).pipe(
+            Stream.unwrap,
             Stream.flatMap(({ _tag, value }) =>
                 _tag === "stdout" ? Stream.succeed(value) : Stream.fail(new TextDecoder().decode(value))
             ),
-            Stream.mapError((cause) => new DockerComposeError({ method, cause })),
+            Stream.mapError((cause) => new DockerComposeError({ method: "", cause })),
             Stream.provideService(MobyEndpoints.Containers, containers)
         );
 

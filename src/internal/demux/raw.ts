@@ -375,8 +375,8 @@ export const mergeToTaggedStream = <
 > =>
     Stream.mergeWithTag(
         {
-            stdout: rawToStream(asRawChannel(stderr)),
-            stderr: rawToStream(asRawChannel(stdout)),
+            stdout: rawToStream(asRawChannel(stdout)),
+            stderr: rawToStream(asRawChannel(stderr)),
         } as const,
         {
             concurrency: "unbounded",
