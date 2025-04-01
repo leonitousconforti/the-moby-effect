@@ -145,9 +145,15 @@ export const make: Effect.Effect<
 
             const { stderr, stdin, stdout } = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
 
-            return Stream.ensuring(
+            const streamFailableEnsuring = <A, X, E1, E2, R1, R2>(
+                stream: Stream.Stream<A, E1, R1>,
+                effect: Effect.Effect<X, E2, R2>
+            ): Stream.Stream<A, E1 | E2, R1 | R2> =>
+                Stream.flatMap(stream, (a: A) => Stream.fromEffect(Effect.map(effect, Function.constant(a))));
+
+            return streamFailableEnsuring(
                 MobyDemux.mergeToTaggedStream(stdout, stderr),
-                Effect.orDie(MobyDemux.demuxRawToSingleSink(stdin, Stream.make(new Socket.CloseEvent()), Sink.drain))
+                MobyDemux.demuxRawToSingleSink(stdin, Stream.make(new Socket.CloseEvent()), Sink.drain)
             );
         }).pipe(
             Stream.unwrap,
