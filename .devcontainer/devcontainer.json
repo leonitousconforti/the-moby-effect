@@ -58,7 +58,8 @@
                 "editor.suggest.localityBonus": true,
                 "editor.suggestSelection": "recentlyUsed",
                 "editor.wordBasedSuggestions": "matchingDocuments",
-                "editor.parameterHints.enabled": true
+                "editor.parameterHints.enabled": true,
+                "typescript.tsdk": "node_modules/typescript/lib"
             }
         }
     },
