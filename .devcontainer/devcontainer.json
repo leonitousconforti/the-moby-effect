@@ -16,7 +16,6 @@
         "vscode": {
             "extensions": [
                 "dbaeumer.vscode-eslint",
-                "kisstkondoros.vscode-codemetrics",
                 "visualstudioexptteam.vscodeintellicode",
                 "esbenp.prettier-vscode",
                 "editorconfig.editorconfig",
@@ -25,7 +24,8 @@
                 "mutantdino.resourcemonitor",
                 "GitHub.vscode-github-actions",
                 "yoavbls.pretty-ts-errors",
-                "redhat.vscode-yaml"
+                "redhat.vscode-yaml",
+                "vitest.explorer"
             ],
             "settings": {
                 "cSpell.enabled": true,
