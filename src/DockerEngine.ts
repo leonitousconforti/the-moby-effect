@@ -25,19 +25,6 @@ import * as internalDocker from "./internal/engines/docker.js";
  * @category Layers
  */
 export type DockerLayer = Layer.Layer<
-    Layer.Layer.Success<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
-    Layer.Layer.Error<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
-    Exclude<
-        Layer.Layer.Context<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
-        HttpClient.HttpClient | Socket.WebSocketConstructor
-    >
->;
-
-/**
- * @since 1.0.0
- * @category Layers
- */
-export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
     | MobyEndpoints.Configs
     | MobyEndpoints.Containers
     | MobyEndpoints.Distributions
@@ -54,7 +41,17 @@ export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
     | MobyEndpoints.Tasks
     | MobyEndpoints.Volumes,
     never,
-    HttpClient.HttpClient | Socket.WebSocketConstructor
+    never
+>;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
+    Layer.Layer.Success<DockerLayer>,
+    Layer.Layer.Error<DockerLayer>,
+    Layer.Layer.Context<DockerLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**
