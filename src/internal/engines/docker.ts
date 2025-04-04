@@ -1,7 +1,8 @@
+import type * as Socket from "@effect/platform/Socket";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
+import type * as MobySchemas from "../../MobySchemas.js";
 
-import * as Socket from "@effect/platform/Socket";
 import * as Array from "effect/Array";
 import * as Channel from "effect/Channel";
 import * as Effect from "effect/Effect";
@@ -18,7 +19,6 @@ import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
 import * as MobyDemux from "../../MobyDemux.js";
 import * as MobyEndpoints from "../../MobyEndpoints.js";
-import * as MobySchemas from "../../MobySchemas.js";
 
 /** @internal */
 export const pull = ({

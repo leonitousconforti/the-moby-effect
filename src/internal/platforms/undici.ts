@@ -127,6 +127,6 @@ export const makeUndiciHttpClientLayer = (
         Layer.unwrapEffect
     );
 
-    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions);
+    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticLayer(connectionOptions);
     return Layer.provide(agnosticHttpClientLayer, undiciLayer);
 };

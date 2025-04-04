@@ -35,7 +35,7 @@ layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Plugins
     it.effect.skip("Should update a plugin", () =>
         Effect.gen(function* () {
             const plugins = yield* Plugins;
-            plugins.upgrade({
+            yield* plugins.upgrade({
                 remote: "docker.io/grafana/loki-docker-driver:main",
                 name: "test-plugin:latest",
             });

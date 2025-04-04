@@ -1,4 +1,4 @@
-import type { GlobalSetupContext } from "vitest/node";
+import type { TestProject } from "vitest/node";
 
 import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
@@ -6,7 +6,7 @@ import * as Function from "effect/Function";
 import * as Option from "effect/Option";
 import * as MobyConnection from "the-moby-effect/MobyConnection";
 
-export const setup = async function ({ provide }: GlobalSetupContext): Promise<void> {
+export const setup = async function ({ provide }: TestProject): Promise<void> {
     await Effect.gen(function* () {
         const connectionVariant = yield* Config.literal("socket", "http", "https", "ssh")("__CONNECTION_VARIANT");
 

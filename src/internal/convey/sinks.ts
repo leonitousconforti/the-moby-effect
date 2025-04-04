@@ -1,5 +1,6 @@
 import type * as Chunk from "effect/Chunk";
 import type * as Scope from "effect/Scope";
+import type { JSONMessage } from "../generated/JSONMessage.generated.js";
 
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
@@ -7,8 +8,6 @@ import * as Function from "effect/Function";
 import * as Predicate from "effect/Predicate";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
-
-import { JSONMessage } from "../generated/JSONMessage.generated.js";
 
 /** @internal */
 export const waitForProgressToComplete = <E1, R1>(

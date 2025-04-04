@@ -1,4 +1,5 @@
 import type * as ParseResult from "effect/ParseResult";
+import type * as Scope from "effect/Scope";
 import type * as DockerComposeEngine from "../../DockerComposeEngine.js";
 
 import * as PlatformError from "@effect/platform/Error";
@@ -10,7 +11,6 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Record from "effect/Record";
-import * as Scope from "effect/Scope";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";

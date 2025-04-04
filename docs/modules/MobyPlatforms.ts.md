@@ -61,7 +61,11 @@ http client that you could use to connect to your moby instance.
 ```ts
 export declare const makeAgnosticHttpClientLayer: (
   connectionOptions: MobyConnection.MobyConnectionOptions
-) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient>
+) => Layer.Layer<
+  HttpClient.HttpClient | Socket.WebSocketConstructor,
+  never,
+  HttpClient.HttpClient | Socket.WebSocketConstructor
+>
 ```
 
 Added in v1.0.0
@@ -95,8 +99,6 @@ different than the Node implementation currently.
 This function will dynamically import the `@effect/platform-node` package.
 
 FIXME: https://github.com/denoland/deno/issues/21436?
-
-Will fallback to using undici for now because that seems to work
 
 **Signature**
 

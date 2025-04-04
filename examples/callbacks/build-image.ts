@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 // Run with: npx tsx examples/callbacks/build-image.ts
 
 import * as url from "node:url";

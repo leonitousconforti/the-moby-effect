@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 // Run with: npx tsx examples/callbacks/pull-image.ts
 
 import { Effect, Function, Layer } from "effect";

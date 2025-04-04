@@ -72,7 +72,7 @@ export const websocketRequest = (
     });
 
 /** @internal */
-export const makeAgnosticHttpLayer = (
+export const makeAgnosticHttpClientLayer = (
     connectionOptions: MobyConnection.MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> =>
     Function.pipe(
@@ -110,10 +110,10 @@ export const makeAgnosticWebsocketLayer = (
     );
 
 /** @internal */
-export const makeAgnosticHttpClientLayer = (
+export const makeAgnosticLayer = (
     connectionOptions: MobyConnection.MobyConnectionOptions
 ): Layer.Layer<Socket.WebSocketConstructor | HttpClient.HttpClient, never, HttpClient.HttpClient> => {
-    const httpClientLayer = makeAgnosticHttpLayer(connectionOptions);
+    const httpClientLayer = makeAgnosticHttpClientLayer(connectionOptions);
     const websocketLayer = makeAgnosticWebsocketLayer(connectionOptions);
     return Layer.merge(websocketLayer, httpClientLayer);
 };

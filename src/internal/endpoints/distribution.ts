@@ -1,13 +1,14 @@
+import type * as HttpBody from "@effect/platform/HttpBody";
+import type * as HttpClientError from "@effect/platform/HttpClientError";
+import type * as Layer from "effect/Layer";
+import type * as ParseResult from "effect/ParseResult";
+
 import * as PlatformError from "@effect/platform/Error";
-import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
-import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 
 import { RegistryDistributionInspect } from "../generated/index.js";

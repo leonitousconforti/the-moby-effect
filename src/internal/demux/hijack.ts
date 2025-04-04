@@ -1,10 +1,10 @@
 import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import type * as MobyDemux from "../../MobyDemux.js";
+import type { IExposeSocketOnEffectClientResponseHack } from "../platforms/node.js";
 
 import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 
-import { IExposeSocketOnEffectClientResponseHack } from "../platforms/node.js";
 import { makeMultiplexedSocket, responseIsMultiplexedResponse } from "./multiplexed.js";
 import { makeRawSocket, responseIsRawResponse } from "./raw.js";
 

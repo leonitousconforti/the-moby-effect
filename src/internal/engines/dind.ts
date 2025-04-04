@@ -1,7 +1,10 @@
 import type * as PlatformError from "@effect/platform/Error";
 import type * as ParseResult from "effect/ParseResult";
+import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
+import type * as TarCommon from "eftar/Common";
 import type * as DindEngine from "../../DindEngine.js";
+import type * as BlobConstants from "../blobs/constants.js";
 
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
@@ -14,18 +17,15 @@ import * as Match from "effect/Match";
 import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as Schedule from "effect/Schedule";
-import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
-import * as TarCommon from "eftar/Common";
 import * as Tar from "eftar/Tar";
 import * as Untar from "eftar/Untar";
 import * as DockerEngine from "../../DockerEngine.js";
 import * as MobyConnection from "../../MobyConnection.js";
 import * as MobyConvey from "../../MobyConvey.js";
 import * as MobyEndpoints from "../../MobyEndpoints.js";
-import * as BlobConstants from "../blobs/constants.js";
 import * as internalHttpBlob from "../blobs/http.js";
 import * as internalHttpsBlob from "../blobs/https.js";
 import * as internalSocketBlob from "../blobs/socket.js";
@@ -165,7 +165,6 @@ const waitForDindContainerToBeReady = (
 export const makeDindLayerFromPlatformConstructor =
     <
         PlatformLayerConstructor extends (
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             connectionOptions: any
         ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
         SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (

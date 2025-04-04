@@ -37,7 +37,6 @@ export const makeMultiplexedSocket = (underlying: Socket.Socket): MobyDemux.Mult
     "content-type": MultiplexedContentType,
     [MultiplexedSocketTypeId]: MultiplexedSocketTypeId,
     pipe() {
-        // eslint-disable-next-line prefer-rest-params
         return Pipeable.pipeArguments(this, arguments);
     },
 });
@@ -58,7 +57,6 @@ export const makeMultiplexedChannel = <IE = unknown, OE = Socket.SocketError, R 
     "content-type": MultiplexedContentType,
     [MultiplexedChannelTypeId]: MultiplexedChannelTypeId,
     pipe() {
-        // eslint-disable-next-line prefer-rest-params
         return Pipeable.pipeArguments(this, arguments);
     },
 });

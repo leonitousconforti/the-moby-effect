@@ -60,9 +60,6 @@ importers:
       '@effect/docgen':
         specifier: 0.5.2
         version: 0.5.2(tsx@4.19.3)(typescript@5.8.2)
-      '@effect/eslint-plugin':
-        specifier: 0.3.0
-        version: 0.3.0
       '@effect/experimental':
         specifier: 0.44.6
         version: 0.44.6(@effect/platform@0.80.6(effect@3.14.6))(effect@3.14.6)
@@ -90,12 +87,6 @@ importers:
       '@effect/vitest':
         specifier: 0.20.6
         version: 0.20.6(effect@3.14.6)(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.14.0)(tsx@4.19.3)(yaml@2.7.1))
-      '@eslint/compat':
-        specifier: 1.2.8
-        version: 1.2.8(eslint@9.24.0)
-      '@eslint/eslintrc':
-        specifier: 3.3.1
-        version: 3.3.1
       '@eslint/js':
         specifier: 9.24.0
         version: 9.24.0
@@ -108,13 +99,7 @@ importers:
       '@types/ws':
         specifier: 8.18.1
         version: 8.18.1
-      '@typescript-eslint/eslint-plugin':
-        specifier: 8.29.0
-        version: 8.29.0(@typescript-eslint/parser@8.29.0(eslint@9.24.0)(typescript@5.8.2))(eslint@9.24.0)(typescript@5.8.2)
       '@typescript-eslint/parser':
-        specifier: 8.29.0
-        version: 8.29.0(eslint@9.24.0)(typescript@5.8.2)
-      '@typescript-eslint/utils':
         specifier: 8.29.0
         version: 8.29.0(eslint@9.24.0)(typescript@5.8.2)
       '@vitest/coverage-v8':
@@ -391,12 +376,6 @@ packages:
     resolution: {integrity: sha512-Y6+WUMsTFWE5jb20IFP4YGa5IrGY/+a/FbOSjDF/wz9gepU2hwCYSXRHP/vPwBvwcY3SVMASt4yXxbXNXigmZQ==}
     engines: {node: '>=18'}
 
-  '@dprint/formatter@0.4.1':
-    resolution: {integrity: sha512-IB/GXdlMOvi0UhQQ9mcY15Fxcrc2JPadmo6tqefCNV0bptFq7YBpggzpqYXldBXDa04CbKJ+rDwO2eNRPE2+/g==}
-
-  '@dprint/typescript@0.91.8':
-    resolution: {integrity: sha512-tuKn4leCPItox1O4uunHcQF0QllDCvPWklnNQIh2PiWWVtRAGltJJnM4Cwj5AciplosD1Hiz7vAY3ew3crLb3A==}
-
   '@effect/build-utils@0.7.9':
     resolution: {integrity: sha512-I9tuSvKOnhF2NNsCzHulsUvEwJBQKqiZ1RtbJA+DfxqXZ9J1QSh4txnfnDC2D2bygMYuWqMJWg7TvAWun7cs6w==}
     engines: {node: '>=16.17.1'}
@@ -425,9 +404,6 @@ packages:
     peerDependencies:
       tsx: ^4.1.0
       typescript: ^5.2.2
-
-  '@effect/eslint-plugin@0.3.0':
-    resolution: {integrity: sha512-feNIhQXE0SGkyIKUlTHY7m/AMOxwfpBs3QBwDX7qSl8sShyxWmGWzES4R0u/9hUmHj1o2+Ie49UkN/lOp6728A==}
 
   '@effect/experimental@0.44.6':
     resolution: {integrity: sha512-1xbExr01HbyCoeSiFUGEmRrRMofjdrZsEM843VswhUdtJWpgT1E5xxfcK5TY4krxzfse9bLB8yQTD7eZGNO5ng==}
@@ -692,15 +668,6 @@ packages:
   '@eslint-community/regexpp@4.12.1':
     resolution: {integrity: sha512-CCZCDJuduB9OUkFkY2IgppNZMi2lBQgD2qzwXkEia16cge2pijY/aXi96CJMquDMn3nJdlPV1A5KrJEXwfLNzQ==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
-
-  '@eslint/compat@1.2.8':
-    resolution: {integrity: sha512-LqCYHdWL/QqKIJuZ/ucMAv8d4luKGs4oCPgpt8mWztQAtPrHfXKQ/XAUc8ljCHAfJCn6SvkpTcGt5Tsh8saowA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-    peerDependencies:
-      eslint: ^9.10.0
-    peerDependenciesMeta:
-      eslint:
-        optional: true
 
   '@eslint/config-array@0.20.0':
     resolution: {integrity: sha512-fxlS1kkIjx8+vy2SjuCB94q3htSNrufYTXubwiBFeaQHbH6Ipi43gFJq2zCMt6PHhImH3Xmr0NksKDvchWlpQQ==}
@@ -3342,10 +3309,6 @@ snapshots:
       gonzales-pe: 4.3.0
       node-source-walk: 7.0.1
 
-  '@dprint/formatter@0.4.1': {}
-
-  '@dprint/typescript@0.91.8': {}
-
   '@effect/build-utils@0.7.9(patch_hash=l5kgl23lx2gxuhhyvqfmhjtllq)': {}
 
   '@effect/cli@0.59.6(@effect/platform@0.80.6(effect@3.14.6))(@effect/printer-ansi@0.42.6(@effect/typeclass@0.33.6(effect@3.14.6))(effect@3.14.6))(@effect/printer@0.42.6(@effect/typeclass@0.33.6(effect@3.14.6))(effect@3.14.6))(effect@3.14.6)':
@@ -3373,12 +3336,6 @@ snapshots:
       prettier: 3.5.3
       tsx: 4.19.3
       typescript: 5.8.2
-
-  '@effect/eslint-plugin@0.3.0':
-    dependencies:
-      '@dprint/formatter': 0.4.1
-      '@dprint/typescript': 0.91.8
-      prettier-linter-helpers: 1.0.0
 
   '@effect/experimental@0.44.6(@effect/platform@0.80.6(effect@3.14.6))(effect@3.14.6)':
     dependencies:
@@ -3592,10 +3549,6 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.1': {}
-
-  '@eslint/compat@1.2.8(eslint@9.24.0)':
-    optionalDependencies:
-      eslint: 9.24.0
 
   '@eslint/config-array@0.20.0':
     dependencies:

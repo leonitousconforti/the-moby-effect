@@ -1,17 +1,18 @@
+import type * as HttpBody from "@effect/platform/HttpBody";
+import type * as HttpClientError from "@effect/platform/HttpClientError";
+import type * as Layer from "effect/Layer";
+import type * as ParseResult from "effect/ParseResult";
+import type * as Stream from "effect/Stream";
+
 import * as PlatformError from "@effect/platform/Error";
-import * as HttpBody from "@effect/platform/HttpBody";
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
 import * as Option from "effect/Option";
-import * as ParseResult from "effect/ParseResult";
 import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
-import * as Stream from "effect/Stream";
 
 import { Plugin, PluginPrivilege } from "../generated/index.js";
 import { maybeAddHeader, maybeAddQueryParameter } from "./common.js";

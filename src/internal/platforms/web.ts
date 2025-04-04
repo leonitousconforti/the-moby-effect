@@ -16,6 +16,6 @@ export const makeWebHttpClientLayer = (
         Effect.map((browserHttpClientLazy) => browserHttpClientLazy.layerXMLHttpRequest),
         Layer.unwrapEffect
     );
-    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions);
+    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticLayer(connectionOptions);
     return Layer.provide(agnosticHttpClientLayer, browserLayer);
 };

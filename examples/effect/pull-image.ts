@@ -1,8 +1,11 @@
 // Run with: npx tsx examples/effect/pull-image.ts
 
+import type { Stream } from "effect";
+import type { MobyEndpoints, MobySchemas } from "the-moby-effect";
+
 import { NodeRuntime } from "@effect/platform-node";
-import { Effect, Function, Layer, Stream } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } from "the-moby-effect";
+import { Effect, Function, Layer } from "effect";
+import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(

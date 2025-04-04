@@ -1,15 +1,16 @@
-import { inject } from "@effect/vitest";
+import type * as PlatformError from "@effect/platform/Error";
+import type * as ParseResult from "effect/ParseResult";
+import type * as DockerEngine from "the-moby-effect/DockerEngine";
 
 import * as FileSystem from "@effect/platform-node/NodeFileSystem";
-import * as PlatformError from "@effect/platform/Error";
 import * as Path from "@effect/platform/Path";
 import * as Context from "effect/Context";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
-import * as ParseResult from "effect/ParseResult";
 
-import { DindEngine, DockerEngine, MobyEndpoints } from "the-moby-effect";
+import { inject } from "@effect/vitest";
+import { DindEngine, MobyEndpoints } from "the-moby-effect";
 
 const makePlatformDindLayer = Function.pipe(
     Match.value(inject("__PLATFORM_VARIANT")),

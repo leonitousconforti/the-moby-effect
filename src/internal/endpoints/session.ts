@@ -1,11 +1,12 @@
+import type * as HttpClientError from "@effect/platform/HttpClientError";
+import type * as Socket from "@effect/platform/Socket";
+import type * as Layer from "effect/Layer";
+
 import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientError from "@effect/platform/HttpClientError";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 
 import { hijackResponseUnsafe } from "../demux/hijack.js";

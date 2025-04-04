@@ -33,7 +33,6 @@ export const makeRawSocket = (underlying: Socket.Socket): MobyDemux.RawSocket =>
     "content-type": RawContentType,
     [RawSocketTypeId]: RawSocketTypeId,
     pipe() {
-        // eslint-disable-next-line prefer-rest-params
         return Pipeable.pipeArguments(this, arguments);
     },
 });
@@ -54,7 +53,6 @@ export const makeRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>
     "content-type": RawContentType,
     [RawChannelTypeId]: RawChannelTypeId,
     pipe() {
-        // eslint-disable-next-line prefer-rest-params
         return Pipeable.pipeArguments(this, arguments);
     },
 });

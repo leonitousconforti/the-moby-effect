@@ -10,4 +10,4 @@ import * as internalAgnostic from "./agnostic.js";
 export const makeFetchHttpClientLayer = (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ): Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> =>
-    Layer.provide(internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions), FetchHttpClient.layer);
+    Layer.provide(internalAgnostic.makeAgnosticLayer(connectionOptions), FetchHttpClient.layer);

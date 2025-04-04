@@ -4,12 +4,11 @@
  * @since 1.0.0
  */
 
+import type * as Path from "@effect/platform/Path";
 import type * as ConfigError from "effect/ConfigError";
+import type * as Data from "effect/Data";
+import type * as Effect from "effect/Effect";
 import type * as ssh2 from "ssh2";
-
-import * as Path from "@effect/platform/Path";
-import * as Data from "effect/Data";
-import * as Effect from "effect/Effect";
 
 import * as internal from "./internal/platforms/connection.js";
 

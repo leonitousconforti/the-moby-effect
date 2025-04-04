@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-/* eslint-disable no-console */
 
 import * as glob from "glob";
 import madge from "madge";

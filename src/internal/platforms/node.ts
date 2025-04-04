@@ -155,6 +155,6 @@ export const makeNodeHttpClientLayer = (
         ),
         Layer.unwrapEffect
     );
-    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions);
+    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticLayer(connectionOptions);
     return Layer.provide(agnosticHttpClientLayer, nodeHttpClientLayer);
 };

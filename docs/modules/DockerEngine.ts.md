@@ -438,23 +438,6 @@ Added in v1.0.0
 
 ```ts
 export type DockerLayer = Layer.Layer<
-  Layer.Layer.Success<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
-  Layer.Layer.Error<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
-  Exclude<
-    Layer.Layer.Context<DockerLayerWithoutHttpClientOrWebsocketConstructor>,
-    HttpClient.HttpClient | Socket.WebSocketConstructor
-  >
->
-```
-
-Added in v1.0.0
-
-## DockerLayerWithoutHttpClientOrWebsocketConstructor (type alias)
-
-**Signature**
-
-```ts
-export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
   | MobyEndpoints.Configs
   | MobyEndpoints.Containers
   | MobyEndpoints.Distributions
@@ -471,7 +454,21 @@ export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
   | MobyEndpoints.Tasks
   | MobyEndpoints.Volumes,
   never,
-  HttpClient.HttpClient | Socket.WebSocketConstructor
+  never
+>
+```
+
+Added in v1.0.0
+
+## DockerLayerWithoutHttpClientOrWebsocketConstructor (type alias)
+
+**Signature**
+
+```ts
+export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
+  Layer.Layer.Success<DockerLayer>,
+  Layer.Layer.Error<DockerLayer>,
+  Layer.Layer.Context<DockerLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >
 ```
 

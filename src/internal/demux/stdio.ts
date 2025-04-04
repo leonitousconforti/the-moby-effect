@@ -3,13 +3,13 @@ import type * as Channel from "effect/Channel";
 import type * as Chunk from "effect/Chunk";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
+import type * as Stream from "effect/Stream";
 import type * as MobyDemux from "../../MobyDemux.js";
 
 import * as Console from "effect/Console";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Sink from "effect/Sink";
-import * as Stream from "effect/Stream";
 
 import { asMultiplexedChannel, demuxMultiplexedToSeparateSinks, makeMultiplexedChannel } from "./multiplexed.js";
 

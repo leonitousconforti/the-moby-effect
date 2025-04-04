@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 // Run with: npx tsx examples/callbacks/container-with-volume.ts
 
 import * as url from "node:url";

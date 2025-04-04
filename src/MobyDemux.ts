@@ -187,9 +187,8 @@ export type EitherRawInput<IE, OE, R> = RawSocket | RawChannel<IE, OE, R>;
  * @since 1.0.0
  * @category Types
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export type AnyRawInput = EitherRawInput<any, any, any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * @since 1.0.0
@@ -201,9 +200,7 @@ export type EitherMultiplexedInput<IE, OE, R> = MultiplexedSocket | MultiplexedC
  * @since 1.0.0
  * @category Types
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /**
  * @since 1.0.0

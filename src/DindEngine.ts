@@ -7,12 +7,12 @@
 import type * as PlatformError from "@effect/platform/Error";
 import type * as FileSystem from "@effect/platform/FileSystem";
 import type * as Path from "@effect/platform/Path";
+import type * as Layer from "effect/Layer";
 import type * as ParseResult from "effect/ParseResult";
 import type * as BlobConstants from "./internal/blobs/constants.js";
 import type * as MobyConnection from "./MobyConnection.js";
 import type * as MobyEndpoints from "./MobyEndpoints.js";
 
-import * as Layer from "effect/Layer";
 import * as DockerEngine from "./DockerEngine.js";
 import * as internal from "./internal/engines/dind.js";
 
@@ -22,7 +22,6 @@ import * as internal from "./internal/engines/dind.js";
  */
 export type MakeDindLayerFromPlatformConstructor<
     PlatformLayerConstructor extends (
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         connectionOptions: any
     ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
     SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (

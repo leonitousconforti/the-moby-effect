@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+
 import type * as Effect from "effect/Effect";
 import type * as Layer from "effect/Layer";
 

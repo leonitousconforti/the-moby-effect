@@ -4,6 +4,8 @@
  * @since 1.0.0
  */
 
+import type * as Family from "./family.js";
+
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -12,7 +14,6 @@ import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import * as Address from "./address.js";
 import * as CidrBlockMask from "./cidrBlockMask.js";
-import * as Family from "./family.js";
 import * as IPv4 from "./ipv4.js";
 import * as IPv6 from "./ipv6.js";
 
