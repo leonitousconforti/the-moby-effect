@@ -35,7 +35,6 @@ Added in v1.0.0
 ```ts
 export type MakeDindLayerFromPlatformConstructor<
   PlatformLayerConstructor extends (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     connectionOptions: any
   ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
   SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (
