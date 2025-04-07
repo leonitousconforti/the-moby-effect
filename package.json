@@ -48,7 +48,7 @@
         "update-blobs": "tsx ./scripts/update-blobs.ts"
     },
     "dependencies": {
-        "eftar": "0.0.31"
+        "eftar": "0.0.32"
     },
     "devDependencies": {
         "@babel/cli": "7.27.0",
@@ -57,7 +57,7 @@
         "@babel/plugin-transform-modules-commonjs": "7.26.3",
         "@effect/build-utils": "0.7.9",
         "@effect/cli": "0.59.6",
-        "@effect/cluster": "0.29.10",
+        "@effect/cluster": "0.29.11",
         "@effect/docgen": "0.5.2",
         "@effect/experimental": "0.44.6",
         "@effect/language-service": "0.6.0",
@@ -67,7 +67,7 @@
         "@effect/platform-node": "0.76.10",
         "@effect/printer": "0.42.6",
         "@effect/printer-ansi": "0.42.6",
-        "@effect/rpc": "0.55.8",
+        "@effect/rpc": "0.55.9",
         "@effect/sql": "0.33.6",
         "@effect/typeclass": "0.33.6",
         "@effect/vitest": "0.20.6",
@@ -105,17 +105,17 @@
         "ws": "8.18.1"
     },
     "peerDependencies": {
-        "@effect/cluster": "0.29.10",
+        "@effect/cluster": "0.29.11",
         "@effect/experimental": "0.44.6",
         "@effect/platform": "0.80.6",
-        "@effect/rpc": "0.55.8",
+        "@effect/rpc": "0.55.9",
         "@effect/sql": "0.33.6",
         "effect": "3.14.6"
     },
     "optionalDependencies": {
         "@effect/platform-browser": "0.59.6",
-        "@effect/platform-bun": "0.60.10",
-        "@effect/platform-node": "0.76.10",
+        "@effect/platform-bun": "0.60.11",
+        "@effect/platform-node": "0.76.11",
         "ssh2": "^1.16.0",
         "undici": "^7.4.0",
         "ws": "^8.18.1"
