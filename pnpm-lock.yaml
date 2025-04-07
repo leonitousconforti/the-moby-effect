@@ -30,7 +30,7 @@ importers:
         specifier: ^1.16.0
         version: 1.16.0
       undici:
-        specifier: ^7.4.0
+        specifier: ^7.7.0
         version: 7.7.0
       ws:
         specifier: ^8.18.1
