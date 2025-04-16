@@ -108,14 +108,25 @@
         "@effect/cluster": "0.29.18",
         "@effect/experimental": "0.44.9",
         "@effect/platform": "0.80.9",
+        "@effect/platform-browser": "0.60.0",
+        "@effect/platform-bun": "0.60.18",
+        "@effect/platform-node": "0.76.18",
         "@effect/rpc": "0.55.13",
         "@effect/sql": "0.33.9",
         "effect": "3.14.9"
     },
+    "peerDependenciesMeta": {
+        "@effect/platform-browser": {
+            "optional": true
+        },
+        "@effect/platform-bun": {
+            "optional": true
+        },
+        "@effect/platform-node": {
+            "optional": true
+        }
+    },
     "optionalDependencies": {
-        "@effect/platform-browser": "0.60.0",
-        "@effect/platform-bun": "0.60.18",
-        "@effect/platform-node": "0.76.18",
         "ssh2": "^1.16.0",
         "undici": "^7.7.0",
         "ws": "^8.18.1"
