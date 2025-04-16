@@ -1,3 +1,9 @@
+## 1.48.2 (2025-04-16)
+
+### changed (1 change)
+
+- [Update Effect-ts](https://git.ltgk.net/leoconforti/the-moby-effect/-/commit/f90f4fded1c3c41caf5a612b970d93b1ed18cfd8) ([merge request](https://git.ltgk.net/leoconforti/the-moby-effect/-/merge_requests/212))
+
 ## 1.48.1 (2025-04-16)
 
 ### changed (47 changes)
