@@ -60,7 +60,7 @@
         "@effect/cluster": "0.29.21",
         "@effect/docgen": "0.5.2",
         "@effect/experimental": "0.44.11",
-        "@effect/language-service": "0.7.0",
+        "@effect/language-service": "0.7.1",
         "@effect/platform": "0.80.11",
         "@effect/platform-browser": "0.60.2",
         "@effect/platform-bun": "0.60.21",
