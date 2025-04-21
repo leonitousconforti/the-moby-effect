@@ -14,8 +14,8 @@ importers:
   .:
     dependencies:
       eftar:
-        specifier: 0.0.52
-        version: 0.0.52(@effect/cluster@0.29.21(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11))(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11)
+        specifier: 0.0.53
+        version: 0.0.53(@effect/cluster@0.29.21(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11))(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11)
     optionalDependencies:
       ssh2:
         specifier: ^1.16.0
@@ -1557,8 +1557,8 @@ packages:
   effect@3.14.11:
     resolution: {integrity: sha512-PPfiu7QRtmmrgH6VWZp/rY1S8SSLJofx5betRuTPGG868G3f0C7yvPOa6SZPLG5ra2yCd1Vfm7cdeI26ZVGGlA==}
 
-  eftar@0.0.52:
-    resolution: {integrity: sha512-Wa9YxAYLQCZhYUDJcLWwIdT8CUu22yLvSW3bhV36ZhOrQhPD7ZcsSiFb3qvW7/YNJYMVZ28OIezPxegY0x+3tA==}
+  eftar@0.0.53:
+    resolution: {integrity: sha512-TrBhMVo8x6JD6eAgvFhZxcmnV/KDQqDsa2SQEz10y4AjunucgVK9fhhCtF34KEBuk8AtbCy4wSjJtmRs6VhjtQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       '@effect/cluster': 0.29.21
@@ -4391,7 +4391,7 @@ snapshots:
       '@standard-schema/spec': 1.0.0
       fast-check: 3.23.2
 
-  eftar@0.0.52(@effect/cluster@0.29.21(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11))(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11):
+  eftar@0.0.53(@effect/cluster@0.29.21(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11))(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11):
     dependencies:
       '@effect/cluster': 0.29.21(@effect/platform@0.80.11(effect@3.14.11))(@effect/rpc@0.55.16(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/sql@0.33.11(@effect/experimental@0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11))(effect@3.14.11)
       '@effect/experimental': 0.44.11(@effect/platform@0.80.11(effect@3.14.11))(effect@3.14.11)
