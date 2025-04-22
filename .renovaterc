@@ -1,0 +1,63 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:best-practices"
+    ],
+    "labels": [
+        "dependency"
+    ],
+    "prHourlyLimit": 0,
+    "git-submodules": {
+        "enabled": true
+    },
+    "postUpgradeTasks": {
+        "executionMode": "branch",
+        "commands": [
+            "rm .prettierrc.json",
+            "npm install -g @changesets/cli",
+            "./.changeset/automate.exp \"{{depType}}\" \"{{packageFile}}\" \"patch\" \"{{depName}}\" \"{{currentVersion}}\" \"{{newVersion}}\""
+        ],
+        "fileFilters": [
+            ".changeset/*.md"
+        ]
+    },
+    "packageRules": [
+        {
+            "description": "Group @effect Node.JS packages together",
+            "groupName": "Effect-ts",
+            "groupSlug": "effect-ts",
+            "matchDatasources": [
+                "npm"
+            ],
+            "matchPackageNames": [
+                "@effect/**",
+                "effect"
+            ],
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
+        },
+        {
+            "matchUpdateTypes": [
+                "minor",
+                "patch"
+            ],
+            "matchCurrentVersion": "!/^0/",
+            "automerge": true,
+            "automergeType": "pr",
+            "platformAutomerge": true
+        },
+        {
+            "matchPackageNames": [
+                "pnpm"
+            ],
+            "automerge": false
+        }
+    ],
+    "lockFileMaintenance": {
+        "enabled": true,
+        "automerge": true,
+        "automergeType": "pr",
+        "platformAutomerge": true
+    }
+}

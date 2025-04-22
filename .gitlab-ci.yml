@@ -1,11 +1,9 @@
 stages:
   - prepare
-  - devcontainer
   - build
   - test
-  - release
-  - publish
   - deploy
+  - release
 
 include:
   - template: Security/Secret-Detection.gitlab-ci.yml
@@ -14,36 +12,44 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/
-    # - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH =~ /^renovate\/.+$/i
 
-cache:
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - .pnpm-store
-    - node_modules/
+variables:
+  CI: true
+  GIT_DEPTH: 2
+  GIT_STRATEGY: fetch
 
-prepare_job:
-  stage: prepare
-  image: alpine:latest
+default:
+  image: node:lts-alpine@sha256:9bef0ef1e268f60627da9ba7d7605e8831d5b56ad07487d24d1aa386336d1944
   tags: [docker]
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/'
-  script:
-    - apk add curl jq
-    - 'curl -H "PRIVATE-TOKEN: $CI_API_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/changelog?version=$CI_COMMIT_TAG" | jq -r .notes > release_notes.md'
-    - 'curl -H "PRIVATE-TOKEN: $CI_API_TOKEN" -X POST "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/changelog?version=$CI_COMMIT_TAG" --data-urlencode "notes=$(cat release_notes.md)"'
-  artifacts:
+  timeout: 10 minutes
+  before_script:
+    - npm install --global corepack@latest
+    - corepack install
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install
+  cache:
     paths:
-      - release_notes.md
+      - .pnpm-store
+    key:
+      files:
+        - pnpm-lock.yaml
+
+comment:
+  stage: prepare
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  variables:
+    GITLAB_TOKEN: $CI_COMMENT_TOKEN
+  script:
+    - pnpm changesets-gitlab comment
+    - pnpm changesets-gitlab comment
 
 devcontainer_job:
-  stage: devcontainer
-  timeout: 30 minutes
-  tags: [docker]
-  image: docker:28.1.1
+  stage: build
+  image: docker:28.1.1@sha256:f49e1c71b5d9f8ebe53715f78996ce42b8be4b1ec03875d187dfe3c03de1dc00
   services:
-    - docker:28.1.1-dind
+    - docker:28.1.1-dind@sha256:f49e1c71b5d9f8ebe53715f78996ce42b8be4b1ec03875d187dfe3c03de1dc00
   variables:
     DOCKER_BUILDKIT: "1"
     DOCKER_DRIVER: "overlay2"
@@ -63,16 +69,13 @@ devcontainer_job:
 
 build_job:
   stage: build
-  timeout: 30 minutes
-  image: docker:28.1.1
-  tags: [docker]
+  image: docker:28.1.1@sha256:f49e1c71b5d9f8ebe53715f78996ce42b8be4b1ec03875d187dfe3c03de1dc00
   services:
-    - docker:28.1.1-dind
+    - docker:28.1.1-dind@sha256:f49e1c71b5d9f8ebe53715f78996ce42b8be4b1ec03875d187dfe3c03de1dc00
   needs:
     - job: devcontainer_job
   variables:
-    GIT_SUBMODULE_DEPTH: 1
-    GIT_SUBMODULE_STRATEGY: recursive
+    CI: true
     FQ_IMAGE_NAME: "$CI_REGISTRY_IMAGE/dev-container:$CI_COMMIT_REF_SLUG"
   before_script:
     - docker pull $FQ_IMAGE_NAME
@@ -88,9 +91,9 @@ build_job:
     id_label="ci-container=${build_date}"
 
     # Run build
-    devcontainer up --cache-from $FQ_IMAGE_NAME --id-label ${id_label} --workspace-folder .
+    devcontainer up --cache-from $FQ_IMAGE_NAME --id-label ${id_label} --remote-env CI=true --workspace-folder .
     set +e
-    devcontainer exec --id-label ${id_label} --workspace-folder . pnpm check
+    devcontainer exec --id-label ${id_label} --workspace-folder . pnpm coverage --run
     build_exit_code=$?
     set -e
 
@@ -98,6 +101,7 @@ build_job:
     docker rm -f $(docker ps -aq --filter label=${id_label})
     exit ${build_exit_code}
   coverage: /All files(?:[^|]*\|){4}\s*(\S+)/
+  cache: []
   artifacts:
     paths:
       - dist/
@@ -108,80 +112,55 @@ build_job:
       junit:
         - coverage/junit.xml
 
-release_job:
+secret_detection:
+  before_script: []
+  cache: []
+
+release:
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  tags: [docker]
+  rules:
+    - if: $CI_PROJECT_PATH == "leoconforti/the-moby-effect" && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   needs:
     - job: build_job
-    - job: prepare_job
       artifacts: true
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/'
   script:
-    - echo "Creating release"
-  release:
-    name: "Release $CI_COMMIT_TAG"
-    description: release_notes.md
-    tag_name: "$CI_COMMIT_TAG"
-    ref: "$CI_COMMIT_SHA"
-
-publish_job:
-  stage: publish
-  image: node:latest
-  tags: [docker]
-  needs:
-    - job: release_job
-    - job: build_job
-      artifacts: true
-  rules:
-    - if: '$CI_COMMIT_TAG =~ /^v?\d+\.\d+\.\d+$/'
-  script:
-    # Install pnpm
-    - npm install --global corepack@latest
-    - corepack install
-    - corepack enable
-
-    # Set version to match the git tag
-    - (cd dist && npm version --no-git-tag-version $CI_COMMIT_TAG)
-
-    # Add configuration to publish to GitLab's NPM registry and NPMJS
-    # For more information, see https://docs.gitlab.com/ee/user/packages/npm_registry/#with-the-npmrc-file
-    - echo "@${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/" >> .npmrc
-    - echo "//registry.npmjs.org/:_authToken=\${NPM_TOKEN}" >> .npmrc
-    - echo "${CI_API_V4_URL#http*:}/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=\${CI_JOB_TOKEN}" >> .npmrc
-    - echo "Using the following .npmrc:"; cat .npmrc
-
-    # Publish to npm (before we change the scope of the package)
-    - pnpm publish --no-git-checks --access public --registry https://registry.npmjs.org/
-
-    # Validate that the package name is properly scoped to the project's root namespace.
-    # For more information, see https://docs.gitlab.com/ee/user/packages/npm_registry/#package-naming-convention
-    - (cd dist && npm init --yes --scope "@leoconforti")
-    - NPM_PACKAGE_NAME=$(node -p "require('./dist/package.json').name")
+    - apk add --update git
+    - touch ${GITHUB_ENV}
     - |
-      if [[ ! $NPM_PACKAGE_NAME =~ ^@$CI_PROJECT_ROOT_NAMESPACE/ ]]; then
-        echo "Invalid package scope! Packages must be scoped in the root namespace of the project, e.g. \"@${CI_PROJECT_ROOT_NAMESPACE}/${CI_PROJECT_NAME}\""
-        echo 'For more information, see https://docs.gitlab.com/ee/user/packages/npm_registry/#package-naming-convention'
-        exit 1
+      cat << EOF > "$HOME/.npmrc"
+        //registry.npmjs.org/:_authToken=$NPM_TOKEN
+        //${CI_SERVER_HOST}/api/v4/projects/${CI_PROJECT_ID}/packages/npm/:_authToken=${CI_JOB_TOKEN}
+        @${CI_PROJECT_ROOT_NAMESPACE}:registry=${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
+      EOF
+    - pnpm changesets-gitlab
+    - PUBLISHED=$(sed -n '/^PUBLISHED<<.*$/,/^.*ghadelimiter_.*$/p' ${GITHUB_ENV} | sed '1d;$d')
+    - |
+      if [ "$PUBLISHED" = "true" ]; then
+        pnpm publish --access public --registry ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/ --no-git-checks
+      else
+        echo "Skipping publish to GitLab NPM registry"
       fi
-
-    # Publish to gitlab
-    - pnpm publish --no-git-checks --access public --registry ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/npm/
+  variables:
+    GITLAB_TOKEN: $CI_API_TOKEN
+    INPUT_REMOVE_SOURCE_BRANCH: true
+    INPUT_CREATE_GITLAB_RELEASES: true
+    INPUT_PUBLISH: pnpm changeset publish
+    GITHUB_ENV: "${CI_PROJECT_DIR}/.github-env-file"
 
 pages_job:
-  image: ruby:latest
+  image: ruby:latest@sha256:07c880a5e0fd72fa6cf0ff353633c488899082839578776201266e5f9fa95de0
   stage: deploy
   pages: true
-  tags: [docker]
   rules:
-    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
+    - if: $CI_PROJECT_PATH == "leoconforti/the-moby-effect" && $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
   needs:
     - job: build_job
       artifacts: true
+  before_script: []
   script:
     - gem install github-pages
     - github-pages build --source docs --destination public
+  cache: []
   artifacts:
     paths:
       - public

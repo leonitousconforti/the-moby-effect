@@ -1,0 +1,34 @@
+#!/usr/bin/expect -f
+
+set dep_type [lindex $argv 0]
+set package_file [lindex $argv 1]
+set change_type [lindex $argv 2]
+set dep_name [lindex $argv 3]
+set current_version [lindex $argv 4]
+set new_version [lindex $argv 5]
+
+if {($dep_type == "dependencies" || $dep_type == "optionalDependencies" || $dep_type == "peerDependencies") && $package_file == "package.json"} {
+    spawn npx changeset
+
+    expect "What kind of change is this"
+    send "$change_type\r"
+
+    expect "Please enter a summary for this change"
+    if {$current_version == "" && $new_version == ""} {
+        set message "Update $dep_name"
+    } elseif {$current_version == ""} {
+        set message "Update $dep_name to $new_version"
+    } elseif {$new_version == ""} {
+        set message "Update $dep_name from $current_version"
+    } else {
+        set message "Update $dep_name from $current_version to $new_version"
+    }
+    send "$message\r"
+
+    expect "Is this your desired changeset?"
+    send "Y\r"
+} else {
+    spawn npx changeset add --empty
+}
+
+expect eof

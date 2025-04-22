@@ -1,9 +1,13 @@
-*.tsbuildinfo
+.env
 .DS_Store
+.tsbuildinfo
+.github-env-file
 
 /dist/
 /build/
+/.direnv/
 /coverage/
+/.pnpm-store/
 /node_modules/
 /docs/examples/
-/reflection/reflection
+/.devcontainer/.devpod-internal/
