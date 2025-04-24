@@ -66,6 +66,6 @@
     },
 
     "remoteUser": "vscode",
-    "postCreateCommand": "bash -i -c './.devcontainer/setup.sh'",
+    "postAttachCommand": "bash -i -c './.devcontainer/setup.sh'",
     "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
 }
