@@ -95,7 +95,7 @@ build_job:
     # Run build
     devcontainer up --cache-from $FQ_IMAGE_NAME --id-label ${id_label} --remote-env CI=true --workspace-folder .
     set +e
-    devcontainer exec --id-label ${id_label} --workspace-folder . pnpm coverage --run
+    devcontainer exec --id-label ${id_label} --workspace-folder . pnpm check
     build_exit_code=$?
     set -e
 
