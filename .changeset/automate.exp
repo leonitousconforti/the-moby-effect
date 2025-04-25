@@ -1,20 +1,32 @@
 #!/usr/bin/expect -f
 
-set dep_type [lindex $argv 0]
-set package_file [lindex $argv 1]
-set change_type [lindex $argv 2]
-set dep_name [lindex $argv 3]
-set current_version [lindex $argv 4]
-set new_version [lindex $argv 5]
+set is_group [lindex $argv 0]
+set dep_types [lindex $argv 1]
+set package_file [lindex $argv 2]
+set change_type [lindex $argv 3]
+set dep_name [lindex $argv 4]
+set current_version [lindex $argv 5]
+set new_version [lindex $argv 6]
 
-if {($dep_type == "dependencies" || $dep_type == "optionalDependencies" || $dep_type == "peerDependencies") && $package_file == "package.json"} {
+set dep_types_list [split $dep_types ","]
+set dep_should_add_changeset 0
+foreach dep_type $dep_types_list {
+    if {$dep_type == "dependencies" || $dep_type == "optionalDependencies" || $dep_type == "peerDependencies"} {
+        set dep_should_add_changeset 1
+        break
+    }
+}
+
+if {$dep_should_add_changeset} {
     spawn npx changeset
 
     expect "What kind of change is this"
     send "$change_type\r"
 
     expect "Please enter a summary for this change"
-    if {$current_version == "" && $new_version == ""} {
+    if {$is_group} {
+        set message "Update $dep_name"
+    } elseif {$current_version == "" && $new_version == ""} {
         set message "Update $dep_name"
     } elseif {$current_version == ""} {
         set message "Update $dep_name to $new_version"
@@ -32,3 +44,4 @@ if {($dep_type == "dependencies" || $dep_type == "optionalDependencies" || $dep_
 }
 
 expect eof
+

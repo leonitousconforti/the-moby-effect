@@ -15,7 +15,7 @@
         "commands": [
             "rm .prettierrc.json",
             "npm install -g @changesets/cli",
-            "./.changeset/automate.exp \"{{depType}}\" \"{{packageFile}}\" \"patch\" \"{{depName}}\" \"{{currentVersion}}\" \"{{newVersion}}\""
+            "./.changeset/automate.exp \"{{isGroup}}\" \"{{depTypes}}\" \"{{packageFile}}\" \"patch\" \"{{depName}}\" \"{{currentVersion}}\" \"{{newVersion}}\""
         ],
         "fileFilters": [
             ".changeset/*.md"
