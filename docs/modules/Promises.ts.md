@@ -4,15 +4,15 @@ nav_order: 13
 parent: Modules
 ---
 
-## Promises overview
+## Promises.ts overview
 
 Docker engine promises api
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Promises](#promises)
   - [promiseClient](#promiseclient)
@@ -28,7 +28,7 @@ Create a promise client for the docker engine
 **Signature**
 
 ```ts
-export declare const promiseClient: <E>(
+declare const promiseClient: <E>(
   layer: Layer.Layer<
     Layer.Layer.Success<DockerEngine.DockerLayer>,
     Layer.Layer.Error<DockerEngine.DockerLayer> | E,
@@ -72,11 +72,11 @@ export declare const promiseClient: <E>(
       readonly Tty?: boolean | null | undefined
       readonly OpenStdin?: boolean | null | undefined
       readonly StdinOnce?: boolean | null | undefined
-      readonly Env?: readonly string[] | null | undefined
-      readonly Cmd?: readonly string[] | null | undefined
+      readonly Env?: ReadonlyArray<string> | null | undefined
+      readonly Cmd?: ReadonlyArray<string> | null | undefined
       readonly Healthcheck?:
         | {
-            readonly Test?: readonly string[] | null | undefined
+            readonly Test?: ReadonlyArray<string> | null | undefined
             readonly Interval?: number | undefined
             readonly Timeout?: number | undefined
             readonly StartPeriod?: number | undefined
@@ -88,17 +88,17 @@ export declare const promiseClient: <E>(
       readonly ArgsEscaped?: boolean | null | undefined
       readonly Volumes?: { readonly [x: string]: object } | null | undefined
       readonly WorkingDir?: string | null | undefined
-      readonly Entrypoint?: readonly string[] | null | undefined
+      readonly Entrypoint?: ReadonlyArray<string> | null | undefined
       readonly NetworkDisabled?: boolean | null | undefined
       readonly MacAddress?: string | null | undefined
-      readonly OnBuild?: readonly string[] | null | undefined
+      readonly OnBuild?: ReadonlyArray<string> | null | undefined
       readonly Labels?: { readonly [x: string]: string } | null | undefined
       readonly StopSignal?: string | null | undefined
       readonly StopTimeout?: number | null | undefined
-      readonly Shell?: readonly string[] | null | undefined
+      readonly Shell?: ReadonlyArray<string> | null | undefined
       readonly HostConfig?:
         | {
-            readonly Binds?: readonly string[] | null | undefined
+            readonly Binds?: ReadonlyArray<string> | null | undefined
             readonly ContainerIDFile?: string | null | undefined
             readonly LogConfig?:
               | { readonly Type: string; readonly Config: { readonly [x: string]: string } | null }
@@ -107,18 +107,18 @@ export declare const promiseClient: <E>(
             readonly NetworkMode?: "none" | "default" | "host" | "bridge" | "nat" | null | undefined
             readonly PortBindings?:
               | {
-                  readonly [x: `${number}`]: readonly {
+                  readonly [x: `${number}`]: ReadonlyArray<{
                     readonly HostPort: string
                     readonly HostIp?: string | null | undefined
-                  }[]
-                  readonly [x: `${number}/tcp`]: readonly {
+                  }>
+                  readonly [x: `${number}/tcp`]: ReadonlyArray<{
                     readonly HostPort: string
                     readonly HostIp?: string | null | undefined
-                  }[]
-                  readonly [x: `${number}/udp`]: readonly {
+                  }>
+                  readonly [x: `${number}/udp`]: ReadonlyArray<{
                     readonly HostPort: string
                     readonly HostIp?: string | null | undefined
-                  }[]
+                  }>
                 }
               | null
               | undefined
@@ -128,26 +128,26 @@ export declare const promiseClient: <E>(
               | undefined
             readonly AutoRemove?: boolean | null | undefined
             readonly VolumeDriver?: string | null | undefined
-            readonly VolumesFrom?: readonly string[] | null | undefined
-            readonly ConsoleSize?: readonly number[] | null | undefined
+            readonly VolumesFrom?: ReadonlyArray<string> | null | undefined
+            readonly ConsoleSize?: ReadonlyArray<number> | null | undefined
             readonly Annotations?: { readonly [x: string]: string } | null | undefined
-            readonly CapAdd?: readonly string[] | null | undefined
-            readonly CapDrop?: readonly string[] | null | undefined
+            readonly CapAdd?: ReadonlyArray<string> | null | undefined
+            readonly CapDrop?: ReadonlyArray<string> | null | undefined
             readonly CgroupnsMode?: "" | "host" | "private" | null | undefined
-            readonly Dns?: readonly string[] | null | undefined
-            readonly DnsOptions?: readonly string[] | null | undefined
-            readonly DnsSearch?: readonly string[] | null | undefined
-            readonly ExtraHosts?: readonly string[] | null | undefined
-            readonly GroupAdd?: readonly string[] | null | undefined
+            readonly Dns?: ReadonlyArray<string> | null | undefined
+            readonly DnsOptions?: ReadonlyArray<string> | null | undefined
+            readonly DnsSearch?: ReadonlyArray<string> | null | undefined
+            readonly ExtraHosts?: ReadonlyArray<string> | null | undefined
+            readonly GroupAdd?: ReadonlyArray<string> | null | undefined
             readonly IpcMode?: "none" | "host" | "private" | "container" | "shareable" | null | undefined
             readonly Cgroup?: string | null | undefined
-            readonly Links?: readonly string[] | null | undefined
+            readonly Links?: ReadonlyArray<string> | null | undefined
             readonly OomScoreAdj?: number | null | undefined
             readonly PidMode?: string | null | undefined
             readonly Privileged?: boolean | null | undefined
             readonly PublishAllPorts?: boolean | null | undefined
             readonly ReadonlyRootfs?: boolean | null | undefined
-            readonly SecurityOpt?: readonly string[] | null | undefined
+            readonly SecurityOpt?: ReadonlyArray<string> | null | undefined
             readonly StorageOpt?: { readonly [x: string]: string } | null | undefined
             readonly Tmpfs?: { readonly [x: string]: string } | null | undefined
             readonly UTSMode?: string | null | undefined
@@ -162,23 +162,23 @@ export declare const promiseClient: <E>(
             readonly CgroupParent?: string | null | undefined
             readonly BlkioWeight?: number | null | undefined
             readonly BlkioWeightDevice?:
-              | readonly ({ readonly Path: string; readonly Weight: number } | null)[]
+              | ReadonlyArray<{ readonly Path: string; readonly Weight: number } | null>
               | null
               | undefined
             readonly BlkioDeviceReadBps?:
-              | readonly ({ readonly Path: string; readonly Rate: number } | null)[]
+              | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
               | null
               | undefined
             readonly BlkioDeviceWriteBps?:
-              | readonly ({ readonly Path: string; readonly Rate: number } | null)[]
+              | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
               | null
               | undefined
             readonly BlkioDeviceReadIOps?:
-              | readonly ({ readonly Path: string; readonly Rate: number } | null)[]
+              | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
               | null
               | undefined
             readonly BlkioDeviceWriteIOps?:
-              | readonly ({ readonly Path: string; readonly Rate: number } | null)[]
+              | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
               | null
               | undefined
             readonly CpuPeriod?: number | null | undefined
@@ -188,22 +188,22 @@ export declare const promiseClient: <E>(
             readonly CpusetCpus?: string | null | undefined
             readonly CpusetMems?: string | null | undefined
             readonly Devices?:
-              | readonly ({
+              | ReadonlyArray<{
                   readonly PathOnHost: string
                   readonly PathInContainer: string
                   readonly CgroupPermissions: string
-                } | null)[]
+                } | null>
               | null
               | undefined
-            readonly DeviceCgroupRules?: readonly string[] | null | undefined
+            readonly DeviceCgroupRules?: ReadonlyArray<string> | null | undefined
             readonly DeviceRequests?:
-              | readonly ({
+              | ReadonlyArray<{
                   readonly Driver: string
                   readonly Count: number
-                  readonly DeviceIDs: readonly string[] | null
-                  readonly Capabilities: readonly (readonly string[] | null)[] | null
+                  readonly DeviceIDs: ReadonlyArray<string> | null
+                  readonly Capabilities: ReadonlyArray<ReadonlyArray<string> | null> | null
                   readonly Options: { readonly [x: string]: string } | null
-                } | null)[]
+                } | null>
               | null
               | undefined
             readonly KernelMemory?: number | null | undefined
@@ -214,7 +214,7 @@ export declare const promiseClient: <E>(
             readonly OomKillDisable?: boolean | null | undefined
             readonly PidsLimit?: number | null | undefined
             readonly Ulimits?:
-              | readonly ({ readonly Name: string; readonly Hard: number; readonly Soft: number } | null)[]
+              | ReadonlyArray<{ readonly Name: string; readonly Hard: number; readonly Soft: number } | null>
               | null
               | undefined
             readonly CpuCount?: number | null | undefined
@@ -222,7 +222,7 @@ export declare const promiseClient: <E>(
             readonly IOMaximumIOps?: number | null | undefined
             readonly IOMaximumBandwidth?: number | null | undefined
             readonly Mounts?:
-              | readonly ({
+              | ReadonlyArray<{
                   readonly Type?: "bind" | "volume" | "tmpfs" | "npipe" | "cluster" | undefined
                   readonly Source?: string | undefined
                   readonly Target?: string | undefined
@@ -262,18 +262,18 @@ export declare const promiseClient: <E>(
                     | undefined
                   readonly TmpfsOptions?:
                     | {
-                        readonly Options?: readonly (readonly string[] | null)[] | null | undefined
+                        readonly Options?: ReadonlyArray<ReadonlyArray<string> | null> | null | undefined
                         readonly SizeBytes?: number | undefined
                         readonly Mode?: number | undefined
                       }
                     | null
                     | undefined
                   readonly ClusterOptions?: {} | null | undefined
-                } | null)[]
+                } | null>
               | null
               | undefined
-            readonly MaskedPaths?: readonly string[] | null | undefined
-            readonly ReadonlyPaths?: readonly string[] | null | undefined
+            readonly MaskedPaths?: ReadonlyArray<string> | null | undefined
+            readonly ReadonlyPaths?: ReadonlyArray<string> | null | undefined
             readonly Init?: boolean | null | undefined
           }
         | null
@@ -283,7 +283,7 @@ export declare const promiseClient: <E>(
             readonly EndpointsConfig: {
               readonly [x: string]: {
                 readonly MacAddress: string
-                readonly Links: readonly string[] | null
+                readonly Links: ReadonlyArray<string> | null
                 readonly NetworkID: string
                 readonly EndpointID: string
                 readonly Gateway: string
@@ -294,12 +294,12 @@ export declare const promiseClient: <E>(
                 readonly IPAMConfig: {
                   readonly IPv4Address?: string | undefined
                   readonly IPv6Address?: string | undefined
-                  readonly LinkLocalIPs?: readonly string[] | null | undefined
+                  readonly LinkLocalIPs?: ReadonlyArray<string> | null | undefined
                 } | null
-                readonly Aliases: readonly string[] | null
+                readonly Aliases: ReadonlyArray<string> | null
                 readonly DriverOpts: { readonly [x: string]: string } | null
                 readonly IPAddress: string
-                readonly DNSNames: readonly string[] | null
+                readonly DNSNames: ReadonlyArray<string> | null
               } | null
             } | null
           }
@@ -351,7 +351,7 @@ export declare const promiseClient: <E>(
             | undefined
         }
       | undefined
-  ) => Promise<readonly MobySchemas.ContainerListResponseItem[]>
+  ) => Promise<ReadonlyArray<MobySchemas.ContainerListResponseItem>>
   push: (options: {
     readonly name: string
     readonly tag?: string
@@ -366,13 +366,13 @@ export declare const promiseClient: <E>(
           readonly digests?: boolean | undefined
         }
       | undefined
-  ) => Promise<readonly MobySchemas.ImageSummary[]>
+  ) => Promise<ReadonlyArray<MobySchemas.ImageSummary>>
   search: (options: {
     readonly term: string
     readonly limit?: number | undefined
     readonly stars?: number | undefined
     readonly "is-official"?: boolean | undefined
-  }) => Promise<readonly MobySchemas.RegistrySearchResponse[]>
+  }) => Promise<ReadonlyArray<MobySchemas.RegistrySearchResponse>>
   version: () => Promise<Readonly<MobySchemas.SystemVersionResponse>>
   info: () => Promise<Readonly<MobySchemas.SystemInfoResponse>>
   ping: () => Promise<"OK">
@@ -380,12 +380,14 @@ export declare const promiseClient: <E>(
   followProgressInConsole: (
     evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
     onError: (error: unknown) => unknown
-  ) => Promise<readonly MobySchemas.JSONMessage[]>
+  ) => Promise<ReadonlyArray<MobySchemas.JSONMessage>>
   waitForProgressToComplete: (
     evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
     onError: (error: unknown) => unknown
-  ) => Promise<readonly MobySchemas.JSONMessage[]>
+  ) => Promise<ReadonlyArray<MobySchemas.JSONMessage>>
 }>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/Promises.ts#L24)
+
+Since v1.0.0

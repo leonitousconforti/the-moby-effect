@@ -4,15 +4,15 @@ nav_order: 8
 parent: Modules
 ---
 
-## MobyDemux overview
+## MobyDemux.ts overview
 
 Demux utilities for different types of docker streams.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Branded Types](#branded-types)
   - [MultiplexedChannel (interface)](#multiplexedchannel-interface)
@@ -122,7 +122,9 @@ export interface MultiplexedChannel<in IE = unknown, out OE = Socket.SocketError
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L165)
+
+Since v1.0.0
 
 ## MultiplexedSocket (interface)
 
@@ -145,7 +147,9 @@ export interface MultiplexedSocket extends Pipeable.Pipeable {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L144)
+
+Since v1.0.0
 
 ## RawChannel (interface)
 
@@ -176,7 +180,9 @@ export interface RawChannel<in IE = unknown, out OE = Socket.SocketError, out R 
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L117)
+
+Since v1.0.0
 
 ## RawSocket (interface)
 
@@ -197,7 +203,9 @@ export interface RawSocket extends Pipeable.Pipeable {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L98)
+
+Since v1.0.0
 
 # Constructors
 
@@ -206,7 +214,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const makeMultiplexedChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
+declare const makeMultiplexedChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
   underlying: Channel.Channel<
     Chunk.Chunk<Uint8Array>,
     Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
@@ -219,24 +227,28 @@ export declare const makeMultiplexedChannel: <IE = unknown, OE = Socket.SocketEr
 ) => MultiplexedChannel<IE, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L366)
+
+Since v1.0.0
 
 ## makeMultiplexedSocket
 
 **Signature**
 
 ```ts
-export declare const makeMultiplexedSocket: (underlying: Socket.Socket) => MultiplexedSocket
+declare const makeMultiplexedSocket: (underlying: Socket.Socket) => MultiplexedSocket
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L359)
+
+Since v1.0.0
 
 ## makeRawChannel
 
 **Signature**
 
 ```ts
-export declare const makeRawChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
+declare const makeRawChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
   underlying: Channel.Channel<
     Chunk.Chunk<Uint8Array>,
     Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
@@ -249,17 +261,21 @@ export declare const makeRawChannel: <IE = unknown, OE = Socket.SocketError, R =
 ) => RawChannel<IE, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L343)
+
+Since v1.0.0
 
 ## makeRawSocket
 
 **Signature**
 
 ```ts
-export declare const makeRawSocket: (underlying: Socket.Socket) => RawSocket
+declare const makeRawSocket: (underlying: Socket.Socket) => RawSocket
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L337)
+
+Since v1.0.0
 
 # Conversions
 
@@ -268,31 +284,35 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const asMultiplexedChannel: <IE = never, OE = Socket.SocketError, R = never>(
+declare const asMultiplexedChannel: <IE = never, OE = Socket.SocketError, R = never>(
   input: EitherMultiplexedInput<IE, OE, R>
 ) => MultiplexedChannel<IE, OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L463)
+
+Since v1.0.0
 
 ## asRawChannel
 
 **Signature**
 
 ```ts
-export declare const asRawChannel: <IE = never, OE = Socket.SocketError, R = never>(
+declare const asRawChannel: <IE = never, OE = Socket.SocketError, R = never>(
   input: EitherRawInput<IE, OE, R>
 ) => RawChannel<IE, OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L455)
+
+Since v1.0.0
 
 ## interleaveRaw
 
 **Signature**
 
 ```ts
-export declare const interleaveRaw: <
+declare const interleaveRaw: <
   IE1 = never,
   IE2 = never,
   OE1 = Socket.SocketError,
@@ -305,14 +325,16 @@ export declare const interleaveRaw: <
 ) => Stream.Stream<Uint8Array, IE1 | IE2 | OE1 | OE2, R1 | R2>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L550)
+
+Since v1.0.0
 
 ## mergeRawToTaggedStream
 
 **Signature**
 
 ```ts
-export declare const mergeRawToTaggedStream: <
+declare const mergeRawToTaggedStream: <
   IE1 = never,
   IE2 = never,
   OE1 = Socket.SocketError,
@@ -330,125 +352,145 @@ export declare const mergeRawToTaggedStream: <
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L566)
+
+Since v1.0.0
 
 ## multiplexedFromSink
 
 **Signature**
 
 ```ts
-export declare const multiplexedFromSink: <E, R>(
+declare const multiplexedFromSink: <E, R>(
   input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
 ) => MultiplexedChannel<never, E, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L542)
+
+Since v1.0.0
 
 ## multiplexedFromStream
 
 **Signature**
 
 ```ts
-export declare const multiplexedFromStream: <E, R>(
-  input: Stream.Stream<Uint8Array, E, R>
-) => MultiplexedChannel<never, E, R>
+declare const multiplexedFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => MultiplexedChannel<never, E, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L527)
+
+Since v1.0.0
 
 ## multiplexedFromStreamWith
 
 **Signature**
 
 ```ts
-export declare const multiplexedFromStreamWith: <IE>() => <E, R>(
+declare const multiplexedFromStreamWith: <IE>() => <E, R>(
   input: Stream.Stream<Uint8Array, IE | E, R>
 ) => MultiplexedChannel<IE, IE | E, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L512)
+
+Since v1.0.0
 
 ## multiplexedToSink
 
 **Signature**
 
 ```ts
-export declare const multiplexedToSink: <IE = never, OE = Socket.SocketError, R = never>(
+declare const multiplexedToSink: <IE = never, OE = Socket.SocketError, R = never>(
   input: EitherMultiplexedInput<IE, OE, R>
 ) => Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L495)
+
+Since v1.0.0
 
 ## multiplexedToStream
 
 **Signature**
 
 ```ts
-export declare const multiplexedToStream: <IE = never, OE = Socket.SocketError, R = never>(
+declare const multiplexedToStream: <IE = never, OE = Socket.SocketError, R = never>(
   input: EitherMultiplexedInput<IE, OE, R>
 ) => Stream.Stream<Uint8Array, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L479)
+
+Since v1.0.0
 
 ## rawFromSink
 
 **Signature**
 
 ```ts
-export declare const rawFromSink: <E, R>(
+declare const rawFromSink: <E, R>(
   input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
 ) => RawChannel<never, E, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L534)
+
+Since v1.0.0
 
 ## rawFromStream
 
 **Signature**
 
 ```ts
-export declare const rawFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => RawChannel<never, E, R>
+declare const rawFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => RawChannel<never, E, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L520)
+
+Since v1.0.0
 
 ## rawFromStreamWith
 
 **Signature**
 
 ```ts
-export declare const rawFromStreamWith: <IE>() => <E, R>(
+declare const rawFromStreamWith: <IE>() => <E, R>(
   input: Stream.Stream<Uint8Array, IE | E, R>
 ) => RawChannel<IE, IE | E, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L504)
+
+Since v1.0.0
 
 ## rawToSink
 
 **Signature**
 
 ```ts
-export declare const rawToSink: <IE = never, OE = Socket.SocketError, R = never>(
+declare const rawToSink: <IE = never, OE = Socket.SocketError, R = never>(
   input: EitherRawInput<IE, OE, R>
 ) => Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L487)
+
+Since v1.0.0
 
 ## rawToStream
 
 **Signature**
 
 ```ts
-export declare const rawToStream: <IE = never, OE = Socket.SocketError, R = never>(
+declare const rawToStream: <IE = never, OE = Socket.SocketError, R = never>(
   input: EitherRawInput<IE, OE, R>
 ) => Stream.Stream<Uint8Array, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L471)
+
+Since v1.0.0
 
 # Demux
 
@@ -465,7 +507,7 @@ bufferSize is 16.
 **Signature**
 
 ```ts
-export declare const demuxMultiplexedToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
+declare const demuxMultiplexedToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
   source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
   sink1: Sink.Sink<A1, string, L1, E2, R2>,
   sink2: Sink.Sink<A2, string, L2, E3, R3>,
@@ -490,7 +532,9 @@ export declare const demuxMultiplexedToSeparateSinks: (<A1, A2, L1, L2, E1, E2, 
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L660)
+
+Since v1.0.0
 
 ## demuxMultiplexedToSingleSink
 
@@ -499,7 +543,7 @@ Demux a multiplexed socket, all output goes to a single sink.
 **Signature**
 
 ```ts
-export declare const demuxMultiplexedToSingleSink: (<A1, L1, E1, E2, R1, R2>(
+declare const demuxMultiplexedToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
   sink: Sink.Sink<A1, readonly [internalMultiplexed.MultiplexedHeaderType, string], L1, E2, R2>,
   options?: { encoding?: string | undefined } | undefined
@@ -522,7 +566,9 @@ export declare const demuxMultiplexedToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L646)
+
+Since v1.0.0
 
 ## demuxRawToSingleSink
 
@@ -533,7 +579,7 @@ combined on the same sink.
 **Signature**
 
 ```ts
-export declare const demuxRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
+declare const demuxRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
   sink: Sink.Sink<A1, string, L1, E2, R2>,
   options?: { encoding?: string | undefined } | undefined
@@ -556,20 +602,22 @@ export declare const demuxRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L602)
+
+Since v1.0.0
 
 ## demuxStdioRawToSeparateSinks
 
 Demux multiple raw sockets, created from multiple container attach requests.
 If no options are provided for a given stream, it will be ignored. This is
-really just an Effect.all wrapper around {@link demuxRawSingleSink}.
+really just an Effect.all wrapper around `demuxRawSingleSink`.
 
-To demux a single raw socket, you should use {@link demuxRawSingleSink}
+To demux a single raw socket, you should use `demuxRawSingleSink`
 
 **Signature**
 
 ```ts
-export declare const demuxStdioRawToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
+declare const demuxStdioRawToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
   io: {
     stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>
     stdout: Sink.Sink<A1, string, L1, E2, R2>
@@ -638,20 +686,22 @@ export declare const demuxStdioRawToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3,
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L638)
+
+Since v1.0.0
 
 ## demuxStdioRawToSingleSink
 
 Demux multiple raw sockets, created from multiple container attach requests.
 If no options are provided for a given stream, it will be ignored. This is
-really just an Effect.all wrapper around {@link demuxRawSingleSink}.
+really just an Effect.all wrapper around `demuxRawSingleSink`.
 
-To demux a single raw socket, you should use {@link demuxRawSingleSink}
+To demux a single raw socket, you should use `demuxRawSingleSink`
 
 **Signature**
 
 ```ts
-export declare const demuxStdioRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
+declare const demuxStdioRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
   sink: Sink.Sink<A1, string, L1, E2, R2>,
   options?: { encoding?: string | undefined } | undefined
@@ -708,20 +758,22 @@ export declare const demuxStdioRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L626)
+
+Since v1.0.0
 
 ## demuxStdioRawTupled
 
 Demux multiple raw sockets, created from multiple container attach requests.
 If no options are provided for a given stream, it will be ignored. This is
-really just an Effect.all wrapper around {@link demuxRawSingleSink}.
+really just an Effect.all wrapper around `demuxRawSingleSink`.
 
-To demux a single raw socket, you should use {@link demuxRawSingleSink}
+To demux a single raw socket, you should use `demuxRawSingleSink`
 
 **Signature**
 
 ```ts
-export declare const demuxStdioRawTupled: <
+declare const demuxStdioRawTupled: <
   A1 = void,
   A2 = void,
   L1 = never,
@@ -776,7 +828,9 @@ export declare const demuxStdioRawTupled: <
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L614)
+
+Since v1.0.0
 
 ## demuxToSingleSink
 
@@ -785,7 +839,7 @@ Demux either a raw socket or a multiplexed socket to a single sink.
 **Signature**
 
 ```ts
-export declare const demuxToSingleSink: {
+declare const demuxToSingleSink: {
   <A1, L1, E1, E2, R1, R2>(
     source: Stream.Stream<string | Uint8Array, E1, R1>,
     sink: Sink.Sink<A1, string, L1, E2, R2>,
@@ -810,7 +864,9 @@ export declare const demuxToSingleSink: {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L668)
+
+Since v1.0.0
 
 # DemuxStdio
 
@@ -824,14 +880,14 @@ stream sockets, then you can provide different individual sockets for stdin,
 stdout, and stderr.
 
 If you are looking for a way to demux to the console instead of stdin,
-stdout, and stderr then see {@link demuxSocketWithInputToConsole}. Since we
+stdout, and stderr then see `demuxSocketWithInputToConsole`. Since we
 are interacting with stdin, stdout, and stderr this function dynamically
 imports the `@effect/platform-node` package.
 
 **Signature**
 
 ```ts
-export declare const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketError, R = never>(
+declare const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketError, R = never>(
   sockets: EitherMultiplexedInput<IE, OE, R>,
   options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<
@@ -841,7 +897,9 @@ export declare const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.S
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L748)
+
+Since v1.0.0
 
 ## demuxWithInputToConsole
 
@@ -853,19 +911,21 @@ sockets, then you can provide different individual sockets for stdin, stdout,
 and stderr.
 
 If you are looking for a way to demux to stdin, stdout, and stderr instead of
-the console then see {@link demuxSocketFromStdinToStdoutAndStderr}.
+the console then see `demuxSocketFromStdinToStdoutAndStderr`.
 
 **Signature**
 
 ```ts
-export declare const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketError, R2 = never>(
+declare const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketError, R2 = never>(
   sockets: EitherMultiplexedInput<E | IE, OE, R2>,
   input: Stream.Stream<string | Uint8Array, E, R1>,
   options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
 ) => Effect.Effect<void, E | IE | OE | ParseResult.ParseError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L720)
+
+Since v1.0.0
 
 # Fanning
 
@@ -874,7 +934,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const fan: (<IE = never, OE = Socket.SocketError, R = never>(options: {
+declare const fan: (<IE = never, OE = Socket.SocketError, R = never>(options: {
   requestedCapacity: number
   encoding?: string | undefined
 }) => (
@@ -902,7 +962,9 @@ export declare const fan: (<IE = never, OE = Socket.SocketError, R = never>(opti
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L704)
+
+Since v1.0.0
 
 # Packing
 
@@ -911,7 +973,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const pack: (<
+declare const pack: (<
   IE1 = never,
   IE2 = never,
   IE3 = never,
@@ -951,7 +1013,9 @@ export declare const pack: (<
   >)
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L698)
+
+Since v1.0.0
 
 # Predicates
 
@@ -960,64 +1024,76 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const isMultiplexedChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
+declare const isMultiplexedChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
   u: unknown
 ) => u is MultiplexedChannel<IE, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L402)
+
+Since v1.0.0
 
 ## isMultiplexedSocket
 
 **Signature**
 
 ```ts
-export declare const isMultiplexedSocket: (u: unknown) => u is MultiplexedSocket
+declare const isMultiplexedSocket: (u: unknown) => u is MultiplexedSocket
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L396)
+
+Since v1.0.0
 
 ## isRawChannel
 
 **Signature**
 
 ```ts
-export declare const isRawChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
+declare const isRawChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
   u: unknown
 ) => u is RawChannel<IE, IE | OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L388)
+
+Since v1.0.0
 
 ## isRawSocket
 
 **Signature**
 
 ```ts
-export declare const isRawSocket: (u: unknown) => u is RawSocket
+declare const isRawSocket: (u: unknown) => u is RawSocket
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L382)
+
+Since v1.0.0
 
 ## responseIsMultiplexedResponse
 
 **Signature**
 
 ```ts
-export declare const responseIsMultiplexedResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
+declare const responseIsMultiplexedResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L417)
+
+Since v1.0.0
 
 ## responseIsRawResponse
 
 **Signature**
 
 ```ts
-export declare const responseIsRawResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
+declare const responseIsRawResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L410)
+
+Since v1.0.0
 
 ## responseToStreamingSocketOrFailUnsafe
 
@@ -1032,12 +1108,14 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const responseToStreamingSocketOrFailUnsafe: (
+declare const responseToStreamingSocketOrFailUnsafe: (
   response: HttpClientResponse.HttpClientResponse
 ) => Effect.Effect<RawSocket | MultiplexedSocket, Socket.SocketError, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L446)
+
+Since v1.0.0
 
 # Transformations
 
@@ -1052,12 +1130,14 @@ Bun/Deno yet, and will never work in the browser.
 **Signature**
 
 ```ts
-export declare const hijackResponseUnsafe: (
+declare const hijackResponseUnsafe: (
   response: HttpClientResponse.HttpClientResponse
 ) => Effect.Effect<Socket.Socket, Socket.SocketError, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L430)
+
+Since v1.0.0
 
 # Type ids
 
@@ -1066,80 +1146,96 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const MultiplexedChannelTypeId: typeof MultiplexedChannelTypeId
+declare const MultiplexedChannelTypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L79)
+
+Since v1.0.0
 
 ## MultiplexedChannelTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type MultiplexedChannelTypeId = typeof MultiplexedChannelTypeId
+type MultiplexedChannelTypeId = typeof MultiplexedChannelTypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L85)
+
+Since v1.0.0
 
 ## MultiplexedSocketTypeId
 
 **Signature**
 
 ```ts
-export declare const MultiplexedSocketTypeId: typeof MultiplexedSocketTypeId
+declare const MultiplexedSocketTypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L67)
+
+Since v1.0.0
 
 ## MultiplexedSocketTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type MultiplexedSocketTypeId = typeof MultiplexedSocketTypeId
+type MultiplexedSocketTypeId = typeof MultiplexedSocketTypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L73)
+
+Since v1.0.0
 
 ## RawChannelTypeId
 
 **Signature**
 
 ```ts
-export declare const RawChannelTypeId: typeof RawChannelTypeId
+declare const RawChannelTypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L55)
+
+Since v1.0.0
 
 ## RawChannelTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type RawChannelTypeId = typeof RawChannelTypeId
+type RawChannelTypeId = typeof RawChannelTypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L61)
+
+Since v1.0.0
 
 ## RawSocketTypeId
 
 **Signature**
 
 ```ts
-export declare const RawSocketTypeId: typeof RawSocketTypeId
+declare const RawSocketTypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L43)
+
+Since v1.0.0
 
 ## RawSocketTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type RawSocketTypeId = typeof RawSocketTypeId
+type RawSocketTypeId = typeof RawSocketTypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L49)
+
+Since v1.0.0
 
 # Types
 
@@ -1148,27 +1244,31 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>
+type AnyMultiplexedInput = EitherMultiplexedInput<any, any, any>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L203)
+
+Since v1.0.0
 
 ## AnyRawInput (type alias)
 
 **Signature**
 
 ```ts
-export type AnyRawInput = EitherRawInput<any, any, any>
+type AnyRawInput = EitherRawInput<any, any, any>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L191)
+
+Since v1.0.0
 
 ## CompressedDemuxOutput (type alias)
 
 **Signature**
 
 ```ts
-export type CompressedDemuxOutput<A1, A2> = A1 extends undefined | void
+type CompressedDemuxOutput<A1, A2> = A1 extends undefined | void
   ? A2 extends undefined | void
     ? void
     : readonly [stdout: undefined, stderr: A2]
@@ -1177,34 +1277,40 @@ export type CompressedDemuxOutput<A1, A2> = A1 extends undefined | void
     : readonly [stdout: A1, stderr: A2]
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L325)
+
+Since v1.0.0
 
 ## EitherMultiplexedInput (type alias)
 
 **Signature**
 
 ```ts
-export type EitherMultiplexedInput<IE, OE, R> = MultiplexedSocket | MultiplexedChannel<IE, OE, R>
+type EitherMultiplexedInput<IE, OE, R> = MultiplexedSocket | MultiplexedChannel<IE, OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L197)
+
+Since v1.0.0
 
 ## EitherRawInput (type alias)
 
 **Signature**
 
 ```ts
-export type EitherRawInput<IE, OE, R> = RawSocket | RawChannel<IE, OE, R>
+type EitherRawInput<IE, OE, R> = RawSocket | RawChannel<IE, OE, R>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L184)
+
+Since v1.0.0
 
 ## HeterogeneousStdioRawInput (type alias)
 
 **Signature**
 
 ```ts
-export type HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
+type HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
   | { stdin: EitherRawInput<IE1, OE1, R1>; stdout?: never; stderr?: never }
   | { stdin?: never; stdout: EitherRawInput<IE2, OE2, R2>; stderr?: never }
   | { stdin?: never; stdout?: never; stderr: EitherRawInput<IE3, OE3, R3> }
@@ -1218,14 +1324,16 @@ export type HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
     }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L235)
+
+Since v1.0.0
 
 ## HeterogeneousStdioTupledRawInput (type alias)
 
 **Signature**
 
 ```ts
-export type HeterogeneousStdioTupledRawInput<
+type HeterogeneousStdioTupledRawInput<
   A1,
   A2,
   L1,
@@ -1295,14 +1403,16 @@ export type HeterogeneousStdioTupledRawInput<
     }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L252)
+
+Since v1.0.0
 
 ## HomogeneousStdioRawChannelInput (type alias)
 
 **Signature**
 
 ```ts
-export type HomogeneousStdioRawChannelInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
+type HomogeneousStdioRawChannelInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3> =
   | { stdin: RawChannel<IE1, OE1, R1>; stdout?: never; stderr?: never }
   | { stdin?: never; stdout: RawChannel<IE2, OE2, R2>; stderr?: never }
   | { stdin?: never; stdout?: never; stderr: RawChannel<IE3, OE3, R3> }
@@ -1312,14 +1422,16 @@ export type HomogeneousStdioRawChannelInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2
   | { stdin: RawChannel<IE1, OE1, R1>; stdout: RawChannel<IE2, OE2, R2>; stderr: RawChannel<IE3, OE3, R3> }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L222)
+
+Since v1.0.0
 
 ## HomogeneousStdioRawSocketInput (type alias)
 
 **Signature**
 
 ```ts
-export type HomogeneousStdioRawSocketInput =
+type HomogeneousStdioRawSocketInput =
   | { stdin: RawSocket; stdout?: never; stderr?: never }
   | { stdin?: never; stdout: RawSocket; stderr?: never }
   | { stdin?: never; stdout?: never; stderr: RawSocket }
@@ -1329,24 +1441,30 @@ export type HomogeneousStdioRawSocketInput =
   | { stdin: RawSocket; stdout: RawSocket; stderr: RawSocket }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L209)
+
+Since v1.0.0
 
 ## MultiplexedContentType
 
 **Signature**
 
 ```ts
-export declare const MultiplexedContentType: "application/vnd.docker.multiplexed-stream"
+declare const MultiplexedContentType: "application/vnd.docker.multiplexed-stream"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L36)
+
+Since v1.0.0
 
 ## RawContentType
 
 **Signature**
 
 ```ts
-export declare const RawContentType: "application/vnd.docker.raw-stream"
+declare const RawContentType: "application/vnd.docker.raw-stream"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L30)
+
+Since v1.0.0

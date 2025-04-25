@@ -4,37 +4,37 @@ nav_order: 5
 parent: Modules
 ---
 
-## index overview
+## index.ts overview
 
 Docker engine callbacks api
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
-- [exports](#exports)
-  - [From "./Callbacks.js"](#from-callbacksjs)
-  - [From "./DindEngine.js"](#from-dindenginejs)
-  - [From "./DockerComposeEngine.js"](#from-dockercomposeenginejs)
-  - [From "./DockerEngine.js"](#from-dockerenginejs)
-  - [From "./MobyConnection.js"](#from-mobyconnectionjs)
-  - [From "./MobyConvey.js"](#from-mobyconveyjs)
-  - [From "./MobyDemux.js"](#from-mobydemuxjs)
-  - [From "./MobyEndpoints.js"](#from-mobyendpointsjs)
-  - [From "./MobyPlatforms.js"](#from-mobyplatformsjs)
-  - [From "./MobySchemas.js"](#from-mobyschemasjs)
-  - [From "./PodmanEngine.js"](#from-podmanenginejs)
-  - [From "./Promises.js"](#from-promisesjs)
+- [utils](#utils)
+  - [Callbacks (namespace export)](#callbacks-namespace-export)
+  - [DindEngine (namespace export)](#dindengine-namespace-export)
+  - [DockerComposeEngine (namespace export)](#dockercomposeengine-namespace-export)
+  - [DockerEngine (namespace export)](#dockerengine-namespace-export)
+  - [MobyConnection (namespace export)](#mobyconnection-namespace-export)
+  - [MobyConvey (namespace export)](#mobyconvey-namespace-export)
+  - [MobyDemux (namespace export)](#mobydemux-namespace-export)
+  - [MobyEndpoints (namespace export)](#mobyendpoints-namespace-export)
+  - [MobyPlatforms (namespace export)](#mobyplatforms-namespace-export)
+  - [MobySchemas (namespace export)](#mobyschemas-namespace-export)
+  - [PodmanEngine (namespace export)](#podmanengine-namespace-export)
+  - [Promises (namespace export)](#promises-namespace-export)
 
 ---
 
-# exports
+# utils
 
-## From "./Callbacks.js"
+## Callbacks (namespace export)
 
-Docker engine callbacks api
+Re-exports all named exports from the "./Callbacks.js" module as `Callbacks`.
 
 **Signature**
 
@@ -42,11 +42,13 @@ Docker engine callbacks api
 export * as Callbacks from "./Callbacks.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L6)
 
-## From "./DindEngine.js"
+Since v1.0.0
 
-Docker in docker engine.
+## DindEngine (namespace export)
+
+Re-exports all named exports from the "./DindEngine.js" module as `DindEngine`.
 
 **Signature**
 
@@ -54,11 +56,13 @@ Docker in docker engine.
 export * as DindEngine from "./DindEngine.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L13)
 
-## From "./DockerComposeEngine.js"
+Since v1.0.0
 
-Docker compose engine.
+## DockerComposeEngine (namespace export)
+
+Re-exports all named exports from the "./DockerComposeEngine.js" module as `DockerComposeEngine`.
 
 **Signature**
 
@@ -66,11 +70,13 @@ Docker compose engine.
 export * as DockerComposeEngine from "./DockerComposeEngine.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L20)
 
-## From "./DockerEngine.js"
+Since v1.0.0
 
-Docker engine.
+## DockerEngine (namespace export)
+
+Re-exports all named exports from the "./DockerEngine.js" module as `DockerEngine`.
 
 **Signature**
 
@@ -78,11 +84,13 @@ Docker engine.
 export * as DockerEngine from "./DockerEngine.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L27)
 
-## From "./MobyConnection.js"
+Since v1.0.0
 
-Http, https, ssh, and unix socket connection agents for all platforms.
+## MobyConnection (namespace export)
+
+Re-exports all named exports from the "./MobyConnection.js" module as `MobyConnection`.
 
 **Signature**
 
@@ -90,11 +98,13 @@ Http, https, ssh, and unix socket connection agents for all platforms.
 export * as MobyConnection from "./MobyConnection.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L34)
 
-## From "./MobyConvey.js"
+Since v1.0.0
 
-Convenance utilities for Docker input and output streams.
+## MobyConvey (namespace export)
+
+Re-exports all named exports from the "./MobyConvey.js" module as `MobyConvey`.
 
 **Signature**
 
@@ -102,11 +112,13 @@ Convenance utilities for Docker input and output streams.
 export * as MobyConvey from "./MobyConvey.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L41)
 
-## From "./MobyDemux.js"
+Since v1.0.0
 
-Demux utilities for different types of docker streams.
+## MobyDemux (namespace export)
+
+Re-exports all named exports from the "./MobyDemux.js" module as `MobyDemux`.
 
 **Signature**
 
@@ -114,11 +126,13 @@ Demux utilities for different types of docker streams.
 export * as MobyDemux from "./MobyDemux.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L48)
 
-## From "./MobyEndpoints.js"
+Since v1.0.0
 
-Moby endpoints.
+## MobyEndpoints (namespace export)
+
+Re-exports all named exports from the "./MobyEndpoints.js" module as `MobyEndpoints`.
 
 **Signature**
 
@@ -126,11 +140,13 @@ Moby endpoints.
 export * as MobyEndpoints from "./MobyEndpoints.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L55)
 
-## From "./MobyPlatforms.js"
+Since v1.0.0
 
-Http client layers for all platforms.
+## MobyPlatforms (namespace export)
+
+Re-exports all named exports from the "./MobyPlatforms.js" module as `MobyPlatforms`.
 
 **Signature**
 
@@ -138,11 +154,13 @@ Http client layers for all platforms.
 export * as MobyPlatforms from "./MobyPlatforms.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L62)
 
-## From "./MobySchemas.js"
+Since v1.0.0
 
-Moby schemas.
+## MobySchemas (namespace export)
+
+Re-exports all named exports from the "./MobySchemas.js" module as `MobySchemas`.
 
 **Signature**
 
@@ -150,11 +168,13 @@ Moby schemas.
 export * as MobySchemas from "./MobySchemas.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L69)
 
-## From "./PodmanEngine.js"
+Since v1.0.0
 
-Podman engine
+## PodmanEngine (namespace export)
+
+Re-exports all named exports from the "./PodmanEngine.js" module as `PodmanEngine`.
 
 **Signature**
 
@@ -162,11 +182,13 @@ Podman engine
 export * as PodmanEngine from "./PodmanEngine.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L76)
 
-## From "./Promises.js"
+Since v1.0.0
 
-Docker engine promises api
+## Promises (namespace export)
+
+Re-exports all named exports from the "./Promises.js" module as `Promises`.
 
 **Signature**
 
@@ -174,4 +196,6 @@ Docker engine promises api
 export * as Promises from "./Promises.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/index.ts#L83)
+
+Since v1.0.0

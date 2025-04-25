@@ -4,15 +4,15 @@ nav_order: 2
 parent: Modules
 ---
 
-## DindEngine overview
+## DindEngine.ts overview
 
 Docker in docker engine.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Layers](#layers)
   - [MakeDindLayerFromPlatformConstructor (type alias)](#makedindlayerfromplatformconstructor-type-alias)
@@ -33,29 +33,11 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type MakeDindLayerFromPlatformConstructor<
-  PlatformLayerConstructor extends (
-    connectionOptions: any
-  ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
-  SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (
-    connectionOptions: infer C
-  ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
-    ? C
-    : never,
-  PlatformLayerConstructorError = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
-    Layer.Layer.Success<DockerEngine.DockerLayer>,
-    infer E,
-    infer _R
-  >
-    ? E
-    : never,
-  PlatformLayerConstructorContext = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
-    Layer.Layer.Success<DockerEngine.DockerLayer>,
-    infer _E,
-    infer R
-  >
-    ? R
-    : never
+type MakeDindLayerFromPlatformConstructor<
+  PlatformLayerConstructor,
+  SupportedConnectionOptions,
+  PlatformLayerConstructorError,
+  PlatformLayerConstructorContext
 > = <
   ConnectionOptionsToHost extends SupportedConnectionOptions,
   ConnectionOptionsToDind extends SupportedConnectionOptions["_tag"]
@@ -77,14 +59,16 @@ export type MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L23)
+
+Since v1.0.0
 
 ## layerAgnostic
 
 **Signature**
 
 ```ts
-export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
+declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
   (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
   ) => DockerEngine.DockerLayerWithoutHttpClientOrWebsocketConstructor,
@@ -92,163 +76,173 @@ export declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   HttpClient | WebSocketConstructor
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L112)
+
+Since v1.0.0
 
 ## layerBun
 
 **Signature**
 
 ```ts
-export declare const layerBun: MakeDindLayerFromPlatformConstructor<
+declare const layerBun: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
-      readonly version?: string | undefined
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
+      readonly version?: string | undefined | undefined
+      readonly port?: number | undefined
+      readonly forceIPv4?: boolean | undefined
+      readonly forceIPv6?: boolean | undefined
+      readonly hostHash?: string | undefined
+      readonly hostVerifier?:
+        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
+        | undefined
+      readonly username?: string | undefined
+      readonly password?: string | undefined
+      readonly agent?: (BaseAgent | string) | undefined
+      readonly privateKey?: (Buffer | string) | undefined
+      readonly passphrase?: (Buffer | string) | undefined
+      readonly localHostname?: string | undefined
+      readonly localUsername?: string | undefined
+      readonly tryKeyboard?: boolean | undefined
+      readonly keepaliveInterval?: number | undefined
+      readonly keepaliveCountMax?: number | undefined
+      readonly readyTimeout?: number | undefined
+      readonly strictVendor?: boolean | undefined
+      readonly sock?: Stream.Readable | undefined
+      readonly agentForward?: boolean | undefined
+      readonly algorithms?: Algorithms | undefined
+      readonly debug?: DebugFunction | undefined
+      readonly authHandler?: (AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]) | undefined
+      readonly localAddress?: string | undefined
+      readonly localPort?: number | undefined
+      readonly timeout?: number | undefined
+      readonly ident?: (Buffer | string) | undefined
     }
   | {
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   never
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L77)
+
+Since v1.0.0
 
 ## layerDeno
 
 **Signature**
 
 ```ts
-export declare const layerDeno: MakeDindLayerFromPlatformConstructor<
+declare const layerDeno: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
-      readonly version?: string | undefined
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
+      readonly version?: string | undefined | undefined
+      readonly port?: number | undefined
+      readonly forceIPv4?: boolean | undefined
+      readonly forceIPv6?: boolean | undefined
+      readonly hostHash?: string | undefined
+      readonly hostVerifier?:
+        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
+        | undefined
+      readonly username?: string | undefined
+      readonly password?: string | undefined
+      readonly agent?: (BaseAgent | string) | undefined
+      readonly privateKey?: (Buffer | string) | undefined
+      readonly passphrase?: (Buffer | string) | undefined
+      readonly localHostname?: string | undefined
+      readonly localUsername?: string | undefined
+      readonly tryKeyboard?: boolean | undefined
+      readonly keepaliveInterval?: number | undefined
+      readonly keepaliveCountMax?: number | undefined
+      readonly readyTimeout?: number | undefined
+      readonly strictVendor?: boolean | undefined
+      readonly sock?: Stream.Readable | undefined
+      readonly agentForward?: boolean | undefined
+      readonly algorithms?: Algorithms | undefined
+      readonly debug?: DebugFunction | undefined
+      readonly authHandler?: (AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]) | undefined
+      readonly localAddress?: string | undefined
+      readonly localPort?: number | undefined
+      readonly timeout?: number | undefined
+      readonly ident?: (Buffer | string) | undefined
     }
   | {
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   never
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L84)
+
+Since v1.0.0
 
 ## layerFetch
 
 **Signature**
 
 ```ts
-export declare const layerFetch: MakeDindLayerFromPlatformConstructor<
+declare const layerFetch: MakeDindLayerFromPlatformConstructor<
   (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
   ) => DockerEngine.DockerLayer,
@@ -256,163 +250,173 @@ export declare const layerFetch: MakeDindLayerFromPlatformConstructor<
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   never
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L105)
+
+Since v1.0.0
 
 ## layerNodeJS
 
 **Signature**
 
 ```ts
-export declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
+declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
-      readonly version?: string | undefined
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
+      readonly version?: string | undefined | undefined
+      readonly port?: number | undefined
+      readonly forceIPv4?: boolean | undefined
+      readonly forceIPv6?: boolean | undefined
+      readonly hostHash?: string | undefined
+      readonly hostVerifier?:
+        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
+        | undefined
+      readonly username?: string | undefined
+      readonly password?: string | undefined
+      readonly agent?: (BaseAgent | string) | undefined
+      readonly privateKey?: (Buffer | string) | undefined
+      readonly passphrase?: (Buffer | string) | undefined
+      readonly localHostname?: string | undefined
+      readonly localUsername?: string | undefined
+      readonly tryKeyboard?: boolean | undefined
+      readonly keepaliveInterval?: number | undefined
+      readonly keepaliveCountMax?: number | undefined
+      readonly readyTimeout?: number | undefined
+      readonly strictVendor?: boolean | undefined
+      readonly sock?: Stream.Readable | undefined
+      readonly agentForward?: boolean | undefined
+      readonly algorithms?: Algorithms | undefined
+      readonly debug?: DebugFunction | undefined
+      readonly authHandler?: (AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]) | undefined
+      readonly localAddress?: string | undefined
+      readonly localPort?: number | undefined
+      readonly timeout?: number | undefined
+      readonly ident?: (Buffer | string) | undefined
     }
   | {
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   never
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L70)
+
+Since v1.0.0
 
 ## layerUndici
 
 **Signature**
 
 ```ts
-export declare const layerUndici: MakeDindLayerFromPlatformConstructor<
+declare const layerUndici: MakeDindLayerFromPlatformConstructor<
   (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerEngine.DockerLayer,
-  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined }
+  | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined }
   | {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
       readonly host: string
-      readonly version?: string | undefined
-      readonly port?: number
-      readonly forceIPv4?: boolean
-      readonly forceIPv6?: boolean
-      readonly hostHash?: string
-      readonly hostVerifier?: HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier
-      readonly username?: string
-      readonly password?: string
-      readonly agent?: BaseAgent | string
-      readonly privateKey?: Buffer | string
-      readonly passphrase?: Buffer | string
-      readonly localHostname?: string
-      readonly localUsername?: string
-      readonly tryKeyboard?: boolean
-      readonly keepaliveInterval?: number
-      readonly keepaliveCountMax?: number
-      readonly readyTimeout?: number
-      readonly strictVendor?: boolean
-      readonly sock?: Readable
-      readonly agentForward?: boolean
-      readonly algorithms?: Algorithms
-      readonly debug?: DebugFunction
-      readonly authHandler?: AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]
-      readonly localAddress?: string
-      readonly localPort?: number
-      readonly timeout?: number
-      readonly ident?: Buffer | string
+      readonly version?: string | undefined | undefined
+      readonly port?: number | undefined
+      readonly forceIPv4?: boolean | undefined
+      readonly forceIPv6?: boolean | undefined
+      readonly hostHash?: string | undefined
+      readonly hostVerifier?:
+        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
+        | undefined
+      readonly username?: string | undefined
+      readonly password?: string | undefined
+      readonly agent?: (BaseAgent | string) | undefined
+      readonly privateKey?: (Buffer | string) | undefined
+      readonly passphrase?: (Buffer | string) | undefined
+      readonly localHostname?: string | undefined
+      readonly localUsername?: string | undefined
+      readonly tryKeyboard?: boolean | undefined
+      readonly keepaliveInterval?: number | undefined
+      readonly keepaliveCountMax?: number | undefined
+      readonly readyTimeout?: number | undefined
+      readonly strictVendor?: boolean | undefined
+      readonly sock?: Stream.Readable | undefined
+      readonly agentForward?: boolean | undefined
+      readonly algorithms?: Algorithms | undefined
+      readonly debug?: DebugFunction | undefined
+      readonly authHandler?: (AuthenticationType[] | AuthHandlerMiddleware | AuthMethod[]) | undefined
+      readonly localAddress?: string | undefined
+      readonly localPort?: number | undefined
+      readonly timeout?: number | undefined
+      readonly ident?: (Buffer | string) | undefined
     }
   | {
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   never
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L91)
+
+Since v1.0.0
 
 ## layerWeb
 
 **Signature**
 
 ```ts
-export declare const layerWeb: MakeDindLayerFromPlatformConstructor<
+declare const layerWeb: MakeDindLayerFromPlatformConstructor<
   (
     connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
   ) => DockerEngine.DockerLayer,
@@ -420,23 +424,25 @@ export declare const layerWeb: MakeDindLayerFromPlatformConstructor<
       readonly _tag: "http"
       readonly host: string
       readonly port: number
-      readonly path?: string | undefined
-      readonly version?: string | undefined
+      readonly path?: string | undefined | undefined
+      readonly version?: string | undefined | undefined
     }
   | {
       readonly _tag: "https"
       readonly host: string
       readonly port: number
-      readonly version?: string | undefined
-      readonly path?: string | undefined
-      readonly cert?: string | undefined
-      readonly ca?: string | undefined
-      readonly key?: string | undefined
-      readonly passphrase?: string | undefined
+      readonly version?: string | undefined | undefined
+      readonly path?: string | undefined | undefined
+      readonly cert?: string | undefined | undefined
+      readonly ca?: string | undefined | undefined
+      readonly key?: string | undefined | undefined
+      readonly passphrase?: string | undefined | undefined
     },
   never,
   never
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L98)
+
+Since v1.0.0

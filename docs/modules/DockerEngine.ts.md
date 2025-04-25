@@ -4,15 +4,15 @@ nav_order: 4
 parent: Modules
 ---
 
-## DockerEngine overview
+## DockerEngine.ts overview
 
 Docker engine.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Docker](#docker)
   - [build](#build)
@@ -59,7 +59,7 @@ images build endpoint exposes.
 **Signature**
 
 ```ts
-export declare const build: <E1>({
+declare const build: <E1>({
   auth,
   buildArgs,
   context,
@@ -76,7 +76,9 @@ export declare const build: <E1>({
 }) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L153)
+
+Since v1.0.0
 
 ## buildScoped
 
@@ -87,7 +89,7 @@ images build endpoint exposes.
 **Signature**
 
 ```ts
-export declare const buildScoped: <E1>({
+declare const buildScoped: <E1>({
   auth,
   buildArgs,
   context,
@@ -108,7 +110,9 @@ export declare const buildScoped: <E1>({
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L177)
+
+Since v1.0.0
 
 ## exec
 
@@ -118,7 +122,7 @@ web.
 **Signature**
 
 ```ts
-export declare const exec: ({
+declare const exec: ({
   command,
   containerId
 }: {
@@ -131,7 +135,9 @@ export declare const exec: ({
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L204)
+
+Since v1.0.0
 
 ## execNonBlocking
 
@@ -141,7 +147,7 @@ with web when not detached.
 **Signature**
 
 ```ts
-export declare const execNonBlocking: <T extends boolean | undefined = undefined>({
+declare const execNonBlocking: <T extends boolean | undefined = undefined>({
   command,
   containerId,
   detach
@@ -156,7 +162,9 @@ export declare const execNonBlocking: <T extends boolean | undefined = undefined
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L223)
+
+Since v1.0.0
 
 ## execWebsockets
 
@@ -167,7 +175,7 @@ can be compatible with web.
 **Signature**
 
 ```ts
-export declare const execWebsockets: ({
+declare const execWebsockets: ({
   command,
   containerId
 }: {
@@ -180,7 +188,9 @@ export declare const execWebsockets: ({
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L233)
+
+Since v1.0.0
 
 ## execWebsocketsNonBlocking
 
@@ -191,7 +201,7 @@ so that is can be compatible with web.
 **Signature**
 
 ```ts
-export declare const execWebsocketsNonBlocking: ({
+declare const execWebsocketsNonBlocking: ({
   command,
   containerId
 }: {
@@ -204,7 +214,9 @@ export declare const execWebsocketsNonBlocking: ({
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L253)
+
+Since v1.0.0
 
 ## images
 
@@ -213,12 +225,14 @@ Implements the `docker images` command.
 **Signature**
 
 ```ts
-export declare const images: (
+declare const images: (
   options?: Parameters<MobyEndpoints.Images["list"]>[0]
 ) => Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L261)
+
+Since v1.0.0
 
 ## info
 
@@ -227,14 +241,16 @@ Implements the `docker info` command.
 **Signature**
 
 ```ts
-export declare const info: () => Effect.Effect<
+declare const info: () => Effect.Effect<
   Readonly<MobySchemas.SystemInfoResponse>,
   MobyEndpoints.SystemsError,
   MobyEndpoints.Systems
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L272)
+
+Since v1.0.0
 
 ## ping
 
@@ -243,10 +259,12 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEndpoints.Systems>
+declare const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEndpoints.Systems>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L284)
+
+Since v1.0.0
 
 ## pingHead
 
@@ -255,10 +273,12 @@ Implements the `docker ping` command.
 **Signature**
 
 ```ts
-export declare const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, MobyEndpoints.Systems>
+declare const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, MobyEndpoints.Systems>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L292)
+
+Since v1.0.0
 
 ## ps
 
@@ -267,7 +287,7 @@ Implements the `docker ps` command.
 **Signature**
 
 ```ts
-export declare const ps: (
+declare const ps: (
   options?: Parameters<MobyEndpoints.Containers["list"]>[0]
 ) => Effect.Effect<
   ReadonlyArray<MobySchemas.ContainerListResponseItem>,
@@ -276,7 +296,9 @@ export declare const ps: (
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L301)
+
+Since v1.0.0
 
 ## pull
 
@@ -286,7 +308,7 @@ images create endpoint exposes.
 **Signature**
 
 ```ts
-export declare const pull: ({
+declare const pull: ({
   auth,
   image,
   platform
@@ -297,7 +319,9 @@ export declare const pull: ({
 }) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L316)
+
+Since v1.0.0
 
 ## pullScoped
 
@@ -308,7 +332,7 @@ internalDocker.flags that the images create endpoint exposes.
 **Signature**
 
 ```ts
-export declare const pullScoped: ({
+declare const pullScoped: ({
   auth,
   image,
   platform
@@ -323,7 +347,9 @@ export declare const pullScoped: ({
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L334)
+
+Since v1.0.0
 
 ## push
 
@@ -332,12 +358,14 @@ Implements the `docker push` command.
 **Signature**
 
 ```ts
-export declare const push: (
+declare const push: (
   options: Parameters<MobyEndpoints.Images["push"]>[0]
 ) => Stream.Stream<string, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L354)
+
+Since v1.0.0
 
 ## run
 
@@ -346,12 +374,14 @@ Implements `docker run` command.
 **Signature**
 
 ```ts
-export declare const run: (
+declare const run: (
   containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
 ) => Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L364)
+
+Since v1.0.0
 
 ## runScoped
 
@@ -361,7 +391,7 @@ both the image and the container is removed = internalDocker.removed.
 **Signature**
 
 ```ts
-export declare const runScoped: (
+declare const runScoped: (
   containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
 ) => Effect.Effect<
   MobySchemas.ContainerInspectResponse,
@@ -370,7 +400,9 @@ export declare const runScoped: (
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L376)
+
+Since v1.0.0
 
 ## search
 
@@ -379,12 +411,14 @@ Implements the `docker search` command.
 **Signature**
 
 ```ts
-export declare const search: (
+declare const search: (
   options: Parameters<MobyEndpoints.Images["search"]>[0]
 ) => Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L390)
+
+Since v1.0.0
 
 ## start
 
@@ -393,12 +427,14 @@ Implements the `docker start` command.
 **Signature**
 
 ```ts
-export declare const start: (
+declare const start: (
   containerId: string
 ) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L401)
+
+Since v1.0.0
 
 ## stop
 
@@ -407,12 +443,14 @@ Implements the `docker stop` command.
 **Signature**
 
 ```ts
-export declare const stop: (
+declare const stop: (
   containerId: string
 ) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L411)
+
+Since v1.0.0
 
 ## version
 
@@ -421,14 +459,16 @@ Implements the `docker version` command.
 **Signature**
 
 ```ts
-export declare const version: () => Effect.Effect<
+declare const version: () => Effect.Effect<
   Readonly<MobySchemas.SystemVersionResponse>,
   MobyEndpoints.SystemsError,
   MobyEndpoints.Systems
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L421)
+
+Since v1.0.0
 
 # Layers
 
@@ -437,7 +477,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export type DockerLayer = Layer.Layer<
+type DockerLayer = Layer.Layer<
   | MobyEndpoints.Configs
   | MobyEndpoints.Containers
   | MobyEndpoints.Distributions
@@ -458,104 +498,124 @@ export type DockerLayer = Layer.Layer<
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L27)
+
+Since v1.0.0
 
 ## DockerLayerWithoutHttpClientOrWebsocketConstructor (type alias)
 
 **Signature**
 
 ```ts
-export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
+type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
   Layer.Layer.Success<DockerLayer>,
   Layer.Layer.Error<DockerLayer>,
   Layer.Layer.Context<DockerLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L51)
+
+Since v1.0.0
 
 ## layerAgnostic
 
 **Signature**
 
 ```ts
-export declare const layerAgnostic: (
+declare const layerAgnostic: (
   connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => DockerLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L139)
+
+Since v1.0.0
 
 ## layerBun
 
 **Signature**
 
 ```ts
-export declare const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
+declare const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L92)
+
+Since v1.0.0
 
 ## layerDeno
 
 **Signature**
 
 ```ts
-export declare const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
+declare const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L101)
+
+Since v1.0.0
 
 ## layerFetch
 
 **Signature**
 
 ```ts
-export declare const layerFetch: (
+declare const layerFetch: (
   connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => DockerLayer
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L129)
+
+Since v1.0.0
 
 ## layerNodeJS
 
 **Signature**
 
 ```ts
-export declare const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
+declare const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L83)
+
+Since v1.0.0
 
 ## layerUndici
 
 **Signature**
 
 ```ts
-export declare const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
+declare const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => DockerLayer
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L110)
+
+Since v1.0.0
 
 ## layerWeb
 
 **Signature**
 
 ```ts
-export declare const layerWeb: (
+declare const layerWeb: (
   connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => DockerLayer
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L119)
+
+Since v1.0.0
 
 ## layerWithoutHttpCLient
 
 **Signature**
 
 ```ts
-export declare const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketConstructor
+declare const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L61)
+
+Since v1.0.0

@@ -4,15 +4,15 @@ nav_order: 9
 parent: Modules
 ---
 
-## MobyEndpoints overview
+## MobyEndpoints.ts overview
 
 Moby endpoints.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Errors](#errors)
   - [ConfigsError](#configserror)
@@ -86,300 +86,360 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const ConfigsError: typeof ConfigsError
+declare const ConfigsError: typeof ConfigsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L22)
+
+Since v1.0.0
 
 ## ContainersError
 
 **Signature**
 
 ```ts
-export declare const ContainersError: typeof ContainersError
+declare const ContainersError: typeof ContainersError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L53)
+
+Since v1.0.0
 
 ## DistributionsError
 
 **Signature**
 
 ```ts
-export declare const DistributionsError: typeof DistributionsError
+declare const DistributionsError: typeof DistributionsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L81)
+
+Since v1.0.0
 
 ## ExecsError
 
 **Signature**
 
 ```ts
-export declare const ExecsError: typeof ExecsError
+declare const ExecsError: typeof ExecsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L109)
+
+Since v1.0.0
 
 ## ImagesError
 
 **Signature**
 
 ```ts
-export declare const ImagesError: typeof ImagesError
+declare const ImagesError: typeof ImagesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L137)
+
+Since v1.0.0
 
 ## NetworksError
 
 **Signature**
 
 ```ts
-export declare const NetworksError: typeof NetworksError
+declare const NetworksError: typeof NetworksError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L171)
+
+Since v1.0.0
 
 ## NodesError
 
 **Signature**
 
 ```ts
-export declare const NodesError: typeof NodesError
+declare const NodesError: typeof NodesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L199)
+
+Since v1.0.0
 
 ## PluginsError
 
 **Signature**
 
 ```ts
-export declare const PluginsError: typeof PluginsError
+declare const PluginsError: typeof PluginsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L227)
+
+Since v1.0.0
 
 ## SecretsError
 
 **Signature**
 
 ```ts
-export declare const SecretsError: typeof SecretsError
+declare const SecretsError: typeof SecretsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L258)
+
+Since v1.0.0
 
 ## ServicesError
 
 **Signature**
 
 ```ts
-export declare const ServicesError: typeof ServicesError
+declare const ServicesError: typeof ServicesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L292)
+
+Since v1.0.0
 
 ## SessionsError
 
 **Signature**
 
 ```ts
-export declare const SessionsError: typeof SessionsError
+declare const SessionsError: typeof SessionsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L323)
+
+Since v1.0.0
 
 ## SwarmsError
 
 **Signature**
 
 ```ts
-export declare const SwarmsError: typeof SwarmsError
+declare const SwarmsError: typeof SwarmsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L364)
+
+Since v1.0.0
 
 ## SystemsError
 
 **Signature**
 
 ```ts
-export declare const SystemsError: typeof SystemsError
+declare const SystemsError: typeof SystemsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L385)
+
+Since v1.0.0
 
 ## TasksError
 
 **Signature**
 
 ```ts
-export declare const TasksError: typeof TasksError
+declare const TasksError: typeof TasksError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L416)
+
+Since v1.0.0
 
 ## VolumesError
 
 **Signature**
 
 ```ts
-export declare const VolumesError: typeof VolumesError
+declare const VolumesError: typeof VolumesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L447)
+
+Since v1.0.0
 
 ## isConfigsError
 
 **Signature**
 
 ```ts
-export declare const isConfigsError: (u: unknown) => u is ConfigsError
+declare const isConfigsError: (u: unknown) => u is ConfigsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L38)
+
+Since v1.0.0
 
 ## isContainersError
 
 **Signature**
 
 ```ts
-export declare const isContainersError: (u: unknown) => u is ContainersError
+declare const isContainersError: (u: unknown) => u is ContainersError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L66)
+
+Since v1.0.0
 
 ## isDistributionsError
 
 **Signature**
 
 ```ts
-export declare const isDistributionsError: (u: unknown) => u is DistributionsError
+declare const isDistributionsError: (u: unknown) => u is DistributionsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L94)
+
+Since v1.0.0
 
 ## isExecsError
 
 **Signature**
 
 ```ts
-export declare const isExecsError: (u: unknown) => u is ExecsError
+declare const isExecsError: (u: unknown) => u is ExecsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L122)
+
+Since v1.0.0
 
 ## isImagesError
 
 **Signature**
 
 ```ts
-export declare const isImagesError: (u: unknown) => u is ImagesError
+declare const isImagesError: (u: unknown) => u is ImagesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L150)
+
+Since v1.0.0
 
 ## isNetworksError
 
 **Signature**
 
 ```ts
-export declare const isNetworksError: (u: unknown) => u is NetworksError
+declare const isNetworksError: (u: unknown) => u is NetworksError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L158)
+
+Since v1.0.0
 
 ## isNodesError
 
 **Signature**
 
 ```ts
-export declare const isNodesError: (u: unknown) => u is NodesError
+declare const isNodesError: (u: unknown) => u is NodesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L186)
+
+Since v1.0.0
 
 ## isPluginsError
 
 **Signature**
 
 ```ts
-export declare const isPluginsError: (u: unknown) => u is PluginsError
+declare const isPluginsError: (u: unknown) => u is PluginsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L214)
+
+Since v1.0.0
 
 ## isSecretsError
 
 **Signature**
 
 ```ts
-export declare const isSecretsError: (u: unknown) => u is SecretsError
+declare const isSecretsError: (u: unknown) => u is SecretsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L242)
+
+Since v1.0.0
 
 ## isServicesError
 
 **Signature**
 
 ```ts
-export declare const isServicesError: (u: unknown) => u is ServicesError
+declare const isServicesError: (u: unknown) => u is ServicesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L276)
+
+Since v1.0.0
 
 ## isSessionsError
 
 **Signature**
 
 ```ts
-export declare const isSessionsError: (u: unknown) => u is SessionsError
+declare const isSessionsError: (u: unknown) => u is SessionsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L310)
+
+Since v1.0.0
 
 ## isSwarmsError
 
 **Signature**
 
 ```ts
-export declare const isSwarmsError: (u: unknown) => u is SwarmsError
+declare const isSwarmsError: (u: unknown) => u is SwarmsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L338)
+
+Since v1.0.0
 
 ## isSystemsError
 
 **Signature**
 
 ```ts
-export declare const isSystemsError: (u: unknown) => u is SystemsError
+declare const isSystemsError: (u: unknown) => u is SystemsError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L372)
+
+Since v1.0.0
 
 ## isTasksError
 
 **Signature**
 
 ```ts
-export declare const isTasksError: (u: unknown) => u is TasksError
+declare const isTasksError: (u: unknown) => u is TasksError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L400)
+
+Since v1.0.0
 
 ## isVolumesError
 
 **Signature**
 
 ```ts
-export declare const isVolumesError: (u: unknown) => u is VolumesError
+declare const isVolumesError: (u: unknown) => u is VolumesError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L434)
+
+Since v1.0.0
 
 # Layers
 
@@ -388,327 +448,507 @@ Added in v1.0.0
 Configs are application configurations that can be used by services.
 Swarm mode must be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Config
+
 **Signature**
 
 ```ts
-export declare const Configs: typeof Configs
+declare const Configs: typeof Configs
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L16)
+
+Since v1.0.0
 
 ## ConfigsLayer
 
 Configs are application configurations that can be used by services.
 Swarm mode must be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Config
+
 **Signature**
 
 ```ts
-export declare const ConfigsLayer: Layer<Configs, never, HttpClient>
+declare const ConfigsLayer: Layer<Configs, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L32)
+
+Since v1.0.0
 
 ## Containers
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Container
+
 **Signature**
 
 ```ts
-export declare const Containers: typeof Containers
+declare const Containers: typeof Containers
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L47)
+
+Since v1.0.0
 
 ## ContainersLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Container
+
 **Signature**
 
 ```ts
-export declare const ContainersLayer: Layer<Containers, never, HttpClient | WebSocketConstructor>
+declare const ContainersLayer: Layer<Containers, never, HttpClient | WebSocketConstructor>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L60)
+
+Since v1.0.0
 
 ## Distributions
 
+**See**
+
+- https://docs.docker.com/engine/api/v1.45/#tag/Distribution
+
 **Signature**
 
 ```ts
-export declare const Distributions: typeof Distributions
+declare const Distributions: typeof Distributions
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L75)
+
+Since v1.0.0
 
 ## DistributionsLayer
 
+**See**
+
+- https://docs.docker.com/engine/api/v1.45/#tag/Distribution
+
 **Signature**
 
 ```ts
-export declare const DistributionsLayer: Layer<Distributions, never, HttpClient>
+declare const DistributionsLayer: Layer<Distributions, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L88)
+
+Since v1.0.0
 
 ## Execs
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Exec
+
 **Signature**
 
 ```ts
-export declare const Execs: typeof Execs
+declare const Execs: typeof Execs
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L103)
+
+Since v1.0.0
 
 ## ExecsLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Exec
+
 **Signature**
 
 ```ts
-export declare const ExecsLayer: Layer<Execs, never, HttpClient>
+declare const ExecsLayer: Layer<Execs, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L116)
+
+Since v1.0.0
 
 ## Images
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Image
+
 **Signature**
 
 ```ts
-export declare const Images: typeof Images
+declare const Images: typeof Images
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L131)
+
+Since v1.0.0
 
 ## ImagesLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Image
+
 **Signature**
 
 ```ts
-export declare const ImagesLayer: Layer<Images, never, HttpClient>
+declare const ImagesLayer: Layer<Images, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L144)
+
+Since v1.0.0
 
 ## Networks
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Network
+
 **Signature**
 
 ```ts
-export declare const Networks: typeof Networks
+declare const Networks: typeof Networks
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L165)
+
+Since v1.0.0
 
 ## NetworksLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Network
+
 **Signature**
 
 ```ts
-export declare const NetworksLayer: Layer<Networks, never, HttpClient>
+declare const NetworksLayer: Layer<Networks, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L178)
+
+Since v1.0.0
 
 ## Nodes
 
+**See**
+
+- https://docs.docker.com/engine/api/v1.45/#tag/Node
+
 **Signature**
 
 ```ts
-export declare const Nodes: typeof Nodes
+declare const Nodes: typeof Nodes
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L193)
+
+Since v1.0.0
 
 ## NodesLayer
 
+**See**
+
+- https://docs.docker.com/engine/api/v1.45/#tag/Node
+
 **Signature**
 
 ```ts
-export declare const NodesLayer: Layer<Nodes, never, HttpClient>
+declare const NodesLayer: Layer<Nodes, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L206)
+
+Since v1.0.0
 
 ## Plugins
 
+**See**
+
+- https://docs.docker.com/engine/api/v1.45/#tag/Plugin
+
 **Signature**
 
 ```ts
-export declare const Plugins: typeof Plugins
+declare const Plugins: typeof Plugins
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L221)
+
+Since v1.0.0
 
 ## PluginsLayer
 
+**See**
+
+- https://docs.docker.com/engine/api/v1.45/#tag/Plugin
+
 **Signature**
 
 ```ts
-export declare const PluginsLayer: Layer<Plugins, never, HttpClient>
+declare const PluginsLayer: Layer<Plugins, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L234)
+
+Since v1.0.0
 
 ## Secrets
 
 Secrets are sensitive data that can be used by services. Swarm mode must
 be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Secret
+
 **Signature**
 
 ```ts
-export declare const Secrets: typeof Secrets
+declare const Secrets: typeof Secrets
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L252)
+
+Since v1.0.0
 
 ## SecretsLayer
 
 Secrets are sensitive data that can be used by services. Swarm mode must
 be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Secret
+
 **Signature**
 
 ```ts
-export declare const SecretsLayer: Layer<Secrets, never, HttpClient>
+declare const SecretsLayer: Layer<Secrets, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L268)
+
+Since v1.0.0
 
 ## Services
 
 Services are the definitions of tasks to run on a swarm. Swarm mode must
 be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Service
+
 **Signature**
 
 ```ts
-export declare const Services: typeof Services
+declare const Services: typeof Services
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L286)
+
+Since v1.0.0
 
 ## ServicesLayer
 
 Services are the definitions of tasks to run on a swarm. Swarm mode must
 be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Service
+
 **Signature**
 
 ```ts
-export declare const ServicesLayer: Layer<Services, never, HttpClient>
+declare const ServicesLayer: Layer<Services, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L302)
+
+Since v1.0.0
 
 ## Sessions
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Session
+
 **Signature**
 
 ```ts
-export declare const Sessions: typeof Sessions
+declare const Sessions: typeof Sessions
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L317)
+
+Since v1.0.0
 
 ## SessionsLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Session
+
 **Signature**
 
 ```ts
-export declare const SessionsLayer: Layer<Sessions, never, HttpClient>
+declare const SessionsLayer: Layer<Sessions, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L330)
+
+Since v1.0.0
 
 ## Swarm
 
 Engines can be clustered together in a swarm. Refer to the swarm mode
 documentation for more information.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
+
 **Signature**
 
 ```ts
-export declare const Swarm: typeof Swarm
+declare const Swarm: typeof Swarm
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L348)
+
+Since v1.0.0
 
 ## SwarmLayer
 
 Engines can be clustered together in a swarm. Refer to the swarm mode
 documentation for more information.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
+
 **Signature**
 
 ```ts
-export declare const SwarmLayer: Layer<Swarm, never, HttpClient>
+declare const SwarmLayer: Layer<Swarm, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L358)
+
+Since v1.0.0
 
 ## Systems
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/System
+
 **Signature**
 
 ```ts
-export declare const Systems: typeof Systems
+declare const Systems: typeof Systems
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L379)
+
+Since v1.0.0
 
 ## SystemsLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/System
+
 **Signature**
 
 ```ts
-export declare const SystemsLayer: Layer<Systems, never, HttpClient>
+declare const SystemsLayer: Layer<Systems, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L392)
+
+Since v1.0.0
 
 ## Tasks
 
 A task is a container running on a swarm. It is the atomic scheduling
 unit of swarm. Swarm mode must be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Task
+
 **Signature**
 
 ```ts
-export declare const Tasks: typeof Tasks
+declare const Tasks: typeof Tasks
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L410)
+
+Since v1.0.0
 
 ## TasksLayer
 
 A task is a container running on a swarm. It is the atomic scheduling
 unit of swarm. Swarm mode must be enabled for these endpoints to work.
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Task
+
 **Signature**
 
 ```ts
-export declare const TasksLayer: Layer<Tasks, never, HttpClient>
+declare const TasksLayer: Layer<Tasks, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L426)
+
+Since v1.0.0
 
 ## Volumes
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Volume
+
 **Signature**
 
 ```ts
-export declare const Volumes: typeof Volumes
+declare const Volumes: typeof Volumes
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L441)
+
+Since v1.0.0
 
 ## VolumesLayer
 
+**See**
+
+- https://docs.docker.com/reference/api/engine/latest/#tag/Volume
+
 **Signature**
 
 ```ts
-export declare const VolumesLayer: Layer<Volumes, never, HttpClient>
+declare const VolumesLayer: Layer<Volumes, never, HttpClient>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L454)
+
+Since v1.0.0

@@ -4,15 +4,15 @@ nav_order: 10
 parent: Modules
 ---
 
-## MobyPlatforms overview
+## MobyPlatforms.ts overview
 
 Http client layers for all platforms.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Browser](#browser)
   - [makeWebHttpClientLayer](#makewebhttpclientlayer)
@@ -42,12 +42,14 @@ This function will dynamically import the `@effect/platform-browser` package.
 **Signature**
 
 ```ts
-export declare const makeWebHttpClientLayer: (
+declare const makeWebHttpClientLayer: (
   connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L124)
+
+Since v1.0.0
 
 # Connection
 
@@ -59,7 +61,7 @@ http client that you could use to connect to your moby instance.
 **Signature**
 
 ```ts
-export declare const makeAgnosticHttpClientLayer: (
+declare const makeAgnosticHttpClientLayer: (
   connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<
   HttpClient.HttpClient | Socket.WebSocketConstructor,
@@ -68,7 +70,9 @@ export declare const makeAgnosticHttpClientLayer: (
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L27)
+
+Since v1.0.0
 
 ## makeBunHttpClientLayer
 
@@ -81,12 +85,14 @@ This function will dynamically import the `@effect/platform-node` package.
 **Signature**
 
 ```ts
-export declare const makeBunHttpClientLayer: (
+declare const makeBunHttpClientLayer: (
   connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L49)
+
+Since v1.0.0
 
 # Deno
 
@@ -103,12 +109,14 @@ FIXME: https://github.com/denoland/deno/issues/21436?
 **Signature**
 
 ```ts
-export declare const makeDenoHttpClientLayer: (
+declare const makeDenoHttpClientLayer: (
   connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L66)
+
+Since v1.0.0
 
 # Fetch
 
@@ -123,12 +131,14 @@ as its base http layer.
 **Signature**
 
 ```ts
-export declare const makeFetchHttpClientLayer: (
+declare const makeFetchHttpClientLayer: (
   connectionOptions: MobyConnection.HttpConnectionOptionsTagged | MobyConnection.HttpsConnectionOptionsTagged
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L81)
+
+Since v1.0.0
 
 # NodeJS
 
@@ -142,12 +152,14 @@ This function will dynamically import the `@effect/platform-node` package.
 **Signature**
 
 ```ts
-export declare const makeNodeHttpClientLayer: (
+declare const makeNodeHttpClientLayer: (
   connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L95)
+
+Since v1.0.0
 
 # Undici
 
@@ -162,9 +174,11 @@ This function will dynamically import the `@effect/platform-node` and
 **Signature**
 
 ```ts
-export declare const makeUndiciHttpClientLayer: (
+declare const makeUndiciHttpClientLayer: (
   connectionOptions: MobyConnection.MobyConnectionOptions
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L110)
+
+Since v1.0.0

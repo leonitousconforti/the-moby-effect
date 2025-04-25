@@ -4,26 +4,26 @@ nav_order: 11
 parent: Modules
 ---
 
-## MobySchemas overview
+## MobySchemas.ts overview
 
 Moby schemas.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
-- [exports](#exports)
-  - [From "./internal/generated/index.js"](#from-internalgeneratedindexjs)
+- [utils](#utils)
+  - ["./internal/generated/index.js" (namespace export)](#internalgeneratedindexjs-namespace-export)
 
 ---
 
-# exports
+# utils
 
-## From "./internal/generated/index.js"
+## "./internal/generated/index.js" (namespace export)
 
-Moby schemas.
+Re-exports all named exports from the "./internal/generated/index.js" module.
 
 **Signature**
 
@@ -31,4 +31,6 @@ Moby schemas.
 export * from "./internal/generated/index.js"
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobySchemas.ts#L8)
+
+Since v1.0.0

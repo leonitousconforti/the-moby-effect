@@ -52,8 +52,8 @@ importers:
         specifier: 0.30.2
         version: 0.30.2(@effect/platform@0.80.14(effect@3.14.14))(@effect/rpc@0.56.2(@effect/platform@0.80.14(effect@3.14.14))(effect@3.14.14))(@effect/sql@0.33.14(@effect/experimental@0.44.14(@effect/platform@0.80.14(effect@3.14.14))(effect@3.14.14))(@effect/platform@0.80.14(effect@3.14.14))(effect@3.14.14))(effect@3.14.14)
       '@effect/docgen':
-        specifier: 0.5.2
-        version: 0.5.2(tsx@4.19.3)(typescript@5.8.3)
+        specifier: https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897
+        version: https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897(tsx@4.19.3)(typescript@5.8.3)
       '@effect/experimental':
         specifier: 0.44.14
         version: 0.44.14(@effect/platform@0.80.14(effect@3.14.14))(effect@3.14.14)
@@ -474,13 +474,14 @@ packages:
       '@effect/sql': ^0.33.14
       effect: ^3.14.14
 
-  '@effect/docgen@0.5.2':
-    resolution: {integrity: sha512-gqBxAhp58R18vT5+ORobWRQ/2MaF5vH0k1zggSct54J41k8TKF5mYIW1qG5tkOVCejet+8K5MKsWK3gzIkaoMw==}
+  '@effect/docgen@https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897':
+    resolution: {tarball: https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897}
+    version: 0.5.2
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
-      tsx: ^4.1.0
-      typescript: ^5.2.2
+      tsx: ^4.19.3
+      typescript: ^5.8.2
 
   '@effect/experimental@0.44.14':
     resolution: {integrity: sha512-soBCnKruHgXPPuxlFmw8DpvS6uuzDi2mytUwamfTttLMo5rydyFF9og6/c8MsUJyx4jadJzufDt2fhsxfsWxnQ==}
@@ -4075,11 +4076,12 @@ snapshots:
       '@effect/sql': 0.33.14(@effect/experimental@0.44.14(@effect/platform@0.80.14(effect@3.14.14))(effect@3.14.14))(@effect/platform@0.80.14(effect@3.14.14))(effect@3.14.14)
       effect: 3.14.14
 
-  '@effect/docgen@0.5.2(tsx@4.19.3)(typescript@5.8.3)':
+  '@effect/docgen@https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897(tsx@4.19.3)(typescript@5.8.3)':
     dependencies:
+      '@babel/code-frame': 7.26.2
       '@effect/markdown-toc': 0.1.0
       doctrine: 3.0.0
-      glob: 10.4.5
+      glob: 11.0.2
       prettier: 3.5.3
       tsx: 4.19.3
       typescript: 5.8.3

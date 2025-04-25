@@ -4,15 +4,15 @@ nav_order: 3
 parent: Modules
 ---
 
-## DockerComposeEngine overview
+## DockerComposeEngine.ts overview
 
 Docker compose engine.
 
-Added in v1.0.0
+Since v1.0.0
 
 ---
 
-<h2 class="text-delta">Table of contents</h2>
+## Exports Grouped by Category
 
 - [Errors](#errors)
   - [DockerComposeError](#dockercomposeerror)
@@ -67,50 +67,60 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const DockerComposeError: typeof internal.DockerComposeError
+declare const DockerComposeError: typeof internal.DockerComposeError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L45)
+
+Since v1.0.0
 
 ## DockerComposeError (type alias)
 
 **Signature**
 
 ```ts
-export type DockerComposeError = internal.DockerComposeError
+type DockerComposeError = internal.DockerComposeError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L39)
+
+Since v1.0.0
 
 ## DockerComposeErrorTypeId
 
 **Signature**
 
 ```ts
-export declare const DockerComposeErrorTypeId: typeof DockerComposeErrorTypeId
+declare const DockerComposeErrorTypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L21)
+
+Since v1.0.0
 
 ## DockerComposeErrorTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type DockerComposeErrorTypeId = typeof DockerComposeErrorTypeId
+type DockerComposeErrorTypeId = typeof DockerComposeErrorTypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L27)
+
+Since v1.0.0
 
 ## isDockerComposeError
 
 **Signature**
 
 ```ts
-export declare const isDockerComposeError: (u: unknown) => u is DockerComposeError
+declare const isDockerComposeError: (u: unknown) => u is DockerComposeError
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L33)
+
+Since v1.0.0
 
 # Layers
 
@@ -119,7 +129,7 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const layer: Layer.Layer<
+declare const layer: Layer.Layer<
   DockerCompose,
   MobyEndpoints.ContainersError | MobyEndpoints.SystemsError,
   | MobyEndpoints.Configs
@@ -140,14 +150,16 @@ export declare const layer: Layer.Layer<
 >
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L1035)
+
+Since v1.0.0
 
 ## layerProject
 
 **Signature**
 
 ```ts
-export declare const layerProject: <E1>(
+declare const layerProject: <E1>(
   project: Stream.Stream<Uint8Array, E1, never>,
   tagIdentifier: string
 ) => {
@@ -156,7 +168,9 @@ export declare const layerProject: <E1>(
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L1045)
+
+Since v1.0.0
 
 # Models
 
@@ -331,7 +345,9 @@ export interface DockerCompose {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L721)
+
+Since v1.0.0
 
 ## DockerComposeProject (interface)
 
@@ -462,7 +478,9 @@ export interface DockerComposeProject {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L908)
+
+Since v1.0.0
 
 # Params
 
@@ -504,7 +522,9 @@ export interface BuildOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L90)
+
+Since v1.0.0
 
 ## ComposeOptions (interface)
 
@@ -547,7 +567,9 @@ export interface ComposeOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L51)
+
+Since v1.0.0
 
 ## ConfigOptions (interface)
 
@@ -602,7 +624,9 @@ export interface ConfigOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L126)
+
+Since v1.0.0
 
 ## CopyOptions (interface)
 
@@ -624,7 +648,9 @@ export interface CopyOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L177)
+
+Since v1.0.0
 
 ## CreateOptions (interface)
 
@@ -667,7 +693,9 @@ export interface CreateOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L195)
+
+Since v1.0.0
 
 ## DownOptions (interface)
 
@@ -695,7 +723,9 @@ export interface DownOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L234)
+
+Since v1.0.0
 
 ## EventsOptions (interface)
 
@@ -708,7 +738,9 @@ export interface EventsOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L258)
+
+Since v1.0.0
 
 ## ExecOptions (interface)
 
@@ -744,7 +776,9 @@ export interface ExecOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L267)
+
+Since v1.0.0
 
 ## ImagesOptions (interface)
 
@@ -760,7 +794,9 @@ export interface ImagesOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L299)
+
+Since v1.0.0
 
 ## KillOptions (interface)
 
@@ -776,7 +812,9 @@ export interface KillOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L311)
+
+Since v1.0.0
 
 ## ListOptions (interface)
 
@@ -798,7 +836,9 @@ export interface ListOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L359)
+
+Since v1.0.0
 
 ## LogsOptions (interface)
 
@@ -838,7 +878,9 @@ export interface LogsOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L323)
+
+Since v1.0.0
 
 ## PortOptions (interface)
 
@@ -854,7 +896,9 @@ export interface PortOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L377)
+
+Since v1.0.0
 
 ## PsOptions (interface)
 
@@ -893,7 +937,9 @@ export interface PsOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L389)
+
+Since v1.0.0
 
 ## PullOptions (interface)
 
@@ -918,7 +964,9 @@ export interface PullOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L424)
+
+Since v1.0.0
 
 ## PushOptions (interface)
 
@@ -937,7 +985,9 @@ export interface PushOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L445)
+
+Since v1.0.0
 
 ## RestartOptions (interface)
 
@@ -953,7 +1003,9 @@ export interface RestartOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L460)
+
+Since v1.0.0
 
 ## RmOptions (interface)
 
@@ -972,7 +1024,9 @@ export interface RmOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L472)
+
+Since v1.0.0
 
 ## RunOptions (interface)
 
@@ -1048,7 +1102,9 @@ export interface RunOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L487)
+
+Since v1.0.0
 
 ## StopOptions (interface)
 
@@ -1061,7 +1117,9 @@ export interface StopOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L559)
+
+Since v1.0.0
 
 ## UpOptions (interface)
 
@@ -1185,7 +1243,9 @@ export interface UpOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L568)
+
+Since v1.0.0
 
 ## VersionOptions (interface)
 
@@ -1201,7 +1261,9 @@ export interface VersionOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L688)
+
+Since v1.0.0
 
 ## WaitOptions (interface)
 
@@ -1214,7 +1276,9 @@ export interface WaitOptions {
 }
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L700)
+
+Since v1.0.0
 
 # Tags
 
@@ -1223,10 +1287,12 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const DockerCompose: Context.Tag<DockerCompose, DockerCompose>
+declare const DockerCompose: Context.Tag<DockerCompose, DockerCompose>
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L890)
+
+Since v1.0.0
 
 # Type id
 
@@ -1235,37 +1301,45 @@ Added in v1.0.0
 **Signature**
 
 ```ts
-export declare const DockerComposeProjectTypeId: typeof DockerComposeProjectTypeId
+declare const DockerComposeProjectTypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L896)
+
+Since v1.0.0
 
 ## DockerComposeProjectTypeId (type alias)
 
 **Signature**
 
 ```ts
-export type DockerComposeProjectTypeId = typeof DockerComposeProjectTypeId
+type DockerComposeProjectTypeId = typeof DockerComposeProjectTypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L902)
+
+Since v1.0.0
 
 ## TypeId
 
 **Signature**
 
 ```ts
-export declare const TypeId: typeof TypeId
+declare const TypeId: unique symbol
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L709)
+
+Since v1.0.0
 
 ## TypeId (type alias)
 
 **Signature**
 
 ```ts
-export type TypeId = typeof TypeId
+type TypeId = typeof TypeId
 ```
 
-Added in v1.0.0
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L715)
+
+Since v1.0.0
