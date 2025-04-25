@@ -24,7 +24,7 @@ if {$dep_should_add_changeset} {
     send "$change_type\r"
 
     expect "Please enter a summary for this change"
-    if {$is_group} {
+    if {$is_group == "true"} {
         set message "Update $dep_name"
     } elseif {$current_version == "" && $new_version == ""} {
         set message "Update $dep_name"
@@ -44,4 +44,3 @@ if {$dep_should_add_changeset} {
 }
 
 expect eof
-
