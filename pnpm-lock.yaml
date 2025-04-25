@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@effect/build-utils':
-    hash: ltp7epy5unpmtuy2xzdoy6iynq
+    hash: suhirx7sdd4dgvpfmcfuyzpkaa
     path: patches/@effect__build-utils.patch
 
 importers:
@@ -44,7 +44,7 @@ importers:
         version: 2.29.2
       '@effect/build-utils':
         specifier: 0.8.3
-        version: 0.8.3(patch_hash=ltp7epy5unpmtuy2xzdoy6iynq)
+        version: 0.8.3(patch_hash=suhirx7sdd4dgvpfmcfuyzpkaa)
       '@effect/cli':
         specifier: 0.59.14
         version: 0.59.14(@effect/platform@0.80.14(effect@3.14.14))(@effect/printer-ansi@0.42.14(@effect/typeclass@0.33.14(effect@3.14.14))(effect@3.14.14))(@effect/printer@0.42.14(@effect/typeclass@0.33.14(effect@3.14.14))(effect@3.14.14))(effect@3.14.14)
@@ -4054,7 +4054,7 @@ snapshots:
       gonzales-pe: 4.3.0
       node-source-walk: 7.0.1
 
-  '@effect/build-utils@0.8.3(patch_hash=ltp7epy5unpmtuy2xzdoy6iynq)':
+  '@effect/build-utils@0.8.3(patch_hash=suhirx7sdd4dgvpfmcfuyzpkaa)':
     dependencies:
       micromatch: 4.0.8
       pkg-entry-points: 1.1.1

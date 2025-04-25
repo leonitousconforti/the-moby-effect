@@ -1,5 +1,5 @@
 diff --git a/main.js b/main.js
-index d10535a04e2f609fe45cb8f563952bccaa6b04a8..1f29ad2aba16edc84d87246db77d79581032e802 100755
+index d10535a04e2f609fe45cb8f563952bccaa6b04a8..b83374993825e50a9ae3068c4da8605cf240de81 100755
 --- a/main.js
 +++ b/main.js
 @@ -32031,6 +32031,10 @@ var _PackageJson = class _PackageJson extends Class3("PackageJson")({
@@ -13,14 +13,14 @@ index d10535a04e2f609fe45cb8f563952bccaa6b04a8..1f29ad2aba16edc84d87246db77d7958
    license: String$,
    author: optional(
      Union2(
-@@ -32311,6 +32315,10 @@ var run11 = gen2(function* () {
+@@ -32459,6 +32463,10 @@ var run12 = gen2(function* () {
+     addOptional("optionalDependencies");
      addOptional("gitHead");
      addOptional("bin");
-     addOptional("bin");
-+    addOptional("keywords");
-+    addOptional("homepage");
-+    addOptional("bugs");
-+    addOptional("engines");
++   addOptional("keywords");
++   addOptional("homepage");
++   addOptional("bugs");
++   addOptional("engines");
      if (ctx.packageJson.publishConfig?.provenance === true) {
        out.publishConfig = { provenance: true };
      }
