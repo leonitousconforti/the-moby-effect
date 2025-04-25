@@ -8,12 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22.x
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
       - run: pnpm install
       - run: pnpm check
       - run: pnpm lint
@@ -21,6 +21,6 @@ jobs:
       - run: pnpm build
 
       - if: ${{ always() }}
-        uses: mxschmitt/action-tmate@v3
+        uses: mxschmitt/action-tmate@c606f8612a802e46b3742322514c09fbc8c4afee # v3
         with:
           limit-access-to-actor: true
