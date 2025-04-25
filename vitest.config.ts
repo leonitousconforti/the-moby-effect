@@ -1,4 +1,3 @@
-import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -27,11 +26,6 @@ export default defineConfig({
                 "**/coverage/**",
                 "**/ui/**",
             ],
-        },
-    },
-    resolve: {
-        alias: {
-            "the-moby-effect": path.resolve(__dirname, "src"),
         },
     },
 });

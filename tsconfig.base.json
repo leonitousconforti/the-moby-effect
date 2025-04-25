@@ -34,11 +34,6 @@
         "incremental": true,
         "declaration": true,
         "declarationMap": true,
-        "baseUrl": ".",
-        "paths": {
-            "the-moby-effect": ["./src/index.js"],
-            "the-moby-effect/*": ["./src/*.js"]
-        },
         "types": ["node"],
         "plugins": [
             {

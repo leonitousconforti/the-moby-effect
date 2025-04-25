@@ -20,6 +20,12 @@
     "license": "GPL-3.0-only",
     "author": "Leo Conforti <leo@leoconforti.us> (https://leoconforti.us)",
     "type": "module",
+    "exports": {
+        "./package.json": "./package.json",
+        ".": "./src/index.ts",
+        "./*": "./src/*.ts",
+        "./internal/*": null
+    },
     "main": "./dist/cjs/index.js",
     "module": "./dist/esm/index.js",
     "types": "./dist/dts/index.d.ts",
@@ -30,7 +36,7 @@
         "test": "test"
     },
     "scripts": {
-        "build": "pnpm clean && pnpm codegen && pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v2",
+        "build": "pnpm clean && pnpm codegen && pnpm build-esm && pnpm build-annotate && pnpm build-cjs && build-utils pack-v3",
         "build-annotate": "babel build/esm --plugins annotate-pure-calls --out-dir build/esm --source-maps",
         "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
         "build-esm": "tsc -b tsconfig.build.json",
@@ -39,7 +45,7 @@
         "check": "tsc -b tsconfig.json",
         "circular": "node ./scripts/circular.mjs",
         "clean": "rimraf .tsbuildinfo docs build dist coverage",
-        "codegen": "build-utils prepare-v2",
+        "codegen": "build-utils prepare-v3",
         "codemod": "node scripts/codemod.mjs",
         "coverage": "vitest --coverage",
         "lint": "eslint \"**/{src,test,examples,scripts,dtslint}/**/*.{ts,mjs}\"",
@@ -140,6 +146,7 @@
     "publishConfig": {
         "access": "public",
         "directory": "dist",
+        "linkDirectory": false,
         "provenance": false
     },
     "pnpm": {
