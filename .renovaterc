@@ -31,7 +31,8 @@
             ],
             "matchPackageNames": [
                 "@effect/**",
-                "effect"
+                "effect",
+                "eftar"
             ],
             "automerge": true,
             "automergeType": "pr",
