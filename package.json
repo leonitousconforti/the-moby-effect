@@ -54,7 +54,7 @@
         "update-blobs": "tsx ./scripts/update-blobs.ts"
     },
     "dependencies": {
-        "eftar": "0.0.56"
+        "eftar": "0.0.58"
     },
     "devDependencies": {
         "@babel/cli": "7.27.0",
@@ -63,21 +63,21 @@
         "@babel/plugin-transform-modules-commonjs": "7.26.3",
         "@changesets/cli": "2.29.2",
         "@effect/build-utils": "0.8.3",
-        "@effect/cli": "0.59.14",
-        "@effect/cluster": "0.30.2",
+        "@effect/cli": "0.59.15",
+        "@effect/cluster": "0.30.3",
         "@effect/docgen": "https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897",
-        "@effect/experimental": "0.44.14",
+        "@effect/experimental": "0.44.15",
         "@effect/language-service": "0.8.1",
-        "@effect/platform": "0.80.14",
-        "@effect/platform-browser": "0.60.5",
-        "@effect/platform-bun": "0.61.2",
-        "@effect/platform-node": "0.77.2",
-        "@effect/printer": "0.42.14",
-        "@effect/printer-ansi": "0.42.14",
-        "@effect/rpc": "0.56.2",
-        "@effect/sql": "0.33.14",
-        "@effect/typeclass": "0.33.14",
-        "@effect/vitest": "0.20.15",
+        "@effect/platform": "0.80.15",
+        "@effect/platform-browser": "0.60.6",
+        "@effect/platform-bun": "0.61.3",
+        "@effect/platform-node": "0.77.3",
+        "@effect/printer": "0.42.15",
+        "@effect/printer-ansi": "0.42.15",
+        "@effect/rpc": "0.56.3",
+        "@effect/sql": "0.33.15",
+        "@effect/typeclass": "0.33.15",
+        "@effect/vitest": "0.20.16",
         "@eslint/js": "9.25.1",
         "@types/node": "22.15.3",
         "@types/ssh2": "1.15.5",
@@ -87,7 +87,7 @@
         "ast-types": "0.14.2",
         "babel-plugin-annotate-pure-calls": "0.5.0",
         "changesets-gitlab": "0.13.3",
-        "effect": "3.14.14",
+        "effect": "3.14.15",
         "eslint": "9.25.1",
         "eslint-config-prettier": "10.1.2",
         "eslint-import-resolver-typescript": "4.3.4",
@@ -113,15 +113,15 @@
         "ws": "8.18.1"
     },
     "peerDependencies": {
-        "@effect/cluster": "0.30.2",
-        "@effect/experimental": "0.44.14",
-        "@effect/platform": "0.80.14",
-        "@effect/platform-browser": "0.60.5",
-        "@effect/platform-bun": "0.61.2",
-        "@effect/platform-node": "0.77.2",
-        "@effect/rpc": "0.56.2",
-        "@effect/sql": "0.33.14",
-        "effect": "3.14.14"
+        "@effect/cluster": "0.30.3",
+        "@effect/experimental": "0.44.15",
+        "@effect/platform": "0.80.15",
+        "@effect/platform-browser": "0.60.6",
+        "@effect/platform-bun": "0.61.3",
+        "@effect/platform-node": "0.77.3",
+        "@effect/rpc": "0.56.3",
+        "@effect/sql": "0.33.15",
+        "effect": "3.14.15"
     },
     "peerDependenciesMeta": {
         "@effect/platform-browser": {
