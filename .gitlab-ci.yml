@@ -150,7 +150,7 @@ release:
     GITHUB_ENV: "${CI_PROJECT_DIR}/.github-env-file"
 
 pages_job:
-  image: ruby:latest@sha256:07c880a5e0fd72fa6cf0ff353633c488899082839578776201266e5f9fa95de0
+  image: ruby:latest@sha256:e7060a4c3d118b0943e57ee104ac3bdbf5134d5c166c8fb1f5dc272f5bb805dc
   stage: deploy
   pages: true
   rules:
