@@ -67,7 +67,7 @@
         "@effect/cluster": "0.30.3",
         "@effect/docgen": "https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897",
         "@effect/experimental": "0.44.15",
-        "@effect/language-service": "0.9.0",
+        "@effect/language-service": "0.9.1",
         "@effect/platform": "0.80.15",
         "@effect/platform-browser": "0.60.6",
         "@effect/platform-bun": "0.61.3",
