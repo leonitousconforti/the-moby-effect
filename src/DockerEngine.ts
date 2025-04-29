@@ -11,6 +11,7 @@ import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
 import type * as MobyConnection from "./MobyConnection.js";
+import type * as MobyDemux from "./MobyDemux.js";
 import type * as MobySchemas from "./MobySchemas.js";
 
 import * as Function from "effect/Function";
@@ -220,7 +221,19 @@ export const exec: ({
  * @since 1.0.0
  * @category Docker
  */
-export const execNonBlocking = internalDocker.execNonBlocking;
+export const execNonBlocking: <T extends boolean | undefined = undefined>({
+    command,
+    containerId,
+    detach,
+}: {
+    detach?: T;
+    containerId: string;
+    command: string | Array<string>;
+}) => Effect.Effect<
+    [socket: T extends true ? void : MobyDemux.RawSocket | MobyDemux.MultiplexedSocket, execId: string],
+    MobyEndpoints.ExecsError,
+    MobyEndpoints.Execs
+> = internalDocker.execNonBlocking;
 
 /**
  * Implements the `docker exec` command in a blocking fashion with websockets as
@@ -250,7 +263,17 @@ export const execWebsockets: ({
  * @since 1.0.0
  * @category Docker
  */
-export const execWebsocketsNonBlocking = internalDocker.execWebsocketsNonBlocking;
+export const execWebsocketsNonBlocking: ({
+    command,
+    containerId,
+}: {
+    command: string | Array<string>;
+    containerId: string;
+}) => Effect.Effect<
+    MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
+    never,
+    MobyEndpoints.Containers
+> = internalDocker.execWebsocketsNonBlocking;
 
 /**
  * Implements the `docker images` command.
