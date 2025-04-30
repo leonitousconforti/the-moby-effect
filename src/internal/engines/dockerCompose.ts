@@ -11,6 +11,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Record from "effect/Record";
+import * as Schema from "effect/Schema";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
@@ -169,6 +170,56 @@ export const make: Effect.Effect<
             Stream.provideService(MobyEndpoints.Containers, containers)
         );
 
+    // Make a scoped temporary directory inside the dind container
+    const makeTempDirScoped: Effect.Effect<string, DockerComposeError, Scope.Scope> = Effect.acquireRelease(
+        Effect.gen(function* () {
+            const [stderr, stdout] = yield* Effect.mapError(
+                DockerEngine.execWebsockets({
+                    command: "mktemp -d",
+                    containerId: dindContainerId,
+                }),
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "makeTempDirScoped",
+                    })
+            );
+
+            if (String.length(stderr) > 0) {
+                throw new DockerComposeError({
+                    cause: stderr,
+                    method: "makeTempDirScoped",
+                });
+            }
+
+            const schema = Schema.startsWith<typeof Schema.String>("/tmp/")(Schema.String);
+            const tempDir = yield* Effect.mapError(
+                Schema.decode(schema)(stdout),
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "makeTempDirScoped",
+                    })
+            );
+
+            return tempDir;
+        }),
+        (tempDir) =>
+            Effect.orDieWith(
+                DockerEngine.execWebsockets({
+                    command: `rm -rf ${tempDir}`,
+                    containerId: dindContainerId,
+                }),
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "makeTempDirScoped",
+                    })
+            )
+    )
+        .pipe(Effect.provideService(MobyEndpoints.Containers, containers))
+        .pipe(Effect.tap((tempDir) => Effect.annotateCurrentSpan("tempDir", tempDir)));
+
     // Actual compose implementation
     return DockerCompose.of({
         [TypeId]: TypeId,
@@ -200,13 +251,55 @@ export const make: Effect.Effect<
                 Stream.run(Sink.mkString)
             ),
 
-        // cp: <E1>(
-        //     project: Stream.Stream<Uint8Array, E1, never>,
-        //     service: string,
-        //     srcPath: string,
-        //     destPath: string,
-        //     options?: DockerComposeEngine.CopyOptions | undefined
-        // ): Stream.Stream<Uint8Array, E1 | DockerComposeError, never> => {},
+        cpTo: <E1, E2>(
+            project: Stream.Stream<Uint8Array, E1, never>,
+            service: string,
+            localSrc: Stream.Stream<Uint8Array, E2, never>,
+            remoteDestLocation: string,
+            options?: DockerComposeEngine.CopyOptions | undefined
+        ): Effect.Effect<void, E1 | E2 | DockerComposeError, never> =>
+            Effect.gen(function* () {
+                yield* uploadProject(project);
+                const remoteTransferDir = yield* makeTempDirScoped;
+                yield* Effect.mapError(
+                    containers.putArchive(dindContainerId, {
+                        stream: localSrc,
+                        path: remoteTransferDir,
+                    }),
+                    (cause) => new DockerComposeError({ method: "cpTo", cause })
+                );
+                const command = `cp ${remoteTransferDir} ${service}:${remoteDestLocation}`;
+                return yield* Stream.runDrain(runCommand(command, [], { ...options }));
+            }).pipe(Effect.scoped),
+
+        cpFrom: <E1>(
+            project: Stream.Stream<Uint8Array, E1, never>,
+            service: string,
+            remoteSrcLocation: string,
+            options?: DockerComposeEngine.CopyOptions | undefined
+        ): Stream.Stream<Uint8Array, E1 | DockerComposeError, never> =>
+            Function.pipe(
+                uploadProject(project),
+                Stream.fromEffect,
+                Stream.flatMap(() => Stream.scoped(makeTempDirScoped)),
+                Stream.tap((remoteTransferDir) =>
+                    Stream.runDrain(
+                        runCommand(`cp ${service}:${remoteSrcLocation} ${remoteTransferDir}`, [], { ...options })
+                    )
+                ),
+                Stream.flatMap((remoteTransferDir) =>
+                    Stream.mapError(
+                        containers.archive(dindContainerId, {
+                            path: remoteTransferDir,
+                        }),
+                        (cause) =>
+                            new DockerComposeError({
+                                cause,
+                                method: "cpFrom",
+                            })
+                    )
+                )
+            ),
 
         create: <E1>(
             project: Stream.Stream<Uint8Array, E1, never>,

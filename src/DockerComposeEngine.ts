@@ -733,13 +733,20 @@ export interface DockerCompose {
         options?: ConfigOptions | undefined
     ) => Effect.Effect<string, E1 | DockerComposeError, never>;
 
-    // readonly cp: <E1>(
-    //     project: Stream.Stream<Uint8Array, E1, never>,
-    //     service: string,
-    //     srcPath: string,
-    //     destPath: string,
-    //     options?: CopyOptions | undefined
-    // ) => Stream.Stream<Uint8Array, E1 | DockerComposeError, never>;
+    readonly cpTo: <E1, E2>(
+        project: Stream.Stream<Uint8Array, E1, never>,
+        service: string,
+        localSrc: Stream.Stream<Uint8Array, E2, never>,
+        remoteDestLocation: string,
+        options?: CopyOptions | undefined
+    ) => Effect.Effect<void, E1 | E2 | DockerComposeError, never>;
+
+    readonly cpFrom: <E1>(
+        project: Stream.Stream<Uint8Array, E1, never>,
+        service: string,
+        remoteSrcLocation: string,
+        options?: CopyOptions | undefined
+    ) => Stream.Stream<Uint8Array, E1 | DockerComposeError, never>;
 
     readonly create: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
