@@ -26,7 +26,8 @@
                 "GitHub.vscode-github-actions",
                 "yoavbls.pretty-ts-errors",
                 "redhat.vscode-yaml",
-                "vitest.explorer"
+                "vitest.explorer",
+                "bierner.comment-tagged-templates"
             ],
             "settings": {
                 "cSpell.enabled": true,

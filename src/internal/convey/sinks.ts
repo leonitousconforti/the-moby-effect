@@ -1,6 +1,6 @@
 import type * as Chunk from "effect/Chunk";
 import type * as Scope from "effect/Scope";
-import type { JSONMessage } from "../generated/JSONMessage.generated.js";
+import type * as MobySchemas from "../generated/index.js";
 
 import * as Console from "effect/Console";
 import * as Effect from "effect/Effect";
@@ -11,11 +11,12 @@ import * as Stream from "effect/Stream";
 
 /** @internal */
 export const waitForProgressToComplete = <E1, R1>(
-    stream: Stream.Stream<JSONMessage, E1, R1>
-): Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>> => Stream.run(stream, Sink.collectAll());
+    stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
+): Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>> =>
+    Stream.run(stream, Sink.collectAll());
 
 /** @internal */
-export const followProgressSink = Sink.forEach<JSONMessage, void, never, never>(
+export const followProgressSink = Sink.forEach<MobySchemas.JSONMessage, void, never, never>(
     Effect.fnUntraced(function* (message) {
         if (Predicate.isNotUndefined(message.status)) {
             yield* Console.log(`${message.status}${message.progress ? " " : ""}${message.progress ?? ""}`);
@@ -29,6 +30,6 @@ export const followProgressSink = Sink.forEach<JSONMessage, void, never, never>(
 
 /** @internal */
 export const followProgressInConsole = <E1, R1>(
-    stream: Stream.Stream<JSONMessage, E1, R1>
-): Effect.Effect<Chunk.Chunk<JSONMessage>, E1, Exclude<R1, Scope.Scope>> =>
+    stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
+): Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>> =>
     Function.pipe(stream, Stream.tapSink(followProgressSink), waitForProgressToComplete);
