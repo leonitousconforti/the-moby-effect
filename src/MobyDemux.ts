@@ -695,13 +695,77 @@ export const demuxToSingleSink: {
  * @since 1.0.0
  * @category Packing
  */
-export const pack = internalPack.pack;
+export const pack: {
+    <
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R1 = never,
+        R2 = never,
+        R3 = never,
+    >(options: {
+        requestedCapacity: number;
+        encoding?: string | undefined;
+    }): (
+        stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
+    ) => Effect.Effect<
+        MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+        never,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+    >;
+    <
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R1 = never,
+        R2 = never,
+        R3 = never,
+    >(
+        stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
+        options: { requestedCapacity: number; encoding?: string | undefined }
+    ): Effect.Effect<
+        MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+        never,
+        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+    >;
+} = internalPack.pack;
 
 /**
  * @since 1.0.0
  * @category Fanning
  */
-export const fan = internalFan.fan;
+export const fan: {
+    <IE = never, OE = Socket.SocketError, R = never>(options: {
+        requestedCapacity: number;
+        encoding?: string | undefined;
+    }): (multiplexedInput: EitherMultiplexedInput<IE, OE, R>) => Effect.Effect<
+        {
+            stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stdout: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stderr: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+        },
+        never,
+        Exclude<R, Scope.Scope>
+    >;
+    <IE = never, OE = Socket.SocketError, R = never>(
+        multiplexedInput: EitherMultiplexedInput<IE, OE, R>,
+        options: { requestedCapacity: number; encoding?: string | undefined }
+    ): Effect.Effect<
+        {
+            stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stdout: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stderr: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+        },
+        never,
+        Exclude<R, Scope.Scope>
+    >;
+} = internalFan.fan;
 
 /**
  * Demux either a raw stream socket or a multiplexed stream socket to the
