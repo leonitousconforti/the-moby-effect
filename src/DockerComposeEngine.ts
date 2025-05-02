@@ -4,12 +4,15 @@
  * @since 1.0.0
  */
 
+import type * as Socket from "@effect/platform/Socket";
 import type * as Array from "effect/Array";
 import type * as Context from "effect/Context";
 import type * as Effect from "effect/Effect";
 import type * as Layer from "effect/Layer";
+import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
 import type * as DockerEngine from "./DockerEngine.js";
+import type * as MobyDemux from "./MobyDemux.js";
 import type * as MobyEndpoints from "./MobyEndpoints.js";
 
 import * as internal from "./internal/engines/dockerCompose.js";
@@ -760,19 +763,23 @@ export interface DockerCompose {
         options?: DownOptions | undefined
     ) => Effect.Effect<void, E1 | DockerComposeError, never>;
 
-    // readonly events: <E1>(
-    //     project: Stream.Stream<Uint8Array, E1, never>,
-    //     services?: Array<string> | undefined,
-    //     options?: EventsOptions | undefined
-    // ) => Stream.Stream<Uint8Array, E1 | DockerComposeError, never>;
+    readonly events: <E1>(
+        project: Stream.Stream<Uint8Array, E1, never>,
+        services?: Array<string> | undefined,
+        options?: EventsOptions | undefined
+    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
 
-    // readonly exec: <E1>(
-    //     project: Stream.Stream<Uint8Array, E1, never>,
-    //     service: string,
-    //     command: string,
-    //     args?: Array<string> | undefined,
-    //     options?: ExecOptions | undefined
-    // ) => Stream.Stream<Uint8Array, E1 | DockerComposeError, never>;
+    readonly exec: <E1>(
+        project: Stream.Stream<Uint8Array, E1, never>,
+        service: string,
+        command: string,
+        args?: Array<string> | undefined,
+        options?: ExecOptions | undefined
+    ) => Effect.Effect<
+        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        E1 | DockerComposeError,
+        Scope.Scope
+    >;
 
     readonly images: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
@@ -802,12 +809,12 @@ export interface DockerCompose {
         services?: Array<string> | undefined
     ) => Effect.Effect<void, E1 | DockerComposeError, never>;
 
-    // readonly port: <E1>(
-    //     project: Stream.Stream<Uint8Array, E1, never>,
-    //     service: string,
-    //     privatePort: number,
-    //     options?: PortOptions | undefined
-    // ) => Effect.Effect<number, E1 | DockerComposeError, never>;
+    readonly port: <E1>(
+        project: Stream.Stream<Uint8Array, E1, never>,
+        service: string,
+        privatePort: number,
+        options?: PortOptions | undefined
+    ) => Effect.Effect<number, E1 | DockerComposeError, never>;
 
     readonly ps: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
@@ -839,13 +846,17 @@ export interface DockerCompose {
         options?: RmOptions | undefined
     ) => Effect.Effect<void, E1 | DockerComposeError, never>;
 
-    // readonly run: <E1>(
-    //     project: Stream.Stream<Uint8Array, E1, never>,
-    //     service: string,
-    //     command: string,
-    //     args?: Array<string> | undefined,
-    //     options?: RunOptions | undefined
-    // ) => Stream.Stream<Uint8Array, E1 | DockerComposeError, never>;
+    readonly run: <E1>(
+        project: Stream.Stream<Uint8Array, E1, never>,
+        service: string,
+        command: string,
+        args?: Array<string> | undefined,
+        options?: RunOptions | undefined
+    ) => Effect.Effect<
+        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        E1 | DockerComposeError,
+        Scope.Scope
+    >;
 
     readonly start: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
@@ -887,7 +898,7 @@ export interface DockerCompose {
 
     readonly forProject: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>
-    ) => Effect.Effect<DockerComposeProject, E1 | DockerComposeError, never>;
+    ) => Effect.Effect<DockerComposeProject, E1 | DockerComposeError | MobyEndpoints.ContainersError, Scope.Scope>;
 }
 
 /**
@@ -925,12 +936,18 @@ export interface DockerComposeProject {
         options?: ConfigOptions | undefined
     ) => Effect.Effect<string, DockerComposeError, never>;
 
-    // readonly cp: (
-    //     service: string,
-    //     srcPath: string,
-    //     destPath: string,
-    //     options?: CopyOptions | undefined
-    // ) => Stream.Stream<Uint8Array, DockerComposeError, never>;
+    readonly cpTo: <E1>(
+        service: string,
+        localSrc: Stream.Stream<Uint8Array, E1, never>,
+        remoteDestLocation: string,
+        options?: CopyOptions | undefined
+    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+
+    readonly cpFrom: (
+        service: string,
+        remoteSrcLocation: string,
+        options?: CopyOptions | undefined
+    ) => Stream.Stream<Uint8Array, DockerComposeError, never>;
 
     readonly create: (
         services?: Array<string> | undefined,
@@ -942,17 +959,21 @@ export interface DockerComposeProject {
         options?: DownOptions | undefined
     ) => Effect.Effect<void, DockerComposeError, never>;
 
-    // readonly events: (
-    //     services?: Array<string> | undefined,
-    //     options?: EventsOptions | undefined
-    // ) => Stream.Stream<Uint8Array, DockerComposeError, never>;
+    readonly events: (
+        services?: Array<string> | undefined,
+        options?: EventsOptions | undefined
+    ) => Stream.Stream<string, DockerComposeError, never>;
 
-    // readonly exec: (
-    //     service: string,
-    //     command: string,
-    //     args?: Array<string> | undefined,
-    //     options?: ExecOptions | undefined
-    // ) => Stream.Stream<Uint8Array, DockerComposeError, never>;
+    readonly exec: (
+        service: string,
+        command: string,
+        args?: Array<string> | undefined,
+        options?: ExecOptions | undefined
+    ) => Effect.Effect<
+        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        DockerComposeError,
+        Scope.Scope
+    >;
 
     readonly images: (
         services?: Array<string> | undefined,
@@ -973,11 +994,11 @@ export interface DockerComposeProject {
 
     readonly pause: (services?: Array<string> | undefined) => Effect.Effect<void, DockerComposeError, never>;
 
-    // readonly port: (
-    //     service: string,
-    //     privatePort: number,
-    //     options?: PortOptions | undefined
-    // ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly port: (
+        service: string,
+        privatePort: number,
+        options?: PortOptions | undefined
+    ) => Effect.Effect<number, DockerComposeError, never>;
 
     readonly ps: (
         services?: Array<string> | undefined,
@@ -1004,12 +1025,16 @@ export interface DockerComposeProject {
         options?: RmOptions | undefined
     ) => Effect.Effect<void, DockerComposeError, never>;
 
-    // readonly run: (
-    //     service: string,
-    //     command: string,
-    //     args?: Array<string> | undefined,
-    //     options?: RunOptions | undefined
-    // ) => Stream.Stream<Uint8Array, DockerComposeError, never>;
+    readonly run: (
+        service: string,
+        command: string,
+        args?: Array<string> | undefined,
+        options?: RunOptions | undefined
+    ) => Effect.Effect<
+        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        DockerComposeError,
+        Scope.Scope
+    >;
 
     readonly start: (services?: Array<string> | undefined) => Effect.Effect<void, DockerComposeError, never>;
 
@@ -1054,5 +1079,9 @@ export const layerProject: <E1>(
     tagIdentifier: string
 ) => {
     readonly tag: Context.Tag<DockerComposeProject, DockerComposeProject>;
-    readonly layer: Layer.Layer<DockerComposeProject, E1 | internal.DockerComposeError, DockerCompose>;
+    readonly layer: Layer.Layer<
+        DockerComposeProject,
+        E1 | internal.DockerComposeError | MobyEndpoints.ContainersError,
+        DockerCompose
+    >;
 } = internal.layerProject;

@@ -536,22 +536,25 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             );
 
         /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/PutContainerArchive */
-        const putArchive_ = <E1>(
+        const putArchive_ = <E1, R1>(
             id: string,
             options: {
                 readonly path: string;
                 readonly noOverwriteDirNonDir?: string | undefined;
                 readonly copyUIDGID?: string | undefined;
-                readonly stream: Stream.Stream<Uint8Array, E1, never>;
+                readonly stream: Stream.Stream<Uint8Array, E1, R1>;
             }
-        ): Effect.Effect<void, ContainersError, never> =>
+        ): Effect.Effect<void, ContainersError, R1> =>
             Function.pipe(
                 HttpClientRequest.put(`/containers/${encodeURIComponent(id)}/archive`),
                 maybeAddQueryParameter("path", Option.some(options.path)),
                 maybeAddQueryParameter("noOverwriteDirNonDir", Option.fromNullable(options.noOverwriteDirNonDir)),
                 maybeAddQueryParameter("copyUIDGID", Option.fromNullable(options.copyUIDGID)),
-                HttpClientRequest.bodyStream(options.stream),
-                client.execute,
+                (request) =>
+                    Effect.context<R1>()
+                        .pipe(Effect.map((c) => Stream.provideContext(options.stream, c)))
+                        .pipe(Effect.map((s) => HttpClientRequest.bodyStream(request, s))),
+                Effect.flatMap(client.execute),
                 Effect.asVoid,
                 Effect.mapError((cause) => new ContainersError({ method: "putArchive", cause }))
             );
