@@ -19,7 +19,7 @@ const localDocker = Function.pipe(
 );
 
 // Create a docker compose layer, using the local docker engine layer
-const localDockerCompose = Layer.provide(DockerComposeEngine.layer, localDocker);
+const localDockerCompose = Layer.provide(DockerComposeEngine.layer(), localDocker);
 
 // Get the docker compose project as a tarball
 const project = Effect.Do.pipe(
