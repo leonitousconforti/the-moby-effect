@@ -277,8 +277,10 @@ const execWebsocketsRegistry = Global.globalValue("the-moby-effect/engines/docke
 export const execWebsocketsNonBlocking = ({
     command,
     containerId,
+    cwd,
 }: {
     command: string | Array<string>;
+    cwd?: string | undefined;
     containerId: string;
 }): Effect.Effect<
     MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
@@ -332,7 +334,8 @@ export const execWebsocketsNonBlocking = ({
 
         const use = Effect.gen(function* () {
             const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
-            const input = Stream.succeed(`${cmd}; exit\n`);
+            const cwdCommand = Predicate.isUndefined(cwd) ? cmd : `cd ${cwd} && ${cmd}`;
+            const input = Stream.succeed(`${cwdCommand}; exit\n`);
             const stdinSocket = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
             const stdoutSocket = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
             const stderrSocket = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });

@@ -266,9 +266,11 @@ export const execWebsockets: ({
 export const execWebsocketsNonBlocking: ({
     command,
     containerId,
+    cwd,
 }: {
     command: string | Array<string>;
     containerId: string;
+    cwd?: string | undefined;
 }) => Effect.Effect<
     MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
     never,

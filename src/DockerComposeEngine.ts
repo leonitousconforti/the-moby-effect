@@ -1064,7 +1064,9 @@ export interface DockerComposeProject {
  * @since 1.0.0
  * @category Layers
  */
-export const layer: Layer.Layer<
+export const layer: (
+    options?: { dockerEngineSocket?: string | undefined } | undefined
+) => Layer.Layer<
     DockerCompose,
     MobyEndpoints.SystemsError | MobyEndpoints.ContainersError,
     Layer.Layer.Success<DockerEngine.DockerLayer>

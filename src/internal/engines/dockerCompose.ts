@@ -23,6 +23,183 @@ import * as MobyDemux from "../../MobyDemux.js";
 import * as MobyEndpoints from "../../MobyEndpoints.js";
 
 /** @internal */
+const makeTempDirScoped = (
+    containerId: string
+): Effect.Effect<string, DockerComposeError, MobyEndpoints.Containers | Scope.Scope> =>
+    Effect.acquireRelease(
+        Effect.gen(function* () {
+            const [stderr, stdout] = yield* Effect.mapError(
+                DockerEngine.execWebsockets({
+                    containerId,
+                    command: "mktemp -d",
+                }),
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "makeTempDirScoped",
+                    })
+            );
+
+            if (String.isNonEmpty(stderr)) {
+                throw new DockerComposeError({
+                    cause: stderr,
+                    method: "makeTempDirScoped",
+                });
+            }
+
+            class schema extends Schema.startsWith<typeof Schema.String>("/tmp/")(Schema.String) {}
+            const tempDir = yield* Effect.mapError(
+                Schema.decode(schema)(stdout),
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "makeTempDirScoped",
+                    })
+            );
+
+            yield* Effect.annotateCurrentSpan("tempDir", tempDir);
+            return tempDir;
+        }),
+        (tempDir) =>
+            Effect.orDieWith(
+                DockerEngine.execWebsockets({
+                    containerId,
+                    command: `rm -rf ${tempDir}`,
+                }),
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "makeTempDirScoped",
+                    })
+            )
+    );
+
+/** @internal */
+const uploadProject = Function.dual<
+    <E1, R1>(
+        project: Stream.Stream<Uint8Array, E1, R1>
+    ) => (
+        containerId: string
+    ) => Effect.Effect<string, E1 | DockerComposeError, R1 | MobyEndpoints.Containers | Scope.Scope>,
+    <E1, R1>(
+        containerId: string,
+        project: Stream.Stream<Uint8Array, E1, R1>
+    ) => Effect.Effect<string, E1 | DockerComposeError, R1 | MobyEndpoints.Containers | Scope.Scope>
+>(
+    2,
+    <E1, R1>(
+        containerId: string,
+        project: Stream.Stream<Uint8Array, E1, R1>
+    ): Effect.Effect<string, E1 | DockerComposeError, R1 | MobyEndpoints.Containers | Scope.Scope> =>
+        Effect.gen(function* () {
+            const containers = yield* MobyEndpoints.Containers;
+            const projectUploadDir = yield* makeTempDirScoped(containerId);
+            yield* Effect.annotateCurrentSpan("projectUploadDir", projectUploadDir);
+            yield* containers.putArchive(containerId, { stream: project, path: projectUploadDir });
+            return projectUploadDir;
+        }).pipe(
+            Effect.catchTag(
+                "ContainersError",
+                (cause) =>
+                    new DockerComposeError({
+                        cause,
+                        method: "uploadProject",
+                    })
+            )
+        )
+);
+
+/** @internal */
+const camelToKebab = Function.compose(String.camelToSnake, String.snakeToKebab);
+
+/** @internal */
+const stringifyOptions = (
+    options: Record<
+        string,
+        | string
+        | number
+        | boolean
+        | undefined
+        | Array<string | number | boolean>
+        | Record<string, string | number | boolean>
+    >
+): string =>
+    Function.pipe(
+        options,
+        Record.toEntries,
+        Array.filter(Function.flow(Tuple.getSecond, Predicate.isNotUndefined)),
+        Array.flatMap(([key, value]): Array<readonly [string, string | number | boolean]> => {
+            if (Predicate.isString(value) || Predicate.isNumber(value) || Predicate.isBoolean(value)) {
+                return [Tuple.make(key, value)];
+            } else if (Array.isArray(value)) {
+                return Array.map(value, (v) => [key, v]);
+            } else if (Predicate.isRecord(value)) {
+                return Record.toEntries(value);
+            } else {
+                return Function.absurd(value as never);
+            }
+        }),
+        Array.map(([key, value]) => `--${camelToKebab(key)}=${value}`),
+        Array.join(" ")
+    );
+
+/** @internal */
+const runCommand = (
+    containerId: string,
+    projectPath: string,
+    method: string,
+    services: ReadonlyArray<string> | undefined = [],
+    options:
+        | Record<
+              string,
+              | string
+              | number
+              | boolean
+              | undefined
+              | Array<string | number | boolean>
+              | Record<string, string | number | boolean>
+          >
+        | undefined = {}
+): Stream.Stream<Uint8Array, DockerComposeError, MobyEndpoints.Containers> =>
+    Effect.gen(function* () {
+        const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({
+            containerId,
+            cwd: projectPath,
+            command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
+        });
+
+        const { stderr, stdin, stdout } = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
+
+        const streamFailableEnsuring = <A, X, E1, E2, R1, R2>(
+            stream: Stream.Stream<A, E1, R1>,
+            effect: Effect.Effect<X, E2, R2>
+        ): Stream.Stream<A, E1 | E2, R1 | R2> =>
+            Stream.flatMap(stream, (a: A) => Stream.fromEffect(Effect.map(effect, Function.constant(a))));
+
+        return streamFailableEnsuring(
+            MobyDemux.mergeRawToTaggedStream(stdout, stderr),
+            MobyDemux.demuxRawToSingleSink(stdin, Stream.make(new Socket.CloseEvent()), Sink.drain)
+        );
+    }).pipe(
+        Stream.unwrap,
+        Stream.mapEffect((entry) => {
+            if (Predicate.isTagged(entry, "stdout")) {
+                return Effect.succeed(entry.value);
+            } else {
+                const decoded = new TextDecoder("utf-8").decode(entry.value);
+                return Effect.fail(new DockerComposeError({ method, cause: decoded }));
+            }
+        }),
+        Stream.mapError(
+            (cause) =>
+                new DockerComposeError({
+                    cause,
+                    method,
+                })
+        )
+    );
+
+/** @internal */
 export const DockerComposeErrorTypeId: DockerComposeEngine.DockerComposeErrorTypeId = Symbol.for(
     "@the-moby-effect/engines/DockerCompose/DockerComposeError"
 ) as DockerComposeEngine.DockerComposeErrorTypeId;
@@ -56,356 +233,44 @@ export const DockerCompose: Context.Tag<DockerComposeEngine.DockerCompose, Docke
     Context.GenericTag<DockerComposeEngine.DockerCompose>("@the-moby-effect/engines/DockerCompose");
 
 /** @internal */
-export const make: Effect.Effect<
+export const make: (options?: {
+    dockerEngineSocket?: string | undefined;
+}) => Effect.Effect<
     DockerComposeEngine.DockerCompose,
     MobyEndpoints.SystemsError | MobyEndpoints.ContainersError,
     MobyEndpoints.Containers | MobyEndpoints.Systems | Scope.Scope
-> = Effect.gen(function* () {
+> = Effect.fnUntraced(function* (options) {
     const containers = yield* MobyEndpoints.Containers;
+    const runCommandHelper = Function.flow(runCommand, Stream.provideService(MobyEndpoints.Containers, containers));
     yield* DockerEngine.pingHead();
 
-    const makeTempDirScoped = (dindContainerId: string): Effect.Effect<string, DockerComposeError, Scope.Scope> =>
-        Effect.acquireRelease(
-            Effect.gen(function* () {
-                const [stderr, stdout] = yield* Effect.mapError(
-                    DockerEngine.execWebsockets({
-                        command: "mktemp -d",
-                        containerId: dindContainerId,
-                    }),
-                    (cause) =>
-                        new DockerComposeError({
-                            cause,
-                            method: "makeTempDirScoped",
-                        })
-                );
-
-                if (String.isNonEmpty(stderr)) {
-                    throw new DockerComposeError({
-                        cause: stderr,
-                        method: "makeTempDirScoped",
-                    });
-                }
-
-                class schema extends Schema.startsWith<typeof Schema.String>("/tmp/")(Schema.String) {}
-                const tempDir = yield* Effect.mapError(
-                    Schema.decode(schema)(stdout),
-                    (cause) =>
-                        new DockerComposeError({
-                            cause,
-                            method: "makeTempDirScoped",
-                        })
-                );
-
-                return tempDir;
-            }),
-            (tempDir) =>
-                Effect.orDieWith(
-                    DockerEngine.execWebsockets({
-                        command: `rm -rf ${tempDir}`,
-                        containerId: dindContainerId,
-                    }),
-                    (cause) =>
-                        new DockerComposeError({
-                            cause,
-                            method: "makeTempDirScoped",
-                        })
-                )
-        )
-            .pipe(Effect.tap((tmpDir) => Effect.annotateCurrentSpan("tempDir", tmpDir)))
-            .pipe(Effect.provideService(MobyEndpoints.Containers, containers));
-
-    const uploadProject = Function.dual<
-        <E1, R1>(
-            project: Stream.Stream<Uint8Array, E1, R1>
-        ) => (dindContainerId: string) => Effect.Effect<void, E1 | DockerComposeError, R1 | Scope.Scope>,
-        <E1, R1>(
-            dindContainerId: string,
-            project: Stream.Stream<Uint8Array, E1, R1>
-        ) => Effect.Effect<void, E1 | DockerComposeError, R1 | Scope.Scope>
-    >(
-        2,
-        <E1, R1>(
-            dindContainerId: string,
-            project: Stream.Stream<Uint8Array, E1, R1>
-        ): Effect.Effect<void, E1 | DockerComposeError, R1 | Scope.Scope> =>
-            Effect.gen(function* () {
-                const projectUploadDir = yield* makeTempDirScoped(dindContainerId);
-                yield* Effect.annotateCurrentSpan("projectUploadDir", projectUploadDir);
-                yield* containers.putArchive(dindContainerId, {
-                    path: projectUploadDir,
-                    stream: project,
-                });
-            }).pipe(
-                Effect.catchTag(
-                    "ContainersError",
-                    (cause) =>
-                        new DockerComposeError({
-                            cause,
-                            method: "uploadProject",
-                        })
-                )
-            )
-    );
-
-    const camelToKebab = Function.compose(String.camelToSnake, String.snakeToKebab);
-
-    const stringifyOptions = (
-        options: Record<
-            string,
-            | string
-            | number
-            | boolean
-            | undefined
-            | Array<string | number | boolean>
-            | Record<string, string | number | boolean>
-        >
-    ): string =>
-        Function.pipe(
-            options,
-            Record.toEntries,
-            Array.filter(Function.flow(Tuple.getSecond, Predicate.isNotUndefined)),
-            Array.flatMap(([key, value]): Array<readonly [string, string | number | boolean]> => {
-                if (Predicate.isString(value) || Predicate.isNumber(value) || Predicate.isBoolean(value)) {
-                    return [Tuple.make(key, value)];
-                } else if (Array.isArray(value)) {
-                    return Array.map(value, (v) => [key, v]);
-                } else if (Predicate.isRecord(value)) {
-                    return Record.toEntries(value);
-                } else {
-                    return Function.absurd(value as never);
-                }
-            }),
-            Array.map(([key, value]) => `--${camelToKebab(key)}=${value}`),
-            Array.join(" ")
-        );
-
-    const runCommand = Function.dual<
-        (
-            method: string,
-            services?: ReadonlyArray<string> | undefined,
-            options?:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined
-        ) => (dindContainerId: string) => Stream.Stream<Uint8Array, DockerComposeError, never>,
-        (
-            dindContainerId: string,
-            method: string,
-            services?: ReadonlyArray<string> | undefined,
-            options?:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined
-        ) => Stream.Stream<Uint8Array, DockerComposeError, never>
-    >(
-        (arguments_) => Predicate.isString(arguments_[0]) && Predicate.isString(arguments_[1]),
-        (
-            dindContainerId: string,
-            method: string,
-            services: ReadonlyArray<string> | undefined = [],
-            options:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined = {}
-        ): Stream.Stream<Uint8Array, DockerComposeError, never> =>
-            Effect.gen(function* () {
-                const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({
-                    containerId: dindContainerId,
-                    command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions(options)} ${Array.join(services, " ")}`,
-                });
-
-                const { stderr, stdin, stdout } = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
-
-                const streamFailableEnsuring = <A, X, E1, E2, R1, R2>(
-                    stream: Stream.Stream<A, E1, R1>,
-                    effect: Effect.Effect<X, E2, R2>
-                ): Stream.Stream<A, E1 | E2, R1 | R2> =>
-                    Stream.flatMap(stream, (a: A) => Stream.fromEffect(Effect.map(effect, Function.constant(a))));
-
-                return streamFailableEnsuring(
-                    MobyDemux.mergeRawToTaggedStream(stdout, stderr),
-                    MobyDemux.demuxRawToSingleSink(stdin, Stream.make(new Socket.CloseEvent()), Sink.drain)
-                );
-            }).pipe(
-                Stream.unwrap,
-                Stream.provideService(MobyEndpoints.Containers, containers),
-                Stream.mapEffect((entry) => {
-                    if (Predicate.isTagged(entry, "stdout")) {
-                        return Effect.succeed(entry.value);
-                    } else {
-                        const decoded = new TextDecoder("utf-8").decode(entry.value);
-                        return Effect.fail(new DockerComposeError({ method, cause: decoded }));
-                    }
-                }),
-                Stream.mapError(
-                    (cause) =>
-                        new DockerComposeError({
-                            cause,
-                            method,
-                        })
-                )
-            )
-    );
-
-    const execOnly = Function.dual<
-        (
-            command: string,
-            args: Array<string> | undefined,
-            method: string,
-            service: string,
-            options?:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined
-        ) => (
-            dindContainerId: string
-        ) => Effect.Effect<
-            MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
-            never,
-            never
-        >,
-        (
-            dindContainerId: string,
-            command: string,
-            args: Array<string> | undefined,
-            method: string,
-            service: string,
-            options?:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined
-        ) => Effect.Effect<
-            MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
-            never,
-            never
-        >
-    >(
-        (arguments_) => Predicate.isString(arguments_[0]) && Predicate.isString(arguments_[1]),
-        (
-            dindContainerId: string,
-            command: string,
-            args: Array<string> | undefined,
-            method: string,
-            service: string,
-            options:
-                | Record<
-                      string,
-                      | string
-                      | number
-                      | boolean
-                      | undefined
-                      | Array<string | number | boolean>
-                      | Record<string, string | number | boolean>
-                  >
-                | undefined = {}
-        ): Effect.Effect<
-            MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
-            never,
-            never
-        > =>
-            Effect.provideService(
-                DockerEngine.execWebsocketsNonBlocking({
-                    containerId: dindContainerId,
-                    command: `COMPOSE_STATUS_STDOUT=1 docker compose ${method} ${stringifyOptions({ ...options })} ${service} ${command} ${Array.join(args ?? [], " ")}`,
-                }),
-                MobyEndpoints.Containers,
-                containers
-            )
-    );
-
-    const uncurryWithUploadProject =
-        (dindContainerId: string) =>
-        <
-            A1 extends Array<any>,
-            T extends Effect.Effect<any, any, any> | Stream.Stream<any, any, any>,
-            A2 extends [T] extends [Effect.Effect<any, any, any>] ? Effect.Effect.Success<T> : Stream.Stream.Success<T>,
-            E2 extends [T] extends [Effect.Effect<any, any, any>] ? Effect.Effect.Error<T> : Stream.Stream.Error<T>,
-            R2 extends [T] extends [Effect.Effect<any, any, any>] ? Effect.Effect.Context<T> : Stream.Stream.Context<T>,
-        >(
-            func: (dindContainerId: string) => (...args: A1) => T
-        ) =>
-        <E1, R1>(
-            project: Stream.Stream<Uint8Array, E1, R1>,
-            ...args: A1
-        ): [T] extends [Effect.Effect<A2, E2, R2>]
-            ? Effect.Effect<A2, E1 | E2 | DockerComposeError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
-            : Stream.Stream<A2, E1 | E2 | DockerComposeError, Exclude<R1, Scope.Scope> | R2> => {
-            const first = uploadProject(project)(dindContainerId);
-            const second = func(dindContainerId)(...args);
-
-            type Ret = [T] extends [Effect.Effect<A2, E2, R2>]
-                ? Effect.Effect<A2, E1 | E2 | DockerComposeError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
-                : Stream.Stream<A2, E1 | E2 | DockerComposeError, Exclude<R1, Scope.Scope> | R2>;
-
-            if (Predicate.hasProperty(second, Stream.StreamTypeId)) {
-                return Stream.scoped(first).pipe(Stream.flatMap(() => second as Stream.Stream<A2, E2, R2>)) as Ret;
-            } else {
-                return first.pipe(Effect.flatMap(() => second as Effect.Effect<A2, E2, R2>)).pipe(Effect.scoped) as Ret;
-            }
-        };
-
     const build =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.BuildOptions | undefined
         ): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "build", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "build", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const config =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.ConfigOptions | undefined
         ): Effect.Effect<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "config", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "config", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines,
                 Stream.run(Sink.mkString)
             );
 
     const cpTo =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         <E1, R1>(
             service: string,
             localSrc: Stream.Stream<Uint8Array, E1, R1>,
@@ -413,7 +278,11 @@ export const make: Effect.Effect<
             options?: DockerComposeEngine.CopyOptions | undefined
         ): Effect.Effect<void, E1 | DockerComposeError, R1> =>
             Effect.gen(function* () {
-                const remoteTransferDir = yield* makeTempDirScoped(dindContainerId);
+                const remoteTransferDir = yield* Effect.provideService(
+                    makeTempDirScoped(dindContainerId),
+                    MobyEndpoints.Containers,
+                    containers
+                );
                 yield* Effect.mapError(
                     containers.putArchive(dindContainerId, {
                         stream: localSrc,
@@ -422,11 +291,13 @@ export const make: Effect.Effect<
                     (cause) => new DockerComposeError({ method: "cpTo", cause })
                 );
                 const command = `cp ${remoteTransferDir} ${service}:${remoteDestLocation}`;
-                return yield* Stream.runDrain(runCommand(dindContainerId, command, [], { ...options }));
+                return yield* Stream.runDrain(
+                    runCommandHelper(dindContainerId, projectPath, command, [], { ...options })
+                );
             }).pipe(Effect.scoped);
 
     const cpFrom =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             service: string,
             remoteSrcLocation: string,
@@ -434,11 +305,18 @@ export const make: Effect.Effect<
         ): Stream.Stream<Uint8Array, DockerComposeError, never> =>
             Function.pipe(
                 Stream.scoped(makeTempDirScoped(dindContainerId)),
+                Stream.provideService(MobyEndpoints.Containers, containers),
                 Stream.tap((remoteTransferDir) =>
                     Stream.runDrain(
-                        runCommand(dindContainerId, `cp ${service}:${remoteSrcLocation} ${remoteTransferDir}`, [], {
-                            ...options,
-                        })
+                        runCommandHelper(
+                            projectPath,
+                            dindContainerId,
+                            `cp ${service}:${remoteSrcLocation} ${remoteTransferDir}`,
+                            [],
+                            {
+                                ...options,
+                            }
+                        )
                     )
                 ),
                 Stream.flatMap((remoteTransferDir) =>
@@ -456,35 +334,41 @@ export const make: Effect.Effect<
             );
 
     const create =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.CreateOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "create", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "create", services, { ...options }),
+                Stream.runDrain
+            );
 
     const down =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.DownOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "down", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "down", services, { ...options }),
+                Stream.runDrain
+            );
 
     const events =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.EventsOptions | undefined
         ): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "events", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "events", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const exec =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             service: string,
             command: string,
@@ -495,63 +379,76 @@ export const make: Effect.Effect<
             DockerComposeError,
             Scope.Scope
         > =>
-            execOnly(dindContainerId, command, args, "exec", service, { ...options });
+            Effect.provideService(
+                DockerEngine.execWebsocketsNonBlocking({
+                    containerId: dindContainerId,
+                    cwd: projectPath,
+                    command: `COMPOSE_STATUS_STDOUT=1 docker compose exec ${stringifyOptions({ ...options })} ${service} ${command} ${Array.join(args ?? [], " ")}`,
+                }),
+                MobyEndpoints.Containers,
+                containers
+            );
 
     const images =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.ImagesOptions | undefined
         ): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "images", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "images", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const kill =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.KillOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "kill", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "kill", services, { ...options }),
+                Stream.runDrain
+            );
 
     const logs =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.LogsOptions | undefined
         ): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "logs", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "logs", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const ls =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (options?: DockerComposeEngine.ListOptions | undefined): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "ls", [], { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "ls", [], { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const pause =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "pause", services), Stream.runDrain);
+            Function.pipe(runCommandHelper(dindContainerId, projectPath, "pause", services), Stream.runDrain);
 
     const port =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             service: string,
             privatePort: number,
             options?: DockerComposeEngine.PortOptions | undefined
         ): Effect.Effect<number, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "port", [service, privatePort.toString()], { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "port", [service, privatePort.toString()], {
+                    ...options,
+                }),
                 Stream.decodeText(),
                 Stream.splitLines,
                 Stream.take(1),
@@ -561,55 +458,64 @@ export const make: Effect.Effect<
             );
 
     const ps =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.PsOptions | undefined
         ): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "ps", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "ps", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const pull =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.PullOptions | undefined
         ): Stream.Stream<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "pull", services, { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "pull", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines
             );
 
     const push =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.PushOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "push", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "push", services, { ...options }),
+                Stream.runDrain
+            );
 
     const restart =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.RestartOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "restart", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "restart", services, { ...options }),
+                Stream.runDrain
+            );
 
     const rm =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.RmOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "rm", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "rm", services, { ...options }),
+                Stream.runDrain
+            );
 
     const run =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             service: string,
             command: string,
@@ -620,55 +526,76 @@ export const make: Effect.Effect<
             DockerComposeError,
             Scope.Scope
         > =>
-            execOnly(dindContainerId, command, args, "run", service, { ...options });
+            Effect.provideService(
+                DockerEngine.execWebsocketsNonBlocking({
+                    containerId: dindContainerId,
+                    cwd: projectPath,
+                    command: `COMPOSE_STATUS_STDOUT=1 docker compose run ${stringifyOptions({ ...options })} ${service} ${command} ${Array.join(args ?? [], " ")}`,
+                }),
+                MobyEndpoints.Containers,
+                containers
+            );
 
     const start =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "start", services), Stream.runDrain);
+            Function.pipe(runCommandHelper(dindContainerId, projectPath, "start", services), Stream.runDrain);
 
     const stop =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.StopOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "stop", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "stop", services, { ...options }),
+                Stream.runDrain
+            );
 
     const top =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (services?: Array<string> | undefined): Stream.Stream<string, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "top", services), Stream.decodeText(), Stream.splitLines);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "top", services),
+                Stream.decodeText(),
+                Stream.splitLines
+            );
 
     const unpause =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "unpause", services), Stream.runDrain);
+            Function.pipe(runCommandHelper(dindContainerId, projectPath, "unpause", services), Stream.runDrain);
 
     const up =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services?: Array<string> | undefined,
             options?: DockerComposeEngine.UpOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "up", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "up", services, { ...options }),
+                Stream.runDrain
+            );
 
     const version =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (options?: DockerComposeEngine.VersionOptions | undefined): Effect.Effect<string, DockerComposeError, never> =>
             Function.pipe(
-                runCommand(dindContainerId, "version", [], { ...options }),
+                runCommandHelper(dindContainerId, projectPath, "version", [], { ...options }),
                 Stream.decodeText(),
                 Stream.run(Sink.mkString)
             );
 
     const wait =
-        (dindContainerId: string) =>
+        (dindContainerId: string, projectPath: string) =>
         (
             services: Array.NonEmptyReadonlyArray<string>,
             options?: DockerComposeEngine.WaitOptions | undefined
         ): Effect.Effect<void, DockerComposeError, never> =>
-            Function.pipe(runCommand(dindContainerId, "wait", services, { ...options }), Stream.runDrain);
+            Function.pipe(
+                runCommandHelper(dindContainerId, projectPath, "wait", services, { ...options }),
+                Stream.runDrain
+            );
 
     const dindContainerIdResource = yield* DockerEngine.runScoped({
         spec: {
@@ -681,17 +608,47 @@ export const make: Effect.Effect<
             AttachStderr: true,
             HostConfig: {
                 Privileged: true,
-                Binds: ["/var/run/docker.sock:/var/run/docker.sock"],
+                Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
             },
         },
     }).pipe(Effect.map(({ Id }) => Id));
 
+    const uncurryEffectWithUploadProject =
+        (dindContainerId: string) =>
+        <P extends Array<any>, A, E, R>(
+            func: (dindContainerId: string, projectPath: string) => (...args: P) => Effect.Effect<A, E, R>
+        ) =>
+        <E1, R1>(
+            project: Stream.Stream<Uint8Array, E1, R1>,
+            ...args: P
+        ): Effect.Effect<A, E | E1 | DockerComposeError, Exclude<R, Scope.Scope> | Exclude<R1, Scope.Scope>> =>
+            uploadProject(project)(dindContainerId)
+                .pipe(Effect.provideService(MobyEndpoints.Containers, containers))
+                .pipe(Effect.flatMap((cwd) => func(dindContainerId, cwd)(...args)))
+                .pipe(Effect.scoped);
+
+    const uncurryStreamWithUploadProject =
+        (dindContainerId: string) =>
+        <P extends Array<any>, A, E, R>(
+            func: (dindContainerId: string, projectPath: string) => (...args: P) => Stream.Stream<A, E, R>
+        ) =>
+        <E1, R1>(
+            project: Stream.Stream<Uint8Array, E1, R1>,
+            ...args: P
+        ): Stream.Stream<A, E | E1 | DockerComposeError, R | R1> =>
+            uploadProject(project)(dindContainerId)
+                .pipe(Stream.scoped)
+                .pipe(Stream.provideService(MobyEndpoints.Containers, containers))
+                .pipe(Stream.flatMap((cwd) => func(dindContainerId, cwd)(...args)));
+
+    const uncurryEffect = uncurryEffectWithUploadProject(dindContainerIdResource);
+    const uncurryStream = uncurryStreamWithUploadProject(dindContainerIdResource);
+
     // Actual compose implementation
-    const uncurryHelper = uncurryWithUploadProject(dindContainerIdResource);
     return DockerCompose.of({
         [TypeId]: TypeId,
-        build: uncurryHelper(build),
-        config: uncurryHelper(config),
+        build: uncurryStream(build),
+        config: uncurryEffect(config),
         cpTo: <E1, R1, E2, R2>(
             project: Stream.Stream<Uint8Array, E1, R1>,
             service: string,
@@ -700,33 +657,37 @@ export const make: Effect.Effect<
             options?: DockerComposeEngine.CopyOptions | undefined
         ): Effect.Effect<void, E1 | E2 | DockerComposeError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
             Effect.gen(function* () {
-                yield* uploadProject(project)(dindContainerIdResource);
-                return yield* cpTo(dindContainerIdResource)(service, localSrc, remoteDestLocation, options);
+                const cwd = yield* Effect.provideService(
+                    uploadProject(project)(dindContainerIdResource),
+                    MobyEndpoints.Containers,
+                    containers
+                );
+                yield* cpTo(dindContainerIdResource, cwd)(service, localSrc, remoteDestLocation, options);
             }).pipe(Effect.scoped),
-        cpFrom: uncurryHelper(cpFrom),
-        create: uncurryHelper(create),
-        down: uncurryHelper(down),
-        events: uncurryHelper(events),
-        exec: uncurryHelper(exec),
-        images: uncurryHelper(images),
-        kill: uncurryHelper(kill),
-        logs: uncurryHelper(logs),
-        ls: uncurryHelper(ls),
-        pause: uncurryHelper(pause),
-        port: uncurryHelper(port),
-        ps: uncurryHelper(ps),
-        pull: uncurryHelper(pull),
-        push: uncurryHelper(push),
-        restart: uncurryHelper(restart),
-        rm: uncurryHelper(rm),
-        run: uncurryHelper(run),
-        start: uncurryHelper(start),
-        stop: uncurryHelper(stop),
-        top: uncurryHelper(top),
-        unpause: uncurryHelper(unpause),
-        up: uncurryHelper(up),
-        version: uncurryHelper(version),
-        wait: uncurryHelper(wait),
+        cpFrom: uncurryStream(cpFrom),
+        create: uncurryEffect(create),
+        down: uncurryEffect(down),
+        events: uncurryStream(events),
+        exec: uncurryEffect(exec),
+        images: uncurryStream(images),
+        kill: uncurryEffect(kill),
+        logs: uncurryStream(logs),
+        ls: uncurryStream(ls),
+        pause: uncurryEffect(pause),
+        port: uncurryEffect(port),
+        ps: uncurryStream(ps),
+        pull: uncurryStream(pull),
+        push: uncurryEffect(push),
+        restart: uncurryEffect(restart),
+        rm: uncurryEffect(rm),
+        run: uncurryEffect(run),
+        start: uncurryEffect(start),
+        stop: uncurryEffect(stop),
+        top: uncurryStream(top),
+        unpause: uncurryEffect(unpause),
+        up: uncurryEffect(up),
+        version: uncurryEffect(version),
+        wait: uncurryEffect(wait),
         forProject: <E1>(
             project: Stream.Stream<Uint8Array, E1, never>
         ): Effect.Effect<
@@ -746,54 +707,61 @@ export const make: Effect.Effect<
                         AttachStderr: true,
                         HostConfig: {
                             Privileged: true,
-                            Binds: ["/var/run/docker.sock:/var/run/docker.sock"],
+                            Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
                         },
                     },
                 })
                     .pipe(Effect.map(({ Id }) => Id))
                     .pipe(Effect.provideService(MobyEndpoints.Containers, containers));
 
-                yield* uploadProject(projectDindContainerIdResource, project);
+                const cwd = yield* Effect.provideService(
+                    uploadProject(projectDindContainerIdResource, project),
+                    MobyEndpoints.Containers,
+                    containers
+                );
+
                 return {
                     [DockerComposeProjectTypeId]: DockerComposeProjectTypeId,
-                    build: build(projectDindContainerIdResource),
-                    config: config(projectDindContainerIdResource),
-                    cpTo: cpTo(projectDindContainerIdResource),
-                    cpFrom: cpFrom(projectDindContainerIdResource),
-                    create: create(projectDindContainerIdResource),
-                    down: down(projectDindContainerIdResource),
-                    events: events(projectDindContainerIdResource),
-                    exec: exec(projectDindContainerIdResource),
-                    images: images(projectDindContainerIdResource),
-                    kill: kill(projectDindContainerIdResource),
-                    logs: logs(projectDindContainerIdResource),
-                    ls: ls(projectDindContainerIdResource),
-                    pause: pause(projectDindContainerIdResource),
-                    port: port(projectDindContainerIdResource),
-                    ps: ps(projectDindContainerIdResource),
-                    pull: pull(projectDindContainerIdResource),
-                    push: push(projectDindContainerIdResource),
-                    restart: restart(projectDindContainerIdResource),
-                    rm: rm(projectDindContainerIdResource),
-                    run: run(projectDindContainerIdResource),
-                    start: start(projectDindContainerIdResource),
-                    stop: stop(projectDindContainerIdResource),
-                    top: top(projectDindContainerIdResource),
-                    unpause: unpause(projectDindContainerIdResource),
-                    up: up(projectDindContainerIdResource),
-                    version: version(projectDindContainerIdResource),
-                    wait: wait(projectDindContainerIdResource),
+                    build: build(projectDindContainerIdResource, cwd),
+                    config: config(projectDindContainerIdResource, cwd),
+                    cpTo: cpTo(projectDindContainerIdResource, cwd),
+                    cpFrom: cpFrom(projectDindContainerIdResource, cwd),
+                    create: create(projectDindContainerIdResource, cwd),
+                    down: down(projectDindContainerIdResource, cwd),
+                    events: events(projectDindContainerIdResource, cwd),
+                    exec: exec(projectDindContainerIdResource, cwd),
+                    images: images(projectDindContainerIdResource, cwd),
+                    kill: kill(projectDindContainerIdResource, cwd),
+                    logs: logs(projectDindContainerIdResource, cwd),
+                    ls: ls(projectDindContainerIdResource, cwd),
+                    pause: pause(projectDindContainerIdResource, cwd),
+                    port: port(projectDindContainerIdResource, cwd),
+                    ps: ps(projectDindContainerIdResource, cwd),
+                    pull: pull(projectDindContainerIdResource, cwd),
+                    push: push(projectDindContainerIdResource, cwd),
+                    restart: restart(projectDindContainerIdResource, cwd),
+                    rm: rm(projectDindContainerIdResource, cwd),
+                    run: run(projectDindContainerIdResource, cwd),
+                    start: start(projectDindContainerIdResource, cwd),
+                    stop: stop(projectDindContainerIdResource, cwd),
+                    top: top(projectDindContainerIdResource, cwd),
+                    unpause: unpause(projectDindContainerIdResource, cwd),
+                    up: up(projectDindContainerIdResource, cwd),
+                    version: version(projectDindContainerIdResource, cwd),
+                    wait: wait(projectDindContainerIdResource, cwd),
                 };
             }),
     });
 });
 
 /** @internal */
-export const layer: Layer.Layer<
+export const layer = (
+    options?: { dockerEngineSocket?: string | undefined } | undefined
+): Layer.Layer<
     DockerComposeEngine.DockerCompose,
     MobyEndpoints.SystemsError | MobyEndpoints.ContainersError,
     Layer.Layer.Success<DockerEngine.DockerLayer>
-> = Layer.scoped(DockerCompose, make);
+> => Layer.scoped(DockerCompose, make(options));
 
 /** @internal */
 export const layerProject: <E1>(

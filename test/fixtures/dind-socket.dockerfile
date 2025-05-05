@@ -1,0 +1,1 @@
+../../docker/dind-socket.dockerfile
