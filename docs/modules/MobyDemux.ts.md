@@ -897,7 +897,7 @@ declare const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketEr
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L748)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L812)
 
 Since v1.0.0
 
@@ -923,7 +923,7 @@ declare const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketErr
 ) => Effect.Effect<void, E | IE | OE | ParseResult.ParseError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L720)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L784)
 
 Since v1.0.0
 
@@ -934,23 +934,12 @@ Since v1.0.0
 **Signature**
 
 ```ts
-declare const fan: (<IE = never, OE = Socket.SocketError, R = never>(options: {
-  requestedCapacity: number
-  encoding?: string | undefined
-}) => (
-  multiplexedInput: EitherMultiplexedInput<IE, OE, R>
-) => Effect.Effect<
-  {
-    stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
-    stdout: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
-    stderr: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
-  },
-  never,
-  Exclude<R, Scope.Scope>
->) &
-  (<IE = never, OE = Socket.SocketError, R = never>(
-    multiplexedInput: EitherMultiplexedInput<IE, OE, R>,
-    options: { requestedCapacity: number; encoding?: string | undefined }
+declare const fan: {
+  <IE = never, OE = Socket.SocketError, R = never>(options: {
+    requestedCapacity: number
+    encoding?: string | undefined
+  }): (
+    multiplexedInput: EitherMultiplexedInput<IE, OE, R>
   ) => Effect.Effect<
     {
       stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
@@ -959,10 +948,23 @@ declare const fan: (<IE = never, OE = Socket.SocketError, R = never>(options: {
     },
     never,
     Exclude<R, Scope.Scope>
-  >)
+  >
+  <IE = never, OE = Socket.SocketError, R = never>(
+    multiplexedInput: EitherMultiplexedInput<IE, OE, R>,
+    options: { requestedCapacity: number; encoding?: string | undefined }
+  ): Effect.Effect<
+    {
+      stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
+      stdout: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
+      stderr: RawChannel<IE, IE | OE | ParseResult.ParseError, never>
+    },
+    never,
+    Exclude<R, Scope.Scope>
+  >
+}
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L704)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L743)
 
 Since v1.0.0
 
@@ -973,27 +975,28 @@ Since v1.0.0
 **Signature**
 
 ```ts
-declare const pack: (<
-  IE1 = never,
-  IE2 = never,
-  IE3 = never,
-  OE1 = Socket.SocketError,
-  OE2 = Socket.SocketError,
-  OE3 = Socket.SocketError,
-  R1 = never,
-  R2 = never,
-  R3 = never
->(options: {
-  requestedCapacity: number
-  encoding?: string | undefined
-}) => (
-  stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
-) => Effect.Effect<
-  MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
-  never,
-  Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
->) &
-  (<
+declare const pack: {
+  <
+    IE1 = never,
+    IE2 = never,
+    IE3 = never,
+    OE1 = Socket.SocketError,
+    OE2 = Socket.SocketError,
+    OE3 = Socket.SocketError,
+    R1 = never,
+    R2 = never,
+    R3 = never
+  >(options: {
+    requestedCapacity: number
+    encoding?: string | undefined
+  }): (
+    stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
+  ) => Effect.Effect<
+    MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+    never,
+    Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+  >
+  <
     IE1 = never,
     IE2 = never,
     IE3 = never,
@@ -1006,11 +1009,12 @@ declare const pack: (<
   >(
     stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
     options: { requestedCapacity: number; encoding?: string | undefined }
-  ) => Effect.Effect<
+  ): Effect.Effect<
     MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
     never,
     Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-  >)
+  >
+}
 ```
 
 [Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L698)

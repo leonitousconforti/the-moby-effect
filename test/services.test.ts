@@ -1,15 +1,34 @@
-import { expect, layer } from "@effect/vitest";
+import { NodeContext } from "@effect/platform-node";
+import { describe, expect, layer } from "@effect/vitest";
 import { Duration, Effect, Layer } from "effect";
-import { Services } from "the-moby-effect/MobyEndpoints";
-import { testLayer } from "./shared.js";
+import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { makePlatformDindLayer, testMatrix } from "./shared.js";
 
-layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Services tests", (it) => {
-    it.effect("Should see no services", () =>
-        Effect.gen(function* () {
-            const services = yield* Services;
-            const servicesList = yield* services.list();
-            expect(servicesList).toBeInstanceOf(Array);
-            expect(servicesList).toHaveLength(0);
-        })
-    );
-});
+describe.each(testMatrix)(
+    "MobyApi Services tests for $exposeDindContainerBy+$dindBaseImage",
+    ({ dindBaseImage, exposeDindContainerBy }) => {
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
+            .pipe(
+                Effect.map((connectionOptionsToHost) =>
+                    makePlatformDindLayer({
+                        dindBaseImage,
+                        exposeDindContainerBy,
+                        connectionOptionsToHost,
+                    })
+                )
+            )
+            .pipe(Layer.unwrapEffect)
+            .pipe(Layer.provide(NodeContext.layer));
+
+        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Services tests", (it) => {
+            it.effect("Should see no services", () =>
+                Effect.gen(function* () {
+                    const services = yield* MobyEndpoints.Services;
+                    const servicesList = yield* services.list();
+                    expect(servicesList).toBeInstanceOf(Array);
+                    expect(servicesList).toHaveLength(0);
+                })
+            );
+        });
+    }
+);

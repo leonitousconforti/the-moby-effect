@@ -323,6 +323,7 @@ declare const promiseClient: <E>(
   execWebsocketsNonBlocking: (a: {
     command: string | Array<string>
     containerId: string
+    cwd?: string | undefined
   }) => ReadableStream<MultiplexedChannel<never, ContainersError | SocketError, never>>
   ps: (
     options?:

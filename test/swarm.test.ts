@@ -1,31 +1,50 @@
-import { expect, layer } from "@effect/vitest";
+import { NodeContext } from "@effect/platform-node";
+import { describe, expect, layer } from "@effect/vitest";
 import { Duration, Effect, Layer } from "effect";
-import { Swarm } from "the-moby-effect/MobyEndpoints";
-import { testLayer } from "./shared.js";
+import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { makePlatformDindLayer, testMatrix } from "./shared.js";
 
-layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Swarm tests", (it) => {
-    it.effect("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", () =>
-        Effect.gen(function* () {
-            const swarm = yield* Swarm;
-            const inspect = yield* swarm.inspect();
+describe.each(testMatrix)(
+    "MobyApi Swarm tests for $exposeDindContainerBy+$dindBaseImage",
+    ({ dindBaseImage, exposeDindContainerBy }) => {
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
+            .pipe(
+                Effect.map((connectionOptionsToHost) =>
+                    makePlatformDindLayer({
+                        dindBaseImage,
+                        exposeDindContainerBy,
+                        connectionOptionsToHost,
+                    })
+                )
+            )
+            .pipe(Layer.unwrapEffect)
+            .pipe(Layer.provide(NodeContext.layer));
 
-            const spec = inspect.Spec;
-            const version = inspect.Version;
-            expect(inspect).toBeDefined();
-            expect(spec).toBeDefined();
-            expect(version).toBeDefined();
-            expect(version!.Index).toBeDefined();
+        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Swarm tests", (it) => {
+            it.effect("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", () =>
+                Effect.gen(function* () {
+                    const swarm = yield* MobyEndpoints.Swarm;
+                    const inspect = yield* swarm.inspect();
 
-            yield* swarm.update({
-                spec: spec!,
-                version: version!.Index!,
-                rotateWorkerToken: true,
-                rotateManagerToken: true,
-                rotateManagerUnlockKey: true,
-            });
+                    const spec = inspect.Spec;
+                    const version = inspect.Version;
+                    expect(inspect).toBeDefined();
+                    expect(spec).toBeDefined();
+                    expect(version).toBeDefined();
+                    expect(version!.Index).toBeDefined();
 
-            const { UnlockKey } = yield* swarm.unlockkey();
-            expect(UnlockKey).toBeDefined();
-        })
-    );
-});
+                    yield* swarm.update({
+                        spec: spec!,
+                        version: version!.Index!,
+                        rotateWorkerToken: true,
+                        rotateManagerToken: true,
+                        rotateManagerUnlockKey: true,
+                    });
+
+                    const { UnlockKey } = yield* swarm.unlockkey();
+                    expect(UnlockKey).toBeDefined();
+                })
+            );
+        });
+    }
+);

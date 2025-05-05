@@ -336,6 +336,7 @@ declare const callbackClient: <E>(
   execWebsocketsNonBlocking: (a: {
     command: string | Array<string>
     containerId: string
+    cwd?: string | undefined
   }) => ReadableStream<MultiplexedChannel<never, ContainersError | SocketError, never>>
   ps: (
     z:

@@ -1,6 +1,3 @@
-import type { MobyConnectionOptions } from "../src/PlatformAgents.ts";
-import type { RecommendedDindBaseImages } from "../src/blobs/Constants.ts";
-
 export type PLATFORM_VARIANT =
     | "node-18.x"
     | "node-20.x"
@@ -15,8 +12,5 @@ export type PLATFORM_VARIANT =
 declare module "vitest" {
     export interface ProvidedContext {
         __PLATFORM_VARIANT: PLATFORM_VARIANT;
-        __DOCKER_ENGINE_VERSION: RecommendedDindBaseImages;
-        __CONNECTION_VARIANT: MobyConnectionOptions["_tag"];
-        __DOCKER_HOST_CONNECTION_OPTIONS: MobyConnectionOptions;
     }
 }

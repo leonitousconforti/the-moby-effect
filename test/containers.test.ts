@@ -1,82 +1,100 @@
-import { expect, layer } from "@effect/vitest";
+import { NodeContext } from "@effect/platform-node";
+import { describe, layer } from "@effect/vitest";
 import { Duration, Effect, Layer, Stream } from "effect";
-import * as DockerEngine from "the-moby-effect/DockerEngine";
-import * as Convey from "the-moby-effect/MobyConvey";
-import { Containers } from "the-moby-effect/MobyEndpoints";
-import { testLayer } from "./shared.js";
+import { DockerEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { makePlatformDindLayer, testMatrix } from "./shared.js";
 
-layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Containers tests", (it) => {
-    it.effect.skip(
-        "Should create, list, pause, unpause, top, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)",
-        () =>
-            Effect.gen(function* () {
-                const containers = yield* Containers;
-                const pullStream = DockerEngine.pull({ image: "docker.io/library/alpine:latest" });
-                yield* Convey.waitForProgressToComplete(pullStream);
+describe.each(testMatrix)(
+    "MobyApi Containers tests for $exposeDindContainerBy+$dindBaseImage",
+    ({ dindBaseImage, exposeDindContainerBy }) => {
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
+            .pipe(
+                Effect.map((connectionOptionsToHost) =>
+                    makePlatformDindLayer({
+                        dindBaseImage,
+                        exposeDindContainerBy,
+                        connectionOptionsToHost,
+                    })
+                )
+            )
+            .pipe(Layer.unwrapEffect)
+            .pipe(Layer.provide(NodeContext.layer));
 
-                const { Id: id } = yield* DockerEngine.run({
-                    spec: {
-                        StopTimeout: 10,
-                        Image: "docker.io/library/alpine:latest",
-                        Cmd: ["sleep", "1m"],
-                    },
-                });
+        layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
+            it.skip("Should wait for a container to exit", () =>
+                Effect.gen(function* () {
+                    const containers = yield* MobyEndpoints.Containers;
+                    const { Id: id } = yield* DockerEngine.run({
+                        spec: {
+                            StopTimeout: 10,
+                            Image: "docker.io/library/alpine:latest",
+                            Cmd: ["sleep", "1s"],
+                        },
+                    });
 
-                // List containers
-                const containerList = yield* containers.list();
-                expect(containerList).toBeInstanceOf(Array);
+                    yield* containers.wait(id);
+                    const logs = containers.logs(id, { follow: false, stdout: true, stderr: true });
+                    yield* Stream.runCollect(logs);
+                }));
+        });
+    }
+);
 
-                // Pause and unpause the container
-                yield* containers.pause(id);
-                yield* containers.unpause(id);
+// layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Containers tests", (it) => {
+//     it.effect.skip(
+//         "Should create, list, pause, unpause, top, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)",
+//         () =>
+//             Effect.gen(function* () {
+//                 const containers = yield* MobyEndpoints.Containers;
+//                 const pullStream = DockerEngine.pull({ image: "docker.io/library/alpine:latest" });
+//                 yield* Convey.waitForProgressToComplete(pullStream);
 
-                // Top, stats one-shot, and stats stream the container
-                yield* containers.top(id);
-                yield* Stream.runCollect(containers.stats(id, { stream: false }));
-                const statsStream = containers.stats(id, { stream: true });
-                yield* statsStream.pipe(Stream.take(1)).pipe(Stream.runCollect);
+//                 const { Id: id } = yield* DockerEngine.run({
+//                     spec: {
+//                         StopTimeout: 10,
+//                         Image: "docker.io/library/alpine:latest",
+//                         Cmd: ["sleep", "1m"],
+//                     },
+//                 });
 
-                // Update and resize the container
-                // yield* containers.update({ id, spec: { Devices: [] } });
-                yield* containers.resize(id, { h: 100, w: 100 });
+//                 // List containers
+//                 const containerList = yield* containers.list();
+//                 expect(containerList).toBeInstanceOf(Array);
 
-                // Kill, start, restart, and stop the container
-                yield* containers.kill(id);
-                yield* containers.start(id);
-                yield* containers.restart(id);
-                yield* containers.stop(id);
+//                 // Pause and unpause the container
+//                 yield* containers.pause(id);
+//                 yield* containers.unpause(id);
 
-                // Get the FS changes, get details about a path, and get a tarball for a path
-                yield* containers.changes(id);
-                yield* containers.archiveInfo(id, { path: "/bin" });
-                const archiveStream = containers.archive(id, { path: "/bin" });
-                yield* containers.putArchive(id, { path: "/bin", stream: archiveStream });
+//                 // Top, stats one-shot, and stats stream the container
+//                 yield* containers.top(id);
+//                 yield* Stream.runCollect(containers.stats(id, { stream: false }));
+//                 const statsStream = containers.stats(id, { stream: true });
+//                 yield* statsStream.pipe(Stream.take(1)).pipe(Stream.runCollect);
 
-                // Export the container
-                const exportStream = containers.export(id);
-                yield* Stream.runCollect(exportStream);
+//                 // Update and resize the container
+//                 // yield* containers.update({ id, spec: { Devices: [] } });
+//                 yield* containers.resize(id, { h: 100, w: 100 });
 
-                // Rename, force delete, and prune the container
-                yield* containers.rename(id, { name: "new-name" });
-                yield* containers.delete(id, { force: true });
-                yield* containers.prune();
-            })
-    );
+//                 // Kill, start, restart, and stop the container
+//                 yield* containers.kill(id);
+//                 yield* containers.start(id);
+//                 yield* containers.restart(id);
+//                 yield* containers.stop(id);
 
-    it.effect.skip("Should wait for a container to exit", () =>
-        Effect.gen(function* () {
-            const containers = yield* Containers;
-            const { Id: id } = yield* DockerEngine.run({
-                spec: {
-                    StopTimeout: 10,
-                    Image: "docker.io/library/alpine:latest",
-                    Cmd: ["sleep", "1s"],
-                },
-            });
+//                 // Get the FS changes, get details about a path, and get a tarball for a path
+//                 yield* containers.changes(id);
+//                 yield* containers.archiveInfo(id, { path: "/bin" });
+//                 const archiveStream = containers.archive(id, { path: "/bin" });
+//                 yield* containers.putArchive(id, { path: "/bin", stream: archiveStream });
 
-            yield* containers.wait(id);
-            const logs = containers.logs(id, { follow: false, stdout: true, stderr: true });
-            yield* Stream.runCollect(logs);
-        })
-    );
-});
+//                 // Export the container
+//                 const exportStream = containers.export(id);
+//                 yield* Stream.runCollect(exportStream);
+
+//                 // Rename, force delete, and prune the container
+//                 yield* containers.rename(id, { name: "new-name" });
+//                 yield* containers.delete(id, { force: true });
+//                 yield* containers.prune();
+//             })
+//     );
+// });

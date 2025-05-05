@@ -1,13 +1,32 @@
-import { layer } from "@effect/vitest";
+import { NodeContext } from "@effect/platform-node";
+import { describe, layer } from "@effect/vitest";
 import { Duration, Effect, Layer } from "effect";
-import { Networks } from "the-moby-effect/MobyEndpoints";
-import { testLayer } from "./shared.js";
+import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { makePlatformDindLayer, testMatrix } from "./shared.js";
 
-layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Networks tests", (it) => {
-    it.effect("Should list all the networks", () =>
-        Effect.gen(function* () {
-            const networks = yield* Networks;
-            yield* networks.list();
-        })
-    );
-});
+describe.each(testMatrix)(
+    "MobyApi Networks tests for $exposeDindContainerBy+$dindBaseImage",
+    ({ dindBaseImage, exposeDindContainerBy }) => {
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
+            .pipe(
+                Effect.map((connectionOptionsToHost) =>
+                    makePlatformDindLayer({
+                        dindBaseImage,
+                        exposeDindContainerBy,
+                        connectionOptionsToHost,
+                    })
+                )
+            )
+            .pipe(Layer.unwrapEffect)
+            .pipe(Layer.provide(NodeContext.layer));
+
+        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Networks tests", (it) => {
+            it.effect("Should list all the networks", () =>
+                Effect.gen(function* () {
+                    const networks = yield* MobyEndpoints.Networks;
+                    yield* networks.list();
+                })
+            );
+        });
+    }
+);

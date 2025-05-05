@@ -1,15 +1,32 @@
-import { inject, layer } from "@effect/vitest";
+import { NodeContext } from "@effect/platform-node";
+import { describe, layer } from "@effect/vitest";
 import { Duration, Effect, Layer } from "effect";
-import { Sessions } from "the-moby-effect/MobyEndpoints";
-import { testLayer } from "./shared.js";
+import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { makePlatformDindLayer, testMatrix } from "./shared.js";
 
-layer(Layer.fresh(testLayer), { timeout: Duration.minutes(2) })("MobyApi Session tests", (it) => {
-    it.scoped.skipIf(inject("__PLATFORM_VARIANT").includes("undici") || inject("__PLATFORM_VARIANT").includes("deno"))(
-        "Should be able to request a session",
-        () =>
-            Effect.gen(function* () {
-                const sessions = yield* Sessions;
-                yield* sessions.session();
-            })
-    );
-});
+describe.each(testMatrix)(
+    "MobyApi Sessions tests for $exposeDindContainerBy+$dindBaseImage",
+    ({ dindBaseImage, exposeDindContainerBy }) => {
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
+            .pipe(
+                Effect.map((connectionOptionsToHost) =>
+                    makePlatformDindLayer({
+                        dindBaseImage,
+                        exposeDindContainerBy,
+                        connectionOptionsToHost,
+                    })
+                )
+            )
+            .pipe(Layer.unwrapEffect)
+            .pipe(Layer.provide(NodeContext.layer));
+
+        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Session tests", (it) => {
+            it.scoped("Should be able to request a session", () =>
+                Effect.gen(function* () {
+                    const sessions = yield* MobyEndpoints.Sessions;
+                    yield* sessions.session();
+                })
+            );
+        });
+    }
+);

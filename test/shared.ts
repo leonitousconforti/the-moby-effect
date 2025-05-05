@@ -1,18 +1,12 @@
-import type * as PlatformError from "@effect/platform/Error";
-import type * as ParseResult from "effect/ParseResult";
-import type * as DockerEngine from "the-moby-effect/DockerEngine";
-
-import * as FileSystem from "@effect/platform-node/NodeFileSystem";
-import * as Path from "@effect/platform/Path";
-import * as Context from "effect/Context";
-import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
-import * as Match from "effect/Match";
+import type { Array } from "effect";
+import type { MobyConnection } from "the-moby-effect";
+import type { RecommendedDindBaseImages } from "../src/internal/blobs/constants.js";
 
 import { inject } from "@effect/vitest";
-import { DindEngine, MobyEndpoints } from "the-moby-effect";
+import { Function, Match } from "effect";
+import { DindEngine } from "the-moby-effect";
 
-const makePlatformDindLayer = Function.pipe(
+export const makePlatformDindLayer = Function.pipe(
     Match.value(inject("__PLATFORM_VARIANT")),
     Match.when("bun", () => DindEngine.layerBun),
     Match.when("deno", () => DindEngine.layerDeno),
@@ -21,25 +15,27 @@ const makePlatformDindLayer = Function.pipe(
     Match.exhaustive
 );
 
-const testDindLayer = makePlatformDindLayer({
-    dindBaseImage: inject("__DOCKER_ENGINE_VERSION"),
-    exposeDindContainerBy: inject("__CONNECTION_VARIANT"),
-    connectionOptionsToHost: inject("__DOCKER_HOST_CONNECTION_OPTIONS"),
-});
+export const testMatrix = [
+    {
+        exposeDindContainerBy: "socket" as const,
+        dindBaseImage: "docker.io/library/docker:dind-rootless",
+    },
+] as Array.NonEmptyReadonlyArray<{
+    dindBaseImage: RecommendedDindBaseImages;
+    exposeDindContainerBy: MobyConnection.MobyConnectionOptions["_tag"];
+}>;
 
-const testServices = Layer.mergeAll(Path.layer, FileSystem.layer);
-
-export const testLayer: Layer.Layer<
-    Layer.Layer.Success<DockerEngine.DockerLayer>,
-    | MobyEndpoints.ContainersError
-    | MobyEndpoints.ImagesError
-    | MobyEndpoints.SwarmsError
-    | MobyEndpoints.SystemsError
-    | MobyEndpoints.VolumesError
-    | ParseResult.ParseError
-    | PlatformError.PlatformError,
-    never
-> = Layer.tap(Layer.provide(testDindLayer, testServices), (context) => {
-    const swarm = Context.get(context, MobyEndpoints.Swarm);
-    return swarm.init({ ListenAddr: "0.0.0.0" });
-});
+// export const testLayer: Layer.Layer<
+//     Layer.Layer.Success<DockerEngine.DockerLayer>,
+//     | MobyEndpoints.ContainersError
+//     | MobyEndpoints.ImagesError
+//     | MobyEndpoints.SwarmsError
+//     | MobyEndpoints.SystemsError
+//     | MobyEndpoints.VolumesError
+//     | ParseResult.ParseError
+//     | PlatformError.PlatformError,
+//     never
+// > = Layer.tap(Layer.provide(testDindLayer, testServices), (context) => {
+//     const swarm = Context.get(context, MobyEndpoints.Swarm);
+//     return swarm.init({ ListenAddr: "0.0.0.0" });
+// });
