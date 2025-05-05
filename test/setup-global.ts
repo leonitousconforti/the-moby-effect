@@ -15,7 +15,7 @@ export const setup = async function ({ provide }: TestProject): Promise<void> {
             "deno-undici",
             "node-20.x-undici",
             "node-22.x-undici"
-        )("__PLATFORM_VARIANT");
+        )("__PLATFORM_VARIANT").pipe(Config.orElse(() => Config.succeed("node-18.x" as const)));
 
         provide("__PLATFORM_VARIANT", platformVariant);
     }).pipe(Effect.runPromise);
