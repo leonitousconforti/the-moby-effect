@@ -66,7 +66,9 @@
         }
     },
 
+    "privileged": true,
     "remoteUser": "vscode",
+    "runArgs": ["--security-opt", "apparmor=rootlesskit"],
     "postAttachCommand": "bash -i -c './.devcontainer/setup.sh'",
     "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
 }
