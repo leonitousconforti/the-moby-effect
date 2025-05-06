@@ -4,7 +4,7 @@ import { Duration, Effect, Layer, Stream } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer, testMatrix } from "./shared.js";
 
-describe.each(testMatrix)(
+describe.concurrent.each(testMatrix)(
     "MobyApi Images tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
         const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault

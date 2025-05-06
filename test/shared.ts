@@ -1,9 +1,8 @@
-import type { Array } from "effect";
+import { Array, Function, Match } from "effect";
 import type { MobyConnection } from "the-moby-effect";
 import type { RecommendedDindBaseImages } from "../src/internal/blobs/constants.js";
 
 import { inject } from "@effect/vitest";
-import { Function, Match } from "effect";
 import { DindEngine } from "the-moby-effect";
 
 export const makePlatformDindLayer = Function.pipe(
@@ -15,27 +14,19 @@ export const makePlatformDindLayer = Function.pipe(
     Match.orElse(() => DindEngine.layerNodeJS)
 );
 
-export const testMatrix = [
-    {
-        exposeDindContainerBy: "socket" as const,
-        dindBaseImage: "docker.io/library/docker:dind-rootless",
-    },
-] as Array.NonEmptyReadonlyArray<{
+export const testMatrix: Array<{
     dindBaseImage: RecommendedDindBaseImages;
     exposeDindContainerBy: MobyConnection.MobyConnectionOptions["_tag"];
-}>;
-
-// export const testLayer: Layer.Layer<
-//     Layer.Layer.Success<DockerEngine.DockerLayer>,
-//     | MobyEndpoints.ContainersError
-//     | MobyEndpoints.ImagesError
-//     | MobyEndpoints.SwarmsError
-//     | MobyEndpoints.SystemsError
-//     | MobyEndpoints.VolumesError
-//     | ParseResult.ParseError
-//     | PlatformError.PlatformError,
-//     never
-// > = Layer.tap(Layer.provide(testDindLayer, testServices), (context) => {
-//     const swarm = Context.get(context, MobyEndpoints.Swarm);
-//     return swarm.init({ ListenAddr: "0.0.0.0" });
-// });
+}> = Array.cartesianWith(
+    Array.make("socket" as const, "http" as const, "https" as const, "ssh" as const),
+    Array.make(
+        "docker.io/library/docker:dind-rootless" as const,
+        "docker.io/library/docker:23-dind-rootless" as const,
+        "docker.io/library/docker:24-dind-rootless" as const,
+        "docker.io/library/docker:25-dind-rootless" as const,
+        "docker.io/library/docker:26-dind-rootless" as const,
+        "docker.io/library/docker:27-dind-rootless" as const,
+        "docker.io/library/docker:28-dind-rootless" as const
+    ),
+    (exposeDindContainerBy, dindBaseImage) => ({ dindBaseImage, exposeDindContainerBy })
+);
