@@ -8,6 +8,6 @@ export class SwarmSecretCreateResponse extends Schema.Class<SwarmSecretCreateRes
         identifier: "SwarmSecretCreateResponse",
         title: "types.SecretCreateResponse",
         documentation:
-            "https://github.com/moby/moby/blob/951a04cc01b2d6d9c8c45ad04cd5a03182803c88/api/types/types.go#L105-L110",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/types.go#L105-L110",
     }
 ) {}

@@ -1,15 +1,19 @@
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmSeccompOpts extends Schema.Class<SwarmSeccompOpts>("SwarmSeccompOpts")(
     {
-        Mode: Schema.optional(Schema.String),
-        Profile: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        Mode: Schema.optional(
+            Schema.Literal("default", "unconfined", "custom").annotations({
+                documentation:
+                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/container.go#L34-L42",
+            })
+        ),
+        Profile: Schema.optionalWith(Schema.Uint8Array, { nullable: true }),
     },
     {
         identifier: "SwarmSeccompOpts",
         title: "swarm.SeccompOpts",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/container.go#L44-L53",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/container.go#L44-L53",
     }
 ) {}
