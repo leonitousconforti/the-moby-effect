@@ -4,13 +4,7 @@ import * as Driver from "./Driver.generated.js";
 export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
     {
         NoCopy: Schema.optional(Schema.Boolean),
-        Labels: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Labels: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         Subpath: Schema.optional(Schema.String),
         DriverConfig: Schema.optionalWith(Driver.Driver, { nullable: true }),
     },
@@ -18,6 +12,6 @@ export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
         identifier: "VolumeOptions",
         title: "mount.VolumeOptions",
         documentation:
-            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/mount/mount.go#L95-L101",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/mount/mount.go#L98-L104",
     }
 ) {}

@@ -8,13 +8,23 @@ export class VolumeAccessMode extends Schema.Class<VolumeAccessMode>("VolumeAcce
          * Scope defines the set of nodes this volume can be used on at one
          * time.
          */
-        Scope: Schema.optional(Schema.Literal("single", "multi")),
+        Scope: Schema.optional(
+            Schema.Literal("single", "multi").annotations({
+                documentation:
+                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L107-L119",
+            })
+        ),
 
         /**
          * Sharing defines the number and way that different tasks can use this
          * volume at one time.
          */
-        Sharing: Schema.optional(Schema.Literal("none", "readonly", "onewriter", "all")),
+        Sharing: Schema.optional(
+            Schema.Literal("none", "readonly", "onewriter", "all").annotations({
+                documentation:
+                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L121-L141",
+            })
+        ),
 
         /** MountVolume defines options for using this volume as a Mount-type */
         MountVolume: Schema.optionalWith(VolumeTypeMount.VolumeTypeMount, { nullable: true }),
@@ -26,6 +36,6 @@ export class VolumeAccessMode extends Schema.Class<VolumeAccessMode>("VolumeAcce
         identifier: "VolumeAccessMode",
         title: "volume.AccessMode",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/volume/cluster_volume.go#L85-L105",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L85-L105",
     }
 ) {}

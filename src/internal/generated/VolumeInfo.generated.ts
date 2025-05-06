@@ -14,13 +14,9 @@ export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
          * VolumeContext is the context originating from the CSI storage plugin
          * when the Volume is created.
          */
-        VolumeContext: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        VolumeContext: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
+            nullable: true,
+        }),
 
         /**
          * VolumeID is the ID of the Volume as seen by the CSI storage plugin.
@@ -42,6 +38,6 @@ export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
         identifier: "VolumeInfo",
         title: "volume.Info",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/volume/cluster_volume.go#L400-L420",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L400-L420",
     }
 ) {}

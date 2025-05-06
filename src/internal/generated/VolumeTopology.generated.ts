@@ -30,18 +30,12 @@ export class VolumeTopology extends Schema.Class<VolumeTopology>("VolumeTopology
         // Each string MUST be 63 characters or less and begin and end with an
         // alphanumeric character with '-', '_', '.', or alphanumerics in
         // between.
-        Segments: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Segments: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
     },
     {
         identifier: "VolumeTopology",
         title: "volume.Topology",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/volume/cluster_volume.go#L301-L335",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L301-L335",
     }
 ) {}
