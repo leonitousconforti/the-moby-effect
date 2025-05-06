@@ -12,6 +12,7 @@ import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as HashMap from "effect/HashMap";
+import * as HashSet from "effect/HashSet";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Number from "effect/Number";
@@ -45,7 +46,14 @@ const downloadDindCertificates = (
 > =>
     Effect.gen(function* () {
         const containers = yield* MobyEndpoints.Containers;
-        const certs = yield* Untar.untar(containers.archive(dindContainerId, { path: "/certs" }));
+        const certs = yield* Effect.catchTag(
+            Untar.extractEntries(
+                containers.archive(dindContainerId, { path: "/certs" }),
+                HashSet.make("certs/server/ca.pem", "certs/server/key.pem", "certs/server/cert.pem")
+            ),
+            "MissingEntries",
+            () => Effect.dieMessage("Missing dind certificates in container")
+        );
 
         const readAndAssemble = (
             path: string
