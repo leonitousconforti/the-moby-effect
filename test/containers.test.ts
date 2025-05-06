@@ -5,7 +5,7 @@ import { DockerEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
-describe.concurrent.each(testMatrix)(
+describe.each(testMatrix)(
     "MobyApi Containers tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
         const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
