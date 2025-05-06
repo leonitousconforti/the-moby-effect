@@ -2,7 +2,8 @@ import { NodeContext } from "@effect/platform-node";
 import { describe, layer } from "@effect/vitest";
 import { Duration, Effect, Layer } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
-import { makePlatformDindLayer, testMatrix } from "./shared.js";
+import { makePlatformDindLayer } from "./shared-file.js";
+import { testMatrix } from "./shared-global.js";
 
 describe.concurrent.each(testMatrix)(
     "MobyApi Networks tests for $exposeDindContainerBy+$dindBaseImage",

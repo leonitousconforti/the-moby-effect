@@ -7,7 +7,7 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 
 import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
-import { testMatrix } from "./shared.js";
+import { testMatrix } from "./shared-global.js";
 
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
