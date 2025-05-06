@@ -11,6 +11,10 @@ export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("
         Components: Schema.optionalWith(Schema.Array(Schema.NullOr(ComponentVersion.ComponentVersion)), {
             nullable: true,
         }),
+
+        // The following fields are deprecated, they relate to the
+        // Engine component and are kept for backwards compatibility.
+
         Version: Schema.String,
         ApiVersion: Schema.String,
         MinAPIVersion: Schema.optional(Schema.String),
@@ -26,6 +30,6 @@ export class SystemVersionResponse extends Schema.Class<SystemVersionResponse>("
         identifier: "SystemVersionResponse",
         title: "types.Version",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/types.go#L188-L206",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/types.go#L46-L64",
     }
 ) {}

@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
+import * as FirewallInfo from "./FirewallInfo.generated.js";
 import * as RegistryServiceConfig from "./RegistryServiceConfig.generated.js";
 import * as SwarmGenericResource from "./SwarmGenericResource.generated.js";
 import * as SwarmInfo from "./SwarmInfo.generated.js";
@@ -63,10 +64,7 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         ExperimentalBuild: Schema.Boolean,
         ServerVersion: Schema.String,
         Runtimes: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.NullOr(SystemRuntimeWithStatus.SystemRuntimeWithStatus),
-            })
+            Schema.Record({ key: Schema.String, value: Schema.NullOr(SystemRuntimeWithStatus.SystemRuntimeWithStatus) })
         ),
         DefaultRuntime: Schema.String,
         Swarm: Schema.NullOr(SwarmInfo.SwarmInfo),
@@ -82,15 +80,15 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
             Schema.Array(Schema.NullOr(SystemNetworkAddressPool.SystemNetworkAddressPool)),
             { nullable: true }
         ),
-        CDISpecDirs: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        FirewallBackend: Schema.optionalWith(FirewallInfo.FirewallInfo, { nullable: true }),
+        CDISpecDirs: Schema.NullOr(Schema.Array(Schema.String)),
         Containerd: Schema.optionalWith(SystemContainerdInfo.SystemContainerdInfo, { nullable: true }),
-        ExecutionDriver: Schema.optional(Schema.String),
         Warnings: Schema.NullOr(Schema.Array(Schema.String)),
     },
     {
         identifier: "SystemInfoResponse",
         title: "system.Info",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/system/info.go#L9-L85",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/system/info.go#L9-L85",
     }
 ) {}
