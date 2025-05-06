@@ -1,11 +1,11 @@
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Layer } from "effect";
+import { Context, Duration, Effect, Layer } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
-describe.concurrent.each(testMatrix)(
+describe.each(testMatrix)(
     "MobyApi Configs tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
         const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
@@ -21,7 +21,12 @@ describe.concurrent.each(testMatrix)(
             .pipe(Layer.unwrapEffect)
             .pipe(Layer.provide(NodeContext.layer));
 
-        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Configs tests", (it) => {
+        const withSwarmEnabled = Layer.tap(testLayer, (context) => {
+            const swarm = Context.get(context, MobyEndpoints.Swarm);
+            return swarm.init({ ListenAddr: "0.0.0.0" });
+        });
+
+        layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Configs tests", (it) => {
             it.effect("Should see no configs", () =>
                 Effect.gen(function* () {
                     const configs = yield* MobyEndpoints.Configs;
