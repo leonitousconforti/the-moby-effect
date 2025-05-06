@@ -15,9 +15,7 @@ export class SwarmServiceSpec extends Schema.Class<SwarmServiceSpec>("SwarmServi
         RollbackConfig: Schema.optionalWith(SwarmUpdateConfig.SwarmUpdateConfig, { nullable: true }),
         Networks: Schema.optionalWith(
             Schema.Array(Schema.NullOr(SwarmNetworkAttachmentConfig.SwarmNetworkAttachmentConfig)),
-            {
-                nullable: true,
-            }
+            { nullable: true }
         ),
         EndpointSpec: Schema.optionalWith(SwarmEndpointSpec.SwarmEndpointSpec, { nullable: true }),
     },
@@ -25,6 +23,6 @@ export class SwarmServiceSpec extends Schema.Class<SwarmServiceSpec>("SwarmServi
         identifier: "SwarmServiceSpec",
         title: "swarm.ServiceSpec",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/service.go#L26-L42",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/service.go#L26-L42",
     }
 ) {}
