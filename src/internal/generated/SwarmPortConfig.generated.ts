@@ -3,17 +3,26 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmPortConfig extends Schema.Class<SwarmPortConfig>("SwarmPortConfig")(
     {
-        // FIXME: use better types
         Name: Schema.optional(Schema.String),
-        Protocol: Schema.optional(Schema.String),
+        Protocol: Schema.optional(
+            Schema.Literal("tcp", "udp", "sctp").annotations({
+                documentation:
+                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/network.go#L55-L67",
+            })
+        ),
         TargetPort: Schema.optional(MobySchemas.UInt32),
         PublishedPort: Schema.optional(MobySchemas.UInt32),
-        PublishMode: Schema.optional(Schema.String),
+        PublishMode: Schema.optional(
+            Schema.Literal("ingress", "host").annotations({
+                documentation:
+                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/network.go#L42-L53",
+            })
+        ),
     },
     {
         identifier: "SwarmPortConfig",
         title: "swarm.PortConfig",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/network.go#L30-L40",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/network.go#L30-L40",
     }
 ) {}
