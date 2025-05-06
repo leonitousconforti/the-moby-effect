@@ -2,7 +2,7 @@ import type * as PlatformError from "@effect/platform/Error";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
-import type * as TarCommon from "eftar/Common";
+import type * as TarHeader from "eftar/Header";
 import type * as DindEngine from "../../DindEngine.js";
 import type * as BlobConstants from "../blobs/constants.js";
 
@@ -45,13 +45,13 @@ const downloadDindCertificates = (
 > =>
     Effect.gen(function* () {
         const containers = yield* MobyEndpoints.Containers;
-        const certs = yield* Untar.Untar(containers.archive(dindContainerId, { path: "/certs" }));
+        const certs = yield* Untar.untar(containers.archive(dindContainerId, { path: "/certs" }));
 
         const readAndAssemble = (
             path: string
         ): (<E, R>(
             data: HashMap.HashMap<
-                Schema.Schema.Type<(typeof TarCommon.TarHeader)["non-full"]>,
+                Schema.Schema.Type<(typeof TarHeader.TarHeader)["non-full"]>,
                 Stream.Stream<Uint8Array, E, R>
             >
         ) => Effect.Effect<string, E, R>) =>
