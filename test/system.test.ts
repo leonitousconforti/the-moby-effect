@@ -1,6 +1,6 @@
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Layer, Stream } from "effect";
+import { Duration, Effect, Layer, Schema, Stream } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
@@ -34,6 +34,29 @@ describe.each(testMatrix)(
                     const system = yield* MobyEndpoints.Systems;
                     const versionResponse = yield* system.version();
                     expect(versionResponse).toBeDefined();
+
+                    const schema = Schema.transform(
+                        Schema.Union(
+                            Schema.Literal("docker.io/library/docker:dind-rootless"),
+                            Schema.TemplateLiteral("docker.io/library/docker:", Schema.String, "-dind-rootless")
+                        ),
+                        Schema.String,
+                        {
+                            decode: (str) =>
+                                str === "docker.io/library/docker:dind-rootless"
+                                    ? "latest"
+                                    : str.split(":")[1]!.split("-dind-rootless")[0]!,
+                            encode: (version) =>
+                                version === "latest"
+                                    ? ("docker.io/library/docker:dind-rootless" as const)
+                                    : (`docker.io/library/docker:${version}-dind-rootless` as const),
+                        }
+                    );
+
+                    const runningMajorVersion = yield* Schema.decode(schema)(dindBaseImage);
+                    if (runningMajorVersion !== "latest") {
+                        expect(versionResponse.Version).toContain(runningMajorVersion);
+                    }
                 })
             );
 
@@ -53,7 +76,7 @@ describe.each(testMatrix)(
                 })
             );
 
-            it.effect.skip("Should see docker events", () =>
+            it.effect("Should see docker events", () =>
                 Effect.gen(function* () {
                     const system = yield* MobyEndpoints.Systems;
                     yield* Stream.runHead(system.events({ since: "0" }));
