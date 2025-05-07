@@ -5,7 +5,7 @@ export class SwarmManagerStatus extends Schema.Class<SwarmManagerStatus>("SwarmM
         Leader: Schema.optional(Schema.Boolean),
         Reachability: Schema.optional(
             Schema.Literal("unknown", "reachable", "unreachable").annotations({
-                description:
+                documentation:
                     "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/node.go#L100-L110",
             })
         ),
