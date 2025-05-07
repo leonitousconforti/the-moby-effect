@@ -16,17 +16,12 @@ export class ContainerDeviceRequest extends Schema.Class<ContainerDeviceRequest>
         Capabilities: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.Array(Schema.String)))),
 
         /** Options to pass onto the device driver */
-        Options: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            })
-        ),
+        Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
     },
     {
         identifier: "ContainerDeviceRequest",
         title: "container.DeviceRequest",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/container/hostconfig.go#L257-L265",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/hostconfig.go#L258-L266",
     }
 ) {}
