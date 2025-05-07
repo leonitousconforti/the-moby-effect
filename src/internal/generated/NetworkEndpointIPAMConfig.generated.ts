@@ -11,6 +11,6 @@ export class NetworkEndpointIPAMConfig extends Schema.Class<NetworkEndpointIPAMC
         identifier: "NetworkEndpointIPAMConfig",
         title: "network.EndpointIPAMConfig",
         documentation:
-            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/network/endpoint.go#L61-L66",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/network/endpoint.go#L67-L72",
     }
 ) {}
