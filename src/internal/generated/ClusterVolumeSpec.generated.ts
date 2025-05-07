@@ -45,21 +45,24 @@ export class ClusterVolumeSpec extends Schema.Class<ClusterVolumeSpec>("ClusterV
          * Secrets defines Swarm Secrets that are passed to the CSI storage
          * plugin when operating on this volume.
          */
-        Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumeSecret.VolumeSecret)), {
-            nullable: true,
-        }),
+        Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumeSecret.VolumeSecret)), { nullable: true }),
 
         /**
          * Availability is the Volume's desired availability. Analogous to Node
          * Availability, this allows the user to take volumes offline in order
          * to update or delete them.
          */
-        Availability: Schema.optional(Schema.Literal("active", "pause", "drain")),
+        Availability: Schema.optional(
+            Schema.Literal("active", "drain", "pause").annotations({
+                documentation:
+                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L68-L83",
+            })
+        ),
     },
     {
         identifier: "ClusterVolumeSpec",
         title: "volume.ClusterVolumeSpec",
         documentation:
-            "https:*github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/volume/cluster_volume.go#L29-L66",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L29-L66",
     }
 ) {}
