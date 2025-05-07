@@ -41,7 +41,7 @@
         "build-cjs": "babel build/esm --plugins @babel/transform-export-namespace-from --plugins @babel/transform-modules-commonjs --out-dir build/cjs --source-maps",
         "build-esm": "tsc -b tsconfig.build.json",
         "build-reflection": "(cd reflection/ && go build)",
-        "build-schemas": "(cd src && rm -rf ./generated && mkdir -p generated && ../reflection/reflection) && eslint ./src/generated/ --fix",
+        "build-schemas": "(cd src && rm -rf ./internal/generated && mkdir -p internal/generated && ../reflection/reflection) && eslint ./src/internal/generated/ --fix",
         "check": "tsc -b tsconfig.json",
         "circular": "node ./scripts/circular.mjs",
         "clean": "rimraf .tsbuildinfo docs build dist coverage",
