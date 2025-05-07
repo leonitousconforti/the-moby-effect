@@ -20,6 +20,8 @@ export class NetworkSettingsBase extends Schema.Class<NetworkSettingsBase>("Netw
     },
     {
         identifier: "NetworkSettingsBase",
-        title: "types.NetworkSettingsBase",
+        title: "container.NetworkSettingsBase",
+        documentation:
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/network_settings.go#L15-L36",
     }
 ) {}
