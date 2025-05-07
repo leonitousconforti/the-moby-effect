@@ -15,6 +15,6 @@ export class ContainerLogsOptions extends Schema.Class<ContainerLogsOptions>("Co
         identifier: "ContainerLogsOptions",
         title: "container.LogsOptions",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/container/options.go#L57-L67",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/options.go#L57-L67",
     }
 ) {}
