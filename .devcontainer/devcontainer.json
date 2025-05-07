@@ -46,6 +46,9 @@
                     "editor.autoIndent": "advanced",
                     "editor.defaultFormatter": "redhat.vscode-yaml"
                 },
+                "[go]": {
+                    "editor.defaultFormatter": "golang.go"
+                },
                 "editor.codeActionsOnSave": {
                     "source.organizeImports": "always",
                     "source.addMissingImports": "always",
