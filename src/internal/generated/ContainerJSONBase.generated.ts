@@ -1,9 +1,8 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
 import * as ContainerHostConfig from "./ContainerHostConfig.generated.js";
-import * as ContainerNode from "./ContainerNode.generated.js";
-import * as ContainerState from "./ContainerState.generated.js";
-import * as GraphDriverData from "./GraphDriverData.generated.js";
+import * as DriverData from "./DriverData.generated.js";
+import * as State from "./State.generated.js";
 
 export class ContainerJSONBase extends Schema.Class<ContainerJSONBase>("ContainerJSONBase")(
     {
@@ -11,13 +10,12 @@ export class ContainerJSONBase extends Schema.Class<ContainerJSONBase>("Containe
         Created: Schema.String,
         Path: Schema.String,
         Args: Schema.NullOr(Schema.Array(Schema.String)),
-        State: Schema.NullOr(ContainerState.ContainerState),
+        State: Schema.NullOr(State.State),
         Image: Schema.String,
         ResolvConfPath: Schema.String,
         HostnamePath: Schema.String,
         HostsPath: Schema.String,
         LogPath: Schema.String,
-        Node: Schema.optionalWith(ContainerNode.ContainerNode, { nullable: true }),
         Name: Schema.String,
         RestartCount: MobySchemas.Int64,
         Driver: Schema.String,
@@ -27,12 +25,14 @@ export class ContainerJSONBase extends Schema.Class<ContainerJSONBase>("Containe
         AppArmorProfile: Schema.String,
         ExecIDs: Schema.NullOr(Schema.Array(Schema.String)),
         HostConfig: Schema.NullOr(ContainerHostConfig.ContainerHostConfig),
-        GraphDriver: Schema.NullOr(GraphDriverData.GraphDriverData),
+        GraphDriver: Schema.NullOr(DriverData.DriverData),
         SizeRw: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
         SizeRootFs: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
     },
     {
         identifier: "ContainerJSONBase",
-        title: "types.ContainerJSONBase",
+        title: "container.ContainerJSONBase",
+        documentation:
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/container.go#L145-L177",
     }
 ) {}
