@@ -98,7 +98,7 @@ func tsType(t reflect.Type) TSType {
 		} else {
 			name = t.Name()
 		}
-		return TSType{fmt.Sprintf("MobySchemasGenerated.%s", name), true}
+		return TSType{fmt.Sprintf("%s.%s", name, name), true}
 	case reflect.Interface:
 		return TSType{"Schema.Object", false}
 	case reflect.Func:
@@ -155,9 +155,26 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	if strings.Contains(outString, "MobySchemas.") {
 		fmt.Fprintf(w, "import * as MobySchemas from \"../schemas/index.js\";\n")
 	}
-	if strings.Contains(outString, "MobySchemasGenerated.") {
-		fmt.Fprintf(w, "import * as MobySchemasGenerated from \"./index.js\";\n")
+
+	imports := make(map[string]bool)
+	for _, p := range t.Properties {
+		typeName := p.Type.Name
+		parts := strings.FieldsFunc(typeName, func(r rune) bool {
+			return r == '.' || r == '(' || r == ')'
+		})
+
+		for i := range len(parts) - 1 {
+			if parts[i] == parts[i+1] {
+				packageName := parts[i]
+				if _, ok := imports[packageName]; !ok {
+					fmt.Fprintf(w, "import * as %s from \"./%s.generated.js\";\n", packageName, packageName)
+					imports[packageName] = true
+					break
+				}
+			}
+		}
 	}
+
 	fmt.Fprintf(w, "\n")
 	fmt.Fprint(w, outString)
 }
