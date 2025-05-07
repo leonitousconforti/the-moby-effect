@@ -9,6 +9,6 @@ export class SwarmNamedGenericResource extends Schema.Class<SwarmNamedGenericRes
         identifier: "SwarmNamedGenericResource",
         title: "swarm.NamedGenericResource",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/task.go#L121-L128",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/task.go#L121-L128",
     }
 ) {}

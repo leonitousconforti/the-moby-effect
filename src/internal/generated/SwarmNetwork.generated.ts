@@ -1,15 +1,13 @@
 import * as Schema from "effect/Schema";
 import * as SwarmDriver from "./SwarmDriver.generated.js";
 import * as SwarmIPAMOptions from "./SwarmIPAMOptions.generated.js";
+import * as SwarmMeta from "./SwarmMeta.generated.js";
 import * as SwarmNetworkSpec from "./SwarmNetworkSpec.generated.js";
-import * as SwarmVersion from "./SwarmVersion.generated.js";
 
 export class SwarmNetwork extends Schema.Class<SwarmNetwork>("SwarmNetwork")(
     {
         ID: Schema.String,
-        Version: Schema.optionalWith(SwarmVersion.SwarmVersion, { nullable: true }),
-        CreatedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
-        UpdatedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
+        ...SwarmMeta.SwarmMeta.fields,
         Spec: Schema.optionalWith(SwarmNetworkSpec.SwarmNetworkSpec, { nullable: true }),
         DriverState: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
         IPAMOptions: Schema.optionalWith(SwarmIPAMOptions.SwarmIPAMOptions, { nullable: true }),
@@ -18,6 +16,6 @@ export class SwarmNetwork extends Schema.Class<SwarmNetwork>("SwarmNetwork")(
         identifier: "SwarmNetwork",
         title: "swarm.Network",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/network.go#L75-L82",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/network.go#L75-L82",
     }
 ) {}

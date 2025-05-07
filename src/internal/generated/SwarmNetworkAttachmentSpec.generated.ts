@@ -8,6 +8,6 @@ export class SwarmNetworkAttachmentSpec extends Schema.Class<SwarmNetworkAttachm
         identifier: "SwarmNetworkAttachmentSpec",
         title: "swarm.NetworkAttachmentSpec",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/runtime.go#L23-L27",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/runtime.go#L23-L27",
     }
 ) {}

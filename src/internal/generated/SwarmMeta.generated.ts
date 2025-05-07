@@ -11,6 +11,6 @@ export class SwarmMeta extends Schema.Class<SwarmMeta>("SwarmMeta")(
         identifier: "SwarmMeta",
         title: "swarm.Meta",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/common.go#L18-L23",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/common.go#L18-L23",
     }
 ) {}
