@@ -107,7 +107,7 @@ func main() {
 		panic(err)
 	}
 
-	sourcePath := path.Join(cwd, "generated")
+	sourcePath := path.Join(cwd, "internal", "generated")
 	files, err := os.ReadDir(sourcePath)
 	if err != nil {
 		panic(err)
