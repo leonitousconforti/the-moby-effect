@@ -5,18 +5,14 @@ export class NetworkIPAMConfig extends Schema.Class<NetworkIPAMConfig>("NetworkI
         Subnet: Schema.optional(Schema.String),
         IPRange: Schema.optional(Schema.String),
         Gateway: Schema.optional(Schema.String),
-        AuxiliaryAddresses: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        AuxiliaryAddresses: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
+            nullable: true,
+        }),
     },
     {
         identifier: "NetworkIPAMConfig",
         title: "network.IPAMConfig",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/network/ipam.go#L18-L24",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/network/ipam.go#L18-L24",
     }
 ) {}
