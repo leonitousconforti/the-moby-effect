@@ -8,12 +8,11 @@ export class JSONProgress extends Schema.Class<JSONProgress>("JSONProgress")(
         start: Schema.optional(MobySchemas.Int64),
         hidecounts: Schema.optional(Schema.Boolean),
         units: Schema.optional(Schema.String),
-        winSize: Schema.optional(MobySchemas.Int64),
     },
     {
         identifier: "JSONProgress",
         title: "jsonmessage.JSONProgress",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/pkg/jsonmessage/jsonmessage.go#L30-L52",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/pkg/jsonmessage/jsonmessage.go#L30-L52",
     }
 ) {}

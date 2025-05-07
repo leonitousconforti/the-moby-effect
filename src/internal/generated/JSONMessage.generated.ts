@@ -21,6 +21,6 @@ export class JSONMessage extends Schema.Class<JSONMessage>("JSONMessage")(
         identifier: "JSONMessage",
         title: "jsonmessage.JSONMessage",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/pkg/jsonmessage/jsonmessage.go#L142-L158",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/pkg/jsonmessage/jsonmessage.go#L141-L165",
     }
 ) {}
