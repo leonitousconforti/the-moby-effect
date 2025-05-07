@@ -11,6 +11,6 @@ export class Swarm extends Schema.Class<Swarm>("Swarm")(
         identifier: "Swarm",
         title: "swarm.Swarm",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/swarm.go#L20-L24",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/swarm.go#L20-L24",
     }
 ) {}

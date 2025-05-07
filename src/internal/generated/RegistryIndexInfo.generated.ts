@@ -11,6 +11,6 @@ export class RegistryIndexInfo extends Schema.Class<RegistryIndexInfo>("Registry
         identifier: "RegistryIndexInfo",
         title: "registry.IndexInfo",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/registry/registry.go#L45-L85",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/registry/registry.go#L71-L111",
     }
 ) {}

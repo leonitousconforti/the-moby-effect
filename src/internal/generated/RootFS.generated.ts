@@ -7,8 +7,8 @@ export class RootFS extends Schema.Class<RootFS>("RootFS")(
     },
     {
         identifier: "RootFS",
-        title: "types.RootFS",
+        title: "image.RootFS",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/types.go#L24-L28",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/image/image_inspect.go#L9-L13",
     }
 ) {}
