@@ -13,6 +13,6 @@ export class NetworkServiceInfo extends Schema.Class<NetworkServiceInfo>("Networ
         identifier: "NetworkServiceInfo",
         title: "network.ServiceInfo",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/network/network.go#L118-L124",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/network/network.go#L120-L126",
     }
 ) {}
