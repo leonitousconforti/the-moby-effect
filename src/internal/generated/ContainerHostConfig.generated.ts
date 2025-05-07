@@ -18,7 +18,10 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         LogConfig: Schema.NullOr(ContainerLogConfig.ContainerLogConfig),
 
         /** Network mode to use for the container */
-        NetworkMode: Schema.Literal("default", "none", "host", "bridge", "nat"),
+        NetworkMode: Schema.Literal("default", "none", "host", "bridge", "nat").annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/d71afd73bf54599a2d2aac4e5072719bc62adcb8/api/types/network/network.go#L9-L20",
+        }),
 
         /** Port mapping between the exposed port (container) and the host */
         PortBindings: Schema.NullOr(MobySchemas.PortSchemas.PortMap),
@@ -42,13 +45,9 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
          * Arbitrary non-identifying metadata attached to container and provided
          * to the runtime
          */
-        Annotations: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
+            nullable: true,
+        }),
 
         // Applicable to UNIX platforms
         /** List of kernel capabilities to add to the container */
@@ -58,7 +57,10 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         CapDrop: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** Cgroup namespace mode to use for the container */
-        CgroupnsMode: Schema.Literal("", "private", "host"),
+        CgroupnsMode: Schema.Literal("", "private", "host").annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/hostconfig.go#L16-L24",
+        }),
 
         /** List of DNS servers for the container to use */
         Dns: Schema.NullOr(Schema.Array(Schema.String)),
@@ -76,7 +78,10 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         GroupAdd: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** IPC namespace to use for the container */
-        IpcMode: Schema.Literal("none", "host", "container", "private", "shareable"),
+        IpcMode: Schema.Literal("none", "host", "container", "private", "shareable").annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/hostconfig.go#L78-L88",
+        }),
 
         /** Cgroup to use for the container */
         Cgroup: Schema.String,
@@ -106,22 +111,12 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         SecurityOpt: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** Storage driver options per container. */
-        StorageOpt: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        StorageOpt: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
+            nullable: true,
+        }),
 
         /** List of tmpfs (mounts) used for the container */
-        Tmpfs: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Tmpfs: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
 
         /** UTS namespace to use for the container */
         UTSMode: Schema.String,
@@ -133,20 +128,17 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         ShmSize: MobySchemas.Int64,
 
         /** List of Namespaced sysctls used for the container */
-        Sysctls: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
 
         /** Runtime to use with this container */
         Runtime: Schema.optional(Schema.String),
 
         // Applicable to Windows
         /** Isolation technology of the container (e.g. default, hyperv) */
-        Isolation: Schema.Literal("default", "process", "hyperv", ""),
+        Isolation: Schema.Literal("default", "process", "hyperv", "").annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/hostconfig.go#L46-L56",
+        }),
 
         // Contains container's resources (cgroups, ulimits)
         ...ContainerResources.ContainerResources.fields,
@@ -176,6 +168,6 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         identifier: "ContainerHostConfig",
         title: "container.HostConfig",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/container/hostconfig.go#L420-L480",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/hostconfig.go#L421-L481",
     }
 ) {}
