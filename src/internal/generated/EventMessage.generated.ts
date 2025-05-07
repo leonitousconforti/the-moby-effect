@@ -19,7 +19,10 @@ export class EventMessage extends Schema.Class<EventMessage>("EventMessage")(
             "secret",
             "service",
             "volume"
-        ),
+        ).annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/events/events.go#L4-L20",
+        }),
         Action: Schema.Literal(
             "create",
             "start",
@@ -68,7 +71,10 @@ export class EventMessage extends Schema.Class<EventMessage>("EventMessage")(
             "health_status: running",
             "health_status: healthy",
             "health_status: unhealthy"
-        ),
+        ).annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/events/events.go#L22-L100",
+        }),
         Actor: Schema.NullOr(EventActor.EventActor),
         scope: Schema.optional(Schema.String),
         time: Schema.optional(MobySchemas.Int64),
@@ -78,6 +84,6 @@ export class EventMessage extends Schema.Class<EventMessage>("EventMessage")(
         identifier: "EventMessage",
         title: "events.Message",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/events/events.go#L112-L128",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/events/events.go#L112-L128",
     }
 ) {}

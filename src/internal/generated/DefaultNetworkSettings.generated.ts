@@ -14,6 +14,8 @@ export class DefaultNetworkSettings extends Schema.Class<DefaultNetworkSettings>
     },
     {
         identifier: "DefaultNetworkSettings",
-        title: "types.DefaultNetworkSettings",
+        title: "container.DefaultNetworkSettings",
+        documentation:
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/network_settings.go#L38-L50",
     }
 ) {}
