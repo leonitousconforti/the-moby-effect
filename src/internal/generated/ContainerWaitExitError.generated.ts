@@ -8,6 +8,6 @@ export class ContainerWaitExitError extends Schema.Class<ContainerWaitExitError>
         identifier: "ContainerWaitExitError",
         title: "container.WaitExitError",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/container/wait_exit_error.go#L6-L12",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/wait_exit_error.go#L6-L12",
     }
 ) {}
