@@ -1,8 +1,10 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
 import * as ContainerConfig from "./ContainerConfig.generated.js";
-import * as GraphDriverData from "./GraphDriverData.generated.js";
+import * as Descriptor from "./Descriptor.generated.js";
+import * as DriverData from "./DriverData.generated.js";
 import * as ImageMetadata from "./ImageMetadata.generated.js";
+import * as ManifestSummary from "./ManifestSummary.generated.js";
 import * as RootFS from "./RootFS.generated.js";
 
 export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("ImageInspectResponse")(
@@ -24,14 +26,18 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         OsVersion: Schema.optional(Schema.String),
         Size: MobySchemas.Int64,
         VirtualSize: Schema.optional(MobySchemas.Int64),
-        GraphDriver: Schema.NullOr(GraphDriverData.GraphDriverData),
+        GraphDriver: Schema.NullOr(DriverData.DriverData),
         RootFS: Schema.NullOr(RootFS.RootFS),
         Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),
+        Descriptor: Schema.optionalWith(Descriptor.Descriptor, { nullable: true }),
+        Manifests: Schema.optionalWith(Schema.Array(Schema.NullOr(ManifestSummary.ManifestSummary)), {
+            nullable: true,
+        }),
     },
     {
         identifier: "ImageInspectResponse",
-        title: "types.ImageInspect",
+        title: "image.InspectResponse",
         documentation:
-            "https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/image/image_inspect.go#L14-L122",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/image/image_inspect.go#L15-L141",
     }
 ) {}
