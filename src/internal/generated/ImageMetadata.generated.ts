@@ -8,6 +8,6 @@ export class ImageMetadata extends Schema.Class<ImageMetadata>("ImageMetadata")(
         identifier: "ImageMetadata",
         title: "image.Metadata",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/image/image.go#L8-L12",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/image/image.go#L8-L12",
     }
 ) {}

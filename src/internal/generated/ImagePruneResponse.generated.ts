@@ -3,13 +3,13 @@ import * as MobySchemas from "../schemas/index.js";
 
 export class ImagePruneResponse extends Schema.Class<ImagePruneResponse>("ImagePruneResponse")(
     {
-        CachesDeleted: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        CachesDeleted: Schema.NullOr(Schema.Array(Schema.String)),
         SpaceReclaimed: MobySchemas.UInt64,
     },
     {
         identifier: "ImagePruneResponse",
         title: "types.BuildCachePruneReport",
         documentation:
-            "https://github.com/moby/moby/blob/2b1097f08088fd387a01c6d6a2a0f6916a39b872/api/types/image/image.go#L14-L19",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/image/image.go#L14-L19",
     }
 ) {}
