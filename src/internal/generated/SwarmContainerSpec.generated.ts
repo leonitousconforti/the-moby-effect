@@ -11,13 +11,7 @@ import * as SwarmSecretReference from "./SwarmSecretReference.generated.js";
 export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmContainerSpec")(
     {
         Image: Schema.optional(Schema.String),
-        Labels: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Labels: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         Command: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         Args: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         Hostname: Schema.optional(Schema.String),
@@ -43,24 +37,16 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
             nullable: true,
         }),
         Isolation: Schema.optional(Schema.String),
-        Sysctls: Schema.optionalWith(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            }),
-            { nullable: true }
-        ),
+        Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         CapabilityAdd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         CapabilityDrop: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Ulimits: Schema.optionalWith(Schema.Array(Schema.NullOr(ContainerUlimit.ContainerUlimit)), {
-            nullable: true,
-        }),
+        Ulimits: Schema.optionalWith(Schema.Array(Schema.NullOr(ContainerUlimit.ContainerUlimit)), { nullable: true }),
         OomScoreAdj: Schema.optional(MobySchemas.Int64),
     },
     {
         identifier: "SwarmContainerSpec",
         title: "swarm.ContainerSpec",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/container.go#L86-L119",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/container.go#L86-L119",
     }
 ) {}

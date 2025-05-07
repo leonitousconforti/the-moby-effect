@@ -14,6 +14,6 @@ export class SwarmConfigReferenceFileTarget extends Schema.Class<SwarmConfigRefe
         identifier: "SwarmConfigReferenceFileTarget",
         title: "swarm.ConfigReferenceFileTarget",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/config.go#L22-L28",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/config.go#L28-L34",
     }
 ) {}
