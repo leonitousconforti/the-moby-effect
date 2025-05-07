@@ -2,7 +2,7 @@ import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
 import * as Health from "./Health.generated.js";
 
-export class ContainerState extends Schema.Class<ContainerState>("ContainerState")(
+export class State extends Schema.Class<State>("State")(
     {
         Status: Schema.String,
         Running: Schema.Boolean,
@@ -18,7 +18,9 @@ export class ContainerState extends Schema.Class<ContainerState>("ContainerState
         Health: Schema.optionalWith(Health.Health, { nullable: true }),
     },
     {
-        identifier: "ContainerState",
-        title: "types.ContainerState",
+        identifier: "State",
+        title: "container.State",
+        documentation:
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/container.go#L104-L119",
     }
 ) {}
