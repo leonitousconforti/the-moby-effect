@@ -62,12 +62,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         Image: Schema.String,
 
         /** List of volumes (mounts) used for the container */
-        Volumes: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.Object,
-            })
-        ),
+        Volumes: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.Object })),
 
         /** Current directory (PWD) in the command will be launched */
         WorkingDir: Schema.String,
@@ -88,12 +83,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         OnBuild: Schema.NullOr(Schema.Array(Schema.String)),
 
         /** List of labels set to this container */
-        Labels: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            })
-        ),
+        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
 
         /** Signal to stop a container */
         StopSignal: Schema.optional(Schema.String),
@@ -108,6 +98,6 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         identifier: "ContainerConfig",
         title: "container.Config",
         documentation:
-            "https://github.com/moby/moby/blob/a21b1a2d12e2c01542cb191eb526d7bfad0641e3/api/types/container/config.go#L38-L73",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/config.go#L38-L73",
     }
 ) {}
