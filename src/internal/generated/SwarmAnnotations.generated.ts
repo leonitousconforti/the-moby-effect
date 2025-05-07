@@ -3,17 +3,12 @@ import * as Schema from "effect/Schema";
 export class SwarmAnnotations extends Schema.Class<SwarmAnnotations>("SwarmAnnotations")(
     {
         Name: Schema.optional(Schema.String),
-        Labels: Schema.NullOr(
-            Schema.Record({
-                key: Schema.String,
-                value: Schema.String,
-            })
-        ),
+        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
     },
     {
         identifier: "SwarmAnnotations",
         title: "swarm.Annotations",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/common.go#L25-L29",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/common.go#L25-L29",
     }
 ) {}
