@@ -61,7 +61,7 @@ This package does not follow semantic versioning, instead the major and minor pa
 
 ## Library docs :card_file_box:
 
-[https://leoconforti.pages.ltgk.net/the-moby-effect/](https://leoconforti.pages.ltgk.net/the-moby-effect/)
+[https://leoconforti.pages.ltgk.net/the-moby-effect/](https://leonitousconforti.github.io/the-moby-effect/)
 
 ## Contributing and getting help :speech_balloon: :beers:
 
