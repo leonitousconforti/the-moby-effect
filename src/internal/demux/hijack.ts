@@ -1,6 +1,5 @@
 import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import type * as MobyDemux from "../../MobyDemux.js";
-import type { IExposeSocketOnEffectClientResponseHack } from "../platforms/node.js";
 
 import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
@@ -13,9 +12,15 @@ export const hijackResponseUnsafe = (
     response: HttpClientResponse.HttpClientResponse
 ): Effect.Effect<Socket.Socket, Socket.SocketError, never> =>
     Effect.flatMap(
-        Effect.promise(() => import("@effect/platform-node/NodeSocket")),
-        (nodeSocketLazy) => {
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).original.source.socket;
+        Effect.all(
+            {
+                nodeSocketLazy: Effect.promise(() => import("@effect/platform-node/NodeSocket")),
+                nodeHttpServerRequestLazy: Effect.promise(() => import("@effect/platform-node/NodeHttpServerRequest")),
+            },
+            { concurrency: 2 }
+        ),
+        ({ nodeHttpServerRequestLazy, nodeSocketLazy }) => {
+            const socket = nodeHttpServerRequestLazy.toIncomingMessage(response);
             return nodeSocketLazy.fromDuplex(Effect.sync(() => socket));
         }
     );

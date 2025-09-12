@@ -4,7 +4,7 @@ import * as Health from "./Health.generated.js";
 
 export class State extends Schema.Class<State>("State")(
     {
-        Status: Schema.String,
+        Status: Schema.Literal("created", "running", "paused", "restarting", "removing", "exited", "dead"),
         Running: Schema.Boolean,
         Paused: Schema.Boolean,
         Restarting: Schema.Boolean,

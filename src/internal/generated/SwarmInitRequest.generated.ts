@@ -12,11 +12,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
          * like eth0:4567. If the port number is omitted, the default swarm
          * listening port is used.
          */
-        ListenAddr: Schema.Union(
-            Schema.TemplateLiteral(Schema.String, ":", Schema.Number),
-            MobySchemas.AddressString,
-            Schema.String
-        ),
+        ListenAddr: Schema.String,
 
         /**
          * Externally reachable address advertised to other nodes. This can
@@ -26,14 +22,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
          * used. If AdvertiseAddr is not specified, it will be automatically
          * detected when possible.
          */
-        AdvertiseAddr: Schema.optionalWith(
-            Schema.Union(
-                Schema.TemplateLiteral(Schema.String, ":", Schema.Number),
-                MobySchemas.AddressString,
-                Schema.String
-            ),
-            { nullable: true }
-        ),
+        AdvertiseAddr: Schema.String,
 
         /**
          * Address or interface to use for data path traffic (format:
@@ -47,43 +36,43 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
          * to separate the container data traffic from the management traffic of
          * the cluster.
          */
-        DataPathAddr: Schema.optionalWith(Schema.Union(MobySchemas.AddressString, Schema.String), { nullable: true }),
+        DataPathAddr: Schema.String,
 
         /**
          * DataPathPort specifies the data path port number for data traffic.
          * Acceptable port range is 1024 to 49151. if no port is set or is set
          * to 0, default port 4789 will be used.
          */
-        DataPathPort: Schema.optionalWith(MobySchemas.Port, { nullable: true }),
+        DataPathPort: MobySchemas.Port,
 
         /** Force creation of a new swarm. */
-        ForceNewCluster: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        ForceNewCluster: Schema.Boolean,
 
         /** User modifiable swarm configuration. */
-        Spec: Schema.optionalWith(SwarmSpec.SwarmSpec, { nullable: true }),
+        Spec: Schema.NullOr(SwarmSpec.SwarmSpec),
 
         /**
          * Default Address Pool specifies default subnet pools for global scope
          * networks.
          */
-        DefaultAddrPool: Schema.optionalWith(Schema.Array(MobySchemas.CidrBlockFromString), { nullable: true }),
+        DefaultAddrPool: Schema.NullOr(Schema.Array(MobySchemas.CidrBlockFromString)),
 
         /**
          * SubnetSize specifies the subnet size of the networks created from the
          * default subnet pool.
          */
-        SubnetSize: Schema.optionalWith(MobySchemas.UInt32, {
-            default: () => MobySchemas.UInt32Schemas.UInt32Brand(24),
-            nullable: true,
-        }),
+        SubnetSize: MobySchemas.UInt32,
 
-        AutoLockManagers: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-        Availability: Schema.optionalWith(Schema.Literal("active", "pause", "drain"), { nullable: true }),
+        AutoLockManagers: Schema.Boolean,
+        Availability: Schema.Literal("active", "pause", "drain").annotations({
+            documentation:
+                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/node.go#L37-L47",
+        }),
     },
     {
         identifier: "SwarmInitRequest",
         title: "swarm.InitRequest",
         documentation:
-            "https://github.com/moby/moby/blob/7d861e889cd2214b38c8f1f3f997bf003c77739d/api/types/swarm/swarm.go#L152-L164",
+            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/swarm.go#L152-L164",
     }
 ) {}
