@@ -6,7 +6,6 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
-    HttpClientRequest,
     HttpClientResponse,
     Socket,
     UrlParams,
@@ -16,6 +15,7 @@ import { Effect, Either, Schema, Stream, Tuple, type Layer } from "effect";
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeRawSocket, responseToStreamingSocketOrFailUnsafe } from "../../MobyDemux.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { HttpApiStreamingRequest } from "../../test.js";
 import {
     ContainerChange,
     ContainerConfig,
@@ -482,15 +482,13 @@ export class ContainersService extends Effect.Service<ContainersService>()("@the
             stream: Stream.Stream<Uint8Array, E, never>,
             options: Options<"putArchive">
         ) =>
-            Effect.flatMap(
-                HttpApiClient.endpoint(ContainersApi, {
-                    httpClient,
-                    group: "containers",
-                    endpoint: "putArchive",
-                    transformClient: HttpClient.mapRequest(HttpClientRequest.bodyStream(stream)),
-                }),
-                (client) => client({ path: { id }, urlParams: { ...options } })
-            );
+            HttpApiStreamingRequest(
+                ContainersApi,
+                "containers",
+                "putArchive",
+                httpClient,
+                stream
+            )({ path: { id }, urlParams: { ...options } });
         const prune_ = (filters?: string | undefined) => client.prune({ urlParams: { filters } });
 
         return {
