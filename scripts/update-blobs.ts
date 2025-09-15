@@ -4,10 +4,10 @@ import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
 import * as Effect from "effect/Effect";
 
-import * as HttpBlob from "../src/blobs/Http.js";
-import * as HttpsBlob from "../src/blobs/Https.js";
-import * as SocketBlob from "../src/blobs/Socket.js";
-import * as SshBlob from "../src/blobs/Ssh.js";
+import * as HttpBlob from "../src/internal/blobs/Http.js";
+import * as HttpsBlob from "../src/internal/blobs/Https.js";
+import * as SocketBlob from "../src/internal/blobs/Socket.js";
+import * as SshBlob from "../src/internal/blobs/Ssh.js";
 
 const program = Effect.gen(function* () {
     const path = yield* Path.Path;

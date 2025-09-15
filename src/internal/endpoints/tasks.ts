@@ -1,138 +1,118 @@
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Stream from "effect/Stream";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmTask } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
+
+/**
+ * Task list filters (JSON encoded)
+ *
+ * @since 1.0.0
+ */
+export class TaskListFilters extends Schema.parseJson(
+    Schema.Struct({
+        "desired-state": Schema.optional(Schema.Array(Schema.Literal("running", "shutdown", "accepted"))),
+        id: Schema.optional(Schema.Array(Schema.String)),
+        name: Schema.optional(Schema.Array(Schema.String)),
+        node: Schema.optional(Schema.Array(Schema.String)),
+        service: Schema.optional(Schema.Array(Schema.String)),
+        label: Schema.optional(Schema.Array(Schema.String)),
+    })
+) {}
+
+/**
+ * Task logs query params
+ *
+ * @since 1.0.0
+ */
+export const TaskLogsQuery = Schema.Struct({
+    details: Schema.optional(Schema.BooleanFromString),
+    follow: Schema.optional(Schema.BooleanFromString),
+    stdout: Schema.optional(Schema.BooleanFromString),
+    stderr: Schema.optional(Schema.BooleanFromString),
+    since: Schema.optional(Schema.NumberFromString),
+    timestamps: Schema.optional(Schema.BooleanFromString),
+    tail: Schema.optional(Schema.String),
+});
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskList */
+const listTasksEndpoint = HttpApiEndpoint.get("list", "/")
+    .setUrlParams(Schema.Struct({ filters: Schema.optional(TaskListFilters) }))
+    .addSuccess(Schema.Array(SwarmTask), { status: 200 });
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskInspect */
+const inspectTaskEndpoint = HttpApiEndpoint.get("inspect", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .addSuccess(SwarmTask, { status: 200 })
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskLogs */
+const logsTaskEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(TaskLogsQuery)
+    // Logs are multiplexed; represent as empty streaming body similar to containers implementation
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task */
+const TasksGroup = HttpApiGroup.make("tasks")
+    .add(listTasksEndpoint)
+    .add(inspectTaskEndpoint)
+    .add(logsTaskEndpoint)
+    .addError(HttpApiError.InternalServerError)
+    .prefix("/tasks");
 
 /**
  * @since 1.0.0
- * @category Errors
+ * @category HttpApi
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
-export const TasksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/TasksError") as TasksErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type TasksErrorTypeId = typeof TasksErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isTasksError = (u: unknown): u is TasksError => Predicate.hasProperty(u, TasksErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "TasksError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
+export const TasksApi = HttpApi.make("TasksApi").add(TasksGroup);
 
 /**
  * A task is a container running on a swarm. It is the atomic scheduling unit of
  * swarm. Swarm mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @category Tags
+ * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
-export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/Tasks", {
+export class TasksService extends Effect.Service<TasksService>()("@the-moby-effect/endpoints/Tasks", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(TasksApi, { group: "tasks", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskList */
-        const list_ = (
-            options?:
-                | {
-                      readonly filters?: {
-                          "desired-state"?: ["running" | "shutdown" | "accepted"] | undefined;
-                          id?: [string] | undefined;
-                          name?: [string] | undefined;
-                          node?: [string] | undefined;
-                          service?: [string] | undefined;
-                          label?: Array<string> | undefined;
-                      };
-                  }
-                | undefined
-        ): Effect.Effect<Readonly<Array<SwarmTask>>, TasksError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/tasks"),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmTask))),
-                Effect.mapError((cause) => new TasksError({ method: "list", cause }))
-            );
+        const list_ = (filters?: Schema.Schema.Type<TaskListFilters> | undefined) =>
+            client.list({ urlParams: { filters } });
+        const inspect_ = (id: string) => client.inspect({ path: { id } });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskInspect */
-        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmTask>, TasksError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/tasks/${encodeURIComponent(id)}`),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmTask)),
-                Effect.mapError((cause) => new TasksError({ method: "inspect", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskLogs */
-        const logs_ = (
-            id: string,
-            options?:
-                | {
-                      readonly details?: boolean;
-                      readonly follow?: boolean;
-                      readonly stdout?: boolean;
-                      readonly stderr?: boolean;
-                      readonly since?: number;
-                      readonly timestamps?: boolean;
-                      readonly tail?: string;
-                  }
-                | undefined
-        ): Stream.Stream<string, TasksError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/tasks/${encodeURIComponent(id)}/logs`),
-                maybeAddQueryParameter("details", Option.fromNullable(options?.details)),
-                maybeAddQueryParameter("follow", Option.fromNullable(options?.follow)),
-                maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
-                maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
-                maybeAddQueryParameter("since", Option.fromNullable(options?.since)),
-                maybeAddQueryParameter("timestamps", Option.fromNullable(options?.timestamps)),
-                maybeAddQueryParameter("tail", Option.fromNullable(options?.tail)),
-                client.execute,
-                HttpClientResponse.stream,
-                Stream.decodeText(),
-                Stream.mapError((cause) => new TasksError({ method: "logs", cause }))
-            );
+        // Logs: produce a Stream<string>. The Text schema returns a string body; wrap in singleton stream when not following.
+        const logs_ = (id: string, query?: Schema.Schema.Type<typeof TaskLogsQuery>) =>
+            client.logs({ path: { id }, urlParams: query ?? {} });
 
         return {
             list: list_,
             inspect: inspect_,
             logs: logs_,
-        };
+        } as const;
     }),
 }) {}
 
@@ -144,4 +124,14 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
-export const TasksLayer: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.Default;
+export const TasksLayer: Layer.Layer<TasksService, never, HttpClient.HttpClient> =
+    TasksService.DefaultWithoutDependencies as Layer.Layer<TasksService, never, HttpClient.HttpClient>;
+
+/**
+ * Local socket auto-configured layer
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const TasksLayerLocalSocket: Layer.Layer<TasksService, never, HttpClient.HttpClient> =
+    TasksService.Default as Layer.Layer<TasksService, never, HttpClient.HttpClient>;

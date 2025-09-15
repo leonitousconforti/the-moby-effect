@@ -1,148 +1,139 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmNode, SwarmNodeSpec } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
+
+/** Node list filters (JSON encoded) */
+export class NodeListFilters extends Schema.parseJson(
+    Schema.Struct({
+        id: Schema.optional(Schema.Array(Schema.String)),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        membership: Schema.optional(Schema.Array(Schema.Literal("accepted", "pending"))),
+        name: Schema.optional(Schema.Array(Schema.String)),
+        "node.label": Schema.optional(Schema.Array(Schema.String)),
+        role: Schema.optional(Schema.Array(Schema.Literal("manager", "worker"))),
+    })
+) {}
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeList */
+const listNodesEndpoint = HttpApiEndpoint.get("list", "/")
+    .setUrlParams(Schema.Struct({ filters: Schema.optional(NodeListFilters) }))
+    .addSuccess(Schema.Array(SwarmNode), { status: 200 });
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeInspect */
+const inspectNodeEndpoint = HttpApiEndpoint.get("inspect", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .addSuccess(SwarmNode, { status: 200 })
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeDelete */
+const deleteNodeEndpoint = HttpApiEndpoint.del("delete", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(Schema.Struct({ force: Schema.optional(Schema.BooleanFromString) }))
+    .addSuccess(HttpApiSchema.NoContent)
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
+const updateNodeEndpoint = HttpApiEndpoint.post("update", "/:id/update")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(
+        Schema.Struct({
+            version: Schema.Number, // required
+            rotateWorkerToken: Schema.optional(Schema.BooleanFromString),
+            rotateManagerToken: Schema.optional(Schema.BooleanFromString),
+            rotateManagerUnlockKey: Schema.optional(Schema.BooleanFromString),
+        })
+    )
+    .setPayload(SwarmNodeSpec)
+    .addSuccess(HttpApiSchema.Empty(200))
+    .addError(HttpApiError.NotFound)
+    .addError(HttpApiError.BadRequest);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node */
+const NodesGroup = HttpApiGroup.make("nodes")
+    .add(listNodesEndpoint)
+    .add(inspectNodeEndpoint)
+    .add(deleteNodeEndpoint)
+    .add(updateNodeEndpoint)
+    .addError(HttpApiError.InternalServerError)
+    .prefix("/nodes");
 
 /**
  * @since 1.0.0
- * @category Errors
+ * @category HttpApi
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
  */
-export const NodesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/NodesError") as NodesErrorTypeId;
+export const NodesApi = HttpApi.make("NodesApi").add(NodesGroup);
 
 /**
  * @since 1.0.0
- * @category Errors
+ * @category Services
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
  */
-export type NodesErrorTypeId = typeof NodesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isNodesError = (u: unknown): u is NodesError => Predicate.hasProperty(u, NodesErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "NodesError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
-
-/**
- * Nodes service
- *
- * @since 1.0.0
- * @category Tags
- * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
- */
-export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/Nodes", {
+export class NodesService extends Effect.Service<NodesService>()("@the-moby-effect/endpoints/Nodes", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(NodesApi, { group: "nodes", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeList */
-        const list_ = (
-            options?:
-                | {
-                      readonly filters?: {
-                          id?: [string] | undefined;
-                          label?: [string] | undefined;
-                          membership?: ["accepted" | "pending"] | undefined;
-                          name?: [string] | undefined;
-                          "node.label"?: [string] | undefined;
-                          role?: ["manager" | "worker"] | undefined;
-                      };
-                  }
-                | undefined
-        ): Effect.Effect<Readonly<Array<SwarmNode>>, NodesError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/nodes"),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
-                Effect.mapError((cause) => new NodesError({ method: "list", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeDelete */
-        const delete_ = (
-            id: string,
-            options?:
-                | {
-                      readonly force?: boolean | undefined;
-                  }
-                | undefined
-        ): Effect.Effect<void, NodesError, never> =>
-            Function.pipe(
-                HttpClientRequest.del(`/nodes/${encodeURIComponent(id)}`),
-                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmNode))),
-                Effect.mapError((cause) => new NodesError({ method: "delete", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeInspect */
-        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmNode>, NodesError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/nodes/${encodeURIComponent(id)}`),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmNode)),
-                Effect.mapError((cause) => new NodesError({ method: "inspect", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
+        const list_ = (filters?: Schema.Schema.Type<NodeListFilters>) => client.list({ urlParams: { filters } });
+        const inspect_ = (id: string) => client.inspect({ path: { id } });
+        const delete_ = (id: string, options?: { force?: boolean }) =>
+            client.delete({ path: { id }, urlParams: { force: options?.force } });
         const update_ = (
             id: string,
-            options: {
-                readonly body: SwarmNodeSpec;
-                readonly version: number;
+            payload: SwarmNodeSpec,
+            params: {
+                version: number;
+                rotateWorkerToken?: boolean;
+                rotateManagerToken?: boolean;
+                rotateManagerUnlockKey?: boolean;
             }
-        ): Effect.Effect<void, NodesError, never> =>
-            Function.pipe(
-                HttpClientRequest.post(`/nodes/${encodeURIComponent(id)}/update`),
-                maybeAddQueryParameter("version", Option.some(options.version)),
-                HttpClientRequest.schemaBodyJson(SwarmNodeSpec)(options.body),
-                Effect.flatMap(client.execute),
-                Effect.asVoid,
-                Effect.mapError((cause) => new NodesError({ method: "update", cause }))
-            );
+        ) => client.update({ path: { id }, urlParams: { ...params }, payload });
 
         return {
             list: list_,
-            delete: delete_,
             inspect: inspect_,
+            delete: delete_,
             update: update_,
-        };
+        } as const;
     }),
 }) {}
 
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
  */
-export const NodesLayer: Layer.Layer<Nodes, never, HttpClient.HttpClient> = Nodes.Default;
+export const NodesLayer: Layer.Layer<NodesService, never, HttpClient.HttpClient> =
+    NodesService.DefaultWithoutDependencies as Layer.Layer<NodesService, never, HttpClient.HttpClient>;
+
+/**
+ * Local socket auto-configured layer
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const NodesLayerLocalSocket: Layer.Layer<NodesService, never, HttpClient.HttpClient> =
+    NodesService.Default as Layer.Layer<NodesService, never, HttpClient.HttpClient>;
+
+/** Alias for pre-refactor naming consistency */
+export { NodesService as Nodes };

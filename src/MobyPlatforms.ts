@@ -8,7 +8,7 @@ import type * as HttpClient from "@effect/platform/HttpClient";
 import type * as Socket from "@effect/platform/Socket";
 import type * as MobyConnection from "./MobyConnection.js";
 
-import * as Layer from "effect/Layer";
+import type * as Layer from "effect/Layer";
 import * as internalAgnostic from "./internal/platforms/agnostic.js";
 import * as internalBun from "./internal/platforms/bun.js";
 import * as internalDeno from "./internal/platforms/deno.js";
@@ -26,15 +26,8 @@ import * as internalWeb from "./internal/platforms/web.js";
  */
 export const makeAgnosticHttpClientLayer: (
     connectionOptions: MobyConnection.MobyConnectionOptions
-) => Layer.Layer<
-    HttpClient.HttpClient | Socket.WebSocketConstructor,
-    never,
-    HttpClient.HttpClient | Socket.WebSocketConstructor
-> = (connectionOptions) =>
-    Layer.merge(
-        Layer.context<Socket.WebSocketConstructor>(),
-        internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions)
-    );
+) => Layer.Layer<Socket.WebSocketConstructor | HttpClient.HttpClient, never, HttpClient.HttpClient> =
+    internalAgnostic.makeAgnosticLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

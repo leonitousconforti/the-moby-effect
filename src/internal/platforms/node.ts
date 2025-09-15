@@ -5,6 +5,7 @@ import type * as Socket from "@effect/platform/Socket";
 import type * as Scope from "effect/Scope";
 import type * as http from "node:http";
 import type * as https from "node:https";
+import type * as net from "node:net";
 import type * as stream from "node:stream";
 import type * as ssh2 from "ssh2";
 import type * as MobyConnection from "../../MobyConnection.js";
@@ -24,13 +25,13 @@ import * as internalConnection from "./connection.js";
  * @category NodeJS
  * @internal
  */
-// export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
-//     original: {
-//         source: {
-//             socket: net.Socket;
-//         };
-//     };
-// }
+export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
+    original: {
+        source: {
+            socket: net.Socket;
+        };
+    };
+}
 
 /** @internal */
 export const makeNodeSshAgent = (
@@ -66,8 +67,8 @@ export const makeNodeSshAgent = (
          */
         public createConnection(
             _options: http.ClientRequestArgs,
-            callback: (error: Error | undefined, socket?: stream.Duplex | undefined) => void
-        ): void {
+            callback?: ((error: Error | null, socket: stream.Duplex) => void) | undefined
+        ): stream.Duplex {
             this.sshClient
                 .on("ready", () => {
                     this.sshClient.openssh_forwardOutStreamLocal(
@@ -75,21 +76,23 @@ export const makeNodeSshAgent = (
                         (error: Error | undefined, stream: ssh2.ClientChannel) => {
                             if (error) {
                                 this.sshClient.end();
-                                return callback(error);
+                                return callback!(error, void 0 as unknown as stream.Duplex);
                             }
 
                             stream.once("close", () => {
                                 stream.end();
                                 stream.destroy();
-                                this.sshClient.end();
+                                // this.sshClient.end();
                             });
 
-                            callback(undefined, stream);
+                            callback!(null, stream);
                         }
                     );
                 })
-                .on("error", (error) => callback(error, undefined))
+                .on("error", (error) => callback!(error, void 0 as unknown as stream.Duplex))
                 .connect(this.connectConfig);
+
+            return void 0 as unknown as stream.Duplex;
         }
     })(connectionOptions);
 

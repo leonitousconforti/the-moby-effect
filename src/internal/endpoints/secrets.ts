@@ -1,141 +1,99 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Tuple from "effect/Tuple";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmSecret, SwarmSecretCreateResponse, SwarmSecretSpec } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
+
+/** Secret list filters (JSON encoded) */
+export class SecretListFilters extends Schema.parseJson(
+    Schema.Record({ key: Schema.String }, Schema.Any) // kept broad; can be tightened later
+) {}
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretList */
+const listSecretsEndpoint = HttpApiEndpoint.get("list", "/")
+    .setUrlParams(Schema.Struct({ filters: Schema.optional(SecretListFilters) }))
+    .addSuccess(Schema.Array(SwarmSecret), { status: 200 });
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretCreate */
+const createSecretEndpoint = HttpApiEndpoint.post("create", "/create")
+    .setPayload(SwarmSecretSpec)
+    .addSuccess(SwarmSecretCreateResponse, { status: 201 })
+    .addError(HttpApiError.BadRequest);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretInspect */
+const inspectSecretEndpoint = HttpApiEndpoint.get("inspect", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .addSuccess(SwarmSecret, { status: 200 })
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretDelete */
+const deleteSecretEndpoint = HttpApiEndpoint.del("delete", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .addSuccess(HttpApiSchema.NoContent)
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretUpdate */
+const updateSecretEndpoint = HttpApiEndpoint.post("update", "/:id/update")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(Schema.Struct({ version: Schema.Number }))
+    .setPayload(SwarmSecretSpec)
+    .addSuccess(HttpApiSchema.Empty(200))
+    .addError(HttpApiError.NotFound)
+    .addError(HttpApiError.BadRequest);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret */
+const SecretsGroup = HttpApiGroup.make("secrets")
+    .add(listSecretsEndpoint)
+    .add(createSecretEndpoint)
+    .add(inspectSecretEndpoint)
+    .add(deleteSecretEndpoint)
+    .add(updateSecretEndpoint)
+    .addError(HttpApiError.InternalServerError)
+    .prefix("/secrets");
 
 /**
  * @since 1.0.0
- * @category Errors
- */
-export const SecretsErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/SecretsError"
-) as SecretsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type SecretsErrorTypeId = typeof SecretsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isSecretsError = (u: unknown): u is SecretsError => Predicate.hasProperty(u, SecretsErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, "SecretsError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
-
-/**
- * Secrets are sensitive data that can be used by services. Swarm mode must be
- * enabled for these endpoints to work.
- *
- * @since 1.0.0
- * @category Tags
+ * @category HttpApi
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
  */
-export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoints/Secrets", {
+export const SecretsApi = HttpApi.make("SecretsApi").add(SecretsGroup);
+
+/**
+ * @since 1.0.0
+ * @category Services
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
+ */
+export class SecretsService extends Effect.Service<SecretsService>()("@the-moby-effect/endpoints/Secrets", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(SecretsApi, { group: "secrets", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretList */
-        const list_ = (
-            options?: { readonly filters?: Record<string, string | Array<string>> } | undefined
-        ): Effect.Effect<Readonly<Array<SwarmSecret>>, SecretsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/secrets"),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmSecret))),
-                Effect.mapError((cause) => new SecretsError({ method: "list", cause }))
-            );
+        const list_ = (filters?: Schema.Schema.Type<SecretListFilters>) => client.list({ urlParams: { filters } });
+        const create_ = (payload: SwarmSecretSpec) => client.create({ payload });
+        const inspect_ = (id: string) => client.inspect({ path: { id } });
+        const delete_ = (id: string) => client.delete({ path: { id } });
+        const update_ = (id: string, version: number, payload: SwarmSecretSpec) =>
+            client.update({ path: { id }, urlParams: { version }, payload });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretCreate */
-        const create_ = (
-            data: typeof SwarmSecretSpec.Encoded
-        ): Effect.Effect<Readonly<SwarmSecretCreateResponse>, SecretsError, never> =>
-            Function.pipe(
-                Schema.decode(SwarmSecretSpec)(data),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/secrets/create"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmSecretSpec))),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecretCreateResponse)),
-                Effect.mapError((cause) => new SecretsError({ method: "create", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretDelete */
-        const delete_ = (id: string): Effect.Effect<void, SecretsError, never> =>
-            Function.pipe(
-                HttpClientRequest.del(`/secrets/${encodeURIComponent(id)}`),
-                client.execute,
-                Effect.asVoid,
-                Effect.mapError((cause) => new SecretsError({ method: "delete", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretInspect */
-        const inspect_ = (id: string): Effect.Effect<Readonly<SwarmSecret>, SecretsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/secrets/${encodeURIComponent(id)}`),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmSecret)),
-                Effect.mapError((cause) => new SecretsError({ method: "inspect", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretUpdate */
-        const update_ = (
-            id: string,
-            options: {
-                readonly spec: SwarmSecretSpec;
-                readonly version: number;
-            }
-        ): Effect.Effect<void, SecretsError, never> =>
-            Function.pipe(
-                HttpClientRequest.post(`/secrets/${encodeURIComponent(id)}/update`),
-                maybeAddQueryParameter("version", Option.some(options.version)),
-                HttpClientRequest.schemaBodyJson(SwarmSecretSpec)(options.spec),
-                Effect.flatMap(client.execute),
-                Effect.asVoid,
-                Effect.mapError((cause) => new SecretsError({ method: "update", cause }))
-            );
-
-        return {
-            list: list_,
-            create: create_,
-            delete: delete_,
-            inspect: inspect_,
-            update: update_,
-        };
+        return { list: list_, create: create_, inspect: inspect_, delete: delete_, update: update_ } as const;
     }),
 }) {}
 
@@ -147,4 +105,17 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
  */
-export const SecretsLayer: Layer.Layer<Secrets, never, HttpClient.HttpClient> = Secrets.Default;
+export const SecretsLayer: Layer.Layer<SecretsService, never, HttpClient.HttpClient> =
+    SecretsService.DefaultWithoutDependencies as Layer.Layer<SecretsService, never, HttpClient.HttpClient>;
+
+/**
+ * Local socket auto-configured layer
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const SecretsLayerLocalSocket: Layer.Layer<SecretsService, never, HttpClient.HttpClient> =
+    SecretsService.Default as Layer.Layer<SecretsService, never, HttpClient.HttpClient>;
+
+/** Alias for pre-refactor naming consistency */
+export { SecretsService as Secrets };

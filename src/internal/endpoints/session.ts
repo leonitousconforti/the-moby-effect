@@ -2,60 +2,33 @@ import type * as HttpClientError from "@effect/platform/HttpClientError";
 import type * as Socket from "@effect/platform/Socket";
 import type * as Layer from "effect/Layer";
 
-import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
-import * as Predicate from "effect/Predicate";
 
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { hijackResponseUnsafe } from "../demux/hijack.js";
 
 /**
  * @since 1.0.0
- * @category Errors
- */
-export const SessionsErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/SessionsError"
-) as SessionsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type SessionsErrorTypeId = typeof SessionsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isSessionsError = (u: unknown): u is SessionsError => Predicate.hasProperty(u, SessionsErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId, "SessionsError")<{
-    method: string;
-    cause: HttpClientError.HttpClientError | Socket.SocketError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
-
-/**
- * @since 1.0.0
- * @category Tags
+ * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
  */
 export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpoints/Session", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatus((status) => status === 101));
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = HttpClient.filterStatus(httpClient, (status) => status === 101);
 
         /**
          * Start a new interactive session with a server. Session allows server
@@ -69,14 +42,17 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
          *
          * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session
          */
-        const session_ = (): Effect.Effect<Socket.Socket, SessionsError, never> =>
+        const session_ = (): Effect.Effect<
+            Socket.Socket,
+            HttpClientError.HttpClientError | Socket.SocketError,
+            never
+        > =>
             Function.pipe(
                 HttpClientRequest.post("/session"),
                 HttpClientRequest.setHeader("Upgrade", "h2c"),
                 HttpClientRequest.setHeader("Connection", "Upgrade"),
                 client.execute,
-                Effect.flatMap(hijackResponseUnsafe),
-                Effect.mapError((cause) => new SessionsError({ method: "session", cause }))
+                Effect.flatMap(hijackResponseUnsafe)
             );
 
         return { session: session_ };
@@ -88,4 +64,11 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
  */
-export const SessionsLayer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;
+export const SessionsLayerLocalSocket: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.Default;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
+ */
+export const SessionsLayer: Layer.Layer<Sessions, never, HttpClient.HttpClient> = Sessions.DefaultWithoutDependencies;

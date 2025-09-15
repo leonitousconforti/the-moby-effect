@@ -153,12 +153,6 @@ export {
 export {
     /**
      * @since 1.0.0
-     * @category Errors
-     */
-    isNetworksError,
-
-    /**
-     * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
      */
@@ -166,44 +160,37 @@ export {
 
     /**
      * @since 1.0.0
-     * @category Errors
+     * @category Layers
+     * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
      */
-    NetworksError,
-
+    NetworksLayer,
     /**
      * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
      */
-    NetworksLayer,
+    NetworksLayerLocalSocket,
 } from "./internal/endpoints/networks.js";
 
 export {
-    /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    isNodesError,
-
     /**
      * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
      */
     Nodes,
-
-    /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    NodesError,
-
     /**
      * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
      */
     NodesLayer,
+    /**
+     * @since 1.0.0
+     * @category Layers
+     * @see https://docs.docker.com/engine/api/v1.45/#tag/Node
+     */
+    NodesLayerLocalSocket,
 } from "./internal/endpoints/nodes.js";
 
 export {
@@ -236,12 +223,6 @@ export {
 
 export {
     /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    isSecretsError,
-
-    /**
      * Secrets are sensitive data that can be used by services. Swarm mode must
      * be enabled for these endpoints to work.
      *
@@ -252,12 +233,6 @@ export {
     Secrets,
 
     /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    SecretsError,
-
-    /**
      * Secrets are sensitive data that can be used by services. Swarm mode must
      * be enabled for these endpoints to work.
      *
@@ -266,6 +241,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
      */
     SecretsLayer,
+    /**
+     * @since 1.0.0
+     * @category Layers
+     * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
+     */
+    SecretsLayerLocalSocket,
 } from "./internal/endpoints/secrets.js";
 
 export {
@@ -332,12 +313,6 @@ export {
 
 export {
     /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    isSwarmsError,
-
-    /**
      * Engines can be clustered together in a swarm. Refer to the swarm mode
      * documentation for more information.
      *
@@ -356,12 +331,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
      */
     SwarmLayer,
-
     /**
      * @since 1.0.0
-     * @category Errors
+     * @category Layers
+     * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
      */
-    SwarmsError,
+    SwarmLayerLocalSocket,
 } from "./internal/endpoints/swarm.js";
 
 export {
@@ -394,12 +369,6 @@ export {
 
 export {
     /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    isTasksError,
-
-    /**
      * A task is a container running on a swarm. It is the atomic scheduling
      * unit of swarm. Swarm mode must be enabled for these endpoints to work.
      *
@@ -410,12 +379,6 @@ export {
     Tasks,
 
     /**
-     * @since 1.0.0
-     * @category Errors
-     */
-    TasksError,
-
-    /**
      * A task is a container running on a swarm. It is the atomic scheduling
      * unit of swarm. Swarm mode must be enabled for these endpoints to work.
      *
@@ -424,6 +387,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
      */
     TasksLayer,
+    /**
+     * @since 1.0.0
+     * @category Layers
+     * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
+     */
+    TasksLayerLocalSocket,
 } from "./internal/endpoints/tasks.js";
 
 export {

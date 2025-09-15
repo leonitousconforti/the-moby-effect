@@ -1,19 +1,16 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Tuple from "effect/Tuple";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
     Swarm as SwarmData,
     SwarmInitRequest,
@@ -22,143 +19,121 @@ import {
     SwarmUnlockKeyResponse,
     SwarmUnlockRequest,
 } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const SwarmsErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/SwarmsError"
-) as SwarmsErrorTypeId;
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInspect */
+const inspectSwarmEndpoint = HttpApiEndpoint.get("inspect", "/")
+    .addSuccess(SwarmData, { status: 200 }) // 200 OK
+    .addError(HttpApiError.NotAcceptable); // 406 node is not a swarm manager
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type SwarmsErrorTypeId = typeof SwarmsErrorTypeId;
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInit */
+const initSwarmEndpoint = HttpApiEndpoint.post("init", "/init")
+    .setPayload(SwarmInitRequest)
+    .addSuccess(Schema.String, { status: 200 }) // 200 OK returns node ID
+    .addError(HttpApiError.BadRequest)
+    .addError(HttpApiError.InternalServerError);
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isSwarmsError = (u: unknown): u is SwarmsError => Predicate.hasProperty(u, SwarmsErrorTypeId);
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmJoin */
+const joinSwarmEndpoint = HttpApiEndpoint.post("join", "/join")
+    .setPayload(SwarmJoinRequest)
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.InternalServerError);
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "SwarmsError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmLeave */
+const leaveSwarmEndpoint = HttpApiEndpoint.post("leave", "/leave")
+    .setUrlParams(Schema.Struct({ force: Schema.optional(Schema.BooleanFromString) }))
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.InternalServerError);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUpdate */
+const updateSwarmEndpoint = HttpApiEndpoint.post("update", "/update")
+    .setUrlParams(
+        Schema.Struct({
+            version: Schema.NumberFromString,
+            rotateWorkerToken: Schema.optional(Schema.BooleanFromString),
+            rotateManagerToken: Schema.optional(Schema.BooleanFromString),
+            rotateManagerUnlockKey: Schema.optional(Schema.BooleanFromString),
+        })
+    )
+    .setPayload(SwarmSpec)
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(HttpApiError.InternalServerError);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlockkey */
+const unlockkeySwarmEndpoint = HttpApiEndpoint.get("unlockkey", "/unlockkey")
+    .addSuccess(SwarmUnlockKeyResponse, { status: 200 }) // 200 OK
+    .addError(HttpApiError.InternalServerError);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlock */
+const unlockSwarmEndpoint = HttpApiEndpoint.post("unlock", "/unlock")
+    .setPayload(SwarmUnlockRequest)
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.InternalServerError);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm */
+const SwarmGroup = HttpApiGroup.make("swarm")
+    .add(inspectSwarmEndpoint)
+    .add(initSwarmEndpoint)
+    .add(joinSwarmEndpoint)
+    .add(leaveSwarmEndpoint)
+    .add(updateSwarmEndpoint)
+    .add(unlockkeySwarmEndpoint)
+    .add(unlockSwarmEndpoint)
+    .addError(HttpApiError.InternalServerError)
+    .prefix("/swarm");
 
 /**
  * Engines can be clustered together in a swarm. Refer to the swarm mode
  * documentation for more information.
  *
  * @since 1.0.0
- * @category Tags
+ * @category HttpApi
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
-export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/Swarm", {
+export const SwarmApi = HttpApi.make("SwarmApi").add(SwarmGroup);
+
+/**
+ * Engines can be clustered together in a swarm. Refer to the swarm mode
+ * documentation for more information.
+ *
+ * @since 1.0.0
+ * @category Services
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
+ */
+export class SwarmService extends Effect.Service<SwarmService>()("@the-moby-effect/endpoints/Swarm", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(SwarmApi, { group: "swarm", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInspect */
-        const inspect_ = (): Effect.Effect<Readonly<SwarmData>, SwarmsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/swarm"),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmData)),
-                Effect.mapError((cause) => new SwarmsError({ method: "inspect", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInit */
-        const init_ = (options: typeof SwarmInitRequest.Encoded): Effect.Effect<Readonly<string>, SwarmsError, never> =>
-            Function.pipe(
-                Schema.decode(SwarmInitRequest)(options),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/init"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmInitRequest))),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.String)),
-                Effect.mapError((cause) => new SwarmsError({ method: "init", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmJoin */
-        const join_ = (options: typeof SwarmJoinRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
-            Function.pipe(
-                Schema.decode(SwarmJoinRequest)(options),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/join"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmJoinRequest))),
-                Effect.flatMap(client.execute),
-                Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "join", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmLeave */
-        const leave_ = (options: {
-            /**
-             * Force leave swarm, even if this is the last manager or that it
-             * will break the cluster.
-             */
-            readonly force?: boolean;
-        }): Effect.Effect<void, SwarmsError, never> =>
-            Function.pipe(
-                HttpClientRequest.post("/swarm/leave"),
-                maybeAddQueryParameter("force", Option.fromNullable(options.force)),
-                client.execute,
-                Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "leave", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUpdate */
-        const update_ = (options: {
-            readonly spec: SwarmSpec;
-            readonly version: number;
-            readonly rotateWorkerToken?: boolean;
-            readonly rotateManagerToken?: boolean;
-            readonly rotateManagerUnlockKey?: boolean;
-        }): Effect.Effect<void, SwarmsError, never> =>
-            Function.pipe(
-                HttpClientRequest.post("/swarm/update"),
-                maybeAddQueryParameter("version", Option.some(options.version)),
-                maybeAddQueryParameter("rotateWorkerToken", Option.fromNullable(options.rotateWorkerToken)),
-                maybeAddQueryParameter("rotateManagerToken", Option.fromNullable(options.rotateManagerToken)),
-                maybeAddQueryParameter("rotateManagerUnlockKey", Option.fromNullable(options.rotateManagerUnlockKey)),
-                HttpClientRequest.schemaBodyJson(SwarmSpec)(options.spec),
-                Effect.flatMap(client.execute),
-                Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "update", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlockkey */
-        const unlockkey_ = (): Effect.Effect<SwarmUnlockKeyResponse, SwarmsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/swarm/unlockkey"),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmUnlockKeyResponse)),
-                Effect.mapError((cause) => new SwarmsError({ method: "unlockkey", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlock */
-        const unlock_ = (options: typeof SwarmUnlockRequest.Encoded): Effect.Effect<void, SwarmsError, never> =>
-            Function.pipe(
-                Schema.decode(SwarmUnlockRequest)(options),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/swarm/unlock"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmUnlockRequest))),
-                Effect.flatMap(client.execute),
-                Effect.asVoid,
-                Effect.mapError((cause) => new SwarmsError({ method: "unlock", cause }))
-            );
+        const inspect_ = () => client.inspect({});
+        const init_ = (payload: SwarmInitRequest) => client.init({ payload });
+        const join_ = (payload: SwarmJoinRequest) => client.join({ payload });
+        const leave_ = (force?: boolean) => client.leave({ urlParams: { force } });
+        const update_ = (
+            spec: SwarmSpec,
+            version: number,
+            rotate?: { workerToken?: boolean; managerToken?: boolean; managerUnlockKey?: boolean }
+        ) =>
+            client.update({
+                urlParams: {
+                    version,
+                    rotateWorkerToken: rotate?.workerToken,
+                    rotateManagerToken: rotate?.managerToken,
+                    rotateManagerUnlockKey: rotate?.managerUnlockKey,
+                },
+                payload: spec,
+            });
+        const unlockkey_ = () => client.unlockkey({});
+        const unlock_ = (payload: SwarmUnlockRequest) => client.unlock({ payload });
 
         return {
             inspect: inspect_,
@@ -168,7 +143,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
             update: update_,
             unlockkey: unlockkey_,
             unlock: unlock_,
-        };
+        } as const;
     }),
 }) {}
 
@@ -180,4 +155,14 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
-export const SwarmLayer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.Default;
+export const SwarmLayer: Layer.Layer<SwarmService, never, HttpClient.HttpClient> =
+    SwarmService.DefaultWithoutDependencies as Layer.Layer<SwarmService, never, HttpClient.HttpClient>;
+
+/**
+ * Local socket auto-configured layer
+ *
+ * @since 1.0.0
+ * @category Layers
+ */
+export const SwarmLayerLocalSocket: Layer.Layer<SwarmService, never, HttpClient.HttpClient> =
+    SwarmService.Default as Layer.Layer<SwarmService, never, HttpClient.HttpClient>;

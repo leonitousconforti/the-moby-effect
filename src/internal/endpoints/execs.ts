@@ -1,17 +1,11 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Socket from "@effect/platform/Socket";
 import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
 
-import * as PlatformError from "@effect/platform/Error";
 import * as HttpClient from "@effect/platform/HttpClient";
 import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
 import * as Schema from "effect/Schema";
 import * as Tuple from "effect/Tuple";
 import * as MobyDemux from "../../MobyDemux.js";
@@ -22,43 +16,7 @@ import {
     ContainerExecInspect as ExecInspectResponse,
     IDResponse,
 } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const ExecsErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/ExecsError") as ExecsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type ExecsErrorTypeId = typeof ExecsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isExecsError = (u: unknown): u is ExecsError => Predicate.hasProperty(u, ExecsErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class ExecsError extends PlatformError.TypeIdError(ExecsErrorTypeId, "ExecsError")<{
-    method: string;
-    cause:
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpBody.HttpBodyError
-        | Socket.SocketError
-        | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
+import { ExecsError } from "../../MobyEndpoints.js";
 
 /**
  * Execs service

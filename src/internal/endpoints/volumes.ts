@@ -1,19 +1,16 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Tuple from "effect/Tuple";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
     ClusterVolumeSpec,
     Volume,
@@ -21,168 +18,147 @@ import {
     VolumeListResponse,
     VolumePruneResponse,
 } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
 
 /**
+ * Volume list filters (JSON encoded)
+ *
  * @since 1.0.0
- * @category Errors
  */
-export const VolumesErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/VolumesError"
-) as VolumesErrorTypeId;
+export class VolumeListFilters extends Schema.parseJson(
+    Schema.Struct({
+        name: Schema.optional(Schema.Array(Schema.String)),
+        driver: Schema.optional(Schema.Array(Schema.String)),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        dangling: Schema.optional(Schema.Array(Schema.Literal("true", "false", "1", "0"))),
+    })
+) {}
 
 /**
+ * Volume prune filters (JSON encoded)
+ *
  * @since 1.0.0
- * @category Errors
  */
-export type VolumesErrorTypeId = typeof VolumesErrorTypeId;
+export class VolumePruneFilters extends Schema.parseJson(
+    Schema.Struct({
+        label: Schema.optional(Schema.Array(Schema.String)),
+        all: Schema.optional(Schema.Array(Schema.Literal("true", "false", "1", "0"))),
+    })
+) {}
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeList */
+const listVolumesEndpoint = HttpApiEndpoint.get("list", "/")
+    .setUrlParams(
+        Schema.Struct({
+            filters: Schema.optional(VolumeListFilters),
+        })
+    )
+    .addSuccess(VolumeListResponse, { status: 200 }); // 200 OK
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeCreate */
+const createVolumeEndpoint = HttpApiEndpoint.post("create", "/create")
+    .setPayload(VolumeCreateOptions)
+    .addSuccess(Volume, { status: 201 }) // 201 Created
+    .addError(HttpApiError.Conflict); // 409 Name conflicts
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeInspect */
+const inspectVolumeEndpoint = HttpApiEndpoint.get("inspect", "/:name")
+    .setPath(Schema.Struct({ name: Schema.String }))
+    .addSuccess(Volume, { status: 200 }) // 200 OK
+    .addError(HttpApiError.NotFound); // 404 Volume not found
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeDelete */
+const deleteVolumeEndpoint = HttpApiEndpoint.del("delete", "/:name")
+    .setPath(Schema.Struct({ name: Schema.String }))
+    .setUrlParams(Schema.Struct({ force: Schema.optional(Schema.BooleanFromString) }))
+    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
+    .addError(HttpApiError.NotFound); // 404 Volume not found
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeUpdate */
+const updateVolumeEndpoint = HttpApiEndpoint.put("update", "/:name")
+    .setPath(Schema.Struct({ name: Schema.String }))
+    .setUrlParams(Schema.Struct({ version: Schema.NumberFromString }))
+    .setPayload(ClusterVolumeSpec)
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(HttpApiError.NotFound); // 404 Volume not found
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumePrune */
+const pruneVolumeEndpoint = HttpApiEndpoint.post("prune", "/prune")
+    .setUrlParams(
+        Schema.Struct({
+            filters: Schema.optional(VolumePruneFilters),
+        })
+    )
+    .addSuccess(VolumePruneResponse, { status: 200 }); // 200 OK
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume */
+const VolumesGroup = HttpApiGroup.make("volumes")
+    .add(listVolumesEndpoint)
+    .add(createVolumeEndpoint)
+    .add(inspectVolumeEndpoint)
+    .add(deleteVolumeEndpoint)
+    .add(updateVolumeEndpoint)
+    .add(pruneVolumeEndpoint)
+    .addError(HttpApiError.InternalServerError) // 500 Server error
+    .prefix("/volumes");
 
 /**
  * @since 1.0.0
- * @category Errors
- */
-export const isVolumesError = (u: unknown): u is VolumesError => Predicate.hasProperty(u, VolumesErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class VolumesError extends PlatformError.TypeIdError(VolumesErrorTypeId, "VolumesError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
-
-/**
- * @since 1.0.0
- * @category Tags
+ * @category HttpApi
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
  */
-export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoints/Volumes", {
+export const VolumesApi = HttpApi.make("VolumesApi").add(VolumesGroup);
+
+/**
+ * @since 1.0.0
+ * @category Services
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
+ */
+export class VolumesService extends Effect.Service<VolumesService>()("@the-moby-effect/endpoints/Volumes", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(VolumesApi, { group: "volumes", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeList */
-        const list_ = (
-            options?:
-                | {
-                      readonly filters?: {
-                          name?: [string] | undefined;
-                          driver?: [string] | undefined;
-                          label?: Array<string> | undefined;
-                          dangling?: ["true" | "false" | "1" | "0"] | undefined;
-                      };
-                  }
-                | undefined
-        ): Effect.Effect<VolumeListResponse, VolumesError> =>
-            Function.pipe(
-                HttpClientRequest.get("/volumes"),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumeListResponse)),
-                Effect.mapError((cause) => new VolumesError({ method: "list", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeCreate */
-        const create_ = (
-            createOptions: typeof VolumeCreateOptions.Encoded
-        ): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
-            Function.pipe(
-                Schema.decode(VolumeCreateOptions)(createOptions),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/volumes/create"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(VolumeCreateOptions))),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
-                Effect.mapError((cause) => new VolumesError({ method: "create", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeDelete */
-        const delete_ = (
-            name: string,
-            options?:
-                | {
-                      readonly force?: boolean | undefined;
-                  }
-                | undefined
-        ): Effect.Effect<void, VolumesError, never> =>
-            Function.pipe(
-                HttpClientRequest.del(`/volumes/${encodeURIComponent(name)}`),
-                maybeAddQueryParameter("force", Option.fromNullable(options?.force)),
-                client.execute,
-                Effect.asVoid,
-                Effect.mapError((cause) => new VolumesError({ method: "delete", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeInspect */
-        const inspect_ = (name: string): Effect.Effect<Readonly<Volume>, VolumesError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/volumes/${encodeURIComponent(name)}`),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Volume)),
-                Effect.mapError((cause) => new VolumesError({ method: "inspect", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeUpdate */
-        const update_ = (options: {
-            readonly name: string;
-            readonly spec: ClusterVolumeSpec;
-            readonly version: number;
-        }): Effect.Effect<void, VolumesError, never> =>
-            Function.pipe(
-                HttpClientRequest.put(`/volumes/${encodeURIComponent(options.name)}`),
-                maybeAddQueryParameter("version", Option.some(options.version)),
-                HttpClientRequest.schemaBodyJson(ClusterVolumeSpec)(options.spec),
-                Effect.flatMap(client.execute),
-                Effect.asVoid,
-                Effect.mapError((cause) => new VolumesError({ method: "update", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumePrune */
-        const prune_ = (
-            options?:
-                | {
-                      readonly filters?: {
-                          label?: Array<string> | undefined;
-                          all?: ["true" | "false" | "1" | "0"] | undefined;
-                      };
-                  }
-                | undefined
-        ): Effect.Effect<VolumePruneResponse, VolumesError, never> =>
-            Function.pipe(
-                HttpClientRequest.post("/volumes/prune"),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(VolumePruneResponse)),
-                Effect.mapError((cause) => new VolumesError({ method: "prune", cause }))
-            );
+        const list_ = (filters?: Schema.Schema.Type<VolumeListFilters> | undefined) =>
+            client.list({ urlParams: { filters } });
+        const create_ = (options: VolumeCreateOptions) => client.create({ payload: options });
+        const inspect_ = (name: string) => client.inspect({ path: { name } });
+        const delete_ = (name: string, force?: boolean) => client.delete({ path: { name }, urlParams: { force } });
+        const update_ = (name: string, version: number, spec: ClusterVolumeSpec) =>
+            client.update({ path: { name }, urlParams: { version }, payload: spec });
+        const prune_ = (filters?: Schema.Schema.Type<VolumePruneFilters> | undefined) =>
+            client.prune({ urlParams: { filters } });
 
         return {
             list: list_,
             create: create_,
-            delete: delete_,
             inspect: inspect_,
+            delete: delete_,
             update: update_,
             prune: prune_,
-        };
+        } as const;
     }),
 }) {}
 
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
  */
-export const VolumesLayer: Layer.Layer<Volumes, never, HttpClient.HttpClient> = Volumes.Default;
+export const VolumesLayerLocalSocket: Layer.Layer<VolumesService, never, HttpClient.HttpClient> =
+    VolumesService.Default;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ */
+export const VolumesLayer: Layer.Layer<VolumesService, never, HttpClient.HttpClient> =
+    VolumesService.DefaultWithoutDependencies;

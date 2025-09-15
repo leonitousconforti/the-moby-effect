@@ -1,4 +1,29 @@
 {
+    "direnv.restart.automatic": true,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "editor.defaultFormatter": "EditorConfig.EditorConfig",
+    "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc][yaml]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[go]": {
+        "editor.defaultFormatter": "golang.go"
+    },
+
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "**/.direnv": true,
+        "**/.tsbuildinfo": true,
+        "**/build": true,
+        "**/coverage": true,
+        "**/dist": true
+    },
+
+    "cSpell.enabled": true,
     "cSpell.words": [
         "aaahhhhh",
         "Addrs",
