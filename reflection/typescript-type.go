@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"maps"
 	"reflect"
+	"slices"
 	"strings"
 )
 
@@ -17,6 +19,7 @@ type TSProperty struct {
 	Name         string
 	Type         TSType
 	IsOpt        bool
+	IsAnonymous  bool
 	DefaultValue string
 }
 
@@ -80,11 +83,16 @@ func tsType(t reflect.Type) TSType {
 
 	switch t.Kind() {
 	case reflect.Slice:
-		return TSType{fmt.Sprintf("Schema.Array(%s)", tsTypeToString(tsType(t.Elem()))), true}
+		inner := tsTypeToString(tsType(t.Elem()))
+		return TSType{fmt.Sprintf("Schema.Array(%s)", inner), true}
 	case reflect.Map:
-		return TSType{fmt.Sprintf("Schema.Record({ key: %s, value: %s })", tsTypeToString(tsType(t.Key())), tsTypeToString(tsType(t.Elem()))), true}
+		innerKey := tsTypeToString(tsType(t.Key()))
+		innerValue := tsTypeToString(tsType(t.Elem()))
+		return TSType{fmt.Sprintf("Schema.Record({ key: %s, value: %s })", innerKey, innerValue), true}
 	case reflect.Array:
-		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", tsTypeToString(tsType(t.Elem())), t.Len()), false}
+		len := t.Len()
+		inner := tsTypeToString(tsType(t.Elem()))
+		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", inner, len), false}
 	case reflect.Pointer:
 		ptr := tsType(t.Elem())
 		ptr.Nullable = true
@@ -110,6 +118,7 @@ func tsType(t reflect.Type) TSType {
 	}
 }
 
+// TODO: Get rid of this
 func (t *TSModelType) WriteInlineStruct() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintln("Schema.Struct({"))
@@ -133,12 +142,18 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	buffer.WriteString(fmt.Sprintf("export class %s extends Schema.Class<%s>(\"%s\")(\n", t.Name, t.Name, t.Name))
 	buffer.WriteString(fmt.Sprintln("    {"))
 	for _, p := range t.Properties {
+		if replacement, willReplace := typesToSkip[p.Type.Name]; willReplace {
+			p.Type.Name = replacement
+		}
+
 		if p.IsOpt && p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
 		} else if p.IsOpt {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
 		} else if p.Type.Nullable {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
+		} else if p.IsAnonymous {
+			buffer.WriteString(fmt.Sprintf("        ...%s.%s.fields,\n", p.Name, p.Name))
 		} else {
 			buffer.WriteString(fmt.Sprintf("        \"%s\": %s,\n", p.Name, p.Type.Name))
 		}
@@ -147,6 +162,7 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	buffer.WriteString(fmt.Sprintln("    {"))
 	buffer.WriteString(fmt.Sprintf("        identifier: \"%s\",\n", t.Name))
 	buffer.WriteString(fmt.Sprintf("        title: \"%s\",\n", t.SourceName))
+	buffer.WriteString(fmt.Sprintf("        documentation: \"%s\",\n", generateDocLink(t.SourceName)))
 	buffer.WriteString(fmt.Sprintln("    }"))
 	buffer.WriteString(fmt.Sprintln(") {}"))
 
@@ -156,23 +172,26 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 		fmt.Fprintf(w, "import * as MobySchemas from \"../schemas/index.js\";\n")
 	}
 
-	imports := make(map[string]bool)
+	importsUnsorted := make(map[string]string)
 	for _, p := range t.Properties {
 		typeName := p.Type.Name
+		if _, willSkip := typesToSkip[typeName]; willSkip {
+			continue
+		}
+
 		parts := strings.FieldsFunc(typeName, func(r rune) bool {
 			return r == '.' || r == '(' || r == ')'
 		})
 
-		for i := range len(parts) - 1 {
+		for i := 0; i+1 < len(parts); i++ {
 			if parts[i] == parts[i+1] {
-				packageName := parts[i]
-				if _, ok := imports[packageName]; !ok {
-					fmt.Fprintf(w, "import * as %s from \"./%s.generated.js\";\n", packageName, packageName)
-					imports[packageName] = true
-					break
-				}
+				importsUnsorted[parts[i]] = fmt.Sprintf("import * as %s from \"./%s.generated.js\";\n", parts[i], parts[i])
 			}
 		}
+	}
+
+	for _, k := range slices.Sorted(maps.Keys(importsUnsorted)) {
+		fmt.Fprint(w, importsUnsorted[k])
 	}
 
 	fmt.Fprintf(w, "\n")

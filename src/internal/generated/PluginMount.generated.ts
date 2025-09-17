@@ -13,7 +13,6 @@ export class PluginMount extends Schema.Class<PluginMount>("PluginMount")(
     {
         identifier: "PluginMount",
         title: "types.PluginMount",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/plugin_mount.go#L6-L37",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types#PluginMount",
     }
 ) {}

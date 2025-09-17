@@ -1,180 +1,123 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Stream from "effect/Stream";
-import * as Tuple from "effect/Tuple";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
     RegistryAuthenticateOKBody as AuthResponse,
     DiskUsage,
-    EventMessage,
     RegistryAuthConfig,
     SystemInfoResponse,
     SystemVersionResponse,
 } from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
+import { HttpApiStreamingResponse } from "./httpApiHacks.js";
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemAuth */
+const authEndpoint = HttpApiEndpoint.post("auth", "/auth")
+    .setPayload(RegistryAuthConfig)
+    .addSuccess(AuthResponse, { status: 200 }) // 200 OK
+    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
+    .addError(HttpApiError.Unauthorized); // 401 Unauthorized
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemInfo */
+const infoEndpoint = HttpApiEndpoint.get("info", "/info").addSuccess(SystemInfoResponse, { status: 200 });
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemVersion */
+const versionEndpoint = HttpApiEndpoint.get("version", "/version").addSuccess(SystemVersionResponse, { status: 200 });
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemPing */
+const pingEndpoint = HttpApiEndpoint.get("ping", "/_ping").addSuccess(HttpApiSchema.Empty(200));
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemPingHead */
+const pingHeadEndpoint = HttpApiEndpoint.head("pingHead", "/_ping").addSuccess(HttpApiSchema.Empty(200));
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemEvents */
+const eventsEndpoint = HttpApiEndpoint.get("events", "/events")
+    .setUrlParams(
+        Schema.Struct({
+            since: Schema.optional(Schema.String),
+            until: Schema.optional(Schema.String),
+        })
+    )
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.BadRequest); // 400 Bad request
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemDataUsage */
+const dataUsageEndpoint = HttpApiEndpoint.get("dataUsage", "/system/df")
+    .setUrlParams(
+        Schema.Struct({
+            type: Schema.optional(
+                Schema.Array(
+                    Schema.Union(
+                        Schema.Literal("container"),
+                        Schema.Literal("image"),
+                        Schema.Literal("volume"),
+                        Schema.Literal("build-cache")
+                    )
+                )
+            ),
+        })
+    )
+    .addSuccess(DiskUsage, { status: 200 }); // 200 OK
+
+/** @see https://docs.docker.com/reference/api/engine/version/v1.51/#tag/System */
+const SystemGroup = HttpApiGroup.make("system")
+    .add(authEndpoint)
+    .add(infoEndpoint)
+    .add(versionEndpoint)
+    .add(pingEndpoint)
+    .add(pingHeadEndpoint)
+    .add(eventsEndpoint)
+    .add(dataUsageEndpoint)
+    .addError(HttpApiError.InternalServerError);
 
 /**
  * @since 1.0.0
- * @category Errors
+ * @category HttpApi
+ * @see https://docs.docker.com/reference/api/engine/version/v1.51/#tag/System
  */
-export const SystemsErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/SystemsError"
-) as SystemsErrorTypeId;
+export const SystemApi = HttpApi.make("SystemApi").add(SystemGroup);
 
 /**
  * @since 1.0.0
- * @category Errors
+ * @category Services
+ * @see https://docs.docker.com/reference/api/engine/version/v1.51/#tag/System
  */
-export type SystemsErrorTypeId = typeof SystemsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isSystemsError = (u: unknown): u is SystemsError => Predicate.hasProperty(u, SystemsErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class SystemsError extends PlatformError.TypeIdError(SystemsErrorTypeId, "SystemsError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
-
-/**
- * @since 1.0.0
- * @category Tags
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/System
- */
-export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoints/System", {
+export class System extends Effect.Service<System>()("@the-moby-effect/endpoints/System", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        type Options<Name extends (typeof SystemGroup.endpoints)[number]["name"]> =
+            HttpApiEndpoint.HttpApiEndpoint.UrlParams<
+                HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof SystemGroup.endpoints)[number], Name>
+            >;
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemAuth */
-        const auth_ = (
-            authConfig: typeof RegistryAuthConfig.Encoded
-        ): Effect.Effect<Readonly<AuthResponse>, SystemsError, never> =>
-            Function.pipe(
-                Schema.decode(RegistryAuthConfig)(authConfig),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/auth"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(RegistryAuthConfig))),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(AuthResponse)),
-                Effect.mapError((cause) => new SystemsError({ method: "auth", cause }))
-            );
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(SystemApi, { group: "system", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemInfo */
-        const info_ = (): Effect.Effect<Readonly<SystemInfoResponse>, SystemsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/info"),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SystemInfoResponse)),
-                Effect.mapError((cause) => new SystemsError({ method: "info", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemVersion */
-        const version_ = (): Effect.Effect<Readonly<SystemVersionResponse>, SystemsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/version"),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SystemVersionResponse)),
-                Effect.mapError((cause) => new SystemsError({ method: "version", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemPing */
-        const ping_ = (): Effect.Effect<"OK", SystemsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/_ping"),
-                client.execute,
-                Effect.flatMap((response) => response.text),
-                Effect.flatMap(Schema.decodeUnknown(Schema.Literal("OK"))),
-                Effect.mapError((cause) => new SystemsError({ method: "ping", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemPingHead */
-        const pingHead_ = (): Effect.Effect<void, SystemsError, never> =>
-            Function.pipe(
-                HttpClientRequest.head("/_ping"),
-                client.execute,
-                Effect.asVoid,
-                Effect.mapError((cause) => new SystemsError({ method: "pingHead", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemEvents */
-        const events_ = (
-            options?:
-                | {
-                      readonly since?: string;
-                      readonly until?: string;
-                      readonly filters?: {
-                          config?: string | undefined;
-                          container?: string | undefined;
-                          daemon?: string | undefined;
-                          event?: string | undefined;
-                          image?: string | undefined;
-                          label?: string | undefined;
-                          network?: string | undefined;
-                          node?: string | undefined;
-                          plugin?: string | undefined;
-                          scope?: string | undefined;
-                          secret?: string | undefined;
-                          service?: string | undefined;
-                          type?: string | undefined;
-                          volume?: string | undefined;
-                      };
-                  }
-                | undefined
-        ): Stream.Stream<EventMessage, SystemsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/events"),
-                maybeAddQueryParameter("since", Option.fromNullable(options?.since)),
-                maybeAddQueryParameter("until", Option.fromNullable(options?.until)),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                client.execute,
-                HttpClientResponse.stream,
-                Stream.decodeText(),
-                Stream.splitLines,
-                Stream.flatMap(Schema.decode(Schema.parseJson(EventMessage))),
-                Stream.mapError((cause) => new SystemsError({ method: "events", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemDataUsage */
-        const dataUsage_ = (
-            options?:
-                | { readonly type?: Array<"container" | "image" | "volume" | "build-cache"> | undefined }
-                | undefined
-        ): Effect.Effect<DiskUsage, SystemsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/system/df"),
-                maybeAddQueryParameter("type", Option.fromNullable(options?.type)),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(DiskUsage)),
-                Effect.mapError((cause) => new SystemsError({ method: "dataUsage", cause }))
-            );
+        const auth_ = (payload: RegistryAuthConfig) => client.auth({ payload });
+        const info_ = () => client.info({});
+        const version_ = () => client.version({});
+        const ping_ = () => client.ping({});
+        const pingHead_ = () => client.pingHead({});
+        const events_ = (options?: Options<"events">) =>
+            HttpApiStreamingResponse(SystemApi, "system", "events", httpClient)({ urlParams: { ...options } });
+        const dataUsage_ = (params?: Options<"dataUsage">) => client.dataUsage({ urlParams: { ...params } });
 
         return {
             auth: auth_,
@@ -191,6 +134,13 @@ export class Systems extends Effect.Service<Systems>()("@the-moby-effect/endpoin
 /**
  * @since 1.0.0
  * @category Layers
- * @see https://docs.docker.com/reference/api/engine/latest/#tag/System
+ * @see https://docs.docker.com/reference/api/engine/version/v1.51/#tag/System
  */
-export const SystemsLayer: Layer.Layer<Systems, never, HttpClient.HttpClient> = Systems.Default;
+export const SystemLayerLocalSocket: Layer.Layer<System, never, HttpClient.HttpClient> = System.Default;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/version/v1.51/#tag/System
+ */
+export const SystemLayer: Layer.Layer<System, never, HttpClient.HttpClient> = System.DefaultWithoutDependencies;

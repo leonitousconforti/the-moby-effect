@@ -25,9 +25,9 @@ func ultimateType(t reflect.Type) reflect.Type {
 func reflectTypeMembers(typeToReflect reflect.Type, m *TSModelType) {
 	for index := 0; index < typeToReflect.NumField(); index++ {
 		field := typeToReflect.Field(index)
-
-		// If the json tag says to omit we skip any generation.
 		jsonTag, _ := JsonTagFromString(field.Tag.Get("json"))
+
+		// If the json tag says to omit we skip any generation
 		if jsonTag.Skip {
 			continue
 		}
@@ -53,10 +53,10 @@ func reflectTypeMembers(typeToReflect reflect.Type, m *TSModelType) {
 			ut := ultimateType(field.Type)
 			reflectType(ut)
 			newType := reflectedTypes[typeToKey(ut)]
-			if newType == nil {
-				panic(fmt.Sprintf("Failed to reflect ultimate type (%s) for anonymous member (%s) on type (%s)", ut, field.Name, typeToReflect))
-			}
-			m.Properties = append(m.Properties, newType.Properties...)
+			tsTypeName := fmt.Sprintf("%s.%s", newType.Name, newType.Name)
+			tsType := TSType{Name: tsTypeName, Nullable: false}
+			tsProp := TSProperty{Name: newType.Name, Type: tsType, IsOpt: false, IsAnonymous: true}
+			m.Properties = append(m.Properties, tsProp)
 			continue
 		}
 
@@ -74,10 +74,11 @@ func reflectTypeMembers(typeToReflect reflect.Type, m *TSModelType) {
 
 func reflectType(t reflect.Type) {
 	k := typeToKey(t)
-	var activeType *TSModelType
-	var alreadyInserted bool
-	activeType, alreadyInserted = reflectedTypes[k]
-	if alreadyInserted {
+	if _, alreadyInserted := reflectedTypes[k]; alreadyInserted {
+		return
+	}
+
+	if _, shouldSkip := typesToSkip[k]; shouldSkip {
 		return
 	}
 
@@ -93,10 +94,7 @@ func reflectType(t reflect.Type) {
 		name = t.Name()
 	}
 
-	if activeType == nil {
-		activeType = NewModel(name, t.String())
-	}
-
+	activeType := NewModel(name, t.String())
 	reflectedTypes[k] = activeType
 	reflectTypeMembers(t, activeType)
 }
@@ -108,18 +106,14 @@ func main() {
 	}
 
 	sourcePath := path.Join(cwd, "internal", "generated")
-	files, err := os.ReadDir(sourcePath)
+	err = os.RemoveAll(sourcePath)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, file := range files {
-		if strings.HasSuffix(file.Name(), ".generated.ts") {
-			err := os.Remove(path.Join(sourcePath, file.Name()))
-			if err != nil {
-				panic(err)
-			}
-		}
+	err = os.MkdirAll(sourcePath, 0755)
+	if err != nil {
+		panic(err)
 	}
 
 	for _, t := range dockerTypesToReflect {

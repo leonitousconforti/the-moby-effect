@@ -18,6 +18,6 @@ export class ContainerMemoryStats extends Schema.Class<ContainerMemoryStats>("Co
         identifier: "ContainerMemoryStats",
         title: "container.MemoryStats",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/stats.go#L55-L80",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#MemoryStats",
     }
 ) {}

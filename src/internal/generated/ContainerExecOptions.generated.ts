@@ -12,16 +12,16 @@ export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("Co
         AttachStdin: Schema.Boolean,
         AttachStderr: Schema.Boolean,
         AttachStdout: Schema.Boolean,
-        Detach: Schema.Boolean,
         DetachKeys: Schema.String,
         Env: Schema.NullOr(Schema.Array(Schema.String)),
         WorkingDir: Schema.String,
         Cmd: Schema.NullOr(Schema.Array(Schema.String)),
+        Detach: Schema.Boolean,
     },
     {
         identifier: "ContainerExecOptions",
         title: "container.ExecOptions",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/exec.go#L11-L26",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#ExecOptions",
     }
 ) {}

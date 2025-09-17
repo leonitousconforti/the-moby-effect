@@ -13,7 +13,6 @@ export class RegistryAuthConfig extends Schema.Class<RegistryAuthConfig>("Regist
     {
         identifier: "RegistryAuthConfig",
         title: "registry.AuthConfig",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/registry/authconfig.go#L27-L46",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/registry#AuthConfig",
     }
 ) {}

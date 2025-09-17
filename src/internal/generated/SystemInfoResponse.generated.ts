@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
+import * as DeviceInfo from "./DeviceInfo.generated.js";
 import * as FirewallInfo from "./FirewallInfo.generated.js";
 import * as RegistryServiceConfig from "./RegistryServiceConfig.generated.js";
 import * as SwarmGenericResource from "./SwarmGenericResource.generated.js";
@@ -34,8 +35,6 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         CPUSet: Schema.Boolean,
         PidsLimit: Schema.Boolean,
         IPv4Forwarding: Schema.Boolean,
-        BridgeNfIptables: Schema.Boolean,
-        BridgeNfIp6tables: Schema.Boolean,
         Debug: Schema.Boolean,
         NFd: MobySchemas.Int64,
         OomKillDisable: Schema.Boolean,
@@ -82,13 +81,13 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         ),
         FirewallBackend: Schema.optionalWith(FirewallInfo.FirewallInfo, { nullable: true }),
         CDISpecDirs: Schema.NullOr(Schema.Array(Schema.String)),
+        DiscoveredDevices: Schema.optionalWith(Schema.Array(Schema.NullOr(DeviceInfo.DeviceInfo)), { nullable: true }),
         Containerd: Schema.optionalWith(SystemContainerdInfo.SystemContainerdInfo, { nullable: true }),
         Warnings: Schema.NullOr(Schema.Array(Schema.String)),
     },
     {
         identifier: "SystemInfoResponse",
         title: "system.Info",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/system/info.go#L9-L85",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#Info",
     }
 ) {}

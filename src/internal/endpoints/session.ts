@@ -1,15 +1,30 @@
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Socket from "@effect/platform/Socket";
-import type * as Layer from "effect/Layer";
-
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { hijackResponseUnsafe } from "../demux/hijack.js";
+import { HttpApiSocket } from "./httpApiHacks.js";
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session */
+const sessionEndpoint = HttpApiEndpoint.post("session", "/session")
+    .setHeaders(
+        Schema.Struct({
+            Upgrade: Schema.Literal("h2c"),
+            Connection: Schema.Literal("Upgrade"),
+        })
+    )
+    .addSuccess(HttpApiSchema.Empty(101)) // 101 Switching Protocols
+    .addSuccess(HttpApiSchema.Empty(200)); // 200 OK
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Session */
+const SessionGroup = HttpApiGroup.make("session").add(sessionEndpoint);
+
+/**
+ * @since 1.0.0
+ * @category HttpApi
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
+ */
+export const SessionApi = HttpApi.make("SessionApi").add(SessionGroup);
 
 /**
  * @since 1.0.0
@@ -28,32 +43,20 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
 
     effect: Effect.gen(function* () {
         const httpClient = yield* HttpClient.HttpClient;
-        const client = HttpClient.filterStatus(httpClient, (status) => status === 101);
+        yield* HttpApiClient.group(SessionApi, { group: "session", httpClient });
 
-        /**
-         * Start a new interactive session with a server. Session allows server
-         * to call back to the client for advanced capabilities. This endpoint
-         * hijacks the HTTP connection to HTTP2 transport that allows the client
-         * to expose gPRC services on that connection. For example, the client
-         * sends this request to upgrade the connection: `POST /session HTTP/1.1
-         * Upgrade: h2c Connection: Upgrade` The Docker daemon responds with a
-         * `101 UPGRADED` response follow with the raw stream: `HTTP/1.1 101
-         * UPGRADED Connection: Upgrade Upgrade: h2c`
-         *
-         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session
-         */
-        const session_ = (): Effect.Effect<
-            Socket.Socket,
-            HttpClientError.HttpClientError | Socket.SocketError,
-            never
-        > =>
-            Function.pipe(
-                HttpClientRequest.post("/session"),
-                HttpClientRequest.setHeader("Upgrade", "h2c"),
-                HttpClientRequest.setHeader("Connection", "Upgrade"),
-                client.execute,
-                Effect.flatMap(hijackResponseUnsafe)
-            );
+        const session_ = () =>
+            HttpApiSocket(
+                SessionApi,
+                "session",
+                "session",
+                httpClient
+            )({
+                headers: {
+                    Upgrade: "h2c",
+                    Connection: "Upgrade",
+                },
+            });
 
         return { session: session_ };
     }),

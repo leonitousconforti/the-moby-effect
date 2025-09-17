@@ -7,15 +7,12 @@ import {
     HttpApiSchema,
     HttpClient,
     HttpClientResponse,
-    Socket,
-    UrlParams,
+    type Socket,
 } from "@effect/platform";
-import { Effect, Either, Schema, Stream, Tuple, type Layer } from "effect";
+import { Effect, Schema, Stream, Tuple, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeRawSocket, responseToStreamingSocketOrFailUnsafe } from "../../MobyDemux.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { HttpApiStreamingRequest } from "../../test.js";
 import {
     ContainerChange,
     ContainerConfig,
@@ -25,6 +22,7 @@ import {
     ContainerInspectResponse,
     ContainerListResponseItem,
     ContainerPruneResponse,
+    ContainerStatsResponse,
     ContainerTopResponse,
     ContainerUpdateResponse,
     ContainerWaitResponse,
@@ -32,6 +30,7 @@ import {
     State,
 } from "../generated/index.js";
 import { ContainerId } from "../schemas/id.js";
+import { HttpApiSocket, HttpApiStreamingRequest, HttpApiStreamingResponse, HttpApiWebsocket } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -50,7 +49,15 @@ export class ListFilters extends Schema.parseJson(
         publish: Schema.optional(Schema.Array(Schema.String)),
         since: Schema.optional(Schema.Array(Schema.String)),
         status: Schema.optional(Schema.Array(State.fields["Status"])),
-        volume: Schema.optional(Schema.BooleanFromString),
+        volume: Schema.optional(Schema.String),
+    })
+) {}
+
+/** @since 1.0.0 */
+export class PruneFilters extends Schema.parseJson(
+    Schema.Struct({
+        until: Schema.optional(Schema.String),
+        label: Schema.optional(Schema.Array(Schema.String)),
     })
 ) {}
 
@@ -317,14 +324,6 @@ const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:id/arch
             copyUIDGID: Schema.optional(Schema.String),
         })
     )
-    // .setPayload(
-    //     Schema.Uint8ArrayFromSelf.pipe(
-    //         HttpApiSchema.withEncoding({
-    //             kind: "Uint8Array",
-    //             contentType: "application/x-tar",
-    //         })
-    //     )
-    // )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
     .addError(HttpApiError.Forbidden) // 403 Forbidden
@@ -332,7 +331,7 @@ const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:id/arch
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPrune */
 const pruneContainersEndpoint = HttpApiEndpoint.post("prune", "/prune")
-    .setUrlParams(Schema.Struct({ filters: Schema.optional(Schema.String) }))
+    .setUrlParams(Schema.Struct({ filters: Schema.optional(PruneFilters) }))
     .addSuccess(ContainerPruneResponse, { status: 200 }); // 200 OK
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container */
@@ -377,7 +376,7 @@ export const ContainersApi = HttpApi.make("ContainersApi").add(ContainersGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
-export class ContainersService extends Effect.Service<ContainersService>()("@the-moby-effect/endpoints/Containers", {
+export class Containers extends Effect.Service<Containers>()("@the-moby-effect/endpoints/Containers", {
     accessors: false,
     dependencies: [
         makeAgnosticHttpClientLayer(
@@ -394,21 +393,10 @@ export class ContainersService extends Effect.Service<ContainersService>()("@the
             >;
 
         const httpClient = yield* HttpClient.HttpClient;
-        const context = yield* Effect.context<HttpClient.HttpClient | Socket.WebSocketConstructor>();
-
-        // Regular http client for "normal" rest endpoints
+        const context = yield* Effect.context<Socket.WebSocketConstructor>();
         const client = yield* HttpApiClient.group(ContainersApi, {
             httpClient,
             group: "containers",
-        });
-
-        const emptyResponse = new Response(undefined, { status: 200 });
-        const noopHttpClient = HttpClient.make((request) =>
-            Effect.succeed(HttpClientResponse.fromWeb(request, emptyResponse))
-        );
-        const websocketClient = yield* HttpApiClient.group(ContainersApi, {
-            group: "containers",
-            httpClient: noopHttpClient,
         });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
@@ -420,15 +408,27 @@ export class ContainersService extends Effect.Service<ContainersService>()("@the
         const top_ = (id: ContainerId, options?: Options<"top">) =>
             client.top({ path: { id }, urlParams: { ...options } });
         const logs_ = (id: ContainerId, options?: Options<"logs">) =>
-            client.logs({ path: { id }, urlParams: { ...options } });
+            HttpApiStreamingResponse(
+                ContainersApi,
+                "containers",
+                "logs",
+                httpClient
+            )({ path: { id }, urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines);
         const changes_ = (id: ContainerId) => client.changes({ path: { id } });
-        const export_ = (id: ContainerId) => client.export({ path: { id } });
+        const export_ = (id: ContainerId) =>
+            HttpApiStreamingResponse(ContainersApi, "containers", "export", httpClient)({ path: { id } });
         const stats_ = (id: ContainerId, options?: Options<"stats">) =>
-            client
-                .stats({ path: { id }, urlParams: { ...options }, withResponse: true })
-                .pipe(Effect.map(Tuple.getSecond))
-                .pipe(Effect.map((response) => response.stream))
-                .pipe(Stream.unwrap);
+            HttpApiStreamingResponse(
+                ContainersApi,
+                "containers",
+                "stats",
+                httpClient
+            )({ path: { id }, urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(ContainerStatsResponse))));
         const resize_ = (id: ContainerId, options?: Options<"resize">) =>
             client.resize({ path: { id }, urlParams: { ...options } });
         const start_ = (id: ContainerId, options?: Options<"start">) =>
@@ -444,39 +444,50 @@ export class ContainersService extends Effect.Service<ContainersService>()("@the
         const pause_ = (id: ContainerId) => client.pause({ path: { id } });
         const unpause_ = (id: ContainerId) => client.unpause({ path: { id } });
         const attach_ = (id: ContainerId, options?: Options<"attach">) =>
-            client
-                .attach({
-                    path: { id },
-                    urlParams: { ...options },
-                    headers: { Connection: "Upgrade", Upgrade: "tcp" },
-                    withResponse: true,
-                })
-                .pipe(Effect.map(Tuple.getSecond))
-                .pipe(Effect.flatMap(responseToStreamingSocketOrFailUnsafe));
+            HttpApiSocket(
+                ContainersApi,
+                "containers",
+                "attach",
+                httpClient
+            )({
+                path: { id },
+                urlParams: { ...options },
+                headers: { Connection: "Upgrade", Upgrade: "tcp" },
+            });
         const attachWebsocket_ = (id: ContainerId, options?: Options<"attachWebsocket">) =>
-            websocketClient
-                .attachWebsocket({ path: { id }, urlParams: { ...options }, withResponse: true })
-                .pipe(Effect.map(Tuple.getSecond))
-                .pipe(
-                    Effect.flatMap(({ request: { hash, url, urlParams } }) =>
-                        Either.mapLeft(
-                            UrlParams.makeUrl(url, urlParams, hash),
-                            (_cause) => new HttpApiError.BadRequest()
-                        )
-                    )
-                )
-                .pipe(Effect.map((url) => url.toString()))
-                .pipe(Effect.flatMap(Socket.makeWebSocket))
-                .pipe(Effect.map(makeRawSocket))
-                .pipe(Effect.provide(context));
+            HttpApiWebsocket(
+                ContainersApi,
+                "containers",
+                "attachWebsocket"
+            )({ path: { id }, urlParams: { ...options } }).pipe(Effect.provide(context));
         const wait_ = (id: ContainerId, options?: Options<"wait">) =>
             client.wait({ path: { id }, urlParams: { ...options } });
         const delete_ = (id: ContainerId, options?: Options<"delete">) =>
             client.delete({ path: { id }, urlParams: { ...options } });
         const archive_ = (id: ContainerId, options: Options<"archive">) =>
-            client.archive({ path: { id }, urlParams: { ...options } });
+            client
+                .archive({ path: { id }, urlParams: { ...options }, withResponse: true })
+                .pipe(Effect.map(Tuple.getSecond))
+                .pipe(
+                    Effect.flatMap(
+                        HttpClientResponse.schemaHeaders(
+                            Schema.Struct({
+                                "X-Docker-Container-Path-Stat": Schema.compose(
+                                    Schema.StringFromBase64,
+                                    Schema.parseJson()
+                                ),
+                            })
+                        )
+                    )
+                )
+                .pipe(Effect.map(({ "X-Docker-Container-Path-Stat": pathStat }) => pathStat));
         const archiveInfo_ = (id: ContainerId, options: Options<"archiveInfo">) =>
-            client.archiveInfo({ path: { id }, urlParams: { ...options } });
+            HttpApiStreamingResponse(
+                ContainersApi,
+                "containers",
+                "archiveInfo",
+                httpClient
+            )({ path: { id }, urlParams: { ...options } });
         const putArchive_ = <E>(
             id: ContainerId,
             stream: Stream.Stream<Uint8Array, E, never>,
@@ -489,7 +500,8 @@ export class ContainersService extends Effect.Service<ContainersService>()("@the
                 httpClient,
                 stream
             )({ path: { id }, urlParams: { ...options } });
-        const prune_ = (filters?: string | undefined) => client.prune({ urlParams: { filters } });
+        const prune_ = (filters?: Schema.Schema.Type<PruneFilters> | undefined) =>
+            client.prune({ urlParams: { filters } });
 
         return {
             list: list_,
@@ -526,16 +538,12 @@ export class ContainersService extends Effect.Service<ContainersService>()("@the
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
-export const ContainersLayerLocalSocket: Layer.Layer<ContainersService, never, HttpClient.HttpClient> =
-    ContainersService.Default;
+export const ContainersLayerLocalSocket: Layer.Layer<Containers, never, HttpClient.HttpClient> = Containers.Default;
 
 /**
  * @since 1.0.0
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
-export const ContainersLayer: Layer.Layer<
-    ContainersService,
-    never,
-    HttpClient.HttpClient | Socket.WebSocketConstructor
-> = ContainersService.DefaultWithoutDependencies;
+export const ContainersLayer: Layer.Layer<Containers, never, HttpClient.HttpClient | Socket.WebSocketConstructor> =
+    Containers.DefaultWithoutDependencies;

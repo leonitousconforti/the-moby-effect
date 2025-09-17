@@ -12,7 +12,6 @@ export class NetworkIPAMConfig extends Schema.Class<NetworkIPAMConfig>("NetworkI
     {
         identifier: "NetworkIPAMConfig",
         title: "network.IPAMConfig",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/network/ipam.go#L18-L24",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#IPAMConfig",
     }
 ) {}

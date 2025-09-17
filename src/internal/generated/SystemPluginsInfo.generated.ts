@@ -10,7 +10,6 @@ export class SystemPluginsInfo extends Schema.Class<SystemPluginsInfo>("SystemPl
     {
         identifier: "SystemPluginsInfo",
         title: "system.PluginsInfo",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/system/info.go#L125-L136",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#PluginsInfo",
     }
 ) {}

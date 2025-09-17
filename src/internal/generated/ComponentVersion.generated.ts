@@ -9,7 +9,6 @@ export class ComponentVersion extends Schema.Class<ComponentVersion>("ComponentV
     {
         identifier: "ComponentVersion",
         title: "types.ComponentVersion",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/types.go#L39-L44",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types#ComponentVersion",
     }
 ) {}

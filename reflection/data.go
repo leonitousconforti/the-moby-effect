@@ -21,26 +21,31 @@ func typeToKey(t reflect.Type) string {
 	return t.String()
 }
 
+var typesToSkip = map[string]string{
+	"Time.Time": "Schema.DatetimeFromString",
+	"time.Time": "Schema.DatetimeFromString",
+	"Time.time": "Schema.DatetimeFromString",
+	"time.time": "Schema.DatetimeFromString",
+}
+
 var typesToDisambiguate = map[string]string{
 	// Types renames
 	// https://pkg.go.dev/github.com/docker/docker@v27+incompatible/api/types
-	typeToKey(reflect.TypeOf(types.Version{})):               "SystemVersionResponse",
-	typeToKey(reflect.TypeOf(types.Container{})):             "ContainerListResponseItem",
-	typeToKey(reflect.TypeOf(types.ConfigCreateResponse{})):  "SwarmConfigCreateResponse",
-	typeToKey(reflect.TypeOf(types.BuildCachePruneReport{})): "ImagePruneResponse",
+	typeToKey(reflect.TypeOf(types.Version{})):     "SystemVersionResponse",
+	typeToKey(reflect.TypeOf(container.Summary{})): "ContainerListResponseItem",
 
 	// Archive renames
 	typeToKey(reflect.TypeOf(archive.Change{})): "ContainerChange",
 
 	// Events renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/events
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/events
 	// String/enum types
 	// typeToKey(reflect.TypeOf(events.Action{})):   "EventAction",
 	typeToKey(reflect.TypeOf(events.Actor{})):   "EventActor",
 	typeToKey(reflect.TypeOf(events.Message{})): "EventMessage",
 
 	// Container renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/container
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container
 	// string/enum types
 	// typeToKey(reflect.TypeOf(container.CgroupSpec{})): "ContainerCgroupSpec",
 	// typeToKey(reflect.TypeOf(container.CgroupnsMode{})): "ContainerCgroupnsMode",
@@ -71,8 +76,8 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(container.CPUStats{})):               "ContainerCPUStats",
 	typeToKey(reflect.TypeOf(container.CPUUsage{})):               "ContainerCPUUsage",
 	typeToKey(reflect.TypeOf(container.Config{})):                 "ContainerConfig",
-	typeToKey(reflect.TypeOf(container.ContainerTopOKBody{})):     "ContainerTopResponse",
-	typeToKey(reflect.TypeOf(container.ContainerUpdateOKBody{})):  "ContainerUpdateResponse",
+	typeToKey(reflect.TypeOf(container.TopResponse{})):            "ContainerTopResponse",
+	typeToKey(reflect.TypeOf(container.UpdateResponse{})):         "ContainerUpdateResponse",
 	typeToKey(reflect.TypeOf(container.CreateRequest{})):          "ContainerCreateRequest",
 	typeToKey(reflect.TypeOf(container.CreateResponse{})):         "ContainerCreateResponse",
 	typeToKey(reflect.TypeOf(container.DeviceMapping{})):          "ContainerDeviceMapping",
@@ -89,7 +94,7 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(container.PruneReport{})):            "ContainerPruneResponse",
 	typeToKey(reflect.TypeOf(container.Resources{})):              "ContainerResources",
 	typeToKey(reflect.TypeOf(container.RestartPolicy{})):          "ContainerRestartPolicy",
-	typeToKey(reflect.TypeOf(container.Stats{})):                  "ContainerStats",
+	typeToKey(reflect.TypeOf(container.StatsResponse{})):          "ContainerStats",
 	typeToKey(reflect.TypeOf(container.StatsResponse{})):          "ContainerStatsResponse",
 	typeToKey(reflect.TypeOf(container.StorageStats{})):           "ContainerStorageStats",
 	typeToKey(reflect.TypeOf(container.ThrottlingData{})):         "ContainerThrottlingData",
@@ -97,10 +102,10 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(container.UpdateConfig{})):           "ContainerUpdateConfig",
 	typeToKey(reflect.TypeOf(container.WaitExitError{})):          "ContainerWaitExitError",
 	typeToKey(reflect.TypeOf(container.WaitResponse{})):           "ContainerWaitResponse",
-	typeToKey(reflect.TypeOf(types.ContainerJSON{})):              "ContainerInspectResponse",
+	typeToKey(reflect.TypeOf(container.InspectResponse{})):        "ContainerInspectResponse",
 
 	// Image renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/image
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image
 	typeToKey(reflect.TypeOf(image.CreateOptions{})):       "ImageCreateOptions",
 	typeToKey(reflect.TypeOf(image.ImportOptions{})):       "ImageImportOptions",
 	typeToKey(reflect.TypeOf(image.ImportSource{})):        "ImageImportSource",
@@ -114,10 +119,10 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(image.Metadata{})):            "ImageMetadata",
 	typeToKey(reflect.TypeOf(image.PruneReport{})):         "ImagePruneResponse",
 	typeToKey(reflect.TypeOf(image.Summary{})):             "ImageSummary",
-	typeToKey(reflect.TypeOf(types.ImageInspect{})):        "ImageInspectResponse",
+	typeToKey(reflect.TypeOf(image.InspectResponse{})):     "ImageInspectResponse",
 
 	// Registry renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/registry
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/registry
 	typeToKey(reflect.TypeOf(registry.SearchResult{})):        "RegistrySearchResponse",
 	typeToKey(reflect.TypeOf(registry.SearchResults{})):       "RegistryImageSearchResponse",
 	typeToKey(reflect.TypeOf(registry.AuthConfig{})):          "RegistryAuthConfig",
@@ -127,7 +132,7 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(registry.ServiceConfig{})):       "RegistryServiceConfig",
 
 	// Network renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/network
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network
 	typeToKey(reflect.TypeOf(network.Address{})):            "NetworkAddress",
 	typeToKey(reflect.TypeOf(network.ConfigReference{})):    "NetworkConfigReference",
 	typeToKey(reflect.TypeOf(network.ConnectOptions{})):     "NetworkConnectOptions",
@@ -151,7 +156,7 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(network.Task{})):               "NetworkTask",
 
 	// Swarm renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/swarm
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm
 	// typeToKey(reflect.TypeOf(swarm.AppArmorMode{})): "SwarmAppArmorMode",
 	// typeToKey(reflect.TypeOf(swarm.ExternalCAProtocol{})): "SwarmExternalCAProtocol",
 	// typeToKey(reflect.TypeOf(swarm.LocalNodeState{})): "SwarmLocalNodeState",
@@ -257,10 +262,9 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(swarm.UpdateStatus{})):                 "SwarmUpdateStatus",
 	typeToKey(reflect.TypeOf(swarm.Version{})):                      "SwarmVersion",
 	typeToKey(reflect.TypeOf(swarm.VolumeAttachment{})):             "SwarmVolumeAttachment",
-    typeToKey(reflect.TypeOf(types.SecretCreateResponse{})):         "SwarmSecretCreateResponse",
 
 	// System renames
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/system
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system
 	typeToKey(reflect.TypeOf(system.Commit{})):               "SystemCommit",
 	typeToKey(reflect.TypeOf(system.ContainerdInfo{})):       "SystemContainerdInfo",
 	typeToKey(reflect.TypeOf(system.ContainerdNamespaces{})): "SystemContainerdNamespaces",
@@ -273,7 +277,7 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(system.SecurityOpt{})):          "SystemSecurityOpt",
 
 	// Volumes rename
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/types/volume
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/volume
 	// typeToKey(reflect.TypeOf(volume.Availability{})): "VolumeAvailability",
 	// typeToKey(reflect.TypeOf(volume.PublishState{})): "VolumePublishState",
 	// typeToKey(reflect.TypeOf(volume.Scope{})): "VolumeScope",
@@ -299,10 +303,8 @@ var typesToDisambiguate = map[string]string{
 }
 
 var dockerTypesToReflect = []reflect.Type{
-	reflect.TypeOf(types.IDResponse{}),
-
 	// Configs API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/swarm
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/swarm
 	// GetConfigs(opts types.ConfigListOptions) ([]swarm.Config, error)
 	// CreateConfig(s swarm.ConfigSpec) (string, error)
 	// RemoveConfig(id string) error
@@ -310,13 +312,12 @@ var dockerTypesToReflect = []reflect.Type{
 	// UpdateConfig(idOrName string, version uint64, spec swarm.ConfigSpec) error
 	reflect.TypeOf(swarm.Config{}),
 	reflect.TypeOf(swarm.ConfigSpec{}),
-	reflect.TypeOf(types.ConfigCreateResponse{}),
 
 	// Containers API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/container
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/container
 	// ContainerExecCreate(name string, options *container.ExecOptions) (string, error)
 	// ContainerExecInspect(id string) (*backend.ExecInspect, error)
-	// ContainerExecResize(name string, height, width int) error
+	// ContainerExecResize(ctx context.Context, name string, height, width uint32) error
 	// ContainerExecStart(ctx context.Context, name string, options backend.ExecStartConfig) error
 	// ContainerArchivePath(name string, path string) (content io.ReadCloser, stat *container.PathStat, err error)
 	// ContainerExport(ctx context.Context, name string, out io.Writer) error
@@ -326,20 +327,20 @@ var dockerTypesToReflect = []reflect.Type{
 	// ContainerKill(name string, signal string) error
 	// ContainerPause(name string) error
 	// ContainerRename(oldName, newName string) error
-	// ContainerResize(name string, height, width int) error
+	// ContainerResize(ctx context.Context, name string, height, width uint32) error
 	// ContainerRestart(ctx context.Context, name string, options container.StopOptions) error
 	// ContainerRm(name string, config *backend.ContainerRmConfig) error
 	// ContainerStart(ctx context.Context, name string, checkpoint string, checkpointDir string) error
 	// ContainerStop(ctx context.Context, name string, options container.StopOptions) error
 	// ContainerUnpause(name string) error
-	// ContainerUpdate(name string, hostConfig *container.HostConfig) (container.ContainerUpdateOKBody, error)
-	// ContainerWait(ctx context.Context, name string, condition containerpkg.WaitCondition) (<-chan containerpkg.StateStatus, error)
+	// ContainerUpdate(name string, hostConfig *container.HostConfig) (container.UpdateResponse, error)
+	// ContainerWait(ctx context.Context, name string, condition container.WaitCondition) (<-chan container.StateStatus, error)
 	// ContainerChanges(ctx context.Context, name string) ([]archive.Change, error)
-	// ContainerInspect(ctx context.Context, name string, size bool, version string) (interface{}, error)
+	// ContainerInspect(ctx context.Context, name string, options backend.ContainerInspectOptions) (*container.InspectResponse, error)
 	// ContainerLogs(ctx context.Context, name string, config *container.LogsOptions) (msgs <-chan *backend.LogMessage, tty bool, err error)
 	// ContainerStats(ctx context.Context, name string, config *backend.ContainerStatsConfig) error
-	// ContainerTop(name string, psArgs string) (*container.ContainerTopOKBody, error)
-	// Containers(ctx context.Context, config *container.ListOptions) ([]*types.Container, error)
+	// ContainerTop(name string, psArgs string) (*container.TopResponse, error)
+	// Containers(ctx context.Context, config *container.ListOptions) ([]*container.Summary, error)
 	// ContainerAttach(name string, c *backend.ContainerAttachConfig) error
 	// ContainersPrune(ctx context.Context, pruneFilters filters.Args) (*container.PruneReport, error)
 	// CreateImageFromContainer(ctx context.Context, name string, config *backend.CreateImageConfig) (imageID string, err error)
@@ -350,55 +351,61 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(container.CreateResponse{}),
 	reflect.TypeOf(container.HostConfig{}),
 	reflect.TypeOf(container.StopOptions{}),
-	reflect.TypeOf(container.ContainerUpdateOKBody{}),
+	reflect.TypeOf(container.UpdateResponse{}),
 	reflect.TypeOf(container.LogsOptions{}),
-	reflect.TypeOf(container.ContainerTopOKBody{}),
+	reflect.TypeOf(container.TopResponse{}),
 	reflect.TypeOf(container.PruneReport{}),
 	reflect.TypeOf(container.StatsResponse{}),
 	reflect.TypeOf(container.WaitResponse{}),
-	reflect.TypeOf(types.Container{}),
+	reflect.TypeOf(container.Summary{}),
 	reflect.TypeOf(archive.Change{}),
 	reflect.TypeOf(container.ExecInspect{}),
 	reflect.TypeOf(jsonmessage.JSONMessage{}),
-    reflect.TypeOf(types.ContainerJSON{}),
+	reflect.TypeOf(container.InspectResponse{}),
 
 	// Distribution API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/distribution
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/distribution
 	// GetRepositories(context.Context, reference.Named, *registry.AuthConfig) ([]distribution.Repository, error)
 	reflect.TypeOf(registry.DistributionInspect{}),
 
 	// Images API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/image
-	// Search(ctx context.Context, searchFilters filters.Args, term string, limit int, authConfig *registry.AuthConfig, headers map[string][]string) ([]registry.SearchResult, error)
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/image
+	// ImageDelete(ctx context.Context, imageRef string, options image.RemoveOptions) ([]image.DeleteResponse, error)
+	// ImageHistory(ctx context.Context, imageName string, platform *ocispec.Platform) ([]*image.HistoryResponseItem, error)
+	// Images(ctx context.Context, opts image.ListOptions) ([]*image.Summary, error)
+	// GetImage(ctx context.Context, refOrID string, options backend.GetImageOpts) (*dockerimage.Image, error)
+	// ImageInspect(ctx context.Context, refOrID string, options backend.ImageInspectOpts) (*image.InspectResponse, error)
+	// TagImage(ctx context.Context, id dockerimage.ID, newRef reference.Named) error
+	// ImagesPrune(ctx context.Context, pruneFilters filters.Args) (*image.PruneReport, error)
+	// LoadImage(ctx context.Context, inTar io.ReadCloser, platform *ocispec.Platform, outStream io.Writer, quiet bool) error
+	// ImportImage(ctx context.Context, ref reference.Named, platform *ocispec.Platform, msg string, layerReader io.Reader, changes []string) (dockerimage.ID, error)
+	// ExportImage(ctx context.Context, names []string, platform *ocispec.Platform, outStream io.Writer) error
+	// PullImage(ctx context.Context, ref reference.Named, platform *ocispec.Platform, metaHeaders map[string][]string, authConfig *registry.AuthConfig, outStream io.Writer) error
+	// PushImage(ctx context.Context, ref reference.Named, platform *ocispec.Platform, metaHeaders map[string][]string, authConfig *registry.AuthConfig, outStream io.Writer) error
 	reflect.TypeOf(registry.SearchResult{}),
 	reflect.TypeOf(image.DeleteResponse{}),
 	reflect.TypeOf(image.HistoryResponseItem{}),
 	reflect.TypeOf(image.LoadResponse{}),
 	reflect.TypeOf(image.Metadata{}),
-	reflect.TypeOf(image.PruneReport{}),
 	reflect.TypeOf(image.Summary{}),
-	reflect.TypeOf(types.BuildCachePruneReport{}),
-	reflect.TypeOf(types.ImageInspect{}),
+	reflect.TypeOf(image.InspectResponse{}),
 
 	// Networks API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/network
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/network
 	// GetNetworks(filters.Args, backend.NetworkListConfig) ([]network.Inspect, error)
-	// CreateNetwork(nc network.CreateRequest) (*network.CreateResponse, error)
+	// CreateNetwork(ctx context.Context, nc network.CreateRequest) (*network.CreateResponse, error)
 	// ConnectContainerToNetwork(ctx context.Context, containerName, networkName string, endpointConfig *network.EndpointSettings) error
 	// DisconnectContainerFromNetwork(containerName string, networkName string, force bool) error
 	// DeleteNetwork(networkID string) error
 	// NetworksPrune(ctx context.Context, pruneFilters filters.Args) (*network.PruneReport, error)
 	reflect.TypeOf(network.Inspect{}),
 	reflect.TypeOf(network.CreateRequest{}),
-	reflect.TypeOf(network.CreateResponse{}),
 	reflect.TypeOf(network.EndpointSettings{}),
-	reflect.TypeOf(network.PruneReport{}),
 	reflect.TypeOf(network.ConnectOptions{}),
-	reflect.TypeOf(network.DisconnectOptions{}),
 
 	// Nodes API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/swarm
-	// GetNodes(types.NodeListOptions) ([]swarm.Node, error)
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/swarm
+	// GetNodes(swarm.NodeListOptions) ([]swarm.Node, error)
 	// GetNode(string) (swarm.Node, error)
 	// UpdateNode(string, uint64, swarm.NodeSpec) error
 	// RemoveNode(string, bool) error
@@ -406,7 +413,7 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(swarm.NodeSpec{}),
 
 	// Plugins API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/plugin
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/plugin
 	// Disable(name string, config *backend.PluginDisableConfig) error
 	// Enable(name string, config *backend.PluginEnableConfig) error
 	// List(filters.Args) ([]types.Plugin, error)
@@ -422,8 +429,8 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(types.Plugin{}),
 
 	// Secrets API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/swarm
-	// GetSecrets(opts types.SecretListOptions) ([]swarm.Secret, error)
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/swarm
+	// GetSecrets(opts swarm.SecretListOptions) ([]swarm.Secret, error)
 	// CreateSecret(s swarm.SecretSpec) (string, error)
 	// RemoveSecret(idOrName string) error
 	// GetSecret(id string) (swarm.Secret, error)
@@ -432,19 +439,18 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(swarm.SecretSpec{}),
 
 	// Services API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/swarm
-	// GetServices(types.ServiceListOptions) ([]swarm.Service, error)
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/swarm
+	// GetServices(swarm.ServiceListOptions) ([]swarm.Service, error)
 	// GetService(idOrName string, insertDefaults bool) (swarm.Service, error)
 	// CreateService(swarm.ServiceSpec, string, bool) (*swarm.ServiceCreateResponse, error)
-	// UpdateService(string, uint64, swarm.ServiceSpec, types.ServiceUpdateOptions, bool) (*swarm.ServiceUpdateResponse, error)
+	// UpdateService(string, uint64, swarm.ServiceSpec, swarm.ServiceUpdateOptions, bool) (*swarm.ServiceUpdateResponse, error)
 	// RemoveService(string) error
+	// ServiceLogs(context.Context, *backend.LogSelector, *container.LogsOptions) (<-chan *backend.LogMessage, error)
 	reflect.TypeOf(swarm.Service{}),
 	reflect.TypeOf(swarm.ServiceSpec{}),
-	reflect.TypeOf(swarm.ServiceCreateResponse{}),
-	reflect.TypeOf(swarm.ServiceUpdateResponse{}),
 
 	// Swarm API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/swarm
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/swarm
 	// Init(req swarm.InitRequest) (string, error)
 	// Join(req swarm.JoinRequest) error
 	// Leave(ctx context.Context, force bool) error
@@ -457,14 +463,12 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(swarm.Swarm{}),
 	reflect.TypeOf(swarm.Spec{}),
 	reflect.TypeOf(swarm.UnlockRequest{}),
-	reflect.TypeOf(types.SwarmUnlockKeyResponse{}),
-    reflect.TypeOf(types.SecretCreateResponse{}),
 
 	// System API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/system
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/system
 	// SystemInfo(context.Context) (*system.Info, error)
 	// SystemVersion(context.Context) (types.Version, error)
-	// SystemDiskUsage(ctx context.Context, opts DiskUsageOptions) (*types.DiskUsage, error)
+	// SystemDiskUsage(ctx context.Context, opts backend.DiskUsageOptions) (*backend.DiskUsage, error)
 	// SubscribeToEvents(since, until time.Time, ef filters.Args) ([]events.Message, chan interface{})
 	// AuthenticateToRegistry(ctx context.Context, authConfig *registry.AuthConfig) (string, string, error)
 	reflect.TypeOf(system.Info{}),
@@ -475,13 +479,13 @@ var dockerTypesToReflect = []reflect.Type{
 	reflect.TypeOf(registry.AuthenticateOKBody{}),
 
 	// Tasks API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/swarm
-	// GetTasks(types.TaskListOptions) ([]swarm.Task, error)
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/swarm
+	// GetTasks(swarm.TaskListOptions) ([]swarm.Task, error)
 	// GetTask(string) (swarm.Task, error)
 	reflect.TypeOf(swarm.Task{}),
 
 	// Volumes API
-	// https://pkg.go.dev/github.com/docker/docker@v27.0.3+incompatible/api/server/router/volume
+	// https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/server/router/volume
 	// List(ctx context.Context, filter filters.Args) ([]*volume.Volume, []string, error)
 	// Get(ctx context.Context, name string, opts ...opts.GetOption) (*volume.Volume, error)
 	// Create(ctx context.Context, name, driverName string, opts ...opts.CreateOption) (*volume.Volume, error)

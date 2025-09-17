@@ -11,19 +11,14 @@ import { Effect, Schema, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { SwarmConfig, SwarmConfigCreateResponse, SwarmConfigSpec } from "../generated/index.js";
+import { SwarmConfig, SwarmConfigSpec } from "../generated/index.js";
+import { NodeNotPartOfSwarm } from "../schemas/errors.js";
 import { ConfigId } from "../schemas/id.js";
-
-/** @since 1.0.0 */
-export class NodeNotPartOfSwarm extends HttpApiSchema.EmptyError<NodeNotPartOfSwarm>()({
-    tag: "NodeNotPartOfSwarm",
-    status: 503,
-}) {}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
     Schema.Struct({
-        id: Schema.optional(Schema.Array(Schema.String)),
+        id: Schema.optional(Schema.Array(ConfigId)),
         name: Schema.optional(Schema.Array(Schema.String)),
         names: Schema.optional(Schema.Array(Schema.String)),
         label: Schema.optional(Schema.Array(Schema.String)),
@@ -38,8 +33,8 @@ const listConfigsEndpoint = HttpApiEndpoint.get("list", "/")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigCreate */
 const createConfigEndpoint = HttpApiEndpoint.post("create", "/create")
     .setPayload(SwarmConfigSpec)
-    .addSuccess(SwarmConfigCreateResponse, { status: 201 }) // 201 Created
-    .addError(HttpApiError.Conflict); // 409 Name conflicts
+    .addSuccess(Schema.Struct({ Id: ConfigId }), { status: 201 }) // 201 Created
+    .addError(HttpApiError.Conflict); // 409 Name conflicts with existing object
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigInspect */
 const inspectConfigEndpoint = HttpApiEndpoint.get("inspect", "/:id")
@@ -69,8 +64,8 @@ const ConfigsGroup = HttpApiGroup.make("configs")
     .add(inspectConfigEndpoint)
     .add(deleteConfigEndpoint)
     .add(updateConfigEndpoint)
-    .addError(HttpApiError.InternalServerError) // 500 Server error
     .addError(NodeNotPartOfSwarm) // 503 Node not part of swarm
+    .addError(HttpApiError.InternalServerError) // 500 Server error
     .prefix("/configs"); // Prefix for endpoints in this group
 
 /**
@@ -91,7 +86,7 @@ export const ConfigsApi = HttpApi.make("ConfigsApi").add(ConfigsGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
  */
-export class ConfigsService extends Effect.Service<ConfigsService>()("@the-moby-effect/endpoints/Configs", {
+export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoints/Configs", {
     accessors: false,
     dependencies: [
         makeAgnosticHttpClientLayer(
@@ -131,8 +126,7 @@ export class ConfigsService extends Effect.Service<ConfigsService>()("@the-moby-
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
  */
-export const ConfigsLayerLocalSocket: Layer.Layer<ConfigsService, never, HttpClient.HttpClient> =
-    ConfigsService.Default;
+export const ConfigsLayerLocalSocket: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.Default;
 
 /**
  * Configs are application configurations that can be used by services. Swarm
@@ -142,5 +136,4 @@ export const ConfigsLayerLocalSocket: Layer.Layer<ConfigsService, never, HttpCli
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
  */
-export const ConfigsLayer: Layer.Layer<ConfigsService, never, HttpClient.HttpClient> =
-    ConfigsService.DefaultWithoutDependencies;
+export const ConfigsLayer: Layer.Layer<Configs, never, HttpClient.HttpClient> = Configs.DefaultWithoutDependencies;

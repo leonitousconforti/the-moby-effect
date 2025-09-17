@@ -8,7 +8,6 @@ export class SwarmAnnotations extends Schema.Class<SwarmAnnotations>("SwarmAnnot
     {
         identifier: "SwarmAnnotations",
         title: "swarm.Annotations",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/common.go#L25-L29",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#Annotations",
     }
 ) {}

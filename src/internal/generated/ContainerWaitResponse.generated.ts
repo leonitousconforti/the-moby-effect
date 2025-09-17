@@ -11,6 +11,6 @@ export class ContainerWaitResponse extends Schema.Class<ContainerWaitResponse>("
         identifier: "ContainerWaitResponse",
         title: "container.WaitResponse",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/wait_response.go#L6-L18",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#WaitResponse",
     }
 ) {}

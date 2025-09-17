@@ -38,7 +38,7 @@ export type DockerLayer = Layer.Layer<
     | MobyEndpoints.Services
     | MobyEndpoints.Sessions
     | MobyEndpoints.Swarm
-    | MobyEndpoints.Systems
+    | MobyEndpoints.System
     | MobyEndpoints.Tasks
     | MobyEndpoints.Volumes,
     never,
@@ -72,7 +72,7 @@ export const layerWithoutHttpCLient: DockerLayerWithoutHttpClientOrWebsocketCons
     MobyEndpoints.ServicesLayer,
     MobyEndpoints.SessionsLayer,
     MobyEndpoints.SwarmLayer,
-    MobyEndpoints.SystemsLayer,
+    MobyEndpoints.SystemLayer,
     MobyEndpoints.TasksLayer,
     MobyEndpoints.VolumesLayer
 );

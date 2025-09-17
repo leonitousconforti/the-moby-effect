@@ -32,7 +32,6 @@ export class ContainerListResponseItem extends Schema.Class<ContainerListRespons
     {
         identifier: "ContainerListResponseItem",
         title: "container.Summary",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/container.go#L121-L143",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#Summary",
     }
 ) {}

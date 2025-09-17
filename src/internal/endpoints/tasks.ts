@@ -7,17 +7,15 @@ import {
     HttpApiSchema,
     HttpClient,
 } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import { Effect, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmTask } from "../generated/index.js";
+import { NodeNotPartOfSwarm } from "../schemas/errors.js";
+import { HttpApiStreamingResponse } from "./httpApiHacks.js";
 
-/**
- * Task list filters (JSON encoded)
- *
- * @since 1.0.0
- */
+/** @since 1.0.0 */
 export class TaskListFilters extends Schema.parseJson(
     Schema.Struct({
         "desired-state": Schema.optional(Schema.Array(Schema.Literal("running", "shutdown", "accepted"))),
@@ -29,39 +27,36 @@ export class TaskListFilters extends Schema.parseJson(
     })
 ) {}
 
-/**
- * Task logs query params
- *
- * @since 1.0.0
- */
-export const TaskLogsQuery = Schema.Struct({
-    details: Schema.optional(Schema.BooleanFromString),
-    follow: Schema.optional(Schema.BooleanFromString),
-    stdout: Schema.optional(Schema.BooleanFromString),
-    stderr: Schema.optional(Schema.BooleanFromString),
-    since: Schema.optional(Schema.NumberFromString),
-    timestamps: Schema.optional(Schema.BooleanFromString),
-    tail: Schema.optional(Schema.String),
-});
-
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskList */
 const listTasksEndpoint = HttpApiEndpoint.get("list", "/")
     .setUrlParams(Schema.Struct({ filters: Schema.optional(TaskListFilters) }))
-    .addSuccess(Schema.Array(SwarmTask), { status: 200 });
+    .addSuccess(Schema.Array(SwarmTask), { status: 200 }) // 200 OK
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskInspect */
 const inspectTaskEndpoint = HttpApiEndpoint.get("inspect", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
-    .addSuccess(SwarmTask, { status: 200 })
-    .addError(HttpApiError.NotFound);
+    .addSuccess(SwarmTask, { status: 200 }) // 200 OK
+    .addError(HttpApiError.NotFound) // 404 No such task
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskLogs */
 const logsTaskEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
     .setPath(Schema.Struct({ id: Schema.String }))
-    .setUrlParams(TaskLogsQuery)
-    // Logs are multiplexed; represent as empty streaming body similar to containers implementation
+    .setUrlParams(
+        Schema.Struct({
+            details: Schema.optional(Schema.BooleanFromString),
+            follow: Schema.optional(Schema.BooleanFromString),
+            stdout: Schema.optional(Schema.BooleanFromString),
+            stderr: Schema.optional(Schema.BooleanFromString),
+            since: Schema.optional(Schema.NumberFromString),
+            timestamps: Schema.optional(Schema.BooleanFromString),
+            tail: Schema.optional(Schema.String),
+        })
+    )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound);
+    .addError(HttpApiError.NotFound) // 404 No such task
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task */
 const TasksGroup = HttpApiGroup.make("tasks")
@@ -72,6 +67,9 @@ const TasksGroup = HttpApiGroup.make("tasks")
     .prefix("/tasks");
 
 /**
+ * A task is a container running on a swarm. It is the atomic scheduling unit of
+ * swarm. Swarm mode must be enabled for these endpoints to work.
+ *
  * @since 1.0.0
  * @category HttpApi
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
@@ -86,7 +84,7 @@ export const TasksApi = HttpApi.make("TasksApi").add(TasksGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
-export class TasksService extends Effect.Service<TasksService>()("@the-moby-effect/endpoints/Tasks", {
+export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/Tasks", {
     accessors: false,
     dependencies: [
         makeAgnosticHttpClientLayer(
@@ -97,22 +95,31 @@ export class TasksService extends Effect.Service<TasksService>()("@the-moby-effe
     ],
 
     effect: Effect.gen(function* () {
+        type Options<Name extends (typeof TasksGroup.endpoints)[number]["name"]> =
+            HttpApiEndpoint.HttpApiEndpoint.UrlParams<
+                HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof TasksGroup.endpoints)[number], Name>
+            >;
+
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(TasksApi, { group: "tasks", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<TaskListFilters> | undefined) =>
-            client.list({ urlParams: { filters } });
+        const list_ = (filters?: Schema.Schema.Type<TaskListFilters>) => client.list({ urlParams: { filters } });
         const inspect_ = (id: string) => client.inspect({ path: { id } });
-
-        // Logs: produce a Stream<string>. The Text schema returns a string body; wrap in singleton stream when not following.
-        const logs_ = (id: string, query?: Schema.Schema.Type<typeof TaskLogsQuery>) =>
-            client.logs({ path: { id }, urlParams: query ?? {} });
+        const logs_ = (id: string, options?: Options<"logs">) =>
+            HttpApiStreamingResponse(
+                TasksApi,
+                "tasks",
+                "logs",
+                httpClient
+            )({ path: { id }, urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines);
 
         return {
             list: list_,
             inspect: inspect_,
             logs: logs_,
-        } as const;
+        };
     }),
 }) {}
 
@@ -124,14 +131,14 @@ export class TasksService extends Effect.Service<TasksService>()("@the-moby-effe
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
-export const TasksLayer: Layer.Layer<TasksService, never, HttpClient.HttpClient> =
-    TasksService.DefaultWithoutDependencies as Layer.Layer<TasksService, never, HttpClient.HttpClient>;
+export const TasksLayer: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.DefaultWithoutDependencies;
 
 /**
- * Local socket auto-configured layer
+ * A task is a container running on a swarm. It is the atomic scheduling unit of
+ * swarm. Swarm mode must be enabled for these endpoints to work.
  *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
  */
-export const TasksLayerLocalSocket: Layer.Layer<TasksService, never, HttpClient.HttpClient> =
-    TasksService.Default as Layer.Layer<TasksService, never, HttpClient.HttpClient>;
+export const TasksLayerLocalSocket: Layer.Layer<Tasks, never, HttpClient.HttpClient> = Tasks.Default;

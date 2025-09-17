@@ -11,7 +11,6 @@ export class Platform extends Schema.Class<Platform>("Platform")(
     {
         identifier: "Platform",
         title: "v1.Platform",
-        documentation:
-            "https://github.com/opencontainers/image-spec/blob/39ab2d54cfa8fe1bee1ff20001264986d92ab85a/specs-go/v1/descriptor.go#L52-L72",
+        documentation: "",
     }
 ) {}

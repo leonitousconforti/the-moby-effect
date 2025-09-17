@@ -1,18 +1,19 @@
+import type * as HttpApiError from "@effect/platform/HttpApiError";
+import type * as HttpClientError from "@effect/platform/HttpClientError";
 import type * as Socket from "@effect/platform/Socket";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 import type * as MobySchemas from "../../MobySchemas.js";
+import type * as IdSchemas from "../schemas/id.js";
 
 import * as Array from "effect/Array";
 import * as Channel from "effect/Channel";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Global from "effect/GlobalValue";
-import * as Match from "effect/Match";
 import * as MutableHashMap from "effect/MutableHashMap";
 import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
-import * as Schedule from "effect/Schedule";
 import * as Schema from "effect/Schema";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
@@ -22,37 +23,46 @@ import * as MobyEndpoints from "../../MobyEndpoints.js";
 
 /** @internal */
 export const pull = ({
-    auth,
     image,
     platform,
 }: {
     image: string;
-    auth?: string | undefined;
     platform?: string | undefined;
-}): Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
-    Stream.unwrap(
-        MobyEndpoints.Images.use((images) => images.create({ fromImage: image, "X-Registry-Auth": auth, platform }))
-    );
+}): Stream.Stream<
+    MobySchemas.JSONMessage,
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> => Stream.unwrap(MobyEndpoints.Images.use((images) => images.create({ fromImage: image, platform })));
 
 /** @internal */
 export const pullScoped = ({
-    auth,
     image,
     platform,
 }: {
     image: string;
-    auth?: string | undefined;
     platform?: string | undefined;
 }): Effect.Effect<
-    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<
+        MobySchemas.JSONMessage,
+        | HttpApiError.NotFound
+        | HttpApiError.InternalServerError
+        | HttpApiError.HttpApiDecodeError
+        | HttpClientError.HttpClientError
+        | ParseResult.ParseError,
+        never
+    >,
     never,
     MobyEndpoints.Images | Scope.Scope
 > =>
     Effect.Do.pipe(
         Effect.bind("images", () => MobyEndpoints.Images),
-        Effect.let("stream", () => pull({ image, auth, platform })),
+        Effect.let("stream", () => pull({ image, platform })),
         Effect.let("acquire", ({ images, stream }) => Stream.provideService(stream, MobyEndpoints.Images, images)),
-        Effect.let("release", ({ images }) => images.delete({ name: image })),
+        Effect.let("release", ({ images }) => images.delete(image)),
         Effect.flatMap(({ acquire, release }) =>
             Effect.acquireRelease(
                 Effect.sync(() => acquire),
@@ -63,51 +73,61 @@ export const pullScoped = ({
 
 /** @internal */
 export const build = <E1>({
-    auth,
-    buildArgs,
+    buildargs,
     context,
     dockerfile,
     platform,
     tag,
 }: {
     tag: string;
-    auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
-    buildArgs?: Record<string, string | undefined> | undefined;
-}): Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
+    buildargs?: Record<string, string | undefined> | undefined;
+}): Stream.Stream<
+    MobySchemas.JSONMessage,
+    | HttpApiError.BadRequest
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> =>
     Stream.unwrap(
-        MobyEndpoints.Images.use((images) =>
-            images.build({ context, buildArgs, dockerfile, platform, t: tag, "X-Registry-Config": auth })
-        )
+        MobyEndpoints.Images.use((images) => images.build(context, { buildargs, dockerfile, platform, t: tag }))
     );
 
 /** @internal */
 export const buildScoped = <E1>({
-    auth,
-    buildArgs,
+    buildargs,
     context,
     dockerfile,
     platform,
     tag,
 }: {
     tag: string;
-    auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
-    buildArgs?: Record<string, string | undefined> | undefined;
+    buildargs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }): Effect.Effect<
-    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<
+        MobySchemas.JSONMessage,
+        | HttpApiError.BadRequest
+        | HttpApiError.InternalServerError
+        | HttpApiError.HttpApiDecodeError
+        | HttpClientError.HttpClientError
+        | ParseResult.ParseError,
+        never
+    >,
     never,
     Scope.Scope | MobyEndpoints.Images
 > =>
     Effect.Do.pipe(
         Effect.bind("images", () => MobyEndpoints.Images),
-        Effect.let("stream", () => build({ tag, buildArgs, auth, context, platform, dockerfile })),
+        Effect.let("stream", () => build({ tag, buildargs, context, platform, dockerfile })),
         Effect.let("acquire", ({ images, stream }) => Stream.provideService(stream, MobyEndpoints.Images, images)),
-        Effect.let("release", ({ images }) => images.delete({ name: tag })),
+        Effect.let("release", ({ images }) => images.delete(tag)),
         Effect.flatMap(({ acquire, release }) =>
             Effect.acquireRelease(
                 Effect.sync(() => acquire),
@@ -118,102 +138,137 @@ export const buildScoped = <E1>({
 
 /** @internal */
 export const start = (
-    containerId: string
-): Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =>
-    MobyEndpoints.Containers.use((containers) => containers.start(containerId));
+    containerId: IdSchemas.ContainerId
+): Effect.Effect<
+    void,
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> => MobyEndpoints.Containers.use((containers) => containers.start(containerId));
 
 /** @internal */
 export const stop = (
-    containerId: string
-): Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =>
-    MobyEndpoints.Containers.use((containers) => containers.stop(containerId));
+    containerId: IdSchemas.ContainerId
+): Effect.Effect<
+    void,
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> => MobyEndpoints.Containers.use((containers) => containers.stop(containerId));
 
 /** @internal */
 export const run = (
-    containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
-): Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =>
+    name: string,
+    platform: string,
+    container: MobySchemas.ContainerCreateRequest
+): Effect.Effect<
+    MobySchemas.ContainerInspectResponse,
+    | HttpApiError.BadRequest
+    | HttpApiError.Forbidden
+    | HttpApiError.NotFound
+    | HttpApiError.NotAcceptable
+    | HttpApiError.Conflict
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> =>
     Effect.gen(function* () {
         const containers = yield* MobyEndpoints.Containers;
-        const containerCreateResponse = yield* containers.create(containerOptions);
-        yield* containers.start(containerCreateResponse.Id);
+        const containerCreateResponse = yield* containers.create(name, platform, container);
+        yield* containers.start(containerCreateResponse.Id as IdSchemas.ContainerId);
 
-        // Helper to wait until a container is dead or running
-        const waitUntilContainerDeadOrRunning = Function.pipe(
-            containers.inspect(containerCreateResponse.Id),
-            // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
-            Effect.flatMap(({ State }) =>
-                Function.pipe(
-                    Match.value(State?.Status),
-                    Match.when("running", (_s) => Effect.void),
-                    Match.when("created", (_s) => Effect.fail("Waiting")),
-                    // Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
-                    // Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
-                    Match.orElse((_s) => Effect.fail("Container is dead or killed"))
-                ).pipe(
-                    Effect.mapError(
-                        (s) => new MobyEndpoints.ContainersError({ method: "inspect", cause: new Error(s) })
-                    )
-                )
-            )
-        ).pipe(
-            Effect.retry(
-                Schedule.spaced(500).pipe(
-                    Schedule.whileInput(({ message }: MobyEndpoints.ContainersError) => message === "Waiting")
-                )
-            )
-        );
+        // // Helper to wait until a container is dead or running
+        // const waitUntilContainerDeadOrRunning = Function.pipe(
+        //     containers.inspect(containerCreateResponse.Id),
+        //     // Effect.tap(({ State }) => Effect.log(`Waiting for container to be running, state=${State?.Status}`)),
+        //     Effect.flatMap(({ State }) =>
+        //         Function.pipe(
+        //             Match.value(State?.Status),
+        //             Match.when("running", (_s) => Effect.void),
+        //             Match.when("created", (_s) => Effect.fail("Waiting")),
+        //             // Match.when(Schemas.ContainerState_Status.RUNNING, (_s) => Effect.void),
+        //             // Match.when(Schemas.ContainerState_Status.CREATED, (_s) => Effect.fail("Waiting")),
+        //             Match.orElse((_s) => Effect.fail("Container is dead or killed"))
+        //         ).pipe(
+        //             Effect.mapError(
+        //                 (s) => new MobyEndpoints.ContainersError({ method: "inspect", cause: new Error(s) })
+        //             )
+        //         )
+        //     )
+        // ).pipe(
+        //     Effect.retry(
+        //         Schedule.spaced(500).pipe(
+        //             Schedule.whileInput(({ message }: MobyEndpoints.ContainersError) => message === "Waiting")
+        //         )
+        //     )
+        // );
 
-        // Helper for if the container has a healthcheck, wait for it to report healthy
-        const waitUntilContainerHealthy = Function.pipe(
-            containers.inspect(containerCreateResponse.Id),
-            // Effect.tap(({ State }) =>
-            //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
-            // ),
-            Effect.flatMap(({ State }) =>
-                Function.pipe(
-                    Match.value(State?.Health?.Status),
-                    Match.when(undefined, (_s) => Effect.void),
-                    Match.when("healthy", (_s) => Effect.void),
-                    Match.when("starting", (_s) => Effect.fail("Waiting")),
-                    // Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
-                    // Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
-                    Match.orElse((_s) => Effect.fail("Container is unhealthy"))
-                ).pipe(
-                    Effect.mapError(
-                        (s) => new MobyEndpoints.ContainersError({ method: "inspect", cause: new Error(s) })
-                    )
-                )
-            )
-        ).pipe(
-            Effect.retry(
-                Schedule.spaced(500).pipe(
-                    Schedule.whileInput(({ message }: MobyEndpoints.ContainersError) => message === "Waiting")
-                )
-            )
-        );
+        // // Helper for if the container has a healthcheck, wait for it to report healthy
+        // const waitUntilContainerHealthy = Function.pipe(
+        //     containers.inspect(containerCreateResponse.Id),
+        //     // Effect.tap(({ State }) =>
+        //     //     Effect.log(`Waiting for container to be healthy, health=${State?.Health?.Status}`)
+        //     // ),
+        //     Effect.flatMap(({ State }) =>
+        //         Function.pipe(
+        //             Match.value(State?.Health?.Status),
+        //             Match.when(undefined, (_s) => Effect.void),
+        //             Match.when("healthy", (_s) => Effect.void),
+        //             Match.when("starting", (_s) => Effect.fail("Waiting")),
+        //             // Match.when(Schemas.Health_Status.HEALTHY, (_s) => Effect.void),
+        //             // Match.when(Schemas.Health_Status.STARTING, (_s) => Effect.fail("Waiting")),
+        //             Match.orElse((_s) => Effect.fail("Container is unhealthy"))
+        //         ).pipe(
+        //             Effect.mapError(
+        //                 (s) => new MobyEndpoints.ContainersError({ method: "inspect", cause: new Error(s) })
+        //             )
+        //         )
+        //     )
+        // ).pipe(
+        //     Effect.retry(
+        //         Schedule.spaced(500).pipe(
+        //             Schedule.whileInput(({ message }: MobyEndpoints.ContainersError) => message === "Waiting")
+        //         )
+        //     )
+        // );
 
-        yield* waitUntilContainerDeadOrRunning;
-        yield* waitUntilContainerHealthy;
-        return yield* containers.inspect(containerCreateResponse.Id);
+        // yield* waitUntilContainerDeadOrRunning;
+        // yield* waitUntilContainerHealthy;
+        return yield* containers.inspect(containerCreateResponse.Id as IdSchemas.ContainerId);
     });
 
 /** @internal */
 export const runScoped = (
-    containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
+    name: string,
+    platform: string,
+    container: MobySchemas.ContainerCreateRequest
 ): Effect.Effect<
     MobySchemas.ContainerInspectResponse,
-    MobyEndpoints.ContainersError,
+    | HttpApiError.BadRequest
+    | HttpApiError.Forbidden
+    | HttpApiError.NotFound
+    | HttpApiError.NotAcceptable
+    | HttpApiError.Conflict
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
     Scope.Scope | MobyEndpoints.Containers
 > => {
-    const acquire = run(containerOptions);
+    const acquire = run(name, platform, container);
     const release = (containerData: MobySchemas.ContainerInspectResponse) =>
         Effect.orDie(
-            Effect.gen(function* () {
-                const containers = yield* MobyEndpoints.Containers;
-                // FIXME: this cleanup should be better
-                yield* Effect.catchTag(containers.stop(containerData.Id), "ContainersError", () => Effect.void);
-                yield* containers.delete(containerData.Id, { force: true });
-            })
+            MobyEndpoints.Containers.use((containers) =>
+                containers.delete(containerData.Id as IdSchemas.ContainerId, { force: true })
+            )
         );
     return Effect.acquireRelease(acquire, release);
 };
@@ -225,13 +280,9 @@ export const execNonBlocking = <T extends boolean | undefined = undefined>({
     detach,
 }: {
     detach?: T;
-    containerId: string;
+    containerId: IdSchemas.ContainerId;
     command: string | Array<string>;
-}): Effect.Effect<
-    [socket: T extends true ? void : MobyDemux.RawSocket | MobyDemux.MultiplexedSocket, execId: string],
-    MobyEndpoints.ExecsError,
-    MobyEndpoints.Execs
-> =>
+}) =>
     Effect.gen(function* () {
         const execs = yield* MobyEndpoints.Execs;
         const execId = yield* execs.container(containerId, {
@@ -241,7 +292,7 @@ export const execNonBlocking = <T extends boolean | undefined = undefined>({
             Cmd: Predicate.isString(command) ? command.split(" ") : command,
         });
 
-        const socket = yield* execs.start<T>(execId.Id, { Detach: detach as T });
+        const socket = yield* execs.start(execId.Id, { Detach: detach as T });
         return Tuple.make(socket, execId.Id);
     });
 
@@ -250,7 +301,7 @@ export const exec = ({
     command,
     containerId,
 }: {
-    containerId: string;
+    containerId: IdSchemas.ContainerId;
     command: string | Array<string>;
 }): Effect.Effect<
     readonly [exitCode: number, output: string],
@@ -281,7 +332,7 @@ export const execWebsocketsNonBlocking = ({
 }: {
     command: string | Array<string>;
     cwd?: string | undefined;
-    containerId: string;
+    containerId: IdSchemas.ContainerId;
 }): Effect.Effect<
     MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
     never,
@@ -361,7 +412,7 @@ export const execWebsockets = ({
     containerId,
 }: {
     command: string | Array<string>;
-    containerId: string;
+    containerId: IdSchemas.ContainerId;
 }): Effect.Effect<
     readonly [stdout: string, stderr: string],
     MobyEndpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
@@ -401,24 +452,40 @@ export const search = (
 
 /** @internal */
 export const version: () => Effect.Effect<
-    Readonly<MobySchemas.SystemVersionResponse>,
-    MobyEndpoints.SystemsError,
-    MobyEndpoints.Systems
-> = Function.constant(MobyEndpoints.Systems.use((systems) => systems.version()));
+    MobySchemas.SystemVersionResponse,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.System
+> = Function.constant(MobyEndpoints.System.use((systems) => systems.version()));
 
 /** @internal */
 export const info: () => Effect.Effect<
-    Readonly<MobySchemas.SystemInfoResponse>,
-    MobyEndpoints.SystemsError,
-    MobyEndpoints.Systems
-> = Function.constant(MobyEndpoints.Systems.use((systems) => systems.info()));
+    MobySchemas.SystemInfoResponse,
+    | ParseResult.ParseError
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError,
+    MobyEndpoints.System
+> = Function.constant(MobyEndpoints.System.use((systems) => systems.info()));
 
 /** @internal */
-export const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEndpoints.Systems> = Function.constant(
-    MobyEndpoints.Systems.use((systems) => systems.ping())
-);
+export const ping: () => Effect.Effect<
+    void,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.System
+> = Function.constant(MobyEndpoints.System.use((systems) => systems.ping()));
 
 /** @internal */
-export const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, MobyEndpoints.Systems> = Function.constant(
-    MobyEndpoints.Systems.use((systems) => systems.ping())
-);
+export const pingHead: () => Effect.Effect<
+    void,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.System
+> = Function.constant(MobyEndpoints.System.use((systems) => systems.ping()));

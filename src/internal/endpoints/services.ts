@@ -1,210 +1,180 @@
-import type * as HttpBody from "@effect/platform/HttpBody";
-import type * as HttpClientError from "@effect/platform/HttpClientError";
-import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
-
-import * as PlatformError from "@effect/platform/Error";
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Predicate from "effect/Predicate";
-import * as Schema from "effect/Schema";
-import * as Stream from "effect/Stream";
-import * as Tuple from "effect/Tuple";
-
 import {
-    SwarmService,
-    SwarmServiceCreateResponse,
-    SwarmServiceSpec,
-    SwarmServiceUpdateResponse,
-} from "../generated/index.js";
-import { maybeAddQueryParameter } from "./common.js";
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, Stream, type Layer } from "effect";
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const ServicesErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/ServicesError"
-) as ServicesErrorTypeId;
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { SwarmService, SwarmServiceSpec } from "../generated/index.js";
+import { NodeNotPartOfSwarm } from "../schemas/errors.js";
+import { ServiceId } from "../schemas/id.js";
+import { HttpApiStreamingResponse } from "./httpApiHacks.js";
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type ServicesErrorTypeId = typeof ServicesErrorTypeId;
+/** @since 1.0.0 */
+export class ListFilters extends Schema.parseJson(
+    Schema.Struct({
+        id: Schema.optional(Schema.Array(Schema.String)),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        mode: Schema.optional(Schema.Array(Schema.Literal("replicated", "global"))),
+    })
+) {}
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isServicesError = (u: unknown): u is ServicesError => Predicate.hasProperty(u, ServicesErrorTypeId);
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceList */
+const listServicesEndpoint = HttpApiEndpoint.get("list", "/")
+    .setUrlParams(
+        Schema.Struct({
+            filters: Schema.optional(ListFilters),
+            status: Schema.optional(Schema.BooleanFromString),
+        })
+    )
+    .addSuccess(Schema.Array(SwarmService), { status: 200 }) // 200 OK
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId, "ServicesError")<{
-    method: string;
-    cause: ParseResult.ParseError | HttpClientError.HttpClientError | HttpBody.HttpBodyError | unknown;
-}> {
-    get message() {
-        return `${this.method}`;
-    }
-}
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceCreate */
+const createServiceEndpoint = HttpApiEndpoint.post("create", "/create")
+    .setPayload(SwarmServiceSpec)
+    .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
+    .addSuccess(
+        Schema.Struct({
+            ID: ServiceId,
+            Warnings: Schema.optional(Schema.Array(Schema.String)),
+        }),
+        { status: 201 }
+    ) // 201 Created
+    .addError(HttpApiError.BadRequest) // 400 Bad request
+    .addError(HttpApiError.Forbidden) // 403 network is not eligible for services
+    .addError(HttpApiError.Conflict) // 409 name conflicts with an existing object
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceDelete */
+const deleteServiceEndpoint = HttpApiEndpoint.del("delete", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceInspect */
+const inspectServiceEndpoint = HttpApiEndpoint.get("inspect", "/:id")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(Schema.Struct({ insertDefaults: Schema.optional(Schema.BooleanFromString) }))
+    .addSuccess(SwarmService, { status: 200 }) // 200 OK
+    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceUpdate */
+const updateServiceEndpoint = HttpApiEndpoint.post("update", "/:id/update")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(
+        Schema.Struct({
+            version: Schema.NumberFromString,
+            rollback: Schema.optional(Schema.String),
+            registryAuthFrom: Schema.optional(Schema.String),
+        })
+    )
+    .setHeaders(
+        Schema.Struct({
+            "X-Registry-Auth": Schema.optional(Schema.String),
+        })
+    )
+    .setPayload(SwarmServiceSpec)
+    .addSuccess(Schema.Struct({ Warnings: Schema.optional(Schema.Array(Schema.String)) }), { status: 200 }) // 200 OK
+    .addError(HttpApiError.BadRequest) // 400 Bad request
+    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceLogs */
+const logsServiceEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setUrlParams(
+        Schema.Struct({
+            details: Schema.optional(Schema.BooleanFromString),
+            follow: Schema.optional(Schema.BooleanFromString),
+            stdout: Schema.optional(Schema.BooleanFromString),
+            stderr: Schema.optional(Schema.BooleanFromString),
+            since: Schema.optional(Schema.NumberFromString),
+            timestamps: Schema.optional(Schema.BooleanFromString),
+            tail: Schema.optional(Schema.String),
+        })
+    )
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service */
+const ServicesGroup = HttpApiGroup.make("services")
+    .add(listServicesEndpoint)
+    .add(createServiceEndpoint)
+    .add(deleteServiceEndpoint)
+    .add(inspectServiceEndpoint)
+    .add(updateServiceEndpoint)
+    .add(logsServiceEndpoint)
+    .addError(HttpApiError.InternalServerError)
+    .prefix("/services");
 
 /**
  * Services are the definitions of tasks to run on a swarm. Swarm mode must be
  * enabled for these endpoints to work.
  *
  * @since 1.0.0
- * @category Tags
+ * @category HttpApi
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
+ */
+export const ServicesApi = HttpApi.make("ServicesApi").add(ServicesGroup);
+
+/**
+ * Services are the definitions of tasks to run on a swarm. Swarm mode must be
+ * enabled for these endpoints to work.
+ *
+ * @since 1.0.0
+ * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
  */
 export class Services extends Effect.Service<Services>()("@the-moby-effect/endpoints/Services", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const defaultClient = yield* HttpClient.HttpClient;
-        const client = defaultClient.pipe(HttpClient.filterStatusOk);
+        type Options<Name extends (typeof ServicesGroup.endpoints)[number]["name"]> =
+            HttpApiEndpoint.HttpApiEndpoint.UrlParams<
+                HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof ServicesGroup.endpoints)[number], Name>
+            >;
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceList */
-        const list_ = (
-            options?: { readonly filters?: string; readonly status?: boolean } | undefined
-        ): Effect.Effect<Readonly<Array<SwarmService>>, ServicesError, never> =>
-            Function.pipe(
-                HttpClientRequest.get("/services"),
-                maybeAddQueryParameter(
-                    "filters",
-                    Function.pipe(options?.filters, Option.fromNullable, Option.map(JSON.stringify))
-                ),
-                maybeAddQueryParameter("status", Option.fromNullable(options?.status)),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(Schema.Array(SwarmService))),
-                Effect.mapError((cause) => new ServicesError({ method: "list", cause }))
-            );
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(ServicesApi, { group: "services", httpClient });
 
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceCreate */
-        const create_ = (options: {
-            readonly body: typeof SwarmServiceSpec.Encoded;
-            readonly "X-Registry-Auth"?: string;
-        }): Effect.Effect<Readonly<SwarmServiceCreateResponse>, ServicesError, never> =>
-            Function.pipe(
-                Schema.decode(SwarmServiceSpec)(options.body),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post("/services/create"), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(SwarmServiceSpec))),
-                Effect.map(HttpClientRequest.setHeader("X-Registry-Auth", "")),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmServiceCreateResponse)),
-                Effect.mapError((cause) => new ServicesError({ method: "create", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceDelete */
-        const delete_ = (id: string): Effect.Effect<void, ServicesError, never> =>
-            Function.pipe(
-                HttpClientRequest.del(`/services/${encodeURIComponent(id)}`),
-                client.execute,
-                Effect.asVoid,
-                Effect.mapError((cause) => new ServicesError({ method: "delete", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceInspect */
-        const inspect_ = (
-            id: string,
-            options?:
-                | {
-                      readonly insertDefaults?: boolean;
-                  }
-                | undefined
-        ): Effect.Effect<Readonly<SwarmService>, ServicesError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/services/${encodeURIComponent(id)}`),
-                maybeAddQueryParameter("insertDefaults", Option.fromNullable(options?.insertDefaults)),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmService)),
-                Effect.mapError((cause) => new ServicesError({ method: "inspect", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceUpdate */
-        const update_ = (
-            id: string,
-            options: {
-                readonly body: SwarmServiceSpec;
-                /**
-                 * The version number of the service object being updated. This
-                 * is required to avoid conflicting writes. This version number
-                 * should be the value as currently set on the service _before_
-                 * the update. You can find the current version by calling `GET
-                 * /services/{id}`
-                 */
-                readonly version: number;
-                /**
-                 * If the `X-Registry-Auth` header is not specified, this
-                 * parameter indicates where to find registry authorization
-                 * credentials.
-                 */
-                readonly registryAuthFrom?: string;
-                /**
-                 * Set to this parameter to `previous` to cause a server-side
-                 * rollback to the previous service spec. The supplied spec will
-                 * be ignored in this case.
-                 */
-                readonly rollback?: string;
-                /**
-                 * A base64url-encoded auth configuration for pulling from
-                 * private registries.
-                 *
-                 * Refer to the [authentication
-                 * section](#section/Authentication) for details.
-                 */
-                readonly "X-Registry-Auth"?: string;
-            }
-        ): Effect.Effect<Readonly<SwarmServiceUpdateResponse>, ServicesError, never> =>
-            Function.pipe(
-                HttpClientRequest.post(`/services/${encodeURIComponent(id)}/update`),
-                HttpClientRequest.setHeader("X-Registry-Auth", ""),
-                maybeAddQueryParameter("version", Option.some(options.version)),
-                maybeAddQueryParameter("registryAuthFrom", Option.fromNullable(options.registryAuthFrom)),
-                maybeAddQueryParameter("rollback", Option.fromNullable(options.rollback)),
-                HttpClientRequest.schemaBodyJson(SwarmServiceSpec)(options.body),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(SwarmServiceUpdateResponse)),
-                Effect.mapError((cause) => new ServicesError({ method: "update", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceLogs */
-        const logs_ = (
-            id: string,
-            options?:
-                | {
-                      readonly details?: boolean;
-                      readonly follow?: boolean;
-                      readonly stdout?: boolean;
-                      readonly stderr?: boolean;
-                      readonly since?: number;
-                      readonly timestamps?: boolean;
-                      readonly tail?: string;
-                  }
-                | undefined
-        ): Stream.Stream<string, ServicesError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/services/${encodeURIComponent(id)}/logs`),
-                maybeAddQueryParameter("details", Option.fromNullable(options?.details)),
-                maybeAddQueryParameter("follow", Option.fromNullable(options?.follow)),
-                maybeAddQueryParameter("stdout", Option.fromNullable(options?.stdout)),
-                maybeAddQueryParameter("stderr", Option.fromNullable(options?.stderr)),
-                maybeAddQueryParameter("since", Option.fromNullable(options?.since)),
-                maybeAddQueryParameter("timestamps", Option.fromNullable(options?.timestamps)),
-                maybeAddQueryParameter("tail", Option.fromNullable(options?.tail)),
-                client.execute,
-                HttpClientResponse.stream,
-                Stream.decodeText(),
-                Stream.mapError((cause) => new ServicesError({ method: "logs", cause }))
-            );
+        const list_ = (options?: Options<"list">) => client.list({ urlParams: { ...options } });
+        const create_ = (payload: SwarmServiceSpec) => client.create({ payload, headers: { "X-Registry-Auth": "" } });
+        const delete_ = (id: string) => client.delete({ path: { id } });
+        const inspect_ = (id: string, options?: Options<"inspect">) =>
+            client.inspect({ path: { id }, urlParams: { ...options } });
+        const update_ = (id: string, payload: SwarmServiceSpec, options: Options<"update">) =>
+            client.update({
+                payload,
+                path: { id },
+                urlParams: { ...options },
+                headers: { "X-Registry-Auth": "" },
+            });
+        const logs_ = (id: string, options?: Options<"logs">) =>
+            HttpApiStreamingResponse(
+                ServicesApi,
+                "services",
+                "logs",
+                httpClient
+            )({ path: { id }, urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines);
 
         return {
             list: list_,
@@ -225,4 +195,14 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
  */
-export const ServicesLayer: Layer.Layer<Services, never, HttpClient.HttpClient> = Services.Default;
+export const ServicesLayerLocalSocket: Layer.Layer<Services, never, HttpClient.HttpClient> = Services.Default;
+
+/**
+ * Services are the definitions of tasks to run on a swarm. Swarm mode must be
+ * enabled for these endpoints to work.
+ *
+ * @since 1.0.0
+ * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
+ */
+export const ServicesLayer: Layer.Layer<Services, never, HttpClient.HttpClient> = Services.DefaultWithoutDependencies;

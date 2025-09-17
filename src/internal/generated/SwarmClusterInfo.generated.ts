@@ -18,7 +18,6 @@ export class SwarmClusterInfo extends Schema.Class<SwarmClusterInfo>("SwarmClust
     {
         identifier: "SwarmClusterInfo",
         title: "swarm.ClusterInfo",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/swarm.go#L7-L18",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ClusterInfo",
     }
 ) {}

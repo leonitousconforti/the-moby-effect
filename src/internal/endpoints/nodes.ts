@@ -12,9 +12,10 @@ import { Effect, Schema, type Layer } from "effect";
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmNode, SwarmNodeSpec } from "../generated/index.js";
+import { NodeNotPartOfSwarm } from "../schemas/errors.js";
 
-/** Node list filters (JSON encoded) */
-export class NodeListFilters extends Schema.parseJson(
+/** @since 1.0.0 */
+export class ListFilters extends Schema.parseJson(
     Schema.Struct({
         id: Schema.optional(Schema.Array(Schema.String)),
         label: Schema.optional(Schema.Array(Schema.String)),
@@ -27,37 +28,34 @@ export class NodeListFilters extends Schema.parseJson(
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeList */
 const listNodesEndpoint = HttpApiEndpoint.get("list", "/")
-    .setUrlParams(Schema.Struct({ filters: Schema.optional(NodeListFilters) }))
-    .addSuccess(Schema.Array(SwarmNode), { status: 200 });
+    .setUrlParams(Schema.Struct({ filters: Schema.optional(ListFilters) }))
+    .addSuccess(Schema.Array(SwarmNode), { status: 200 })
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeInspect */
 const inspectNodeEndpoint = HttpApiEndpoint.get("inspect", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .addSuccess(SwarmNode, { status: 200 })
-    .addError(HttpApiError.NotFound);
+    .addError(HttpApiError.NotFound) // 404 No such node
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeDelete */
 const deleteNodeEndpoint = HttpApiEndpoint.del("delete", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .setUrlParams(Schema.Struct({ force: Schema.optional(Schema.BooleanFromString) }))
-    .addSuccess(HttpApiSchema.NoContent)
-    .addError(HttpApiError.NotFound);
+    .addSuccess(HttpApiSchema.Empty(200))
+    .addError(HttpApiError.NotFound) // 404 No such node
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
 const updateNodeEndpoint = HttpApiEndpoint.post("update", "/:id/update")
     .setPath(Schema.Struct({ id: Schema.String }))
-    .setUrlParams(
-        Schema.Struct({
-            version: Schema.Number, // required
-            rotateWorkerToken: Schema.optional(Schema.BooleanFromString),
-            rotateManagerToken: Schema.optional(Schema.BooleanFromString),
-            rotateManagerUnlockKey: Schema.optional(Schema.BooleanFromString),
-        })
-    )
+    .setUrlParams(Schema.Struct({ version: Schema.NumberFromString }))
     .setPayload(SwarmNodeSpec)
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.NotFound)
-    .addError(HttpApiError.BadRequest);
+    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(HttpApiError.NotFound) // 404 No such node
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node */
 const NodesGroup = HttpApiGroup.make("nodes")
@@ -80,7 +78,7 @@ export const NodesApi = HttpApi.make("NodesApi").add(NodesGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
  */
-export class NodesService extends Effect.Service<NodesService>()("@the-moby-effect/endpoints/Nodes", {
+export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/Nodes", {
     accessors: false,
     dependencies: [
         makeAgnosticHttpClientLayer(
@@ -94,27 +92,19 @@ export class NodesService extends Effect.Service<NodesService>()("@the-moby-effe
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(NodesApi, { group: "nodes", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<NodeListFilters>) => client.list({ urlParams: { filters } });
+        const list_ = (filters?: Schema.Schema.Type<ListFilters>) => client.list({ urlParams: { filters } });
         const inspect_ = (id: string) => client.inspect({ path: { id } });
-        const delete_ = (id: string, options?: { force?: boolean }) =>
-            client.delete({ path: { id }, urlParams: { force: options?.force } });
-        const update_ = (
-            id: string,
-            payload: SwarmNodeSpec,
-            params: {
-                version: number;
-                rotateWorkerToken?: boolean;
-                rotateManagerToken?: boolean;
-                rotateManagerUnlockKey?: boolean;
-            }
-        ) => client.update({ path: { id }, urlParams: { ...params }, payload });
+        const delete_ = (id: string, options?: { force?: boolean | undefined } | undefined) =>
+            client.delete({ path: { id }, urlParams: { ...options } });
+        const update_ = (id: string, version: number, payload: SwarmNodeSpec) =>
+            client.update({ path: { id }, urlParams: { version }, payload });
 
         return {
             list: list_,
             inspect: inspect_,
             delete: delete_,
             update: update_,
-        } as const;
+        };
     }),
 }) {}
 
@@ -123,17 +113,11 @@ export class NodesService extends Effect.Service<NodesService>()("@the-moby-effe
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
  */
-export const NodesLayer: Layer.Layer<NodesService, never, HttpClient.HttpClient> =
-    NodesService.DefaultWithoutDependencies as Layer.Layer<NodesService, never, HttpClient.HttpClient>;
+export const NodesLayer: Layer.Layer<Nodes, never, HttpClient.HttpClient> = Nodes.DefaultWithoutDependencies;
 
 /**
- * Local socket auto-configured layer
- *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
  */
-export const NodesLayerLocalSocket: Layer.Layer<NodesService, never, HttpClient.HttpClient> =
-    NodesService.Default as Layer.Layer<NodesService, never, HttpClient.HttpClient>;
-
-/** Alias for pre-refactor naming consistency */
-export { NodesService as Nodes };
+export const NodesLayerLocalSocket: Layer.Layer<Nodes, never, HttpClient.HttpClient> = Nodes.Default;

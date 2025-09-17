@@ -9,7 +9,6 @@ export class SwarmJobStatus extends Schema.Class<SwarmJobStatus>("SwarmJobStatus
     {
         identifier: "SwarmJobStatus",
         title: "swarm.JobStatus",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/service.go#L186-L202",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#JobStatus",
     }
 ) {}

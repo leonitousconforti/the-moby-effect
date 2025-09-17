@@ -14,7 +14,6 @@ export class SwarmServiceMode extends Schema.Class<SwarmServiceMode>("SwarmServi
     {
         identifier: "SwarmServiceMode",
         title: "swarm.ServiceMode",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/service.go#L44-L50",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ServiceMode",
     }
 ) {}

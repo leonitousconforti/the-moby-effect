@@ -10,7 +10,6 @@ export class SwarmMeta extends Schema.Class<SwarmMeta>("SwarmMeta")(
     {
         identifier: "SwarmMeta",
         title: "swarm.Meta",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/common.go#L18-L23",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#Meta",
     }
 ) {}

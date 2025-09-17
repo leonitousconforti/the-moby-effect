@@ -14,7 +14,6 @@ export class Plugin extends Schema.Class<Plugin>("Plugin")(
     {
         identifier: "Plugin",
         title: "types.Plugin",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/plugin.go#L6-L31",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types#Plugin",
     }
 ) {}

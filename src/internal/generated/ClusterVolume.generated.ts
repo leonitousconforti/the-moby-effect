@@ -6,37 +6,18 @@ import * as VolumePublishStatus from "./VolumePublishStatus.generated.js";
 
 export class ClusterVolume extends Schema.Class<ClusterVolume>("ClusterVolume")(
     {
-        /**
-         * ID is the Swarm ID of the volume. Because cluster volumes are Swarm
-         * objects, they have an ID, unlike non-cluster volumes, which only have
-         * a Name. This ID can be used to refer to the cluster volume.
-         */
         ID: Schema.String,
-
-        // https://github.com/moby/moby/blob/733755d7cb18a4dbea7c290cc56e61d05502aca0/api/types/swarm/common.go#L18-L23
         ...SwarmMeta.SwarmMeta.fields,
-
-        /**
-         * Spec is the cluster-specific options from which this volume is
-         * derived.
-         */
         Spec: Schema.NullOr(ClusterVolumeSpec.ClusterVolumeSpec),
-
-        /**
-         * PublishStatus contains the status of the volume as it pertains to its
-         * publishing on Nodes.
-         */
         PublishStatus: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumePublishStatus.VolumePublishStatus)), {
             nullable: true,
         }),
-
-        /** Info is information about the global status of the volume. */
         Info: Schema.optionalWith(VolumeInfo.VolumeInfo, { nullable: true }),
     },
     {
         identifier: "ClusterVolume",
         title: "volume.ClusterVolume",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L7-L27",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/volume#ClusterVolume",
     }
 ) {}

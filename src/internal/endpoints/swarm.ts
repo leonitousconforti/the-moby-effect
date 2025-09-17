@@ -16,33 +16,35 @@ import {
     SwarmInitRequest,
     SwarmJoinRequest,
     SwarmSpec,
-    SwarmUnlockKeyResponse,
     SwarmUnlockRequest,
 } from "../generated/index.js";
+import { NodeAlreadyPartOfSwarm, NodeNotPartOfSwarm } from "../schemas/errors.js";
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInspect */
 const inspectSwarmEndpoint = HttpApiEndpoint.get("inspect", "/")
     .addSuccess(SwarmData, { status: 200 }) // 200 OK
-    .addError(HttpApiError.NotAcceptable); // 406 node is not a swarm manager
+    .addError(HttpApiError.NotFound) // 404 No such swarm
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInit */
 const initSwarmEndpoint = HttpApiEndpoint.post("init", "/init")
     .setPayload(SwarmInitRequest)
-    .addSuccess(Schema.String, { status: 200 }) // 200 OK returns node ID
-    .addError(HttpApiError.BadRequest)
-    .addError(HttpApiError.InternalServerError);
+    .addSuccess(Schema.String, { status: 200 }) // 200 OK
+    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(NodeAlreadyPartOfSwarm); // 503 Node is already part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmJoin */
 const joinSwarmEndpoint = HttpApiEndpoint.post("join", "/join")
     .setPayload(SwarmJoinRequest)
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.InternalServerError);
+    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(NodeAlreadyPartOfSwarm); // 503 Node is already part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmLeave */
 const leaveSwarmEndpoint = HttpApiEndpoint.post("leave", "/leave")
     .setUrlParams(Schema.Struct({ force: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.InternalServerError);
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUpdate */
 const updateSwarmEndpoint = HttpApiEndpoint.post("update", "/update")
@@ -57,18 +59,18 @@ const updateSwarmEndpoint = HttpApiEndpoint.post("update", "/update")
     .setPayload(SwarmSpec)
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.InternalServerError);
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlockkey */
 const unlockkeySwarmEndpoint = HttpApiEndpoint.get("unlockkey", "/unlockkey")
-    .addSuccess(SwarmUnlockKeyResponse, { status: 200 }) // 200 OK
-    .addError(HttpApiError.InternalServerError);
+    .addSuccess(Schema.Struct({ UnlockKey: Schema.String }), { status: 200 }) // 200 OK
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlock */
 const unlockSwarmEndpoint = HttpApiEndpoint.post("unlock", "/unlock")
     .setPayload(SwarmUnlockRequest)
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.InternalServerError);
+    .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm */
 const SwarmGroup = HttpApiGroup.make("swarm")
@@ -100,7 +102,7 @@ export const SwarmApi = HttpApi.make("SwarmApi").add(SwarmGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
-export class SwarmService extends Effect.Service<SwarmService>()("@the-moby-effect/endpoints/Swarm", {
+export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/Swarm", {
     accessors: false,
     dependencies: [
         makeAgnosticHttpClientLayer(
@@ -117,20 +119,27 @@ export class SwarmService extends Effect.Service<SwarmService>()("@the-moby-effe
         const inspect_ = () => client.inspect({});
         const init_ = (payload: SwarmInitRequest) => client.init({ payload });
         const join_ = (payload: SwarmJoinRequest) => client.join({ payload });
-        const leave_ = (force?: boolean) => client.leave({ urlParams: { force } });
+        const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
+            client.leave({ urlParams: { ...options } });
         const update_ = (
             spec: SwarmSpec,
             version: number,
-            rotate?: { workerToken?: boolean; managerToken?: boolean; managerUnlockKey?: boolean }
+            rotate?:
+                | {
+                      workerToken?: boolean | undefined;
+                      managerToken?: boolean | undefined;
+                      managerUnlockKey?: boolean | undefined;
+                  }
+                | undefined
         ) =>
             client.update({
+                payload: spec,
                 urlParams: {
                     version,
                     rotateWorkerToken: rotate?.workerToken,
                     rotateManagerToken: rotate?.managerToken,
                     rotateManagerUnlockKey: rotate?.managerUnlockKey,
                 },
-                payload: spec,
             });
         const unlockkey_ = () => client.unlockkey({});
         const unlock_ = (payload: SwarmUnlockRequest) => client.unlock({ payload });
@@ -143,7 +152,7 @@ export class SwarmService extends Effect.Service<SwarmService>()("@the-moby-effe
             update: update_,
             unlockkey: unlockkey_,
             unlock: unlock_,
-        } as const;
+        };
     }),
 }) {}
 
@@ -155,14 +164,14 @@ export class SwarmService extends Effect.Service<SwarmService>()("@the-moby-effe
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
-export const SwarmLayer: Layer.Layer<SwarmService, never, HttpClient.HttpClient> =
-    SwarmService.DefaultWithoutDependencies as Layer.Layer<SwarmService, never, HttpClient.HttpClient>;
+export const SwarmLayer: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.DefaultWithoutDependencies;
 
 /**
- * Local socket auto-configured layer
+ * Engines can be clustered together in a swarm. Refer to the swarm mode
+ * documentation for more information.
  *
  * @since 1.0.0
  * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
  */
-export const SwarmLayerLocalSocket: Layer.Layer<SwarmService, never, HttpClient.HttpClient> =
-    SwarmService.Default as Layer.Layer<SwarmService, never, HttpClient.HttpClient>;
+export const SwarmLayerLocalSocket: Layer.Layer<Swarm, never, HttpClient.HttpClient> = Swarm.Default;

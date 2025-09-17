@@ -12,6 +12,6 @@ export class HealthcheckResult extends Schema.Class<HealthcheckResult>("Healthch
         identifier: "HealthcheckResult",
         title: "container.HealthcheckResult",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/container/health.go#L25-L31",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#HealthcheckResult",
     }
 ) {}

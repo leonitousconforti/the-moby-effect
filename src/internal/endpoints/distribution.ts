@@ -30,39 +30,36 @@ export const DistributionsApi = HttpApi.make("distributions").add(DistributionsG
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution
  */
-export class DistributionsService extends Effect.Service<DistributionsService>()(
-    "@the-moby-effect/endpoints/Distributions",
-    {
-        accessors: false,
-        dependencies: [
-            makeAgnosticHttpClientLayer(
-                MobyConnectionOptions.socket({
-                    socketPath: "/var/run/docker.sock",
-                })
-            ),
-        ],
+export class Distributions extends Effect.Service<Distributions>()("@the-moby-effect/endpoints/Distributions", {
+    accessors: false,
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
-        effect: Effect.gen(function* () {
-            const httpClient = yield* HttpClient.HttpClient;
-            const client = yield* HttpApiClient.group(DistributionsApi, { group: "distributions", httpClient });
-            const inspect_ = (name: string) => client.inspect({ path: { name } });
-            return { inspect: inspect_ };
-        }),
-    }
-) {}
+    effect: Effect.gen(function* () {
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(DistributionsApi, { group: "distributions", httpClient });
+        const inspect_ = (name: string) => client.inspect({ path: { name } });
+        return { inspect: inspect_ };
+    }),
+}) {}
 
 /**
  * @since 1.0.0
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution
  */
-export const DistributionsLayerLocalSocket: Layer.Layer<DistributionsService, never, HttpClient.HttpClient> =
-    DistributionsService.Default;
+export const DistributionsLayerLocalSocket: Layer.Layer<Distributions, never, HttpClient.HttpClient> =
+    Distributions.Default;
 
 /**
  * @since 1.0.0
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution
  */
-export const DistributionsLayer: Layer.Layer<DistributionsService, never, HttpClient.HttpClient> =
-    DistributionsService.DefaultWithoutDependencies;
+export const DistributionsLayer: Layer.Layer<Distributions, never, HttpClient.HttpClient> =
+    Distributions.DefaultWithoutDependencies;

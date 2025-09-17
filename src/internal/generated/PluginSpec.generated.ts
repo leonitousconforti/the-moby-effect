@@ -14,7 +14,6 @@ export class PluginSpec extends Schema.Class<PluginSpec>("PluginSpec")(
     {
         identifier: "PluginSpec",
         title: "runtime.PluginSpec",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/runtime/plugin.pb.go#L25-L33",
+        documentation: "",
     }
 ) {}

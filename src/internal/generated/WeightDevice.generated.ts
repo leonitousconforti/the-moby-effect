@@ -9,7 +9,6 @@ export class WeightDevice extends Schema.Class<WeightDevice>("WeightDevice")(
     {
         identifier: "WeightDevice",
         title: "blkiodev.WeightDevice",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/blkiodev/blkio.go#L5-L9",
+        documentation: "",
     }
 ) {}

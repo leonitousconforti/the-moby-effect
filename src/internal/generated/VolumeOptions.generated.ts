@@ -11,7 +11,6 @@ export class VolumeOptions extends Schema.Class<VolumeOptions>("VolumeOptions")(
     {
         identifier: "VolumeOptions",
         title: "mount.VolumeOptions",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/mount/mount.go#L98-L104",
+        documentation: "",
     }
 ) {}

@@ -9,6 +9,6 @@ export class SwarmReplicatedService extends Schema.Class<SwarmReplicatedService>
         identifier: "SwarmReplicatedService",
         title: "swarm.ReplicatedService",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/service.go#L78-L81",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ReplicatedService",
     }
 ) {}

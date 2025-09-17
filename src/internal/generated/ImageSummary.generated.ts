@@ -23,7 +23,6 @@ export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
     {
         identifier: "ImageSummary",
         title: "image.Summary",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/image/summary.go#L5-L101",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image#Summary",
     }
 ) {}

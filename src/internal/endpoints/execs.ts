@@ -1,145 +1,112 @@
-import type * as Layer from "effect/Layer";
+import {
+    HttpApi,
+    HttpApiClient,
+    HttpApiEndpoint,
+    HttpApiError,
+    HttpApiGroup,
+    HttpApiSchema,
+    HttpClient,
+} from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
-import * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Option from "effect/Option";
-import * as Schema from "effect/Schema";
-import * as Tuple from "effect/Tuple";
-import * as MobyDemux from "../../MobyDemux.js";
-
+import { MobyConnectionOptions } from "../../MobyConnection.js";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
     ContainerExecOptions as ContainerExecStartConfig,
     ContainerExecOptions as ExecConfig,
     ContainerExecInspect as ExecInspectResponse,
-    IDResponse,
 } from "../generated/index.js";
-import { ExecsError } from "../../MobyEndpoints.js";
+import { ExecId } from "../schemas/id.js";
+import { HttpApiSocket } from "./httpApiHacks.js";
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ContainerExec */
+const createExecEndpoint = HttpApiEndpoint.post("container", "/containers/:id/exec")
+    .setPath(Schema.Struct({ id: Schema.String }))
+    .setPayload(ExecConfig)
+    .addSuccess(Schema.Struct({ Id: ExecId }), { status: 201 })
+    .addError(HttpApiError.NotFound) // 404 No such container
+    .addError(HttpApiError.Conflict); // 409 Container is not running
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecStart */
+const startExecEndpoint = HttpApiEndpoint.post("start", "/exec/:id/start")
+    .setPath(Schema.Struct({ id: ExecId }))
+    .setHeaders(Schema.Struct({ Upgrade: Schema.Literal("tcp"), Connection: Schema.Literal("Upgrade") }))
+    .setPayload(ContainerExecStartConfig)
+    .addSuccess(HttpApiSchema.Empty(101))
+    .addSuccess(HttpApiSchema.Empty(200))
+    .addError(HttpApiError.NotFound) // 404 No such Exec instance
+    .addError(HttpApiError.Conflict); // 409 Container is not running
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecResize */
+const resizeExecEndpoint = HttpApiEndpoint.post("resize", "/exec/:id/resize")
+    .setPath(Schema.Struct({ id: ExecId }))
+    .setUrlParams(
+        Schema.Struct({
+            h: Schema.NumberFromString,
+            w: Schema.NumberFromString,
+        })
+    )
+    .addSuccess(HttpApiSchema.Empty(200))
+    .addError(HttpApiError.BadRequest) // 400 Invalid parameters
+    .addError(HttpApiError.NotFound); // 404 No such Exec instance
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecInspect */
+const inspectExecEndpoint = HttpApiEndpoint.get("inspect", "/exec/:id/json")
+    .setPath(Schema.Struct({ id: ExecId }))
+    .addSuccess(ExecInspectResponse, { status: 200 })
+    .addError(HttpApiError.NotFound);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec */
+const ExecsGroup = HttpApiGroup.make("exec")
+    .add(createExecEndpoint)
+    .add(startExecEndpoint)
+    .add(resizeExecEndpoint)
+    .add(inspectExecEndpoint)
+    .addError(HttpApiError.InternalServerError);
 
 /**
- * Execs service
- *
  * @since 1.0.0
- * @category Tags
+ * @category HttpApi
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
+ */
+export const ExecsApi = HttpApi.make("ExecsApi").add(ExecsGroup);
+
+/**
+ * @since 1.0.0
+ * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
 export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/Execs", {
     accessors: false,
-    dependencies: [],
+    dependencies: [
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        ),
+    ],
 
     effect: Effect.gen(function* () {
-        const contextClient = yield* HttpClient.HttpClient;
-        const client = contextClient.pipe(HttpClient.filterStatusOk);
-        const maybeUpgradedClient = contextClient.pipe(
-            HttpClient.filterStatus((status) => (status >= 200 && status < 300) || status === 101)
-        );
+        const httpClient = yield* HttpClient.HttpClient;
+        const client = yield* HttpApiClient.group(ExecsApi, { group: "exec", httpClient });
 
-        /**
-         * Create an exec instance
-         *
-         * @param execConfig - Exec configuration
-         * @param id - ID or name of container
-         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ContainerExec
-         */
-        const container_ = (
-            id: string,
-            execConfig: typeof ExecConfig.Encoded
-        ): Effect.Effect<Readonly<IDResponse>, ExecsError, never> =>
-            Function.pipe(
-                Schema.decode(ExecConfig)(execConfig),
-                Effect.map((body) =>
-                    Tuple.make(HttpClientRequest.post(`/containers/${encodeURIComponent(id)}/exec`), body)
-                ),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(ExecConfig))),
-                Effect.flatMap(client.execute),
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(IDResponse)),
-                Effect.mapError((cause) => new ExecsError({ method: "container", cause }))
-            );
+        const container_ = (id: string, payload: ExecConfig) => client.container({ path: { id }, payload });
+        const start_ = (id: ExecId, payload: ContainerExecStartConfig) =>
+            HttpApiSocket(
+                ExecsApi,
+                "exec",
+                "start",
+                httpClient
+            )({
+                payload,
+                path: { id },
+                headers: { Connection: "Upgrade", Upgrade: "tcp" },
+            });
+        const resize_ = (id: ExecId, params: { w: number; h: number }) =>
+            client.resize({ path: { id }, urlParams: { ...params } });
+        const inspect_ = (id: ExecId) => client.inspect({ path: { id } });
 
-        /**
-         * Start an exec instance
-         *
-         * @param execStartConfig -
-         * @param id - Exec instance ID
-         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecStart
-         */
-        const start_ = <T extends boolean | undefined = undefined>(
-            id: string,
-            execStartConfig: Omit<typeof ContainerExecStartConfig.Encoded, "Detach"> & { Detach?: T }
-        ): Effect.Effect<
-            T extends true ? void : MobyDemux.MultiplexedSocket | MobyDemux.RawSocket,
-            ExecsError,
-            never
-        > => {
-            type U = Effect.Effect<
-                T extends true ? void : MobyDemux.MultiplexedSocket | MobyDemux.RawSocket,
-                ExecsError,
-                never
-            >;
-
-            const response = Function.pipe(
-                Schema.decode(ContainerExecStartConfig)(execStartConfig),
-                Effect.map((body) => Tuple.make(HttpClientRequest.post(`/exec/${encodeURIComponent(id)}/start`), body)),
-                Effect.flatMap(Function.tupled(HttpClientRequest.schemaBodyJson(ContainerExecStartConfig))),
-                Effect.map(HttpClientRequest.setHeader("Upgrade", "tcp")),
-                Effect.map(HttpClientRequest.setHeader("Connection", "Upgrade")),
-                Effect.flatMap(maybeUpgradedClient.execute),
-                Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
-            );
-
-            const toStreamingSock = Function.compose(
-                MobyDemux.responseToStreamingSocketOrFailUnsafe,
-                Effect.mapError((cause) => new ExecsError({ method: "start", cause }))
-            );
-
-            return execStartConfig.Detach
-                ? (Function.pipe(response, Effect.asVoid) as U)
-                : (Function.pipe(response, Effect.flatMap(toStreamingSock)) as U);
-        };
-
-        /**
-         * Resize an exec instance
-         *
-         * @param id - Exec instance ID
-         * @param h - Height of the TTY session in characters
-         * @param w - Width of the TTY session in characters
-         * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecResize
-         */
-        const resize_ = (
-            id: string,
-            options?:
-                | {
-                      readonly h?: number;
-                      readonly w?: number;
-                  }
-                | undefined
-        ): Effect.Effect<void, ExecsError, never> =>
-            Function.pipe(
-                HttpClientRequest.post(`/exec/${encodeURIComponent(id)}/resize`),
-                maybeAddQueryParameter("h", Option.fromNullable(options?.h)),
-                maybeAddQueryParameter("w", Option.fromNullable(options?.w)),
-                client.execute,
-                Effect.asVoid,
-                Effect.mapError((cause) => new ExecsError({ method: "resize", cause }))
-            );
-
-        /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecInspect */
-        const inspect_ = (id: string): Effect.Effect<ExecInspectResponse, ExecsError, never> =>
-            Function.pipe(
-                HttpClientRequest.get(`/exec/${encodeURIComponent(id)}/json`),
-                client.execute,
-                Effect.flatMap(HttpClientResponse.schemaBodyJson(ExecInspectResponse)),
-                Effect.mapError((cause) => new ExecsError({ method: "inspect", cause }))
-            );
-
-        return {
-            container: container_,
-            start: start_,
-            resize: resize_,
-            inspect: inspect_,
-        };
+        return { container: container_, start: start_, resize: resize_, inspect: inspect_ };
     }),
 }) {}
 
@@ -148,4 +115,11 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
-export const ExecsLayer: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.Default;
+export const ExecsLayerLocalSocket: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.Default;
+
+/**
+ * @since 1.0.0
+ * @category Layers
+ * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
+ */
+export const ExecsLayer: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.DefaultWithoutDependencies;

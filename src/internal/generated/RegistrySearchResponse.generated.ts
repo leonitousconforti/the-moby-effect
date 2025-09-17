@@ -13,6 +13,6 @@ export class RegistrySearchResponse extends Schema.Class<RegistrySearchResponse>
         identifier: "RegistrySearchResponse",
         title: "registry.SearchResult",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/registry/search.go#L24-L38",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/registry#SearchResult",
     }
 ) {}
