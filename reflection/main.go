@@ -105,7 +105,7 @@ func main() {
 		panic(err)
 	}
 
-	sourcePath := path.Join(cwd, "internal", "generated")
+	sourcePath := path.Join(cwd, "..", "src", "internal", "generated")
 	err = os.RemoveAll(sourcePath)
 	if err != nil {
 		panic(err)

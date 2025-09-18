@@ -72,6 +72,25 @@ func tsTypeToString(t TSType) string {
 }
 
 func tsType(t reflect.Type) TSType {
+	// println("tsType:", t.String())
+	// println("tsType name:", t.Name())
+	// println("tsType kind:", t.Kind().String())
+	// println("---")
+
+	if t.Kind().String() == "string" && t.Name() != "string" {
+		var literals []string
+		results := getEnumLiterals(t)
+		if len(results) == 0 {
+			println("no literals found for type:", t.String())
+			goto noLiteralsForStringType
+		}
+		for _, r := range results {
+			literals = append(literals, fmt.Sprintf(`"%s"`, r.Value))
+		}
+		return TSType{fmt.Sprintf("Schema.Literal(%s)", strings.Join(literals, ", ")), false}
+	}
+
+noLiteralsForStringType:
 	def, found := TSInboxTypesMap[t.Kind()]
 	if found {
 		return def

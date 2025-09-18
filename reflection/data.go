@@ -22,10 +22,14 @@ func typeToKey(t reflect.Type) string {
 }
 
 var typesToSkip = map[string]string{
-	"Time.Time": "Schema.DatetimeFromString",
-	"time.Time": "Schema.DatetimeFromString",
-	"Time.time": "Schema.DatetimeFromString",
-	"time.time": "Schema.DatetimeFromString",
+	"Time.Time":       "Schema.DateFromString",
+	"time.Time":       "Schema.DateFromString",
+	"Time.time":       "Schema.DateFromString",
+	"time.time":       "Schema.DateFromString",
+	"network.Address": "MobySchemas.Address",
+	"nat.PortBinding": "MobySchemas.PortBinding",
+	"nat.PortMap":     "MobySchemas.PortMap",
+	"nat.port":        "MobySchemas.Port",
 }
 
 var typesToDisambiguate = map[string]string{
@@ -300,6 +304,10 @@ var typesToDisambiguate = map[string]string{
 	typeToKey(reflect.TypeOf(volume.UpdateOptions{})):       "VolumeUpdateOptions",
 	typeToKey(reflect.TypeOf(volume.UsageData{})):           "VolumeUsageData",
 	typeToKey(reflect.TypeOf(volume.Volume{})):              "Volume",
+}
+
+var dockerTypesToReflect2 = []reflect.Type{
+	reflect.TypeOf(container.Health{}),
 }
 
 var dockerTypesToReflect = []reflect.Type{
