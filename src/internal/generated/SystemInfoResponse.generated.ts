@@ -68,7 +68,7 @@ export class SystemInfoResponse extends Schema.Class<SystemInfoResponse>("System
         DefaultRuntime: Schema.String,
         Swarm: Schema.NullOr(SwarmInfo.SwarmInfo),
         LiveRestoreEnabled: Schema.Boolean,
-        Isolation: Schema.String,
+        Isolation: Schema.Literal("", "default", "process", "hyperv"),
         InitBinary: Schema.String,
         ContainerdCommit: Schema.NullOr(SystemCommit.SystemCommit),
         RuncCommit: Schema.NullOr(SystemCommit.SystemCommit),

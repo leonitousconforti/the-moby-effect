@@ -3,18 +3,12 @@ import * as Schema from "effect/Schema";
 export class SwarmManagerStatus extends Schema.Class<SwarmManagerStatus>("SwarmManagerStatus")(
     {
         Leader: Schema.optional(Schema.Boolean),
-        Reachability: Schema.optional(
-            Schema.Literal("unknown", "reachable", "unreachable").annotations({
-                documentation:
-                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/node.go#L100-L110",
-            })
-        ),
+        Reachability: Schema.optional(Schema.Literal("unknown", "unreachable", "reachable")),
         Addr: Schema.optional(Schema.String),
     },
     {
         identifier: "SwarmManagerStatus",
         title: "swarm.ManagerStatus",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/node.go#L112-L117",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ManagerStatus",
     }
 ) {}

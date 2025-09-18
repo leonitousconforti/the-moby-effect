@@ -19,7 +19,25 @@ export class SwarmTask extends Schema.Class<SwarmTask>("SwarmTask")(
         Slot: Schema.optional(MobySchemas.Int64),
         NodeID: Schema.optional(Schema.String),
         Status: Schema.optionalWith(SwarmTaskStatus.SwarmTaskStatus, { nullable: true }),
-        DesiredState: Schema.optional(Schema.String),
+        DesiredState: Schema.optional(
+            Schema.Literal(
+                "new",
+                "allocated",
+                "pending",
+                "assigned",
+                "accepted",
+                "preparing",
+                "ready",
+                "starting",
+                "running",
+                "complete",
+                "shutdown",
+                "failed",
+                "rejected",
+                "remove",
+                "orphaned"
+            )
+        ),
         NetworksAttachments: Schema.optionalWith(
             Schema.Array(Schema.NullOr(SwarmNetworkAttachment.SwarmNetworkAttachment)),
             { nullable: true }

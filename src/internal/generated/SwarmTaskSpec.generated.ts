@@ -25,7 +25,7 @@ export class SwarmTaskSpec extends Schema.Class<SwarmTaskSpec>("SwarmTaskSpec")(
         ),
         LogDriver: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
         ForceUpdate: MobySchemas.UInt64,
-        Runtime: Schema.optional(Schema.String),
+        Runtime: Schema.optional(Schema.Literal("container", "plugin", "attachment")),
     },
     {
         identifier: "SwarmTaskSpec",

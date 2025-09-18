@@ -7,15 +7,11 @@ export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>("SwarmJoinR
         DataPathAddr: Schema.String,
         RemoteAddrs: Schema.NullOr(Schema.Array(Schema.String)),
         JoinToken: Schema.String,
-        Availability: Schema.Literal("active", "pause", "drain").annotations({
-            documentation:
-                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/node.go#L37-L47",
-        }),
+        Availability: Schema.Literal("active", "pause", "drain"),
     },
     {
         identifier: "SwarmJoinRequest",
         title: "swarm.JoinRequest",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/swarm.go#L166-L174",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#JoinRequest",
     }
 ) {}

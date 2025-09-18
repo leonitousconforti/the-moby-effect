@@ -2,10 +2,7 @@ import * as Schema from "effect/Schema";
 
 export class SwarmExternalCA extends Schema.Class<SwarmExternalCA>("SwarmExternalCA")(
     {
-        Protocol: Schema.Literal("cfssl").annotations({
-            documentation:
-                "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/swarm.go#L129-L133",
-        }),
+        Protocol: Schema.Literal("cfssl"),
         URL: Schema.String,
         Options: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         CACert: Schema.String,
@@ -13,7 +10,6 @@ export class SwarmExternalCA extends Schema.Class<SwarmExternalCA>("SwarmExterna
     {
         identifier: "SwarmExternalCA",
         title: "swarm.ExternalCA",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/swarm.go#L135-L150",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ExternalCA",
     }
 ) {}

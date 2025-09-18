@@ -7,7 +7,7 @@ export class SwarmInfo extends Schema.Class<SwarmInfo>("SwarmInfo")(
     {
         NodeID: Schema.String,
         NodeAddr: Schema.String,
-        LocalNodeState: Schema.String,
+        LocalNodeState: Schema.Literal("inactive", "pending", "active", "error", "locked"),
         ControlAvailable: Schema.Boolean,
         Error: Schema.String,
         RemoteManagers: Schema.NullOr(Schema.Array(Schema.NullOr(SwarmPeer.SwarmPeer))),

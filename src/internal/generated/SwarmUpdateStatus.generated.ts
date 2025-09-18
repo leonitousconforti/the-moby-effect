@@ -10,10 +10,7 @@ export class SwarmUpdateStatus extends Schema.Class<SwarmUpdateStatus>("SwarmUpd
                 "rollback_started",
                 "rollback_paused",
                 "rollback_completed"
-            ).annotations({
-                documentation:
-                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/service.go#L52-L68",
-            })
+            )
         ),
         StartedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
         CompletedAt: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
@@ -22,7 +19,6 @@ export class SwarmUpdateStatus extends Schema.Class<SwarmUpdateStatus>("SwarmUpd
     {
         identifier: "SwarmUpdateStatus",
         title: "swarm.UpdateStatus",
-        documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/swarm/service.go#L70-L76",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#UpdateStatus",
     }
 ) {}

@@ -5,7 +5,25 @@ import * as SwarmPortStatus from "./SwarmPortStatus.generated.js";
 export class SwarmTaskStatus extends Schema.Class<SwarmTaskStatus>("SwarmTaskStatus")(
     {
         Timestamp: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
-        State: Schema.optional(Schema.String),
+        State: Schema.optional(
+            Schema.Literal(
+                "new",
+                "allocated",
+                "pending",
+                "assigned",
+                "accepted",
+                "preparing",
+                "ready",
+                "starting",
+                "running",
+                "complete",
+                "shutdown",
+                "failed",
+                "rejected",
+                "remove",
+                "orphaned"
+            )
+        ),
         Message: Schema.optional(Schema.String),
         Err: Schema.optional(Schema.String),
         ContainerStatus: Schema.optionalWith(SwarmContainerStatus.SwarmContainerStatus, { nullable: true }),

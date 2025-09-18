@@ -36,7 +36,7 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         Configs: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmConfigReference.SwarmConfigReference)), {
             nullable: true,
         }),
-        Isolation: Schema.optional(Schema.String),
+        Isolation: Schema.optional(Schema.Literal("", "default", "process", "hyperv")),
         Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         CapabilityAdd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         CapabilityDrop: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
