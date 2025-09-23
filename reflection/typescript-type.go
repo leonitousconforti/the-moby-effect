@@ -140,6 +140,9 @@ noLiteralsForStringType:
 }
 
 func (t *TSModelType) Name() string {
+	if newName, willRename := typesToRename[t.GoSourceName]; willRename {
+		return newName
+	}
 	return strings.Title(strings.ReplaceAll(t.GoSourceName, ".", ""))
 }
 

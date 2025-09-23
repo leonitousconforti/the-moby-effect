@@ -3,7 +3,7 @@ import * as MobySchemas from "../schemas/index.js";
 import * as JsonmessageJSONError from "./JsonmessageJSONError.generated.js";
 import * as JsonmessageJSONProgress from "./JsonmessageJSONProgress.generated.js";
 
-export class JsonmessageJSONMessage extends Schema.Class<JsonmessageJSONMessage>("JsonmessageJSONMessage")(
+export class JSONMessage extends Schema.Class<JSONMessage>("JSONMessage")(
     {
         stream: Schema.optional(Schema.String),
         status: Schema.optional(Schema.String),
@@ -18,7 +18,7 @@ export class JsonmessageJSONMessage extends Schema.Class<JsonmessageJSONMessage>
         aux: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
     },
     {
-        identifier: "JsonmessageJSONMessage",
+        identifier: "JSONMessage",
         title: "jsonmessage.JSONMessage",
         documentation: "",
     }

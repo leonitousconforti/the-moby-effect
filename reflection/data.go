@@ -20,6 +20,10 @@ import (
 	"github.com/opencontainers/go-digest"
 )
 
+var typesToRename = map[string]string{
+	"jsonmessage.JSONMessage": "JSONMessage",
+}
+
 var typesToReplace = map[reflect.Type]TSType{
 	reflect.TypeOf(time.Time{}):       {StrRepresentation: "Schema.DateFromString", Nullable: false},
 	reflect.TypeOf(digest.Digest("")): {StrRepresentation: "MobySchemas.Digest", Nullable: false},
