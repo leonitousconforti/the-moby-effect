@@ -22,8 +22,6 @@ export const followProgressSink = Sink.forEach<MobySchemas.JSONMessage, void, ne
             yield* Console.log(`${message.status}${message.progress ? " " : ""}${message.progress ?? ""}`);
         } else if (Predicate.isNotUndefined(message.stream)) {
             yield* Console.log(message.stream);
-        } else if (Predicate.isNotUndefined(message.aux)) {
-            yield* Console.log(message.aux.ID);
         }
     })
 );

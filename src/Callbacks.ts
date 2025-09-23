@@ -127,7 +127,7 @@ export const callbackClient = async <E>(
     const runCallbackZero = runCallback(runtime, 0);
     const runCallbackSingle = runCallback(runtime, 1);
     const runCallbackDouble = runCallback(runtime, 2);
-    // const runCallbackTriple = runCallback(runtime, 3);
+    const runCallbackTriple = runCallback(runtime, 3);
     // const runCallbackQuadruple = runCallback(runtime, 4);
     // const runCallbackQuintuple = runCallback(runtime, 5);
 
@@ -136,7 +136,7 @@ export const callbackClient = async <E>(
         build: Function.compose(DockerEngine.build, Stream.toReadableStreamRuntime(runtime)),
         stop: runCallbackSingle(DockerEngine.stop),
         start: runCallbackSingle(DockerEngine.start),
-        run: runCallbackSingle(DockerEngine.run),
+        run: runCallbackTriple(DockerEngine.run),
         exec: runCallbackSingle(DockerEngine.exec),
         execNonBlocking: runCallbackSingle(DockerEngine.execNonBlocking),
         execWebsockets: runCallbackSingle(DockerEngine.execWebsockets),
@@ -145,7 +145,7 @@ export const callbackClient = async <E>(
             Stream.toReadableStreamRuntime(runtime)
         ),
         ps: runCallbackSingle(DockerEngine.ps),
-        push: Function.compose(DockerEngine.push, Stream.toReadableStreamRuntime(runtime)),
+        push: Function.flow(DockerEngine.push, Stream.toReadableStreamRuntime(runtime)),
         images: runCallbackSingle(DockerEngine.images),
         search: runCallbackSingle(DockerEngine.search),
         version: runCallbackZero(DockerEngine.version),

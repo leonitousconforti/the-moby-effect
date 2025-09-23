@@ -19,7 +19,7 @@ import {
     ImageHistoryResponseItem,
     ImageInspectResponse,
     ImageSummary,
-    JsonmessageJSONMessage as JSONMessage,
+    JSONMessage,
     RegistrySearchResult,
 } from "../generated/index.js";
 import { HttpApiStreamingBoth, HttpApiStreamingResponse } from "./httpApiHacks.js";
