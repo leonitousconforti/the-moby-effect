@@ -165,8 +165,7 @@ export const build: <E1>({
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
     buildargs?: Record<string, string | undefined> | undefined;
-}) => Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
-    internalDocker.build;
+}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.build;
 
 /**
  * Implements the `docker build` command as a scoped effect. When the scope is
@@ -189,7 +188,7 @@ export const buildScoped: <E1>({
     buildargs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }) => Effect.Effect<
-    Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
     Scope.Scope | MobyEndpoints.Images
 > = internalDocker.buildScoped;
@@ -340,8 +339,7 @@ export const pull: ({
 }: {
     image: string;
     platform?: string | undefined;
-}) => Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
-    internalDocker.pull;
+}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.pull;
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
@@ -358,7 +356,7 @@ export const pullScoped: ({
     image: string;
     platform?: string | undefined;
 }) => Effect.Effect<
-    Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
     MobyEndpoints.Images | Scope.Scope
 > = internalDocker.pullScoped;
@@ -372,8 +370,7 @@ export const pullScoped: ({
 export const push: (
     name: string,
     options: Parameters<MobyEndpoints.Images["push"]>[1]
-) => Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
-    internalDocker.push;
+) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.push;
 
 /**
  * Implements `docker run` command.

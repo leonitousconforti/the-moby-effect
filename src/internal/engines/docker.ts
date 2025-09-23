@@ -27,7 +27,7 @@ export const pull = ({
 }: {
     image: string;
     platform?: string | undefined;
-}): Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
+}): Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
     Stream.unwrap(MobyEndpoints.Images.use((images) => images.create({ fromImage: image, platform })));
 
 /** @internal */
@@ -38,7 +38,7 @@ export const pullScoped = ({
     image: string;
     platform?: string | undefined;
 }): Effect.Effect<
-    Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
     MobyEndpoints.Images | Scope.Scope
 > =>
@@ -68,7 +68,7 @@ export const build = <E1>({
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
     buildargs?: Record<string, string | undefined> | undefined;
-}): Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
+}): Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
     Stream.unwrap(
         MobyEndpoints.Images.use((images) => images.build(context, { buildargs, dockerfile, platform, t: tag }))
     );
@@ -87,7 +87,7 @@ export const buildScoped = <E1>({
     buildargs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }): Effect.Effect<
-    Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
     never,
     Scope.Scope | MobyEndpoints.Images
 > =>
@@ -360,7 +360,7 @@ export const ps = (
 export const push = (
     name: string,
     options?: Parameters<MobyEndpoints.Images["push"]>[1]
-): Stream.Stream<MobySchemas.JsonmessageJSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
+): Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
     Stream.unwrap(MobyEndpoints.Images.use((images) => images.push(name, options)));
 
 /** @internal */
