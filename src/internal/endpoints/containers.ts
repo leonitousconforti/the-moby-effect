@@ -7,30 +7,77 @@ import {
     HttpApiSchema,
     HttpClient,
     HttpClientResponse,
+    Error as PlatformError,
+    type HttpClientError,
     type Socket,
 } from "@effect/platform";
-import { Effect, Schema, Stream, Tuple, type Layer } from "effect";
+import { Effect, Predicate, Schema, Stream, Tuple, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
-    ContainerChange,
+    ArchiveChange,
     ContainerConfig,
     ContainerCreateRequest,
-    ContainerCreateResponse,
+    ContainerHealth,
     ContainerHostConfig,
     ContainerInspectResponse,
-    ContainerListResponseItem,
-    ContainerPruneResponse,
+    ContainerState,
     ContainerStatsResponse,
+    ContainerSummary,
     ContainerTopResponse,
-    ContainerUpdateResponse,
     ContainerWaitResponse,
-    Health,
-    State,
 } from "../generated/index.js";
-import { ContainerId } from "../schemas/id.js";
+import { ContainerIdentifier } from "../schemas/id.js";
+import { Int64 } from "../schemas/int64.js";
 import { HttpApiSocket, HttpApiStreamingRequest, HttpApiStreamingResponse, HttpApiWebsocket } from "./httpApiHacks.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const ContainersErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ContainersError"
+) as ContainersErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type ContainersErrorTypeId = typeof ContainersErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isContainersError = (u: unknown): u is ContainersError => Predicate.hasProperty(u, ContainersErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTypeId, "ContainersError")<{
+    method: string;
+    cause:
+        | Socket.SocketError
+        | HttpApiError.InternalServerError
+        | HttpApiError.BadRequest
+        | HttpApiError.Forbidden
+        | HttpApiError.Conflict
+        | HttpApiError.NotAcceptable
+        | HttpApiError.NotFound
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: ContainersError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -39,8 +86,8 @@ export class ListFilters extends Schema.parseJson(
         before: Schema.optional(Schema.Array(Schema.String)),
         expose: Schema.optional(Schema.Array(Schema.String)),
         exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
-        health: Schema.optional(Schema.Array(Health.fields["Status"])),
-        id: Schema.optional(Schema.Array(ContainerId)),
+        health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
+        identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
         isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
         "is-task": Schema.optional(Schema.BooleanFromString),
         label: Schema.optional(Schema.Array(Schema.String)),
@@ -48,7 +95,7 @@ export class ListFilters extends Schema.parseJson(
         network: Schema.optional(Schema.Array(Schema.String)),
         publish: Schema.optional(Schema.Array(Schema.String)),
         since: Schema.optional(Schema.Array(Schema.String)),
-        status: Schema.optional(Schema.Array(State.fields["Status"])),
+        status: Schema.optional(Schema.Array(ContainerState.fields["Status"])),
         volume: Schema.optional(Schema.String),
     })
 ) {}
@@ -71,7 +118,7 @@ const listContainersEndpoint = HttpApiEndpoint.get("list", "/json")
             filters: Schema.optional(ListFilters),
         })
     )
-    .addSuccess(Schema.Array(ContainerListResponseItem), { status: 200 }) // 200 OK
+    .addSuccess(Schema.Array(ContainerSummary), { status: 200 }) // 200 OK
     .addError(HttpApiError.BadRequest); // 400 Bad parameter
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerCreate */
@@ -83,7 +130,13 @@ const createContainerEndpoint = HttpApiEndpoint.post("create", "/create")
         })
     )
     .setPayload(ContainerCreateRequest)
-    .addSuccess(ContainerCreateResponse, { status: 201 }) // 201 Created
+    .addSuccess(
+        Schema.Struct({
+            Id: ContainerIdentifier,
+            Warnings: Schema.NullOr(Schema.Array(Schema.String)),
+        }),
+        { status: 201 }
+    ) // 201 Created
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
     .addError(HttpApiError.Forbidden) // 403 Forbidden
     .addError(HttpApiError.NotFound) // 404 Not Found
@@ -92,21 +145,21 @@ const createContainerEndpoint = HttpApiEndpoint.post("create", "/create")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerInspect */
 const inspectContainerEndpoint = HttpApiEndpoint.get("inspect", "/:id/json")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ size: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(ContainerInspectResponse) // 200 OK
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerTop */
 const topContainerEndpoint = HttpApiEndpoint.get("top", "/:id/top")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ ps_args: Schema.optional(Schema.String) }))
     .addSuccess(ContainerTopResponse) // 200 OK
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerLogs */
 const logsContainerEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             follow: Schema.optional(Schema.BooleanFromString),
@@ -123,19 +176,19 @@ const logsContainerEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerChanges */
 const changesContainerEndpoint = HttpApiEndpoint.get("changes", "/:id/changes")
-    .setPath(Schema.Struct({ id: ContainerId }))
-    .addSuccess(Schema.NullOr(Schema.Array(ContainerChange)), { status: 200 }) // 200 OK
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
+    .addSuccess(Schema.NullOr(Schema.Array(ArchiveChange)), { status: 200 }) // 200 OK
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerExport */
 const exportContainerEndpoint = HttpApiEndpoint.get("export", "/:id/export")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStats */
 const statsContainerEndpoint = HttpApiEndpoint.get("stats", "/:id/stats")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             stream: Schema.optional(Schema.BooleanFromString),
@@ -147,7 +200,7 @@ const statsContainerEndpoint = HttpApiEndpoint.get("stats", "/:id/stats")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerResize */
 const resizeContainerEndpoint = HttpApiEndpoint.post("resize", "/:id/resize")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             h: Schema.optional(Schema.NumberFromString),
@@ -159,7 +212,7 @@ const resizeContainerEndpoint = HttpApiEndpoint.post("resize", "/:id/resize")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStart */
 const startContainerEndpoint = HttpApiEndpoint.post("start", "/:id/start")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             detachKeys: Schema.optional(Schema.String),
@@ -171,7 +224,7 @@ const startContainerEndpoint = HttpApiEndpoint.post("start", "/:id/start")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStop */
 const stopContainerEndpoint = HttpApiEndpoint.post("stop", "/:id/stop")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             signal: Schema.optional(Schema.String),
@@ -184,7 +237,7 @@ const stopContainerEndpoint = HttpApiEndpoint.post("stop", "/:id/stop")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRestart */
 const restartContainerEndpoint = HttpApiEndpoint.post("restart", "/:id/restart")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             signal: Schema.optional(Schema.String),
@@ -196,7 +249,7 @@ const restartContainerEndpoint = HttpApiEndpoint.post("restart", "/:id/restart")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerKill */
 const killContainerEndpoint = HttpApiEndpoint.post("kill", "/:id/kill")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             signal: Schema.optional(Schema.String),
@@ -208,14 +261,14 @@ const killContainerEndpoint = HttpApiEndpoint.post("kill", "/:id/kill")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUpdate */
 const updateContainerEndpoint = HttpApiEndpoint.post("update", "/:id/update")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setPayload(ContainerConfig)
-    .addSuccess(ContainerUpdateResponse, { status: 200 }) // 200 OK
+    .addSuccess(Schema.Struct({ Warnings: Schema.NullOr(Schema.Array(Schema.String)) }), { status: 200 }) // 200 OK
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRename */
 const renameContainerEndpoint = HttpApiEndpoint.post("rename", "/:id/rename")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ name: Schema.String }))
     .addSuccess(HttpApiSchema.NoContent) // 204 No Content
     .addError(HttpApiError.NotFound) // 404 Not Found
@@ -223,19 +276,19 @@ const renameContainerEndpoint = HttpApiEndpoint.post("rename", "/:id/rename")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPause */
 const pauseContainerEndpoint = HttpApiEndpoint.post("pause", "/:id/pause")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .addSuccess(HttpApiSchema.NoContent) // 204 No Content
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUnpause */
 const unpauseContainerEndpoint = HttpApiEndpoint.post("unpause", "/:id/unpause")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .addSuccess(HttpApiSchema.NoContent) // 204 No Content
     .addError(HttpApiError.NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerAttach */
 const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:id/attach")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             detachKeys: Schema.optional(Schema.String),
@@ -259,7 +312,7 @@ const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:id/attach")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerAttachWebsocket */
 const attachWebsocketContainerEndpoint = HttpApiEndpoint.get("attachWebsocket", "/:id/attach/ws")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             detachKeys: Schema.optional(Schema.String),
@@ -277,7 +330,7 @@ const attachWebsocketContainerEndpoint = HttpApiEndpoint.get("attachWebsocket", 
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerWait */
 const waitContainerEndpoint = HttpApiEndpoint.post("wait", "/:id/wait")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ condition: Schema.optional(Schema.String) }))
     .addSuccess(ContainerWaitResponse, { status: 200 }) // 200 OK
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
@@ -285,7 +338,7 @@ const waitContainerEndpoint = HttpApiEndpoint.post("wait", "/:id/wait")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerDelete */
 const deleteContainerEndpoint = HttpApiEndpoint.del("delete", "/:id")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             v: Schema.optional(Schema.BooleanFromString),
@@ -300,7 +353,7 @@ const deleteContainerEndpoint = HttpApiEndpoint.del("delete", "/:id")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchive */
 const archiveContainerEndpoint = HttpApiEndpoint.get("archive", "/:id/archive")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ path: Schema.String }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
@@ -308,7 +361,7 @@ const archiveContainerEndpoint = HttpApiEndpoint.get("archive", "/:id/archive")
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchiveInfo */
 const archiveInfoContainerEndpoint = HttpApiEndpoint.head("archiveInfo", "/:id/archive")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ path: Schema.String }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
@@ -316,12 +369,12 @@ const archiveInfoContainerEndpoint = HttpApiEndpoint.head("archiveInfo", "/:id/a
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/PutContainerArchive */
 const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:id/archive")
-    .setPath(Schema.Struct({ id: ContainerId }))
+    .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             path: Schema.String,
             noOverwriteDirNonDir: Schema.optional(Schema.String),
-            copyUIDGID: Schema.optional(Schema.String),
+            copyUIDGidentifier: Schema.optional(Schema.String),
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
@@ -332,7 +385,13 @@ const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:id/arch
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPrune */
 const pruneContainersEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .setUrlParams(Schema.Struct({ filters: Schema.optional(PruneFilters) }))
-    .addSuccess(ContainerPruneResponse, { status: 200 }); // 200 OK
+    .addSuccess(
+        Schema.Struct({
+            ContainersDeleted: Schema.NullOr(Schema.Array(ContainerIdentifier)),
+            SpaceReclaimed: Int64,
+        }),
+        { status: 200 }
+    ); // 200 OK
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container */
 const ContainersGroup = HttpApiGroup.make("containers")
@@ -400,73 +459,125 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
         });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
-            client.list({ urlParams: { filters } });
+            Effect.mapError(client.list({ urlParams: { filters } }), ContainersError.WrapForMethod("list"));
         const create_ = (name: string, platform: string, container: ContainerCreateRequest) =>
-            client.create({ urlParams: { name, platform }, payload: container });
-        const inspect_ = (id: ContainerId, options?: Options<"inspect">) =>
-            client.inspect({ path: { id }, urlParams: { ...options } });
-        const top_ = (id: ContainerId, options?: Options<"top">) =>
-            client.top({ path: { id }, urlParams: { ...options } });
-        const logs_ = (id: ContainerId, options?: Options<"logs">) =>
+            Effect.mapError(
+                client.create({ urlParams: { name, platform }, payload: container }),
+                ContainersError.WrapForMethod("create")
+            );
+        const inspect_ = (identifier: ContainerIdentifier, options?: Options<"inspect">) =>
+            Effect.mapError(
+                client.inspect({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("inspect")
+            );
+        const top_ = (identifier: ContainerIdentifier, options?: Options<"top">) =>
+            Effect.mapError(
+                client.top({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("top")
+            );
+        const logs_ = (identifier: ContainerIdentifier, options?: Options<"logs">) =>
             HttpApiStreamingResponse(
                 ContainersApi,
                 "containers",
                 "logs",
                 httpClient
-            )({ path: { id }, urlParams: { ...options } })
+            )({ path: { identifier }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines);
-        const changes_ = (id: ContainerId) => client.changes({ path: { id } });
-        const export_ = (id: ContainerId) =>
-            HttpApiStreamingResponse(ContainersApi, "containers", "export", httpClient)({ path: { id } });
-        const stats_ = (id: ContainerId, options?: Options<"stats">) =>
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapError(ContainersError.WrapForMethod("logs")));
+        const changes_ = (identifier: ContainerIdentifier) =>
+            Effect.mapError(client.changes({ path: { identifier } }), ContainersError.WrapForMethod("changes"));
+        const export_ = (identifier: ContainerIdentifier) =>
+            Stream.mapError(
+                HttpApiStreamingResponse(ContainersApi, "containers", "export", httpClient)({ path: { identifier } }),
+                ContainersError.WrapForMethod("export")
+            );
+        const stats_ = (identifier: ContainerIdentifier, options?: Options<"stats">) =>
             HttpApiStreamingResponse(
                 ContainersApi,
                 "containers",
                 "stats",
                 httpClient
-            )({ path: { id }, urlParams: { ...options } })
+            )({ path: { identifier }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(ContainerStatsResponse))));
-        const resize_ = (id: ContainerId, options?: Options<"resize">) =>
-            client.resize({ path: { id }, urlParams: { ...options } });
-        const start_ = (id: ContainerId, options?: Options<"start">) =>
-            client.start({ path: { id }, urlParams: { ...options } });
-        const stop_ = (id: ContainerId, options?: Options<"stop">) =>
-            client.stop({ path: { id }, urlParams: { ...options } });
-        const restart_ = (id: ContainerId, options?: Options<"restart">) =>
-            client.restart({ path: { id }, urlParams: { ...options } });
-        const kill_ = (id: ContainerId, options?: Options<"kill">) =>
-            client.kill({ path: { id }, urlParams: { ...options } });
-        const update_ = (id: ContainerId, config: ContainerConfig) => client.update({ path: { id }, payload: config });
-        const rename_ = (id: ContainerId, name: string) => client.rename({ path: { id }, urlParams: { name } });
-        const pause_ = (id: ContainerId) => client.pause({ path: { id } });
-        const unpause_ = (id: ContainerId) => client.unpause({ path: { id } });
-        const attach_ = (id: ContainerId, options?: Options<"attach">) =>
-            HttpApiSocket(
-                ContainersApi,
-                "containers",
-                "attach",
-                httpClient
-            )({
-                path: { id },
-                urlParams: { ...options },
-                headers: { Connection: "Upgrade", Upgrade: "tcp" },
-            });
-        const attachWebsocket_ = (id: ContainerId, options?: Options<"attachWebsocket">) =>
-            HttpApiWebsocket(
-                ContainersApi,
-                "containers",
-                "attachWebsocket"
-            )({ path: { id }, urlParams: { ...options } }).pipe(Effect.provide(context));
-        const wait_ = (id: ContainerId, options?: Options<"wait">) =>
-            client.wait({ path: { id }, urlParams: { ...options } });
-        const delete_ = (id: ContainerId, options?: Options<"delete">) =>
-            client.delete({ path: { id }, urlParams: { ...options } });
-        const archive_ = (id: ContainerId, options: Options<"archive">) =>
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(ContainerStatsResponse))))
+                .pipe(Stream.mapError(ContainersError.WrapForMethod("stats")));
+        const resize_ = (identifier: ContainerIdentifier, options?: Options<"resize">) =>
+            Effect.mapError(
+                client.resize({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("resize")
+            );
+        const start_ = (identifier: ContainerIdentifier, options?: Options<"start">) =>
+            Effect.mapError(
+                client.start({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("start")
+            );
+        const stop_ = (identifier: ContainerIdentifier, options?: Options<"stop">) =>
+            Effect.mapError(
+                client.stop({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("stop")
+            );
+        const restart_ = (identifier: ContainerIdentifier, options?: Options<"restart">) =>
+            Effect.mapError(
+                client.restart({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("restart")
+            );
+        const kill_ = (identifier: ContainerIdentifier, options?: Options<"kill">) =>
+            Effect.mapError(
+                client.kill({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("kill")
+            );
+        const update_ = (identifier: ContainerIdentifier, config: ContainerConfig) =>
+            Effect.mapError(
+                client.update({ path: { identifier }, payload: config }),
+                ContainersError.WrapForMethod("update")
+            );
+        const rename_ = (identifier: ContainerIdentifier, name: string) =>
+            Effect.mapError(
+                client.rename({ path: { identifier }, urlParams: { name } }),
+                ContainersError.WrapForMethod("rename")
+            );
+        const pause_ = (identifier: ContainerIdentifier) =>
+            Effect.mapError(client.pause({ path: { identifier } }), ContainersError.WrapForMethod("pause"));
+        const unpause_ = (identifier: ContainerIdentifier) =>
+            Effect.mapError(client.unpause({ path: { identifier } }), ContainersError.WrapForMethod("unpause"));
+        const attach_ = (identifier: ContainerIdentifier, options?: Options<"attach">) =>
+            Effect.mapError(
+                HttpApiSocket(
+                    ContainersApi,
+                    "containers",
+                    "attach",
+                    httpClient
+                )({
+                    path: { identifier },
+                    urlParams: { ...options },
+                    headers: { Connection: "Upgrade", Upgrade: "tcp" },
+                }),
+                ContainersError.WrapForMethod("attach")
+            );
+        const attachWebsocket_ = (identifier: ContainerIdentifier, options?: Options<"attachWebsocket">) =>
+            Effect.mapError(
+                HttpApiWebsocket(
+                    ContainersApi,
+                    "containers",
+                    "attachWebsocket"
+                )({ path: { identifier }, urlParams: { ...options } }).pipe(Effect.provide(context)),
+                ContainersError.WrapForMethod("attachWebsocket")
+            );
+        const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
+            Effect.mapError(
+                client.wait({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("wait")
+            );
+        const delete_ = (identifier: ContainerIdentifier, options?: Options<"delete">) =>
+            Effect.mapError(
+                client.delete({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("delete")
+            );
+        const archive_ = (identifier: ContainerIdentifier, options: Options<"archive">) =>
             client
-                .archive({ path: { id }, urlParams: { ...options }, withResponse: true })
+                .archive({ path: { identifier }, urlParams: { ...options }, withResponse: true })
                 .pipe(Effect.map(Tuple.getSecond))
                 .pipe(
                     Effect.flatMap(
@@ -480,28 +591,35 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                         )
                     )
                 )
-                .pipe(Effect.map(({ "X-Docker-Container-Path-Stat": pathStat }) => pathStat));
-        const archiveInfo_ = (id: ContainerId, options: Options<"archiveInfo">) =>
-            HttpApiStreamingResponse(
-                ContainersApi,
-                "containers",
-                "archiveInfo",
-                httpClient
-            )({ path: { id }, urlParams: { ...options } });
+                .pipe(Effect.map(({ "X-Docker-Container-Path-Stat": pathStat }) => pathStat))
+                .pipe(Effect.mapError(ContainersError.WrapForMethod("archive")));
+        const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
+            Stream.mapError(
+                HttpApiStreamingResponse(
+                    ContainersApi,
+                    "containers",
+                    "archiveInfo",
+                    httpClient
+                )({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("archiveInfo")
+            );
         const putArchive_ = <E>(
-            id: ContainerId,
+            identifier: ContainerIdentifier,
             stream: Stream.Stream<Uint8Array, E, never>,
             options: Options<"putArchive">
         ) =>
-            HttpApiStreamingRequest(
-                ContainersApi,
-                "containers",
-                "putArchive",
-                httpClient,
-                stream
-            )({ path: { id }, urlParams: { ...options } });
+            Stream.mapError(
+                HttpApiStreamingRequest(
+                    ContainersApi,
+                    "containers",
+                    "putArchive",
+                    httpClient,
+                    stream
+                )({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("putArchive")
+            );
         const prune_ = (filters?: Schema.Schema.Type<PruneFilters> | undefined) =>
-            client.prune({ urlParams: { filters } });
+            Effect.mapError(client.prune({ urlParams: { filters } }), ContainersError.WrapForMethod("prune"));
 
         return {
             list: list_,

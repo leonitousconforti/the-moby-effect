@@ -68,9 +68,6 @@ func (v *Visitor) Visit(node ast.Node) ast.Visitor {
 }
 
 func getEnumLiterals(t reflect.Type) []ConstantInfo {
-	// println("pkgPath:", t.PkgPath())
-	// println("found string literal type:", t.String())
-
 	pkg, err := build.Import(t.PkgPath(), "", build.FindOnly)
 	if err != nil {
 		panic(err)

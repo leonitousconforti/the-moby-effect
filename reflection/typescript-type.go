@@ -11,12 +11,12 @@ import (
 )
 
 type TSType struct {
-	Name     string
-	Nullable bool
+	StrRepresentation string
+	Nullable          bool
 }
 
 type TSProperty struct {
-	Name         string
+	FieldName    string
 	Type         TSType
 	IsOpt        bool
 	IsAnonymous  bool
@@ -24,10 +24,8 @@ type TSProperty struct {
 }
 
 type TSModelType struct {
-	IsStarted  bool
-	Name       string
-	SourceName string
-	Properties []TSProperty
+	GoSourceName string
+	Properties   []TSProperty
 }
 
 // EmptyStruct is a type that represents a struct with no exported values.
@@ -55,27 +53,38 @@ var TSInboxTypesMap = map[reflect.Kind]TSType{
 	reflect.Uint64: {"MobySchemas.UInt64", false},
 }
 
-func NewModel(name, sourceName string) *TSModelType {
-	s := TSModelType{
-		Name:       name,
-		SourceName: sourceName,
-	}
-	return &s
-}
-
 func tsTypeToString(t TSType) string {
 	if t.Nullable {
-		return fmt.Sprintf("Schema.NullOr(%s)", t.Name)
+		return fmt.Sprintf("Schema.NullOr(%s)", t.StrRepresentation)
 	} else {
-		return t.Name
+		return t.StrRepresentation
 	}
 }
 
-func tsType(t reflect.Type) TSType {
-	// println("tsType:", t.String())
-	// println("tsType name:", t.Name())
-	// println("tsType kind:", t.Kind().String())
-	// println("---")
+func tsPropertyToString(p TSProperty) string {
+	if p.IsAnonymous {
+		m := TSModelType{GoSourceName: p.FieldName}
+		return fmt.Sprintf("...%s.%s.fields", m.Name(), m.Name())
+	} else if p.IsOpt && p.Type.Nullable {
+		return fmt.Sprintf("Schema.optionalWith(%s, { nullable: true })", p.Type.StrRepresentation)
+	} else if p.IsOpt {
+		return fmt.Sprintf("Schema.optional(%s)", p.Type.StrRepresentation)
+	} else {
+		return tsTypeToString(p.Type)
+	}
+}
+
+func goTypeToTsType(t reflect.Type) TSType {
+	if replacement, willReplace := typesToReplace[t]; willReplace {
+		if replacement.Nullable ||
+			t.Kind() == reflect.Pointer ||
+			t.Kind() == reflect.Slice ||
+			t.Kind() == reflect.Map ||
+			t.Kind() == reflect.Struct {
+			return TSType{replacement.StrRepresentation, true}
+		}
+		return replacement
+	}
 
 	if t.Kind().String() == "string" && t.Name() != "string" {
 		var literals []string
@@ -102,30 +111,23 @@ noLiteralsForStringType:
 
 	switch t.Kind() {
 	case reflect.Slice:
-		inner := tsTypeToString(tsType(t.Elem()))
+		inner := tsTypeToString(goTypeToTsType(t.Elem()))
 		return TSType{fmt.Sprintf("Schema.Array(%s)", inner), true}
 	case reflect.Map:
-		innerKey := tsTypeToString(tsType(t.Key()))
-		innerValue := tsTypeToString(tsType(t.Elem()))
+		innerKey := tsTypeToString(goTypeToTsType(t.Key()))
+		innerValue := tsTypeToString(goTypeToTsType(t.Elem()))
 		return TSType{fmt.Sprintf("Schema.Record({ key: %s, value: %s })", innerKey, innerValue), true}
 	case reflect.Array:
 		len := t.Len()
-		inner := tsTypeToString(tsType(t.Elem()))
+		inner := tsTypeToString(goTypeToTsType(t.Elem()))
 		return TSType{fmt.Sprintf("Schema.Array(%s).pipe(Schema.itemsCount(%d))", inner, len), false}
 	case reflect.Pointer:
-		ptr := tsType(t.Elem())
+		ptr := goTypeToTsType(t.Elem())
 		ptr.Nullable = true
 		return ptr
 	case reflect.Struct:
-		var name string
-		k := typeToKey(t)
-		n, ok := typesToDisambiguate[k]
-		if ok {
-			name = n
-		} else {
-			name = t.Name()
-		}
-		return TSType{fmt.Sprintf("%s.%s", name, name), true}
+		m := TSModelType{GoSourceName: t.String()}
+		return TSType{fmt.Sprintf("%s.%s", m.Name(), m.Name()), true}
 	case reflect.Interface:
 		return TSType{"Schema.Object", false}
 	case reflect.Func:
@@ -137,51 +139,48 @@ noLiteralsForStringType:
 	}
 }
 
-// TODO: Get rid of this
+func (t *TSModelType) Name() string {
+	return strings.Title(strings.ReplaceAll(t.GoSourceName, ".", ""))
+}
+
+func (t *TSModelType) Title() string {
+	return t.GoSourceName
+}
+
+func (t *TSModelType) Documentation() string {
+	return generateDocLink(t.GoSourceName)
+}
+
+func (t *TSModelType) WriteProperties() string {
+	var buffer bytes.Buffer
+	for _, p := range t.Properties {
+		if p.IsAnonymous {
+			buffer.WriteString(fmt.Sprintf("    %s,\n", tsPropertyToString(p)))
+		} else {
+			buffer.WriteString(fmt.Sprintf("    \"%s\": %s,\n", p.FieldName, tsPropertyToString(p)))
+		}
+	}
+	return buffer.String()
+}
+
 func (t *TSModelType) WriteInlineStruct() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintln("Schema.Struct({"))
-	for _, p := range t.Properties {
-		if p.IsOpt && p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
-		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
-		} else if p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
-		} else {
-			buffer.WriteString(fmt.Sprintf("    \"%s\": %s,\n", p.Name, p.Type.Name))
-		}
-	}
+	buffer.WriteString(t.WriteProperties())
 	buffer.WriteString(fmt.Sprintln("})"))
 	return buffer.String()
 }
 
 func (t *TSModelType) WriteClass(w io.Writer) {
 	var buffer bytes.Buffer
-	buffer.WriteString(fmt.Sprintf("export class %s extends Schema.Class<%s>(\"%s\")(\n", t.Name, t.Name, t.Name))
+	buffer.WriteString(fmt.Sprintf("export class %s extends Schema.Class<%s>(\"%s\")(\n", t.Name(), t.Name(), t.Name()))
 	buffer.WriteString(fmt.Sprintln("    {"))
-	for _, p := range t.Properties {
-		if replacement, willReplace := typesToSkip[p.Type.Name]; willReplace {
-			p.Type.Name = replacement
-		}
-
-		if p.IsOpt && p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optionalWith(%s, { nullable: %t }),\n", p.Name, p.Type.Name, p.Type.Nullable))
-		} else if p.IsOpt {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.optional(%s),\n", p.Name, p.Type.Name))
-		} else if p.Type.Nullable {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": Schema.NullOr(%s),\n", p.Name, p.Type.Name))
-		} else if p.IsAnonymous {
-			buffer.WriteString(fmt.Sprintf("        ...%s.%s.fields,\n", p.Name, p.Name))
-		} else {
-			buffer.WriteString(fmt.Sprintf("        \"%s\": %s,\n", p.Name, p.Type.Name))
-		}
-	}
+	buffer.WriteString(t.WriteProperties())
 	buffer.WriteString(fmt.Sprintln("    },"))
 	buffer.WriteString(fmt.Sprintln("    {"))
-	buffer.WriteString(fmt.Sprintf("        identifier: \"%s\",\n", t.Name))
-	buffer.WriteString(fmt.Sprintf("        title: \"%s\",\n", t.SourceName))
-	buffer.WriteString(fmt.Sprintf("        documentation: \"%s\",\n", generateDocLink(t.SourceName)))
+	buffer.WriteString(fmt.Sprintf("        identifier: \"%s\",\n", t.Name()))
+	buffer.WriteString(fmt.Sprintf("        title: \"%s\",\n", t.Title()))
+	buffer.WriteString(fmt.Sprintf("        documentation: \"%s\",\n", t.Documentation()))
 	buffer.WriteString(fmt.Sprintln("    }"))
 	buffer.WriteString(fmt.Sprintln(") {}"))
 
@@ -193,11 +192,7 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 
 	importsUnsorted := make(map[string]string)
 	for _, p := range t.Properties {
-		typeName := p.Type.Name
-		if _, willSkip := typesToSkip[typeName]; willSkip {
-			continue
-		}
-
+		typeName := p.Type.StrRepresentation
 		parts := strings.FieldsFunc(typeName, func(r rune) bool {
 			return r == '.' || r == '(' || r == ')'
 		})

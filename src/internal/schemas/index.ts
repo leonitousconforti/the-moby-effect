@@ -28,17 +28,18 @@ export {
 export { IPv4CidrMask, IPv6CidrMask } from "./cidrBlockMask.js";
 export { Family } from "./family.js";
 export {
-    ConfigId,
-    ContainerId,
-    ExecId,
-    ImageId,
-    NetworkId,
-    NodeId,
-    PluginId,
-    SecretId,
-    ServiceId,
-    TaskId,
-    VolumeId,
+    ConfigIdentifier,
+    ContainerIdentifier,
+    Digest,
+    ExecIdentifier,
+    ImageIdentifier,
+    NetworkIdentifier,
+    NodeIdentifier,
+    PluginIdentifier,
+    SecretIdentifier,
+    ServiceIdentifier,
+    TaskIdentifier,
+    VolumeIdentifier,
 } from "./id.js";
 export { Int16 } from "./int16.js";
 export { Int32 } from "./int32.js";
@@ -47,7 +48,7 @@ export { Int8 } from "./int8.js";
 export { IPv4, IPv4Bigint, IPv4String } from "./ipv4.js";
 export { IPv6, IPv6Bigint, IPv6String } from "./ipv6.js";
 export { MacAddress } from "./mac.js";
-export { Port } from "./port.js";
+export { Port, PortBinding, PortMap, PortSet } from "./port.js";
 export { UInt16 } from "./uInt16.js";
 export { UInt32 } from "./uInt32.js";
 export { UInt64 } from "./uInt64.js";

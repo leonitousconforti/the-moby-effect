@@ -13,9 +13,9 @@ type RestTag struct {
 }
 
 const (
-	header = "header"
-	body   = "body"
-	query  = "query"
+	HEADER = "header"
+	BODY   = "body"
+	QUERY  = "query"
 )
 
 // This can take the form of rest:in,name,required
@@ -31,9 +31,9 @@ func RestTagFromString(tag string) (RestTag, error) {
 	if len >= 1 {
 		ret.In = entries[0]
 		switch ret.In {
-		case header:
-		case body:
-		case query:
+		case HEADER:
+		case BODY:
+		case QUERY:
 		default:
 			return RestTag{}, errors.New("Incorrect 'in' value: " + ret.In)
 		}

@@ -1,17 +1,18 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
 import * as ContainerConfig from "./ContainerConfig.generated.js";
-import * as Descriptor from "./Descriptor.generated.js";
-import * as DriverData from "./DriverData.generated.js";
+import * as ImageManifestSummary from "./ImageManifestSummary.generated.js";
 import * as ImageMetadata from "./ImageMetadata.generated.js";
-import * as ManifestSummary from "./ManifestSummary.generated.js";
-import * as RootFS from "./RootFS.generated.js";
+import * as ImageRootFS from "./ImageRootFS.generated.js";
+import * as StorageDriverData from "./StorageDriverData.generated.js";
+import * as V1Descriptor from "./V1Descriptor.generated.js";
+import * as V1DockerOCIImageConfig from "./V1DockerOCIImageConfig.generated.js";
 
 export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("ImageInspectResponse")(
     {
         Id: Schema.String,
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
-        RepoDigests: Schema.NullOr(Schema.Array(Schema.String)),
+        RepoDigests: Schema.NullOr(Schema.Array(MobySchemas.Digest)),
         Parent: Schema.String,
         Comment: Schema.String,
         Created: Schema.optional(Schema.String),
@@ -19,18 +20,18 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         ContainerConfig: Schema.optionalWith(ContainerConfig.ContainerConfig, { nullable: true }),
         DockerVersion: Schema.String,
         Author: Schema.String,
-        Config: Schema.NullOr(ContainerConfig.ContainerConfig),
+        Config: Schema.NullOr(V1DockerOCIImageConfig.V1DockerOCIImageConfig),
         Architecture: Schema.String,
         Variant: Schema.optional(Schema.String),
         Os: Schema.String,
         OsVersion: Schema.optional(Schema.String),
         Size: MobySchemas.Int64,
         VirtualSize: Schema.optional(MobySchemas.Int64),
-        GraphDriver: Schema.NullOr(DriverData.DriverData),
-        RootFS: Schema.NullOr(RootFS.RootFS),
+        GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
+        RootFS: Schema.NullOr(ImageRootFS.ImageRootFS),
         Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),
-        Descriptor: Schema.optionalWith(Descriptor.Descriptor, { nullable: true }),
-        Manifests: Schema.optionalWith(Schema.Array(Schema.NullOr(ManifestSummary.ManifestSummary)), {
+        Descriptor: Schema.optionalWith(V1Descriptor.V1Descriptor, { nullable: true }),
+        Manifests: Schema.optionalWith(Schema.Array(Schema.NullOr(ImageManifestSummary.ImageManifestSummary)), {
             nullable: true,
         }),
     },
@@ -38,6 +39,6 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         identifier: "ImageInspectResponse",
         title: "image.InspectResponse",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/image/image_inspect.go#L15-L141",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image#InspectResponse",
     }
 ) {}

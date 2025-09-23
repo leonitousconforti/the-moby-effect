@@ -4,14 +4,16 @@
  * @since 1.0.0
  */
 
+import type * as HttpApiError from "@effect/platform/HttpApiError";
 import type * as HttpClient from "@effect/platform/HttpClient";
+import type * as HttpClientError from "@effect/platform/HttpClientError";
 import type * as Socket from "@effect/platform/Socket";
 import type * as Effect from "effect/Effect";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
+import type * as IdSchemas from "./internal/schemas/id.js";
 import type * as MobyConnection from "./MobyConnection.js";
-import type * as MobyDemux from "./MobyDemux.js";
 import type * as MobySchemas from "./MobySchemas.js";
 
 import * as Function from "effect/Function";
@@ -152,20 +154,26 @@ export const layerAgnostic: (
  * @category Docker
  */
 export const build: <E1>({
-    auth,
-    buildArgs,
+    buildargs,
     context,
     dockerfile,
     platform,
     tag,
 }: {
     tag: string;
-    auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
-    buildArgs?: Record<string, string | undefined> | undefined;
-}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.build;
+    buildargs?: Record<string, string | undefined> | undefined;
+}) => Stream.Stream<
+    MobySchemas.JsonmessageJSONMessage,
+    | HttpApiError.BadRequest
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> = internalDocker.build;
 
 /**
  * Implements the `docker build` command as a scoped effect. When the scope is
@@ -176,21 +184,27 @@ export const build: <E1>({
  * @category Docker
  */
 export const buildScoped: <E1>({
-    auth,
-    buildArgs,
+    buildargs,
     context,
     dockerfile,
     platform,
     tag,
 }: {
     tag: string;
-    auth?: string | undefined;
     platform?: string | undefined;
     dockerfile?: string | undefined;
-    buildArgs?: Record<string, string | undefined> | undefined;
+    buildargs?: Record<string, string | undefined> | undefined;
     context: Stream.Stream<Uint8Array, E1, never>;
 }) => Effect.Effect<
-    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<
+        MobySchemas.JsonmessageJSONMessage,
+        | HttpApiError.BadRequest
+        | HttpApiError.InternalServerError
+        | HttpApiError.HttpApiDecodeError
+        | HttpClientError.HttpClientError
+        | ParseResult.ParseError,
+        never
+    >,
     never,
     Scope.Scope | MobyEndpoints.Images
 > = internalDocker.buildScoped;
@@ -202,17 +216,17 @@ export const buildScoped: <E1>({
  * @since 1.0.0
  * @category Docker
  */
-export const exec: ({
-    command,
-    containerId,
-}: {
-    containerId: string;
-    command: string | Array<string>;
-}) => Effect.Effect<
-    readonly [exitCode: number, output: string],
-    MobyEndpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
-    MobyEndpoints.Execs
-> = internalDocker.exec;
+// export const exec: ({
+//     command,
+//     containerId,
+// }: {
+//     containerId: string;
+//     command: string | Array<string>;
+// }) => Effect.Effect<
+//     readonly [exitCode: number, output: string],
+//     MobyEndpoints.ExecsError | Socket.SocketError | ParseResult.ParseError,
+//     MobyEndpoints.Execs
+// > = internalDocker.exec;
 
 /**
  * Implements the `docker exec` command in a non blocking fashion. Incompatible
@@ -221,19 +235,19 @@ export const exec: ({
  * @since 1.0.0
  * @category Docker
  */
-export const execNonBlocking: <T extends boolean | undefined = undefined>({
-    command,
-    containerId,
-    detach,
-}: {
-    detach?: T;
-    containerId: string;
-    command: string | Array<string>;
-}) => Effect.Effect<
-    [socket: T extends true ? void : MobyDemux.RawSocket | MobyDemux.MultiplexedSocket, execId: string],
-    MobyEndpoints.ExecsError,
-    MobyEndpoints.Execs
-> = internalDocker.execNonBlocking;
+// export const execNonBlocking: <T extends boolean | undefined = undefined>({
+//     command,
+//     containerId,
+//     detach,
+// }: {
+//     detach?: T;
+//     containerId: string;
+//     command: string | Array<string>;
+// }) => Effect.Effect<
+//     [socket: T extends true ? void : MobyDemux.RawSocket | MobyDemux.MultiplexedSocket, execId: string],
+//     MobyEndpoints.ExecsError,
+//     MobyEndpoints.Execs
+// > = internalDocker.execNonBlocking;
 
 /**
  * Implements the `docker exec` command in a blocking fashion with websockets as
@@ -243,17 +257,17 @@ export const execNonBlocking: <T extends boolean | undefined = undefined>({
  * @since 1.0.0
  * @category Docker
  */
-export const execWebsockets: ({
-    command,
-    containerId,
-}: {
-    command: string | Array<string>;
-    containerId: string;
-}) => Effect.Effect<
-    readonly [stdout: string, stderr: string],
-    MobyEndpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
-    MobyEndpoints.Containers
-> = internalDocker.execWebsockets;
+// export const execWebsockets: ({
+//     command,
+//     containerId,
+// }: {
+//     command: string | Array<string>;
+//     containerId: string;
+// }) => Effect.Effect<
+//     readonly [stdout: string, stderr: string],
+//     MobyEndpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
+//     MobyEndpoints.Containers
+// > = internalDocker.execWebsockets;
 
 /**
  * Implements the `docker exec` command in a non blocking fashion with
@@ -263,19 +277,19 @@ export const execWebsockets: ({
  * @since 1.0.0
  * @category Docker
  */
-export const execWebsocketsNonBlocking: ({
-    command,
-    containerId,
-    cwd,
-}: {
-    command: string | Array<string>;
-    containerId: string;
-    cwd?: string | undefined;
-}) => Effect.Effect<
-    MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
-    never,
-    MobyEndpoints.Containers
-> = internalDocker.execWebsocketsNonBlocking;
+// export const execWebsocketsNonBlocking: ({
+//     command,
+//     containerId,
+//     cwd,
+// }: {
+//     command: string | Array<string>;
+//     containerId: string;
+//     cwd?: string | undefined;
+// }) => Effect.Effect<
+//     MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
+//     never,
+//     MobyEndpoints.Containers
+// > = internalDocker.execWebsocketsNonBlocking;
 
 /**
  * Implements the `docker images` command.
@@ -285,8 +299,14 @@ export const execWebsocketsNonBlocking: ({
  */
 export const images: (
     options?: Parameters<MobyEndpoints.Images["list"]>[0]
-) => Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
-    internalDocker.images;
+) => Effect.Effect<
+    ReadonlyArray<MobySchemas.ImageSummary>,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> = internalDocker.images;
 
 /**
  * Implements the `docker info` command.
@@ -295,9 +315,12 @@ export const images: (
  * @category Docker
  */
 export const info: () => Effect.Effect<
-    Readonly<MobySchemas.SystemInfoResponse>,
-    MobyEndpoints.SystemsError,
-    MobyEndpoints.Systems
+    MobySchemas.SystemInfo,
+    | ParseResult.ParseError
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError,
+    MobyEndpoints.System
 > = internalDocker.info;
 
 /**
@@ -306,7 +329,14 @@ export const info: () => Effect.Effect<
  * @since 1.0.0
  * @category Docker
  */
-export const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEndpoints.Systems> = internalDocker.ping;
+export const ping: () => Effect.Effect<
+    void,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.System
+> = internalDocker.ping;
 
 /**
  * Implements the `docker ping` command.
@@ -314,8 +344,14 @@ export const ping: () => Effect.Effect<"OK", MobyEndpoints.SystemsError, MobyEnd
  * @since 1.0.0
  * @category Docker
  */
-export const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, MobyEndpoints.Systems> =
-    internalDocker.pingHead;
+export const pingHead: () => Effect.Effect<
+    void,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.System
+> = internalDocker.pingHead;
 
 /**
  * Implements the `docker ps` command.
@@ -326,8 +362,12 @@ export const pingHead: () => Effect.Effect<void, MobyEndpoints.SystemsError, Mob
 export const ps: (
     options?: Parameters<MobyEndpoints.Containers["list"]>[0]
 ) => Effect.Effect<
-    ReadonlyArray<MobySchemas.ContainerListResponseItem>,
-    MobyEndpoints.ContainersError,
+    ReadonlyArray<MobySchemas.ContainerSummary>,
+    | HttpApiError.BadRequest
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
     MobyEndpoints.Containers
 > = internalDocker.ps;
 
@@ -339,14 +379,20 @@ export const ps: (
  * @category Docker
  */
 export const pull: ({
-    auth,
     image,
     platform,
 }: {
     image: string;
-    auth?: string | undefined;
     platform?: string | undefined;
-}) => Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.pull;
+}) => Stream.Stream<
+    MobySchemas.JsonmessageJSONMessage,
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> = internalDocker.pull;
 
 /**
  * Implements the `docker pull` command as a scoped effect. When the scope is
@@ -357,15 +403,21 @@ export const pull: ({
  * @category Docker
  */
 export const pullScoped: ({
-    auth,
     image,
     platform,
 }: {
     image: string;
-    auth?: string | undefined;
     platform?: string | undefined;
 }) => Effect.Effect<
-    Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never>,
+    Stream.Stream<
+        MobySchemas.JsonmessageJSONMessage,
+        | HttpApiError.NotFound
+        | HttpApiError.InternalServerError
+        | HttpApiError.HttpApiDecodeError
+        | HttpClientError.HttpClientError
+        | ParseResult.ParseError,
+        never
+    >,
     never,
     MobyEndpoints.Images | Scope.Scope
 > = internalDocker.pullScoped;
@@ -377,8 +429,17 @@ export const pullScoped: ({
  * @category Docker
  */
 export const push: (
-    options: Parameters<MobyEndpoints.Images["push"]>[0]
-) => Stream.Stream<string, MobyEndpoints.ImagesError, MobyEndpoints.Images> = internalDocker.push;
+    name: string,
+    options: Parameters<MobyEndpoints.Images["push"]>[1]
+) => Stream.Stream<
+    MobySchemas.JsonmessageJSONMessage,
+    | ParseResult.ParseError
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError,
+    MobyEndpoints.Images
+> = internalDocker.push;
 
 /**
  * Implements `docker run` command.
@@ -387,9 +448,22 @@ export const push: (
  * @category Docker
  */
 export const run: (
-    containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
-) => Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =
-    internalDocker.run;
+    name: string,
+    platform: string,
+    container: MobySchemas.ContainerCreateRequest
+) => Effect.Effect<
+    MobySchemas.ContainerInspectResponse,
+    | HttpApiError.BadRequest
+    | HttpApiError.Forbidden
+    | HttpApiError.NotFound
+    | HttpApiError.NotAcceptable
+    | HttpApiError.Conflict
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> = internalDocker.run;
 
 /**
  * Implements `docker run` command as a scoped effect. When the scope is closed,
@@ -399,10 +473,20 @@ export const run: (
  * @category Docker
  */
 export const runScoped: (
-    containerOptions: Parameters<MobyEndpoints.Containers["create"]>[0]
+    name: string,
+    platform: string,
+    container: MobySchemas.ContainerCreateRequest
 ) => Effect.Effect<
     MobySchemas.ContainerInspectResponse,
-    MobyEndpoints.ContainersError,
+    | HttpApiError.BadRequest
+    | HttpApiError.Forbidden
+    | HttpApiError.NotFound
+    | HttpApiError.NotAcceptable
+    | HttpApiError.Conflict
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
     Scope.Scope | MobyEndpoints.Containers
 > = internalDocker.runScoped;
 
@@ -414,8 +498,14 @@ export const runScoped: (
  */
 export const search: (
     options: Parameters<MobyEndpoints.Images["search"]>[0]
-) => Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
-    internalDocker.search;
+) => Effect.Effect<
+    ReadonlyArray<MobySchemas.RegistrySearchResult>,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> = internalDocker.search;
 
 /**
  * Implements the `docker start` command.
@@ -424,8 +514,16 @@ export const search: (
  * @category Docker
  */
 export const start: (
-    containerId: string
-) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> = internalDocker.start;
+    containerId: IdSchemas.ContainerIdentifier
+) => Effect.Effect<
+    void,
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> = internalDocker.start;
 
 /**
  * Implements the `docker stop` command.
@@ -434,8 +532,16 @@ export const start: (
  * @category Docker
  */
 export const stop: (
-    containerId: string
-) => Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> = internalDocker.stop;
+    containerId: IdSchemas.ContainerIdentifier
+) => Effect.Effect<
+    void,
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Containers
+> = internalDocker.stop;
 
 /**
  * Implements the `docker version` command.
@@ -444,7 +550,10 @@ export const stop: (
  * @category Docker
  */
 export const version: () => Effect.Effect<
-    Readonly<MobySchemas.SystemVersionResponse>,
-    MobyEndpoints.SystemsError,
-    MobyEndpoints.Systems
+    MobySchemas.TypesVersion,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.System
 > = internalDocker.version;

@@ -6,13 +6,60 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, type Layer, type Stream } from "effect";
+import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { Plugin, PluginPrivilege } from "../generated/index.js";
+import { TypesPlugin as Plugin, RuntimePluginPrivilege as PluginPrivilege } from "../generated/index.js";
 import { HttpApiStreamingRequest } from "./httpApiHacks.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const PluginsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/PluginsError"
+) as PluginsErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type PluginsErrorTypeId = typeof PluginsErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isPluginsError = (u: unknown): u is PluginsError => Predicate.hasProperty(u, PluginsErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class PluginsError extends PlatformError.TypeIdError(PluginsErrorTypeId, "PluginsError")<{
+    method: string;
+    cause:
+        | HttpApiError.InternalServerError
+        | HttpApiError.BadRequest
+        | HttpApiError.NotFound
+        | HttpApiError.Forbidden
+        | HttpApiError.Conflict
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: PluginsError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -141,32 +188,57 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
         const client = yield* HttpApiClient.group(PluginsApi, { group: "plugins", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
-            client.list({ urlParams: { filters } });
-        const getPrivileges_ = (remote: string) => client.getPrivileges({ urlParams: { remote } });
+            Effect.mapError(client.list({ urlParams: { filters } }), PluginsError.WrapForMethod("list"));
+        const getPrivileges_ = (remote: string) =>
+            Effect.mapError(
+                client.getPrivileges({ urlParams: { remote } }),
+                PluginsError.WrapForMethod("getPrivileges")
+            );
         const pull_ = (options: Options<"pull">, payload: Array<PluginPrivilege>) =>
-            client.pull({
-                payload,
-                urlParams: { ...options },
-                headers: { "X-Registry-Auth": "" },
-            });
-        const inspect_ = (name: string) => client.inspect({ path: { name } });
+            Effect.mapError(
+                client.pull({
+                    payload,
+                    urlParams: { ...options },
+                    headers: { "X-Registry-Auth": "" },
+                }),
+                PluginsError.WrapForMethod("pull")
+            );
+        const inspect_ = (name: string) =>
+            Effect.mapError(client.inspect({ path: { name } }), PluginsError.WrapForMethod("inspect"));
         const delete_ = (name: string, options?: Options<"delete">) =>
-            client.delete({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.delete({ path: { name }, urlParams: { ...options } }),
+                PluginsError.WrapForMethod("delete")
+            );
         const enable_ = (name: string, options?: Options<"enable">) =>
-            client.enable({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.enable({ path: { name }, urlParams: { ...options } }),
+                PluginsError.WrapForMethod("enable")
+            );
         const disable_ = (name: string, options?: Options<"disable">) =>
-            client.disable({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.disable({ path: { name }, urlParams: { ...options } }),
+                PluginsError.WrapForMethod("disable")
+            );
         const upgrade_ = (name: string, remote: string, payload: Array<PluginPrivilege>) =>
-            client.upgrade({
-                payload,
-                path: { name },
-                urlParams: { remote },
-                headers: { "X-Registry-Auth": "" },
-            });
+            Effect.mapError(
+                client.upgrade({
+                    payload,
+                    path: { name },
+                    urlParams: { remote },
+                    headers: { "X-Registry-Auth": "" },
+                }),
+                PluginsError.WrapForMethod("upgrade")
+            );
         const create_ = <E>(name: string, tar: Stream.Stream<Uint8Array, E, never>) =>
-            HttpApiStreamingRequest(PluginsApi, "plugins", "create", httpClient, tar)({ urlParams: { name } });
-        const push_ = (name: string) => client.push({ path: { name } });
-        const set_ = (name: string, body: ReadonlyArray<string>) => client.set({ path: { name }, payload: body });
+            Stream.mapError(
+                HttpApiStreamingRequest(PluginsApi, "plugins", "create", httpClient, tar)({ urlParams: { name } }),
+                PluginsError.WrapForMethod("create")
+            );
+        const push_ = (name: string) =>
+            Effect.mapError(client.push({ path: { name } }), PluginsError.WrapForMethod("push"));
+        const set_ = (name: string, body: ReadonlyArray<string>) =>
+            Effect.mapError(client.set({ path: { name }, payload: body }), PluginsError.WrapForMethod("set"));
 
         return {
             list: list_,

@@ -6,14 +6,59 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, Stream, type Layer } from "effect";
+import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmTask } from "../generated/index.js";
-import { NodeNotPartOfSwarm } from "../schemas/errors.js";
 import { HttpApiStreamingResponse } from "./httpApiHacks.js";
+import { NodeNotPartOfSwarm } from "./swarm.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const TasksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/TasksError") as TasksErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type TasksErrorTypeId = typeof TasksErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isTasksError = (u: unknown): u is TasksError => Predicate.hasProperty(u, TasksErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "TasksError")<{
+    method: string;
+    cause:
+        | NodeNotPartOfSwarm
+        | HttpApiError.InternalServerError
+        | HttpApiError.Conflict
+        | HttpApiError.NotFound
+        | HttpApiError.BadRequest
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: TasksError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class TaskListFilters extends Schema.parseJson(
@@ -103,8 +148,10 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(TasksApi, { group: "tasks", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<TaskListFilters>) => client.list({ urlParams: { filters } });
-        const inspect_ = (id: string) => client.inspect({ path: { id } });
+        const list_ = (filters?: Schema.Schema.Type<TaskListFilters>) =>
+            Effect.mapError(client.list({ urlParams: { filters } }), TasksError.WrapForMethod("list"));
+        const inspect_ = (id: string) =>
+            Effect.mapError(client.inspect({ path: { id } }), TasksError.WrapForMethod("inspect"));
         const logs_ = (id: string, options?: Options<"logs">) =>
             HttpApiStreamingResponse(
                 TasksApi,
@@ -113,7 +160,8 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
                 httpClient
             )({ path: { id }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines);
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapError(TasksError.WrapForMethod("logs")));
 
         return {
             list: list_,

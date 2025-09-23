@@ -6,13 +6,57 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmNode, SwarmNodeSpec } from "../generated/index.js";
-import { NodeNotPartOfSwarm } from "../schemas/errors.js";
+import { NodeNotPartOfSwarm } from "./swarm.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const NodesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/NodesError") as NodesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type NodesErrorTypeId = typeof NodesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isNodesError = (u: unknown): u is NodesError => Predicate.hasProperty(u, NodesErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "NodesError")<{
+    method: string;
+    cause:
+        | NodeNotPartOfSwarm
+        | HttpApiError.InternalServerError
+        | HttpApiError.BadRequest
+        | HttpApiError.NotFound
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: NodesError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -92,12 +136,20 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(NodesApi, { group: "nodes", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<ListFilters>) => client.list({ urlParams: { filters } });
-        const inspect_ = (id: string) => client.inspect({ path: { id } });
+        const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
+            Effect.mapError(client.list({ urlParams: { filters } }), NodesError.WrapForMethod("list"));
+        const inspect_ = (id: string) =>
+            Effect.mapError(client.inspect({ path: { id } }), NodesError.WrapForMethod("inspect"));
         const delete_ = (id: string, options?: { force?: boolean | undefined } | undefined) =>
-            client.delete({ path: { id }, urlParams: { ...options } });
+            Effect.mapError(
+                client.delete({ path: { id }, urlParams: { ...options } }),
+                NodesError.WrapForMethod("delete")
+            );
         const update_ = (id: string, version: number, payload: SwarmNodeSpec) =>
-            client.update({ path: { id }, urlParams: { version }, payload });
+            Effect.mapError(
+                client.update({ path: { id }, urlParams: { version }, payload }),
+                NodesError.WrapForMethod("update")
+            );
 
         return {
             list: list_,

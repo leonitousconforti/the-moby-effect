@@ -6,17 +6,59 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import {
-    NetworkConnectOptions as NetworkConnectRequest,
-    NetworkCreateRequest,
-    NetworkSummary,
-} from "../generated/index.js";
-import { ContainerId, NetworkId } from "../schemas/id.js";
+import { NetworkConnectOptions, NetworkCreateRequest, NetworkInspect } from "../generated/index.js";
+import { ContainerIdentifier, NetworkIdentifier } from "../schemas/id.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const NetworksErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/NetworksError"
+) as NetworksErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type NetworksErrorTypeId = typeof NetworksErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isNetworksError = (u: unknown): u is NetworksError => Predicate.hasProperty(u, NetworksErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId, "NetworksError")<{
+    method: string;
+    cause:
+        | HttpApiError.InternalServerError
+        | HttpApiError.BadRequest
+        | HttpApiError.NotFound
+        | HttpApiError.Forbidden
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: NetworksError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -42,7 +84,7 @@ export class PruneFilters extends Schema.parseJson(
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkList */
 const listNetworksEndpoint = HttpApiEndpoint.get("list", "/")
     .setUrlParams(Schema.Struct({ filters: Schema.optional(ListFilters) }))
-    .addSuccess(Schema.Array(NetworkSummary), { status: 200 });
+    .addSuccess(Schema.Array(NetworkInspect), { status: 200 });
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkInspect */
 const inspectNetworkEndpoint = HttpApiEndpoint.get("inspect", "/:id")
@@ -53,7 +95,7 @@ const inspectNetworkEndpoint = HttpApiEndpoint.get("inspect", "/:id")
             scope: Schema.optional(Schema.String),
         })
     )
-    .addSuccess(NetworkSummary, { status: 200 })
+    .addSuccess(NetworkInspect, { status: 200 })
     .addError(HttpApiError.NotFound); // 404 No such network
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDelete */
@@ -66,7 +108,7 @@ const deleteNetworkEndpoint = HttpApiEndpoint.del("delete", "/:id")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkCreate */
 const createNetworkEndpoint = HttpApiEndpoint.post("create", "/create")
     .setPayload(NetworkCreateRequest)
-    .addSuccess(Schema.Struct({ Id: NetworkId }), { status: 201 })
+    .addSuccess(Schema.Struct({ Id: NetworkIdentifier }), { status: 201 })
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
     .addError(HttpApiError.Forbidden) // 403 Forbidden operation
     .addError(HttpApiError.NotFound); // 404 Plugin not found
@@ -74,7 +116,7 @@ const createNetworkEndpoint = HttpApiEndpoint.post("create", "/create")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkConnect */
 const connectNetworkEndpoint = HttpApiEndpoint.post("connect", "/:id/connect")
     .setPath(Schema.Struct({ id: Schema.String }))
-    .setPayload(NetworkConnectRequest)
+    .setPayload(NetworkConnectOptions)
     .addSuccess(HttpApiSchema.Empty(200))
     .addError(HttpApiError.BadRequest) // 400 Bad parameter
     .addError(HttpApiError.Forbidden) // 403 Forbidden operation
@@ -83,7 +125,7 @@ const connectNetworkEndpoint = HttpApiEndpoint.post("connect", "/:id/connect")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDisconnect */
 const disconnectNetworkEndpoint = HttpApiEndpoint.post("disconnect", "/:id/disconnect")
     .setPath(Schema.Struct({ id: Schema.String }))
-    .setPayload(Schema.Struct({ Container: ContainerId, Force: Schema.Boolean }))
+    .setPayload(Schema.Struct({ Container: ContainerIdentifier, Force: Schema.Boolean }))
     .addSuccess(HttpApiSchema.Empty(200))
     .addError(HttpApiError.Forbidden) // 403 Forbidden operation
     .addError(HttpApiError.NotFound); // 404 Plugin not found
@@ -136,18 +178,33 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(NetworksApi, { group: "networks", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<ListFilters>) => client.list({ urlParams: { filters } });
-        const create_ = (payload: NetworkCreateRequest) => client.create({ payload });
+        const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
+            Effect.mapError(client.list({ urlParams: { filters } }), NetworksError.WrapForMethod("list"));
+        const create_ = (payload: NetworkCreateRequest) =>
+            Effect.mapError(client.create({ payload }), NetworksError.WrapForMethod("create"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
-            client.inspect({ path: { id }, urlParams: { ...options } });
-        const delete_ = (id: string) => client.delete({ path: { id } });
-        const connect_ = (id: string, payload: NetworkConnectRequest) => client.connect({ path: { id }, payload });
+            Effect.mapError(
+                client.inspect({ path: { id }, urlParams: { ...options } }),
+                NetworksError.WrapForMethod("inspect")
+            );
+        const delete_ = (id: string) =>
+            Effect.mapError(client.delete({ path: { id } }), NetworksError.WrapForMethod("delete"));
+        const connect_ = (id: string, payload: NetworkConnectOptions) =>
+            Effect.mapError(client.connect({ path: { id }, payload }), NetworksError.WrapForMethod("connect"));
         const disconnect_ = (
             id: string,
-            containerId: ContainerId,
+            containerId: ContainerIdentifier,
             options?: { force?: boolean | undefined } | undefined
-        ) => client.disconnect({ path: { id }, payload: { Container: containerId, Force: options?.force ?? false } });
-        const prune_ = (filters?: Schema.Schema.Type<PruneFilters>) => client.prune({ urlParams: { filters } });
+        ) =>
+            Effect.mapError(
+                client.disconnect({
+                    path: { id },
+                    payload: { Container: containerId, Force: options?.force ?? false },
+                }),
+                NetworksError.WrapForMethod("disconnect")
+            );
+        const prune_ = (filters?: Schema.Schema.Type<PruneFilters>) =>
+            Effect.mapError(client.prune({ urlParams: { filters } }), NetworksError.WrapForMethod("prune"));
 
         return {
             list: list_,

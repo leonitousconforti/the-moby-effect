@@ -26,6 +26,12 @@ export {
     ConfigsApi,
 
     /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    ConfigsError,
+
+    /**
      * Configs are application configurations that can be used by services.
      * Swarm mode must be enabled for these endpoints to work.
      *
@@ -44,6 +50,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
      */
     ConfigsLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isConfigsError,
 } from "./internal/endpoints/configs.js";
 
 export {
@@ -63,6 +75,12 @@ export {
 
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    ContainersError,
+
+    /**
+     * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
      */
@@ -74,6 +92,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
      */
     ContainersLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isContainersError,
 } from "./internal/endpoints/containers.js";
 
 export {
@@ -93,6 +117,12 @@ export {
 
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    DistributionsError,
+
+    /**
+     * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution
      */
@@ -104,6 +134,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution
      */
     DistributionsLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isDistributionsError,
 } from "./internal/endpoints/distribution.js";
 
 export {
@@ -123,6 +159,12 @@ export {
 
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    ExecsError,
+
+    /**
+     * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
      */
@@ -134,6 +176,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
      */
     ExecsLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isExecsError,
 } from "./internal/endpoints/execs.js";
 
 export {
@@ -153,6 +201,12 @@ export {
 
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    ImagesError,
+
+    /**
+     * @since 1.0.0
      * @category Layers
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
      */
@@ -164,9 +218,21 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
      */
     ImagesLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isImagesError,
 } from "./internal/endpoints/images.js";
 
 export {
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isNetworksError,
+
     /**
      * @since 1.0.0
      * @category Services
@@ -180,6 +246,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
      */
     NetworksApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    NetworksError,
 
     /**
      * @since 1.0.0
@@ -199,6 +271,12 @@ export {
 export {
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    isNodesError,
+
+    /**
+     * @since 1.0.0
      * @category Services
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
      */
@@ -210,6 +288,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
      */
     NodesApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    NodesError,
 
     /**
      * @since 1.0.0
@@ -229,6 +313,12 @@ export {
 export {
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    isPluginsError,
+
+    /**
+     * @since 1.0.0
      * @category Services
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin
      */
@@ -240,6 +330,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin
      */
     PluginsApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    PluginsError,
 
     /**
      * @since 1.0.0
@@ -257,6 +353,12 @@ export {
 } from "./internal/endpoints/plugins.js";
 
 export {
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isSecretsError,
+
     /**
      * Secrets are sensitive data that can be used by services. Swarm mode must
      * be enabled for these endpoints to work.
@@ -276,6 +378,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
      */
     SecretsApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    SecretsError,
 
     /**
      * Secrets are sensitive data that can be used by services. Swarm mode must
@@ -300,6 +408,12 @@ export {
 
 export {
     /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isServicesError,
+
+    /**
      * Services are the definitions of tasks to run on a swarm. Swarm mode must
      * be enabled for these endpoints to work.
      *
@@ -318,6 +432,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
      */
     ServicesApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    ServicesError,
 
     /**
      * Services are the definitions of tasks to run on a swarm. Swarm mode must
@@ -343,6 +463,12 @@ export {
 export {
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    isSessionsError,
+
+    /**
+     * @since 1.0.0
      * @category HttpApi
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
      */
@@ -354,6 +480,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
      */
     Sessions,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    SessionsError,
 
     /**
      * @since 1.0.0
@@ -371,6 +503,12 @@ export {
 } from "./internal/endpoints/session.js";
 
 export {
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isSwarmsError,
+
     /**
      * Engines can be clustered together in a swarm. Refer to the swarm mode
      * documentation for more information.
@@ -407,9 +545,21 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
      */
     SwarmLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    SwarmsError,
 } from "./internal/endpoints/swarm.js";
 
 export {
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isSystemsError,
+
     /**
      * @since 1.0.0
      * @category Services
@@ -437,9 +587,21 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/System
      */
     SystemLayerLocalSocket,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    SystemsError,
 } from "./internal/endpoints/system.js";
 
 export {
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    isTasksError,
+
     /**
      * A task is a container running on a swarm. It is the atomic scheduling
      * unit of swarm. Swarm mode must be enabled for these endpoints to work.
@@ -459,6 +621,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
      */
     TasksApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    TasksError,
 
     /**
      * A task is a container running on a swarm. It is the atomic scheduling
@@ -484,6 +652,12 @@ export {
 export {
     /**
      * @since 1.0.0
+     * @category Errors
+     */
+    isVolumesError,
+
+    /**
+     * @since 1.0.0
      * @category Services
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
      */
@@ -495,6 +669,12 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
      */
     VolumesApi,
+
+    /**
+     * @since 1.0.0
+     * @category Errors
+     */
+    VolumesError,
 
     /**
      * @since 1.0.0

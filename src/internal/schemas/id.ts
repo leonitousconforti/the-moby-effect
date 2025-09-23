@@ -4,136 +4,153 @@
  * @since 1.0.0
  */
 
+import * as Function from "effect/Function";
 import * as Schema from "effect/Schema";
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const ConfigId = Schema.String.pipe(Schema.brand("ConfigId"));
+export const ConfigIdentifier = Schema.String.pipe(Schema.brand("ConfigId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type ConfigId = Schema.Schema.Type<typeof ConfigId>;
+export type ConfigIdentifier = Schema.Schema.Type<typeof ConfigIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const ContainerId = Schema.String.pipe(Schema.brand("ContainerId"));
+export const ContainerIdentifier = Schema.String.pipe(Schema.brand("ContainerId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type ContainerId = Schema.Schema.Type<typeof ContainerId>;
+export type ContainerIdentifier = Schema.Schema.Type<typeof ContainerIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const ExecId = Schema.String.pipe(Schema.brand("ExecId"));
+export const ExecIdentifier = Schema.String.pipe(Schema.brand("ExecId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type ExecId = Schema.Schema.Type<typeof ExecId>;
+export type ExecIdentifier = Schema.Schema.Type<typeof ExecIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const ImageId = Schema.String.pipe(Schema.brand("ImageId"));
+export const ImageIdentifier = Schema.String.pipe(Schema.brand("ImageId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type ImageId = Schema.Schema.Type<typeof ImageId>;
+export type ImageIdentifier = Schema.Schema.Type<typeof ImageIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const NetworkId = Schema.String.pipe(Schema.brand("NetworkId"));
+export const NetworkIdentifier = Schema.String.pipe(Schema.brand("NetworkId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type NetworkId = Schema.Schema.Type<typeof NetworkId>;
+export type NetworkIdentifier = Schema.Schema.Type<typeof NetworkIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const NodeId = Schema.String.pipe(Schema.brand("NodeId"));
+export const NodeIdentifier = Schema.String.pipe(Schema.brand("NodeId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type NodeId = Schema.Schema.Type<typeof NodeId>;
+export type NodeIdentifier = Schema.Schema.Type<typeof NodeIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const PluginId = Schema.String.pipe(Schema.brand("PluginId"));
+export const PluginIdentifier = Schema.String.pipe(Schema.brand("PluginId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type PluginId = Schema.Schema.Type<typeof PluginId>;
+export type PluginIdentifier = Schema.Schema.Type<typeof PluginIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const SecretId = Schema.String.pipe(Schema.brand("SecretId"));
+export const SecretIdentifier = Schema.String.pipe(Schema.brand("SecretId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type SecretId = Schema.Schema.Type<typeof SecretId>;
+export type SecretIdentifier = Schema.Schema.Type<typeof SecretIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const ServiceId = Schema.String.pipe(Schema.brand("ServiceId"));
+export const ServiceIdentifier = Schema.String.pipe(Schema.brand("ServiceId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type ServiceId = Schema.Schema.Type<typeof ServiceId>;
+export type ServiceIdentifier = Schema.Schema.Type<typeof ServiceIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const TaskId = Schema.String.pipe(Schema.brand("TaskId"));
+export const TaskIdentifier = Schema.String.pipe(Schema.brand("TaskId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type TaskId = Schema.Schema.Type<typeof TaskId>;
+export type TaskIdentifier = Schema.Schema.Type<typeof TaskIdentifier>;
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export const VolumeId = Schema.String.pipe(Schema.brand("VolumeId"));
+export const VolumeIdentifier = Schema.String.pipe(Schema.brand("VolumeId"));
 
 /**
  * @since 1.0.0
  * @category Id Schemas
  */
-export type VolumeId = Schema.Schema.Type<typeof VolumeId>;
+export type VolumeIdentifier = Schema.Schema.Type<typeof VolumeIdentifier>;
+
+/**
+ * @since 1.0.0
+ * @category Id Schemas
+ */
+export const Digest = Function.pipe(
+    Schema.String,
+    Schema.pattern(/^[a-z0-9]+(?:[.+_-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$/),
+    Schema.brand("Digest")
+);
+
+/**
+ * @since 1.0.0
+ * @category Id Schemas
+ */
+export type Digest = Schema.Schema.Type<typeof Digest>;

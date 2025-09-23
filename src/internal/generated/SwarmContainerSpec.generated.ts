@@ -1,12 +1,12 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as ContainerHealthConfig from "./ContainerHealthConfig.generated.js";
-import * as ContainerUlimit from "./ContainerUlimit.generated.js";
-import * as Mount from "./Mount.generated.js";
+import * as MountMount from "./MountMount.generated.js";
 import * as SwarmConfigReference from "./SwarmConfigReference.generated.js";
 import * as SwarmDNSConfig from "./SwarmDNSConfig.generated.js";
 import * as SwarmPrivileges from "./SwarmPrivileges.generated.js";
 import * as SwarmSecretReference from "./SwarmSecretReference.generated.js";
+import * as UnitsUlimit from "./UnitsUlimit.generated.js";
+import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.js";
 
 export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmContainerSpec")(
     {
@@ -25,9 +25,9 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         TTY: Schema.optional(Schema.Boolean),
         OpenStdin: Schema.optional(Schema.Boolean),
         ReadOnly: Schema.optional(Schema.Boolean),
-        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(Mount.Mount)), { nullable: true }),
+        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MountMount.MountMount)), { nullable: true }),
         StopGracePeriod: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
-        Healthcheck: Schema.optionalWith(ContainerHealthConfig.ContainerHealthConfig, { nullable: true }),
+        Healthcheck: Schema.optionalWith(V1HealthcheckConfig.V1HealthcheckConfig, { nullable: true }),
         Hosts: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         DNSConfig: Schema.optionalWith(SwarmDNSConfig.SwarmDNSConfig, { nullable: true }),
         Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmSecretReference.SwarmSecretReference)), {
@@ -40,7 +40,7 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         CapabilityAdd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         CapabilityDrop: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Ulimits: Schema.optionalWith(Schema.Array(Schema.NullOr(ContainerUlimit.ContainerUlimit)), { nullable: true }),
+        Ulimits: Schema.optionalWith(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)), { nullable: true }),
         OomScoreAdj: Schema.optional(MobySchemas.Int64),
     },
     {

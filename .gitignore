@@ -1,7 +1,6 @@
 .env
 .DS_Store
 .tsbuildinfo
-.github-env-file
 
 /dist/
 /build/
@@ -10,4 +9,3 @@
 /.pnpm-store/
 /node_modules/
 /docs/examples/
-/.devcontainer/.devpod-internal/

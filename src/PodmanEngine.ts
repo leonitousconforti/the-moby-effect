@@ -23,7 +23,7 @@ export type PodmanLayer = Layer.Layer<
     | MobyEndpoints.Images
     | MobyEndpoints.Networks
     | MobyEndpoints.Secrets
-    | MobyEndpoints.Systems
+    | MobyEndpoints.System
     | MobyEndpoints.Volumes,
     never,
     never
@@ -49,7 +49,7 @@ export const layerWithoutHttpCLient: PodmanLayerWithoutHttpClientOrWebsocketCons
     MobyEndpoints.ImagesLayer,
     MobyEndpoints.NetworksLayer,
     MobyEndpoints.SecretsLayer,
-    MobyEndpoints.SystemsLayer,
+    MobyEndpoints.SystemLayer,
     MobyEndpoints.VolumesLayer
 );
 

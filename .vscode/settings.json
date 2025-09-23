@@ -118,6 +118,7 @@
         "ONBUILD",
         "onewriter",
         "openapi",
+        "opencontainers",
         "operatingsystem",
         "packagejson",
         "percpu",

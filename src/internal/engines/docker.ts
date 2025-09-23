@@ -29,7 +29,7 @@ export const pull = ({
     image: string;
     platform?: string | undefined;
 }): Stream.Stream<
-    MobySchemas.JSONMessage,
+    MobySchemas.JsonmessageJSONMessage,
     | HttpApiError.NotFound
     | HttpApiError.InternalServerError
     | HttpApiError.HttpApiDecodeError
@@ -47,7 +47,7 @@ export const pullScoped = ({
     platform?: string | undefined;
 }): Effect.Effect<
     Stream.Stream<
-        MobySchemas.JSONMessage,
+        MobySchemas.JsonmessageJSONMessage,
         | HttpApiError.NotFound
         | HttpApiError.InternalServerError
         | HttpApiError.HttpApiDecodeError
@@ -85,7 +85,7 @@ export const build = <E1>({
     context: Stream.Stream<Uint8Array, E1, never>;
     buildargs?: Record<string, string | undefined> | undefined;
 }): Stream.Stream<
-    MobySchemas.JSONMessage,
+    MobySchemas.JsonmessageJSONMessage,
     | HttpApiError.BadRequest
     | HttpApiError.InternalServerError
     | HttpApiError.HttpApiDecodeError
@@ -112,7 +112,7 @@ export const buildScoped = <E1>({
     context: Stream.Stream<Uint8Array, E1, never>;
 }): Effect.Effect<
     Stream.Stream<
-        MobySchemas.JSONMessage,
+        MobySchemas.JsonmessageJSONMessage,
         | HttpApiError.BadRequest
         | HttpApiError.InternalServerError
         | HttpApiError.HttpApiDecodeError
@@ -138,7 +138,7 @@ export const buildScoped = <E1>({
 
 /** @internal */
 export const start = (
-    containerId: IdSchemas.ContainerId
+    containerId: IdSchemas.ContainerIdentifier
 ): Effect.Effect<
     void,
     | HttpApiError.NotFound
@@ -151,7 +151,7 @@ export const start = (
 
 /** @internal */
 export const stop = (
-    containerId: IdSchemas.ContainerId
+    containerId: IdSchemas.ContainerIdentifier
 ): Effect.Effect<
     void,
     | HttpApiError.NotFound
@@ -183,7 +183,7 @@ export const run = (
     Effect.gen(function* () {
         const containers = yield* MobyEndpoints.Containers;
         const containerCreateResponse = yield* containers.create(name, platform, container);
-        yield* containers.start(containerCreateResponse.Id as IdSchemas.ContainerId);
+        yield* containers.start(containerCreateResponse.Id as IdSchemas.ContainerIdentifier);
 
         // // Helper to wait until a container is dead or running
         // const waitUntilContainerDeadOrRunning = Function.pipe(
@@ -242,7 +242,7 @@ export const run = (
 
         // yield* waitUntilContainerDeadOrRunning;
         // yield* waitUntilContainerHealthy;
-        return yield* containers.inspect(containerCreateResponse.Id as IdSchemas.ContainerId);
+        return yield* containers.inspect(containerCreateResponse.Id as IdSchemas.ContainerIdentifier);
     });
 
 /** @internal */
@@ -267,20 +267,20 @@ export const runScoped = (
     const release = (containerData: MobySchemas.ContainerInspectResponse) =>
         Effect.orDie(
             MobyEndpoints.Containers.use((containers) =>
-                containers.delete(containerData.Id as IdSchemas.ContainerId, { force: true })
+                containers.delete(containerData.Id as IdSchemas.ContainerIdentifier, { force: true })
             )
         );
     return Effect.acquireRelease(acquire, release);
 };
 
 /** @internal */
-export const execNonBlocking = <T extends boolean | undefined = undefined>({
+export const execNonBlocking = <const T extends boolean | undefined = undefined>({
     command,
     containerId,
     detach,
 }: {
     detach?: T;
-    containerId: IdSchemas.ContainerId;
+    containerId: IdSchemas.ContainerIdentifier;
     command: string | Array<string>;
 }) =>
     Effect.gen(function* () {
@@ -301,7 +301,7 @@ export const exec = ({
     command,
     containerId,
 }: {
-    containerId: IdSchemas.ContainerId;
+    containerId: IdSchemas.ContainerIdentifier;
     command: string | Array<string>;
 }): Effect.Effect<
     readonly [exitCode: number, output: string],
@@ -332,7 +332,7 @@ export const execWebsocketsNonBlocking = ({
 }: {
     command: string | Array<string>;
     cwd?: string | undefined;
-    containerId: IdSchemas.ContainerId;
+    containerId: IdSchemas.ContainerIdentifier;
 }): Effect.Effect<
     MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
     never,
@@ -412,7 +412,7 @@ export const execWebsockets = ({
     containerId,
 }: {
     command: string | Array<string>;
-    containerId: IdSchemas.ContainerId;
+    containerId: IdSchemas.ContainerIdentifier;
 }): Effect.Effect<
     readonly [stdout: string, stderr: string],
     MobyEndpoints.ContainersError | Socket.SocketError | ParseResult.ParseError,
@@ -427,32 +427,56 @@ export const execWebsockets = ({
 export const ps = (
     options?: Parameters<MobyEndpoints.Containers["list"]>[0]
 ): Effect.Effect<
-    ReadonlyArray<MobySchemas.ContainerListResponseItem>,
-    MobyEndpoints.ContainersError,
+    ReadonlyArray<MobySchemas.ContainerSummary>,
+    | HttpApiError.BadRequest
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
     MobyEndpoints.Containers
 > => MobyEndpoints.Containers.use((containers) => containers.list(options));
 
 /** @internal */
 export const push = (
-    options: Parameters<MobyEndpoints.Images["push"]>[0]
-): Stream.Stream<string, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
-    Stream.unwrap(MobyEndpoints.Images.use((images) => images.push(options)));
+    name: string,
+    options?: Parameters<MobyEndpoints.Images["push"]>[1]
+): Stream.Stream<
+    MobySchemas.JsonmessageJSONMessage,
+    | ParseResult.ParseError
+    | HttpApiError.NotFound
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError,
+    MobyEndpoints.Images
+> => Stream.unwrap(MobyEndpoints.Images.use((images) => images.push(name, options)));
 
 /** @internal */
 export const images = (
     options?: Parameters<MobyEndpoints.Images["list"]>[0]
-): Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
-    MobyEndpoints.Images.use((images) => images.list(options));
+): Effect.Effect<
+    ReadonlyArray<MobySchemas.ImageSummary>,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> => MobyEndpoints.Images.use((images) => images.list(options));
 
 /** @internal */
 export const search = (
     options: Parameters<MobyEndpoints.Images["search"]>[0]
-): Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResponse>, MobyEndpoints.ImagesError, MobyEndpoints.Images> =>
-    MobyEndpoints.Images.use((images) => images.search(options));
+): Effect.Effect<
+    ReadonlyArray<MobySchemas.RegistrySearchResult>,
+    | HttpApiError.InternalServerError
+    | HttpApiError.HttpApiDecodeError
+    | HttpClientError.HttpClientError
+    | ParseResult.ParseError,
+    MobyEndpoints.Images
+> => MobyEndpoints.Images.use((images) => images.search(options));
 
 /** @internal */
 export const version: () => Effect.Effect<
-    MobySchemas.SystemVersionResponse,
+    MobySchemas.TypesVersion,
     | HttpApiError.InternalServerError
     | HttpApiError.HttpApiDecodeError
     | HttpClientError.HttpClientError
@@ -462,7 +486,7 @@ export const version: () => Effect.Effect<
 
 /** @internal */
 export const info: () => Effect.Effect<
-    MobySchemas.SystemInfoResponse,
+    MobySchemas.SystemInfo,
     | ParseResult.ParseError
     | HttpApiError.InternalServerError
     | HttpApiError.HttpApiDecodeError

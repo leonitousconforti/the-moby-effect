@@ -1,7 +1,7 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as Descriptor from "./Descriptor.generated.js";
-import * as ManifestSummary from "./ManifestSummary.generated.js";
+import * as ImageManifestSummary from "./ImageManifestSummary.generated.js";
+import * as V1Descriptor from "./V1Descriptor.generated.js";
 
 export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
     {
@@ -10,11 +10,11 @@ export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
         Id: Schema.String,
         Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
         ParentId: Schema.String,
-        Descriptor: Schema.optionalWith(Descriptor.Descriptor, { nullable: true }),
-        Manifests: Schema.optionalWith(Schema.Array(Schema.NullOr(ManifestSummary.ManifestSummary)), {
+        Descriptor: Schema.optionalWith(V1Descriptor.V1Descriptor, { nullable: true }),
+        Manifests: Schema.optionalWith(Schema.Array(Schema.NullOr(ImageManifestSummary.ImageManifestSummary)), {
             nullable: true,
         }),
-        RepoDigests: Schema.NullOr(Schema.Array(Schema.String)),
+        RepoDigests: Schema.NullOr(Schema.Array(MobySchemas.Digest)),
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
         SharedSize: MobySchemas.Int64,
         Size: MobySchemas.Int64,

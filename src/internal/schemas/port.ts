@@ -7,6 +7,7 @@
 import * as Brand from "effect/Brand";
 import * as Function from "effect/Function";
 import * as Schema from "effect/Schema";
+import { Address } from "./address.js";
 
 /**
  * @since 1.0.0
@@ -110,13 +111,8 @@ export const PortSet: $PortSet = Schema.Record({
  */
 export interface $PortBinding
     extends Schema.Struct<{
-        HostIp: Schema.optionalWith<
-            typeof Schema.String,
-            {
-                nullable: true;
-            }
-        >;
-        HostPort: typeof Schema.String;
+        HostIp: typeof Address;
+        HostPort: typeof Port;
     }> {}
 
 /**
@@ -127,8 +123,8 @@ export interface $PortBinding
  * @see https://github.com/docker/go-connections/blob/5df8d2b30ca886f2d94740ce3c54abd58a5bb2c9/nat/nat.go#L11-L17
  */
 export const PortBinding: $PortBinding = Schema.Struct({
-    HostPort: Schema.String,
-    HostIp: Schema.optionalWith(Schema.String, { nullable: true }),
+    HostPort: Port,
+    HostIp: Address,
 }).annotations({
     identifier: "PortBinding",
     title: "nat.PortBinding",

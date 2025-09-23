@@ -6,15 +6,63 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, Stream, type Layer } from "effect";
+import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmService, SwarmServiceSpec } from "../generated/index.js";
-import { NodeNotPartOfSwarm } from "../schemas/errors.js";
-import { ServiceId } from "../schemas/id.js";
+import { ServiceIdentifier } from "../schemas/id.js";
 import { HttpApiStreamingResponse } from "./httpApiHacks.js";
+import { NodeNotPartOfSwarm } from "./swarm.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const ServicesErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ServicesError"
+) as ServicesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type ServicesErrorTypeId = typeof ServicesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isServicesError = (u: unknown): u is ServicesError => Predicate.hasProperty(u, ServicesErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId, "ServicesError")<{
+    method: string;
+    cause:
+        | NodeNotPartOfSwarm
+        | HttpApiError.InternalServerError
+        | HttpApiError.BadRequest
+        | HttpApiError.NotFound
+        | HttpApiError.Forbidden
+        | HttpApiError.Conflict
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: ServicesError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -42,7 +90,7 @@ const createServiceEndpoint = HttpApiEndpoint.post("create", "/create")
     .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
     .addSuccess(
         Schema.Struct({
-            ID: ServiceId,
+            ID: ServiceIdentifier,
             Warnings: Schema.optional(Schema.Array(Schema.String)),
         }),
         { status: 201 }
@@ -154,18 +202,30 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(ServicesApi, { group: "services", httpClient });
 
-        const list_ = (options?: Options<"list">) => client.list({ urlParams: { ...options } });
-        const create_ = (payload: SwarmServiceSpec) => client.create({ payload, headers: { "X-Registry-Auth": "" } });
-        const delete_ = (id: string) => client.delete({ path: { id } });
+        const list_ = (options?: Options<"list">) =>
+            Effect.mapError(client.list({ urlParams: { ...options } }), ServicesError.WrapForMethod("list"));
+        const create_ = (payload: SwarmServiceSpec) =>
+            Effect.mapError(
+                client.create({ payload, headers: { "X-Registry-Auth": "" } }),
+                ServicesError.WrapForMethod("create")
+            );
+        const delete_ = (id: string) =>
+            Effect.mapError(client.delete({ path: { id } }), ServicesError.WrapForMethod("delete"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
-            client.inspect({ path: { id }, urlParams: { ...options } });
+            Effect.mapError(
+                client.inspect({ path: { id }, urlParams: { ...options } }),
+                ServicesError.WrapForMethod("inspect")
+            );
         const update_ = (id: string, payload: SwarmServiceSpec, options: Options<"update">) =>
-            client.update({
-                payload,
-                path: { id },
-                urlParams: { ...options },
-                headers: { "X-Registry-Auth": "" },
-            });
+            Effect.mapError(
+                client.update({
+                    payload,
+                    path: { id },
+                    urlParams: { ...options },
+                    headers: { "X-Registry-Auth": "" },
+                }),
+                ServicesError.WrapForMethod("update")
+            );
         const logs_ = (id: string, options?: Options<"logs">) =>
             HttpApiStreamingResponse(
                 ServicesApi,
@@ -174,7 +234,8 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 httpClient
             )({ path: { id }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines);
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapError(ServicesError.WrapForMethod("logs")));
 
         return {
             list: list_,

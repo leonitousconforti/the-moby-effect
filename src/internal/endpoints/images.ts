@@ -6,8 +6,10 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, Stream, type Layer } from "effect";
+import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -17,10 +19,54 @@ import {
     ImageHistoryResponseItem,
     ImageInspectResponse,
     ImageSummary,
-    JSONMessage,
-    RegistrySearchResponse,
+    JsonmessageJSONMessage as JSONMessage,
+    RegistrySearchResult,
 } from "../generated/index.js";
 import { HttpApiStreamingBoth, HttpApiStreamingResponse } from "./httpApiHacks.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const ImagesErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ImagesError"
+) as ImagesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type ImagesErrorTypeId = typeof ImagesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isImagesError = (u: unknown): u is ImagesError => Predicate.hasProperty(u, ImagesErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class ImagesError extends PlatformError.TypeIdError(ImagesErrorTypeId, "ImagesError")<{
+    method: string;
+    cause:
+        | HttpApiError.InternalServerError
+        | HttpApiError.Conflict
+        | HttpApiError.BadRequest
+        | HttpApiError.NotFound
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: ImagesError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -181,7 +227,7 @@ const searchImagesEndpoint = HttpApiEndpoint.get("search", "/search")
             filters: Schema.optional(Schema.String),
         })
     )
-    .addSuccess(Schema.Array(RegistrySearchResponse), { status: 200 });
+    .addSuccess(Schema.Array(RegistrySearchResult), { status: 200 });
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePrune */
 const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/prune")
@@ -291,7 +337,8 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(ImagesApi, { group: "images", httpClient });
 
-        const list_ = (options?: Options<"list">) => client.list({ urlParams: { ...options } });
+        const list_ = (options?: Options<"list">) =>
+            Effect.mapError(client.list({ urlParams: { ...options } }), ImagesError.WrapForMethod("list"));
         const build_ = <E1>(context: Stream.Stream<Uint8Array, E1, never>, options?: Options<"build">) =>
             HttpApiStreamingBoth(
                 ImagesApi,
@@ -305,8 +352,10 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))));
-        const buildPrune_ = (options?: Options<"buildPrune">) => client.buildPrune({ urlParams: { ...options } });
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapError(ImagesError.WrapForMethod("build")));
+        const buildPrune_ = (options?: Options<"buildPrune">) =>
+            Effect.mapError(client.buildPrune({ urlParams: { ...options } }), ImagesError.WrapForMethod("buildPrune"));
         const create_ = (options?: Options<"create">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
@@ -319,11 +368,18 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))));
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapError(ImagesError.WrapForMethod("create")));
         const inspect_ = (name: string, options?: Options<"inspect">) =>
-            client.inspect({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.inspect({ path: { name }, urlParams: { ...options } }),
+                ImagesError.WrapForMethod("inspect")
+            );
         const history_ = (name: string, options?: Options<"history">) =>
-            client.history({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.history({ path: { name }, urlParams: { ...options } }),
+                ImagesError.WrapForMethod("history")
+            );
         const push_ = (name: string, options?: Options<"push">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
@@ -334,26 +390,47 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 path: { name },
                 urlParams: { ...options },
                 headers: { "X-Registry-Auth": "" },
-            });
+            })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapError(ImagesError.WrapForMethod("push")));
         const tag_ = (name: string, options?: Options<"tag">) =>
-            client.tag({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.tag({ path: { name }, urlParams: { ...options } }),
+                ImagesError.WrapForMethod("tag")
+            );
         const delete_ = (name: string, options?: Options<"delete">) =>
-            client.delete({ path: { name }, urlParams: { ...options } });
-        const search_ = (options: Options<"search">) => client.search({ urlParams: { ...options } });
-        const prune_ = (options?: Options<"prune">) => client.prune({ urlParams: { ...options } });
+            Effect.mapError(
+                client.delete({ path: { name }, urlParams: { ...options } }),
+                ImagesError.WrapForMethod("delete")
+            );
+        const search_ = (options: Options<"search">) =>
+            Effect.mapError(client.search({ urlParams: { ...options } }), ImagesError.WrapForMethod("search"));
+        const prune_ = (options?: Options<"prune">) =>
+            Effect.mapError(client.prune({ urlParams: { ...options } }), ImagesError.WrapForMethod("prune"));
         const commit_ = (payload: ContainerCreateRequest, options: Options<"commit">) =>
-            client.commit({ urlParams: { ...options }, payload });
+            Effect.mapError(client.commit({ urlParams: { ...options }, payload }), ImagesError.WrapForMethod("commit"));
         const export_ = (name: string, options?: Options<"export">) =>
-            HttpApiStreamingResponse(
-                ImagesApi,
-                "images",
-                "export",
-                httpClient
-            )({ path: { name }, urlParams: { ...options } });
+            Stream.mapError(
+                HttpApiStreamingResponse(
+                    ImagesApi,
+                    "images",
+                    "export",
+                    httpClient
+                )({ path: { name }, urlParams: { ...options } }),
+                ImagesError.WrapForMethod("export")
+            );
         const exportMany_ = (options?: Options<"exportMany">) =>
-            HttpApiStreamingResponse(ImagesApi, "images", "exportMany", httpClient)({ urlParams: { ...options } });
+            Stream.mapError(
+                HttpApiStreamingResponse(ImagesApi, "images", "exportMany", httpClient)({ urlParams: { ...options } }),
+                ImagesError.WrapForMethod("exportMany")
+            );
         const import_ = <E>(context: Stream.Stream<Uint8Array, E, never>, options?: Options<"import">) =>
-            HttpApiStreamingBoth(ImagesApi, "images", "import", httpClient, context)({ urlParams: { ...options } });
+            Stream.mapError(
+                HttpApiStreamingBoth(ImagesApi, "images", "import", httpClient, context)({ urlParams: { ...options } }),
+                ImagesError.WrapForMethod("import")
+            );
 
         return {
             list: list_,

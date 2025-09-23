@@ -1,27 +1,12 @@
 import * as Schema from "effect/Schema";
+import * as MobySchemas from "../schemas/index.js";
 
 export class VolumePublishStatus extends Schema.Class<VolumePublishStatus>("VolumePublishStatus")(
     {
-        /** NodeID is the ID of the swarm node this Volume is published to. */
-        NodeID: Schema.optional(Schema.String),
-
-        /** State is the publish state of the volume. */
+        NodeID: Schema.optional(MobySchemas.NodeIdentifier),
         State: Schema.optional(
-            Schema.Literal(
-                "pending-publish",
-                "published",
-                "pending-node-unpublish",
-                "pending-controller-unpublish"
-            ).annotations({
-                documentation:
-                    "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L362-L384",
-            })
+            Schema.Literal("pending-publish", "published", "pending-node-unpublish", "pending-controller-unpublish")
         ),
-
-        /**
-         * PublishContext is the PublishContext returned by the CSI plugin when
-         * a volume is published.
-         */
         PublishContext: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),
@@ -30,6 +15,6 @@ export class VolumePublishStatus extends Schema.Class<VolumePublishStatus>("Volu
         identifier: "VolumePublishStatus",
         title: "volume.PublishStatus",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/volume/cluster_volume.go#L386-L398",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/volume#PublishStatus",
     }
 ) {}

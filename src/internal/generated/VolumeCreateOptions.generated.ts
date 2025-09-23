@@ -1,9 +1,9 @@
 import * as Schema from "effect/Schema";
-import * as ClusterVolumeSpec from "./ClusterVolumeSpec.generated.js";
+import * as VolumeClusterVolumeSpec from "./VolumeClusterVolumeSpec.generated.js";
 
 export class VolumeCreateOptions extends Schema.Class<VolumeCreateOptions>("VolumeCreateOptions")(
     {
-        ClusterVolumeSpec: Schema.optionalWith(ClusterVolumeSpec.ClusterVolumeSpec, { nullable: true }),
+        ClusterVolumeSpec: Schema.optionalWith(VolumeClusterVolumeSpec.VolumeClusterVolumeSpec, { nullable: true }),
         Driver: Schema.optional(Schema.String),
         DriverOpts: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,

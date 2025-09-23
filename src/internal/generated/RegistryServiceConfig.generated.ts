@@ -1,13 +1,15 @@
 import * as Schema from "effect/Schema";
 import * as RegistryIndexInfo from "./RegistryIndexInfo.generated.js";
+import * as RegistryNetIPNet from "./RegistryNetIPNet.generated.js";
 
 export class RegistryServiceConfig extends Schema.Class<RegistryServiceConfig>("RegistryServiceConfig")(
     {
-        AllowNondistributableArtifactsCIDRs: Schema.optionalWith(Schema.Array(Schema.NullOr(Schema.String)), {
-            nullable: true,
-        }),
+        AllowNondistributableArtifactsCIDRs: Schema.optionalWith(
+            Schema.Array(Schema.NullOr(RegistryNetIPNet.RegistryNetIPNet)),
+            { nullable: true }
+        ),
         AllowNondistributableArtifactsHostnames: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        InsecureRegistryCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.String))),
+        InsecureRegistryCIDRs: Schema.NullOr(Schema.Array(Schema.NullOr(RegistryNetIPNet.RegistryNetIPNet))),
         IndexConfigs: Schema.NullOr(
             Schema.Record({ key: Schema.String, value: Schema.NullOr(RegistryIndexInfo.RegistryIndexInfo) })
         ),
@@ -17,6 +19,6 @@ export class RegistryServiceConfig extends Schema.Class<RegistryServiceConfig>("
         identifier: "RegistryServiceConfig",
         title: "registry.ServiceConfig",
         documentation:
-            "https://github.com/moby/moby/blob/453c165be709d294ab744f2efbd2552b338bb1a0/api/types/registry/registry.go#L10-L17",
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/registry#ServiceConfig",
     }
 ) {}

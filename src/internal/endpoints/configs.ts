@@ -6,19 +6,66 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmConfig, SwarmConfigSpec } from "../generated/index.js";
-import { NodeNotPartOfSwarm } from "../schemas/errors.js";
-import { ConfigId } from "../schemas/id.js";
+import { ConfigIdentifier } from "../schemas/id.js";
+import { NodeNotPartOfSwarm } from "./swarm.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const ConfigsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/ConfigsError"
+) as ConfigsErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type ConfigsErrorTypeId = typeof ConfigsErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isConfigsError = (u: unknown): u is ConfigsError => Predicate.hasProperty(u, ConfigsErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, "ConfigsError")<{
+    method: string;
+    cause:
+        | NodeNotPartOfSwarm
+        | HttpApiError.InternalServerError
+        | HttpApiError.Conflict
+        | HttpApiError.NotFound
+        | HttpApiError.BadRequest
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: ConfigsError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
     Schema.Struct({
-        id: Schema.optional(Schema.Array(ConfigId)),
+        id: Schema.optional(Schema.Array(ConfigIdentifier)),
         name: Schema.optional(Schema.Array(Schema.String)),
         names: Schema.optional(Schema.Array(Schema.String)),
         label: Schema.optional(Schema.Array(Schema.String)),
@@ -33,24 +80,24 @@ const listConfigsEndpoint = HttpApiEndpoint.get("list", "/")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigCreate */
 const createConfigEndpoint = HttpApiEndpoint.post("create", "/create")
     .setPayload(SwarmConfigSpec)
-    .addSuccess(Schema.Struct({ Id: ConfigId }), { status: 201 }) // 201 Created
+    .addSuccess(Schema.Struct({ Id: ConfigIdentifier }), { status: 201 }) // 201 Created
     .addError(HttpApiError.Conflict); // 409 Name conflicts with existing object
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigInspect */
-const inspectConfigEndpoint = HttpApiEndpoint.get("inspect", "/:id")
-    .setPath(Schema.Struct({ id: ConfigId }))
+const inspectConfigEndpoint = HttpApiEndpoint.get("inspect", "/:identifier")
+    .setPath(Schema.Struct({ identifier: ConfigIdentifier }))
     .addSuccess(SwarmConfig, { status: 200 }) // 200 OK
     .addError(HttpApiError.NotFound); // 404 Config not found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigDelete */
-const deleteConfigEndpoint = HttpApiEndpoint.del("delete", "/:id")
-    .setPath(Schema.Struct({ id: ConfigId }))
+const deleteConfigEndpoint = HttpApiEndpoint.del("delete", "/:identifier")
+    .setPath(Schema.Struct({ identifier: ConfigIdentifier }))
     .addSuccess(HttpApiSchema.NoContent) // 204 No Content
     .addError(HttpApiError.NotFound); // 404 Config not found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigUpdate */
-const updateConfigEndpoint = HttpApiEndpoint.post("update", "/:id/update")
-    .setPath(Schema.Struct({ id: ConfigId }))
+const updateConfigEndpoint = HttpApiEndpoint.post("update", "/:identifier/update")
+    .setPath(Schema.Struct({ identifier: ConfigIdentifier }))
     .setUrlParams(Schema.Struct({ version: Schema.NumberFromString }))
     .setPayload(SwarmConfigSpec) // Note: Docker API states only Labels can be updated
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK, no response body
@@ -101,12 +148,29 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
         const client = yield* HttpApiClient.group(ConfigsApi, { group: "configs", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
-            client.list({ urlParams: { filters } });
-        const create_ = (config: SwarmConfigSpec) => client.create({ payload: config });
-        const inspect_ = (id: ConfigId) => client.inspect({ path: { id } });
-        const delete_ = (id: ConfigId) => client.delete({ path: { id } });
-        const update_ = (id: ConfigId, version: number, config: SwarmConfigSpec) =>
-            client.update({ path: { id }, urlParams: { version }, payload: config });
+            Effect.mapError(client.list({ urlParams: { filters } }), ConfigsError.WrapForMethod("list"));
+        const create_ = (...config: ConstructorParameters<typeof SwarmConfigSpec>) =>
+            Effect.mapError(
+                client.create({ payload: SwarmConfigSpec.make(...config) }),
+                ConfigsError.WrapForMethod("create")
+            );
+        const inspect_ = (identifier: ConfigIdentifier) =>
+            Effect.mapError(client.inspect({ path: { identifier } }), ConfigsError.WrapForMethod("inspect"));
+        const delete_ = (identifier: ConfigIdentifier) =>
+            Effect.mapError(client.delete({ path: { identifier } }), ConfigsError.WrapForMethod("delete"));
+        const update_ = (
+            identifier: ConfigIdentifier,
+            version: number,
+            ...config: ConstructorParameters<typeof SwarmConfigSpec>
+        ) =>
+            Effect.mapError(
+                client.update({
+                    path: { identifier },
+                    urlParams: { version },
+                    payload: SwarmConfigSpec.make(...config),
+                }),
+                ConfigsError.WrapForMethod("update")
+            );
 
         return {
             list: list_,

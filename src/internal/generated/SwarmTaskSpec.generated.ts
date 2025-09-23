@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
-import * as PluginSpec from "./PluginSpec.generated.js";
+import * as RuntimePluginSpec from "./RuntimePluginSpec.generated.js";
 import * as SwarmContainerSpec from "./SwarmContainerSpec.generated.js";
 import * as SwarmDriver from "./SwarmDriver.generated.js";
 import * as SwarmNetworkAttachmentConfig from "./SwarmNetworkAttachmentConfig.generated.js";
@@ -12,7 +12,7 @@ import * as SwarmRestartPolicy from "./SwarmRestartPolicy.generated.js";
 export class SwarmTaskSpec extends Schema.Class<SwarmTaskSpec>("SwarmTaskSpec")(
     {
         ContainerSpec: Schema.optionalWith(SwarmContainerSpec.SwarmContainerSpec, { nullable: true }),
-        PluginSpec: Schema.optionalWith(PluginSpec.PluginSpec, { nullable: true }),
+        PluginSpec: Schema.optionalWith(RuntimePluginSpec.RuntimePluginSpec, { nullable: true }),
         NetworkAttachmentSpec: Schema.optionalWith(SwarmNetworkAttachmentSpec.SwarmNetworkAttachmentSpec, {
             nullable: true,
         }),

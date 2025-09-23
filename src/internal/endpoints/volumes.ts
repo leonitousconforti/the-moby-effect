@@ -6,19 +6,66 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
-    ClusterVolumeSpec,
-    Volume,
+    VolumeClusterVolumeSpec as ClusterVolumeSpec,
+    VolumeVolume as Volume,
     VolumeCreateOptions,
-    VolumeListResponse,
-    VolumePruneResponse,
 } from "../generated/index.js";
-import { NodeNotPartOfSwarm } from "../schemas/errors.js";
+import { VolumeIdentifier } from "../schemas/id.js";
+import { Int64 } from "../schemas/int64.js";
+import { NodeNotPartOfSwarm } from "./swarm.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const VolumesErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/VolumesError"
+) as VolumesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type VolumesErrorTypeId = typeof VolumesErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isVolumesError = (u: unknown): u is VolumesError => Predicate.hasProperty(u, VolumesErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class VolumesError extends PlatformError.TypeIdError(VolumesErrorTypeId, "VolumesError")<{
+    method: string;
+    cause:
+        | NodeNotPartOfSwarm
+        | HttpApiError.InternalServerError
+        | HttpApiError.Conflict
+        | HttpApiError.NotFound
+        | HttpApiError.BadRequest
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: VolumesError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -41,7 +88,13 @@ export class PruneFilters extends Schema.parseJson(
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeList */
 const listVolumesEndpoint = HttpApiEndpoint.get("list", "/")
     .setUrlParams(Schema.Struct({ filters: Schema.optional(ListFilters) }))
-    .addSuccess(VolumeListResponse, { status: 200 }); // 200 OK
+    .addSuccess(
+        Schema.Struct({
+            Volumes: Schema.Array(Volume),
+            Warnings: Schema.optional(Schema.Array(Schema.String)),
+        }),
+        { status: 200 }
+    ); // 200 OK
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeCreate */
 const createVolumeEndpoint = HttpApiEndpoint.post("create", "/create")
@@ -75,7 +128,13 @@ const updateVolumeEndpoint = HttpApiEndpoint.put("update", "/:name")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumePrune */
 const pruneVolumeEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .setUrlParams(Schema.Struct({ filters: Schema.optional(PruneFilters) }))
-    .addSuccess(VolumePruneResponse, { status: 200 }); // 200 OK
+    .addSuccess(
+        Schema.Struct({
+            VolumesDeleted: Schema.optional(Schema.Array(VolumeIdentifier)),
+            SpaceReclaimed: Int64,
+        }),
+        { status: 200 }
+    ); // 200 OK
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume */
 const VolumesGroup = HttpApiGroup.make("volumes")
@@ -114,14 +173,24 @@ export class Volumes extends Effect.Service<Volumes>()("@the-moby-effect/endpoin
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(VolumesApi, { group: "volumes", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<ListFilters>) => client.list({ urlParams: { filters } });
-        const create_ = (options: VolumeCreateOptions) => client.create({ payload: options });
-        const inspect_ = (name: string) => client.inspect({ path: { name } });
+        const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
+            Effect.mapError(client.list({ urlParams: { filters } }), VolumesError.WrapForMethod("list"));
+        const create_ = (options: VolumeCreateOptions) =>
+            Effect.mapError(client.create({ payload: options }), VolumesError.WrapForMethod("create"));
+        const inspect_ = (name: string) =>
+            Effect.mapError(client.inspect({ path: { name } }), VolumesError.WrapForMethod("inspect"));
         const delete_ = (name: string, options?: { force?: boolean | undefined } | undefined) =>
-            client.delete({ path: { name }, urlParams: { ...options } });
+            Effect.mapError(
+                client.delete({ path: { name }, urlParams: { ...options } }),
+                VolumesError.WrapForMethod("delete")
+            );
         const update_ = (name: string, version: number, spec: ClusterVolumeSpec) =>
-            client.update({ path: { name }, urlParams: { version }, payload: spec });
-        const prune_ = (filters?: Schema.Schema.Type<PruneFilters>) => client.prune({ urlParams: { filters } });
+            Effect.mapError(
+                client.update({ path: { name }, urlParams: { version }, payload: spec }),
+                VolumesError.WrapForMethod("update")
+            );
+        const prune_ = (filters?: Schema.Schema.Type<PruneFilters>) =>
+            Effect.mapError(client.prune({ urlParams: { filters } }), VolumesError.WrapForMethod("prune"));
 
         return {
             list: list_,

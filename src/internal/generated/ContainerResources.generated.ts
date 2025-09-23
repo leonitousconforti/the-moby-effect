@@ -1,10 +1,10 @@
 import * as Schema from "effect/Schema";
 import * as MobySchemas from "../schemas/index.js";
+import * as BlkiodevThrottleDevice from "./BlkiodevThrottleDevice.generated.js";
+import * as BlkiodevWeightDevice from "./BlkiodevWeightDevice.generated.js";
 import * as ContainerDeviceMapping from "./ContainerDeviceMapping.generated.js";
 import * as ContainerDeviceRequest from "./ContainerDeviceRequest.generated.js";
-import * as ContainerUlimit from "./ContainerUlimit.generated.js";
-import * as ThrottleDevice from "./ThrottleDevice.generated.js";
-import * as WeightDevice from "./WeightDevice.generated.js";
+import * as UnitsUlimit from "./UnitsUlimit.generated.js";
 
 export class ContainerResources extends Schema.Class<ContainerResources>("ContainerResources")(
     {
@@ -13,11 +13,11 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         NanoCpus: MobySchemas.Int64,
         CgroupParent: Schema.String,
         BlkioWeight: MobySchemas.UInt16,
-        BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(WeightDevice.WeightDevice))),
-        BlkioDeviceReadBps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
-        BlkioDeviceWriteBps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
-        BlkioDeviceReadIOps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
-        BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(ThrottleDevice.ThrottleDevice))),
+        BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevWeightDevice.BlkiodevWeightDevice))),
+        BlkioDeviceReadBps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
+        BlkioDeviceWriteBps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
+        BlkioDeviceReadIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
+        BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
         CpuPeriod: MobySchemas.Int64,
         CpuQuota: MobySchemas.Int64,
         CpuRealtimePeriod: MobySchemas.Int64,
@@ -34,7 +34,7 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         MemorySwappiness: Schema.NullOr(MobySchemas.Int64),
         OomKillDisable: Schema.NullOr(Schema.Boolean),
         PidsLimit: Schema.NullOr(MobySchemas.Int64),
-        Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerUlimit.ContainerUlimit))),
+        Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit))),
         CpuCount: MobySchemas.Int64,
         CpuPercent: MobySchemas.Int64,
         IOMaximumIOps: MobySchemas.UInt64,

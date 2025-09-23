@@ -6,14 +6,61 @@ import {
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
+    Error as PlatformError,
+    type HttpClientError,
 } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmSecret, SwarmSecretSpec } from "../generated/index.js";
-import { NodeNotPartOfSwarm } from "../schemas/errors.js";
-import { SecretId } from "../schemas/id.js";
+import { SecretIdentifier } from "../schemas/id.js";
+import { NodeNotPartOfSwarm } from "./swarm.js";
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const SecretsErrorTypeId: unique symbol = Symbol.for(
+    "@the-moby-effect/endpoints/SecretsError"
+) as SecretsErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export type SecretsErrorTypeId = typeof SecretsErrorTypeId;
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export const isSecretsError = (u: unknown): u is SecretsError => Predicate.hasProperty(u, SecretsErrorTypeId);
+
+/**
+ * @since 1.0.0
+ * @category Errors
+ */
+export class SecretsError extends PlatformError.TypeIdError(SecretsErrorTypeId, "SecretsError")<{
+    method: string;
+    cause:
+        | NodeNotPartOfSwarm
+        | HttpApiError.InternalServerError
+        | HttpApiError.BadRequest
+        | HttpApiError.NotFound
+        | HttpApiError.Conflict
+        | ParseResult.ParseError
+        | HttpClientError.HttpClientError
+        | HttpApiError.HttpApiDecodeError;
+}> {
+    get message() {
+        return `${this.method}`;
+    }
+
+    static WrapForMethod(method: string) {
+        return (cause: SecretsError["cause"]) => new this({ method, cause });
+    }
+}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -33,7 +80,7 @@ const listSecretsEndpoint = HttpApiEndpoint.get("list", "/")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretCreate */
 const createSecretEndpoint = HttpApiEndpoint.post("create", "/create")
     .setPayload(SwarmSecretSpec)
-    .addSuccess(Schema.Struct({ Id: SecretId }), { status: 201 }) // 201 Created
+    .addSuccess(Schema.Struct({ Id: SecretIdentifier }), { status: 201 }) // 201 Created
     .addError(HttpApiError.Conflict) // 409 name conflicts with an existing object
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
@@ -103,12 +150,19 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
         const httpClient = yield* HttpClient.HttpClient;
         const client = yield* HttpApiClient.group(SecretsApi, { group: "secrets", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<ListFilters>) => client.list({ urlParams: { filters } });
-        const create_ = (payload: SwarmSecretSpec) => client.create({ payload });
-        const inspect_ = (id: string) => client.inspect({ path: { id } });
-        const delete_ = (id: string) => client.delete({ path: { id } });
+        const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
+            Effect.mapError(client.list({ urlParams: { filters } }), SecretsError.WrapForMethod("list"));
+        const create_ = (payload: SwarmSecretSpec) =>
+            Effect.mapError(client.create({ payload }), SecretsError.WrapForMethod("create"));
+        const inspect_ = (id: string) =>
+            Effect.mapError(client.inspect({ path: { id } }), SecretsError.WrapForMethod("inspect"));
+        const delete_ = (id: string) =>
+            Effect.mapError(client.delete({ path: { id } }), SecretsError.WrapForMethod("delete"));
         const update_ = (id: string, version: number, payload: SwarmSecretSpec) =>
-            client.update({ path: { id }, urlParams: { version }, payload });
+            Effect.mapError(
+                client.update({ path: { id }, urlParams: { version }, payload }),
+                SecretsError.WrapForMethod("update")
+            );
 
         return {
             list: list_,
