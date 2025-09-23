@@ -576,8 +576,18 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 ContainersError.WrapForMethod("delete")
             );
         const archive_ = (identifier: ContainerIdentifier, options: Options<"archive">) =>
+            Stream.mapError(
+                HttpApiStreamingResponse(
+                    ContainersApi,
+                    "containers",
+                    "archive",
+                    httpClient
+                )({ path: { identifier }, urlParams: { ...options } }),
+                ContainersError.WrapForMethod("archive")
+            );
+        const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
             client
-                .archive({ path: { identifier }, urlParams: { ...options }, withResponse: true })
+                .archiveInfo({ path: { identifier }, urlParams: { ...options }, withResponse: true })
                 .pipe(Effect.map(Tuple.getSecond))
                 .pipe(
                     Effect.flatMap(
@@ -592,23 +602,13 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     )
                 )
                 .pipe(Effect.map(({ "X-Docker-Container-Path-Stat": pathStat }) => pathStat))
-                .pipe(Effect.mapError(ContainersError.WrapForMethod("archive")));
-        const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
-            Stream.mapError(
-                HttpApiStreamingResponse(
-                    ContainersApi,
-                    "containers",
-                    "archiveInfo",
-                    httpClient
-                )({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("archiveInfo")
-            );
-        const putArchive_ = <E>(
+                .pipe(Effect.mapError(ContainersError.WrapForMethod("archiveInfo")));
+        const putArchive_ = <E, R>(
             identifier: ContainerIdentifier,
-            stream: Stream.Stream<Uint8Array, E, never>,
+            stream: Stream.Stream<Uint8Array, E, R>,
             options: Options<"putArchive">
         ) =>
-            Stream.mapError(
+            Effect.mapError(
                 HttpApiStreamingRequest(
                     ContainersApi,
                     "containers",

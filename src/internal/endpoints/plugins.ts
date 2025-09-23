@@ -9,7 +9,7 @@ import {
     Error as PlatformError,
     type HttpClientError,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, type Layer, type ParseResult, type Stream } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -230,8 +230,8 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 }),
                 PluginsError.WrapForMethod("upgrade")
             );
-        const create_ = <E>(name: string, tar: Stream.Stream<Uint8Array, E, never>) =>
-            Stream.mapError(
+        const create_ = <E, R>(name: string, tar: Stream.Stream<Uint8Array, E, R>) =>
+            Effect.mapError(
                 HttpApiStreamingRequest(PluginsApi, "plugins", "create", httpClient, tar)({ urlParams: { name } }),
                 PluginsError.WrapForMethod("create")
             );

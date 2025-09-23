@@ -32,12 +32,13 @@ export const HttpApiStreamingRequest =
         E,
         E2,
         R,
+        R2,
     >(
         api: HttpApi.HttpApi<ApiId, Groups, ApiError, ApiR>,
         group: GroupName,
         endpoint: EndpointName,
         httpClient: HttpClient.HttpClient.With<E, R>,
-        stream: Stream.Stream<Uint8Array, E2, never>,
+        stream: Stream.Stream<Uint8Array, E2, R2>,
         options?:
             | {
                   readonly baseUrl?: URL | string | undefined;
@@ -100,6 +101,7 @@ export const HttpApiStreamingRequest =
         | HttpClientError.HttpClientError
         | ParseResult.ParseError,
         | R
+        | R2
         | HttpApiMiddleware.HttpApiMiddleware.Without<
               | ApiR
               | HttpApiGroup.HttpApiGroup.Context<HttpApiGroup.HttpApiGroup.WithName<Groups, GroupName>>
@@ -114,7 +116,9 @@ export const HttpApiStreamingRequest =
           >
     > =>
         Effect.gen(function* () {
-            const transformClient = HttpClient.mapRequest(HttpClientRequest.bodyStream(stream));
+            const context = yield* Effect.context<R2>();
+            const streamWithContext = Stream.provideContext(stream, context);
+            const transformClient = HttpClient.mapRequest(HttpClientRequest.bodyStream(streamWithContext));
 
             const client = yield* HttpApiClient.endpoint(api, {
                 group,
@@ -290,12 +294,13 @@ export const HttpApiStreamingBoth =
         E,
         E2,
         R,
+        R2,
     >(
         api: HttpApi.HttpApi<ApiId, Groups, ApiError, ApiR>,
         group: GroupName,
         endpoint: EndpointName,
         httpClient: HttpClient.HttpClient.With<E, R>,
-        stream: Stream.Stream<Uint8Array, E2, never>,
+        stream: Stream.Stream<Uint8Array, E2, R2>,
         options?:
             | {
                   readonly baseUrl?: URL | string | undefined;
@@ -343,6 +348,7 @@ export const HttpApiStreamingBoth =
         | HttpClientError.HttpClientError
         | ParseResult.ParseError,
         | R
+        | R2
         | HttpApiMiddleware.HttpApiMiddleware.Without<
               | ApiR
               | HttpApiGroup.HttpApiGroup.Context<HttpApiGroup.HttpApiGroup.WithName<Groups, GroupName>>
@@ -357,7 +363,9 @@ export const HttpApiStreamingBoth =
           >
     > =>
         Effect.gen(function* () {
-            const transformClient = HttpClient.mapRequest(HttpClientRequest.bodyStream(stream));
+            const context = yield* Effect.context<R2>();
+            const streamWithContext = Stream.provideContext(stream, context);
+            const transformClient = HttpClient.mapRequest(HttpClientRequest.bodyStream(streamWithContext));
 
             const client = yield* HttpApiClient.endpoint(api, {
                 group,

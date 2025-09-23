@@ -259,11 +259,7 @@ export const execWebsocketsNonBlocking = ({
     cwd?: string | undefined;
     containerId: IdSchemas.ContainerIdentifier;
 }): Effect.Effect<
-    MobyDemux.MultiplexedChannel<
-        never,
-        MobyEndpoints.ContainersError | ParseResult.ParseError | Socket.SocketError,
-        never
-    >,
+    MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
     never,
     MobyEndpoints.Containers
 > =>
@@ -298,7 +294,9 @@ export const execWebsocketsNonBlocking = ({
                     "/usr/local/bin/sh", // Alternative location for sh
                     "/busybox/sh" // Busybox shell
                 )
-            )(command);
+            )(command).pipe(
+                Effect.mapError((cause) => new MobyEndpoints.ContainersError({ method: "inspect", cause }))
+            );
             yield* mutex.take(1);
         });
 

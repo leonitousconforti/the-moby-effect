@@ -271,11 +271,7 @@ export const execWebsocketsNonBlocking: ({
     containerId: IdSchemas.ContainerIdentifier;
     cwd?: string | undefined;
 }) => Effect.Effect<
-    MobyDemux.MultiplexedChannel<
-        never,
-        Socket.SocketError | ParseResult.ParseError | MobyEndpoints.ContainersError,
-        never
-    >,
+    MobyDemux.MultiplexedChannel<never, Socket.SocketError | MobyEndpoints.ContainersError, never>,
     never,
     MobyEndpoints.Containers
 > = internalDocker.execWebsocketsNonBlocking;
