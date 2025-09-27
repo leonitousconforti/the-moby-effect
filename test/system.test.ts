@@ -24,14 +24,14 @@ describe.each(testMatrix)(
         layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi System tests", (it) => {
             it.effect("Should ping the docker daemon", () =>
                 Effect.gen(function* () {
-                    const system = yield* MobyEndpoints.Systems;
+                    const system = yield* MobyEndpoints.System;
                     yield* system.ping();
                 })
             );
 
             it.effect("Should see the docker version", () =>
                 Effect.gen(function* () {
-                    const system = yield* MobyEndpoints.Systems;
+                    const system = yield* MobyEndpoints.System;
                     const versionResponse = yield* system.version();
                     expect(versionResponse).toBeDefined();
 
@@ -62,7 +62,7 @@ describe.each(testMatrix)(
 
             it.effect("Should see the docker info", () =>
                 Effect.gen(function* () {
-                    const system = yield* MobyEndpoints.Systems;
+                    const system = yield* MobyEndpoints.System;
                     const infoResponse = yield* system.info();
                     expect(infoResponse).toBeDefined();
                 })
@@ -70,7 +70,7 @@ describe.each(testMatrix)(
 
             it.effect("Should see the docker system data usage", () =>
                 Effect.gen(function* () {
-                    const system = yield* MobyEndpoints.Systems;
+                    const system = yield* MobyEndpoints.System;
                     const dataUsageResponse = yield* system.dataUsage();
                     expect(dataUsageResponse).toBeDefined();
                 })
@@ -78,7 +78,7 @@ describe.each(testMatrix)(
 
             it.effect("Should see docker events", () =>
                 Effect.gen(function* () {
-                    const system = yield* MobyEndpoints.Systems;
+                    const system = yield* MobyEndpoints.System;
                     yield* Stream.runHead(system.events({ since: "0" }));
                 })
             );

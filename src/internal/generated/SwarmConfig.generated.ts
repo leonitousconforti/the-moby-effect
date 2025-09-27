@@ -1,10 +1,11 @@
 import * as Schema from "effect/Schema";
+import * as MobySchemas from "../schemas/index.js";
 import * as SwarmConfigSpec from "./SwarmConfigSpec.generated.js";
 import * as SwarmMeta from "./SwarmMeta.generated.js";
 
 export class SwarmConfig extends Schema.Class<SwarmConfig>("SwarmConfig")(
     {
-        ID: Schema.String,
+        ID: MobySchemas.ConfigIdentifier,
         ...SwarmMeta.SwarmMeta.fields,
         Spec: Schema.NullOr(SwarmConfigSpec.SwarmConfigSpec),
     },

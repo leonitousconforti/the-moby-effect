@@ -8,9 +8,6 @@ export class JsonmessageJSONProgress extends Schema.Class<JsonmessageJSONProgres
         start: Schema.optional(MobySchemas.Int64),
         hidecounts: Schema.optional(Schema.Boolean),
         units: Schema.optional(Schema.String),
-        terminalFd: Schema.Never,
-        nowFunc: Schema.Never,
-        winSize: MobySchemas.Int64,
     },
     {
         identifier: "JsonmessageJSONProgress",

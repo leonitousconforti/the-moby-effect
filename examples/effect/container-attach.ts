@@ -27,15 +27,13 @@ const program = Effect.gen(function* () {
 
     // Run the container, will be removed when the scope is closed
     const { Id: containerId } = yield* DockerEngine.runScoped({
-        spec: {
-            Image: image,
-            Entrypoint: ["/bin/sh"],
-            Tty: false,
-            OpenStdin: true,
-            AttachStdin: true,
-            AttachStdout: true,
-            AttachStderr: true,
-        },
+        Image: image,
+        Entrypoint: ["/bin/sh"],
+        Tty: false,
+        OpenStdin: true,
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
     });
 
     // Attach to the container

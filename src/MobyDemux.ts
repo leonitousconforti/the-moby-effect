@@ -4,6 +4,7 @@
  * @since 1.0.0
  */
 
+import type * as PlatformError from "@effect/platform/Error";
 import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import type * as Socket from "@effect/platform/Socket";
 import type * as Channel from "effect/Channel";
@@ -817,8 +818,5 @@ export const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketErr
               encoding?: string | undefined;
           }
         | undefined
-) => Effect.Effect<
-    void,
-    IE | OE | internalStdio.StdinError | internalStdio.StdoutError | internalStdio.StderrError | ParseResult.ParseError,
-    Exclude<R, Scope.Scope>
-> = internalStdio.demuxFromStdinToStdoutAndStderr;
+) => Effect.Effect<void, IE | OE | PlatformError.PlatformError | ParseResult.ParseError, Exclude<R, Scope.Scope>> =
+    internalStdio.demuxFromStdinToStdoutAndStderr;

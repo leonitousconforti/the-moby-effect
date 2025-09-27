@@ -10,10 +10,10 @@ import {
     type HttpClientError,
     type Socket,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
-import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.js";
+import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
+import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
     ContainerExecStartOptions,
@@ -57,11 +57,11 @@ export class ExecsError extends PlatformError.TypeIdError(ExecsErrorTypeId, "Exe
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: ExecsError["cause"]) => new this({ method, cause });
     }
 }

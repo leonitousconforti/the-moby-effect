@@ -9,7 +9,7 @@ import {
     Error as PlatformError,
     type HttpClientError,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, type Layer, type ParseResult, type Stream } from "effect";
+import { Array, Effect, Predicate, Schema, String, type Layer, type ParseResult, type Stream } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -52,11 +52,11 @@ export class PluginsError extends PlatformError.TypeIdError(PluginsErrorTypeId, 
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: PluginsError["cause"]) => new this({ method, cause });
     }
 }
@@ -194,12 +194,18 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 client.getPrivileges({ urlParams: { remote } }),
                 PluginsError.WrapForMethod("getPrivileges")
             );
-        const pull_ = (options: Options<"pull">, payload: Array<PluginPrivilege>) =>
+        const pull_ = (
+            remote: string,
+            options?: {
+                name?: string | undefined;
+                privileges?: Array<ConstructorParameters<typeof PluginPrivilege>[0]> | undefined;
+            }
+        ) =>
             Effect.mapError(
                 client.pull({
-                    payload,
-                    urlParams: { ...options },
                     headers: { "X-Registry-Auth": "" },
+                    urlParams: { remote, name: options?.name },
+                    payload: Array.map(options?.privileges ?? [], PluginPrivilege.make),
                 }),
                 PluginsError.WrapForMethod("pull")
             );
@@ -220,13 +226,17 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 client.disable({ path: { name }, urlParams: { ...options } }),
                 PluginsError.WrapForMethod("disable")
             );
-        const upgrade_ = (name: string, remote: string, payload: Array<PluginPrivilege>) =>
+        const upgrade_ = (
+            name: string,
+            remote: string,
+            privileges?: Array<ConstructorParameters<typeof PluginPrivilege>[0]> | undefined
+        ) =>
             Effect.mapError(
                 client.upgrade({
-                    payload,
                     path: { name },
                     urlParams: { remote },
                     headers: { "X-Registry-Auth": "" },
+                    payload: Array.map(privileges ?? [], PluginPrivilege.make),
                 }),
                 PluginsError.WrapForMethod("upgrade")
             );

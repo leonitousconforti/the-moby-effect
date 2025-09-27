@@ -28,12 +28,10 @@ const program = Effect.gen(function* () {
 
     const testDocument: string = yield* path.fromFileUrl(new URL("container-with-volume.txt", import.meta.url));
     const containerInspectResponse: MobySchemas.ContainerInspectResponse = yield* DockerEngine.runScoped({
-        spec: {
-            Image: "ubuntu:latest",
-            Cmd: ["echo", "/app/test.txt"],
-            HostConfig: {
-                Binds: [`${testDocument}:/app/test.txt`],
-            },
+        Image: "ubuntu:latest",
+        Cmd: ["echo", "/app/test.txt"],
+        HostConfig: {
+            Binds: [`${testDocument}:/app/test.txt`],
         },
     });
 

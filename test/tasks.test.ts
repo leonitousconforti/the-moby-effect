@@ -1,6 +1,6 @@
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Layer, Context } from "effect";
+import { Context, Duration, Effect, Layer } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
@@ -23,7 +23,7 @@ describe.each(testMatrix)(
 
         const withSwarmEnabled = Layer.tap(testLayer, (context) => {
             const swarm = Context.get(context, MobyEndpoints.Swarm);
-            return swarm.init({ ListenAddr: "0.0.0.0" });
+            return swarm.init();
         });
 
         layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Tasks tests", (it) => {

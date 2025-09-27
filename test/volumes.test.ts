@@ -96,7 +96,7 @@ describe.each(testMatrix)(
             it.effect("Should list volumes with labels", () =>
                 Effect.gen(function* () {
                     const volumes = yield* MobyEndpoints.Volumes;
-                    const testData = yield* volumes.list({ filters: { label: ["testLabel=test"] } });
+                    const testData = yield* volumes.list({ label: ["testLabel=test"] });
                     expect(testData.Warnings).toBeNull();
                     expect(testData.Volumes).toBeInstanceOf(Array);
                     expect(testData.Volumes).toHaveLength(1);
@@ -106,7 +106,7 @@ describe.each(testMatrix)(
             it.effect("Should list non dangling volumes", () =>
                 Effect.gen(function* () {
                     const volumes = yield* MobyEndpoints.Volumes;
-                    const testData = yield* volumes.list({ filters: { dangling: ["false"] } });
+                    const testData = yield* volumes.list({ dangling: ["false"] });
                     expect(testData.Warnings).toBeNull();
                     expect(testData.Volumes).toBeInstanceOf(Array);
                     expect(testData.Volumes).toHaveLength(0);
@@ -116,7 +116,7 @@ describe.each(testMatrix)(
             it.effect("Should prune volumes", () =>
                 Effect.gen(function* () {
                     const volumes = yield* MobyEndpoints.Volumes;
-                    const testData = yield* volumes.prune({ filters: { all: ["true"] } });
+                    const testData = yield* volumes.prune({ all: ["true"] });
                     expect(testData.SpaceReclaimed).toBe(0);
                     expect(testData.VolumesDeleted).toBeInstanceOf(Array);
                     expect(testData.VolumesDeleted).toHaveLength(1);

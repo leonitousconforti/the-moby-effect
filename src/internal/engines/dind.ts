@@ -5,6 +5,7 @@ import type * as Scope from "effect/Scope";
 import type * as TarHeader from "eftar/Header";
 import type * as DindEngine from "../../DindEngine.js";
 import type * as BlobConstants from "../blobs/constants.js";
+import type * as IdSchemas from "../schemas/id.js";
 
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
@@ -15,7 +16,6 @@ import * as HashMap from "effect/HashMap";
 import * as HashSet from "effect/HashSet";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
-import * as Number from "effect/Number";
 import * as Option from "effect/Option";
 import * as Schedule from "effect/Schedule";
 import * as Stream from "effect/Stream";
@@ -31,10 +31,11 @@ import * as internalHttpBlob from "../blobs/http.js";
 import * as internalHttpsBlob from "../blobs/https.js";
 import * as internalSocketBlob from "../blobs/socket.js";
 import * as internalSshBlob from "../blobs/ssh.js";
+import * as PortSchemas from "../schemas/port.js";
 
 /** @internal */
 const downloadDindCertificates = (
-    dindContainerId: string
+    dindContainerId: IdSchemas.ContainerIdentifier
 ): Effect.Effect<
     {
         ca: string;
@@ -140,7 +141,7 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
  * @internal
  */
 const waitForDindContainerToBeReady = (
-    dindContainerId: string
+    dindContainerId: IdSchemas.ContainerIdentifier
 ): Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =>
     Function.pipe(
         MobyEndpoints.Containers.use((containers) =>
@@ -238,7 +239,7 @@ export const makeDindLayerFromPlatformConstructor =
             const buildStream = streamWithHostDocker(
                 DockerEngine.build({
                     dockerfile: "Dockerfile",
-                    buildArgs: { DIND_BASE_IMAGE: options.dindBaseImage },
+                    buildargs: { DIND_BASE_IMAGE: options.dindBaseImage },
                     tag: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
                     context: Tar.tarballFromMemory(HashMap.make(["Dockerfile", dindBlob] as const)),
                 })
@@ -255,33 +256,27 @@ export const makeDindLayerFromPlatformConstructor =
             // Create the dind container
             const containerInspectResponse = yield* effectWithHostDocker(
                 DockerEngine.runScoped({
-                    spec: {
-                        Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
-                        Volumes: { "/var/lib/docker": {}, "/home/rootless/.local/share/docker": {} },
-                        ExposedPorts: {
-                            "22/tcp": {},
-                            "2375/tcp": {},
-                            "2376/tcp": {},
-                        },
-                        HostConfig: {
-                            Privileged: true,
-                            Binds: binds,
-                            PortBindings: {
-                                "22/tcp": [{ HostPort: "0" }],
-                                "2375/tcp": [{ HostPort: "0" }],
-                                "2376/tcp": [{ HostPort: "0" }],
-                            },
+                    Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
+                    Volumes: { "/var/lib/docker": {}, "/home/rootless/.local/share/docker": {} },
+                    ExposedPorts: {
+                        "22/tcp": {},
+                        "2375/tcp": {},
+                        "2376/tcp": {},
+                    },
+                    HostConfig: {
+                        Privileged: true,
+                        Binds: binds,
+                        PortBindings: {
+                            "22/tcp": [{ HostPort: PortSchemas.PortBrand(0) }],
+                            "2375/tcp": [{ HostPort: PortSchemas.PortBrand(0) }],
+                            "2376/tcp": [{ HostPort: PortSchemas.PortBrand(0) }],
                         },
                     },
                 })
             );
 
             // Extract the ports from the container inspect response
-            const tryGetPort = Function.flow(
-                Option.fromNullable<string | undefined>,
-                Option.flatMap(Number.parse),
-                Option.getOrThrow
-            );
+            const tryGetPort = Function.flow(Option.fromNullable<number | undefined>, Option.getOrThrow);
             const sshPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort);
             const httpPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort);
             const httpsPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort);

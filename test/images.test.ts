@@ -30,7 +30,7 @@ describe.each(testMatrix)(
                         const searchResults = yield* images.search({
                             term: "alpine",
                             limit: 1,
-                            "is-official": true,
+                            filters: { "is-official": true },
                         });
                         expect(searchResults).toBeInstanceOf(Array);
                         expect(searchResults).toHaveLength(1);
@@ -57,7 +57,7 @@ describe.each(testMatrix)(
             it.effect("Should inspect an image", () =>
                 Effect.gen(function* () {
                     const images = yield* MobyEndpoints.Images;
-                    const inspectResponse = yield* images.inspect({ name: "docker.io/library/alpine:latest" });
+                    const inspectResponse = yield* images.inspect("docker.io/library/alpine:latest");
                     expect(inspectResponse.Id).toBeDefined();
                     expect(inspectResponse.RepoDigests).toBeDefined();
                     expect(inspectResponse.RepoTags).toBeDefined();
@@ -68,8 +68,7 @@ describe.each(testMatrix)(
             it.effect("Should tag an image", () =>
                 Effect.gen(function* () {
                     const images = yield* MobyEndpoints.Images;
-                    yield* images.tag({
-                        name: "docker.io/library/alpine:latest",
+                    yield* images.tag("docker.io/library/alpine:latest", {
                         repo: "docker.io/person/their-image",
                         tag: "test",
                     });
@@ -79,7 +78,7 @@ describe.each(testMatrix)(
             it.effect("Should get the history of an image", () =>
                 Effect.gen(function* () {
                     const images = yield* MobyEndpoints.Images;
-                    const historyResponse = yield* images.history({ name: "docker.io/library/alpine:latest" });
+                    const historyResponse = yield* images.history("docker.io/library/alpine:latest");
                     expect(historyResponse).toBeInstanceOf(Array);
                 })
             );

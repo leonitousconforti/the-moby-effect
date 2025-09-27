@@ -2,16 +2,16 @@ import {
     HttpApi,
     HttpApiClient,
     HttpApiEndpoint,
-    HttpApiError,
     HttpApiGroup,
     HttpApiSchema,
     HttpClient,
     HttpClientResponse,
     Error as PlatformError,
+    type HttpApiError,
     type HttpClientError,
     type Socket,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, Tuple, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, Stream, String, Tuple, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -30,7 +30,18 @@ import {
 } from "../generated/index.js";
 import { ContainerIdentifier } from "../schemas/id.js";
 import { Int64 } from "../schemas/int64.js";
-import { HttpApiSocket, HttpApiStreamingRequest, HttpApiStreamingResponse, HttpApiWebsocket } from "./httpApiHacks.js";
+import {
+    BadRequest,
+    Conflict,
+    Forbidden,
+    HttpApiSocket,
+    HttpApiStreamingRequest,
+    HttpApiStreamingResponse,
+    HttpApiWebsocket,
+    InternalServerError,
+    NotAcceptable,
+    NotFound,
+} from "./httpApiHacks.js";
 
 /**
  * @since 1.0.0
@@ -60,21 +71,21 @@ export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTy
     method: string;
     cause:
         | Socket.SocketError
-        | HttpApiError.InternalServerError
-        | HttpApiError.BadRequest
-        | HttpApiError.Forbidden
-        | HttpApiError.Conflict
-        | HttpApiError.NotAcceptable
-        | HttpApiError.NotFound
+        | InternalServerError
+        | BadRequest
+        | Forbidden
+        | Conflict
+        | NotAcceptable
+        | NotFound
         | ParseResult.ParseError
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `Containers error when executing method ${String.capitalize(this.method)}, ${this.cause.message}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: ContainersError["cause"]) => new this({ method, cause });
     }
 }
@@ -88,7 +99,7 @@ export class ListFilters extends Schema.parseJson(
         exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
         health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
         identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
-        isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
+        // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
         "is-task": Schema.optional(Schema.BooleanFromString),
         label: Schema.optional(Schema.Array(Schema.String)),
         name: Schema.optional(Schema.Array(Schema.String)),
@@ -119,14 +130,14 @@ const listContainersEndpoint = HttpApiEndpoint.get("list", "/json")
         })
     )
     .addSuccess(Schema.Array(ContainerSummary), { status: 200 }) // 200 OK
-    .addError(HttpApiError.BadRequest); // 400 Bad parameter
+    .addError(BadRequest); // 400 Bad parameter
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerCreate */
 const createContainerEndpoint = HttpApiEndpoint.post("create", "/create")
     .setUrlParams(
         Schema.Struct({
-            name: Schema.pattern(/^[a-zA-Z0-9][a-zA-Z0-9_.-]+/)(Schema.String),
-            platform: Schema.optionalWith(Schema.String, { default: () => "" }),
+            platform: Schema.optional(Schema.String),
+            name: Schema.String.pipe(Schema.pattern(/^[a-zA-Z0-9][a-zA-Z0-9_.-]+/)).pipe(Schema.optional),
         })
     )
     .setPayload(ContainerCreateRequest)
@@ -137,28 +148,28 @@ const createContainerEndpoint = HttpApiEndpoint.post("create", "/create")
         }),
         { status: 201 }
     ) // 201 Created
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.Forbidden) // 403 Forbidden
-    .addError(HttpApiError.NotFound) // 404 Not Found
-    .addError(HttpApiError.NotAcceptable) // 406 Not Acceptable
-    .addError(HttpApiError.Conflict); // 409 Name conflicts
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(Forbidden) // 403 Forbidden
+    .addError(NotFound) // 404 Not Found
+    .addError(NotAcceptable) // 406 Not Acceptable
+    .addError(Conflict); // 409 Name conflicts
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerInspect */
-const inspectContainerEndpoint = HttpApiEndpoint.get("inspect", "/:id/json")
+const inspectContainerEndpoint = HttpApiEndpoint.get("inspect", "/:identifier/json")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ size: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(ContainerInspectResponse) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerTop */
-const topContainerEndpoint = HttpApiEndpoint.get("top", "/:id/top")
+const topContainerEndpoint = HttpApiEndpoint.get("top", "/:identifier/top")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ ps_args: Schema.optional(Schema.String) }))
     .addSuccess(ContainerTopResponse) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerLogs */
-const logsContainerEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
+const logsContainerEndpoint = HttpApiEndpoint.get("logs", "/:identifier/logs")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -172,22 +183,22 @@ const logsContainerEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerChanges */
-const changesContainerEndpoint = HttpApiEndpoint.get("changes", "/:id/changes")
+const changesContainerEndpoint = HttpApiEndpoint.get("changes", "/:identifier/changes")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .addSuccess(Schema.NullOr(Schema.Array(ArchiveChange)), { status: 200 }) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerExport */
-const exportContainerEndpoint = HttpApiEndpoint.get("export", "/:id/export")
+const exportContainerEndpoint = HttpApiEndpoint.get("export", "/:identifier/export")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStats */
-const statsContainerEndpoint = HttpApiEndpoint.get("stats", "/:id/stats")
+const statsContainerEndpoint = HttpApiEndpoint.get("stats", "/:identifier/stats")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -196,10 +207,10 @@ const statsContainerEndpoint = HttpApiEndpoint.get("stats", "/:id/stats")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerResize */
-const resizeContainerEndpoint = HttpApiEndpoint.post("resize", "/:id/resize")
+const resizeContainerEndpoint = HttpApiEndpoint.post("resize", "/:identifier/resize")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -208,22 +219,22 @@ const resizeContainerEndpoint = HttpApiEndpoint.post("resize", "/:id/resize")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStart */
-const startContainerEndpoint = HttpApiEndpoint.post("start", "/:id/start")
+const startContainerEndpoint = HttpApiEndpoint.post("start", "/:identifier/start")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             detachKeys: Schema.optional(Schema.String),
         })
     )
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
     .addSuccess(HttpApiSchema.Empty(304)) // 304 Container already started
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerStop */
-const stopContainerEndpoint = HttpApiEndpoint.post("stop", "/:id/stop")
+const stopContainerEndpoint = HttpApiEndpoint.post("stop", "/:identifier/stop")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -231,12 +242,12 @@ const stopContainerEndpoint = HttpApiEndpoint.post("stop", "/:id/stop")
             t: Schema.optional(Schema.NumberFromString),
         })
     )
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
     .addSuccess(HttpApiSchema.Empty(304)) // 304 Container already stopped
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRestart */
-const restartContainerEndpoint = HttpApiEndpoint.post("restart", "/:id/restart")
+const restartContainerEndpoint = HttpApiEndpoint.post("restart", "/:identifier/restart")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -244,50 +255,50 @@ const restartContainerEndpoint = HttpApiEndpoint.post("restart", "/:id/restart")
             t: Schema.optional(Schema.NumberFromString),
         })
     )
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerKill */
-const killContainerEndpoint = HttpApiEndpoint.post("kill", "/:id/kill")
+const killContainerEndpoint = HttpApiEndpoint.post("kill", "/:identifier/kill")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
             signal: Schema.optional(Schema.String),
         })
     )
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.NotFound) // 404 Not Found
-    .addError(HttpApiError.Conflict); // 409 Container is not running
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
+    .addError(NotFound) // 404 Not Found
+    .addError(Conflict); // 409 Container is not running
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUpdate */
-const updateContainerEndpoint = HttpApiEndpoint.post("update", "/:id/update")
+const updateContainerEndpoint = HttpApiEndpoint.post("update", "/:identifier/update")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setPayload(ContainerConfig)
     .addSuccess(Schema.Struct({ Warnings: Schema.NullOr(Schema.Array(Schema.String)) }), { status: 200 }) // 200 OK
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerRename */
-const renameContainerEndpoint = HttpApiEndpoint.post("rename", "/:id/rename")
+const renameContainerEndpoint = HttpApiEndpoint.post("rename", "/:identifier/rename")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ name: Schema.String }))
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.NotFound) // 404 Not Found
-    .addError(HttpApiError.Conflict); // 409 Name already in use
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
+    .addError(NotFound) // 404 Not Found
+    .addError(Conflict); // 409 Name already in use
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPause */
-const pauseContainerEndpoint = HttpApiEndpoint.post("pause", "/:id/pause")
+const pauseContainerEndpoint = HttpApiEndpoint.post("pause", "/:identifier/pause")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerUnpause */
-const unpauseContainerEndpoint = HttpApiEndpoint.post("unpause", "/:id/unpause")
+const unpauseContainerEndpoint = HttpApiEndpoint.post("unpause", "/:identifier/unpause")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerAttach */
-const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:id/attach")
+const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:identifier/attach")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -307,11 +318,11 @@ const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:id/attach")
     )
     .addSuccess(HttpApiSchema.Empty(101)) // 101 Switching Protocols
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerAttachWebsocket */
-const attachWebsocketContainerEndpoint = HttpApiEndpoint.get("attachWebsocket", "/:id/attach/ws")
+const attachWebsocketContainerEndpoint = HttpApiEndpoint.get("attachWebsocket", "/:identifier/attach/ws")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -325,19 +336,19 @@ const attachWebsocketContainerEndpoint = HttpApiEndpoint.get("attachWebsocket", 
     )
     .addSuccess(HttpApiSchema.Empty(101)) // 101 Switching Protocols
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerWait */
-const waitContainerEndpoint = HttpApiEndpoint.post("wait", "/:id/wait")
+const waitContainerEndpoint = HttpApiEndpoint.post("wait", "/:identifier/wait")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ condition: Schema.optional(Schema.String) }))
     .addSuccess(ContainerWaitResponse, { status: 200 }) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerDelete */
-const deleteContainerEndpoint = HttpApiEndpoint.del("delete", "/:id")
+const deleteContainerEndpoint = HttpApiEndpoint.del("delete", "/:identifier")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -346,29 +357,29 @@ const deleteContainerEndpoint = HttpApiEndpoint.del("delete", "/:id")
             link: Schema.optional(Schema.BooleanFromString),
         })
     )
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound) // 404 Not Found
-    .addError(HttpApiError.Conflict); // 409 Conflict
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound) // 404 Not Found
+    .addError(Conflict); // 409 Conflict
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchive */
-const archiveContainerEndpoint = HttpApiEndpoint.get("archive", "/:id/archive")
+const archiveContainerEndpoint = HttpApiEndpoint.get("archive", "/:identifier/archive")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ path: Schema.String }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerArchiveInfo */
-const archiveInfoContainerEndpoint = HttpApiEndpoint.head("archiveInfo", "/:id/archive")
+const archiveInfoContainerEndpoint = HttpApiEndpoint.head("archiveInfo", "/:identifier/archive")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(Schema.Struct({ path: Schema.String }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/PutContainerArchive */
-const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:id/archive")
+const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:identifier/archive")
     .setPath(Schema.Struct({ identifier: ContainerIdentifier }))
     .setUrlParams(
         Schema.Struct({
@@ -378,9 +389,9 @@ const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:id/arch
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.Forbidden) // 403 Forbidden
-    .addError(HttpApiError.NotFound); // 404 Not Found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(Forbidden) // 403 Forbidden
+    .addError(NotFound); // 404 Not Found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerPrune */
 const pruneContainersEndpoint = HttpApiEndpoint.post("prune", "/prune")
@@ -420,7 +431,7 @@ const ContainersGroup = HttpApiGroup.make("containers")
     .add(archiveInfoContainerEndpoint)
     .add(putArchiveContainerEndpoint)
     .add(pruneContainersEndpoint)
-    .addError(HttpApiError.InternalServerError)
+    .addError(InternalServerError)
     .prefix("/containers");
 
 /**
@@ -460,9 +471,21 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
             Effect.mapError(client.list({ urlParams: { filters } }), ContainersError.WrapForMethod("list"));
-        const create_ = (name: string, platform: string, container: ContainerCreateRequest) =>
+        const create_ = (
+            options: Omit<ConstructorParameters<typeof ContainerCreateRequest>[0], "HostConfig"> & {
+                readonly Name?: string | undefined;
+                readonly Platform?: string | undefined;
+                readonly HostConfig?: ConstructorParameters<typeof ContainerHostConfig>[0] | undefined;
+            }
+        ) =>
             Effect.mapError(
-                client.create({ urlParams: { name, platform }, payload: container }),
+                client.create({
+                    urlParams: { name: options.Name, platform: options.Platform },
+                    payload: ContainerCreateRequest.make({
+                        ...options,
+                        HostConfig: options.HostConfig ? ContainerHostConfig.make(options.HostConfig) : undefined,
+                    }),
+                }),
                 ContainersError.WrapForMethod("create")
             );
         const inspect_ = (identifier: ContainerIdentifier, options?: Options<"inspect">) =>

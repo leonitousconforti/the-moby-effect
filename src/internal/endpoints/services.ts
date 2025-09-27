@@ -9,7 +9,7 @@ import {
     Error as PlatformError,
     type HttpClientError,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, Stream, String, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -55,11 +55,11 @@ export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: ServicesError["cause"]) => new this({ method, cause });
     }
 }

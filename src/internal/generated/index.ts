@@ -79,7 +79,6 @@ export * from "./RegistryAuthConfig.generated.js";
 export * from "./RegistryAuthenticateOKBody.generated.js";
 export * from "./RegistryDistributionInspect.generated.js";
 export * from "./RegistryIndexInfo.generated.js";
-export * from "./RegistryNetIPNet.generated.js";
 export * from "./RegistrySearchResult.generated.js";
 export * from "./RegistryServiceConfig.generated.js";
 export * from "./RuntimePluginPrivilege.generated.js";

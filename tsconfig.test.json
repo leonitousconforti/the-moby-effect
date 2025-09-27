@@ -1,10 +1,24 @@
 {
-    "extends": "./tsconfig.base.json",
+    "$schema": "http://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.base.jsonc",
     "include": ["test"],
     "references": [{ "path": "./tsconfig.src.json" }],
     "compilerOptions": {
+        "tsBuildInfoFile": ".tsbuildinfo/test.tsbuildinfo",
+        "outDir": ".tsbuildinfo/test",
         "noEmit": true,
-        "rootDir": "test",
-        "tsBuildInfoFile": ".tsbuildinfo/test.tsbuildinfo"
+        "erasableSyntaxOnly": false,
+        "baseUrl": ".",
+        "paths": {
+            "the-moby-effect": ["src/index.ts"],
+            "the-moby-effect/*": ["src/*.ts"]
+        },
+        "types": ["node"],
+        "plugins": [
+            {
+                "name": "@effect/language-service",
+                "namespaceImportPackages": []
+            }
+        ]
     }
 }

@@ -31,12 +31,10 @@ callbackClient.followProgressInConsole(
         const testDocument: string = url.fileURLToPath(new URL("container-with-volume.txt", import.meta.url));
         callbackClient.run(
             {
-                spec: {
-                    Image: "ubuntu:latest",
-                    Cmd: ["echo", "/app/test.txt"],
-                    HostConfig: {
-                        Binds: [`${testDocument}:/app/test.txt`],
-                    },
+                Image: "ubuntu:latest",
+                Cmd: ["echo", "/app/test.txt"],
+                HostConfig: {
+                    Binds: [`${testDocument}:/app/test.txt`],
                 },
             },
             (exit) => {

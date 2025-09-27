@@ -8,37 +8,89 @@ import * as UnitsUlimit from "./UnitsUlimit.generated.js";
 
 export class ContainerResources extends Schema.Class<ContainerResources>("ContainerResources")(
     {
-        CpuShares: MobySchemas.Int64,
-        Memory: MobySchemas.Int64,
-        NanoCpus: MobySchemas.Int64,
-        CgroupParent: Schema.String,
-        BlkioWeight: MobySchemas.UInt16,
-        BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevWeightDevice.BlkiodevWeightDevice))),
-        BlkioDeviceReadBps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
-        BlkioDeviceWriteBps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
-        BlkioDeviceReadIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
-        BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))),
-        CpuPeriod: MobySchemas.Int64,
-        CpuQuota: MobySchemas.Int64,
-        CpuRealtimePeriod: MobySchemas.Int64,
-        CpuRealtimeRuntime: MobySchemas.Int64,
-        CpusetCpus: Schema.String,
-        CpusetMems: Schema.String,
-        Devices: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceMapping.ContainerDeviceMapping))),
-        DeviceCgroupRules: Schema.NullOr(Schema.Array(Schema.String)),
-        DeviceRequests: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceRequest.ContainerDeviceRequest))),
+        CpuShares: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        Memory: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        NanoCpus: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        CgroupParent: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        BlkioWeight: MobySchemas.UInt16.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.UInt16Schemas.UInt16Brand(0))
+        ),
+        BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevWeightDevice.BlkiodevWeightDevice)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        BlkioDeviceReadBps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        BlkioDeviceWriteBps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        BlkioDeviceReadIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        CpuPeriod: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        CpuQuota: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        CpuRealtimePeriod: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        CpuRealtimeRuntime: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        CpusetCpus: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        CpusetMems: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        Devices: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceMapping.ContainerDeviceMapping)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        DeviceCgroupRules: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        DeviceRequests: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceRequest.ContainerDeviceRequest)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
         KernelMemory: Schema.optional(MobySchemas.Int64),
         KernelMemoryTCP: Schema.optional(MobySchemas.Int64),
-        MemoryReservation: MobySchemas.Int64,
-        MemorySwap: MobySchemas.Int64,
-        MemorySwappiness: Schema.NullOr(MobySchemas.Int64),
-        OomKillDisable: Schema.NullOr(Schema.Boolean),
-        PidsLimit: Schema.NullOr(MobySchemas.Int64),
-        Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit))),
-        CpuCount: MobySchemas.Int64,
-        CpuPercent: MobySchemas.Int64,
-        IOMaximumIOps: MobySchemas.UInt64,
-        IOMaximumBandwidth: MobySchemas.UInt64,
+        MemoryReservation: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        MemorySwap: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        MemorySwappiness: Schema.NullOr(MobySchemas.Int64)
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(-1))),
+        OomKillDisable: Schema.NullOr(Schema.Boolean)
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => false)),
+        PidsLimit: Schema.NullOr(MobySchemas.Int64)
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))),
+        Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        CpuCount: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        CpuPercent: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        IOMaximumIOps: MobySchemas.UInt64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.UInt64Schemas.UInt64Brand(0))
+        ),
+        IOMaximumBandwidth: MobySchemas.UInt64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.UInt64Schemas.UInt64Brand(0))
+        ),
     },
     {
         identifier: "ContainerResources",

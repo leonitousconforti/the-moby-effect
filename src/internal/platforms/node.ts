@@ -65,7 +65,7 @@ export const makeNodeSshAgent = (
          * @since 1.0.0
          * @see https://nodejs.org/api/http.html#agentcreateconnectionoptions-callback
          */
-        public createConnection(
+        public override createConnection(
             _options: http.ClientRequestArgs,
             callback?: ((error: Error | null, socket: stream.Duplex) => void) | undefined
         ): stream.Duplex {

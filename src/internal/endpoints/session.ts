@@ -10,7 +10,7 @@ import {
     type HttpClientError,
     type Socket,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -48,11 +48,11 @@ export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: SessionsError["cause"]) => new this({ method, cause });
     }
 }

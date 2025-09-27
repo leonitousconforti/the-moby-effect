@@ -9,7 +9,7 @@ import {
     Error as PlatformError,
     type HttpClientError,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, Stream, String, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -59,11 +59,11 @@ export class ImagesError extends PlatformError.TypeIdError(ImagesErrorTypeId, "I
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: ImagesError["cause"]) => new this({ method, cause });
     }
 }
@@ -80,8 +80,17 @@ export class ListFilters extends Schema.parseJson(
     })
 ) {}
 
+/** @since 1.0.0 */
+export class SearchFilters extends Schema.parseJson(
+    Schema.Struct({
+        "is-official": Schema.optional(Schema.BooleanFromString),
+        "is-automated": Schema.optional(Schema.BooleanFromString),
+        stars: Schema.optional(Schema.NumberFromString),
+    })
+) {}
+
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageList */
-const listImagesEndpoint = HttpApiEndpoint.get("list", "/json")
+const listImagesEndpoint = HttpApiEndpoint.get("list", "/images/json")
     .setUrlParams(
         Schema.Struct({
             filters: Schema.optional(ListFilters),
@@ -174,21 +183,21 @@ const createImageEndpoint = HttpApiEndpoint.post("create", "/images/create")
     .addError(HttpApiError.NotFound); // 404 Repository not found or no read access
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageInspect */
-const inspectImageEndpoint = HttpApiEndpoint.get("inspect", "/:name/json")
+const inspectImageEndpoint = HttpApiEndpoint.get("inspect", "/images/:name/json")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ manifests: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(ImageInspectResponse, { status: 200 })
     .addError(HttpApiError.NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageHistory */
-const historyImageEndpoint = HttpApiEndpoint.get("history", "/:name/history")
+const historyImageEndpoint = HttpApiEndpoint.get("history", "/images/:name/history")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
     .addSuccess(Schema.Array(ImageHistoryResponseItem), { status: 200 })
     .addError(HttpApiError.NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePush */
-const pushImageEndpoint = HttpApiEndpoint.post("push", "/:name/push")
+const pushImageEndpoint = HttpApiEndpoint.post("push", "/images/:name/push")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ tag: Schema.optional(Schema.String), platform: Schema.optional(Schema.String) }))
     .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.String }))
@@ -196,7 +205,7 @@ const pushImageEndpoint = HttpApiEndpoint.post("push", "/:name/push")
     .addError(HttpApiError.NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageTag */
-const tagImageEndpoint = HttpApiEndpoint.post("tag", "/:name/tag")
+const tagImageEndpoint = HttpApiEndpoint.post("tag", "/images/:name/tag")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ repo: Schema.optional(Schema.String), tag: Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(201))
@@ -205,7 +214,7 @@ const tagImageEndpoint = HttpApiEndpoint.post("tag", "/:name/tag")
     .addError(HttpApiError.Conflict); // 409 Conflict
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageDelete */
-const deleteImageEndpoint = HttpApiEndpoint.del("delete", "/:name")
+const deleteImageEndpoint = HttpApiEndpoint.del("delete", "/images/:name")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(
         Schema.Struct({
@@ -219,18 +228,18 @@ const deleteImageEndpoint = HttpApiEndpoint.del("delete", "/:name")
     .addError(HttpApiError.Conflict); // 409 Conflict
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageSearch */
-const searchImagesEndpoint = HttpApiEndpoint.get("search", "/search")
+const searchImagesEndpoint = HttpApiEndpoint.get("search", "/images/search")
     .setUrlParams(
         Schema.Struct({
             term: Schema.String,
             limit: Schema.optional(Schema.NumberFromString),
-            filters: Schema.optional(Schema.String),
+            filters: Schema.optional(SearchFilters),
         })
     )
     .addSuccess(Schema.Array(RegistrySearchResult), { status: 200 });
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePrune */
-const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/prune")
+const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/images/prune")
     .setUrlParams(
         Schema.Struct({
             filters: Schema.optional(Schema.String),
@@ -245,7 +254,7 @@ const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/prune")
     );
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCommit */
-const commitImageEndpoint = HttpApiEndpoint.post("commit", "/commit")
+const commitImageEndpoint = HttpApiEndpoint.post("commit", "/images/commit")
     .setUrlParams(
         Schema.Struct({
             container: Schema.String,
@@ -262,21 +271,21 @@ const commitImageEndpoint = HttpApiEndpoint.post("commit", "/commit")
     .addError(HttpApiError.NotFound); // 404 No such container
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGet */
-const exportImageEndpoint = HttpApiEndpoint.get("export", "/:name/get")
+const exportImageEndpoint = HttpApiEndpoint.get("export", "/images/:name/get")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(200))
     .addError(HttpApiError.NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGetAll */
-const exportManyImagesEndpoint = HttpApiEndpoint.get("exportMany", "/get")
+const exportManyImagesEndpoint = HttpApiEndpoint.get("exportMany", "/images/get")
     .setUrlParams(Schema.Struct({ names: Schema.optional(Schema.String) }))
     .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(200))
     .addError(HttpApiError.NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageLoad */
-const importImageEndpoint = HttpApiEndpoint.post("import", "/import")
+const importImageEndpoint = HttpApiEndpoint.post("import", "/images/load")
     .setUrlParams(
         Schema.Struct({
             platform: Schema.optional(Schema.String),
@@ -303,8 +312,7 @@ const ImagesGroup = HttpApiGroup.make("images")
     .add(exportImageEndpoint)
     .add(exportManyImagesEndpoint)
     .add(importImageEndpoint)
-    .addError(HttpApiError.InternalServerError)
-    .prefix("/images");
+    .addError(HttpApiError.InternalServerError);
 
 /**
  * @since 1.0.0
@@ -364,7 +372,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 httpClient
             )({
                 urlParams: { ...options },
-                headers: { "X-Registry-Auth": "" },
+                headers: { "X-Registry-Auth": undefined },
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)

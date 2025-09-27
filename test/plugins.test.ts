@@ -53,10 +53,7 @@ describe.each(testMatrix)(
             it.effect.skip("Should update a plugin", () =>
                 Effect.gen(function* () {
                     const plugins = yield* MobyEndpoints.Plugins;
-                    yield* plugins.upgrade({
-                        remote: "docker.io/grafana/loki-docker-driver:main",
-                        name: "test-plugin:latest",
-                    });
+                    yield* plugins.upgrade("test-plugin:latest", "docker.io/grafana/loki-docker-driver:main");
                 })
             );
 
@@ -70,7 +67,7 @@ describe.each(testMatrix)(
             it.effect.skip("Should see no enabled plugins", () =>
                 Effect.gen(function* () {
                     const plugins = yield* MobyEndpoints.Plugins;
-                    const pluginsList = yield* plugins.list({ filters: { enable: ["true"] } });
+                    const pluginsList = yield* plugins.list({ enabled: true });
                     expect(pluginsList).toBeInstanceOf(Array);
                     expect(pluginsList).toHaveLength(0);
                 })

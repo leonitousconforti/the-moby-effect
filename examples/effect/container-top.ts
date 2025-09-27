@@ -44,10 +44,8 @@ const program = Effect.gen(function* () {
     yield* MobyConvey.followProgressInConsole(pullStream);
 
     const containerInspectResponse: MobySchemas.ContainerInspectResponse = yield* DockerEngine.runScoped({
-        spec: {
-            Image: "ubuntu:latest",
-            Cmd: ["sleep", "infinity"],
-        },
+        Image: "ubuntu:latest",
+        Cmd: ["sleep", "infinity"],
     });
 
     const data: MobySchemas.ContainerTopResponse = yield* containers.top(containerInspectResponse.Id, {

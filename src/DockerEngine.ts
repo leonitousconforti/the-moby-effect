@@ -379,9 +379,11 @@ export const push: (
  * @category Docker
  */
 export const run: (
-    name: string,
-    platform: string,
-    container: MobySchemas.ContainerCreateRequest
+    options: Omit<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0], "HostConfig"> & {
+        readonly name?: string | undefined;
+        readonly platform?: string | undefined;
+        readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
+    }
 ) => Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =
     internalDocker.run;
 
@@ -393,9 +395,11 @@ export const run: (
  * @category Docker
  */
 export const runScoped: (
-    name: string,
-    platform: string,
-    container: MobySchemas.ContainerCreateRequest
+    options: Omit<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0], "HostConfig"> & {
+        readonly name?: string | undefined;
+        readonly platform?: string | undefined;
+        readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
+    }
 ) => Effect.Effect<
     MobySchemas.ContainerInspectResponse,
     MobyEndpoints.ContainersError,

@@ -37,13 +37,13 @@ const dockerHubLogin = {
 // Status: Downloaded newer image for confo014/hello-world:latest
 const program = Effect.gen(function* () {
     const images: MobyEndpoints.Images = yield* MobyEndpoints.Images;
-    const system: MobyEndpoints.Systems = yield* MobyEndpoints.Systems;
+    const system: MobyEndpoints.System = yield* MobyEndpoints.System;
 
     // Get an identity token from docker hub
-    const authResponse: MobySchemas.RegistryAuthenticateOKBody = yield* system.auth(dockerHubLogin);
+    const authResponse: MobySchemas.RegistryAuthenticateOKBody | void = yield* system.auth(dockerHubLogin);
     yield* Console.log(authResponse);
 
-    if (authResponse.Status === "Login Succeeded" && !authResponse.IdentityToken) {
+    if (authResponse?.Status === "Login Succeeded" && !authResponse.IdentityToken) {
         yield* Console.warn(
             "Login succeeded but no identity token was given, you must pass the base64 encoded auth options directly using the X-Registry-Auth header"
         );
@@ -52,7 +52,8 @@ const program = Effect.gen(function* () {
     // Pull the image using the images service
     const pullStream: Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never> = images.create({
         fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
-        "X-Registry-Auth": authResponse.IdentityToken || Buffer.from(JSON.stringify(dockerHubLogin)).toString("base64"),
+        "X-Registry-Auth":
+            authResponse?.IdentityToken || Buffer.from(JSON.stringify(dockerHubLogin)).toString("base64"),
     });
 
     // You could fold/iterate over the stream here too if you wanted progress events in real time

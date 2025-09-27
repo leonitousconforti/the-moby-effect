@@ -7,50 +7,112 @@ import * as MountMount from "./MountMount.generated.js";
 
 export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("ContainerHostConfig")(
     {
-        Binds: Schema.NullOr(Schema.Array(Schema.String)),
-        ContainerIDFile: Schema.String,
-        LogConfig: Schema.NullOr(ContainerLogConfig.ContainerLogConfig),
-        NetworkMode: Schema.String,
-        PortBindings: Schema.NullOr(MobySchemas.PortMap),
-        RestartPolicy: Schema.NullOr(ContainerRestartPolicy.ContainerRestartPolicy),
-        AutoRemove: Schema.Boolean,
-        VolumeDriver: Schema.String,
-        VolumesFrom: Schema.NullOr(Schema.Array(Schema.String)),
-        ConsoleSize: Schema.Array(MobySchemas.UInt64).pipe(Schema.itemsCount(2)),
+        Binds: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        ContainerIDFile: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        LogConfig: Schema.NullOr(ContainerLogConfig.ContainerLogConfig)
+            .pipe(Schema.propertySignature)
+            .pipe(
+                Schema.withConstructorDefault(
+                    () => new ContainerLogConfig.ContainerLogConfig({ Type: "json-file", Config: null })
+                )
+            ),
+        NetworkMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "default")),
+        PortBindings: Schema.NullOr(MobySchemas.PortMap)
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        RestartPolicy: Schema.NullOr(ContainerRestartPolicy.ContainerRestartPolicy)
+            .pipe(Schema.propertySignature)
+            .pipe(
+                Schema.withConstructorDefault(
+                    () =>
+                        new ContainerRestartPolicy.ContainerRestartPolicy({
+                            Name: "no",
+                            MaximumRetryCount: MobySchemas.Int64Schemas.Int64Brand(0),
+                        })
+                )
+            ),
+        AutoRemove: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        VolumeDriver: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        VolumesFrom: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        ConsoleSize: Schema.Array(MobySchemas.UInt64)
+            .pipe(Schema.itemsCount(2))
+            .pipe(Schema.propertySignature)
+            .pipe(
+                Schema.withConstructorDefault(() => [
+                    MobySchemas.UInt64Schemas.UInt64Brand(0),
+                    MobySchemas.UInt64Schemas.UInt64Brand(0),
+                ])
+            ),
         Annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),
-        CapAdd: Schema.NullOr(Schema.Array(Schema.String)),
-        CapDrop: Schema.NullOr(Schema.Array(Schema.String)),
-        CgroupnsMode: Schema.Literal("", "private", "host"),
-        Dns: Schema.NullOr(Schema.Array(Schema.String)),
-        DnsOptions: Schema.NullOr(Schema.Array(Schema.String)),
-        DnsSearch: Schema.NullOr(Schema.Array(Schema.String)),
-        ExtraHosts: Schema.NullOr(Schema.Array(Schema.String)),
-        GroupAdd: Schema.NullOr(Schema.Array(Schema.String)),
-        IpcMode: Schema.Literal("none", "host", "container", "private", "shareable"),
-        Cgroup: Schema.String,
-        Links: Schema.NullOr(Schema.Array(Schema.String)),
-        OomScoreAdj: MobySchemas.Int64,
-        PidMode: Schema.String,
-        Privileged: Schema.Boolean,
-        PublishAllPorts: Schema.Boolean,
-        ReadonlyRootfs: Schema.Boolean,
-        SecurityOpt: Schema.NullOr(Schema.Array(Schema.String)),
+        CapAdd: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        CapDrop: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        CgroupnsMode: Schema.Literal("", "private", "host")
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => "")),
+        Dns: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        DnsOptions: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        DnsSearch: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => [])),
+        ExtraHosts: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        GroupAdd: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        IpcMode: Schema.Literal("", "none", "host", "container", "private", "shareable")
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => "")),
+        Cgroup: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        Links: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        OomScoreAdj: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
+        PidMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        Privileged: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        PublishAllPorts: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        ReadonlyRootfs: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        SecurityOpt: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
         StorageOpt: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),
         Tmpfs: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
-        UTSMode: Schema.String,
-        UsernsMode: Schema.String,
-        ShmSize: MobySchemas.Int64,
+        UTSMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        UsernsMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        ShmSize: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+        ),
         Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         Runtime: Schema.optional(Schema.String),
-        Isolation: Schema.Literal("", "default", "process", "hyperv"),
+        Isolation: Schema.Literal("", "default", "process", "hyperv")
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => "")),
         ...ContainerResources.ContainerResources.fields,
         Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MountMount.MountMount)), { nullable: true }),
-        MaskedPaths: Schema.NullOr(Schema.Array(Schema.String)),
-        ReadonlyPaths: Schema.NullOr(Schema.Array(Schema.String)),
+        MaskedPaths: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        ReadonlyPaths: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
         Init: Schema.optionalWith(Schema.Boolean, { nullable: true }),
     },
     {

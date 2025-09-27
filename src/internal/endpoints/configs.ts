@@ -9,7 +9,7 @@ import {
     Error as PlatformError,
     type HttpClientError,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -53,11 +53,11 @@ export class ConfigsError extends PlatformError.TypeIdError(ConfigsErrorTypeId, 
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: ConfigsError["cause"]) => new this({ method, cause });
     }
 }
@@ -80,7 +80,7 @@ const listConfigsEndpoint = HttpApiEndpoint.get("list", "/")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigCreate */
 const createConfigEndpoint = HttpApiEndpoint.post("create", "/create")
     .setPayload(SwarmConfigSpec)
-    .addSuccess(Schema.Struct({ Id: ConfigIdentifier }), { status: 201 }) // 201 Created
+    .addSuccess(Schema.rename(Schema.Struct({ ID: ConfigIdentifier }), { ID: "Id" }), { status: 201 }) // 201 Created
     .addError(HttpApiError.Conflict); // 409 Name conflicts with existing object
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigInspect */

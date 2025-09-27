@@ -37,9 +37,9 @@ describe.each(testMatrix)(
                     const secret = yield* secrets.create({
                         Name: "test-secret",
                         Labels: { testLabel: "test" },
-                        Data: Buffer.from("aaahhhhh").toString("base64"),
+                        Data: Buffer.from("aaahhhhh"),
                     });
-                    expect(secret.ID).toBeDefined();
+                    expect(secret.Id).toBeDefined();
                 })
             );
 
@@ -66,9 +66,9 @@ describe.each(testMatrix)(
                 Effect.gen(function* () {
                     const secrets = yield* MobyEndpoints.Secrets;
                     const secretsList = yield* secrets.list();
-                    yield* secrets.update(secretsList[0]!.ID, {
-                        version: secretsList[0]!.Version!.Index!,
-                        spec: { ...secretsList[0]!.Spec, Labels: { testLabelUpdated: "test" } },
+                    yield* secrets.update(secretsList[0]!.ID, secretsList[0]!.Version!.Index!, {
+                        ...secretsList[0]!.Spec,
+                        Labels: { testLabelUpdated: "test" },
                     });
                 })
             );
@@ -76,9 +76,7 @@ describe.each(testMatrix)(
             it.effect("Should list secrets with the new label", () =>
                 Effect.gen(function* () {
                     const secrets = yield* MobyEndpoints.Secrets;
-                    const secretsList = yield* secrets.list({
-                        filters: { label: ["testLabelUpdated=test"] },
-                    });
+                    const secretsList = yield* secrets.list({ label: ["testLabelUpdated=test"] });
                     expect(secretsList).toBeInstanceOf(Array);
                     expect(secretsList).toHaveLength(1);
                 })

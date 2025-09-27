@@ -224,8 +224,8 @@ export class DockerComposeError extends PlatformError.TypeIdError(DockerComposeE
     method: string;
     cause: ParseResult.ParseError | Socket.SocketError | MobyEndpoints.ExecsError | unknown;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)}`;
     }
 }
 
@@ -594,20 +594,18 @@ export const make: (options?: {
             );
 
     const dindContainerIdResource = yield* DockerEngine.runScoped({
-        spec: {
-            Image: "docker.io/library/docker:latest",
-            Entrypoint: ["/bin/sh"],
-            Tty: false,
-            OpenStdin: true,
-            AttachStdin: true,
-            AttachStdout: true,
-            AttachStderr: true,
-            HostConfig: {
-                Privileged: true,
-                Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
-            },
+        Image: "docker.io/library/docker:latest",
+        Entrypoint: ["/bin/sh"],
+        Tty: false,
+        OpenStdin: true,
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        HostConfig: {
+            Privileged: true,
+            Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
         },
-    }).pipe(Effect.map(({ Id }) => Id as IdSchemas.ContainerIdentifier));
+    }).pipe(Effect.map(({ Id }) => Id));
 
     const uncurryEffectWithUploadProject =
         (dindContainerId: IdSchemas.ContainerIdentifier) =>
@@ -699,23 +697,20 @@ export const make: (options?: {
         > =>
             Effect.gen(function* () {
                 const projectDindContainerIdResource = yield* DockerEngine.runScoped({
-                    spec: {
-                        Image: "docker.io/library/docker:latest",
-                        Entrypoint: ["/bin/sh"],
-                        Tty: false,
-                        OpenStdin: true,
-                        AttachStdin: true,
-                        AttachStdout: true,
-                        AttachStderr: true,
-                        HostConfig: {
-                            Privileged: true,
-                            Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
-                        },
+                    Image: "docker.io/library/docker:latest",
+                    Entrypoint: ["/bin/sh"],
+                    Tty: false,
+                    OpenStdin: true,
+                    AttachStdin: true,
+                    AttachStdout: true,
+                    AttachStderr: true,
+                    HostConfig: {
+                        Privileged: true,
+                        Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
                     },
                 })
                     .pipe(Effect.map(({ Id }) => Id))
-                    .pipe(Effect.provideService(MobyEndpoints.Containers, containers))
-                    .pipe(Effect.map((x) => x as IdSchemas.ContainerIdentifier));
+                    .pipe(Effect.provideService(MobyEndpoints.Containers, containers));
 
                 const cwd = yield* Effect.provideService(
                     uploadProject(projectDindContainerIdResource, project),

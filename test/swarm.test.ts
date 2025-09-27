@@ -23,7 +23,7 @@ describe.each(testMatrix)(
 
         const withSwarmEnabled = Layer.tap(testLayer, (context) => {
             const swarm = Context.get(context, MobyEndpoints.Swarm);
-            return swarm.init({ ListenAddr: "0.0.0.0" });
+            return swarm.init();
         });
 
         layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Swarm tests", (it) => {
@@ -39,9 +39,7 @@ describe.each(testMatrix)(
                     expect(version).toBeDefined();
                     expect(version!.Index).toBeDefined();
 
-                    yield* swarm.update({
-                        spec: spec!,
-                        version: version!.Index!,
+                    yield* swarm.update(spec!, version!.Index!, {
                         rotateWorkerToken: true,
                         rotateManagerToken: true,
                         rotateManagerUnlockKey: true,

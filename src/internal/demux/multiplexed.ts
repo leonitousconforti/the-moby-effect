@@ -75,11 +75,14 @@ export const responseIsMultiplexedResponse = (response: HttpClientResponse.HttpC
     response.headers["content-type"] === MultiplexedContentType;
 
 /** @internal */
-export enum MultiplexedHeaderType {
-    Stdin = 0,
-    Stdout = 1,
-    Stderr = 2,
-}
+export const MultiplexedHeaderType = {
+    Stdin: 0,
+    Stdout: 1,
+    Stderr: 2,
+} as const;
+
+/** @internal */
+export type MultiplexedHeaderType = (typeof MultiplexedHeaderType)[keyof typeof MultiplexedHeaderType];
 
 /** @internal */
 export type MultiplexedAccumulator = {

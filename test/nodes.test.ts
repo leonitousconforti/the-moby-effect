@@ -23,7 +23,7 @@ describe.each(testMatrix)(
 
         const withSwarmEnabled = Layer.tap(testLayer, (context) => {
             const swarm = Context.get(context, MobyEndpoints.Swarm);
-            return swarm.init({ ListenAddr: "0.0.0.0" });
+            return swarm.init();
         });
 
         layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Nodes tests", (it) => {

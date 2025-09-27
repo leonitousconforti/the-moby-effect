@@ -4,28 +4,40 @@ import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.js";
 
 export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerConfig")(
     {
-        Hostname: Schema.String,
-        Domainname: Schema.String,
-        User: Schema.String,
-        AttachStdin: Schema.Boolean,
-        AttachStdout: Schema.Boolean,
-        AttachStderr: Schema.Boolean,
+        Hostname: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        Domainname: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        User: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        AttachStdin: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        AttachStdout: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        AttachStderr: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         ExposedPorts: Schema.optionalWith(MobySchemas.PortSet, { nullable: true }),
-        Tty: Schema.Boolean,
-        OpenStdin: Schema.Boolean,
-        StdinOnce: Schema.Boolean,
-        Env: Schema.NullOr(Schema.Array(Schema.String)),
-        Cmd: Schema.NullOr(Schema.Array(Schema.String)),
+        Tty: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        OpenStdin: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        StdinOnce: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        Env: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        Cmd: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
         Healthcheck: Schema.optionalWith(V1HealthcheckConfig.V1HealthcheckConfig, { nullable: true }),
         ArgsEscaped: Schema.optional(Schema.Boolean),
         Image: Schema.String,
-        Volumes: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.Object })),
-        WorkingDir: Schema.String,
-        Entrypoint: Schema.NullOr(Schema.Array(Schema.String)),
+        Volumes: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.Object }))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        WorkingDir: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
+        Entrypoint: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
         NetworkDisabled: Schema.optional(Schema.Boolean),
         MacAddress: Schema.optional(Schema.String),
-        OnBuild: Schema.NullOr(Schema.Array(Schema.String)),
-        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        OnBuild: Schema.NullOr(Schema.Array(Schema.String))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
+        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String }))
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
         StopSignal: Schema.optional(Schema.String),
         StopTimeout: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
         Shell: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),

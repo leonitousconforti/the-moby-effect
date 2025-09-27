@@ -9,7 +9,7 @@ import {
     Error as PlatformError,
     type HttpClientError,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, type Layer, type ParseResult } from "effect";
+import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -51,11 +51,11 @@ export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "S
         | HttpClientError.HttpClientError
         | HttpApiError.HttpApiDecodeError;
 }> {
-    get message() {
-        return `${this.method}`;
+    public override get message() {
+        return `${String.capitalize(this.method)} ${this.cause._tag}`;
     }
 
-    static WrapForMethod(method: string) {
+    public static WrapForMethod(method: string) {
         return (cause: SwarmsError["cause"]) => new this({ method, cause });
     }
 }
@@ -169,8 +169,11 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
         const client = yield* HttpApiClient.group(SwarmApi, { group: "swarm", httpClient });
 
         const inspect_ = () => Effect.mapError(client.inspect({}), SwarmsError.WrapForMethod("inspect"));
-        const init_ = (payload: SwarmInitRequest) =>
-            Effect.mapError(client.init({ payload }), SwarmsError.WrapForMethod("init"));
+        const init_ = (payload: ConstructorParameters<typeof SwarmInitRequest>[0]) =>
+            Effect.mapError(
+                client.init({ payload: SwarmInitRequest.make(payload) }),
+                SwarmsError.WrapForMethod("init")
+            );
         const join_ = (payload: SwarmJoinRequest) =>
             Effect.mapError(client.join({ payload }), SwarmsError.WrapForMethod("join"));
         const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
@@ -180,21 +183,16 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
             version: number,
             rotate?:
                 | {
-                      workerToken?: boolean | undefined;
-                      managerToken?: boolean | undefined;
-                      managerUnlockKey?: boolean | undefined;
+                      readonly rotateWorkerToken?: boolean | undefined;
+                      readonly rotateManagerToken?: boolean | undefined;
+                      readonly rotateManagerUnlockKey?: boolean | undefined;
                   }
                 | undefined
         ) =>
             Effect.mapError(
                 client.update({
                     payload: spec,
-                    urlParams: {
-                        version,
-                        rotateWorkerToken: rotate?.workerToken,
-                        rotateManagerToken: rotate?.managerToken,
-                        rotateManagerUnlockKey: rotate?.managerUnlockKey,
-                    },
+                    urlParams: { version, ...rotate },
                 }),
                 SwarmsError.WrapForMethod("update")
             );

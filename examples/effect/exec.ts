@@ -24,14 +24,12 @@ const program = Effect.gen(function* () {
 
     // Run the container, will be removed when the scope is closed
     const { Id: containerId } = yield* DockerEngine.runScoped({
-        spec: {
-            Image: image,
-            OpenStdin: true,
-            AttachStdin: true,
-            AttachStdout: true,
-            AttachStderr: true,
-            Entrypoint: ["/bin/bash"],
-        },
+        Image: image,
+        OpenStdin: true,
+        AttachStdin: true,
+        AttachStdout: true,
+        AttachStderr: true,
+        Entrypoint: ["/bin/bash"],
     });
 
     const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({

@@ -7,7 +7,9 @@ import sortDestructureKeys from "eslint-plugin-sort-destructure-keys";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-    { ignores: ["**/dist", "**/build", "**/docs", "**/*.md"] },
+    {
+        ignores: ["**/dist", "**/docs", "**/.tsbuildinfo", "**/*.md"],
+    },
     eslint.configs.recommended,
     tseslint.configs.strict,
     importPlugin.flatConfigs.recommended,
@@ -18,11 +20,13 @@ export default tseslint.config(
             "simple-import-sort": simpleImportSort,
             "sort-destructure-keys": sortDestructureKeys,
         },
+
         languageOptions: {
             ecmaVersion: 2018,
             sourceType: "module",
             parser: tseslint.parser,
         },
+
         settings: {
             "import-x/resolver": {
                 name: "tsResolver",
@@ -32,12 +36,14 @@ export default tseslint.config(
                 },
             },
         },
+
         rules: {
             "no-fallthrough": "off",
             "no-irregular-whitespace": "off",
             "object-shorthand": "error",
             "prefer-destructuring": "off",
             "sort-imports": "off",
+
             "no-restricted-syntax": [
                 "error",
                 {
@@ -45,6 +51,7 @@ export default tseslint.config(
                     message: "Do not use spread arguments in Array.push",
                 },
             ],
+
             "no-unused-vars": "off",
             "require-yield": "off",
             "prefer-rest-params": "off",
@@ -59,6 +66,7 @@ export default tseslint.config(
             "simple-import-sort/imports": "off",
             "sort-destructure-keys/sort-destructure-keys": "error",
             "deprecation/deprecation": "off",
+
             "@typescript-eslint/array-type": [
                 "warn",
                 {
@@ -66,6 +74,7 @@ export default tseslint.config(
                     readonly: "generic",
                 },
             ],
+            "@typescript-eslint/no-dynamic-delete": "off",
             "@typescript-eslint/ban-ts-comment": "off",
             "@typescript-eslint/ban-types": "off",
             "@typescript-eslint/camelcase": "off",

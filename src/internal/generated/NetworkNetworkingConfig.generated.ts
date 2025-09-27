@@ -5,7 +5,9 @@ export class NetworkNetworkingConfig extends Schema.Class<NetworkNetworkingConfi
     {
         EndpointsConfig: Schema.NullOr(
             Schema.Record({ key: Schema.String, value: Schema.NullOr(NetworkEndpointSettings.NetworkEndpointSettings) })
-        ),
+        )
+            .pipe(Schema.propertySignature)
+            .pipe(Schema.withConstructorDefault(() => null)),
     },
     {
         identifier: "NetworkNetworkingConfig",

@@ -23,7 +23,7 @@ describe.each(testMatrix)(
 
         const withSwarmEnabled = Layer.tap(testLayer, (context) => {
             const swarm = Context.get(context, MobyEndpoints.Swarm);
-            return swarm.init({ ListenAddr: "0.0.0.0" });
+            return swarm.init();
         });
 
         layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Configs tests", (it) => {
@@ -41,10 +41,10 @@ describe.each(testMatrix)(
                     const configs = yield* MobyEndpoints.Configs;
                     const configCreateResponse = yield* configs.create({
                         Name: "testConfig",
-                        Data: Buffer.from("aaahhhhh").toString("base64"),
+                        Data: Buffer.from("aaahhhhh"),
                         Labels: { testLabel: "test" },
                     });
-                    expect(configCreateResponse.ID).toBeDefined();
+                    expect(configCreateResponse.Id).toBeDefined();
                 })
             );
 
@@ -69,9 +69,9 @@ describe.each(testMatrix)(
                     expect(configInspectResponse.Spec).toBeDefined();
                     expect(configInspectResponse.Spec?.Labels).toBeDefined();
                     expect(configInspectResponse.Spec?.Labels?.["testLabel"]).toBe("test");
-                    yield* configs.update(id, {
-                        version: configInspectResponse.Version!.Index!,
-                        spec: { ...configInspectResponse.Spec, Labels: { testLabel: "test2" } },
+                    yield* configs.update(id, configInspectResponse.Version!.Index!, {
+                        ...configInspectResponse.Spec,
+                        Labels: { testLabel: "test2" },
                     });
                 })
             );
@@ -79,7 +79,7 @@ describe.each(testMatrix)(
             it.effect("Should see no configs with label testLabel=test", () =>
                 Effect.gen(function* () {
                     const configs = yield* MobyEndpoints.Configs;
-                    const configsListResponse = yield* configs.list({ filters: { label: { testLabel: "test" } } });
+                    const configsListResponse = yield* configs.list({ label: ["testLabel=test"] });
                     expect(configsListResponse).toBeInstanceOf(Array);
                     expect(configsListResponse).toHaveLength(0);
                 })
@@ -91,7 +91,7 @@ describe.each(testMatrix)(
                     const configsListResponse = yield* configs.list();
                     expect(configsListResponse).toBeInstanceOf(Array);
                     expect(configsListResponse).toHaveLength(1);
-                    const id: string = configsListResponse[0]!.ID;
+                    const id = configsListResponse[0]!.ID;
                     yield* configs.delete(id);
                 })
             );

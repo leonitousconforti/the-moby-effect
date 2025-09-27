@@ -118,13 +118,15 @@ export const stop = (
 
 /** @internal */
 export const run = (
-    name: string,
-    platform: string,
-    container: MobySchemas.ContainerCreateRequest
+    options: Omit<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0], "HostConfig"> & {
+        readonly name?: string | undefined;
+        readonly platform?: string | undefined;
+        readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
+    }
 ): Effect.Effect<MobySchemas.ContainerInspectResponse, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =>
     Effect.gen(function* () {
         const containers = yield* MobyEndpoints.Containers;
-        const containerCreateResponse = yield* containers.create(name, platform, container);
+        const containerCreateResponse = yield* containers.create(options);
         yield* containers.start(containerCreateResponse.Id);
 
         // // Helper to wait until a container is dead or running
@@ -174,25 +176,25 @@ export const run = (
 
         // yield* waitUntilContainerDeadOrRunning;
         // yield* waitUntilContainerHealthy;
-        return yield* containers.inspect(containerCreateResponse.Id as IdSchemas.ContainerIdentifier);
+        return yield* containers.inspect(containerCreateResponse.Id);
     });
 
 /** @internal */
 export const runScoped = (
-    name: string,
-    platform: string,
-    container: MobySchemas.ContainerCreateRequest
+    options: Omit<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0], "HostConfig"> & {
+        readonly name?: string | undefined;
+        readonly platform?: string | undefined;
+        readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
+    }
 ): Effect.Effect<
     MobySchemas.ContainerInspectResponse,
     MobyEndpoints.ContainersError,
     Scope.Scope | MobyEndpoints.Containers
 > => {
-    const acquire = run(name, platform, container);
+    const acquire = run(options);
     const release = (containerData: MobySchemas.ContainerInspectResponse) =>
         Effect.orDie(
-            MobyEndpoints.Containers.use((containers) =>
-                containers.delete(containerData.Id as IdSchemas.ContainerIdentifier, { force: true })
-            )
+            MobyEndpoints.Containers.use((containers) => containers.delete(containerData.Id, { force: true }))
         );
     return Effect.acquireRelease(acquire, release);
 };

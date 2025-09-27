@@ -6,7 +6,7 @@ import * as StorageDriverData from "./StorageDriverData.generated.js";
 
 export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJSONBase>("ContainerContainerJSONBase")(
     {
-        Id: Schema.String,
+        Id: MobySchemas.ContainerIdentifier,
         Created: Schema.String,
         Path: Schema.String,
         Args: Schema.NullOr(Schema.Array(Schema.String)),

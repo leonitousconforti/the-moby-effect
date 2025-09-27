@@ -1,7 +1,7 @@
 import { NodeContext } from "@effect/platform-node";
 import { describe, layer } from "@effect/vitest";
 import { Duration, Effect, Layer, Stream } from "effect";
-import { DockerEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { DockerEngine, MobyConnection, MobyEndpoints, MobySchemas } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
@@ -26,11 +26,9 @@ describe.each(testMatrix)(
                 Effect.gen(function* () {
                     const containers = yield* MobyEndpoints.Containers;
                     const { Id: id } = yield* DockerEngine.run({
-                        spec: {
-                            StopTimeout: 10,
-                            Image: "docker.io/library/alpine:latest",
-                            Cmd: ["sleep", "1s"],
-                        },
+                        StopTimeout: MobySchemas.Int64Schemas.Int64Brand(10),
+                        Image: "docker.io/library/alpine:latest",
+                        Cmd: ["sleep", "1s"],
                     });
 
                     yield* containers.wait(id);

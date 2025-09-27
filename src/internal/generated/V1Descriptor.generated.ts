@@ -11,7 +11,7 @@ export class V1Descriptor extends Schema.Class<V1Descriptor>("V1Descriptor")(
         annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),
-        data: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        data: Schema.optionalWith(Schema.Uint8Array, { nullable: true }),
         platform: Schema.optionalWith(V1Platform.V1Platform, { nullable: true }),
         artifactType: Schema.optional(Schema.String),
     },
