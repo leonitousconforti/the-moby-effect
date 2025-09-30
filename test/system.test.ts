@@ -1,6 +1,6 @@
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Layer, Schema, Stream } from "effect";
+import { Duration, Effect, Either, Layer, Schema, Stream } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
@@ -40,22 +40,26 @@ describe.each(testMatrix)(
                             Schema.Literal("docker.io/library/docker:dind-rootless"),
                             Schema.TemplateLiteral("docker.io/library/docker:", Schema.String, "-dind-rootless")
                         ),
-                        Schema.String,
+                        Schema.EitherFromSelf({
+                            right: Schema.NumberFromString,
+                            left: Schema.Literal("latest"),
+                        }),
                         {
                             decode: (str) =>
                                 str === "docker.io/library/docker:dind-rootless"
-                                    ? "latest"
-                                    : str.split(":")[1]!.split("-dind-rootless")[0]!,
+                                    ? Either.left("latest" as const)
+                                    : Either.right(str.split(":")[1].replace("-dind-rootless", "")),
                             encode: (version) =>
-                                version === "latest"
-                                    ? ("docker.io/library/docker:dind-rootless" as const)
-                                    : (`docker.io/library/docker:${version}-dind-rootless` as const),
+                                Either.match(version, {
+                                    onLeft: () => `docker.io/library/docker:dind-rootless` as const,
+                                    onRight: (v) => `docker.io/library/docker:${v}-dind-rootless` as const,
+                                }),
                         }
                     );
 
                     const runningMajorVersion = yield* Schema.decode(schema)(dindBaseImage);
-                    if (runningMajorVersion !== "latest") {
-                        expect(versionResponse.Version).toContain(runningMajorVersion);
+                    if (Either.isRight(runningMajorVersion)) {
+                        expect(versionResponse.Version).toContain(runningMajorVersion.right);
                     }
                 })
             );

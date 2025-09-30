@@ -708,8 +708,14 @@ export const pack: {
         R2 = never,
         R3 = never,
     >(options: {
-        requestedCapacity: number;
-        encoding?: string | undefined;
+        readonly requestedCapacity:
+            | number
+            | {
+                  readonly stdinCapacity: number;
+                  readonly stdoutCapacity: number;
+                  readonly stderrCapacity: number;
+              };
+        readonly encoding?: string | undefined;
     }): (
         stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
     ) => Effect.Effect<
@@ -729,7 +735,16 @@ export const pack: {
         R3 = never,
     >(
         stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
-        options: { requestedCapacity: number; encoding?: string | undefined }
+        options: {
+            readonly requestedCapacity:
+                | number
+                | {
+                      readonly stdinCapacity: number;
+                      readonly stdoutCapacity: number;
+                      readonly stderrCapacity: number;
+                  };
+            readonly encoding?: string | undefined;
+        }
     ): Effect.Effect<
         MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
@@ -743,8 +758,14 @@ export const pack: {
  */
 export const fan: {
     <IE = never, OE = Socket.SocketError, R = never>(options: {
-        requestedCapacity: number;
-        encoding?: string | undefined;
+        readonly requestedCapacity:
+            | number
+            | {
+                  readonly stdinCapacity: number;
+                  readonly stdoutCapacity: number;
+                  readonly stderrCapacity: number;
+              };
+        readonly encoding?: string | undefined;
     }): (multiplexedInput: EitherMultiplexedInput<IE, OE, R>) => Effect.Effect<
         {
             stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
@@ -756,7 +777,16 @@ export const fan: {
     >;
     <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: EitherMultiplexedInput<IE, OE, R>,
-        options: { requestedCapacity: number; encoding?: string | undefined }
+        options: {
+            readonly requestedCapacity:
+                | number
+                | {
+                      readonly stdinCapacity: number;
+                      readonly stdoutCapacity: number;
+                      readonly stderrCapacity: number;
+                  };
+            readonly encoding?: string | undefined;
+        }
     ): Effect.Effect<
         {
             stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;

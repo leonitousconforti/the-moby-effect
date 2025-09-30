@@ -1,61 +1,10 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpApiError,
-    type HttpClientError,
-    type Socket,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { DockerError } from "./circular.ts";
 import { HttpApiSocket } from "./httpApiHacks.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const SessionsErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/SessionsError"
-) as SessionsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type SessionsErrorTypeId = typeof SessionsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isSessionsError = (u: unknown): u is SessionsError => Predicate.hasProperty(u, SessionsErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class SessionsError extends PlatformError.TypeIdError(SessionsErrorTypeId, "SessionsError")<{
-    method: string;
-    cause:
-        | Socket.SocketError
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: SessionsError["cause"]) => new this({ method, cause });
-    }
-}
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session */
 const sessionEndpoint = HttpApiEndpoint.post("session", "/session")
@@ -95,6 +44,7 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
 
     effect: Effect.gen(function* () {
         const httpClient = yield* HttpClient.HttpClient;
+        const SessionsError = DockerError.WrapForModule("session");
         yield* HttpApiClient.group(SessionApi, { group: "session", httpClient });
 
         const session_ = () =>
@@ -110,7 +60,7 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
                         Connection: "Upgrade",
                     },
                 }),
-                SessionsError.WrapForMethod("session")
+                SessionsError("session")
             );
 
         return { session: session_ };

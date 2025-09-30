@@ -1,64 +1,11 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiError,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpClientError,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmSwarm as SwarmData, SwarmInitRequest, SwarmJoinRequest, SwarmSpec } from "../generated/index.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const SwarmsErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/SwarmsError"
-) as SwarmsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type SwarmsErrorTypeId = typeof SwarmsErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isSwarmsError = (u: unknown): u is SwarmsError => Predicate.hasProperty(u, SwarmsErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class SwarmsError extends PlatformError.TypeIdError(SwarmsErrorTypeId, "SwarmsError")<{
-    method: string;
-    cause:
-        | NodeNotPartOfSwarm
-        | NodeAlreadyPartOfSwarm
-        | HttpApiError.InternalServerError
-        | HttpApiError.BadRequest
-        | HttpApiError.NotFound
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: SwarmsError["cause"]) => new this({ method, cause });
-    }
-}
+import { DockerError } from "./circular.ts";
+import { BadRequest, InternalServerError, NotFound } from "./httpApiHacks.ts";
 
 /** @since 1.0.0 */
 export class NodeNotPartOfSwarm extends HttpApiSchema.EmptyError<NodeNotPartOfSwarm>()({
@@ -75,21 +22,21 @@ export class NodeAlreadyPartOfSwarm extends HttpApiSchema.EmptyError<NodeAlready
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInspect */
 const inspectSwarmEndpoint = HttpApiEndpoint.get("inspect", "/")
     .addSuccess(SwarmData, { status: 200 }) // 200 OK
-    .addError(HttpApiError.NotFound) // 404 No such swarm
+    .addError(NotFound) // 404 No such swarm
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmInit */
 const initSwarmEndpoint = HttpApiEndpoint.post("init", "/init")
     .setPayload(SwarmInitRequest)
     .addSuccess(Schema.String, { status: 200 }) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(BadRequest) // 400 Bad parameter
     .addError(NodeAlreadyPartOfSwarm); // 503 Node is already part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmJoin */
 const joinSwarmEndpoint = HttpApiEndpoint.post("join", "/join")
     .setPayload(SwarmJoinRequest)
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(BadRequest) // 400 Bad parameter
     .addError(NodeAlreadyPartOfSwarm); // 503 Node is already part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmLeave */
@@ -110,7 +57,7 @@ const updateSwarmEndpoint = HttpApiEndpoint.post("update", "/update")
     )
     .setPayload(SwarmSpec)
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
+    .addError(BadRequest) // 400 Bad parameter
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm/operation/SwarmUnlockkey */
@@ -133,7 +80,7 @@ const SwarmGroup = HttpApiGroup.make("swarm")
     .add(updateSwarmEndpoint)
     .add(unlockkeySwarmEndpoint)
     .add(unlockSwarmEndpoint)
-    .addError(HttpApiError.InternalServerError)
+    .addError(InternalServerError)
     .prefix("/swarm");
 
 /**
@@ -166,18 +113,15 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
 
     effect: Effect.gen(function* () {
         const httpClient = yield* HttpClient.HttpClient;
+        const SwarmsError = DockerError.WrapForModule("swarm");
         const client = yield* HttpApiClient.group(SwarmApi, { group: "swarm", httpClient });
 
-        const inspect_ = () => Effect.mapError(client.inspect({}), SwarmsError.WrapForMethod("inspect"));
+        const inspect_ = () => Effect.mapError(client.inspect(), SwarmsError("inspect"));
         const init_ = (payload: ConstructorParameters<typeof SwarmInitRequest>[0]) =>
-            Effect.mapError(
-                client.init({ payload: SwarmInitRequest.make(payload) }),
-                SwarmsError.WrapForMethod("init")
-            );
-        const join_ = (payload: SwarmJoinRequest) =>
-            Effect.mapError(client.join({ payload }), SwarmsError.WrapForMethod("join"));
+            Effect.mapError(client.init({ payload: SwarmInitRequest.make(payload) }), SwarmsError("init"));
+        const join_ = (payload: SwarmJoinRequest) => Effect.mapError(client.join({ payload }), SwarmsError("join"));
         const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
-            Effect.mapError(client.leave({ urlParams: { ...options } }), SwarmsError.WrapForMethod("leave"));
+            Effect.mapError(client.leave({ urlParams: { ...options } }), SwarmsError("leave"));
         const update_ = (
             spec: SwarmSpec,
             version: number,
@@ -194,11 +138,11 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
                     payload: spec,
                     urlParams: { version, ...rotate },
                 }),
-                SwarmsError.WrapForMethod("update")
+                SwarmsError("update")
             );
-        const unlockkey_ = () => Effect.mapError(client.unlockkey({}), SwarmsError.WrapForMethod("unlockkey"));
+        const unlockkey_ = () => Effect.mapError(client.unlockkey(), SwarmsError("unlockkey"));
         const unlock_ = (unlockKey: string) =>
-            Effect.mapError(client.unlock({ payload: { UnlockKey: unlockKey } }), SwarmsError.WrapForMethod("unlock"));
+            Effect.mapError(client.unlock({ payload: { UnlockKey: unlockKey } }), SwarmsError("unlock"));
 
         return {
             inspect: inspect_,

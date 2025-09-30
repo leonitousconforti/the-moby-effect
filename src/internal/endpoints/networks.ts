@@ -1,64 +1,12 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiError,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpClientError,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { NetworkConnectOptions, NetworkCreateRequest, NetworkInspect } from "../generated/index.js";
 import { ContainerIdentifier, NetworkIdentifier } from "../schemas/id.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const NetworksErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/NetworksError"
-) as NetworksErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type NetworksErrorTypeId = typeof NetworksErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isNetworksError = (u: unknown): u is NetworksError => Predicate.hasProperty(u, NetworksErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class NetworksError extends PlatformError.TypeIdError(NetworksErrorTypeId, "NetworksError")<{
-    method: string;
-    cause:
-        | HttpApiError.InternalServerError
-        | HttpApiError.BadRequest
-        | HttpApiError.NotFound
-        | HttpApiError.Forbidden
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: NetworksError["cause"]) => new this({ method, cause });
-    }
-}
+import { DockerError } from "./circular.ts";
+import { BadRequest, Forbidden, InternalServerError, NotFound } from "./httpApiHacks.ts";
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -96,39 +44,39 @@ const inspectNetworkEndpoint = HttpApiEndpoint.get("inspect", "/:id")
         })
     )
     .addSuccess(NetworkInspect, { status: 200 })
-    .addError(HttpApiError.NotFound); // 404 No such network
+    .addError(NotFound); // 404 No such network
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDelete */
 const deleteNetworkEndpoint = HttpApiEndpoint.del("delete", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .addSuccess(HttpApiSchema.NoContent) // 204 No Content
-    .addError(HttpApiError.Forbidden) // 403 Not supported for pre-defined networks
-    .addError(HttpApiError.NotFound); // 404 No such network
+    .addError(Forbidden) // 403 Not supported for pre-defined networks
+    .addError(NotFound); // 404 No such network
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkCreate */
 const createNetworkEndpoint = HttpApiEndpoint.post("create", "/create")
     .setPayload(NetworkCreateRequest)
     .addSuccess(Schema.Struct({ Id: NetworkIdentifier }), { status: 201 })
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.Forbidden) // 403 Forbidden operation
-    .addError(HttpApiError.NotFound); // 404 Plugin not found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(Forbidden) // 403 Forbidden operation
+    .addError(NotFound); // 404 Plugin not found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkConnect */
 const connectNetworkEndpoint = HttpApiEndpoint.post("connect", "/:id/connect")
     .setPath(Schema.Struct({ id: Schema.String }))
     .setPayload(NetworkConnectOptions)
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.Forbidden) // 403 Forbidden operation
-    .addError(HttpApiError.NotFound); // 404 Plugin not found
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(Forbidden) // 403 Forbidden operation
+    .addError(NotFound); // 404 Plugin not found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkDisconnect */
 const disconnectNetworkEndpoint = HttpApiEndpoint.post("disconnect", "/:id/disconnect")
     .setPath(Schema.Struct({ id: Schema.String }))
     .setPayload(Schema.Struct({ Container: ContainerIdentifier, Force: Schema.Boolean }))
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.Forbidden) // 403 Forbidden operation
-    .addError(HttpApiError.NotFound); // 404 Plugin not found
+    .addError(Forbidden) // 403 Forbidden operation
+    .addError(NotFound); // 404 Plugin not found
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkPrune */
 const pruneNetworkEndpoint = HttpApiEndpoint.post("prune", "/prune")
@@ -144,7 +92,7 @@ const NetworksGroup = HttpApiGroup.make("networks")
     .add(connectNetworkEndpoint)
     .add(disconnectNetworkEndpoint)
     .add(pruneNetworkEndpoint)
-    .addError(HttpApiError.InternalServerError)
+    .addError(InternalServerError)
     .prefix("/networks");
 
 /**
@@ -176,21 +124,18 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
             >;
 
         const httpClient = yield* HttpClient.HttpClient;
+        const NetworksError = DockerError.WrapForModule("networks");
         const client = yield* HttpApiClient.group(NetworksApi, { group: "networks", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
-            Effect.mapError(client.list({ urlParams: { filters } }), NetworksError.WrapForMethod("list"));
+            Effect.mapError(client.list({ urlParams: { filters } }), NetworksError("list"));
         const create_ = (payload: NetworkCreateRequest) =>
-            Effect.mapError(client.create({ payload }), NetworksError.WrapForMethod("create"));
+            Effect.mapError(client.create({ payload }), NetworksError("create"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
-            Effect.mapError(
-                client.inspect({ path: { id }, urlParams: { ...options } }),
-                NetworksError.WrapForMethod("inspect")
-            );
-        const delete_ = (id: string) =>
-            Effect.mapError(client.delete({ path: { id } }), NetworksError.WrapForMethod("delete"));
+            Effect.mapError(client.inspect({ path: { id }, urlParams: { ...options } }), NetworksError("inspect"));
+        const delete_ = (id: string) => Effect.mapError(client.delete({ path: { id } }), NetworksError("delete"));
         const connect_ = (id: string, payload: NetworkConnectOptions) =>
-            Effect.mapError(client.connect({ path: { id }, payload }), NetworksError.WrapForMethod("connect"));
+            Effect.mapError(client.connect({ path: { id }, payload }), NetworksError("connect"));
         const disconnect_ = (
             id: string,
             containerId: ContainerIdentifier,
@@ -201,10 +146,10 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
                     path: { id },
                     payload: { Container: containerId, Force: options?.force ?? false },
                 }),
-                NetworksError.WrapForMethod("disconnect")
+                NetworksError("disconnect")
             );
         const prune_ = (filters?: Schema.Schema.Type<PruneFilters>) =>
-            Effect.mapError(client.prune({ urlParams: { filters } }), NetworksError.WrapForMethod("prune"));
+            Effect.mapError(client.prune({ urlParams: { filters } }), NetworksError("prune"));
 
         return {
             list: list_,

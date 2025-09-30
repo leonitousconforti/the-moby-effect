@@ -42,7 +42,7 @@ const downloadDindCertificates = (
         key: string;
         cert: string;
     },
-    MobyEndpoints.ContainersError | ParseResult.ParseError,
+    DockerEngine.DockerError | ParseResult.ParseError,
     MobyEndpoints.Containers
 > =>
     Effect.gen(function* () {
@@ -97,7 +97,7 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
     exposeDindBy: ExposeDindBy
 ): Effect.Effect<
     readonly [boundDockerSocket: string, binds: Array<string>],
-    MobyEndpoints.VolumesError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
+    DockerEngine.DockerError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
     MobyEndpoints.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
 > =>
     Effect.gen(function* () {
@@ -128,7 +128,7 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
         return [boundDockerSocket, binds] as const;
     }) as Effect.Effect<
         readonly [boundDockerSocket: string, binds: Array<string>],
-        MobyEndpoints.VolumesError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
+        DockerEngine.DockerError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
         | MobyEndpoints.Volumes
         | Scope.Scope
         | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
@@ -142,7 +142,7 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
  */
 const waitForDindContainerToBeReady = (
     dindContainerId: IdSchemas.ContainerIdentifier
-): Effect.Effect<void, MobyEndpoints.ContainersError, MobyEndpoints.Containers> =>
+): Effect.Effect<void, DockerEngine.DockerError, MobyEndpoints.Containers> =>
     Function.pipe(
         MobyEndpoints.Containers.use((containers) =>
             containers.logs(dindContainerId, {
@@ -199,11 +199,8 @@ export const makeDindLayerFromPlatformConstructor =
         dindBaseImage: BlobConstants.RecommendedDindBaseImages;
     }): Layer.Layer<
         Layer.Layer.Success<DockerEngine.DockerLayer>,
-        | MobyEndpoints.ImagesError
-        | MobyEndpoints.SystemsError
-        | MobyEndpoints.VolumesError
+        | DockerEngine.DockerError
         | ParseResult.ParseError
-        | MobyEndpoints.ContainersError
         | PlatformLayerConstructorError
         | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
         | PlatformLayerConstructorContext

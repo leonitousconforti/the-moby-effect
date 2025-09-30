@@ -1,15 +1,5 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiError,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpClientError,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -22,51 +12,15 @@ import {
     JSONMessage,
     RegistrySearchResult,
 } from "../generated/index.js";
-import { HttpApiStreamingBoth, HttpApiStreamingResponse } from "./httpApiHacks.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const ImagesErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/ImagesError"
-) as ImagesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type ImagesErrorTypeId = typeof ImagesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isImagesError = (u: unknown): u is ImagesError => Predicate.hasProperty(u, ImagesErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class ImagesError extends PlatformError.TypeIdError(ImagesErrorTypeId, "ImagesError")<{
-    method: string;
-    cause:
-        | HttpApiError.InternalServerError
-        | HttpApiError.Conflict
-        | HttpApiError.BadRequest
-        | HttpApiError.NotFound
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: ImagesError["cause"]) => new this({ method, cause });
-    }
-}
+import { DockerError } from "./circular.ts";
+import {
+    BadRequest,
+    Conflict,
+    HttpApiStreamingBoth,
+    HttpApiStreamingResponse,
+    InternalServerError,
+    NotFound,
+} from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -146,7 +100,7 @@ const buildImageEndpoint = HttpApiEndpoint.post("build", "/build")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.BadRequest); // 400 Bad parameter
+    .addError(BadRequest); // 400 Bad parameter
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/BuildPrune */
 const buildPruneEndpoint = HttpApiEndpoint.post("buildPrune", "/build/prune")
@@ -180,21 +134,21 @@ const createImageEndpoint = HttpApiEndpoint.post("create", "/images/create")
     )
     .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.NotFound); // 404 Repository not found or no read access
+    .addError(NotFound); // 404 Repository not found or no read access
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageInspect */
 const inspectImageEndpoint = HttpApiEndpoint.get("inspect", "/images/:name/json")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ manifests: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(ImageInspectResponse, { status: 200 })
-    .addError(HttpApiError.NotFound); // 404 No such image
+    .addError(NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageHistory */
 const historyImageEndpoint = HttpApiEndpoint.get("history", "/images/:name/history")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
     .addSuccess(Schema.Array(ImageHistoryResponseItem), { status: 200 })
-    .addError(HttpApiError.NotFound); // 404 No such image
+    .addError(NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePush */
 const pushImageEndpoint = HttpApiEndpoint.post("push", "/images/:name/push")
@@ -202,16 +156,16 @@ const pushImageEndpoint = HttpApiEndpoint.post("push", "/images/:name/push")
     .setUrlParams(Schema.Struct({ tag: Schema.optional(Schema.String), platform: Schema.optional(Schema.String) }))
     .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.String }))
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.NotFound); // 404 No such image
+    .addError(NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageTag */
 const tagImageEndpoint = HttpApiEndpoint.post("tag", "/images/:name/tag")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ repo: Schema.optional(Schema.String), tag: Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(201))
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound) // 404 No such image
-    .addError(HttpApiError.Conflict); // 409 Conflict
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound) // 404 No such image
+    .addError(Conflict); // 409 Conflict
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageDelete */
 const deleteImageEndpoint = HttpApiEndpoint.del("delete", "/images/:name")
@@ -224,8 +178,8 @@ const deleteImageEndpoint = HttpApiEndpoint.del("delete", "/images/:name")
         })
     )
     .addSuccess(Schema.Array(ImageDeleteResponse), { status: 200 })
-    .addError(HttpApiError.NotFound) // 404 No such image
-    .addError(HttpApiError.Conflict); // 409 Conflict
+    .addError(NotFound) // 404 No such image
+    .addError(Conflict); // 409 Conflict
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageSearch */
 const searchImagesEndpoint = HttpApiEndpoint.get("search", "/images/search")
@@ -268,21 +222,21 @@ const commitImageEndpoint = HttpApiEndpoint.post("commit", "/images/commit")
     )
     .setPayload(ContainerCreateRequest)
     .addSuccess(ImageInspectResponse, { status: 201 })
-    .addError(HttpApiError.NotFound); // 404 No such container
+    .addError(NotFound); // 404 No such container
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGet */
 const exportImageEndpoint = HttpApiEndpoint.get("export", "/images/:name/get")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.NotFound); // 404 No such image
+    .addError(NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGetAll */
 const exportManyImagesEndpoint = HttpApiEndpoint.get("exportMany", "/images/get")
     .setUrlParams(Schema.Struct({ names: Schema.optional(Schema.String) }))
     .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.NotFound); // 404 No such image
+    .addError(NotFound); // 404 No such image
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageLoad */
 const importImageEndpoint = HttpApiEndpoint.post("import", "/images/load")
@@ -293,7 +247,7 @@ const importImageEndpoint = HttpApiEndpoint.post("import", "/images/load")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.BadRequest); // 400 Bad parameter
+    .addError(BadRequest); // 400 Bad parameter
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image */
 const ImagesGroup = HttpApiGroup.make("images")
@@ -312,7 +266,7 @@ const ImagesGroup = HttpApiGroup.make("images")
     .add(exportImageEndpoint)
     .add(exportManyImagesEndpoint)
     .add(importImageEndpoint)
-    .addError(HttpApiError.InternalServerError);
+    .addError(InternalServerError);
 
 /**
  * @since 1.0.0
@@ -343,10 +297,11 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
             >;
 
         const httpClient = yield* HttpClient.HttpClient;
+        const ImagesError = DockerError.WrapForModule("images");
         const client = yield* HttpApiClient.group(ImagesApi, { group: "images", httpClient });
 
         const list_ = (options?: Options<"list">) =>
-            Effect.mapError(client.list({ urlParams: { ...options } }), ImagesError.WrapForMethod("list"));
+            Effect.mapError(client.list({ urlParams: { ...options } }), ImagesError("list"));
         const build_ = <E1>(context: Stream.Stream<Uint8Array, E1, never>, options?: Options<"build">) =>
             HttpApiStreamingBoth(
                 ImagesApi,
@@ -361,9 +316,9 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
-                .pipe(Stream.mapError(ImagesError.WrapForMethod("build")));
+                .pipe(Stream.mapError(ImagesError("build")));
         const buildPrune_ = (options?: Options<"buildPrune">) =>
-            Effect.mapError(client.buildPrune({ urlParams: { ...options } }), ImagesError.WrapForMethod("buildPrune"));
+            Effect.mapError(client.buildPrune({ urlParams: { ...options } }), ImagesError("buildPrune"));
         const create_ = (options?: Options<"create">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
@@ -377,17 +332,11 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
-                .pipe(Stream.mapError(ImagesError.WrapForMethod("create")));
+                .pipe(Stream.mapError(ImagesError("create")));
         const inspect_ = (name: string, options?: Options<"inspect">) =>
-            Effect.mapError(
-                client.inspect({ path: { name }, urlParams: { ...options } }),
-                ImagesError.WrapForMethod("inspect")
-            );
+            Effect.mapError(client.inspect({ path: { name }, urlParams: { ...options } }), ImagesError("inspect"));
         const history_ = (name: string, options?: Options<"history">) =>
-            Effect.mapError(
-                client.history({ path: { name }, urlParams: { ...options } }),
-                ImagesError.WrapForMethod("history")
-            );
+            Effect.mapError(client.history({ path: { name }, urlParams: { ...options } }), ImagesError("history"));
         const push_ = (name: string, options?: Options<"push">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
@@ -402,23 +351,17 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
-                .pipe(Stream.mapError(ImagesError.WrapForMethod("push")));
+                .pipe(Stream.mapError(ImagesError("push")));
         const tag_ = (name: string, options?: Options<"tag">) =>
-            Effect.mapError(
-                client.tag({ path: { name }, urlParams: { ...options } }),
-                ImagesError.WrapForMethod("tag")
-            );
+            Effect.mapError(client.tag({ path: { name }, urlParams: { ...options } }), ImagesError("tag"));
         const delete_ = (name: string, options?: Options<"delete">) =>
-            Effect.mapError(
-                client.delete({ path: { name }, urlParams: { ...options } }),
-                ImagesError.WrapForMethod("delete")
-            );
+            Effect.mapError(client.delete({ path: { name }, urlParams: { ...options } }), ImagesError("delete"));
         const search_ = (options: Options<"search">) =>
-            Effect.mapError(client.search({ urlParams: { ...options } }), ImagesError.WrapForMethod("search"));
+            Effect.mapError(client.search({ urlParams: { ...options } }), ImagesError("search"));
         const prune_ = (options?: Options<"prune">) =>
-            Effect.mapError(client.prune({ urlParams: { ...options } }), ImagesError.WrapForMethod("prune"));
+            Effect.mapError(client.prune({ urlParams: { ...options } }), ImagesError("prune"));
         const commit_ = (payload: ContainerCreateRequest, options: Options<"commit">) =>
-            Effect.mapError(client.commit({ urlParams: { ...options }, payload }), ImagesError.WrapForMethod("commit"));
+            Effect.mapError(client.commit({ urlParams: { ...options }, payload }), ImagesError("commit"));
         const export_ = (name: string, options?: Options<"export">) =>
             Stream.mapError(
                 HttpApiStreamingResponse(
@@ -427,17 +370,17 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                     "export",
                     httpClient
                 )({ path: { name }, urlParams: { ...options } }),
-                ImagesError.WrapForMethod("export")
+                ImagesError("export")
             );
         const exportMany_ = (options?: Options<"exportMany">) =>
             Stream.mapError(
                 HttpApiStreamingResponse(ImagesApi, "images", "exportMany", httpClient)({ urlParams: { ...options } }),
-                ImagesError.WrapForMethod("exportMany")
+                ImagesError("exportMany")
             );
         const import_ = <E>(context: Stream.Stream<Uint8Array, E, never>, options?: Options<"import">) =>
             Stream.mapError(
                 HttpApiStreamingBoth(ImagesApi, "images", "import", httpClient, context)({ urlParams: { ...options } }),
-                ImagesError.WrapForMethod("import")
+                ImagesError("import")
             );
 
         return {

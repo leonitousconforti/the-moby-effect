@@ -1,68 +1,20 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiError,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpClientError,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmService, SwarmServiceSpec } from "../generated/index.js";
 import { ServiceIdentifier } from "../schemas/id.js";
-import { HttpApiStreamingResponse } from "./httpApiHacks.js";
+import { DockerError } from "./circular.ts";
+import {
+    BadRequest,
+    Conflict,
+    Forbidden,
+    HttpApiStreamingResponse,
+    InternalServerError,
+    NotFound,
+} from "./httpApiHacks.js";
 import { NodeNotPartOfSwarm } from "./swarm.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const ServicesErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/ServicesError"
-) as ServicesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type ServicesErrorTypeId = typeof ServicesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isServicesError = (u: unknown): u is ServicesError => Predicate.hasProperty(u, ServicesErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class ServicesError extends PlatformError.TypeIdError(ServicesErrorTypeId, "ServicesError")<{
-    method: string;
-    cause:
-        | NodeNotPartOfSwarm
-        | HttpApiError.InternalServerError
-        | HttpApiError.BadRequest
-        | HttpApiError.NotFound
-        | HttpApiError.Forbidden
-        | HttpApiError.Conflict
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: ServicesError["cause"]) => new this({ method, cause });
-    }
-}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -95,16 +47,16 @@ const createServiceEndpoint = HttpApiEndpoint.post("create", "/create")
         }),
         { status: 201 }
     ) // 201 Created
-    .addError(HttpApiError.BadRequest) // 400 Bad request
-    .addError(HttpApiError.Forbidden) // 403 network is not eligible for services
-    .addError(HttpApiError.Conflict) // 409 name conflicts with an existing object
+    .addError(BadRequest) // 400 Bad request
+    .addError(Forbidden) // 403 network is not eligible for services
+    .addError(Conflict) // 409 name conflicts with an existing object
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceDelete */
 const deleteServiceEndpoint = HttpApiEndpoint.del("delete", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NotFound) // 404 No such service
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceInspect */
@@ -112,7 +64,7 @@ const inspectServiceEndpoint = HttpApiEndpoint.get("inspect", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .setUrlParams(Schema.Struct({ insertDefaults: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(SwarmService, { status: 200 }) // 200 OK
-    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NotFound) // 404 No such service
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceUpdate */
@@ -132,8 +84,8 @@ const updateServiceEndpoint = HttpApiEndpoint.post("update", "/:id/update")
     )
     .setPayload(SwarmServiceSpec)
     .addSuccess(Schema.Struct({ Warnings: Schema.optional(Schema.Array(Schema.String)) }), { status: 200 }) // 200 OK
-    .addError(HttpApiError.BadRequest) // 400 Bad request
-    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(BadRequest) // 400 Bad request
+    .addError(NotFound) // 404 No such service
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service/operation/ServiceLogs */
@@ -151,7 +103,7 @@ const logsServiceEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound) // 404 No such service
+    .addError(NotFound) // 404 No such service
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Service */
@@ -162,7 +114,7 @@ const ServicesGroup = HttpApiGroup.make("services")
     .add(inspectServiceEndpoint)
     .add(updateServiceEndpoint)
     .add(logsServiceEndpoint)
-    .addError(HttpApiError.InternalServerError)
+    .addError(InternalServerError)
     .prefix("/services");
 
 /**
@@ -200,22 +152,16 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
             >;
 
         const httpClient = yield* HttpClient.HttpClient;
+        const ServicesError = DockerError.WrapForModule("services");
         const client = yield* HttpApiClient.group(ServicesApi, { group: "services", httpClient });
 
         const list_ = (options?: Options<"list">) =>
-            Effect.mapError(client.list({ urlParams: { ...options } }), ServicesError.WrapForMethod("list"));
+            Effect.mapError(client.list({ urlParams: { ...options } }), ServicesError("list"));
         const create_ = (payload: SwarmServiceSpec) =>
-            Effect.mapError(
-                client.create({ payload, headers: { "X-Registry-Auth": "" } }),
-                ServicesError.WrapForMethod("create")
-            );
-        const delete_ = (id: string) =>
-            Effect.mapError(client.delete({ path: { id } }), ServicesError.WrapForMethod("delete"));
+            Effect.mapError(client.create({ payload, headers: { "X-Registry-Auth": "" } }), ServicesError("create"));
+        const delete_ = (id: string) => Effect.mapError(client.delete({ path: { id } }), ServicesError("delete"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
-            Effect.mapError(
-                client.inspect({ path: { id }, urlParams: { ...options } }),
-                ServicesError.WrapForMethod("inspect")
-            );
+            Effect.mapError(client.inspect({ path: { id }, urlParams: { ...options } }), ServicesError("inspect"));
         const update_ = (id: string, payload: SwarmServiceSpec, options: Options<"update">) =>
             Effect.mapError(
                 client.update({
@@ -224,7 +170,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                     urlParams: { ...options },
                     headers: { "X-Registry-Auth": "" },
                 }),
-                ServicesError.WrapForMethod("update")
+                ServicesError("update")
             );
         const logs_ = (id: string, options?: Options<"logs">) =>
             HttpApiStreamingResponse(
@@ -235,7 +181,7 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
             )({ path: { id }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapError(ServicesError.WrapForMethod("logs")));
+                .pipe(Stream.mapError(ServicesError("logs")));
 
         return {
             list: list_,

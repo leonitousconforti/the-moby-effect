@@ -6,12 +6,9 @@ import {
     HttpApiSchema,
     HttpClient,
     HttpClientResponse,
-    Error as PlatformError,
-    type HttpApiError,
-    type HttpClientError,
     type Socket,
 } from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, String, Tuple, type Layer, type ParseResult } from "effect";
+import { Effect, Schema, Stream, Tuple, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -30,6 +27,7 @@ import {
 } from "../generated/index.js";
 import { ContainerIdentifier } from "../schemas/id.js";
 import { Int64 } from "../schemas/int64.js";
+import { DockerError } from "./circular.ts";
 import {
     BadRequest,
     Conflict,
@@ -42,53 +40,6 @@ import {
     NotAcceptable,
     NotFound,
 } from "./httpApiHacks.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const ContainersErrorTypeId: unique symbol = Symbol.for(
-    "@the-moby-effect/endpoints/ContainersError"
-) as ContainersErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type ContainersErrorTypeId = typeof ContainersErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isContainersError = (u: unknown): u is ContainersError => Predicate.hasProperty(u, ContainersErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class ContainersError extends PlatformError.TypeIdError(ContainersErrorTypeId, "ContainersError")<{
-    method: string;
-    cause:
-        | Socket.SocketError
-        | InternalServerError
-        | BadRequest
-        | Forbidden
-        | Conflict
-        | NotAcceptable
-        | NotFound
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `Containers error when executing method ${String.capitalize(this.method)}, ${this.cause.message}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: ContainersError["cause"]) => new this({ method, cause });
-    }
-}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -463,6 +414,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             >;
 
         const httpClient = yield* HttpClient.HttpClient;
+        const ContainersError = DockerError.WrapForModule("containers");
         const context = yield* Effect.context<Socket.WebSocketConstructor>();
         const client = yield* HttpApiClient.group(ContainersApi, {
             httpClient,
@@ -470,7 +422,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
         });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
-            Effect.mapError(client.list({ urlParams: { filters } }), ContainersError.WrapForMethod("list"));
+            Effect.mapError(client.list({ urlParams: { filters } }), ContainersError("list"));
         const create_ = (
             options: Omit<ConstructorParameters<typeof ContainerCreateRequest>[0], "HostConfig"> & {
                 readonly Name?: string | undefined;
@@ -486,18 +438,15 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                         HostConfig: options.HostConfig ? ContainerHostConfig.make(options.HostConfig) : undefined,
                     }),
                 }),
-                ContainersError.WrapForMethod("create")
+                ContainersError("create")
             );
         const inspect_ = (identifier: ContainerIdentifier, options?: Options<"inspect">) =>
             Effect.mapError(
                 client.inspect({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("inspect")
+                ContainersError("inspect")
             );
         const top_ = (identifier: ContainerIdentifier, options?: Options<"top">) =>
-            Effect.mapError(
-                client.top({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("top")
-            );
+            Effect.mapError(client.top({ path: { identifier }, urlParams: { ...options } }), ContainersError("top"));
         const logs_ = (identifier: ContainerIdentifier, options?: Options<"logs">) =>
             HttpApiStreamingResponse(
                 ContainersApi,
@@ -507,13 +456,13 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             )({ path: { identifier }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapError(ContainersError.WrapForMethod("logs")));
+                .pipe(Stream.mapError(ContainersError("logs")));
         const changes_ = (identifier: ContainerIdentifier) =>
-            Effect.mapError(client.changes({ path: { identifier } }), ContainersError.WrapForMethod("changes"));
+            Effect.mapError(client.changes({ path: { identifier } }), ContainersError("changes"));
         const export_ = (identifier: ContainerIdentifier) =>
             Stream.mapError(
                 HttpApiStreamingResponse(ContainersApi, "containers", "export", httpClient)({ path: { identifier } }),
-                ContainersError.WrapForMethod("export")
+                ContainersError("export")
             );
         const stats_ = (identifier: ContainerIdentifier, options?: Options<"stats">) =>
             HttpApiStreamingResponse(
@@ -525,46 +474,34 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(ContainerStatsResponse))))
-                .pipe(Stream.mapError(ContainersError.WrapForMethod("stats")));
+                .pipe(Stream.mapError(ContainersError("stats")));
         const resize_ = (identifier: ContainerIdentifier, options?: Options<"resize">) =>
             Effect.mapError(
                 client.resize({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("resize")
+                ContainersError("resize")
             );
         const start_ = (identifier: ContainerIdentifier, options?: Options<"start">) =>
             Effect.mapError(
                 client.start({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("start")
+                ContainersError("start")
             );
         const stop_ = (identifier: ContainerIdentifier, options?: Options<"stop">) =>
-            Effect.mapError(
-                client.stop({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("stop")
-            );
+            Effect.mapError(client.stop({ path: { identifier }, urlParams: { ...options } }), ContainersError("stop"));
         const restart_ = (identifier: ContainerIdentifier, options?: Options<"restart">) =>
             Effect.mapError(
                 client.restart({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("restart")
+                ContainersError("restart")
             );
         const kill_ = (identifier: ContainerIdentifier, options?: Options<"kill">) =>
-            Effect.mapError(
-                client.kill({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("kill")
-            );
+            Effect.mapError(client.kill({ path: { identifier }, urlParams: { ...options } }), ContainersError("kill"));
         const update_ = (identifier: ContainerIdentifier, config: ContainerConfig) =>
-            Effect.mapError(
-                client.update({ path: { identifier }, payload: config }),
-                ContainersError.WrapForMethod("update")
-            );
+            Effect.mapError(client.update({ path: { identifier }, payload: config }), ContainersError("update"));
         const rename_ = (identifier: ContainerIdentifier, name: string) =>
-            Effect.mapError(
-                client.rename({ path: { identifier }, urlParams: { name } }),
-                ContainersError.WrapForMethod("rename")
-            );
+            Effect.mapError(client.rename({ path: { identifier }, urlParams: { name } }), ContainersError("rename"));
         const pause_ = (identifier: ContainerIdentifier) =>
-            Effect.mapError(client.pause({ path: { identifier } }), ContainersError.WrapForMethod("pause"));
+            Effect.mapError(client.pause({ path: { identifier } }), ContainersError("pause"));
         const unpause_ = (identifier: ContainerIdentifier) =>
-            Effect.mapError(client.unpause({ path: { identifier } }), ContainersError.WrapForMethod("unpause"));
+            Effect.mapError(client.unpause({ path: { identifier } }), ContainersError("unpause"));
         const attach_ = (identifier: ContainerIdentifier, options?: Options<"attach">) =>
             Effect.mapError(
                 HttpApiSocket(
@@ -577,7 +514,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     urlParams: { ...options },
                     headers: { Connection: "Upgrade", Upgrade: "tcp" },
                 }),
-                ContainersError.WrapForMethod("attach")
+                ContainersError("attach")
             );
         const attachWebsocket_ = (identifier: ContainerIdentifier, options?: Options<"attachWebsocket">) =>
             Effect.mapError(
@@ -586,17 +523,14 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     "containers",
                     "attachWebsocket"
                 )({ path: { identifier }, urlParams: { ...options } }).pipe(Effect.provide(context)),
-                ContainersError.WrapForMethod("attachWebsocket")
+                ContainersError("attachWebsocket")
             );
         const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
-            Effect.mapError(
-                client.wait({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("wait")
-            );
+            Effect.mapError(client.wait({ path: { identifier }, urlParams: { ...options } }), ContainersError("wait"));
         const delete_ = (identifier: ContainerIdentifier, options?: Options<"delete">) =>
             Effect.mapError(
                 client.delete({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("delete")
+                ContainersError("delete")
             );
         const archive_ = (identifier: ContainerIdentifier, options: Options<"archive">) =>
             Stream.mapError(
@@ -606,7 +540,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     "archive",
                     httpClient
                 )({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("archive")
+                ContainersError("archive")
             );
         const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
             client
@@ -625,7 +559,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     )
                 )
                 .pipe(Effect.map(({ "X-Docker-Container-Path-Stat": pathStat }) => pathStat))
-                .pipe(Effect.mapError(ContainersError.WrapForMethod("archiveInfo")));
+                .pipe(Effect.mapError(ContainersError("archiveInfo")));
         const putArchive_ = <E, R>(
             identifier: ContainerIdentifier,
             stream: Stream.Stream<Uint8Array, E, R>,
@@ -639,10 +573,10 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     httpClient,
                     stream
                 )({ path: { identifier }, urlParams: { ...options } }),
-                ContainersError.WrapForMethod("putArchive")
+                ContainersError("putArchive")
             );
         const prune_ = (filters?: Schema.Schema.Type<PruneFilters> | undefined) =>
-            Effect.mapError(client.prune({ urlParams: { filters } }), ContainersError.WrapForMethod("prune"));
+            Effect.mapError(client.prune({ urlParams: { filters } }), ContainersError("prune"));
 
         return {
             list: list_,

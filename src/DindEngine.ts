@@ -11,7 +11,6 @@ import type * as Layer from "effect/Layer";
 import type * as ParseResult from "effect/ParseResult";
 import type * as BlobConstants from "./internal/blobs/constants.js";
 import type * as MobyConnection from "./MobyConnection.js";
-import type * as MobyEndpoints from "./MobyEndpoints.js";
 
 import * as DockerEngine from "./DockerEngine.js";
 import * as internal from "./internal/engines/dind.js";
@@ -52,11 +51,8 @@ export type MakeDindLayerFromPlatformConstructor<
     dindBaseImage: BlobConstants.RecommendedDindBaseImages;
 }) => Layer.Layer<
     Layer.Layer.Success<DockerEngine.DockerLayer>,
-    | MobyEndpoints.ImagesError
-    | MobyEndpoints.SystemsError
-    | MobyEndpoints.VolumesError
+    | DockerEngine.DockerError
     | ParseResult.ParseError
-    | MobyEndpoints.ContainersError
     | PlatformLayerConstructorError
     | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
     | PlatformLayerConstructorContext

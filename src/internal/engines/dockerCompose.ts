@@ -100,7 +100,7 @@ const uploadProject = Function.dual<
             return projectUploadDir;
         }).pipe(
             Effect.catchTag(
-                "ContainersError",
+                "DockerError",
                 (cause) =>
                     new DockerComposeError({
                         cause,
@@ -222,7 +222,7 @@ export const isDockerComposeError = (u: unknown): u is DockerComposeError =>
 /** @internal */
 export class DockerComposeError extends PlatformError.TypeIdError(DockerComposeErrorTypeId, "DockerComposeError")<{
     method: string;
-    cause: ParseResult.ParseError | Socket.SocketError | MobyEndpoints.ExecsError | unknown;
+    cause: ParseResult.ParseError | Socket.SocketError | DockerEngine.DockerError | unknown;
 }> {
     public override get message() {
         return `${String.capitalize(this.method)}`;
@@ -238,7 +238,7 @@ export const make: (options?: {
     dockerEngineSocket?: string | undefined;
 }) => Effect.Effect<
     DockerComposeEngine.DockerCompose,
-    MobyEndpoints.SystemsError | MobyEndpoints.ContainersError,
+    DockerEngine.DockerError,
     MobyEndpoints.Containers | MobyEndpoints.System | Scope.Scope
 > = Effect.fnUntraced(function* (options) {
     const containers = yield* MobyEndpoints.Containers;
@@ -371,7 +371,7 @@ export const make: (options?: {
             args?: Array<string> | undefined,
             options?: DockerComposeEngine.ExecOptions | undefined
         ): Effect.Effect<
-            MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+            MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
             DockerComposeError,
             Scope.Scope
         > =>
@@ -518,7 +518,7 @@ export const make: (options?: {
             args?: Array<string> | undefined,
             options?: DockerComposeEngine.RunOptions | undefined
         ): Effect.Effect<
-            MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+            MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
             DockerComposeError,
             Scope.Scope
         > =>
@@ -692,7 +692,7 @@ export const make: (options?: {
             project: Stream.Stream<Uint8Array, E1, never>
         ): Effect.Effect<
             DockerComposeEngine.DockerComposeProject,
-            E1 | DockerComposeError | MobyEndpoints.ContainersError,
+            E1 | DockerComposeError | DockerEngine.DockerError,
             Scope.Scope
         > =>
             Effect.gen(function* () {
@@ -757,7 +757,7 @@ export const layer = (
     options?: { dockerEngineSocket?: string | undefined } | undefined
 ): Layer.Layer<
     DockerComposeEngine.DockerCompose,
-    MobyEndpoints.SystemsError | MobyEndpoints.ContainersError,
+    DockerEngine.DockerError,
     Layer.Layer.Success<DockerEngine.DockerLayer>
 > => Layer.scoped(DockerCompose, make(options));
 
@@ -769,7 +769,7 @@ export const layerProject: <E1>(
     readonly tag: Context.Tag<DockerComposeEngine.DockerComposeProject, DockerComposeEngine.DockerComposeProject>;
     readonly layer: Layer.Layer<
         DockerComposeEngine.DockerComposeProject,
-        E1 | DockerComposeError | MobyEndpoints.ContainersError,
+        E1 | DockerComposeError | DockerEngine.DockerError,
         DockerComposeEngine.DockerCompose
     >;
 } = <E1>(project: Stream.Stream<Uint8Array, E1, never>, tagIdentifier: string) => {

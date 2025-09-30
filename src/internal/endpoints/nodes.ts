@@ -1,62 +1,12 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiError,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpClientError,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmNode, SwarmNodeSpec } from "../generated/index.js";
+import { DockerError } from "./circular.ts";
+import { BadRequest, InternalServerError, NotFound } from "./httpApiHacks.ts";
 import { NodeNotPartOfSwarm } from "./swarm.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const NodesErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/NodesError") as NodesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type NodesErrorTypeId = typeof NodesErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isNodesError = (u: unknown): u is NodesError => Predicate.hasProperty(u, NodesErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class NodesError extends PlatformError.TypeIdError(NodesErrorTypeId, "NodesError")<{
-    method: string;
-    cause:
-        | NodeNotPartOfSwarm
-        | HttpApiError.InternalServerError
-        | HttpApiError.BadRequest
-        | HttpApiError.NotFound
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: NodesError["cause"]) => new this({ method, cause });
-    }
-}
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -80,7 +30,7 @@ const listNodesEndpoint = HttpApiEndpoint.get("list", "/")
 const inspectNodeEndpoint = HttpApiEndpoint.get("inspect", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .addSuccess(SwarmNode, { status: 200 })
-    .addError(HttpApiError.NotFound) // 404 No such node
+    .addError(NotFound) // 404 No such node
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeDelete */
@@ -88,7 +38,7 @@ const deleteNodeEndpoint = HttpApiEndpoint.del("delete", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .setUrlParams(Schema.Struct({ force: Schema.optional(Schema.BooleanFromString) }))
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.NotFound) // 404 No such node
+    .addError(NotFound) // 404 No such node
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
@@ -97,8 +47,8 @@ const updateNodeEndpoint = HttpApiEndpoint.post("update", "/:id/update")
     .setUrlParams(Schema.Struct({ version: Schema.NumberFromString }))
     .setPayload(SwarmNodeSpec)
     .addSuccess(HttpApiSchema.Empty(200))
-    .addError(HttpApiError.BadRequest) // 400 Bad parameter
-    .addError(HttpApiError.NotFound) // 404 No such node
+    .addError(BadRequest) // 400 Bad parameter
+    .addError(NotFound) // 404 No such node
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node */
@@ -107,7 +57,7 @@ const NodesGroup = HttpApiGroup.make("nodes")
     .add(inspectNodeEndpoint)
     .add(deleteNodeEndpoint)
     .add(updateNodeEndpoint)
-    .addError(HttpApiError.InternalServerError)
+    .addError(InternalServerError)
     .prefix("/nodes");
 
 /**
@@ -134,22 +84,16 @@ export class Nodes extends Effect.Service<Nodes>()("@the-moby-effect/endpoints/N
 
     effect: Effect.gen(function* () {
         const httpClient = yield* HttpClient.HttpClient;
+        const NodesError = DockerError.WrapForModule("nodes");
         const client = yield* HttpApiClient.group(NodesApi, { group: "nodes", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
-            Effect.mapError(client.list({ urlParams: { filters } }), NodesError.WrapForMethod("list"));
-        const inspect_ = (id: string) =>
-            Effect.mapError(client.inspect({ path: { id } }), NodesError.WrapForMethod("inspect"));
+            Effect.mapError(client.list({ urlParams: { filters } }), NodesError("list"));
+        const inspect_ = (id: string) => Effect.mapError(client.inspect({ path: { id } }), NodesError("inspect"));
         const delete_ = (id: string, options?: { force?: boolean | undefined } | undefined) =>
-            Effect.mapError(
-                client.delete({ path: { id }, urlParams: { ...options } }),
-                NodesError.WrapForMethod("delete")
-            );
+            Effect.mapError(client.delete({ path: { id }, urlParams: { ...options } }), NodesError("delete"));
         const update_ = (id: string, version: number, payload: SwarmNodeSpec) =>
-            Effect.mapError(
-                client.update({ path: { id }, urlParams: { version }, payload }),
-                NodesError.WrapForMethod("update")
-            );
+            Effect.mapError(client.update({ path: { id }, urlParams: { version }, payload }), NodesError("update"));
 
         return {
             list: list_,

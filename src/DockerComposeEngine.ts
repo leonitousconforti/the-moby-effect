@@ -13,7 +13,6 @@ import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
 import type * as DockerEngine from "./DockerEngine.js";
 import type * as MobyDemux from "./MobyDemux.js";
-import type * as MobyEndpoints from "./MobyEndpoints.js";
 
 import * as internal from "./internal/engines/dockerCompose.js";
 
@@ -776,7 +775,7 @@ export interface DockerCompose {
         args?: Array<string> | undefined,
         options?: ExecOptions | undefined
     ) => Effect.Effect<
-        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         E1 | DockerComposeError,
         Scope.Scope
     >;
@@ -853,7 +852,7 @@ export interface DockerCompose {
         args?: Array<string> | undefined,
         options?: RunOptions | undefined
     ) => Effect.Effect<
-        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         E1 | DockerComposeError,
         Scope.Scope
     >;
@@ -898,7 +897,7 @@ export interface DockerCompose {
 
     readonly forProject: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>
-    ) => Effect.Effect<DockerComposeProject, E1 | DockerComposeError | MobyEndpoints.ContainersError, Scope.Scope>;
+    ) => Effect.Effect<DockerComposeProject, E1 | DockerComposeError | DockerEngine.DockerError, Scope.Scope>;
 }
 
 /**
@@ -970,7 +969,7 @@ export interface DockerComposeProject {
         args?: Array<string> | undefined,
         options?: ExecOptions | undefined
     ) => Effect.Effect<
-        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         DockerComposeError,
         Scope.Scope
     >;
@@ -1031,7 +1030,7 @@ export interface DockerComposeProject {
         args?: Array<string> | undefined,
         options?: RunOptions | undefined
     ) => Effect.Effect<
-        MobyDemux.MultiplexedChannel<never, MobyEndpoints.ContainersError | Socket.SocketError, never>,
+        MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         DockerComposeError,
         Scope.Scope
     >;
@@ -1066,11 +1065,8 @@ export interface DockerComposeProject {
  */
 export const layer: (
     options?: { dockerEngineSocket?: string | undefined } | undefined
-) => Layer.Layer<
-    DockerCompose,
-    MobyEndpoints.SystemsError | MobyEndpoints.ContainersError,
-    Layer.Layer.Success<DockerEngine.DockerLayer>
-> = internal.layer;
+) => Layer.Layer<DockerCompose, DockerEngine.DockerError, Layer.Layer.Success<DockerEngine.DockerLayer>> =
+    internal.layer;
 
 /**
  * @since 1.0.0
@@ -1083,7 +1079,7 @@ export const layerProject: <E1>(
     readonly tag: Context.Tag<DockerComposeProject, DockerComposeProject>;
     readonly layer: Layer.Layer<
         DockerComposeProject,
-        E1 | internal.DockerComposeError | MobyEndpoints.ContainersError,
+        E1 | internal.DockerComposeError | DockerEngine.DockerError,
         DockerCompose
     >;
 } = internal.layerProject;

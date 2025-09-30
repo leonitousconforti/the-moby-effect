@@ -1,64 +1,12 @@
-import {
-    HttpApi,
-    HttpApiClient,
-    HttpApiEndpoint,
-    HttpApiError,
-    HttpApiGroup,
-    HttpApiSchema,
-    HttpClient,
-    Error as PlatformError,
-    type HttpClientError,
-} from "@effect/platform";
-import { Effect, Predicate, Schema, Stream, String, type Layer, type ParseResult } from "effect";
+import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
+import { Effect, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmTask } from "../generated/index.js";
-import { HttpApiStreamingResponse } from "./httpApiHacks.js";
+import { DockerError } from "./circular.ts";
+import { HttpApiStreamingResponse, InternalServerError, NotFound } from "./httpApiHacks.js";
 import { NodeNotPartOfSwarm } from "./swarm.js";
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const TasksErrorTypeId: unique symbol = Symbol.for("@the-moby-effect/endpoints/TasksError") as TasksErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export type TasksErrorTypeId = typeof TasksErrorTypeId;
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export const isTasksError = (u: unknown): u is TasksError => Predicate.hasProperty(u, TasksErrorTypeId);
-
-/**
- * @since 1.0.0
- * @category Errors
- */
-export class TasksError extends PlatformError.TypeIdError(TasksErrorTypeId, "TasksError")<{
-    method: string;
-    cause:
-        | NodeNotPartOfSwarm
-        | HttpApiError.InternalServerError
-        | HttpApiError.Conflict
-        | HttpApiError.NotFound
-        | HttpApiError.BadRequest
-        | ParseResult.ParseError
-        | HttpClientError.HttpClientError
-        | HttpApiError.HttpApiDecodeError;
-}> {
-    public override get message() {
-        return `${String.capitalize(this.method)} ${this.cause._tag}`;
-    }
-
-    public static WrapForMethod(method: string) {
-        return (cause: TasksError["cause"]) => new this({ method, cause });
-    }
-}
 
 /** @since 1.0.0 */
 export class TaskListFilters extends Schema.parseJson(
@@ -82,7 +30,7 @@ const listTasksEndpoint = HttpApiEndpoint.get("list", "/")
 const inspectTaskEndpoint = HttpApiEndpoint.get("inspect", "/:id")
     .setPath(Schema.Struct({ id: Schema.String }))
     .addSuccess(SwarmTask, { status: 200 }) // 200 OK
-    .addError(HttpApiError.NotFound) // 404 No such task
+    .addError(NotFound) // 404 No such task
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskLogs */
@@ -100,7 +48,7 @@ const logsTaskEndpoint = HttpApiEndpoint.get("logs", "/:id/logs")
         })
     )
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
-    .addError(HttpApiError.NotFound) // 404 No such task
+    .addError(NotFound) // 404 No such task
     .addError(NodeNotPartOfSwarm); // 503 Node is not part of a swarm
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task */
@@ -108,7 +56,7 @@ const TasksGroup = HttpApiGroup.make("tasks")
     .add(listTasksEndpoint)
     .add(inspectTaskEndpoint)
     .add(logsTaskEndpoint)
-    .addError(HttpApiError.InternalServerError)
+    .addError(InternalServerError)
     .prefix("/tasks");
 
 /**
@@ -146,12 +94,12 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
             >;
 
         const httpClient = yield* HttpClient.HttpClient;
+        const TasksError = DockerError.WrapForModule("tasks");
         const client = yield* HttpApiClient.group(TasksApi, { group: "tasks", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<TaskListFilters>) =>
-            Effect.mapError(client.list({ urlParams: { filters } }), TasksError.WrapForMethod("list"));
-        const inspect_ = (id: string) =>
-            Effect.mapError(client.inspect({ path: { id } }), TasksError.WrapForMethod("inspect"));
+            Effect.mapError(client.list({ urlParams: { filters } }), TasksError("list"));
+        const inspect_ = (id: string) => Effect.mapError(client.inspect({ path: { id } }), TasksError("inspect"));
         const logs_ = (id: string, options?: Options<"logs">) =>
             HttpApiStreamingResponse(
                 TasksApi,
@@ -161,7 +109,7 @@ export class Tasks extends Effect.Service<Tasks>()("@the-moby-effect/endpoints/T
             )({ path: { id }, urlParams: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapError(TasksError.WrapForMethod("logs")));
+                .pipe(Stream.mapError(TasksError("logs")));
 
         return {
             list: list_,

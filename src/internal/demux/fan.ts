@@ -20,8 +20,14 @@ import { makeRawChannel, rawFromStreamWith } from "./raw.js";
 /** @internal */
 export const fan = Function.dual<
     <IE = never, OE = Socket.SocketError, R = never>(options: {
-        requestedCapacity: number;
-        encoding?: string | undefined;
+        readonly requestedCapacity:
+            | number
+            | {
+                  readonly stdinCapacity: number;
+                  readonly stdoutCapacity: number;
+                  readonly stderrCapacity: number;
+              };
+        readonly encoding?: string | undefined;
     }) => (multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>) => Effect.Effect<
         {
             stdin: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
@@ -33,7 +39,16 @@ export const fan = Function.dual<
     >,
     <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
-        options: { requestedCapacity: number; encoding?: string | undefined }
+        options: {
+            readonly requestedCapacity:
+                | number
+                | {
+                      readonly stdinCapacity: number;
+                      readonly stdoutCapacity: number;
+                      readonly stderrCapacity: number;
+                  };
+            readonly encoding?: string | undefined;
+        }
     ) => Effect.Effect<
         {
             stdin: MobyDemux.RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
@@ -47,17 +62,31 @@ export const fan = Function.dual<
     (arguments_) => isMultiplexedChannel(arguments_[0]) || isMultiplexedSocket(arguments_[0]),
     Effect.fnUntraced(function* <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
-        options: { requestedCapacity: number; encoding?: string | undefined }
+        options: {
+            readonly requestedCapacity:
+                | number
+                | {
+                      readonly stdinCapacity: number;
+                      readonly stdoutCapacity: number;
+                      readonly stderrCapacity: number;
+                  };
+            readonly encoding?: string | undefined;
+        }
     ) {
         const mutex = yield* Effect.makeSemaphore(1);
         const context = yield* Effect.context<Exclude<R, Scope.Scope>>();
 
         // Internal buffers
-        const stdoutConsumerQueue = yield* Queue.bounded<string>(options.requestedCapacity);
-        const stderrConsumerQueue = yield* Queue.bounded<string>(options.requestedCapacity);
+        const capacity = options.requestedCapacity;
+        const stdoutConsumerQueue = yield* Queue.bounded<string>(
+            typeof capacity === "number" ? capacity : capacity.stdoutCapacity
+        );
+        const stderrConsumerQueue = yield* Queue.bounded<string>(
+            typeof capacity === "number" ? capacity : capacity.stderrCapacity
+        );
         const stdinProducerQueue = yield* Queue.bounded<
             Either.Either<Chunk.Chunk<Uint8Array | string | Socket.CloseEvent>, Exit.Exit<void, IE>>
-        >(options.requestedCapacity);
+        >(typeof capacity === "number" ? capacity : capacity.stdinCapacity);
 
         // We MUST only touch the underlying once!!! Very important!!!
         // Demux everything to and fro the correct places. We can touch

@@ -9,7 +9,7 @@ export class ContainerMountPoint extends Schema.Class<ContainerMountPoint>("Cont
         Driver: Schema.optional(Schema.String),
         Mode: Schema.String,
         RW: Schema.Boolean,
-        Propagation: Schema.Literal("rprivate", "private", "rshared", "shared", "rslave", "slave"),
+        Propagation: Schema.Literal("rprivate", "private", "rshared", "shared", "rslave", "slave", ""),
     },
     {
         identifier: "ContainerMountPoint",

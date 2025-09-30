@@ -31,8 +31,14 @@ export const pack = Function.dual<
         R2 = never,
         R3 = never,
     >(options: {
-        requestedCapacity: number;
-        encoding?: string | undefined;
+        readonly requestedCapacity:
+            | number
+            | {
+                  readonly stdinCapacity: number;
+                  readonly stdoutCapacity: number;
+                  readonly stderrCapacity: number;
+              };
+        readonly encoding?: string | undefined;
     }) => (
         stdio: MobyDemux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
     ) => Effect.Effect<
@@ -52,7 +58,16 @@ export const pack = Function.dual<
         R3 = never,
     >(
         stdio: MobyDemux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
-        options: { requestedCapacity: number; encoding?: string | undefined }
+        options: {
+            readonly requestedCapacity:
+                | number
+                | {
+                      readonly stdinCapacity: number;
+                      readonly stdoutCapacity: number;
+                      readonly stderrCapacity: number;
+                  };
+            readonly encoding?: string | undefined;
+        }
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
@@ -72,7 +87,16 @@ export const pack = Function.dual<
         R3 = never,
     >(
         stdio: MobyDemux.HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>,
-        options: { requestedCapacity: number; encoding?: string | undefined }
+        options: {
+            readonly requestedCapacity:
+                | number
+                | {
+                      readonly stdinCapacity: number;
+                      readonly stdoutCapacity: number;
+                      readonly stderrCapacity: number;
+                  };
+            readonly encoding?: string | undefined;
+        }
     ) {
         const mutex = yield* Effect.makeSemaphore(1);
         const context = yield* Effect.context<
@@ -81,10 +105,15 @@ export const pack = Function.dual<
 
         const capacity = options.requestedCapacity;
         type CanReceive = Uint8Array | string | Socket.CloseEvent;
-        const stdoutConsumerQueue = yield* Queue.bounded<string>(capacity);
-        const stderrConsumerQueue = yield* Queue.bounded<string>(capacity);
-        const stdinProducerQueue =
-            yield* Queue.bounded<Either.Either<Chunk.Chunk<CanReceive>, Exit.Exit<void, IE1>>>(capacity);
+        const stdoutConsumerQueue = yield* Queue.bounded<string>(
+            typeof capacity === "number" ? capacity : capacity.stdoutCapacity
+        );
+        const stderrConsumerQueue = yield* Queue.bounded<string>(
+            typeof capacity === "number" ? capacity : capacity.stderrCapacity
+        );
+        const stdinProducerQueue = yield* Queue.bounded<Either.Either<Chunk.Chunk<CanReceive>, Exit.Exit<void, IE1>>>(
+            typeof capacity === "number" ? capacity : capacity.stdinCapacity
+        );
 
         // Demux everything to and fro the correct places. We can touch
         // this more than once because it is wrapped in the mutex.
