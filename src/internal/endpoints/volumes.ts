@@ -9,7 +9,7 @@ import {
     VolumeCreateOptions,
 } from "../generated/index.js";
 import { VolumeIdentifier } from "../schemas/id.js";
-import { Int64 } from "../schemas/int64.js";
+import { Int64 } from "../schemas/index.js";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./httpApiHacks.ts";
 import { NodeNotPartOfSwarm } from "./swarm.js";

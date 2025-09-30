@@ -197,7 +197,7 @@ export const exec = ({
     containerId: IdSchemas.ContainerIdentifier;
     command: string | Array<string>;
 }): Effect.Effect<
-    [exitCode: Schemas.Int64Schemas.Int64Brand, output: string],
+    [exitCode: Schema.Schema.Type<Schemas.Int64>, output: string],
     DockerEngine.DockerError | ParseResult.ParseError | Socket.SocketError,
     MobyEndpoints.Execs
 > =>

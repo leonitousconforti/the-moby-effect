@@ -26,7 +26,7 @@ import {
     ContainerWaitResponse,
 } from "../generated/index.js";
 import { ContainerIdentifier } from "../schemas/id.js";
-import { Int64 } from "../schemas/int64.js";
+import { Int64 } from "../schemas/index.js";
 import { DockerError } from "./circular.ts";
 import {
     BadRequest,

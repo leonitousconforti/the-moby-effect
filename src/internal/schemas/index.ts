@@ -1,22 +1,32 @@
-export * as AddressSchemas from "./address.js";
-export * as CidrBlockSchemas from "./cidrBlock.js";
-export * as CidrBlockMaskSchemas from "./cidrBlockMask.js";
-export * as FamilySchemas from "./family.js";
 export * as IdSchemas from "./id.js";
-export * as Int16Schemas from "./int16.js";
-export * as Int32Schemas from "./int32.js";
-export * as Int64Schemas from "./int64.js";
-export * as Int8Schemas from "./int8.js";
-export * as IPv4Schemas from "./ipv4.js";
-export * as IPv6Schemas from "./ipv6.js";
-export * as MacSchemas from "./mac.js";
-export * as PortSchemas from "./port.js";
-export * as UInt16Schemas from "./uInt16.js";
-export * as UInt32Schemas from "./uInt32.js";
-export * as UInt64Schemas from "./uInt64.js";
-export * as UInt8Schemas from "./uInt8.js";
+export * as Int16Schemas from "./integers/int16.js";
+export * as Int32Schemas from "./integers/int32.js";
+export * as Int64Schemas from "./integers/int64.js";
+export * as Int8Schemas from "./integers/int8.js";
+export * as UInt16Schemas from "./integers/uint16.js";
+export * as UInt32Schemas from "./integers/uint32.js";
+export * as UInt64Schemas from "./integers/uint64.js";
+export * as UInt8Schemas from "./integers/uint8.js";
 
-export { Address, AddressBigint, AddressString } from "./address.js";
+export * as AddressSchemas from "./internet/address.js";
+export * as CidrBlockSchemas from "./internet/cidrBlock.ts";
+export * as CidrBlockMaskSchemas from "./internet/cidrBlockMask.js";
+export * as FamilySchemas from "./internet/family.js";
+export * as IPv4Schemas from "./internet/ipv4.js";
+export * as IPv6Schemas from "./internet/ipv6.js";
+export * as MacSchemas from "./internet/mac.js";
+export * as PortSchemas from "./internet/port.js";
+
+export { Int16 } from "./integers/int16.js";
+export { Int32 } from "./integers/int32.js";
+export { Int64 } from "./integers/int64.js";
+export { Int8 } from "./integers/int8.js";
+export { UInt16 } from "./integers/uint16.js";
+export { UInt32 } from "./integers/uint32.js";
+export { UInt64 } from "./integers/uint64.js";
+export { UInt8 } from "./integers/uint8.js";
+
+export { Address, AddressBigint, AddressString } from "./internet/address.js";
 export {
     CidrBlock,
     CidrBlockFromString,
@@ -24,9 +34,14 @@ export {
     IPv4CidrBlockFromString,
     IPv6CidrBlock,
     IPv6CidrBlockFromString,
-} from "./cidrBlock.js";
-export { IPv4CidrMask, IPv6CidrMask } from "./cidrBlockMask.js";
-export { Family } from "./family.js";
+} from "./internet/cidrBlock.ts";
+export { IPv4CidrMask, IPv6CidrMask } from "./internet/cidrBlockMask.js";
+export { Family } from "./internet/family.js";
+export { IPv4, IPv4Bigint, IPv4String } from "./internet/ipv4.js";
+export { IPv6, IPv6Bigint, IPv6String } from "./internet/ipv6.js";
+export { MacAddress } from "./internet/mac.js";
+export { Port, PortBinding, PortMap, PortSet } from "./internet/port.js";
+
 export {
     ConfigIdentifier,
     ContainerIdentifier,
@@ -41,15 +56,3 @@ export {
     TaskIdentifier,
     VolumeIdentifier,
 } from "./id.js";
-export { Int16 } from "./int16.js";
-export { Int32 } from "./int32.js";
-export { Int64 } from "./int64.js";
-export { Int8 } from "./int8.js";
-export { IPv4, IPv4Bigint, IPv4String } from "./ipv4.js";
-export { IPv6, IPv6Bigint, IPv6String } from "./ipv6.js";
-export { MacAddress } from "./mac.js";
-export { Port, PortBinding, PortMap, PortSet } from "./port.js";
-export { UInt16 } from "./uInt16.js";
-export { UInt32 } from "./uInt32.js";
-export { UInt64 } from "./uInt64.js";
-export { UInt8 } from "./uInt8.js";

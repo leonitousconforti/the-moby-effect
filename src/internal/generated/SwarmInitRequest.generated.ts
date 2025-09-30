@@ -10,7 +10,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
         AdvertiseAddr: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         DataPathAddr: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         DataPathPort: MobySchemas.UInt32.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt32Schemas.UInt32Brand(0))
+            Schema.withConstructorDefault(() => MobySchemas.UInt32.make(0))
         ),
         ForceNewCluster: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         Spec: Schema.NullOr(SwarmSpec.SwarmSpec)
@@ -26,7 +26,7 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => [])),
         SubnetSize: MobySchemas.UInt32.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt32Schemas.UInt32Brand(24))
+            Schema.withConstructorDefault(() => MobySchemas.UInt32.make(24))
         ),
     },
     {

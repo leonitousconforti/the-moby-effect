@@ -31,7 +31,7 @@ import * as internalHttpBlob from "../blobs/http.js";
 import * as internalHttpsBlob from "../blobs/https.js";
 import * as internalSocketBlob from "../blobs/socket.js";
 import * as internalSshBlob from "../blobs/ssh.js";
-import * as PortSchemas from "../schemas/port.js";
+import * as PortSchemas from "../schemas/internet/port.js";
 
 /** @internal */
 const downloadDindCertificates = (
@@ -264,9 +264,9 @@ export const makeDindLayerFromPlatformConstructor =
                         Privileged: true,
                         Binds: binds,
                         PortBindings: {
-                            "22/tcp": [{ HostPort: PortSchemas.PortBrand(0) }],
-                            "2375/tcp": [{ HostPort: PortSchemas.PortBrand(0) }],
-                            "2376/tcp": [{ HostPort: PortSchemas.PortBrand(0) }],
+                            "22/tcp": [{ HostPort: PortSchemas.Port.make(0) }],
+                            "2375/tcp": [{ HostPort: PortSchemas.Port.make(0) }],
+                            "2376/tcp": [{ HostPort: PortSchemas.Port.make(0) }],
                         },
                     },
                 })

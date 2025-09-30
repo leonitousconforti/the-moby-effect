@@ -29,7 +29,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
                     () =>
                         new ContainerRestartPolicy.ContainerRestartPolicy({
                             Name: "no",
-                            MaximumRetryCount: MobySchemas.Int64Schemas.Int64Brand(0),
+                            MaximumRetryCount: MobySchemas.Int64.make(0),
                         })
                 )
             ),
@@ -41,12 +41,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         ConsoleSize: Schema.Array(MobySchemas.UInt64)
             .pipe(Schema.itemsCount(2))
             .pipe(Schema.propertySignature)
-            .pipe(
-                Schema.withConstructorDefault(() => [
-                    MobySchemas.UInt64Schemas.UInt64Brand(0),
-                    MobySchemas.UInt64Schemas.UInt64Brand(0),
-                ])
-            ),
+            .pipe(Schema.withConstructorDefault(() => [MobySchemas.UInt64.make(0), MobySchemas.UInt64.make(0)])),
         Annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),
@@ -82,7 +77,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
         OomScoreAdj: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
         ),
         PidMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         Privileged: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
@@ -98,7 +93,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         UTSMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         UsernsMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         ShmSize: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64Schemas.Int64Brand(0))
+            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
         ),
         Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         Runtime: Schema.optional(Schema.String),

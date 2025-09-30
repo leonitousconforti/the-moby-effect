@@ -26,7 +26,7 @@ describe.each(testMatrix)(
                 Effect.gen(function* () {
                     const containers = yield* MobyEndpoints.Containers;
                     const { Id: id } = yield* DockerEngine.run({
-                        StopTimeout: MobySchemas.Int64Schemas.Int64Brand(10),
+                        StopTimeout: MobySchemas.Int64.make(10),
                         Image: "docker.io/library/alpine:latest",
                         Cmd: ["sleep", "1s"],
                     });
