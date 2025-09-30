@@ -4,7 +4,6 @@
  * @since 1.0.0
  */
 
-import * as Brand from "effect/Brand";
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 import * as IPv4 from "./ipv4.js";
@@ -35,30 +34,12 @@ export const IPv6Regex = new RegExp(
 
 /**
  * @since 1.0.0
- * @category Api interface
- */
-export interface $IPv6Family extends Schema.Literal<["ipv6"]> {}
-
-/**
- * @since 1.0.0
- * @category Decoded types
- */
-export type IPv6Family = Schema.Schema.Type<$IPv6Family>;
-
-/**
- * @since 1.0.0
  * @category Schemas
  */
-export const IPv6Family: $IPv6Family = Schema.Literal("ipv6").annotations({
+export class IPv6Family extends Schema.Literal("ipv6").annotations({
     identifier: "IPv6Family",
     description: "An ipv6 family",
-});
-
-/**
- * @since 1.0.0
- * @category Api interface
- */
-export interface $IPv6String extends Schema.filter<Schema.Schema<string, string, never>> {}
+}) {}
 
 /**
  * An IPv6 address in string format.
@@ -66,44 +47,7 @@ export interface $IPv6String extends Schema.filter<Schema.Schema<string, string,
  * @since 1.0.0
  * @category Schemas
  */
-export const IPv6String: $IPv6String = Schema.String.pipe(Schema.pattern(IPv6Regex));
-
-/**
- * @since 1.0.0
- * @category Branded types
- */
-export type IPv6Brand = string & Brand.Brand<"IPv6">;
-
-/**
- * @since 1.0.0
- * @category Branded constructors
- */
-export const IPv6Brand = Brand.nominal<IPv6Brand>();
-
-/**
- * @since 1.0.0
- * @category Api interface
- */
-export interface $IPv6
-    extends Schema.transform<
-        Schema.filter<Schema.Schema<string, string, never>>,
-        Schema.Struct<{
-            family: $IPv6Family;
-            ip: Schema.BrandSchema<IPv6Brand, Brand.Brand.Unbranded<IPv6Brand>, never>;
-        }>
-    > {}
-
-/**
- * @since 1.0.0
- * @category Decoded types
- */
-export type IPv6 = Schema.Schema.Type<$IPv6>;
-
-/**
- * @since 1.0.0
- * @category Encoded types
- */
-export type IPv6Encoded = Schema.Schema.Encoded<$IPv6>;
+export const IPv6String = Schema.String.pipe(Schema.pattern(IPv6Regex));
 
 /**
  * An IPv6 address.
@@ -128,11 +72,11 @@ export type IPv6Encoded = Schema.Schema.Encoded<$IPv6>;
  *         decodeIPv6("2001:0db8:85a3:0000:0000:8a2e:0370:7334")
  *     );
  */
-export const IPv6: $IPv6 = Schema.transform(
+export class IPv6 extends Schema.transform(
     IPv6String,
     Schema.Struct({
         family: IPv6Family,
-        ip: Schema.String.pipe(Schema.fromBrand(IPv6Brand)),
+        ip: Schema.String.pipe(Schema.brand("IPv6")),
     }),
     {
         encode: ({ ip }) => ip,
@@ -141,45 +85,7 @@ export const IPv6: $IPv6 = Schema.transform(
 ).annotations({
     identifier: "IPv6",
     description: "An ipv6 address",
-});
-
-/**
- * @since 1.0.0
- * @category Branded types
- */
-export type IPv6BigintBrand = bigint & Brand.Brand<"IPv6Bigint">;
-
-/**
- * @since 1.0.0
- * @category Branded constructors
- */
-export const IPv6BigintBrand = Brand.nominal<IPv6BigintBrand>();
-
-/**
- * @since 1.0.0
- * @category Api interface
- */
-export interface $IPv6Bigint
-    extends Schema.transformOrFail<
-        $IPv6,
-        Schema.Struct<{
-            family: $IPv6Family;
-            value: Schema.BrandSchema<IPv6BigintBrand, Brand.Brand.Unbranded<IPv6BigintBrand>, never>;
-        }>,
-        never
-    > {}
-
-/**
- * @since 1.0.0
- * @category Decoded types
- */
-export type IPv6Bigint = Schema.Schema.Type<$IPv6Bigint>;
-
-/**
- * @since 1.0.0
- * @category Encoded types
- */
-export type IPv6BigintEncoded = Schema.Schema.Encoded<$IPv6Bigint>;
+}) {}
 
 /**
  * An IPv6 as a bigint.
@@ -223,11 +129,11 @@ export type IPv6BigintEncoded = Schema.Schema.Encoded<$IPv6Bigint>;
  *         "d8c6:3feb:46e6:b80c:5a07:6227:ac19:caf6"
  *     );
  */
-export const IPv6Bigint: $IPv6Bigint = Schema.transformOrFail(
+export class IPv6Bigint extends Schema.transformOrFail(
     IPv6,
     Schema.Struct({
         family: IPv6Family,
-        value: Schema.BigIntFromSelf.pipe(Schema.fromBrand(IPv6BigintBrand)),
+        value: Schema.BigIntFromSelf.pipe(Schema.brand("IPv6Bigint")),
     }),
     {
         encode: ({ value }) => {
@@ -284,4 +190,4 @@ export const IPv6Bigint: $IPv6Bigint = Schema.transformOrFail(
 ).annotations({
     identifier: "IPv6Bigint",
     description: "An ipv6 address as a bigint",
-});
+}) {}

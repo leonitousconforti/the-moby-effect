@@ -4,7 +4,7 @@
  * @since 1.0.0
  */
 
-import type * as Family from "./family.js";
+import type * as Family from "./internet/family.js";
 
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
@@ -12,10 +12,10 @@ import * as Function from "effect/Function";
 import * as ParseResult from "effect/ParseResult";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
-import * as Address from "./address.js";
-import * as CidrBlockMask from "./cidrBlockMask.js";
-import * as IPv4 from "./ipv4.js";
-import * as IPv6 from "./ipv6.js";
+import * as Address from "./internet/address.js";
+import * as CidrBlockMask from "./internet/cidrBlockMask.js";
+import * as IPv4 from "./internet/ipv4.js";
+import * as IPv6 from "./internet/ipv6.js";
 
 /** @internal */
 type Tail<T extends ReadonlyArray<unknown>> = T extends
@@ -44,15 +44,12 @@ export const splitLiteral = <Str extends string, Delimiter extends string>(
  * @since 1.0.0
  * @category Api interface
  */
-export class CidrBlockBase<_Family extends Family.Family> extends Schema.Class<CidrBlockBase<Family.Family>>(
-    "CidrBlockMixin"
-)({
+export class CidrBlockBase<_Family extends Schema.Schema.Type<Family.Family>> extends Schema.Class<
+    CidrBlockBase<Schema.Schema.Type<Family.Family>>
+>("CidrBlockMixin")({
     address: Address.Address,
     mask: Schema.Union(CidrBlockMask.IPv4CidrMask, CidrBlockMask.IPv6CidrMask),
 }) {
-    /** @since 1.0.0 */
-    public readonly family: Family.Family = this.address.family;
-
     /** @internal */
     private onFamily<OnIPv4, OnIPv6>({
         onIPv4,
@@ -60,22 +57,27 @@ export class CidrBlockBase<_Family extends Family.Family> extends Schema.Class<C
     }: {
         onIPv4: (self: CidrBlockBase<"ipv4">) => OnIPv4;
         onIPv6: (self: CidrBlockBase<"ipv6">) => OnIPv6;
-    }): _Family extends IPv4.IPv4Family ? OnIPv4 : _Family extends IPv6.IPv6Family ? OnIPv6 : never {
-        type Ret = typeof this.address.family extends IPv4.IPv4Family
-            ? OnIPv4
-            : typeof this.address.family extends IPv6.IPv6Family
-              ? OnIPv6
-              : never;
+    }): _Family extends Schema.Schema.Type<IPv4.IPv4Family>
+        ? OnIPv4
+        : _Family extends Schema.Schema.Type<IPv6.IPv6Family>
+          ? OnIPv6
+          : never {
+        type Ret =
+            typeof this.address.family extends Schema.Schema.Type<IPv4.IPv4Family>
+                ? OnIPv4
+                : typeof this.address.family extends Schema.Schema.Type<IPv6.IPv6Family>
+                  ? OnIPv6
+                  : never;
 
-        const isIPv4 = (): this is CidrBlockBase<"ipv4"> => this.family === "ipv4";
-        const isIPv6 = (): this is CidrBlockBase<"ipv6"> => this.family === "ipv6";
+        const isIPv4 = (): this is CidrBlockBase<"ipv4"> => this.address.family === "ipv4";
+        const isIPv6 = (): this is CidrBlockBase<"ipv6"> => this.address.family === "ipv6";
 
         if (isIPv4()) {
             return onIPv4(this as CidrBlockBase<"ipv4">) as Ret;
         } else if (isIPv6()) {
             return onIPv6(this as CidrBlockBase<"ipv6">) as Ret;
         } else {
-            return Function.absurd<Ret>(this.family as never);
+            return Function.absurd<Ret>(this.address.family as never);
         }
     }
 
@@ -95,7 +97,7 @@ export class CidrBlockBase<_Family extends Family.Family> extends Schema.Class<C
         never
     > {
         return Effect.gen(this, function* () {
-            const bits = this.family === "ipv4" ? 32 : 128;
+            const bits = this.address.family === "ipv4" ? 32 : 128;
             const bigIntegerAddress = yield* this.onFamily({
                 onIPv4: (self) => Schema.decode(IPv4.IPv4Bigint)(self.address.ip),
                 onIPv6: (self) => Schema.decode(IPv6.IPv6Bigint)(self.address.ip),
@@ -103,10 +105,7 @@ export class CidrBlockBase<_Family extends Family.Family> extends Schema.Class<C
             const intermediate = bigIntegerAddress.value.toString(2).padStart(bits, "0").slice(0, this.mask);
             const networkAddressString = intermediate + "0".repeat(bits - this.mask);
             const networkAddressBigInt = BigInt(`0b${networkAddressString}`);
-            return this.onFamily({
-                onIPv4: (_self) => IPv4.IPv4BigintBrand(networkAddressBigInt),
-                onIPv6: (_self) => IPv6.IPv6BigintBrand(networkAddressBigInt),
-            });
+            return networkAddressBigInt;
         });
     }
 
