@@ -142,7 +142,7 @@ export class IPv6Bigint extends Schema.transformOrFail(
             for (let i = 0; i < 8; i++) {
                 groups.push(hex.slice(i * 4, (i + 1) * 4));
             }
-            return Schema.decode(IPv6)(groups.join(":")).pipe(Effect.mapError(({ issue }) => issue));
+            return Effect.mapError(Schema.decode(IPv6)(groups.join(":")), ({ issue }) => issue);
         },
         decode: ({ ip }) => {
             function paddedHex(octet: string): string {

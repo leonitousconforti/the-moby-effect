@@ -136,7 +136,7 @@ export class IPv4Bigint extends Schema.transformOrFail(
                 const h = padded.slice(i, i + 2);
                 groups.push(parseInt(h, 16));
             }
-            return Schema.decode(IPv4)(groups.join(".")).pipe(Effect.mapError(({ issue }) => issue));
+            return Effect.mapError(Schema.decode(IPv4)(groups.join(".")), ({ issue }) => issue);
         },
         decode: ({ ip }) =>
             Function.pipe(
