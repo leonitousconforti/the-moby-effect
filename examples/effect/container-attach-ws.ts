@@ -20,8 +20,8 @@ const localDocker = MobyConnection.connectionOptionsFromPlatformSystemSocketDefa
     .pipe(
         Effect.map((connectionOptionsToHost) =>
             DindEngine.layerNodeJS({
-                exposeDindContainerBy: "socket",
-                dindBaseImage: "docker.io/library/docker:26-dind-rootless",
+                exposeDindContainerBy: "ssh",
+                dindBaseImage: "docker.io/library/docker:28-dind-rootless",
                 connectionOptionsToHost,
             })
         )

@@ -75,7 +75,7 @@ export class PortSet extends Schema.Record({
  */
 export class PortBinding extends Schema.Struct({
     HostPort: Schema.compose(Schema.NumberFromString, Port),
-    HostIp: Schema.optional(Address),
+    HostIp: Schema.optional(Schema.Union(Schema.Literal(""), Address)),
 }).annotations({
     identifier: "PortBinding",
     title: "nat.PortBinding",
