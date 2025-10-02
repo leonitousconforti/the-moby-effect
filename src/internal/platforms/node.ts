@@ -67,8 +67,8 @@ export const makeNodeSshAgent = (
          */
         public override createConnection(
             _options: http.ClientRequestArgs,
-            callback?: ((error: Error | null, socket: stream.Duplex) => void) | undefined
-        ): stream.Duplex {
+            callback: (error: Error | null, socket: stream.Duplex | undefined) => void
+        ) {
             this.sshClient
                 .on("ready", () => {
                     this.sshClient.openssh_forwardOutStreamLocal(
@@ -76,23 +76,23 @@ export const makeNodeSshAgent = (
                         (error: Error | undefined, stream: ssh2.ClientChannel) => {
                             if (error) {
                                 this.sshClient.end();
-                                return callback!(error, void 0 as unknown as stream.Duplex);
+                                return callback(error, void 0 as unknown as stream.Duplex);
                             }
 
                             stream.once("close", () => {
-                                stream.end();
-                                stream.destroy();
-                                // this.sshClient.end();
+                                // stream.end();
+                                // stream.destroy();
+                                this.sshClient.end();
                             });
 
-                            callback!(null, stream);
+                            callback(null, stream);
                         }
                     );
                 })
-                .on("error", (error) => callback!(error, void 0 as unknown as stream.Duplex))
+                .on("error", (error) => callback(error, void 0 as unknown as stream.Duplex))
                 .connect(this.connectConfig);
 
-            return void 0 as unknown as stream.Duplex;
+            return undefined;
         }
     })(connectionOptions);
 
