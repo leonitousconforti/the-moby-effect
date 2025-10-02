@@ -1,8 +1,8 @@
 // Run with: npx tsx examples/effect/container-attach-ws.ts
 
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Console, Effect, Layer } from "effect";
-import { DindEngine, DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
+import { NodeRuntime } from "@effect/platform-node";
+import { Console, Effect, Function, Layer } from "effect";
+import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -10,24 +10,24 @@ import { DindEngine, DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEn
 //         socketPath: "/var/run/docker.sock",
 //     })
 // );
-// const localDocker = Function.pipe(
-//     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
-//     Effect.map(DockerEngine.layerNodeJS),
-//     Layer.unwrapEffect
-// );
+const localDocker = Function.pipe(
+    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
+    Effect.map(DockerEngine.layerNodeJS),
+    Layer.unwrapEffect
+);
 
-const localDocker = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-    .pipe(
-        Effect.map((connectionOptionsToHost) =>
-            DindEngine.layerNodeJS({
-                exposeDindContainerBy: "ssh",
-                dindBaseImage: "docker.io/library/docker:28-dind-rootless",
-                connectionOptionsToHost,
-            })
-        )
-    )
-    .pipe(Layer.unwrapEffect)
-    .pipe(Layer.provide(NodeContext.layer));
+// const localDocker = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
+//     .pipe(
+//         Effect.map((connectionOptionsToHost) =>
+//             DindEngine.layerNodeJS({
+//                 exposeDindContainerBy: "ssh",
+//                 dindBaseImage: "docker.io/library/docker:28-dind-rootless",
+//                 connectionOptionsToHost,
+//             })
+//         )
+//     )
+//     .pipe(Layer.unwrapEffect)
+//     .pipe(Layer.provide(NodeContext.layer));
 
 const program = Effect.gen(function* () {
     const containers = yield* MobyEndpoints.Containers;
