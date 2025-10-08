@@ -47,11 +47,8 @@ type MakeDindLayerFromPlatformConstructor<
   dindBaseImage: BlobConstants.RecommendedDindBaseImages
 }) => Layer.Layer<
   Layer.Layer.Success<DockerEngine.DockerLayer>,
-  | MobyEndpoints.ImagesError
-  | MobyEndpoints.SystemsError
-  | MobyEndpoints.VolumesError
+  | DockerEngine.DockerError
   | ParseResult.ParseError
-  | MobyEndpoints.ContainersError
   | PlatformLayerConstructorError
   | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
   | PlatformLayerConstructorContext
@@ -59,7 +56,7 @@ type MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L23)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L22)
 
 Since v1.0.0
 
@@ -95,7 +92,7 @@ declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L112)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L108)
 
 Since v1.0.0
 
@@ -164,7 +161,7 @@ declare const layerBun: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L77)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L73)
 
 Since v1.0.0
 
@@ -233,7 +230,7 @@ declare const layerDeno: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L84)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L80)
 
 Since v1.0.0
 
@@ -269,7 +266,7 @@ declare const layerFetch: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L105)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L101)
 
 Since v1.0.0
 
@@ -338,7 +335,7 @@ declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L70)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L66)
 
 Since v1.0.0
 
@@ -407,7 +404,7 @@ declare const layerUndici: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L91)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L87)
 
 Since v1.0.0
 
@@ -443,6 +440,6 @@ declare const layerWeb: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L98)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L94)
 
 Since v1.0.0

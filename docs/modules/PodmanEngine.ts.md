@@ -146,7 +146,7 @@ type PodmanLayer = Layer.Layer<
   | MobyEndpoints.Images
   | MobyEndpoints.Networks
   | MobyEndpoints.Secrets
-  | MobyEndpoints.Systems
+  | MobyEndpoints.System
   | MobyEndpoints.Volumes,
   never,
   never

@@ -37,365 +37,152 @@ declare const callbackClient: <E>(
     Layer.Layer.Context<DockerEngine.DockerLayer>
   >
 ) => Promise<{
-  pull: (a: {
-    image: string
-    auth?: string | undefined
-    platform?: string | undefined
-  }) => ReadableStream<MobySchemas.JSONMessage>
+  pull: (a: { image: string; platform?: string | undefined }) => ReadableStream<MobySchemas.JSONMessage>
   build: <E1>(a: {
     tag: string
-    auth?: string | undefined
     platform?: string | undefined
     dockerfile?: string | undefined
     context: Stream.Stream<Uint8Array, E1, never>
-    buildArgs?: Record<string, string | undefined> | undefined
+    buildargs?: Record<string, string | undefined> | undefined
   }) => ReadableStream<MobySchemas.JSONMessage>
-  stop: (z: string, callback: (exit: Exit.Exit<void, ContainersError>) => void) => void
-  start: (z: string, callback: (exit: Exit.Exit<void, ContainersError>) => void) => void
+  stop: (z: string & Brand<"ContainerId">, callback: (exit: Exit.Exit<void, DockerError>) => void) => void
+  start: (z: string & Brand<"ContainerId">, callback: (exit: Exit.Exit<void, DockerError>) => void) => void
   run: (
-    z: {
-      readonly name?: string | undefined
-      readonly platform?: string | undefined
-      readonly spec: {
+    z: Omit<
+      {
         readonly Image: string
-        readonly Hostname?: string | null | undefined
-        readonly Domainname?: string | null | undefined
-        readonly User?: string | null | undefined
-        readonly AttachStdin?: boolean | null | undefined
-        readonly AttachStdout?: boolean | null | undefined
-        readonly AttachStderr?: boolean | null | undefined
+        readonly Hostname?: string | undefined
+        readonly Domainname?: string | undefined
+        readonly User?: string | undefined
+        readonly AttachStdin?: boolean | undefined
+        readonly AttachStdout?: boolean | undefined
+        readonly AttachStderr?: boolean | undefined
         readonly ExposedPorts?:
           | {
               readonly [x: `${number}`]: object
               readonly [x: `${number}/tcp`]: object
               readonly [x: `${number}/udp`]: object
             }
-          | null
           | undefined
-        readonly Tty?: boolean | null | undefined
-        readonly OpenStdin?: boolean | null | undefined
-        readonly StdinOnce?: boolean | null | undefined
+        readonly Tty?: boolean | undefined
+        readonly OpenStdin?: boolean | undefined
+        readonly StdinOnce?: boolean | undefined
         readonly Env?: ReadonlyArray<string> | null | undefined
         readonly Cmd?: ReadonlyArray<string> | null | undefined
-        readonly Healthcheck?:
-          | {
-              readonly Test?: ReadonlyArray<string> | null | undefined
-              readonly Interval?: number | undefined
-              readonly Timeout?: number | undefined
-              readonly StartPeriod?: number | undefined
-              readonly StartInterval?: number | undefined
-              readonly Retries?: number | undefined
-            }
-          | null
-          | undefined
-        readonly ArgsEscaped?: boolean | null | undefined
+        readonly Healthcheck?: MobySchemas.V1HealthcheckConfig | undefined
+        readonly ArgsEscaped?: boolean | undefined
         readonly Volumes?: { readonly [x: string]: object } | null | undefined
-        readonly WorkingDir?: string | null | undefined
+        readonly WorkingDir?: string | undefined
         readonly Entrypoint?: ReadonlyArray<string> | null | undefined
-        readonly NetworkDisabled?: boolean | null | undefined
-        readonly MacAddress?: string | null | undefined
+        readonly NetworkDisabled?: boolean | undefined
+        readonly MacAddress?: string | undefined
         readonly OnBuild?: ReadonlyArray<string> | null | undefined
         readonly Labels?: { readonly [x: string]: string } | null | undefined
-        readonly StopSignal?: string | null | undefined
-        readonly StopTimeout?: number | null | undefined
-        readonly Shell?: ReadonlyArray<string> | null | undefined
-        readonly HostConfig?:
-          | {
-              readonly Binds?: ReadonlyArray<string> | null | undefined
-              readonly ContainerIDFile?: string | null | undefined
-              readonly LogConfig?:
-                | { readonly Type: string; readonly Config: { readonly [x: string]: string } | null }
-                | null
-                | undefined
-              readonly NetworkMode?: "none" | "default" | "host" | "bridge" | "nat" | null | undefined
-              readonly PortBindings?:
-                | {
-                    readonly [x: `${number}`]: ReadonlyArray<{
-                      readonly HostPort: string
-                      readonly HostIp?: string | null | undefined
-                    }>
-                    readonly [x: `${number}/tcp`]: ReadonlyArray<{
-                      readonly HostPort: string
-                      readonly HostIp?: string | null | undefined
-                    }>
-                    readonly [x: `${number}/udp`]: ReadonlyArray<{
-                      readonly HostPort: string
-                      readonly HostIp?: string | null | undefined
-                    }>
-                  }
-                | null
-                | undefined
-              readonly RestartPolicy?:
-                | {
-                    readonly MaximumRetryCount: number
-                    readonly Name: "no" | "always" | "unless-stopped" | "on-failure"
-                  }
-                | null
-                | undefined
-              readonly AutoRemove?: boolean | null | undefined
-              readonly VolumeDriver?: string | null | undefined
-              readonly VolumesFrom?: ReadonlyArray<string> | null | undefined
-              readonly ConsoleSize?: ReadonlyArray<number> | null | undefined
-              readonly Annotations?: { readonly [x: string]: string } | null | undefined
-              readonly CapAdd?: ReadonlyArray<string> | null | undefined
-              readonly CapDrop?: ReadonlyArray<string> | null | undefined
-              readonly CgroupnsMode?: "" | "host" | "private" | null | undefined
-              readonly Dns?: ReadonlyArray<string> | null | undefined
-              readonly DnsOptions?: ReadonlyArray<string> | null | undefined
-              readonly DnsSearch?: ReadonlyArray<string> | null | undefined
-              readonly ExtraHosts?: ReadonlyArray<string> | null | undefined
-              readonly GroupAdd?: ReadonlyArray<string> | null | undefined
-              readonly IpcMode?: "none" | "host" | "private" | "container" | "shareable" | null | undefined
-              readonly Cgroup?: string | null | undefined
-              readonly Links?: ReadonlyArray<string> | null | undefined
-              readonly OomScoreAdj?: number | null | undefined
-              readonly PidMode?: string | null | undefined
-              readonly Privileged?: boolean | null | undefined
-              readonly PublishAllPorts?: boolean | null | undefined
-              readonly ReadonlyRootfs?: boolean | null | undefined
-              readonly SecurityOpt?: ReadonlyArray<string> | null | undefined
-              readonly StorageOpt?: { readonly [x: string]: string } | null | undefined
-              readonly Tmpfs?: { readonly [x: string]: string } | null | undefined
-              readonly UTSMode?: string | null | undefined
-              readonly UsernsMode?: string | null | undefined
-              readonly ShmSize?: number | null | undefined
-              readonly Sysctls?: { readonly [x: string]: string } | null | undefined
-              readonly Runtime?: string | null | undefined
-              readonly Isolation?: "" | "default" | "process" | "hyperv" | null | undefined
-              readonly CpuShares?: number | null | undefined
-              readonly Memory?: number | null | undefined
-              readonly NanoCpus?: number | null | undefined
-              readonly CgroupParent?: string | null | undefined
-              readonly BlkioWeight?: number | null | undefined
-              readonly BlkioWeightDevice?:
-                | ReadonlyArray<{ readonly Path: string; readonly Weight: number } | null>
-                | null
-                | undefined
-              readonly BlkioDeviceReadBps?:
-                | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
-                | null
-                | undefined
-              readonly BlkioDeviceWriteBps?:
-                | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
-                | null
-                | undefined
-              readonly BlkioDeviceReadIOps?:
-                | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
-                | null
-                | undefined
-              readonly BlkioDeviceWriteIOps?:
-                | ReadonlyArray<{ readonly Path: string; readonly Rate: number } | null>
-                | null
-                | undefined
-              readonly CpuPeriod?: number | null | undefined
-              readonly CpuQuota?: number | null | undefined
-              readonly CpuRealtimePeriod?: number | null | undefined
-              readonly CpuRealtimeRuntime?: number | null | undefined
-              readonly CpusetCpus?: string | null | undefined
-              readonly CpusetMems?: string | null | undefined
-              readonly Devices?:
-                | ReadonlyArray<{
-                    readonly PathOnHost: string
-                    readonly PathInContainer: string
-                    readonly CgroupPermissions: string
-                  } | null>
-                | null
-                | undefined
-              readonly DeviceCgroupRules?: ReadonlyArray<string> | null | undefined
-              readonly DeviceRequests?:
-                | ReadonlyArray<{
-                    readonly Driver: string
-                    readonly Count: number
-                    readonly DeviceIDs: ReadonlyArray<string> | null
-                    readonly Capabilities: ReadonlyArray<ReadonlyArray<string> | null> | null
-                    readonly Options: { readonly [x: string]: string } | null
-                  } | null>
-                | null
-                | undefined
-              readonly KernelMemory?: number | null | undefined
-              readonly KernelMemoryTCP?: number | null | undefined
-              readonly MemoryReservation?: number | null | undefined
-              readonly MemorySwap?: number | null | undefined
-              readonly MemorySwappiness?: number | null | undefined
-              readonly OomKillDisable?: boolean | null | undefined
-              readonly PidsLimit?: number | null | undefined
-              readonly Ulimits?:
-                | ReadonlyArray<{ readonly Name: string; readonly Hard: number; readonly Soft: number } | null>
-                | null
-                | undefined
-              readonly CpuCount?: number | null | undefined
-              readonly CpuPercent?: number | null | undefined
-              readonly IOMaximumIOps?: number | null | undefined
-              readonly IOMaximumBandwidth?: number | null | undefined
-              readonly Mounts?:
-                | ReadonlyArray<{
-                    readonly Type?: "bind" | "volume" | "tmpfs" | "npipe" | "cluster" | undefined
-                    readonly Source?: string | undefined
-                    readonly Target?: string | undefined
-                    readonly ReadOnly?: boolean | undefined
-                    readonly Consistency?: "default" | "consistent" | "cached" | "delegated" | undefined
-                    readonly BindOptions?:
-                      | {
-                          readonly Propagation?:
-                            | "private"
-                            | "rprivate"
-                            | "rshared"
-                            | "shared"
-                            | "rslave"
-                            | "slave"
-                            | undefined
-                          readonly NonRecursive?: boolean | undefined
-                          readonly CreateMountpoint?: boolean | undefined
-                          readonly ReadOnlyNonRecursive?: boolean | undefined
-                          readonly ReadOnlyForceRecursive?: boolean | undefined
-                        }
-                      | null
-                      | undefined
-                    readonly VolumeOptions?:
-                      | {
-                          readonly Labels?: { readonly [x: string]: string } | null | undefined
-                          readonly NoCopy?: boolean | undefined
-                          readonly Subpath?: string | undefined
-                          readonly DriverConfig?:
-                            | {
-                                readonly Name?: string | undefined
-                                readonly Options?: { readonly [x: string]: string } | null | undefined
-                              }
-                            | null
-                            | undefined
-                        }
-                      | null
-                      | undefined
-                    readonly TmpfsOptions?:
-                      | {
-                          readonly Options?: ReadonlyArray<ReadonlyArray<string> | null> | null | undefined
-                          readonly SizeBytes?: number | undefined
-                          readonly Mode?: number | undefined
-                        }
-                      | null
-                      | undefined
-                    readonly ClusterOptions?: {} | null | undefined
-                  } | null>
-                | null
-                | undefined
-              readonly MaskedPaths?: ReadonlyArray<string> | null | undefined
-              readonly ReadonlyPaths?: ReadonlyArray<string> | null | undefined
-              readonly Init?: boolean | null | undefined
-            }
-          | null
-          | undefined
-        readonly NetworkingConfig?:
-          | {
-              readonly EndpointsConfig: {
-                readonly [x: string]: {
-                  readonly MacAddress: string
-                  readonly Links: ReadonlyArray<string> | null
-                  readonly NetworkID: string
-                  readonly EndpointID: string
-                  readonly Gateway: string
-                  readonly IPPrefixLen: number
-                  readonly IPv6Gateway: string
-                  readonly GlobalIPv6Address: string
-                  readonly GlobalIPv6PrefixLen: number
-                  readonly IPAMConfig: {
-                    readonly IPv4Address?: string | undefined
-                    readonly IPv6Address?: string | undefined
-                    readonly LinkLocalIPs?: ReadonlyArray<string> | null | undefined
-                  } | null
-                  readonly Aliases: ReadonlyArray<string> | null
-                  readonly DriverOpts: { readonly [x: string]: string } | null
-                  readonly IPAddress: string
-                  readonly DNSNames: ReadonlyArray<string> | null
-                } | null
-              } | null
-            }
-          | null
-          | undefined
-      }
+        readonly StopSignal?: string | undefined
+        readonly StopTimeout?: (number & Brand<"I64">) | undefined
+        readonly Shell?: ReadonlyArray<string> | undefined
+        readonly HostConfig?: MobySchemas.ContainerHostConfig | undefined
+        readonly NetworkingConfig?: MobySchemas.NetworkNetworkingConfig | undefined
+      },
+      "HostConfig"
+    > & {
+      readonly name?: string | undefined
+      readonly platform?: string | undefined
+      readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined
     },
-    callback: (exit: Exit.Exit<MobySchemas.ContainerInspectResponse, ContainersError>) => void
+    callback: (exit: Exit.Exit<MobySchemas.ContainerInspectResponse, DockerError>) => void
   ) => void
   exec: (
-    z: { containerId: string; command: string | Array<string> },
+    z: { command: string | Array<string>; containerId: MobySchemas.ContainerIdentifier },
     callback: (
-      exit: Exit.Exit<readonly [exitCode: number, output: string], ExecsError | SocketError | ParseError>
+      exit: Exit.Exit<[exitCode: number & Brand<"I64">, output: string], DockerError | SocketError | ParseError>
     ) => void
   ) => void
-  execNonBlocking: <T extends boolean | undefined = undefined>(
-    z: { detach?: T; containerId: string; command: string | Array<string> },
+  execNonBlocking: <const T extends boolean = false>(
+    z: { detach: T; command: string | Array<string>; containerId: MobySchemas.ContainerIdentifier },
     callback: (
-      exit: Exit.Exit<[socket: T extends true ? void : RawSocket | MultiplexedSocket, execId: string], ExecsError>
+      exit: Exit.Exit<
+        [[T] extends [false] ? RawSocket | MultiplexedSocket : void, string & Brand<"ExecId">],
+        DockerError | SocketError | ParseError
+      >
     ) => void
   ) => void
   execWebsockets: (
-    z: { command: string | Array<string>; containerId: string },
+    z: { command: string | Array<string>; containerId: MobySchemas.ContainerIdentifier },
     callback: (
-      exit: Exit.Exit<readonly [stdout: string, stderr: string], ContainersError | SocketError | ParseError>
+      exit: Exit.Exit<readonly [stdout: string, stderr: string], DockerError | SocketError | ParseError>
     ) => void
   ) => void
   execWebsocketsNonBlocking: (a: {
     command: string | Array<string>
-    containerId: string
+    containerId: MobySchemas.ContainerIdentifier
     cwd?: string | undefined
-  }) => ReadableStream<MultiplexedChannel<never, ContainersError | SocketError, never>>
+  }) => ReadableStream<MultiplexedChannel<never, DockerError | SocketError, never>>
   ps: (
     z:
       | {
-          readonly all?: boolean | undefined
-          readonly limit?: number | undefined
-          readonly size?: boolean | undefined
-          readonly filters?:
-            | {
-                ancestor?: string | undefined
-                before?: string | undefined
-                expose?: `${number}/${string}` | `${number}-${number}/${string}` | undefined
-                exited?: number | undefined
-                health?: "starting" | "healthy" | "unhealthy" | "none" | undefined
-                id?: string | undefined
-                isolation?: "default" | "process" | "hyperv" | undefined
-                "is-task"?: true | false | undefined
-                label?: Record<string, string> | undefined
-                name?: string | undefined
-                network?: string | undefined
-                publish?: `${number}/${string}` | `${number}-${number}/${string}` | undefined
-                since?: string | undefined
-                status?: "created" | "restarting" | "running" | "removing" | "paused" | "exited" | "dead" | undefined
-                volume?: string | undefined
-              }
+          readonly identifier?: ReadonlyArray<string & Brand<"ContainerId">> | undefined
+          readonly volume?: string | undefined
+          readonly name?: ReadonlyArray<string> | undefined
+          readonly ancestor?: ReadonlyArray<string> | undefined
+          readonly before?: ReadonlyArray<string> | undefined
+          readonly expose?: ReadonlyArray<string> | undefined
+          readonly exited?: ReadonlyArray<number> | undefined
+          readonly health?: ReadonlyArray<"none" | "starting" | "healthy" | "unhealthy"> | undefined
+          readonly "is-task"?: boolean | undefined
+          readonly label?: ReadonlyArray<string> | undefined
+          readonly network?: ReadonlyArray<string> | undefined
+          readonly publish?: ReadonlyArray<string> | undefined
+          readonly since?: ReadonlyArray<string> | undefined
+          readonly status?:
+            | ReadonlyArray<"exited" | "created" | "restarting" | "running" | "removing" | "paused" | "dead">
             | undefined
         }
       | undefined,
-    callback: (exit: Exit.Exit<ReadonlyArray<MobySchemas.ContainerListResponseItem>, ContainersError>) => void
+    callback: (exit: Exit.Exit<ReadonlyArray<MobySchemas.ContainerSummary>, DockerError>) => void
   ) => void
-  push: (a: {
-    readonly name: string
-    readonly tag?: string
-    readonly "X-Registry-Auth": string
-  }) => ReadableStream<string>
+  push: (
+    name: string,
+    options: { readonly platform?: string | undefined; readonly tag?: string | undefined } | undefined
+  ) => ReadableStream<MobySchemas.JSONMessage>
   images: (
     z:
       | {
-          readonly all?: boolean
-          readonly filters?: string | undefined
-          readonly "shared-size"?: boolean | undefined
+          readonly all?: boolean | undefined
+          readonly filters?:
+            | {
+                readonly before?: ReadonlyArray<string> | undefined
+                readonly label?: ReadonlyArray<string> | undefined
+                readonly since?: ReadonlyArray<string> | undefined
+                readonly until?: string | undefined
+                readonly dangling?: boolean | undefined
+                readonly reference?: ReadonlyArray<string> | undefined
+              }
+            | undefined
           readonly digests?: boolean | undefined
+          readonly "shared-size"?: boolean | undefined
         }
       | undefined,
-    callback: (exit: Exit.Exit<ReadonlyArray<MobySchemas.ImageSummary>, ImagesError>) => void
+    callback: (exit: Exit.Exit<ReadonlyArray<MobySchemas.ImageSummary>, DockerError>) => void
   ) => void
   search: (
     z: {
-      readonly term: string
       readonly limit?: number | undefined
-      readonly stars?: number | undefined
-      readonly "is-official"?: boolean | undefined
+      readonly filters?:
+        | {
+            readonly "is-official"?: boolean | undefined
+            readonly "is-automated"?: boolean | undefined
+            readonly stars?: number | undefined
+          }
+        | undefined
+      readonly term: string
     },
-    callback: (exit: Exit.Exit<ReadonlyArray<MobySchemas.RegistrySearchResponse>, ImagesError>) => void
+    callback: (exit: Exit.Exit<ReadonlyArray<MobySchemas.RegistrySearchResult>, DockerError>) => void
   ) => void
-  version: (callback: (exit: Exit.Exit<Readonly<MobySchemas.SystemVersionResponse>, SystemsError>) => void) => void
-  info: (callback: (exit: Exit.Exit<Readonly<MobySchemas.SystemInfoResponse>, SystemsError>) => void) => void
-  ping: (callback: (exit: Exit.Exit<"OK", SystemsError>) => void) => void
-  pingHead: (callback: (exit: Exit.Exit<void, SystemsError>) => void) => void
+  version: (callback: (exit: Exit.Exit<MobySchemas.TypesVersion, DockerError>) => void) => void
+  info: (callback: (exit: Exit.Exit<MobySchemas.SystemInfo, DockerError>) => void) => void
+  ping: (callback: (exit: Exit.Exit<void, DockerError>) => void) => void
+  pingHead: (callback: (exit: Exit.Exit<void, DockerError>) => void) => void
   followProgressInConsole: (
     y: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
     z: (error: unknown) => unknown,

@@ -410,7 +410,7 @@ declare const MobyConnectionOptions: {
       >
   readonly $match: {
     <
-      Cases extends {
+      const Cases extends {
         readonly socket: (args: {
           readonly _tag: "socket"
           readonly socketPath: string
@@ -477,7 +477,7 @@ declare const MobyConnectionOptions: {
         }) => any
       }
     >(
-      cases: Cases
+      cases: Cases & { [K in Exclude<keyof Cases, "socket" | "ssh" | "http" | "https">]: never }
     ): (
       value:
         | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined }
@@ -542,7 +542,7 @@ declare const MobyConnectionOptions: {
           }
     ) => Unify<ReturnType<Cases["socket" | "ssh" | "http" | "https"]>>
     <
-      Cases extends {
+      const Cases extends {
         readonly socket: (args: {
           readonly _tag: "socket"
           readonly socketPath: string
@@ -670,7 +670,7 @@ declare const MobyConnectionOptions: {
             readonly key?: string | undefined | undefined
             readonly passphrase?: string | undefined | undefined
           },
-      cases: Cases
+      cases: Cases & { [K in Exclude<keyof Cases, "socket" | "ssh" | "http" | "https">]: never }
     ): Unify<ReturnType<Cases["socket" | "ssh" | "http" | "https"]>>
   }
 }

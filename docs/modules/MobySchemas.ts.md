@@ -16,6 +16,7 @@ Since v1.0.0
 
 - [utils](#utils)
   - ["./internal/generated/index.js" (namespace export)](#internalgeneratedindexjs-namespace-export)
+  - ["./internal/schemas/id.ts" (namespace export)](#internalschemasidts-namespace-export)
 
 ---
 
@@ -32,5 +33,19 @@ export * from "./internal/generated/index.js"
 ```
 
 [Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobySchemas.ts#L8)
+
+Since v1.0.0
+
+## "./internal/schemas/id.ts" (namespace export)
+
+Re-exports all named exports from the "./internal/schemas/id.ts" module.
+
+**Signature**
+
+```ts
+export * from "./internal/schemas/id.ts"
+```
+
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobySchemas.ts#L11)
 
 Since v1.0.0
