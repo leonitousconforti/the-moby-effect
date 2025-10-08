@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as SwarmSpec from "./SwarmSpec.generated.js";
 
 export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitRequest")(
@@ -9,8 +9,8 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
         ),
         AdvertiseAddr: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         DataPathAddr: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        DataPathPort: MobySchemas.UInt32.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt32.make(0))
+        DataPathPort: EffectSchemas.Number.U32.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.U32.make(0))
         ),
         ForceNewCluster: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         Spec: Schema.NullOr(SwarmSpec.SwarmSpec)
@@ -25,8 +25,8 @@ export class SwarmInitRequest extends Schema.Class<SwarmInitRequest>("SwarmInitR
         DefaultAddrPool: Schema.NullOr(Schema.Array(Schema.String))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => [])),
-        SubnetSize: MobySchemas.UInt32.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt32.make(24))
+        SubnetSize: EffectSchemas.Number.U32.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.U32.make(24))
         ),
     },
     {

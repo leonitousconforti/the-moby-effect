@@ -1,5 +1,6 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
 import { Effect, Schema, type Layer } from "effect";
+import { I64 } from "effect-schemas/Number";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -9,7 +10,6 @@ import {
     VolumeCreateOptions,
 } from "../generated/index.js";
 import { VolumeIdentifier } from "../schemas/id.js";
-import { Int64 } from "../schemas/index.js";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./httpApiHacks.ts";
 import { NodeNotPartOfSwarm } from "./swarm.js";
@@ -78,7 +78,7 @@ const pruneVolumeEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .addSuccess(
         Schema.Struct({
             VolumesDeleted: Schema.optional(Schema.Array(VolumeIdentifier)),
-            SpaceReclaimed: Int64,
+            SpaceReclaimed: I64,
         }),
         { status: 200 }
     ); // 200 OK

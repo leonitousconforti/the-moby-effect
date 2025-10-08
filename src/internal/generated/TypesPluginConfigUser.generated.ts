@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class TypesPluginConfigUser extends Schema.Class<TypesPluginConfigUser>("TypesPluginConfigUser")(
     {
-        GID: Schema.optional(MobySchemas.UInt32),
-        UID: Schema.optional(MobySchemas.UInt32),
+        GID: Schema.optional(EffectSchemas.Number.U32),
+        UID: Schema.optional(EffectSchemas.Number.U32),
     },
     {
         identifier: "TypesPluginConfigUser",

@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as SwarmTopology from "./SwarmTopology.generated.js";
 
 export class SwarmNodeCSIInfo extends Schema.Class<SwarmNodeCSIInfo>("SwarmNodeCSIInfo")(
     {
         PluginName: Schema.optional(Schema.String),
         NodeID: Schema.optional(Schema.String),
-        MaxVolumesPerNode: Schema.optional(MobySchemas.Int64),
+        MaxVolumesPerNode: Schema.optional(EffectSchemas.Number.I64),
         AccessibleTopology: Schema.optionalWith(SwarmTopology.SwarmTopology, { nullable: true }),
     },
     {

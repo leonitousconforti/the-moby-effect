@@ -9,6 +9,7 @@ import type * as IdSchemas from "../schemas/id.js";
 
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
+import * as InternetSchemas from "effect-schemas/Internet";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -31,7 +32,6 @@ import * as internalHttpBlob from "../blobs/http.js";
 import * as internalHttpsBlob from "../blobs/https.js";
 import * as internalSocketBlob from "../blobs/socket.js";
 import * as internalSshBlob from "../blobs/ssh.js";
-import * as PortSchemas from "../schemas/internet/port.js";
 
 /** @internal */
 const downloadDindCertificates = (
@@ -264,9 +264,9 @@ export const makeDindLayerFromPlatformConstructor =
                         Privileged: true,
                         Binds: binds,
                         PortBindings: {
-                            "22/tcp": [{ HostPort: PortSchemas.Port.make(0) }],
-                            "2375/tcp": [{ HostPort: PortSchemas.Port.make(0) }],
-                            "2376/tcp": [{ HostPort: PortSchemas.Port.make(0) }],
+                            "22/tcp": [{ HostPort: InternetSchemas.Port.make(0) }],
+                            "2375/tcp": [{ HostPort: InternetSchemas.Port.make(0) }],
+                            "2376/tcp": [{ HostPort: InternetSchemas.Port.make(0) }],
                         },
                     },
                 })

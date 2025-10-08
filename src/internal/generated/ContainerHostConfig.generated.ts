@@ -1,5 +1,6 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as PortSchemas from "../schemas/port.ts";
 import * as ContainerLogConfig from "./ContainerLogConfig.generated.js";
 import * as ContainerResources from "./ContainerResources.generated.js";
 import * as ContainerRestartPolicy from "./ContainerRestartPolicy.generated.js";
@@ -19,7 +20,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
                 )
             ),
         NetworkMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "default")),
-        PortBindings: Schema.NullOr(MobySchemas.PortMap)
+        PortBindings: Schema.NullOr(PortSchemas.PortMap)
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
         RestartPolicy: Schema.NullOr(ContainerRestartPolicy.ContainerRestartPolicy)
@@ -29,7 +30,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
                     () =>
                         new ContainerRestartPolicy.ContainerRestartPolicy({
                             Name: "no",
-                            MaximumRetryCount: MobySchemas.Int64.make(0),
+                            MaximumRetryCount: EffectSchemas.Number.I64.make(0),
                         })
                 )
             ),
@@ -38,10 +39,15 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         VolumesFrom: Schema.NullOr(Schema.Array(Schema.String))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
-        ConsoleSize: Schema.Array(MobySchemas.UInt64)
+        ConsoleSize: Schema.Array(EffectSchemas.Number.U64)
             .pipe(Schema.itemsCount(2))
             .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => [MobySchemas.UInt64.make(0), MobySchemas.UInt64.make(0)])),
+            .pipe(
+                Schema.withConstructorDefault(() => [
+                    EffectSchemas.Number.U64.make(0),
+                    EffectSchemas.Number.U64.make(0),
+                ])
+            ),
         Annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),
@@ -76,8 +82,8 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         Links: Schema.NullOr(Schema.Array(Schema.String))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
-        OomScoreAdj: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        OomScoreAdj: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
         PidMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         Privileged: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
@@ -92,8 +98,8 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         Tmpfs: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         UTSMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         UsernsMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        ShmSize: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        ShmSize: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
         Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         Runtime: Schema.optional(Schema.String),

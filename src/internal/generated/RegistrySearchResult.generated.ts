@@ -1,9 +1,9 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class RegistrySearchResult extends Schema.Class<RegistrySearchResult>("RegistrySearchResult")(
     {
-        star_count: MobySchemas.Int64,
+        star_count: EffectSchemas.Number.I64,
         is_official: Schema.Boolean,
         name: Schema.String,
         is_automated: Schema.Boolean,

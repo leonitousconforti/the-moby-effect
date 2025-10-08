@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as RuntimePluginSpec from "./RuntimePluginSpec.generated.js";
 import * as SwarmContainerSpec from "./SwarmContainerSpec.generated.js";
 import * as SwarmDriver from "./SwarmDriver.generated.js";
@@ -24,7 +24,7 @@ export class SwarmTaskSpec extends Schema.Class<SwarmTaskSpec>("SwarmTaskSpec")(
             { nullable: true }
         ),
         LogDriver: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
-        ForceUpdate: MobySchemas.UInt64,
+        ForceUpdate: EffectSchemas.Number.U64,
         Runtime: Schema.optional(Schema.Literal("container", "plugin", "attachment")),
     },
     {

@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as ContainerHealthcheckResult from "./ContainerHealthcheckResult.generated.js";
 
 export class ContainerHealth extends Schema.Class<ContainerHealth>("ContainerHealth")(
     {
         Status: Schema.Literal("none", "starting", "healthy", "unhealthy"),
-        FailingStreak: MobySchemas.Int64,
+        FailingStreak: EffectSchemas.Number.I64,
         Log: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerHealthcheckResult.ContainerHealthcheckResult))),
     },
     {

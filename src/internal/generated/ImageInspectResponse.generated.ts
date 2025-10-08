@@ -1,5 +1,6 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
 import * as ContainerConfig from "./ContainerConfig.generated.js";
 import * as ImageManifestSummary from "./ImageManifestSummary.generated.js";
 import * as ImageMetadata from "./ImageMetadata.generated.js";
@@ -12,7 +13,7 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
     {
         Id: Schema.String,
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
-        RepoDigests: Schema.NullOr(Schema.Array(MobySchemas.Digest)),
+        RepoDigests: Schema.NullOr(Schema.Array(MobyIdentifiers.Digest)),
         Parent: Schema.String,
         Comment: Schema.String,
         Created: Schema.optional(Schema.String),
@@ -25,8 +26,8 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Variant: Schema.optional(Schema.String),
         Os: Schema.String,
         OsVersion: Schema.optional(Schema.String),
-        Size: MobySchemas.Int64,
-        VirtualSize: Schema.optional(MobySchemas.Int64),
+        Size: EffectSchemas.Number.I64,
+        VirtualSize: Schema.optional(EffectSchemas.Number.I64),
         GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
         RootFS: Schema.NullOr(ImageRootFS.ImageRootFS),
         Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),

@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ArchiveChange extends Schema.Class<ArchiveChange>("ArchiveChange")(
     {
         Path: Schema.String,
-        Kind: MobySchemas.Int64,
+        Kind: EffectSchemas.Number.I64,
     },
     {
         identifier: "ArchiveChange",

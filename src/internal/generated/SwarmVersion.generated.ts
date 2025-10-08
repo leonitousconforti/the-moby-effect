@@ -1,9 +1,9 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmVersion extends Schema.Class<SwarmVersion>("SwarmVersion")(
     {
-        Index: Schema.optional(MobySchemas.UInt64),
+        Index: Schema.optional(EffectSchemas.Number.U64),
     },
     {
         identifier: "SwarmVersion",

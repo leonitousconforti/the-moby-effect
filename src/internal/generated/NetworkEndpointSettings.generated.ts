@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as NetworkEndpointIPAMConfig from "./NetworkEndpointIPAMConfig.generated.js";
 
 export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSettings>("NetworkEndpointSettings")(
@@ -9,15 +9,15 @@ export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSetting
         Aliases: Schema.NullOr(Schema.Array(Schema.String)),
         MacAddress: Schema.String,
         DriverOpts: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
-        GwPriority: MobySchemas.Int64,
+        GwPriority: EffectSchemas.Number.I64,
         NetworkID: Schema.String,
         EndpointID: Schema.String,
         Gateway: Schema.String,
         IPAddress: Schema.String,
-        IPPrefixLen: MobySchemas.Int64,
+        IPPrefixLen: EffectSchemas.Number.I64,
         IPv6Gateway: Schema.String,
         GlobalIPv6Address: Schema.String,
-        GlobalIPv6PrefixLen: MobySchemas.Int64,
+        GlobalIPv6PrefixLen: EffectSchemas.Number.I64,
         DNSNames: Schema.NullOr(Schema.Array(Schema.String)),
     },
     {

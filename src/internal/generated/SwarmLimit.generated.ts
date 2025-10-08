@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmLimit extends Schema.Class<SwarmLimit>("SwarmLimit")(
     {
-        NanoCPUs: Schema.optional(MobySchemas.Int64),
-        MemoryBytes: Schema.optional(MobySchemas.Int64),
-        Pids: Schema.optional(MobySchemas.Int64),
+        NanoCPUs: Schema.optional(EffectSchemas.Number.I64),
+        MemoryBytes: Schema.optional(EffectSchemas.Number.I64),
+        Pids: Schema.optional(EffectSchemas.Number.I64),
     },
     {
         identifier: "SwarmLimit",

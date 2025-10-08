@@ -1,12 +1,13 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
 import * as ImageManifestSummary from "./ImageManifestSummary.generated.js";
 import * as V1Descriptor from "./V1Descriptor.generated.js";
 
 export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
     {
-        Containers: MobySchemas.Int64,
-        Created: MobySchemas.Int64,
+        Containers: EffectSchemas.Number.I64,
+        Created: EffectSchemas.Number.I64,
         Id: Schema.String,
         Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
         ParentId: Schema.String,
@@ -14,11 +15,11 @@ export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
         Manifests: Schema.optionalWith(Schema.Array(Schema.NullOr(ImageManifestSummary.ImageManifestSummary)), {
             nullable: true,
         }),
-        RepoDigests: Schema.NullOr(Schema.Array(MobySchemas.Digest)),
+        RepoDigests: Schema.NullOr(Schema.Array(MobyIdentifiers.Digest)),
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
-        SharedSize: MobySchemas.Int64,
-        Size: MobySchemas.Int64,
-        VirtualSize: Schema.optional(MobySchemas.Int64),
+        SharedSize: EffectSchemas.Number.I64,
+        Size: EffectSchemas.Number.I64,
+        VirtualSize: Schema.optional(EffectSchemas.Number.I64),
     },
     {
         identifier: "ImageSummary",

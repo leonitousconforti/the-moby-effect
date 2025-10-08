@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as SwarmAnnotations from "./SwarmAnnotations.generated.js";
 import * as SwarmGenericResource from "./SwarmGenericResource.generated.js";
 import * as SwarmMeta from "./SwarmMeta.generated.js";
@@ -16,7 +16,7 @@ export class SwarmTask extends Schema.Class<SwarmTask>("SwarmTask")(
         ...SwarmAnnotations.SwarmAnnotations.fields,
         Spec: Schema.optionalWith(SwarmTaskSpec.SwarmTaskSpec, { nullable: true }),
         ServiceID: Schema.optional(Schema.String),
-        Slot: Schema.optional(MobySchemas.Int64),
+        Slot: Schema.optional(EffectSchemas.Number.I64),
         NodeID: Schema.optional(Schema.String),
         Status: Schema.optionalWith(SwarmTaskStatus.SwarmTaskStatus, { nullable: true }),
         DesiredState: Schema.optional(

@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as ContainerMountPoint from "./ContainerMountPoint.generated.js";
 import * as ContainerNetworkSettingsSummary from "./ContainerNetworkSettingsSummary.generated.js";
 import * as ContainerPort from "./ContainerPort.generated.js";
@@ -13,10 +13,10 @@ export class ContainerSummary extends Schema.Class<ContainerSummary>("ContainerS
         ImageID: Schema.String,
         ImageManifestDescriptor: Schema.optionalWith(V1Descriptor.V1Descriptor, { nullable: true }),
         Command: Schema.String,
-        Created: MobySchemas.Int64,
+        Created: EffectSchemas.Number.I64,
         Ports: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerPort.ContainerPort))),
-        SizeRw: Schema.optional(MobySchemas.Int64),
-        SizeRootFs: Schema.optional(MobySchemas.Int64),
+        SizeRw: Schema.optional(EffectSchemas.Number.I64),
+        SizeRootFs: Schema.optional(EffectSchemas.Number.I64),
         Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
         State: Schema.String,
         Status: Schema.String,

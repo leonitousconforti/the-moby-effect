@@ -1,9 +1,9 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmReplicatedService extends Schema.Class<SwarmReplicatedService>("SwarmReplicatedService")(
     {
-        Replicas: Schema.optionalWith(MobySchemas.UInt64, { nullable: true }),
+        Replicas: Schema.optionalWith(EffectSchemas.Number.U64, { nullable: true }),
     },
     {
         identifier: "SwarmReplicatedService",

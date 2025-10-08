@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefaultNetworkSettings>(
     "ContainerDefaultNetworkSettings"
@@ -8,9 +8,9 @@ export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefau
         EndpointID: Schema.String,
         Gateway: Schema.String,
         GlobalIPv6Address: Schema.String,
-        GlobalIPv6PrefixLen: MobySchemas.Int64,
+        GlobalIPv6PrefixLen: EffectSchemas.Number.I64,
         IPAddress: Schema.String,
-        IPPrefixLen: MobySchemas.Int64,
+        IPPrefixLen: EffectSchemas.Number.I64,
         IPv6Gateway: Schema.String,
         MacAddress: Schema.String,
     },

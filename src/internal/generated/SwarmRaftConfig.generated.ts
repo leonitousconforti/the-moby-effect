@@ -1,13 +1,13 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmRaftConfig extends Schema.Class<SwarmRaftConfig>("SwarmRaftConfig")(
     {
-        SnapshotInterval: Schema.optional(MobySchemas.UInt64),
-        KeepOldSnapshots: Schema.optionalWith(MobySchemas.UInt64, { nullable: true }),
-        LogEntriesForSlowFollowers: Schema.optional(MobySchemas.UInt64),
-        ElectionTick: MobySchemas.Int64,
-        HeartbeatTick: MobySchemas.Int64,
+        SnapshotInterval: Schema.optional(EffectSchemas.Number.U64),
+        KeepOldSnapshots: Schema.optionalWith(EffectSchemas.Number.U64, { nullable: true }),
+        LogEntriesForSlowFollowers: Schema.optional(EffectSchemas.Number.U64),
+        ElectionTick: EffectSchemas.Number.I64,
+        HeartbeatTick: EffectSchemas.Number.I64,
     },
     {
         identifier: "SwarmRaftConfig",

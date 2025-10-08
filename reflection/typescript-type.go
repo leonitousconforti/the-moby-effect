@@ -39,18 +39,18 @@ var TSInboxTypesMap = map[reflect.Kind]TSType{
 	reflect.Bool:    {"Schema.Boolean", false},
 
 	// In practice most clients are 64bit so in go Int will be too
-	reflect.Int:   {"MobySchemas.Int64", false},
-	reflect.Int8:  {"MobySchemas.Int8", false},
-	reflect.Int16: {"MobySchemas.Int16", false},
-	reflect.Int32: {"MobySchemas.Int32", false},
-	reflect.Int64: {"MobySchemas.Int64", false},
+	reflect.Int:   {"EffectSchemas.Number.I64", false},
+	reflect.Int8:  {"EffectSchemas.Number.I8", false},
+	reflect.Int16: {"EffectSchemas.Number.I16", false},
+	reflect.Int32: {"EffectSchemas.Number.I32", false},
+	reflect.Int64: {"EffectSchemas.Number.I64", false},
 
 	// In practice most clients are 64bit so in go Uint will be too.
-	reflect.Uint:   {"MobySchemas.UInt64", false},
-	reflect.Uint8:  {"MobySchemas.UInt8", false},
-	reflect.Uint16: {"MobySchemas.UInt16", false},
-	reflect.Uint32: {"MobySchemas.UInt32", false},
-	reflect.Uint64: {"MobySchemas.UInt64", false},
+	reflect.Uint:   {"EffectSchemas.Number.U64", false},
+	reflect.Uint8:  {"EffectSchemas.Number.U8", false},
+	reflect.Uint16: {"EffectSchemas.Number.U16", false},
+	reflect.Uint32: {"EffectSchemas.Number.U32", false},
+	reflect.Uint64: {"EffectSchemas.Number.U64", false},
 }
 
 func tsTypeToString(t TSType) string {
@@ -188,10 +188,10 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 	buffer.WriteString(fmt.Sprintln(") {}"))
 
 	outString := buffer.String()
-	fmt.Fprintf(w, "import * as Schema from \"effect/Schema\";\n")
-	if strings.Contains(outString, "MobySchemas.") {
-		fmt.Fprintf(w, "import * as MobySchemas from \"../schemas/index.js\";\n")
+	if strings.Contains(outString, "EffectSchemas.") {
+		fmt.Fprintf(w, "import * as EffectSchemas from \"effect-schemas\";\n")
 	}
+	fmt.Fprintf(w, "import * as Schema from \"effect/Schema\";\n")
 
 	importsUnsorted := make(map[string]string)
 	for _, p := range t.Properties {

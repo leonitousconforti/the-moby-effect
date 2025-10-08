@@ -1,9 +1,9 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class JsonmessageJSONError extends Schema.Class<JsonmessageJSONError>("JsonmessageJSONError")(
     {
-        code: Schema.optional(MobySchemas.Int64),
+        code: Schema.optional(EffectSchemas.Number.I64),
         message: Schema.optional(Schema.String),
     },
     {

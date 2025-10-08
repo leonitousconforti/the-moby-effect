@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class NetworkAddress extends Schema.Class<NetworkAddress>("NetworkAddress")(
     {
         Addr: Schema.String,
-        PrefixLen: MobySchemas.Int64,
+        PrefixLen: EffectSchemas.Number.I64,
     },
     {
         identifier: "NetworkAddress",

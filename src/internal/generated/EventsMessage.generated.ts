@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as EventsActor from "./EventsActor.generated.js";
 
 export class EventsMessage extends Schema.Class<EventsMessage>("EventsMessage")(
@@ -71,8 +71,8 @@ export class EventsMessage extends Schema.Class<EventsMessage>("EventsMessage")(
         ),
         Actor: Schema.NullOr(EventsActor.EventsActor),
         scope: Schema.optional(Schema.String),
-        time: Schema.optional(MobySchemas.Int64),
-        timeNano: Schema.optional(MobySchemas.Int64),
+        time: Schema.optional(EffectSchemas.Number.I64),
+        timeNano: Schema.optional(EffectSchemas.Number.I64),
     },
     {
         identifier: "EventsMessage",

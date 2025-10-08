@@ -1,12 +1,13 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
 import * as V1Platform from "./V1Platform.generated.js";
 
 export class V1Descriptor extends Schema.Class<V1Descriptor>("V1Descriptor")(
     {
         mediaType: Schema.String,
-        digest: MobySchemas.Digest,
-        size: MobySchemas.Int64,
+        digest: MobyIdentifiers.Digest,
+        size: EffectSchemas.Number.I64,
         urls: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,

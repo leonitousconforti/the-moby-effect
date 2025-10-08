@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerRestartPolicy extends Schema.Class<ContainerRestartPolicy>("ContainerRestartPolicy")(
     {
         Name: Schema.Literal("no", "always", "on-failure", "unless-stopped"),
-        MaximumRetryCount: MobySchemas.Int64,
+        MaximumRetryCount: EffectSchemas.Number.I64,
     },
     {
         identifier: "ContainerRestartPolicy",

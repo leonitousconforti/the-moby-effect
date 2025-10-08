@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as BlkiodevThrottleDevice from "./BlkiodevThrottleDevice.generated.js";
 import * as BlkiodevWeightDevice from "./BlkiodevWeightDevice.generated.js";
 import * as ContainerDeviceMapping from "./ContainerDeviceMapping.generated.js";
@@ -8,18 +8,18 @@ import * as UnitsUlimit from "./UnitsUlimit.generated.js";
 
 export class ContainerResources extends Schema.Class<ContainerResources>("ContainerResources")(
     {
-        CpuShares: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuShares: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        Memory: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        Memory: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        NanoCpus: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        NanoCpus: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
         CgroupParent: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        BlkioWeight: MobySchemas.UInt16.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt16.make(0))
+        BlkioWeight: EffectSchemas.Number.U16.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.U16.make(0))
         ),
         BlkioWeightDevice: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevWeightDevice.BlkiodevWeightDevice)))
             .pipe(Schema.propertySignature)
@@ -36,17 +36,17 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         BlkioDeviceWriteIOps: Schema.NullOr(Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice)))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => [])),
-        CpuPeriod: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuPeriod: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        CpuQuota: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuQuota: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        CpuRealtimePeriod: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuRealtimePeriod: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        CpuRealtimeRuntime: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuRealtimeRuntime: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
         CpusetCpus: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         CpusetMems: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
@@ -59,37 +59,37 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         DeviceRequests: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerDeviceRequest.ContainerDeviceRequest)))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => [])),
-        KernelMemory: Schema.optional(MobySchemas.Int64),
-        KernelMemoryTCP: Schema.optional(MobySchemas.Int64),
-        MemoryReservation: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        KernelMemory: Schema.optional(EffectSchemas.Number.I64),
+        KernelMemoryTCP: Schema.optional(EffectSchemas.Number.I64),
+        MemoryReservation: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        MemorySwap: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        MemorySwap: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        MemorySwappiness: Schema.NullOr(MobySchemas.Int64)
+        MemorySwappiness: Schema.NullOr(EffectSchemas.Number.I64)
             .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => MobySchemas.Int64.make(-1))),
+            .pipe(Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(-1))),
         OomKillDisable: Schema.NullOr(Schema.Boolean)
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => false)),
-        PidsLimit: Schema.NullOr(MobySchemas.Int64)
+        PidsLimit: Schema.NullOr(EffectSchemas.Number.I64)
             .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))),
+            .pipe(Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))),
         Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => [])),
-        CpuCount: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuCount: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        CpuPercent: MobySchemas.Int64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.Int64.make(0))
+        CpuPercent: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
         ),
-        IOMaximumIOps: MobySchemas.UInt64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt64.make(0))
+        IOMaximumIOps: EffectSchemas.Number.U64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.U64.make(0))
         ),
-        IOMaximumBandwidth: MobySchemas.UInt64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => MobySchemas.UInt64.make(0))
+        IOMaximumBandwidth: EffectSchemas.Number.U64.pipe(Schema.propertySignature).pipe(
+            Schema.withConstructorDefault(() => EffectSchemas.Number.U64.make(0))
         ),
     },
     {

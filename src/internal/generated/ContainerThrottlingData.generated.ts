@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerThrottlingData extends Schema.Class<ContainerThrottlingData>("ContainerThrottlingData")(
     {
-        periods: MobySchemas.UInt64,
-        throttled_periods: MobySchemas.UInt64,
-        throttled_time: MobySchemas.UInt64,
+        periods: EffectSchemas.Number.U64,
+        throttled_periods: EffectSchemas.Number.U64,
+        throttled_time: EffectSchemas.Number.U64,
     },
     {
         identifier: "ContainerThrottlingData",

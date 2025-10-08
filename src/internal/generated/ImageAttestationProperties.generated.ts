@@ -1,9 +1,9 @@
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
 
 export class ImageAttestationProperties extends Schema.Class<ImageAttestationProperties>("ImageAttestationProperties")(
     {
-        For: MobySchemas.Digest,
+        For: MobyIdentifiers.Digest,
     },
     {
         identifier: "ImageAttestationProperties",

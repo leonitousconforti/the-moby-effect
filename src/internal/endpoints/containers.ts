@@ -9,6 +9,7 @@ import {
     type Socket,
 } from "@effect/platform";
 import { Effect, Schema, Stream, Tuple, type Layer } from "effect";
+import { I64 } from "effect-schemas/Number";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -26,7 +27,6 @@ import {
     ContainerWaitResponse,
 } from "../generated/index.js";
 import { ContainerIdentifier } from "../schemas/id.js";
-import { Int64 } from "../schemas/index.js";
 import { DockerError } from "./circular.ts";
 import {
     BadRequest,
@@ -350,7 +350,7 @@ const pruneContainersEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .addSuccess(
         Schema.Struct({
             ContainersDeleted: Schema.NullOr(Schema.Array(ContainerIdentifier)),
-            SpaceReclaimed: Int64,
+            SpaceReclaimed: I64,
         }),
         { status: 200 }
     ); // 200 OK
@@ -613,7 +613,11 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
  */
-export const ContainersLayerLocalSocket: Layer.Layer<Containers, never, HttpClient.HttpClient> = Containers.Default;
+export const ContainersLayerLocalSocket: Layer.Layer<
+    Containers,
+    never,
+    HttpClient.HttpClient | Socket.WebSocketConstructor
+> = Containers.Default;
 
 /**
  * @since 1.0.0

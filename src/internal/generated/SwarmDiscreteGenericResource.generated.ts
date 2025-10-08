@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmDiscreteGenericResource extends Schema.Class<SwarmDiscreteGenericResource>(
     "SwarmDiscreteGenericResource"
 )(
     {
         Kind: Schema.optional(Schema.String),
-        Value: Schema.optional(MobySchemas.Int64),
+        Value: Schema.optional(EffectSchemas.Number.I64),
     },
     {
         identifier: "SwarmDiscreteGenericResource",

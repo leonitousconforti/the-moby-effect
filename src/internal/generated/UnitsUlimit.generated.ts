@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class UnitsUlimit extends Schema.Class<UnitsUlimit>("UnitsUlimit")(
     {
         Name: Schema.String,
-        Hard: MobySchemas.Int64,
-        Soft: MobySchemas.Int64,
+        Hard: EffectSchemas.Number.I64,
+        Soft: EffectSchemas.Number.I64,
     },
     {
         identifier: "UnitsUlimit",

@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as V1Platform from "./V1Platform.generated.js";
 
 export class ImageImageProperties extends Schema.Class<ImageImageProperties>("ImageImageProperties")(
     {
         Platform: Schema.NullOr(V1Platform.V1Platform),
         Size: Schema.Struct({
-            Unpacked: MobySchemas.Int64,
+            Unpacked: EffectSchemas.Number.I64,
         }),
         Containers: Schema.NullOr(Schema.Array(Schema.String)),
     },

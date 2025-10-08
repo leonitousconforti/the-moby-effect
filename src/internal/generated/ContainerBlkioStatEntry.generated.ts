@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerBlkioStatEntry extends Schema.Class<ContainerBlkioStatEntry>("ContainerBlkioStatEntry")(
     {
-        major: MobySchemas.UInt64,
-        minor: MobySchemas.UInt64,
+        major: EffectSchemas.Number.U64,
+        minor: EffectSchemas.Number.U64,
         op: Schema.String,
-        value: MobySchemas.UInt64,
+        value: EffectSchemas.Number.U64,
     },
     {
         identifier: "ContainerBlkioStatEntry",

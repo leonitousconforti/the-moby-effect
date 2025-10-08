@@ -1,12 +1,13 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
 import * as ContainerHostConfig from "./ContainerHostConfig.generated.js";
 import * as ContainerState from "./ContainerState.generated.js";
 import * as StorageDriverData from "./StorageDriverData.generated.js";
 
 export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJSONBase>("ContainerContainerJSONBase")(
     {
-        Id: MobySchemas.ContainerIdentifier,
+        Id: MobyIdentifiers.ContainerIdentifier,
         Created: Schema.String,
         Path: Schema.String,
         Args: Schema.NullOr(Schema.Array(Schema.String)),
@@ -17,7 +18,7 @@ export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJ
         HostsPath: Schema.String,
         LogPath: Schema.String,
         Name: Schema.String,
-        RestartCount: MobySchemas.Int64,
+        RestartCount: EffectSchemas.Number.I64,
         Driver: Schema.String,
         Platform: Schema.String,
         MountLabel: Schema.String,
@@ -26,8 +27,8 @@ export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJ
         ExecIDs: Schema.NullOr(Schema.Array(Schema.String)),
         HostConfig: Schema.NullOr(ContainerHostConfig.ContainerHostConfig),
         GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
-        SizeRw: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
-        SizeRootFs: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
+        SizeRw: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
+        SizeRootFs: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
     },
     {
         identifier: "ContainerContainerJSONBase",

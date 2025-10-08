@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as JsonmessageJSONError from "./JsonmessageJSONError.generated.js";
 import * as JsonmessageJSONProgress from "./JsonmessageJSONProgress.generated.js";
 
@@ -11,11 +11,11 @@ export class JSONMessage extends Schema.Class<JSONMessage>("JSONMessage")(
         progress: Schema.optional(Schema.String),
         id: Schema.optional(Schema.String),
         from: Schema.optional(Schema.String),
-        time: Schema.optional(MobySchemas.Int64),
-        timeNano: Schema.optional(MobySchemas.Int64),
+        time: Schema.optional(EffectSchemas.Number.I64),
+        timeNano: Schema.optional(EffectSchemas.Number.I64),
         errorDetail: Schema.optionalWith(JsonmessageJSONError.JsonmessageJSONError, { nullable: true }),
         error: Schema.optional(Schema.String),
-        // aux: Schema.optionalWith(Schema.Array(MobySchemas.UInt8), { nullable: true }),
+        // aux: Schema.optionalWith(Schema.Array(EffectSchemas.Number.U8), { nullable: true }),
     },
     {
         identifier: "JSONMessage",

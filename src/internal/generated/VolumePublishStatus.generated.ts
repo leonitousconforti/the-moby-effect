@@ -1,9 +1,9 @@
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
 
 export class VolumePublishStatus extends Schema.Class<VolumePublishStatus>("VolumePublishStatus")(
     {
-        NodeID: Schema.optional(MobySchemas.NodeIdentifier),
+        NodeID: Schema.optional(MobyIdentifiers.NodeIdentifier),
         State: Schema.optional(
             Schema.Literal("pending-publish", "published", "pending-node-unpublish", "pending-controller-unpublish")
         ),

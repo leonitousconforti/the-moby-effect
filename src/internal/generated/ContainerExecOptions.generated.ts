@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("ContainerExecOptions")(
     {
         User: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         Privileged: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         Tty: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
-        ConsoleSize: Schema.optionalWith(Schema.Array(MobySchemas.UInt64).pipe(Schema.itemsCount(2)), {
+        ConsoleSize: Schema.optionalWith(Schema.Array(EffectSchemas.Number.U64).pipe(Schema.itemsCount(2)), {
             nullable: true,
         }),
         AttachStdin: Schema.Boolean,

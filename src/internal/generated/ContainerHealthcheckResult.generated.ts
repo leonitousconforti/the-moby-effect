@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerHealthcheckResult extends Schema.Class<ContainerHealthcheckResult>("ContainerHealthcheckResult")(
     {
         Start: Schema.NullOr(Schema.DateFromString),
         End: Schema.NullOr(Schema.DateFromString),
-        ExitCode: MobySchemas.Int64,
+        ExitCode: EffectSchemas.Number.I64,
         Output: Schema.String,
     },
     {

@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerPidsStats extends Schema.Class<ContainerPidsStats>("ContainerPidsStats")(
     {
-        current: Schema.optional(MobySchemas.UInt64),
-        limit: Schema.optional(MobySchemas.UInt64),
+        current: Schema.optional(EffectSchemas.Number.U64),
+        limit: Schema.optional(EffectSchemas.Number.U64),
     },
     {
         identifier: "ContainerPidsStats",

@@ -1,18 +1,18 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerMemoryStats extends Schema.Class<ContainerMemoryStats>("ContainerMemoryStats")(
     {
-        usage: Schema.optional(MobySchemas.UInt64),
-        max_usage: Schema.optional(MobySchemas.UInt64),
-        stats: Schema.optionalWith(Schema.Record({ key: Schema.String, value: MobySchemas.UInt64 }), {
+        usage: Schema.optional(EffectSchemas.Number.U64),
+        max_usage: Schema.optional(EffectSchemas.Number.U64),
+        stats: Schema.optionalWith(Schema.Record({ key: Schema.String, value: EffectSchemas.Number.U64 }), {
             nullable: true,
         }),
-        failcnt: Schema.optional(MobySchemas.UInt64),
-        limit: Schema.optional(MobySchemas.UInt64),
-        commitbytes: Schema.optional(MobySchemas.UInt64),
-        commitpeakbytes: Schema.optional(MobySchemas.UInt64),
-        privateworkingset: Schema.optional(MobySchemas.UInt64),
+        failcnt: Schema.optional(EffectSchemas.Number.U64),
+        limit: Schema.optional(EffectSchemas.Number.U64),
+        commitbytes: Schema.optional(EffectSchemas.Number.U64),
+        commitpeakbytes: Schema.optional(EffectSchemas.Number.U64),
+        privateworkingset: Schema.optional(EffectSchemas.Number.U64),
     },
     {
         identifier: "ContainerMemoryStats",

@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as MountMount from "./MountMount.generated.js";
 import * as SwarmConfigReference from "./SwarmConfigReference.generated.js";
 import * as SwarmDNSConfig from "./SwarmDNSConfig.generated.js";
@@ -26,7 +26,7 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         OpenStdin: Schema.optional(Schema.Boolean),
         ReadOnly: Schema.optional(Schema.Boolean),
         Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MountMount.MountMount)), { nullable: true }),
-        StopGracePeriod: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
+        StopGracePeriod: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
         Healthcheck: Schema.optionalWith(V1HealthcheckConfig.V1HealthcheckConfig, { nullable: true }),
         Hosts: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         DNSConfig: Schema.optionalWith(SwarmDNSConfig.SwarmDNSConfig, { nullable: true }),
@@ -41,7 +41,7 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         CapabilityAdd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         CapabilityDrop: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
         Ulimits: Schema.optionalWith(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)), { nullable: true }),
-        OomScoreAdj: Schema.optional(MobySchemas.Int64),
+        OomScoreAdj: Schema.optional(EffectSchemas.Number.I64),
     },
     {
         identifier: "SwarmContainerSpec",

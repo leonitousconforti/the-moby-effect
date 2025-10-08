@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as SwarmClusterInfo from "./SwarmClusterInfo.generated.js";
 import * as SwarmPeer from "./SwarmPeer.generated.js";
 
@@ -11,8 +11,8 @@ export class SwarmInfo extends Schema.Class<SwarmInfo>("SwarmInfo")(
         ControlAvailable: Schema.Boolean,
         Error: Schema.String,
         RemoteManagers: Schema.NullOr(Schema.Array(Schema.NullOr(SwarmPeer.SwarmPeer))),
-        Nodes: Schema.optional(MobySchemas.Int64),
-        Managers: Schema.optional(MobySchemas.Int64),
+        Nodes: Schema.optional(EffectSchemas.Number.I64),
+        Managers: Schema.optional(EffectSchemas.Number.I64),
         Cluster: Schema.optionalWith(SwarmClusterInfo.SwarmClusterInfo, { nullable: true }),
         Warnings: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },

@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as SwarmMeta from "./SwarmMeta.generated.js";
 import * as SwarmSpec from "./SwarmSpec.generated.js";
 import * as SwarmTLSInfo from "./SwarmTLSInfo.generated.js";
@@ -12,8 +12,8 @@ export class SwarmClusterInfo extends Schema.Class<SwarmClusterInfo>("SwarmClust
         TLSInfo: Schema.NullOr(SwarmTLSInfo.SwarmTLSInfo),
         RootRotationInProgress: Schema.Boolean,
         DefaultAddrPool: Schema.NullOr(Schema.Array(Schema.String)),
-        SubnetSize: MobySchemas.UInt32,
-        DataPathPort: MobySchemas.UInt32,
+        SubnetSize: EffectSchemas.Number.U32,
+        DataPathPort: EffectSchemas.Number.U32,
     },
     {
         identifier: "SwarmClusterInfo",

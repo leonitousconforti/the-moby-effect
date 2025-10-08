@@ -1,5 +1,6 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as PortSchemas from "../schemas/port.ts";
 import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.js";
 
 export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerConfig")(
@@ -10,7 +11,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         AttachStdin: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         AttachStdout: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         AttachStderr: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
-        ExposedPorts: Schema.optionalWith(MobySchemas.PortSet, { nullable: true }),
+        ExposedPorts: Schema.optionalWith(PortSchemas.PortSet, { nullable: true }),
         Tty: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         OpenStdin: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
         StdinOnce: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
@@ -39,7 +40,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
         StopSignal: Schema.optional(Schema.String),
-        StopTimeout: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
+        StopTimeout: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
         Shell: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
     },
     {

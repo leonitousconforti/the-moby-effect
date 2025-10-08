@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class VolumeCapacityRange extends Schema.Class<VolumeCapacityRange>("VolumeCapacityRange")(
     {
-        RequiredBytes: MobySchemas.Int64,
-        LimitBytes: MobySchemas.Int64,
+        RequiredBytes: EffectSchemas.Number.I64,
+        LimitBytes: EffectSchemas.Number.I64,
     },
     {
         identifier: "VolumeCapacityRange",

@@ -1,5 +1,6 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
+import * as PortSchemas from "../schemas/port.ts";
 import * as NetworkAddress from "./NetworkAddress.generated.js";
 
 export class ContainerNetworkSettingsBase extends Schema.Class<ContainerNetworkSettingsBase>(
@@ -9,10 +10,10 @@ export class ContainerNetworkSettingsBase extends Schema.Class<ContainerNetworkS
         Bridge: Schema.String,
         SandboxID: Schema.String,
         SandboxKey: Schema.String,
-        Ports: Schema.NullOr(MobySchemas.PortMap),
+        Ports: Schema.NullOr(PortSchemas.PortMap),
         HairpinMode: Schema.Boolean,
         LinkLocalIPv6Address: Schema.String,
-        LinkLocalIPv6PrefixLen: MobySchemas.Int64,
+        LinkLocalIPv6PrefixLen: EffectSchemas.Number.I64,
         SecondaryIPAddresses: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))),
         SecondaryIPv6Addresses: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))),
     },

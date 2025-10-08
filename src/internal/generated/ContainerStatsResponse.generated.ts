@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as ContainerBlkioStats from "./ContainerBlkioStats.generated.js";
 import * as ContainerCPUStats from "./ContainerCPUStats.generated.js";
 import * as ContainerMemoryStats from "./ContainerMemoryStats.generated.js";
@@ -15,7 +15,7 @@ export class ContainerStatsResponse extends Schema.Class<ContainerStatsResponse>
         preread: Schema.NullOr(Schema.DateFromString),
         pids_stats: Schema.optionalWith(ContainerPidsStats.ContainerPidsStats, { nullable: true }),
         blkio_stats: Schema.optionalWith(ContainerBlkioStats.ContainerBlkioStats, { nullable: true }),
-        num_procs: MobySchemas.UInt32,
+        num_procs: EffectSchemas.Number.U32,
         storage_stats: Schema.optionalWith(ContainerStorageStats.ContainerStorageStats, { nullable: true }),
         cpu_stats: Schema.optionalWith(ContainerCPUStats.ContainerCPUStats, { nullable: true }),
         precpu_stats: Schema.optionalWith(ContainerCPUStats.ContainerCPUStats, { nullable: true }),

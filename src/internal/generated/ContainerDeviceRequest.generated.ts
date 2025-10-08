@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerDeviceRequest extends Schema.Class<ContainerDeviceRequest>("ContainerDeviceRequest")(
     {
         Driver: Schema.String,
-        Count: MobySchemas.Int64,
+        Count: EffectSchemas.Number.I64,
         DeviceIDs: Schema.NullOr(Schema.Array(Schema.String)),
         Capabilities: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.Array(Schema.String)))),
         Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),

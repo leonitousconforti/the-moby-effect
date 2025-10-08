@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class BuildCacheRecord extends Schema.Class<BuildCacheRecord>("BuildCacheRecord")(
     {
@@ -10,10 +10,10 @@ export class BuildCacheRecord extends Schema.Class<BuildCacheRecord>("BuildCache
         Description: Schema.String,
         InUse: Schema.Boolean,
         Shared: Schema.Boolean,
-        Size: MobySchemas.Int64,
+        Size: EffectSchemas.Number.I64,
         CreatedAt: Schema.NullOr(Schema.DateFromString),
         LastUsedAt: Schema.NullOr(Schema.DateFromString),
-        UsageCount: MobySchemas.Int64,
+        UsageCount: EffectSchemas.Number.I64,
     },
     {
         identifier: "BuildCacheRecord",

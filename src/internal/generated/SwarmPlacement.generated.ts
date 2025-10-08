@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as SwarmPlacementPreference from "./SwarmPlacementPreference.generated.js";
 import * as SwarmPlatform from "./SwarmPlatform.generated.js";
 
@@ -10,7 +10,7 @@ export class SwarmPlacement extends Schema.Class<SwarmPlacement>("SwarmPlacement
             Schema.Array(Schema.NullOr(SwarmPlacementPreference.SwarmPlacementPreference)),
             { nullable: true }
         ),
-        MaxReplicas: Schema.optional(MobySchemas.UInt64),
+        MaxReplicas: Schema.optional(EffectSchemas.Number.U64),
         Platforms: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmPlatform.SwarmPlatform)), { nullable: true }),
     },
     {

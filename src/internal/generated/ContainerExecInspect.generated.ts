@@ -1,13 +1,13 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerExecInspect extends Schema.Class<ContainerExecInspect>("ContainerExecInspect")(
     {
         ID: Schema.String,
         ContainerID: Schema.String,
         Running: Schema.Boolean,
-        ExitCode: MobySchemas.Int64,
-        Pid: MobySchemas.Int64,
+        ExitCode: EffectSchemas.Number.I64,
+        Pid: EffectSchemas.Number.I64,
     },
     {
         identifier: "ContainerExecInspect",

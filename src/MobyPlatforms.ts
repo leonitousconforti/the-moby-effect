@@ -26,8 +26,7 @@ import * as internalWeb from "./internal/platforms/web.js";
  */
 export const makeAgnosticHttpClientLayer: (
     connectionOptions: MobyConnection.MobyConnectionOptions
-) => Layer.Layer<Socket.WebSocketConstructor | HttpClient.HttpClient, never, HttpClient.HttpClient> =
-    internalAgnostic.makeAgnosticLayer;
+) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> = internalAgnostic.makeAgnosticHttpClientLayer;
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

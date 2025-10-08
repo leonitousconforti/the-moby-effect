@@ -1,7 +1,7 @@
 import type * as HttpClient from "@effect/platform/HttpClient";
-import type * as Socket from "@effect/platform/Socket";
 import type * as MobyConnection from "../../MobyConnection.js";
 
+import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -16,6 +16,8 @@ export const makeWebHttpClientLayer = (
         Effect.map((browserHttpClientLazy) => browserHttpClientLazy.layerXMLHttpRequest),
         Layer.unwrapEffect
     );
-    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticLayer(connectionOptions);
-    return Layer.provide(agnosticHttpClientLayer, browserLayer);
+    const agnosticHttpClientLayer = internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions);
+    return agnosticHttpClientLayer
+        .pipe(Layer.merge(Socket.layerWebSocketConstructorGlobal))
+        .pipe(Layer.provide(browserLayer));
 };

@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmConfigReferenceFileTarget extends Schema.Class<SwarmConfigReferenceFileTarget>(
     "SwarmConfigReferenceFileTarget"
@@ -8,7 +8,7 @@ export class SwarmConfigReferenceFileTarget extends Schema.Class<SwarmConfigRefe
         Name: Schema.String,
         UID: Schema.String,
         GID: Schema.String,
-        Mode: MobySchemas.UInt32,
+        Mode: EffectSchemas.Number.U32,
     },
     {
         identifier: "SwarmConfigReferenceFileTarget",

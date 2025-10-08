@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as NetworkTask from "./NetworkTask.generated.js";
 
 export class NetworkServiceInfo extends Schema.Class<NetworkServiceInfo>("NetworkServiceInfo")(
     {
         VIP: Schema.String,
         Ports: Schema.NullOr(Schema.Array(Schema.String)),
-        LocalLBIndex: MobySchemas.Int64,
+        LocalLBIndex: EffectSchemas.Number.I64,
         Tasks: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkTask.NetworkTask))),
     },
     {

@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerExecStartOptions extends Schema.Class<ContainerExecStartOptions>("ContainerExecStartOptions")(
     {
         Detach: Schema.Boolean,
         Tty: Schema.Boolean,
-        ConsoleSize: Schema.optionalWith(Schema.Array(MobySchemas.UInt64).pipe(Schema.itemsCount(2)), {
+        ConsoleSize: Schema.optionalWith(Schema.Array(EffectSchemas.Number.U64).pipe(Schema.itemsCount(2)), {
             nullable: true,
         }),
     },

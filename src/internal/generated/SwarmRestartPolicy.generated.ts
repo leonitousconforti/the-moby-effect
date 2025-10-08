@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmRestartPolicy extends Schema.Class<SwarmRestartPolicy>("SwarmRestartPolicy")(
     {
         Condition: Schema.optional(Schema.Literal("none", "on-failure", "any")),
-        Delay: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
-        MaxAttempts: Schema.optionalWith(MobySchemas.UInt64, { nullable: true }),
-        Window: Schema.optionalWith(MobySchemas.Int64, { nullable: true }),
+        Delay: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
+        MaxAttempts: Schema.optionalWith(EffectSchemas.Number.U64, { nullable: true }),
+        Window: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
     },
     {
         identifier: "SwarmRestartPolicy",

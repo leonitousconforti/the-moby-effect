@@ -1,12 +1,12 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerCPUUsage extends Schema.Class<ContainerCPUUsage>("ContainerCPUUsage")(
     {
-        total_usage: MobySchemas.UInt64,
-        percpu_usage: Schema.optionalWith(Schema.Array(MobySchemas.UInt64), { nullable: true }),
-        usage_in_kernelmode: MobySchemas.UInt64,
-        usage_in_usermode: MobySchemas.UInt64,
+        total_usage: EffectSchemas.Number.U64,
+        percpu_usage: Schema.optionalWith(Schema.Array(EffectSchemas.Number.U64), { nullable: true }),
+        usage_in_kernelmode: EffectSchemas.Number.U64,
+        usage_in_usermode: EffectSchemas.Number.U64,
     },
     {
         identifier: "ContainerCPUUsage",

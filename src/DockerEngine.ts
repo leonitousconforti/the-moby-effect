@@ -6,13 +6,13 @@
 
 import type * as HttpClient from "@effect/platform/HttpClient";
 import type * as Socket from "@effect/platform/Socket";
+import type * as Schemas from "effect-schemas";
 import type * as Effect from "effect/Effect";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
 import type * as IdSchemas from "./internal/schemas/id.js";
-import type * as Schemas from "./internal/schemas/index.js";
 import type * as MobyConnection from "./MobyConnection.js";
 import type * as MobyDemux from "./MobyDemux.js";
 import type * as MobySchemas from "./MobySchemas.js";
@@ -239,7 +239,7 @@ export const exec: ({
     command: string | Array<string>;
     containerId: IdSchemas.ContainerIdentifier;
 }) => Effect.Effect<
-    [exitCode: Schema.Schema.Type<Schemas.Int64>, output: string],
+    [exitCode: Schema.Schema.Type<Schemas.Number.I64>, output: string],
     Socket.SocketError | ParseResult.ParseError | DockerError,
     MobyEndpoints.Execs
 > = internalDocker.exec;

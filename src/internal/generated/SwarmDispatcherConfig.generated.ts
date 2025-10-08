@@ -1,9 +1,9 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmDispatcherConfig extends Schema.Class<SwarmDispatcherConfig>("SwarmDispatcherConfig")(
     {
-        HeartbeatPeriod: Schema.optional(MobySchemas.Int64),
+        HeartbeatPeriod: Schema.optional(EffectSchemas.Number.I64),
     },
     {
         identifier: "SwarmDispatcherConfig",

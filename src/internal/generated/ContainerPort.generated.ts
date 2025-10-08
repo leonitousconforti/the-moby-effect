@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class ContainerPort extends Schema.Class<ContainerPort>("ContainerPort")(
     {
         IP: Schema.optional(Schema.String),
-        PrivatePort: MobySchemas.UInt16,
-        PublicPort: Schema.optional(MobySchemas.UInt16),
+        PrivatePort: EffectSchemas.Number.U16,
+        PublicPort: Schema.optional(EffectSchemas.Number.U16),
         Type: Schema.String,
     },
     {

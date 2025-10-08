@@ -1,10 +1,10 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as VolumeTopology from "./VolumeTopology.generated.js";
 
 export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
     {
-        CapacityBytes: Schema.optional(MobySchemas.Int64),
+        CapacityBytes: Schema.optional(EffectSchemas.Number.I64),
         VolumeContext: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
             nullable: true,
         }),

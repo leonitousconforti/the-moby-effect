@@ -1,5 +1,5 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 import * as RegistryServiceConfig from "./RegistryServiceConfig.generated.js";
 import * as SwarmGenericResource from "./SwarmGenericResource.generated.js";
 import * as SwarmInfo from "./SwarmInfo.generated.js";
@@ -14,11 +14,11 @@ import * as SystemRuntimeWithStatus from "./SystemRuntimeWithStatus.generated.js
 export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")(
     {
         ID: Schema.String,
-        Containers: MobySchemas.Int64,
-        ContainersRunning: MobySchemas.Int64,
-        ContainersPaused: MobySchemas.Int64,
-        ContainersStopped: MobySchemas.Int64,
-        Images: MobySchemas.Int64,
+        Containers: EffectSchemas.Number.I64,
+        ContainersRunning: EffectSchemas.Number.I64,
+        ContainersPaused: EffectSchemas.Number.I64,
+        ContainersStopped: EffectSchemas.Number.I64,
+        Images: EffectSchemas.Number.I64,
         Driver: Schema.String,
         DriverStatus: Schema.NullOr(Schema.Array(Schema.Array(Schema.String).pipe(Schema.itemsCount(2)))),
         SystemStatus: Schema.optionalWith(Schema.Array(Schema.Array(Schema.String).pipe(Schema.itemsCount(2))), {
@@ -36,14 +36,14 @@ export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")(
         PidsLimit: Schema.Boolean,
         IPv4Forwarding: Schema.Boolean,
         Debug: Schema.Boolean,
-        NFd: MobySchemas.Int64,
+        NFd: EffectSchemas.Number.I64,
         OomKillDisable: Schema.Boolean,
-        NGoroutines: MobySchemas.Int64,
+        NGoroutines: EffectSchemas.Number.I64,
         SystemTime: Schema.String,
         LoggingDriver: Schema.String,
         CgroupDriver: Schema.String,
         CgroupVersion: Schema.optional(Schema.String),
-        NEventsListener: MobySchemas.Int64,
+        NEventsListener: EffectSchemas.Number.I64,
         KernelVersion: Schema.String,
         OperatingSystem: Schema.String,
         OSVersion: Schema.String,
@@ -51,8 +51,8 @@ export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")(
         Architecture: Schema.String,
         IndexServerAddress: Schema.String,
         RegistryConfig: Schema.NullOr(RegistryServiceConfig.RegistryServiceConfig),
-        NCPU: MobySchemas.Int64,
-        MemTotal: MobySchemas.Int64,
+        NCPU: EffectSchemas.Number.I64,
+        MemTotal: EffectSchemas.Number.I64,
         GenericResources: Schema.NullOr(Schema.Array(Schema.NullOr(SwarmGenericResource.SwarmGenericResource))),
         DockerRootDir: Schema.String,
         HttpProxy: Schema.String,

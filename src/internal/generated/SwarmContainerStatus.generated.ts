@@ -1,11 +1,11 @@
+import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MobySchemas from "../schemas/index.js";
 
 export class SwarmContainerStatus extends Schema.Class<SwarmContainerStatus>("SwarmContainerStatus")(
     {
         ContainerID: Schema.String,
-        PID: MobySchemas.Int64,
-        ExitCode: MobySchemas.Int64,
+        PID: EffectSchemas.Number.I64,
+        ExitCode: EffectSchemas.Number.I64,
     },
     {
         identifier: "SwarmContainerStatus",
