@@ -30,7 +30,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
                     () =>
                         new ContainerRestartPolicy.ContainerRestartPolicy({
                             Name: "no",
-                            MaximumRetryCount: EffectSchemas.Number.I64.make(0),
+                            MaximumRetryCount: EffectSchemas.Number.I64.make(0n),
                         })
                 )
             ),
@@ -44,8 +44,8 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
             .pipe(Schema.propertySignature)
             .pipe(
                 Schema.withConstructorDefault(() => [
-                    EffectSchemas.Number.U64.make(0),
-                    EffectSchemas.Number.U64.make(0),
+                    EffectSchemas.Number.U64.make(0n),
+                    EffectSchemas.Number.U64.make(0n),
                 ])
             ),
         Annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
@@ -83,7 +83,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
         OomScoreAdj: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0n))
         ),
         PidMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         Privileged: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
@@ -99,7 +99,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         UTSMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         UsernsMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
         ShmSize: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0))
+            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0n))
         ),
         Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
         Runtime: Schema.optional(Schema.String),

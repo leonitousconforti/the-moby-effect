@@ -50,7 +50,7 @@
         "update-blobs": "tsx ./scripts/update-blobs.ts"
     },
     "dependencies": {
-        "effect-schemas": "0.0.6",
+        "effect-schemas": "0.0.7",
         "eftar": "0.0.69"
     },
     "devDependencies": {

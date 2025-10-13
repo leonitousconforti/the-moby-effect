@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       effect-schemas:
-        specifier: 0.0.6
-        version: 0.0.6(effect@3.18.4)
+        specifier: 0.0.7
+        version: 0.0.7(effect@3.18.4)
       eftar:
         specifier: 0.0.69
         version: 0.0.69(@effect/experimental@0.56.0(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4))(@effect/platform@0.92.1(effect@3.18.4))(effect@3.18.4)
@@ -1792,8 +1792,8 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
-  effect-schemas@0.0.6:
-    resolution: {integrity: sha512-a2F/ijzojzLhA/cUD4jJG4my30Lo4/PHxLGGbIsS0XJA51iiW1FUGB9G1iowc5unIqhCbBaYdZ355jOjkDHHPw==}
+  effect-schemas@0.0.7:
+    resolution: {integrity: sha512-Uk78D/g3Qxn0iagwbZpUiw8GheLwgreObwzc8rde0raXN0M56xepX1bUDR6LWFHfbxhp9+Ufm27+3KYCcz48MQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       effect: 3.18.4
@@ -5296,7 +5296,7 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
-  effect-schemas@0.0.6(effect@3.18.4):
+  effect-schemas@0.0.7(effect@3.18.4):
     dependencies:
       effect: 3.18.4
 
