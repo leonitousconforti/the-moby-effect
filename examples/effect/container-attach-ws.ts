@@ -16,19 +16,6 @@ const localDocker = Function.pipe(
     Layer.unwrapEffect
 );
 
-// const localDocker = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-//     .pipe(
-//         Effect.map((connectionOptionsToHost) =>
-//             DindEngine.layerNodeJS({
-//                 exposeDindContainerBy: "ssh",
-//                 dindBaseImage: "docker.io/library/docker:28-dind-rootless",
-//                 connectionOptionsToHost,
-//             })
-//         )
-//     )
-//     .pipe(Layer.unwrapEffect)
-//     .pipe(Layer.provide(NodeContext.layer));
-
 const program = Effect.gen(function* () {
     const containers = yield* MobyEndpoints.Containers;
 

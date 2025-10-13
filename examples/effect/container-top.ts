@@ -1,7 +1,7 @@
 // Run with: npx tsx examples/effect/container-top.ts
 
 import { NodeRuntime } from "@effect/platform-node";
-import { Console, Effect, Function, Layer } from "effect";
+import { Console, Effect, Function, Layer, Stream } from "effect";
 import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
@@ -53,6 +53,7 @@ const program = Effect.gen(function* () {
     });
 
     yield* Console.log(data);
+    yield* containers.stats(containerInspectResponse.Id, { stream: false }).pipe(Stream.runDrain);
 });
 
 program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);

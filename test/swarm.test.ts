@@ -37,7 +37,7 @@ describe.each(testMatrix)(
                     expect(inspect).toBeDefined();
                     expect(spec).toBeDefined();
                     expect(version).toBeDefined();
-                    expect(version!.Index).toBeDefined();
+                    expect(version?.Index).toBeDefined();
 
                     yield* swarm.update(spec!, version!.Index!, {
                         rotateWorkerToken: true,

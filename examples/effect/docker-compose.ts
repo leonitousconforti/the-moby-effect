@@ -4,7 +4,7 @@ import { Path, Error as PlatformError } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
 import { Array, ConfigError, Console, Effect, Function, Layer, ParseResult, Stream } from "effect";
 import { Tar } from "eftar";
-import { DockerComposeEngine, DockerEngine, MobyConnection, MobyEndpoints } from "the-moby-effect";
+import { DockerComposeEngine, DockerEngine, MobyConnection } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -40,10 +40,9 @@ const { layer: composeForProjectLayer, tag: composeForProjectTag } = DockerCompo
 const dockerComposeProjectLive: Layer.Layer<
     DockerComposeEngine.DockerComposeProject,
     | ConfigError.ConfigError
-    | MobyEndpoints.SystemsError
+    | DockerEngine.DockerError
     | PlatformError.PlatformError
     | ParseResult.ParseError
-    | MobyEndpoints.ContainersError
     | DockerComposeEngine.DockerComposeError,
     never
 > = Layer.provide(composeForProjectLayer, localDockerCompose);

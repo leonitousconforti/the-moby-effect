@@ -50,7 +50,7 @@ const program = Effect.gen(function* () {
     }
 
     // Pull the image using the images service
-    const pullStream: Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, never> = images.create({
+    const pullStream: Stream.Stream<MobySchemas.JSONMessage, DockerEngine.DockerError, never> = images.create({
         fromImage: `docker.io/${dockerHubLogin.username}/hello-world:latest`,
         "X-Registry-Auth":
             authResponse?.IdentityToken || Buffer.from(JSON.stringify(dockerHubLogin)).toString("base64"),

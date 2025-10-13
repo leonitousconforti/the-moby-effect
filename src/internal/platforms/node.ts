@@ -13,7 +13,6 @@ import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
 import * as internalAgnostic from "./agnostic.js";
 import * as internalConnection from "./connection.js";
 
@@ -42,18 +41,35 @@ export const makeNodeSshAgent = (
 ): http.Agent =>
     new (class extends httpLazy.Agent {
         // The ssh client that will be connecting to the server
-        public readonly sshClient: ssh2.Client;
+        private readonly sshClient: ssh2.Client;
 
         // How to connect to the remote server and where the moby socket is located.
-        public readonly connectConfig: MobyConnection.SshConnectionOptions;
+        private readonly sshConfig: MobyConnection.SshConnectionOptions;
+
+        // Internal state to know if we are connected or not
+        private sshConnection: "unopened" | "connecting" | "open-failed" | "ready" = "unopened";
+        private openFailedError: Error | null = null;
 
         public constructor(
             ssh2ConnectConfig: MobyConnection.SshConnectionOptions,
             agentOptions?: http.AgentOptions | undefined
         ) {
             super(agentOptions);
+            this.sshConfig = ssh2ConnectConfig;
             this.sshClient = new ssh2Lazy.Client();
-            this.connectConfig = ssh2ConnectConfig;
+        }
+
+        /**
+         * When the agent is destroyed, we also want to close the ssh connection
+         * if it is still open.
+         *
+         * @since 1.0.0
+         * @see https://nodejs.org/api/http.html#agentdestroy
+         */
+        public override destroy(): void {
+            this.sshClient.end();
+            this.sshClient.destroy();
+            super.destroy();
         }
 
         /**
@@ -70,30 +86,68 @@ export const makeNodeSshAgent = (
             _options: http.ClientRequestArgs,
             callback: (error: Error | null, socket: stream.Duplex | undefined) => void
         ) {
-            this.sshClient
-                .on("ready", () => {
-                    this.sshClient.openssh_forwardOutStreamLocal(
-                        this.connectConfig.remoteSocketPath,
+            const onError = (error: Error & ssh2.ClientErrorExtensions): void => {
+                /**
+                 * Indicates 'client-socket' for socket-level errors and
+                 * 'client-ssh' for SSH disconnection messages. If the error is
+                 * at the client-ssh level, we want to close the ssh connection
+                 * and this agent cannot be used anymore.
+                 */
+                // if (error.level === "client-ssh") this.destroy();
+                callback(error, undefined);
+            };
+
+            // No connection yet, start connecting
+            if (this.sshConnection === "unopened") {
+                this.sshConnection = "connecting";
+                const unableToOpen = (error: Error & ssh2.ClientErrorExtensions) => {
+                    this.sshConnection = "open-failed";
+                    this.openFailedError = error;
+                    onError(error);
+                };
+                this.sshClient
+                    .once("ready", () => {
+                        this.sshConnection = "ready";
+                        this.sshClient.off("error", unableToOpen);
+                        this.createConnection(_options, callback);
+                    })
+                    .once("error", unableToOpen)
+                    .connect(this.sshConfig);
+            }
+
+            // Already tried to connect but failed
+            else if (this.sshConnection === "open-failed") {
+                callback(this.openFailedError, undefined);
+            }
+
+            // Another connection attempt is already in progress, wait for it
+            else if (this.sshConnection === "connecting") {
+                this.sshClient
+                    .once("ready", () => {
+                        this.sshClient.off("error", onError);
+                        this.createConnection(_options, callback);
+                    })
+                    .once("error", onError);
+            }
+
+            // We are connected to the ssh server, now forward our stream local
+            else if (this.sshConnection === "ready") {
+                this.sshClient
+                    .openssh_forwardOutStreamLocal(
+                        this.sshConfig.remoteSocketPath,
                         (error: Error | undefined, stream: ssh2.ClientChannel) => {
-                            if (error) {
-                                this.sshClient.end();
-                                return callback(error, void 0 as unknown as stream.Duplex);
-                            }
-
-                            stream.once("close", () => {
-                                // stream.end();
-                                // stream.destroy();
-                                this.sshClient.end();
-                            });
-
-                            callback(null, stream);
+                            this.sshClient.off("error", onError);
+                            if (error) return callback(error, void 0 as unknown as stream.Duplex);
+                            else return callback(null, stream);
                         }
-                    );
-                })
-                .on("error", (error) => callback(error, void 0 as unknown as stream.Duplex))
-                .connect(this.connectConfig);
+                    )
+                    .once("error", onError);
+            }
 
-            return undefined;
+            // Should never happen
+            else {
+                return Function.absurd<undefined>(this.sshConnection);
+            }
         }
     })(connectionOptions);
 
@@ -153,14 +207,14 @@ export const getWebsocketConstructor = (
         Effect.gen(function* () {
             const ws = yield* Effect.promise(() => import("ws"));
             const nodeHttpClientLazy = yield* Effect.promise(() => import("@effect/platform-node/NodeHttpClient"));
-            const maybeAgent = yield* Effect.serviceOption(nodeHttpClientLazy.HttpAgent);
+            const agent = yield* nodeHttpClientLazy.HttpAgent;
 
-            const prependedUrl = internalAgnostic.makeWebsocketRequestUrl(connectionOptions);
-            const agent = Option.map(maybeAgent, (agent) => agent.http).pipe(Option.getOrUndefined);
             return (url, protocols) =>
-                new ws.WebSocket(`${prependedUrl}${url}`, protocols, {
-                    agent,
-                }) as unknown as globalThis.WebSocket;
+                new ws.WebSocket(
+                    `ws://0.0.0.0${internalAgnostic.makeVersionPath(connectionOptions)}${url}`,
+                    protocols,
+                    { agent: agent.http }
+                ) as unknown as globalThis.WebSocket;
         })
     );
 

@@ -21,7 +21,7 @@ const localDocker = Function.pipe(
 
 // Pull the hello world image, will be removed when the scope is closed
 const program = Effect.gen(function* () {
-    const pullStream: Stream.Stream<MobySchemas.JSONMessage, MobyEndpoints.ImagesError, MobyEndpoints.Images> =
+    const pullStream: Stream.Stream<MobySchemas.JSONMessage, DockerEngine.DockerError, MobyEndpoints.Images> =
         yield* DockerEngine.pullScoped({
             image: "docker.io/library/hello-world:latest",
         });

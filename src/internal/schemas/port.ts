@@ -48,7 +48,7 @@ export class PortBinding extends Schema.Struct({
  */
 export class PortMap extends Schema.Record({
     key: PortWithMaybeProtocol.from,
-    value: Schema.Array(PortBinding),
+    value: Schema.NullOr(Schema.Array(PortBinding)),
 }).annotations({
     identifier: "PortMap",
     title: "nat.PortMap",

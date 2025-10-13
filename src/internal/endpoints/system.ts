@@ -116,7 +116,10 @@ export class System extends Effect.Service<System>()("@the-moby-effect/endpoints
             Stream.mapError(
                 HttpApiStreamingResponse(SystemApi, "system", "events", httpClient)({ urlParams: { ...options } }),
                 SystemsError("events")
-            );
+            )
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson())));
         const dataUsage_ = (params?: Options<"dataUsage">) =>
             Effect.mapError(client.dataUsage({ urlParams: { ...params } }), SystemsError("dataUsage"));
 

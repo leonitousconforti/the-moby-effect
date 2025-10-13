@@ -1,11 +1,12 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
-import { Array, Effect, Schema, type Layer, type Stream } from "effect";
+import { Array, Effect, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { TypesPlugin as Plugin, RuntimePluginPrivilege as PluginPrivilege } from "../generated/index.js";
+import { mapError } from "../convey/sinks.ts";
+import { JSONMessage, TypesPlugin as Plugin, RuntimePluginPrivilege as PluginPrivilege } from "../generated/index.js";
 import { DockerError } from "./circular.ts";
-import { HttpApiStreamingRequest, InternalServerError, NotFound } from "./httpApiHacks.js";
+import { HttpApiStreamingRequest, HttpApiStreamingResponse, InternalServerError, NotFound } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
@@ -30,7 +31,8 @@ const pullPluginEndpoint = HttpApiEndpoint.post("pull", "/pull")
     .setUrlParams(Schema.Struct({ remote: Schema.String, name: Schema.optional(Schema.String) }))
     .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
     .setPayload(Schema.Array(PluginPrivilege))
-    .addSuccess(HttpApiSchema.NoContent); // 204 No Content
+    .addSuccess(HttpApiSchema.Empty(200))
+    .addSuccess(HttpApiSchema.Empty(204)); // 204 No Content
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginInspect */
 const inspectPluginEndpoint = HttpApiEndpoint.get("inspect", "/:name/json")
@@ -145,19 +147,32 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 privileges?: Array<ConstructorParameters<typeof PluginPrivilege>[0]> | undefined;
             }
         ) =>
-            Effect.mapError(
-                client.pull({
-                    headers: { "X-Registry-Auth": "" },
-                    urlParams: { remote, name: options?.name },
-                    payload: Array.map(options?.privileges ?? [], PluginPrivilege.make),
-                }),
-                PluginsError("pull")
-            );
+            HttpApiStreamingResponse(
+                PluginsApi,
+                "plugins",
+                "pull",
+                httpClient
+            )({
+                headers: { "X-Registry-Auth": undefined },
+                urlParams: { remote, name: options?.name },
+                payload: Array.map(options?.privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
+            })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
+                .pipe(Stream.mapError(PluginsError("pull")));
         const inspect_ = (name: string) => Effect.mapError(client.inspect({ path: { name } }), PluginsError("inspect"));
         const delete_ = (name: string, options?: Options<"delete">) =>
             Effect.mapError(client.delete({ path: { name }, urlParams: { ...options } }), PluginsError("delete"));
         const enable_ = (name: string, options?: Options<"enable">) =>
-            Effect.mapError(client.enable({ path: { name }, urlParams: { ...options } }), PluginsError("enable"));
+            Effect.mapError(
+                client.enable({
+                    path: { name },
+                    urlParams: { timeout: options?.timeout ?? 0 },
+                }),
+                PluginsError("enable")
+            );
         const disable_ = (name: string, options?: Options<"disable">) =>
             Effect.mapError(client.disable({ path: { name }, urlParams: { ...options } }), PluginsError("disable"));
         const upgrade_ = (
@@ -170,7 +185,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                     path: { name },
                     urlParams: { remote },
                     headers: { "X-Registry-Auth": "" },
-                    payload: Array.map(privileges ?? [], PluginPrivilege.make),
+                    payload: Array.map(privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
                 }),
                 PluginsError("upgrade")
             );

@@ -4,7 +4,7 @@ import { Effect, Schema, type Layer } from "effect";
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { DockerError } from "./circular.ts";
-import { HttpApiSocket } from "./httpApiHacks.js";
+import { HttpApiTcp } from "./httpApiHacks.js";
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session */
 const sessionEndpoint = HttpApiEndpoint.post("session", "/session")
@@ -49,7 +49,7 @@ export class Sessions extends Effect.Service<Sessions>()("@the-moby-effect/endpo
 
         const session_ = () =>
             Effect.mapError(
-                HttpApiSocket(
+                HttpApiTcp(
                     SessionApi,
                     "session",
                     "session",

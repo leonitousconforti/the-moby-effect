@@ -32,6 +32,10 @@ export class DockerError extends PlatformError.TypeIdError(DockerErrorTypeId, "D
     method: string;
     cause: unknown;
 }> {
+    public override get message() {
+        return `When calling ${this.method} in ${this.module}`;
+    }
+
     public static WrapForModule(module: DockerError["module"]) {
         return (method: string) => (cause: unknown) => new this({ module, method, cause });
     }

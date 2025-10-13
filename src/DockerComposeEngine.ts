@@ -13,6 +13,7 @@ import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
 import type * as DockerEngine from "./DockerEngine.js";
 import type * as MobyDemux from "./MobyDemux.js";
+import type * as MobyEndpoints from "./MobyEndpoints.js";
 
 import * as internal from "./internal/engines/dockerCompose.js";
 
@@ -1065,8 +1066,11 @@ export interface DockerComposeProject {
  */
 export const layer: (
     options?: { dockerEngineSocket?: string | undefined } | undefined
-) => Layer.Layer<DockerCompose, DockerEngine.DockerError, Layer.Layer.Success<DockerEngine.DockerLayer>> =
-    internal.layer;
+) => Layer.Layer<
+    DockerCompose,
+    DockerEngine.DockerError,
+    MobyEndpoints.Containers | MobyEndpoints.System | MobyEndpoints.Images
+> = internal.layer;
 
 /**
  * @since 1.0.0

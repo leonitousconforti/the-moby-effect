@@ -38,7 +38,7 @@ const listVolumesEndpoint = HttpApiEndpoint.get("list", "/")
     .addSuccess(
         Schema.Struct({
             Volumes: Schema.Array(Volume),
-            Warnings: Schema.optional(Schema.Array(Schema.String)),
+            Warnings: Schema.NullOr(Schema.Array(Schema.String)),
         }),
         { status: 200 }
     ); // 200 OK

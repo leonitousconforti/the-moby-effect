@@ -553,7 +553,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                                 "X-Docker-Container-Path-Stat": Schema.compose(
                                     Schema.StringFromBase64,
                                     Schema.parseJson()
-                                ),
+                                ).pipe(Schema.optional),
                             })
                         )
                     )

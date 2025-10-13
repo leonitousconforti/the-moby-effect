@@ -13,23 +13,19 @@ export const makeVersionPath = (connectionOptions: MobyConnection.MobyConnection
 /** @internal */
 export const makeHttpRequestUrl: (connectionOptions: MobyConnection.MobyConnectionOptions) => string =
     internalConnection.MobyConnectionOptions.$match({
-        ssh: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
-        socket: (options) => `http://0.0.0.0${makeVersionPath(options)}` as const,
-        http: (options) =>
-            `http://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
-        https: (options) =>
-            `https://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+        ssh: (options) => `http://0.0.0.0${makeVersionPath(options)}`,
+        socket: (options) => `http://0.0.0.0${makeVersionPath(options)}`,
+        http: (options) => `http://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
+        https: (options) => `https://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
     });
 
 /** @internal */
 export const makeWebsocketRequestUrl: (connectionOptions: MobyConnection.MobyConnectionOptions) => string =
     internalConnection.MobyConnectionOptions.$match({
-        ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}` as const,
-        socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:` as const,
-        http: (options) =>
-            `ws://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
-        https: (options) =>
-            `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}` as const,
+        ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}`,
+        socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:`,
+        http: (options) => `ws://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
+        https: (options) => `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
     });
 
 /** @internal */

@@ -241,7 +241,21 @@ export const execWebsocketsNonBlocking = ({
 
         const acquire = Effect.gen(function* () {
             const inspect = yield* containers.inspect(containerId);
-            const command = Array.join(inspect.Config?.Cmd ?? [], " ");
+            const command = inspect.Config?.Cmd;
+            const entrypoint = Option.fromNullable(inspect.Config?.Entrypoint)
+                .pipe(Option.flatMap(Array.head))
+                .pipe(Option.getOrUndefined);
+
+            yield* Schema.decodeUnknown(Schema.Union(Schema.Undefined, Schema.Null))(command).pipe(
+                Effect.mapError(
+                    (cause) =>
+                        new internalCircular.DockerError({
+                            module: "containers",
+                            method: "execWebsocketsNonBlocking",
+                            cause,
+                        })
+                )
+            );
             yield* Schema.decodeUnknown(
                 Schema.Literal(
                     "/bin/sh", // Basic shell available in most containers
@@ -259,7 +273,7 @@ export const execWebsocketsNonBlocking = ({
                     "/usr/local/bin/sh", // Alternative location for sh
                     "/busybox/sh" // Busybox shell
                 )
-            )(command).pipe(
+            )(entrypoint).pipe(
                 Effect.mapError(
                     (cause) =>
                         new internalCircular.DockerError({

@@ -239,7 +239,7 @@ export const make: (options?: {
 }) => Effect.Effect<
     DockerComposeEngine.DockerCompose,
     DockerEngine.DockerError,
-    MobyEndpoints.Containers | MobyEndpoints.System | Scope.Scope
+    MobyEndpoints.Containers | MobyEndpoints.System | MobyEndpoints.Images | Scope.Scope
 > = Effect.fnUntraced(function* (options) {
     const containers = yield* MobyEndpoints.Containers;
     const runCommandHelper = Function.flow(runCommand, Stream.provideService(MobyEndpoints.Containers, containers));
@@ -593,6 +593,9 @@ export const make: (options?: {
                 Stream.runDrain
             );
 
+    const pullStream = DockerEngine.pull({ image: "docker.io/library/docker:latest" });
+    yield* Stream.runDrain(pullStream);
+
     const dindContainerIdResource = yield* DockerEngine.runScoped({
         Image: "docker.io/library/docker:latest",
         Entrypoint: ["/bin/sh"],
@@ -758,7 +761,7 @@ export const layer = (
 ): Layer.Layer<
     DockerComposeEngine.DockerCompose,
     DockerEngine.DockerError,
-    Layer.Layer.Success<DockerEngine.DockerLayer>
+    MobyEndpoints.Containers | MobyEndpoints.System | MobyEndpoints.Images
 > => Layer.scoped(DockerCompose, make(options));
 
 /** @internal */

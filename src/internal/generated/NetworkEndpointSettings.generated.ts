@@ -9,7 +9,11 @@ export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSetting
         Aliases: Schema.NullOr(Schema.Array(Schema.String)),
         MacAddress: Schema.String,
         DriverOpts: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
-        GwPriority: EffectSchemas.Number.I64,
+
+        // For backwards compatibility, GwPriority is optional
+        // GwPriority: EffectSchemas.Number.I64,
+        GwPriority: Schema.optional(EffectSchemas.Number.I64),
+
         NetworkID: Schema.String,
         EndpointID: Schema.String,
         Gateway: Schema.String,

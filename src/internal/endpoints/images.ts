@@ -3,6 +3,7 @@ import { Effect, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { mapError } from "../convey/sinks.ts";
 import {
     ContainerCreateRequest,
     ImageDeleteResponse,
@@ -316,6 +317,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("build")));
         const buildPrune_ = (options?: Options<"buildPrune">) =>
             Effect.mapError(client.buildPrune({ urlParams: { ...options } }), ImagesError("buildPrune"));
@@ -332,6 +334,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("create")));
         const inspect_ = (name: string, options?: Options<"inspect">) =>
             Effect.mapError(client.inspect({ path: { name }, urlParams: { ...options } }), ImagesError("inspect"));
@@ -351,6 +354,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("push")));
         const tag_ = (name: string, options?: Options<"tag">) =>
             Effect.mapError(client.tag({ path: { name }, urlParams: { ...options } }), ImagesError("tag"));

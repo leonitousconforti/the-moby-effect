@@ -1,6 +1,6 @@
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Either, Layer, Schema, Stream } from "effect";
+import { Duration, Effect, Either, Layer, Option, Schema, Stream } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
@@ -21,7 +21,10 @@ describe.each(testMatrix)(
             .pipe(Layer.unwrapEffect)
             .pipe(Layer.provide(NodeContext.layer));
 
-        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi System tests", (it) => {
+        layer(testLayer, {
+            timeout: Duration.minutes(2),
+            excludeTestServices: true,
+        })("MobyApi System tests", (it) => {
             it.effect("Should ping the docker daemon", () =>
                 Effect.gen(function* () {
                     const system = yield* MobyEndpoints.System;
@@ -80,10 +83,38 @@ describe.each(testMatrix)(
                 })
             );
 
-            it.effect("Should see docker events", () =>
+            it.effect("Should see docker events until now", () =>
+                Effect.gen(function* () {
+                    // Create an event
+                    const volumes = yield* MobyEndpoints.Volumes;
+                    yield* volumes.create({ Name: "events-test-volume-1" });
+                    yield* Effect.sleep("1 second");
+
+                    // Gather the event
+                    const system = yield* MobyEndpoints.System;
+                    const stream = system.events({ until: `${Date.now()}` }).pipe(Stream.take(1));
+                    const data = yield* Stream.runHead(stream);
+                    expect(Option.getOrUndefined(data)).toBeDefined();
+                })
+            );
+
+            it.effect("Should see docker events after now", () =>
                 Effect.gen(function* () {
                     const system = yield* MobyEndpoints.System;
-                    yield* Stream.runHead(system.events({ since: "0" }));
+                    const fiber = yield* system
+                        .events({ since: `${Date.now()}` })
+                        .pipe(Stream.take(1))
+                        .pipe(Stream.runHead)
+                        .pipe(Effect.fork);
+
+                    // Create an event
+                    yield* Effect.sleep("1 second");
+                    const volumes = yield* MobyEndpoints.Volumes;
+                    yield* volumes.create({ Name: "events-test-volume-2" });
+
+                    // Gather the event
+                    const data = yield* fiber;
+                    expect(Option.getOrUndefined(data)).toBeDefined();
                 })
             );
         });

@@ -1860,7 +1860,11 @@ declare const VolumesApi: HttpApi<
         },
         never,
         never,
+<<<<<<< HEAD
         { readonly Volumes: ReadonlyArray<VolumeVolume>; readonly Warnings?: ReadonlyArray<string> | undefined },
+=======
+        { readonly Volumes: ReadonlyArray<VolumeVolume>; readonly Warnings: ReadonlyArray<string> | null },
+>>>>>>> 06cc294 (stash)
         never,
         never,
         never

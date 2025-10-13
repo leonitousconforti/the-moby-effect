@@ -24,4 +24,4 @@ const program = Effect.gen(function* () {
     yield* Effect.log(info);
 });
 
-program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
