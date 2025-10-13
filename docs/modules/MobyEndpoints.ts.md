@@ -544,7 +544,7 @@ declare const ContainersApi: HttpApi<
         never,
         {
           readonly ContainersDeleted: ReadonlyArray<string & Brand<"ContainerId">> | null
-          readonly SpaceReclaimed: number & Brand<"I64">
+          readonly SpaceReclaimed: bigint & Brand<"I64">
         },
         never,
         never,
@@ -1860,11 +1860,7 @@ declare const VolumesApi: HttpApi<
         },
         never,
         never,
-<<<<<<< HEAD
-        { readonly Volumes: ReadonlyArray<VolumeVolume>; readonly Warnings?: ReadonlyArray<string> | undefined },
-=======
         { readonly Volumes: ReadonlyArray<VolumeVolume>; readonly Warnings: ReadonlyArray<string> | null },
->>>>>>> 06cc294 (stash)
         never,
         never,
         never
@@ -1921,7 +1917,7 @@ declare const VolumesApi: HttpApi<
         never,
         never,
         {
-          readonly SpaceReclaimed: number & Brand<"I64">
+          readonly SpaceReclaimed: bigint & Brand<"I64">
           readonly VolumesDeleted?: ReadonlyArray<string & Brand<"VolumeId">> | undefined
         },
         never,

@@ -77,7 +77,7 @@ declare const promiseClient: <E>(
         readonly OnBuild?: ReadonlyArray<string> | null | undefined
         readonly Labels?: { readonly [x: string]: string } | null | undefined
         readonly StopSignal?: string | undefined
-        readonly StopTimeout?: (number & Brand<"I64">) | undefined
+        readonly StopTimeout?: (bigint & Brand<"I64">) | undefined
         readonly Shell?: ReadonlyArray<string> | undefined
         readonly HostConfig?: MobySchemas.ContainerHostConfig | undefined
         readonly NetworkingConfig?: MobySchemas.NetworkNetworkingConfig | undefined
@@ -92,7 +92,7 @@ declare const promiseClient: <E>(
   exec: (a_0: {
     command: string | Array<string>
     containerId: MobySchemas.ContainerIdentifier
-  }) => Promise<[exitCode: number & Brand<"I64">, output: string]>
+  }) => Promise<[exitCode: bigint & Brand<"I64">, output: string]>
   execNonBlocking: <const T extends boolean = false>(a_0: {
     detach: T
     command: string | Array<string>

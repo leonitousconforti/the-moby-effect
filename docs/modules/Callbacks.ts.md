@@ -79,7 +79,7 @@ declare const callbackClient: <E>(
         readonly OnBuild?: ReadonlyArray<string> | null | undefined
         readonly Labels?: { readonly [x: string]: string } | null | undefined
         readonly StopSignal?: string | undefined
-        readonly StopTimeout?: (number & Brand<"I64">) | undefined
+        readonly StopTimeout?: (bigint & Brand<"I64">) | undefined
         readonly Shell?: ReadonlyArray<string> | undefined
         readonly HostConfig?: MobySchemas.ContainerHostConfig | undefined
         readonly NetworkingConfig?: MobySchemas.NetworkNetworkingConfig | undefined
@@ -95,7 +95,7 @@ declare const callbackClient: <E>(
   exec: (
     z: { command: string | Array<string>; containerId: MobySchemas.ContainerIdentifier },
     callback: (
-      exit: Exit.Exit<[exitCode: number & Brand<"I64">, output: string], DockerError | SocketError | ParseError>
+      exit: Exit.Exit<[exitCode: bigint & Brand<"I64">, output: string], DockerError | SocketError | ParseError>
     ) => void
   ) => void
   execNonBlocking: <const T extends boolean = false>(
