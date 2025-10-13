@@ -48,7 +48,7 @@ const deleteSecretEndpoint = HttpApiEndpoint.del("delete", "/:id")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretUpdate */
 const updateSecretEndpoint = HttpApiEndpoint.post("update", "/:id/update")
     .setPath(Schema.Struct({ id: Schema.String }))
-    .setUrlParams(Schema.Struct({ version: Schema.NumberFromString }))
+    .setUrlParams(Schema.Struct({ version: Schema.BigInt }))
     .setPayload(SwarmSecretSpec)
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(BadRequest) // 400 Bad request
@@ -104,7 +104,7 @@ export class Secrets extends Effect.Service<Secrets>()("@the-moby-effect/endpoin
             Effect.mapError(client.create({ payload }), SecretsError("create"));
         const inspect_ = (id: string) => Effect.mapError(client.inspect({ path: { id } }), SecretsError("inspect"));
         const delete_ = (id: string) => Effect.mapError(client.delete({ path: { id } }), SecretsError("delete"));
-        const update_ = (id: string, version: number, payload: SwarmSecretSpec) =>
+        const update_ = (id: string, version: bigint, payload: SwarmSecretSpec) =>
             Effect.mapError(client.update({ path: { id }, urlParams: { version }, payload }), SecretsError("update"));
 
         return {

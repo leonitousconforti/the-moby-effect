@@ -56,7 +56,7 @@ describe.each(testMatrix)(
                         expect(secretsList).toEqual([
                             {
                                 ID: expect.any(String),
-                                Version: { Index: expect.any(Number) },
+                                Version: { Index: expect.any(BigInt) },
                                 CreatedAt: expect.any(Date),
                                 UpdatedAt: expect.any(Date),
                                 Spec: { Name: "test-secret", Labels: { testLabel: "test" } },

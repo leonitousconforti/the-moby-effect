@@ -118,7 +118,7 @@ describe.each(testMatrix)(
                     Effect.gen(function* () {
                         const volumes = yield* MobyEndpoints.Volumes;
                         const testData = yield* volumes.prune({ all: ["true"] });
-                        expect(testData.SpaceReclaimed).toBe(0);
+                        expect(testData.SpaceReclaimed).toBe(0n);
                         expect(testData.VolumesDeleted).toBeInstanceOf(Array);
                         expect(testData.VolumesDeleted).toHaveLength(1);
                         expect(testData.VolumesDeleted![0]).toBe("testVolume");

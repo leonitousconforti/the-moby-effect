@@ -49,7 +49,7 @@ const leaveSwarmEndpoint = HttpApiEndpoint.post("leave", "/leave")
 const updateSwarmEndpoint = HttpApiEndpoint.post("update", "/update")
     .setUrlParams(
         Schema.Struct({
-            version: Schema.NumberFromString,
+            version: Schema.BigInt,
             rotateWorkerToken: Schema.optional(Schema.BooleanFromString),
             rotateManagerToken: Schema.optional(Schema.BooleanFromString),
             rotateManagerUnlockKey: Schema.optional(Schema.BooleanFromString),
@@ -124,7 +124,7 @@ export class Swarm extends Effect.Service<Swarm>()("@the-moby-effect/endpoints/S
             Effect.mapError(client.leave({ urlParams: { ...options } }), SwarmsError("leave"));
         const update_ = (
             spec: SwarmSpec,
-            version: number,
+            version: bigint,
             rotate?:
                 | {
                       readonly rotateWorkerToken?: boolean | undefined;

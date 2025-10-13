@@ -45,7 +45,7 @@ const deleteConfigEndpoint = HttpApiEndpoint.del("delete", "/:identifier")
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigUpdate */
 const updateConfigEndpoint = HttpApiEndpoint.post("update", "/:identifier/update")
     .setPath(Schema.Struct({ identifier: ConfigIdentifier }))
-    .setUrlParams(Schema.Struct({ version: Schema.NumberFromString }))
+    .setUrlParams(Schema.Struct({ version: Schema.BigInt }))
     .setPayload(SwarmConfigSpec) // Note: Docker API states only Labels can be updated
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK, no response body
     .addError(BadRequest) // 400 Bad parameter
@@ -105,7 +105,7 @@ export class Configs extends Effect.Service<Configs>()("@the-moby-effect/endpoin
             Effect.mapError(client.delete({ path: { identifier } }), ConfigsError("delete"));
         const update_ = (
             identifier: ConfigIdentifier,
-            version: number,
+            version: bigint,
             ...config: ConstructorParameters<typeof SwarmConfigSpec>
         ) =>
             Effect.mapError(

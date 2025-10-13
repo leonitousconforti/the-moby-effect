@@ -32,7 +32,7 @@ describe.each(testMatrix)(
                         yield* MobyConvey.waitForProgressToComplete(pullStream);
 
                         const { Id: id } = yield* DockerEngine.run({
-                            StopTimeout: I64.make(10),
+                            StopTimeout: I64.make(10n),
                             Image: "docker.io/library/alpine:latest",
                             Cmd: ["sleep", "1m"],
                         });
@@ -85,7 +85,7 @@ describe.each(testMatrix)(
                 Effect.gen(function* () {
                     const containers = yield* MobyEndpoints.Containers;
                     const { Id: id } = yield* DockerEngine.run({
-                        StopTimeout: I64.make(10),
+                        StopTimeout: I64.make(10n),
                         Image: "docker.io/library/alpine:latest",
                         Cmd: ["sleep", "1s"],
                     });
