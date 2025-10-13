@@ -159,7 +159,7 @@ declare const ConfigsApi: HttpApi<
         "update",
         "POST",
         { readonly identifier: string & Brand<"ConfigId"> },
-        { readonly version: number },
+        { readonly version: bigint },
         SwarmConfigSpec,
         never,
         void,
@@ -1382,7 +1382,7 @@ declare const SecretsApi: HttpApi<
         "update",
         "POST",
         { readonly id: string },
-        { readonly version: number },
+        { readonly version: bigint },
         SwarmSecretSpec,
         never,
         void,
@@ -1632,7 +1632,7 @@ declare const SwarmApi: HttpApi<
         "POST",
         never,
         {
-          readonly version: number
+          readonly version: bigint
           readonly rotateWorkerToken?: boolean | undefined
           readonly rotateManagerToken?: boolean | undefined
           readonly rotateManagerUnlockKey?: boolean | undefined
