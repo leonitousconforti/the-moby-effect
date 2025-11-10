@@ -203,7 +203,7 @@ const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/images/prune")
     .addSuccess(
         Schema.Struct({
             SpaceReclaimed: Schema.Number,
-            ImagesDeleted: Schema.optional(Schema.Array(ImageDeleteResponse)),
+            ImagesDeleted: Schema.NullishOr(Schema.Array(ImageDeleteResponse)),
         }),
         { status: 200 }
     );

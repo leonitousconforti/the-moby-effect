@@ -145,7 +145,7 @@ export type VolumeIdentifier = Schema.Schema.Type<typeof VolumeIdentifier>;
  */
 export const Digest = Function.pipe(
     Schema.String,
-    Schema.pattern(/^[a-z0-9]+(?:[.+_-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$/),
+    Schema.pattern(/^[a-z0-9]+(?:[@.+_-][a-z0-9]+)*:[a-zA-Z0-9=_-]+$/),
     Schema.brand("Digest")
 );
 
