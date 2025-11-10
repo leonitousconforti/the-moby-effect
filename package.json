@@ -19,6 +19,7 @@
     },
     "license": "GPL-3.0-only",
     "author": "Leo Conforti <leo@leoconforti.us> (https://leoconforti.us)",
+    "sideEffects": [],
     "type": "module",
     "exports": {
         "./package.json": "./package.json",
@@ -26,15 +27,13 @@
         "./*": "./src/*.ts",
         "./internal/*": null
     },
-    "main": "./dist/cjs/index.js",
-    "module": "./dist/esm/index.js",
-    "types": "./dist/dts/index.d.ts",
-    "directories": {
-        "bin": "bin",
-        "doc": "docs",
-        "example": "examples",
-        "test": "test"
-    },
+    "files": [
+        "src/**/*.ts",
+        "dist/**/*.js",
+        "dist/**/*.js.map",
+        "dist/**/*.d.ts",
+        "dist/**/*.d.ts.map"
+    ],
     "scripts": {
         "build": "pnpm clean && pnpm codegen && tsc -b tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
         "check": "tsc -b tsconfig.json",
@@ -140,8 +139,17 @@
     },
     "publishConfig": {
         "access": "public",
-        "directory": "dist",
-        "linkDirectory": false,
-        "provenance": false
-    }
+        "exports": {
+            "./package.json": "./package.json",
+            ".": "./dist/src/index.ts",
+            "./*": "./dist/src/*.ts",
+            "./internal/*": null
+        }
+    },
+    "tags": [
+        "moby",
+        "docker",
+        "podman",
+        "effect-ts"
+    ]
 }
