@@ -8,7 +8,7 @@ export const testMatrix: Array<{
     exposeDindContainerBy: MobyConnection.MobyConnectionOptions["_tag"];
 }> = Array.map(
     Array.cartesian(
-        Array.make("http" as const, "ssh" as const),
+        Array.make("http" as const, "ssh" as const, "socket" as const),
         Array.make(
             "docker.io/library/docker:dind-rootless" as const,
             // "docker.io/library/docker:23-dind-rootless" as const
