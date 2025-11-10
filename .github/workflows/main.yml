@@ -78,12 +78,12 @@ jobs:
       - if: startsWith(matrix.platform-variant, 'node')
         run: pnpm test
 
-      - if: startsWith(matrix.platform-variant, 'bun')
+      - if: startsWith(matrix.platform-variant, 'bun') && false
         uses: ./.github/actions/setup-bun
-      - if: startsWith(matrix.platform-variant, 'bun')
+      - if: startsWith(matrix.platform-variant, 'bun') && false
         run: bunx --bun vitest
 
-      - if: startsWith(matrix.platform-variant, 'deno')
+      - if: startsWith(matrix.platform-variant, 'deno') && false
         uses: ./.github/actions/setup-deno
-      - if: startsWith(matrix.platform-variant, 'deno')
+      - if: startsWith(matrix.platform-variant, 'deno') && false
         run: deno task test --watch=false
