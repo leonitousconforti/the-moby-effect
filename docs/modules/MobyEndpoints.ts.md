@@ -818,7 +818,7 @@ declare const ImagesApi: HttpApi<
         { readonly name: string },
         { readonly platform?: string | undefined; readonly tag?: string | undefined },
         never,
-        { readonly "X-Registry-Auth": string },
+        { readonly "X-Registry-Auth"?: string | undefined },
         void,
         NotFound,
         never,
@@ -881,7 +881,10 @@ declare const ImagesApi: HttpApi<
         { readonly filters?: string | undefined },
         never,
         never,
-        { readonly SpaceReclaimed: number; readonly ImagesDeleted?: ReadonlyArray<ImageDeleteResponse> | undefined },
+        {
+          readonly SpaceReclaimed: number
+          readonly ImagesDeleted: ReadonlyArray<ImageDeleteResponse> | null | undefined
+        },
         never,
         never,
         never

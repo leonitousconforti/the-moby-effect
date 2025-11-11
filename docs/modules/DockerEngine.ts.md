@@ -14,6 +14,8 @@ Since v1.0.0
 
 ## Exports Grouped by Category
 
+- [Auth](#auth)
+  - [RegistryAuth](#registryauth)
 - [Docker](#docker)
   - [build](#build)
   - [buildScoped](#buildscoped)
@@ -55,6 +57,24 @@ Since v1.0.0
 
 ---
 
+# Auth
+
+## RegistryAuth
+
+**See**
+
+- https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
+
+**Signature**
+
+```ts
+declare const RegistryAuth: typeof RegistryAuth
+```
+
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L187)
+
+Since v1.0.0
+
 # Docker
 
 ## build
@@ -80,7 +100,7 @@ declare const build: <E1>({
 }) => Stream.Stream<MobySchemas.JSONMessage, DockerError, MobyEndpoints.Images>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L188)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L197)
 
 Since v1.0.0
 
@@ -112,7 +132,7 @@ declare const buildScoped: <E1>({
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L210)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L219)
 
 Since v1.0.0
 
@@ -137,7 +157,7 @@ declare const exec: ({
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L235)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L244)
 
 Since v1.0.0
 
@@ -164,7 +184,7 @@ declare const execNonBlocking: <const T extends boolean = false>({
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L254)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L263)
 
 Since v1.0.0
 
@@ -190,7 +210,7 @@ declare const execWebsockets: ({
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L276)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L285)
 
 Since v1.0.0
 
@@ -218,7 +238,7 @@ declare const execWebsocketsNonBlocking: ({
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L296)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L305)
 
 Since v1.0.0
 
@@ -234,7 +254,7 @@ declare const images: (
 ) => Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, DockerError, MobyEndpoints.Images>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L316)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L325)
 
 Since v1.0.0
 
@@ -248,7 +268,7 @@ Implements the `docker info` command.
 declare const info: () => Effect.Effect<MobySchemas.SystemInfo, DockerError, MobyEndpoints.System>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L326)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L335)
 
 Since v1.0.0
 
@@ -262,7 +282,7 @@ Implements the `docker ping` command.
 declare const ping: () => Effect.Effect<void, DockerError, MobyEndpoints.System>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L334)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L343)
 
 Since v1.0.0
 
@@ -276,7 +296,7 @@ Implements the `docker ping` command.
 declare const pingHead: () => Effect.Effect<void, DockerError, MobyEndpoints.System>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L342)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L351)
 
 Since v1.0.0
 
@@ -292,7 +312,7 @@ declare const ps: (
 ) => Effect.Effect<ReadonlyArray<MobySchemas.ContainerSummary>, DockerError, MobyEndpoints.Containers>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L350)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L359)
 
 Since v1.0.0
 
@@ -313,7 +333,7 @@ declare const pull: ({
 }) => Stream.Stream<MobySchemas.JSONMessage, DockerError, MobyEndpoints.Images>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L362)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L371)
 
 Since v1.0.0
 
@@ -339,7 +359,7 @@ declare const pullScoped: ({
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L378)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L387)
 
 Since v1.0.0
 
@@ -356,7 +376,7 @@ declare const push: (
 ) => Stream.Stream<MobySchemas.JSONMessage, DockerError, MobyEndpoints.Images>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L396)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L405)
 
 Since v1.0.0
 
@@ -376,7 +396,7 @@ declare const run: (
 ) => Effect.Effect<MobySchemas.ContainerInspectResponse, DockerError, MobyEndpoints.Containers>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L407)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L416)
 
 Since v1.0.0
 
@@ -397,7 +417,7 @@ declare const runScoped: (
 ) => Effect.Effect<MobySchemas.ContainerInspectResponse, DockerError, Scope.Scope | MobyEndpoints.Containers>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L422)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L431)
 
 Since v1.0.0
 
@@ -413,7 +433,7 @@ declare const search: (
 ) => Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResult>, DockerError, MobyEndpoints.Images>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L437)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L446)
 
 Since v1.0.0
 
@@ -429,7 +449,7 @@ declare const start: (
 ) => Effect.Effect<void, DockerError, MobyEndpoints.Containers>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L448)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L457)
 
 Since v1.0.0
 
@@ -445,7 +465,7 @@ declare const stop: (
 ) => Effect.Effect<void, DockerError, MobyEndpoints.Containers>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L458)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L467)
 
 Since v1.0.0
 
@@ -459,7 +479,7 @@ Implements the `docker version` command.
 declare const version: () => Effect.Effect<MobySchemas.TypesVersion, DockerError, MobyEndpoints.System>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L468)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerEngine.ts#L477)
 
 Since v1.0.0
 
