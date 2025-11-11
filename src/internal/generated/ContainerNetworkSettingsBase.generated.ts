@@ -11,11 +11,11 @@ export class ContainerNetworkSettingsBase extends Schema.Class<ContainerNetworkS
         SandboxID: Schema.String,
         SandboxKey: Schema.String,
         Ports: Schema.NullOr(PortSchemas.PortMap),
-        HairpinMode: Schema.Boolean,
-        LinkLocalIPv6Address: Schema.String,
-        LinkLocalIPv6PrefixLen: EffectSchemas.Number.I64,
-        SecondaryIPAddresses: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))),
-        SecondaryIPv6Addresses: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))),
+        HairpinMode: Schema.optional(Schema.Boolean), // optional for docker.io/library/docker:26-dind-rootless
+        LinkLocalIPv6Address: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
+        LinkLocalIPv6PrefixLen: Schema.optional(EffectSchemas.Number.I64), // optional for docker.io/library/docker:26-dind-rootless
+        SecondaryIPAddresses: Schema.NullishOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))), // optional for docker.io/library/docker:26-dind-rootless
+        SecondaryIPv6Addresses: Schema.NullishOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))), // optional for docker.io/library/docker:26-dind-rootless
     },
     {
         identifier: "ContainerNetworkSettingsBase",
