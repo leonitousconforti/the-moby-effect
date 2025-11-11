@@ -1,11 +1,16 @@
 import { NodeContext } from "@effect/platform-node";
-import { describe, layer } from "@effect/vitest";
-import { Duration, Effect, Layer } from "effect";
+import { describe, inject, layer } from "@effect/vitest";
+import { Duration, Effect, Layer, Match } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
-describe.each(testMatrix)(
+const skipForUndiciHttpClients = Match.value(inject("__PLATFORM_VARIANT")).pipe(
+    Match.whenOr("node-20.x-undici", "node-22.x-undici", "deno-undici", "bun-undici", () => true),
+    Match.orElse(() => false)
+);
+
+describe.skipIf(() => skipForUndiciHttpClients).each(testMatrix)(
     "MobyApi Sessions tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
         const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
