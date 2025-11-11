@@ -100,8 +100,12 @@ export const WithRegistryAuthHeader = (
 ) =>
     HttpClient.mapRequestEffect(
         Effect.fn("HttpApiHacks.withRegistryAUthHeader")(function* (request: HttpClientRequest.HttpClientRequest) {
-            console.log("Checking for registry auth header requirement for request to", request.url);
-            if (!sendHeaderWithEndpoints.some((endpoint) => request.url?.startsWith(endpoint.path))) {
+            const url = HttpClientRequest.toUrl(request);
+            if (Option.isNone(url)) {
+                return request;
+            }
+
+            if (!sendHeaderWithEndpoints.some((endpoint) => url.value.pathname.startsWith(endpoint.path))) {
                 return request;
             }
 
