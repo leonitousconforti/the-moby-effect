@@ -14,12 +14,12 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Id: Schema.String,
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
         RepoDigests: Schema.NullOr(Schema.Array(MobyIdentifiers.Digest)),
-        Parent: Schema.String,
+        Parent: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
         Comment: Schema.String,
         Created: Schema.optional(Schema.String),
         Container: Schema.optional(Schema.String),
         ContainerConfig: Schema.optionalWith(ContainerConfig.ContainerConfig, { nullable: true }),
-        DockerVersion: Schema.String,
+        DockerVersion: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
         Author: Schema.String,
         Config: Schema.NullOr(V1DockerOCIImageConfig.V1DockerOCIImageConfig),
         Architecture: Schema.String,

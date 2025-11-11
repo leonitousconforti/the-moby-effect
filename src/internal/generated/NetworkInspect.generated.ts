@@ -12,7 +12,7 @@ export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect
         Created: Schema.NullOr(Schema.DateFromString),
         Scope: Schema.String,
         Driver: Schema.String,
-        EnableIPv4: Schema.Boolean,
+        EnableIPv4: Schema.optional(Schema.Boolean), // optional for docker.io/library/docker:27-dind-rootless
         EnableIPv6: Schema.Boolean,
         IPAM: Schema.NullOr(NetworkIPAM.NetworkIPAM),
         Internal: Schema.Boolean,
@@ -20,8 +20,8 @@ export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect
         Ingress: Schema.Boolean,
         ConfigFrom: Schema.NullOr(NetworkConfigReference.NetworkConfigReference),
         ConfigOnly: Schema.Boolean,
-        Containers: Schema.NullOr(
-            Schema.Record({ key: Schema.String, value: Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource) })
+        Containers: Schema.NullishOr(
+            Schema.Record({ key: Schema.String, value: Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource) }) // optional for docker.io/library/docker:26-dind-rootless
         ),
         Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
         Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
