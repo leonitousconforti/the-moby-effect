@@ -10,7 +10,7 @@ import type * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
 import type * as ssh2 from "ssh2";
 
-import * as internal from "./internal/platforms/connection.js";
+import * as internal from "./internal/platforms/connection.ts";
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a

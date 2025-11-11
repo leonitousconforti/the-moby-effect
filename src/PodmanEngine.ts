@@ -6,12 +6,12 @@
 
 import type * as HttpClient from "@effect/platform/HttpClient";
 import type * as Socket from "@effect/platform/Socket";
-import type * as MobyConnection from "./MobyConnection.js";
+import type * as MobyConnection from "./MobyConnection.ts";
 
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyEndpoints from "./MobyEndpoints.js";
-import * as MobyPlatforms from "./MobyPlatforms.js";
+import * as MobyEndpoints from "./MobyEndpoints.ts";
+import * as MobyPlatforms from "./MobyPlatforms.ts";
 
 /**
  * @since 1.0.0

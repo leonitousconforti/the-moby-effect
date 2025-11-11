@@ -44,7 +44,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Config
      */
     ConfigsLayerLocalSocket,
-} from "./internal/endpoints/configs.js";
+} from "./internal/endpoints/configs.ts";
 
 export {
     /**
@@ -74,7 +74,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Container
      */
     ContainersLayerLocalSocket,
-} from "./internal/endpoints/containers.js";
+} from "./internal/endpoints/containers.ts";
 
 export {
     /**
@@ -104,7 +104,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Distribution
      */
     DistributionsLayerLocalSocket,
-} from "./internal/endpoints/distribution.js";
+} from "./internal/endpoints/distribution.ts";
 
 export {
     /**
@@ -134,7 +134,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
      */
     ExecsLayerLocalSocket,
-} from "./internal/endpoints/execs.js";
+} from "./internal/endpoints/execs.ts";
 
 export {
     /**
@@ -164,7 +164,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
      */
     ImagesLayerLocalSocket,
-} from "./internal/endpoints/images.js";
+} from "./internal/endpoints/images.ts";
 
 export {
     /**
@@ -194,7 +194,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Network
      */
     NetworksLayerLocalSocket,
-} from "./internal/endpoints/networks.js";
+} from "./internal/endpoints/networks.ts";
 
 export {
     /**
@@ -224,7 +224,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Node
      */
     NodesLayerLocalSocket,
-} from "./internal/endpoints/nodes.js";
+} from "./internal/endpoints/nodes.ts";
 
 export {
     /**
@@ -254,7 +254,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin
      */
     PluginsLayerLocalSocket,
-} from "./internal/endpoints/plugins.js";
+} from "./internal/endpoints/plugins.ts";
 
 export {
     /**
@@ -296,7 +296,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret
      */
     SecretsLayerLocalSocket,
-} from "./internal/endpoints/secrets.js";
+} from "./internal/endpoints/secrets.ts";
 
 export {
     /**
@@ -338,7 +338,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Service
      */
     ServicesLayerLocalSocket,
-} from "./internal/endpoints/services.js";
+} from "./internal/endpoints/services.ts";
 
 export {
     /**
@@ -368,7 +368,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Session
      */
     SessionsLayerLocalSocket,
-} from "./internal/endpoints/session.js";
+} from "./internal/endpoints/session.ts";
 
 export {
     /**
@@ -407,7 +407,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Swarm
      */
     SwarmLayerLocalSocket,
-} from "./internal/endpoints/swarm.js";
+} from "./internal/endpoints/swarm.ts";
 
 export {
     /**
@@ -437,7 +437,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/System
      */
     SystemLayerLocalSocket,
-} from "./internal/endpoints/system.js";
+} from "./internal/endpoints/system.ts";
 
 export {
     /**
@@ -479,7 +479,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Task
      */
     TasksLayerLocalSocket,
-} from "./internal/endpoints/tasks.js";
+} from "./internal/endpoints/tasks.ts";
 
 export {
     /**
@@ -509,4 +509,4 @@ export {
      * @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume
      */
     VolumesLayerLocalSocket,
-} from "./internal/endpoints/volumes.js";
+} from "./internal/endpoints/volumes.ts";

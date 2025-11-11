@@ -5,7 +5,7 @@
  */
 
 /** @since 1.0.0 */
-export * from "./internal/generated/index.js";
+export * from "./internal/generated/index.ts";
 
 /** @since 1.0.0 */
 export * from "./internal/schemas/id.ts";

@@ -9,11 +9,11 @@ import type * as FileSystem from "@effect/platform/FileSystem";
 import type * as Path from "@effect/platform/Path";
 import type * as Layer from "effect/Layer";
 import type * as ParseResult from "effect/ParseResult";
-import type * as BlobConstants from "./internal/blobs/constants.js";
-import type * as MobyConnection from "./MobyConnection.js";
+import type * as BlobConstants from "./internal/blobs/constants.ts";
+import type * as MobyConnection from "./MobyConnection.ts";
 
-import * as DockerEngine from "./DockerEngine.js";
-import * as internal from "./internal/engines/dind.js";
+import * as DockerEngine from "./DockerEngine.ts";
+import * as internal from "./internal/engines/dind.ts";
 
 /**
  * @since 1.0.0

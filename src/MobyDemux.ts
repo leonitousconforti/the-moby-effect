@@ -16,13 +16,13 @@ import type * as Scope from "effect/Scope";
 import type * as Sink from "effect/Sink";
 import type * as Stream from "effect/Stream";
 
-import * as internal from "./internal/demux/demux.js";
-import * as internalFan from "./internal/demux/fan.js";
-import * as internalHijack from "./internal/demux/hijack.js";
-import * as internalMultiplexed from "./internal/demux/multiplexed.js";
-import * as internalPack from "./internal/demux/pack.js";
-import * as internalRaw from "./internal/demux/raw.js";
-import * as internalStdio from "./internal/demux/stdio.js";
+import * as internal from "./internal/demux/demux.ts";
+import * as internalFan from "./internal/demux/fan.ts";
+import * as internalHijack from "./internal/demux/hijack.ts";
+import * as internalMultiplexed from "./internal/demux/multiplexed.ts";
+import * as internalPack from "./internal/demux/pack.ts";
+import * as internalRaw from "./internal/demux/raw.ts";
+import * as internalStdio from "./internal/demux/stdio.ts";
 
 /**
  * @since 1.0.0

@@ -12,18 +12,18 @@ import type * as ParseResult from "effect/ParseResult";
 import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
-import type * as IdSchemas from "./internal/schemas/id.js";
-import type * as MobyConnection from "./MobyConnection.js";
-import type * as MobyDemux from "./MobyDemux.js";
-import type * as MobySchemas from "./MobySchemas.js";
+import type * as IdSchemas from "./internal/schemas/id.ts";
+import type * as MobyConnection from "./MobyConnection.ts";
+import type * as MobyDemux from "./MobyDemux.ts";
+import type * as MobySchemas from "./MobySchemas.ts";
 
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
-import * as MobyEndpoints from "./MobyEndpoints.js";
-import * as MobyPlatforms from "./MobyPlatforms.js";
+import * as MobyEndpoints from "./MobyEndpoints.ts";
+import * as MobyPlatforms from "./MobyPlatforms.ts";
 
 import * as internalCircular from "./internal/endpoints/circular.ts";
-import * as internalDocker from "./internal/engines/docker.js";
+import * as internalDocker from "./internal/engines/docker.ts";
 
 /**
  * @since 1.0.0
@@ -185,7 +185,7 @@ export {
      * @see https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
      */
     RegistryAuth,
-} from "./internal/endpoints/auth.js";
+} from "./internal/endpoints/auth.ts";
 
 /**
  * Implements the `docker build` command. It doesn't have all the flags that the

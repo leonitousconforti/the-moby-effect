@@ -6,16 +6,16 @@
 
 import type * as HttpClient from "@effect/platform/HttpClient";
 import type * as Socket from "@effect/platform/Socket";
-import type * as MobyConnection from "./MobyConnection.js";
+import type * as MobyConnection from "./MobyConnection.ts";
 
 import type * as Layer from "effect/Layer";
-import * as internalAgnostic from "./internal/platforms/agnostic.js";
-import * as internalBun from "./internal/platforms/bun.js";
-import * as internalDeno from "./internal/platforms/deno.js";
-import * as internalFetch from "./internal/platforms/fetch.js";
-import * as internalNode from "./internal/platforms/node.js";
-import * as internalUndici from "./internal/platforms/undici.js";
-import * as internalWeb from "./internal/platforms/web.js";
+import * as internalAgnostic from "./internal/platforms/agnostic.ts";
+import * as internalBun from "./internal/platforms/bun.ts";
+import * as internalDeno from "./internal/platforms/deno.ts";
+import * as internalFetch from "./internal/platforms/fetch.ts";
+import * as internalNode from "./internal/platforms/node.ts";
+import * as internalUndici from "./internal/platforms/undici.ts";
+import * as internalWeb from "./internal/platforms/web.ts";
 
 /**
  * Given the moby connection options, it will construct a layer that provides a

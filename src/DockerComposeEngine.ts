@@ -11,11 +11,11 @@ import type * as Effect from "effect/Effect";
 import type * as Layer from "effect/Layer";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
-import type * as DockerEngine from "./DockerEngine.js";
-import type * as MobyDemux from "./MobyDemux.js";
-import type * as MobyEndpoints from "./MobyEndpoints.js";
+import type * as DockerEngine from "./DockerEngine.ts";
+import type * as MobyDemux from "./MobyDemux.ts";
+import type * as MobyEndpoints from "./MobyEndpoints.ts";
 
-import * as internal from "./internal/engines/dockerCompose.js";
+import * as internal from "./internal/engines/dockerCompose.ts";
 
 /**
  * @since 1.0.0

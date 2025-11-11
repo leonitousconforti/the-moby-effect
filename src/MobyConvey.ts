@@ -9,9 +9,9 @@ import type * as Effect from "effect/Effect";
 import type * as Scope from "effect/Scope";
 import type * as Sink from "effect/Sink";
 import type * as Stream from "effect/Stream";
-import type * as MobySchemas from "./MobySchemas.js";
+import type * as MobySchemas from "./MobySchemas.ts";
 
-import * as internal from "./internal/convey/sinks.js";
+import * as internal from "./internal/convey/sinks.ts";
 
 /**
  * Waits for the progress stream to complete and returns the result.
