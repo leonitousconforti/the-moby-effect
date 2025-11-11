@@ -73,6 +73,12 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
+      # Disable AppArmor restriction (globally 🤮) on unprivileged user namespaces to allow rootless Docker to work
+      - run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-rootless-docker.conf
+          sudo sysctl --system
+
       - if: startsWith(matrix.platform-variant, 'node')
         uses: ./.github/actions/setup-node
       - if: startsWith(matrix.platform-variant, 'node')
