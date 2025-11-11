@@ -20,7 +20,7 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Container: Schema.optional(Schema.String),
         ContainerConfig: Schema.optionalWith(ContainerConfig.ContainerConfig, { nullable: true }),
         DockerVersion: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
-        Author: Schema.String,
+        Author: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
         Config: Schema.NullOr(V1DockerOCIImageConfig.V1DockerOCIImageConfig),
         Architecture: Schema.String,
         Variant: Schema.optional(Schema.String),
@@ -28,7 +28,7 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         OsVersion: Schema.optional(Schema.String),
         Size: EffectSchemas.Number.I64,
         VirtualSize: Schema.optional(EffectSchemas.Number.I64),
-        GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
+        GraphDriver: Schema.NullishOr(StorageDriverData.StorageDriverData), // optional for docker.io/library/docker:26-dind-rootless
         RootFS: Schema.NullOr(ImageRootFS.ImageRootFS),
         Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),
         Descriptor: Schema.optionalWith(V1Descriptor.V1Descriptor, { nullable: true }),
