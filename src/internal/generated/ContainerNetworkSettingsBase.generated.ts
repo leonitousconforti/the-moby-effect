@@ -7,7 +7,7 @@ export class ContainerNetworkSettingsBase extends Schema.Class<ContainerNetworkS
     "ContainerNetworkSettingsBase"
 )(
     {
-        Bridge: Schema.String,
+        Bridge: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
         SandboxID: Schema.String,
         SandboxKey: Schema.String,
         Ports: Schema.NullOr(PortSchemas.PortMap),
