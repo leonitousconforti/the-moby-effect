@@ -33,7 +33,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
             .pipe(Schema.withConstructorDefault(() => null)),
         NetworkDisabled: Schema.optional(Schema.Boolean),
         MacAddress: Schema.optional(Schema.String),
-        OnBuild: Schema.NullOr(Schema.Array(Schema.String))
+        OnBuild: Schema.NullishOr(Schema.Array(Schema.String))
             .pipe(Schema.propertySignature)
             .pipe(Schema.withConstructorDefault(() => null)),
         Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String }))

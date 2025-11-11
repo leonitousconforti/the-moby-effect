@@ -6,37 +6,11 @@ on:
   pull_request:
     branches: ["main"]
 
-env:
-  platform-variants:
-    "[
-      'node-18.x',
-      'node-20.x',
-      'node-22.x',
-      'node-20.x-undici',
-      'node-22.x-undici',
-      'bun',
-      'bun-undici',
-      'deno',
-      'deno-undici'
-    ]"
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Yes this job is really needed as you can't access the global env var outside of a job step
-  # and I want to use those global env vars to setup things like the matrices for other jobs.
-  compute-matrices:
-    runs-on: ubuntu-latest
-    timeout-minutes: 1
-    outputs:
-      platform-variants: ${{ steps.compute-matrices.outputs.platform-variants }}
-    steps:
-      - id: compute-matrices
-        run: |
-          echo "platform-variants=${{ env.platform-variants }}" >> $GITHUB_OUTPUT
-
   typescript-build:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -44,13 +18,9 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.x
+          node-version: lts/current
 
       - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4
-      - run: npm install -g corepack@latest
-      - run: corepack install
-      - run: corepack enable
-      - run: pnpm install
       - run: pnpm check
       - run: pnpm check
       - run: pnpm lint
@@ -58,7 +28,7 @@ jobs:
       - run: pnpm build
 
   docker-engine-tests:
-    needs: [compute-matrices, typescript-build]
+    needs: [typescript-build]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -67,9 +37,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform-variant: ${{ fromJSON(needs.compute-matrices.outputs.platform-variants) }}
+        config: [
+          { platform: 'bun', variant: 'bun' },
+          { platform: 'bun', variant: 'bun-undici' },
+          { platform: 'deno', variant: 'deno' },
+          { platform: 'deno', variant: 'deno-undici' },
+          { platform: '18.x', variant: 'node-18.x' },
+          # { platform: '18.x', variant: 'node-18.x-undici' },
+          { platform: '20.x', variant: 'node-20.x' },
+          { platform: '20.x', variant: 'node-20.x-undici' },
+          { platform: '22.x', variant: 'node-22.x' },
+          { platform: '22.x', variant: 'node-22.x-undici' },
+        ]
     env:
-      __PLATFORM_VARIANT: ${{ matrix.platform-variant }}
+      __PLATFORM_VARIANT: ${{ matrix.config.variant }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -79,17 +60,19 @@ jobs:
           echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-rootless-docker.conf
           sudo sysctl --system
 
-      - if: startsWith(matrix.platform-variant, 'node')
+      - if: startsWith(matrix.config.variant, 'node')
         uses: ./.github/actions/setup-node
-      - if: startsWith(matrix.platform-variant, 'node')
+        with:
+          node-version: ${{ matrix.config.platform }}
+      - if: startsWith(matrix.config.variant, 'node')
         run: pnpm test
 
-      - if: startsWith(matrix.platform-variant, 'bun') && false
+      - if: false
         uses: ./.github/actions/setup-bun
-      - if: startsWith(matrix.platform-variant, 'bun') && false
+      - if: false
         run: bunx --bun vitest
 
-      - if: startsWith(matrix.platform-variant, 'deno') && false
+      - if: false
         uses: ./.github/actions/setup-deno
-      - if: startsWith(matrix.platform-variant, 'deno') && false
+      - if: false
         run: deno task test --watch=false
