@@ -14,6 +14,7 @@ import {
     JSONMessage,
     RegistrySearchResult,
 } from "../generated/index.js";
+import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import {
     BadRequest,
@@ -168,7 +169,7 @@ const historyImageEndpoint = HttpApiEndpoint.get("history", "/images/:name/histo
 const pushImageEndpoint = HttpApiEndpoint.post("push", "/images/:name/push")
     .setPath(Schema.Struct({ name: Schema.String }))
     .setUrlParams(Schema.Struct({ tag: Schema.optional(Schema.String), platform: Schema.optional(Schema.String) }))
-    .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.String }))
+    .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
     .addSuccess(HttpApiSchema.Empty(200))
     .addError(NotFound); // 404 No such image
 
@@ -310,7 +311,11 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof ImagesGroup.endpoints)[number], Name>
             >;
 
-        const httpClient = yield* HttpClient.HttpClient;
+        const httpClient = yield* Effect.map(
+            HttpClient.HttpClient,
+            WithRegistryAuthHeader(buildImageEndpoint, createImageEndpoint, pushImageEndpoint)
+        );
+
         const ImagesError = DockerError.WrapForModule("images");
         const client = yield* HttpApiClient.group(ImagesApi, { group: "images", httpClient });
 
@@ -341,8 +346,8 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 "create",
                 httpClient
             )({
+                headers: {},
                 urlParams: { ...options },
-                headers: { "X-Registry-Auth": undefined },
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
@@ -362,7 +367,7 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
             )({
                 path: { name },
                 urlParams: { ...options },
-                headers: { "X-Registry-Auth": "" },
+                headers: {},
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)

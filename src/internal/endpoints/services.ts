@@ -5,6 +5,7 @@ import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmService, SwarmServiceSpec } from "../generated/index.js";
 import { ServiceIdentifier } from "../schemas/id.js";
+import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import {
     BadRequest,
@@ -151,14 +152,18 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
                 HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof ServicesGroup.endpoints)[number], Name>
             >;
 
-        const httpClient = yield* HttpClient.HttpClient;
+        const httpClient = yield* Effect.map(
+            HttpClient.HttpClient,
+            WithRegistryAuthHeader(createServiceEndpoint, updateServiceEndpoint)
+        );
+
         const ServicesError = DockerError.WrapForModule("services");
         const client = yield* HttpApiClient.group(ServicesApi, { group: "services", httpClient });
 
         const list_ = (options?: Options<"list">) =>
             Effect.mapError(client.list({ urlParams: { ...options } }), ServicesError("list"));
         const create_ = (payload: SwarmServiceSpec) =>
-            Effect.mapError(client.create({ payload, headers: { "X-Registry-Auth": "" } }), ServicesError("create"));
+            Effect.mapError(client.create({ payload, headers: {} }), ServicesError("create"));
         const delete_ = (id: string) => Effect.mapError(client.delete({ path: { id } }), ServicesError("delete"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
             Effect.mapError(client.inspect({ path: { id }, urlParams: { ...options } }), ServicesError("inspect"));
@@ -166,9 +171,9 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
             Effect.mapError(
                 client.update({
                     payload,
+                    headers: {},
                     path: { id },
                     urlParams: { ...options },
-                    headers: { "X-Registry-Auth": "" },
                 }),
                 ServicesError("update")
             );

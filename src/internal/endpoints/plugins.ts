@@ -5,6 +5,7 @@ import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { mapError } from "../convey/sinks.ts";
 import { JSONMessage, TypesPlugin as Plugin, RuntimePluginPrivilege as PluginPrivilege } from "../generated/index.js";
+import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import { HttpApiStreamingRequest, HttpApiStreamingResponse, InternalServerError, NotFound } from "./httpApiHacks.js";
 
@@ -132,7 +133,11 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof PluginsGroup.endpoints)[number], Name>
             >;
 
-        const httpClient = yield* HttpClient.HttpClient;
+        const httpClient = yield* Effect.map(
+            HttpClient.HttpClient,
+            WithRegistryAuthHeader(pullPluginEndpoint, upgradePluginEndpoint)
+        );
+
         const PluginsError = DockerError.WrapForModule("plugins");
         const client = yield* HttpApiClient.group(PluginsApi, { group: "plugins", httpClient });
 
@@ -153,7 +158,7 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
                 "pull",
                 httpClient
             )({
-                headers: { "X-Registry-Auth": undefined },
+                headers: {},
                 urlParams: { remote, name: options?.name },
                 payload: Array.map(options?.privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
             })
@@ -182,9 +187,9 @@ export class Plugins extends Effect.Service<Plugins>()("@the-moby-effect/endpoin
         ) =>
             Effect.mapError(
                 client.upgrade({
+                    headers: {},
                     path: { name },
                     urlParams: { remote },
-                    headers: { "X-Registry-Auth": "" },
                     payload: Array.map(privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
                 }),
                 PluginsError("upgrade")

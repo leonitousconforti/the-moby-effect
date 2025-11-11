@@ -178,6 +178,15 @@ export const layerAgnostic: (
     (httpClientLayer) => Layer.provide(layerWithoutHttpCLient, httpClientLayer)
 );
 
+export {
+    /**
+     * @since 1.0.0
+     * @category Auth
+     * @see https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
+     */
+    RegistryAuth,
+} from "./internal/endpoints/auth.js";
+
 /**
  * Implements the `docker build` command. It doesn't have all the flags that the
  * images build endpoint exposes.

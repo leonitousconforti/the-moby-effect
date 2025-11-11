@@ -1,5 +1,5 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
-import { Effect, Schema, Stream, type Layer } from "effect";
+import { Effect, type Layer, Schema, Stream } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
