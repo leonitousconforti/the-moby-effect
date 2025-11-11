@@ -9,7 +9,7 @@ export default defineConfig({
     test: {
         setupFiles: ["./test/setup-file.ts"],
         globalSetup: "./test/setup-global.ts",
-        include: ["./test/**/configs.test.ts"],
+        include: ["./test/**/*.test.ts"],
         fakeTimers: {
             toFake: undefined,
         },
