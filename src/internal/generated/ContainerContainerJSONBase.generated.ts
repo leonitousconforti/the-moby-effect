@@ -26,7 +26,7 @@ export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJ
         AppArmorProfile: Schema.String,
         ExecIDs: Schema.NullOr(Schema.Array(Schema.String)),
         HostConfig: Schema.NullOr(ContainerHostConfig.ContainerHostConfig),
-        GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
+        GraphDriver: Schema.NullishOr(StorageDriverData.StorageDriverData), // optional for docker.io/library/docker:26-dind-rootless
         SizeRw: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
         SizeRootFs: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
     },
