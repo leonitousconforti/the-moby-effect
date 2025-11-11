@@ -69,17 +69,24 @@ describe.each(testMatrix)(
                     })
                 );
 
-                it.effect("Should update a plugin", () =>
-                    Effect.gen(function* () {
-                        const plugins = yield* MobyEndpoints.Plugins;
-                        yield* plugins.upgrade("test-plugin:latest", "docker.io/grafana/loki-docker-driver:main");
-                    })
-                );
-
                 it.effect("Should disable a plugin", () =>
                     Effect.gen(function* () {
                         const plugins = yield* MobyEndpoints.Plugins;
                         yield* plugins.disable("test-plugin:latest");
+                    })
+                );
+
+                it.effect("Should update a plugin", () =>
+                    Effect.gen(function* () {
+                        const plugins = yield* MobyEndpoints.Plugins;
+                        const privileges = yield* plugins.getPrivileges("docker.io/grafana/loki-docker-driver:main");
+                        yield* plugins.upgrade("test-plugin:latest", "docker.io/grafana/loki-docker-driver:main", [
+                            {
+                                Name: privileges[0].Name,
+                                Value: privileges[0].Value,
+                                Description: privileges[0].Description,
+                            },
+                        ]);
                     })
                 );
 

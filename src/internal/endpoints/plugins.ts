@@ -1,5 +1,5 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
-import { Array, Effect, Schema, Stream, type Layer } from "effect";
+import { Array, Effect, ParseResult, Schema, Stream, type Layer } from "effect";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -12,8 +12,12 @@ import { HttpApiStreamingRequest, HttpApiStreamingResponse, InternalServerError,
 /** @since 1.0.0 */
 export class ListFilters extends Schema.parseJson(
     Schema.Struct({
-        enabled: Schema.optional(Schema.BooleanFromString),
-        capability: Schema.optional(Schema.String),
+        capability: Schema.optional(Schema.Array(Schema.String)),
+        enabled: Schema.transformOrFail(Schema.Tuple(Schema.String), Schema.BooleanFromString, {
+            decode: (_fromA, _options, ast) =>
+                ParseResult.fail(new ParseResult.Forbidden(ast, _fromA, "Decoding 'enabled' filter is not supported")),
+            encode: (automated) => ParseResult.succeed([automated] as const),
+        }).pipe(Schema.optional),
     })
 ) {}
 
@@ -68,7 +72,8 @@ const upgradePluginEndpoint = HttpApiEndpoint.post("upgrade", "/:name/upgrade")
     .setUrlParams(Schema.Struct({ remote: Schema.String }))
     .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
     .setPayload(Schema.Array(PluginPrivilege))
-    .addSuccess(HttpApiSchema.NoContent) // 204 No Content
+    .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
+    .addSuccess(HttpApiSchema.Empty(204)) // 204 No Content
     .addError(NotFound); // 404 No such plugin
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginCreate */
