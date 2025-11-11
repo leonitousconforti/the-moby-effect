@@ -43,12 +43,12 @@ jobs:
           { platform: 'bun', variant: 'bun-undici' },
           { platform: 'deno', variant: 'deno' },
           { platform: 'deno', variant: 'deno-undici' },
-          { platform: '18.x', variant: 'node-18.x' },
-          # { platform: '18.x', variant: 'node-18.x-undici' },
           { platform: '20.x', variant: 'node-20.x' },
           { platform: '20.x', variant: 'node-20.x-undici' },
           { platform: '22.x', variant: 'node-22.x' },
-          { platform: '22.x', variant: 'node-22.x-undici' },
+          { platform: '22.x', variant: 'node-22.x' },
+          { platform: '24.x', variant: 'node-24.x-undici' },
+          { platform: '24.x', variant: 'node-24.x-undici' },
         ]
     env:
       __PLATFORM_VARIANT: ${{ matrix.config.variant }}

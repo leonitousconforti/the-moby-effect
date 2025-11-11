@@ -1,13 +1,14 @@
 export type PLATFORM_VARIANT =
-    | "node-18.x"
+    | "bun"
+    | "bun-undici"
+    | "deno"
+    | "deno-undici"
     | "node-20.x"
     | "node-22.x"
-    | "bun"
-    | "deno"
+    | "node-24.x"
     | "node-20.x-undici"
     | "node-22.x-undici"
-    | "bun-undici"
-    | "deno-undici";
+    | "node-24.x-undici";
 
 declare module "vitest" {
     export interface ProvidedContext {

@@ -18,16 +18,17 @@ const localDocker = Function.pipe(
 export const setup = async function ({ provide }: TestProject): Promise<void> {
     await Effect.gen(function* () {
         const platformVariant = yield* Config.literal(
-            "deno",
             "bun",
-            "node-18.x",
+            "bun-undici",
+            "deno",
+            "deno-undici",
             "node-20.x",
             "node-22.x",
-            "bun-undici",
-            "deno-undici",
+            "node-24.x",
             "node-20.x-undici",
-            "node-22.x-undici"
-        )("__PLATFORM_VARIANT").pipe(Config.orElse(() => Config.succeed("node-18.x" as const)));
+            "node-22.x-undici",
+            "node-24.x-undici"
+        )("__PLATFORM_VARIANT").pipe(Config.orElse(() => Config.succeed("node-20.x" as const)));
 
         provide("__PLATFORM_VARIANT", platformVariant);
 
