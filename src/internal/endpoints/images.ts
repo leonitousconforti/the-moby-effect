@@ -1,6 +1,7 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
 import { Effect, Schema, Stream, type Layer } from "effect";
 
+import * as ParseResult from "effect/ParseResult";
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { mapError } from "../convey/sinks.ts";
@@ -38,8 +39,20 @@ export class ListFilters extends Schema.parseJson(
 /** @since 1.0.0 */
 export class SearchFilters extends Schema.parseJson(
     Schema.Struct({
-        "is-official": Schema.optional(Schema.BooleanFromString),
-        "is-automated": Schema.optional(Schema.BooleanFromString),
+        "is-official": Schema.transformOrFail(Schema.Tuple(Schema.String), Schema.BooleanFromString, {
+            decode: (_fromA, _options, ast) =>
+                ParseResult.fail(
+                    new ParseResult.Forbidden(ast, _fromA, "Decoding 'is-official' filter is not supported")
+                ),
+            encode: (automated) => ParseResult.succeed([automated] as const),
+        }).pipe(Schema.optional),
+        "is-automated": Schema.transformOrFail(Schema.Tuple(Schema.String), Schema.BooleanFromString, {
+            decode: (_fromA, _options, ast) =>
+                ParseResult.fail(
+                    new ParseResult.Forbidden(ast, _fromA, "Decoding 'is-automated' filter is not supported")
+                ),
+            encode: (automated) => ParseResult.succeed([automated] as const),
+        }).pipe(Schema.optional),
         stars: Schema.optional(Schema.NumberFromString),
     })
 ) {}
