@@ -5,7 +5,7 @@ export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefau
     "ContainerDefaultNetworkSettings"
 )(
     {
-        EndpointID: Schema.String,
+        EndpointID: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
         Gateway: Schema.String,
         GlobalIPv6Address: Schema.String,
         GlobalIPv6PrefixLen: EffectSchemas.Number.I64,
