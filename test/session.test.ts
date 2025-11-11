@@ -11,7 +11,7 @@ const skipForUndiciHttpClients = Match.value(inject("__PLATFORM_VARIANT")).pipe(
     Match.orElse(() => false)
 );
 
-describe.skipIf(() => skipForUndiciHttpClients).each(testMatrix)(
+describe.skipIf(skipForUndiciHttpClients).each(testMatrix)(
     "MobyApi Sessions tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
         const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
