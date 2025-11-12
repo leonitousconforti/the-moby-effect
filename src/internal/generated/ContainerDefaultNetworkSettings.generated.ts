@@ -6,13 +6,13 @@ export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefau
 )(
     {
         EndpointID: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
-        Gateway: Schema.String,
-        GlobalIPv6Address: Schema.String,
-        GlobalIPv6PrefixLen: EffectSchemas.Number.I64,
-        IPAddress: Schema.String,
-        IPPrefixLen: EffectSchemas.Number.I64,
-        IPv6Gateway: Schema.String,
-        MacAddress: Schema.String,
+        Gateway: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
+        GlobalIPv6Address: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
+        GlobalIPv6PrefixLen: Schema.optional(EffectSchemas.Number.I64), // optional for docker.io/library/docker:26-dind-rootless
+        IPAddress: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
+        IPPrefixLen: Schema.optional(EffectSchemas.Number.I64), // optional for docker.io/library/docker:26-dind-rootless
+        IPv6Gateway: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
+        MacAddress: Schema.optional(Schema.String), // optional for docker.io/library/docker:26-dind-rootless
     },
     {
         identifier: "ContainerDefaultNetworkSettings",
