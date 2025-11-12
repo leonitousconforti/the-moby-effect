@@ -61,6 +61,15 @@ jobs:
           echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-rootless-docker.conf
           sudo sysctl --system
 
+      - run: |
+          docker pull docker.io/library/docker:dind-rootless
+          docker pull docker.io/library/docker:23-dind-rootless
+          docker pull docker.io/library/docker:24-dind-rootless
+          docker pull docker.io/library/docker:25-dind-rootless
+          docker pull docker.io/library/docker:26-dind-rootless
+          docker pull docker.io/library/docker:27-dind-rootless
+          docker pull docker.io/library/docker:28-dind-rootless
+
       - if: startsWith(matrix.config.variant, 'node')
         uses: ./.github/actions/setup-node
         with:
