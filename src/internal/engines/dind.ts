@@ -111,7 +111,13 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
 
         const tempSocketDirectory = yield* Effect.if(exposeDindBy === "socket", {
             onFalse: () => Effect.succeed(""),
-            onTrue: () => Effect.flatMap(FileSystem.FileSystem, (fs) => fs.makeTempDirectoryScoped()),
+            onTrue: () =>
+                Effect.gen(function* () {
+                    const fs = yield* FileSystem.FileSystem;
+                    const folder = yield* fs.makeTempDirectoryScoped();
+                    yield* fs.chmod(folder, 0o777); // Ew, for github actions where uid != 1000 🤮
+                    return folder;
+                }),
         });
 
         const boundDockerSocket = yield* Effect.if(exposeDindBy === "socket", {

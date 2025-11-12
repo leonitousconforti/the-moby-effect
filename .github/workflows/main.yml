@@ -75,7 +75,9 @@ jobs:
         with:
           node-version: ${{ matrix.config.platform }}
       - if: startsWith(matrix.config.variant, 'node')
-        run: pnpm test
+        run: |
+          PNPM_BIN=$(which pnpm)
+          sudo -E $PNPM_BIN test
 
       - if: false
         uses: ./.github/actions/setup-bun
