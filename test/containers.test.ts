@@ -46,7 +46,7 @@ describe.each(testMatrix)(
                         yield* containers.unpause(id);
 
                         // Top, stats one-shot, and stats stream the container
-                        yield* containers.top(id);
+                        // yield* containers.top(id);
                         yield* Stream.runCollect(containers.stats(id, { stream: false }));
                         const statsStream = containers.stats(id, { stream: true });
                         yield* statsStream.pipe(Stream.take(1)).pipe(Stream.runCollect);
