@@ -4,18 +4,18 @@ import * as NetworkIPAM from "./NetworkIPAM.generated.js";
 
 export class NetworkCreateOptions extends Schema.Class<NetworkCreateOptions>("NetworkCreateOptions")(
     {
-        Driver: Schema.String,
-        Scope: Schema.String,
+        Driver: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "bridge")),
+        Scope: Schema.optionalWith(Schema.String, { nullable: true }),
         EnableIPv4: Schema.optionalWith(Schema.Boolean, { nullable: true }),
         EnableIPv6: Schema.optionalWith(Schema.Boolean, { nullable: true }),
-        IPAM: Schema.NullOr(NetworkIPAM.NetworkIPAM),
-        Internal: Schema.Boolean,
-        Attachable: Schema.Boolean,
-        Ingress: Schema.Boolean,
-        ConfigOnly: Schema.Boolean,
-        ConfigFrom: Schema.NullOr(NetworkConfigReference.NetworkConfigReference),
-        Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
-        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        IPAM: Schema.optionalWith(NetworkIPAM.NetworkIPAM, { nullable: true }),
+        Internal: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        Attachable: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        Ingress: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        ConfigOnly: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
+        ConfigFrom: Schema.optionalWith(NetworkConfigReference.NetworkConfigReference, { nullable: true }),
+        Options: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        Labels: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
     },
     {
         identifier: "NetworkCreateOptions",

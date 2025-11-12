@@ -81,7 +81,7 @@ const disconnectNetworkEndpoint = HttpApiEndpoint.post("disconnect", "/:id/disco
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkPrune */
 const pruneNetworkEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .setUrlParams(Schema.Struct({ filters: Schema.optional(PruneFilters) }))
-    .addSuccess(Schema.Struct({ NetworksDeleted: Schema.optional(Schema.Array(Schema.String)) }), { status: 200 });
+    .addSuccess(Schema.Struct({ NetworksDeleted: Schema.NullishOr(Schema.Array(Schema.String)) }), { status: 200 });
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network */
 const NetworksGroup = HttpApiGroup.make("networks")
@@ -129,13 +129,19 @@ export class Networks extends Effect.Service<Networks>()("@the-moby-effect/endpo
 
         const list_ = (filters?: Schema.Schema.Type<ListFilters>) =>
             Effect.mapError(client.list({ urlParams: { filters } }), NetworksError("list"));
-        const create_ = (payload: NetworkCreateRequest) =>
-            Effect.mapError(client.create({ payload }), NetworksError("create"));
+        const create_ = (...payload: ConstructorParameters<typeof NetworkCreateRequest>) =>
+            Effect.mapError(client.create({ payload: NetworkCreateRequest.make(...payload) }), NetworksError("create"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
             Effect.mapError(client.inspect({ path: { id }, urlParams: { ...options } }), NetworksError("inspect"));
         const delete_ = (id: string) => Effect.mapError(client.delete({ path: { id } }), NetworksError("delete"));
-        const connect_ = (id: string, payload: NetworkConnectOptions) =>
-            Effect.mapError(client.connect({ path: { id }, payload }), NetworksError("connect"));
+        const connect_ = (id: string, ...payload: ConstructorParameters<typeof NetworkConnectOptions>) =>
+            Effect.mapError(
+                client.connect({
+                    path: { id },
+                    payload: NetworkConnectOptions.make(...payload),
+                }),
+                NetworksError("connect")
+            );
         const disconnect_ = (
             id: string,
             containerId: ContainerIdentifier,
