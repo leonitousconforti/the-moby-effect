@@ -7,7 +7,7 @@ import * as VolumeVolume from "./VolumeVolume.generated.js";
 
 export class TypesDiskUsage extends Schema.Class<TypesDiskUsage>("TypesDiskUsage")(
     {
-        LayersSize: EffectSchemas.Number.I64,
+        LayersSize: Schema.optional(EffectSchemas.Number.I64), // optional for docker.io/library/docker:26-dind-rootless
         Images: Schema.NullOr(Schema.Array(Schema.NullOr(ImageSummary.ImageSummary))),
         Containers: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerSummary.ContainerSummary))),
         Volumes: Schema.NullOr(Schema.Array(Schema.NullOr(VolumeVolume.VolumeVolume))),
