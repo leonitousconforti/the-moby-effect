@@ -162,18 +162,28 @@ export class Services extends Effect.Service<Services>()("@the-moby-effect/endpo
 
         const list_ = (options?: Options<"list">) =>
             Effect.mapError(client.list({ urlParams: { ...options } }), ServicesError("list"));
-        const create_ = (payload: SwarmServiceSpec) =>
-            Effect.mapError(client.create({ payload, headers: {} }), ServicesError("create"));
+        const create_ = (...payload: ConstructorParameters<typeof SwarmServiceSpec>) =>
+            Effect.mapError(
+                client.create({
+                    headers: {},
+                    payload: SwarmServiceSpec.make(...payload),
+                }),
+                ServicesError("create")
+            );
         const delete_ = (id: string) => Effect.mapError(client.delete({ path: { id } }), ServicesError("delete"));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
             Effect.mapError(client.inspect({ path: { id }, urlParams: { ...options } }), ServicesError("inspect"));
-        const update_ = (id: string, payload: SwarmServiceSpec, options: Options<"update">) =>
+        const update_ = (
+            id: string,
+            options: Options<"update">,
+            ...payload: ConstructorParameters<typeof SwarmServiceSpec>
+        ) =>
             Effect.mapError(
                 client.update({
-                    payload,
                     headers: {},
                     path: { id },
                     urlParams: { ...options },
+                    payload: SwarmServiceSpec.make(...payload),
                 }),
                 ServicesError("update")
             );
