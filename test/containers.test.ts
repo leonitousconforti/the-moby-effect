@@ -28,12 +28,12 @@ describe.each(testMatrix)(
                 () =>
                     Effect.gen(function* () {
                         const containers = yield* MobyEndpoints.Containers;
-                        const pullStream = DockerEngine.pull({ image: "docker.io/library/busybox:latest" });
+                        const pullStream = DockerEngine.pull({ image: "docker.io/library/ubuntu:latest" });
                         yield* MobyConvey.waitForProgressToComplete(pullStream);
 
                         const { Id: id } = yield* DockerEngine.run({
                             StopTimeout: I64.make(10n),
-                            Image: "docker.io/library/busybox:latest",
+                            Image: "docker.io/library/ubuntu:latest",
                             Cmd: ["sleep", "1m"],
                         });
 
@@ -86,7 +86,7 @@ describe.each(testMatrix)(
                     const containers = yield* MobyEndpoints.Containers;
                     const { Id: id } = yield* DockerEngine.run({
                         StopTimeout: I64.make(10n),
-                        Image: "docker.io/library/busybox:latest",
+                        Image: "docker.io/library/ubuntu:latest",
                         Cmd: ["sleep", "1s"],
                     });
 
