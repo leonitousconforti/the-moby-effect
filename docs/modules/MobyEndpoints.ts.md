@@ -1066,7 +1066,7 @@ declare const NetworksApi: HttpApi<
         },
         never,
         never,
-        { readonly NetworksDeleted?: ReadonlyArray<string> | undefined },
+        { readonly NetworksDeleted: ReadonlyArray<string> | null | undefined },
         never,
         never,
         never
@@ -1188,7 +1188,7 @@ declare const PluginsApi: HttpApi<
         never,
         {
           readonly filters?:
-            | { readonly enabled?: boolean | undefined; readonly capability?: string | undefined }
+            | { readonly capability?: ReadonlyArray<string> | undefined; readonly enabled?: boolean | undefined }
             | undefined
         },
         never,
