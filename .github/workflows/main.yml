@@ -54,16 +54,7 @@ jobs:
       __PLATFORM_VARIANT: ${{ matrix.config.variant }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-
-      # Disable AppArmor restriction (globally 🤮) on unprivileged user namespaces to allow rootless Docker to work
-      - run: |
-          # sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          # echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-rootless-docker.conf
-          # sudo sysctl --system
-          sudo systemctl stop apparmor
-          sudo systemctl disable apparmor
-          sudo aa-teardown
-          sudo systemctl restart docker
+      - uses: cisagov/action-disable-apparmor@437d94f26a2e4bf8c03acfb500a6afc688b497db # v1.0.0
 
       - if: startsWith(matrix.config.variant, 'node')
         uses: ./.github/actions/setup-node
