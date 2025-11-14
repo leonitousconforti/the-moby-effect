@@ -48,16 +48,8 @@ export const makeUndiciSshConnector = (
             sshClient.openssh_forwardOutStreamLocal(
                 connectionOptions.remoteSocketPath,
                 (error: Error | undefined, socket: ssh2.ClientChannel) => {
-                    if (error) {
-                        return callback(error, null);
-                    }
-
-                    socket.once("close", () => {
-                        socket.end();
-                        socket.destroy();
-                    });
-
-                    return callback(null, socket as unknown as net.Socket);
+                    if (error) callback(error, null);
+                    else callback(null, socket as unknown as net.Socket);
                 }
             );
         }),
