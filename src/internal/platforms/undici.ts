@@ -13,96 +13,135 @@ import * as internalAgnostic from "./agnostic.js";
 import * as internalConnection from "./connection.js";
 
 /** @internal */
-export const makeUndiciSshConnector = (
-    connectionOptions: MobyConnection.SshConnectionOptions
-): Effect.Effect<undici.buildConnector.connector, never, Scope.Scope> =>
-    Effect.Do.pipe(
-        Effect.bind("ssh2Lazy", () => Effect.promise(() => import("ssh2"))),
-        Effect.let("acquire", ({ ssh2Lazy }) => Effect.sync(() => new ssh2Lazy.Client())),
-        Effect.let(
-            "release",
-            () => (client: ssh2.Client) =>
-                Effect.sync(() => {
-                    client.end();
-                    client.destroy();
-                })
-        ),
-        Effect.flatMap(({ acquire, release }) => Effect.acquireRelease(acquire, release)),
-        Effect.flatMap((sshClient) =>
-            Effect.async<ssh2.Client, Error>((resume) => {
-                sshClient
-                    .once("ready", () => {
-                        sshClient.removeAllListeners("error");
-                        sshClient.removeAllListeners("ready");
-                        resume(Effect.succeed(sshClient));
-                    })
-                    .once("error", (error) => {
-                        sshClient.removeAllListeners("error");
-                        sshClient.removeAllListeners("ready");
-                        resume(Effect.fail(error));
-                    })
-                    .connect(connectionOptions);
-            })
-        ),
-        Effect.map((sshClient) => (_opts: undici.buildConnector.Options, callback: undici.buildConnector.Callback) => {
-            sshClient.openssh_forwardOutStreamLocal(
-                connectionOptions.remoteSocketPath,
-                (error: Error | undefined, socket: ssh2.ClientChannel) => {
-                    if (error) callback(error, null);
-                    else callback(null, socket as unknown as net.Socket);
-                }
-            );
-        }),
-        Effect.orDie
-    );
+export const makeDispatcher: (
+    agentOptions?: undici.Agent.Options | undefined
+) => Effect.Effect<undici.Agent, never, Scope.Scope> = Effect.fnUntraced(function* (
+    agentOptions?: undici.Agent.Options | undefined
+) {
+    const undiciLazy = yield* Effect.promise(() => import("undici"));
+    const acquire = Effect.sync(() => new undiciLazy.Agent(agentOptions));
+    const release = (agent: undici.Dispatcher) => Effect.promise(() => agent.destroy());
+    const resource = Effect.acquireRelease(acquire, release);
+    return yield* resource;
+});
 
 /** @internal */
-export const getUndiciDispatcher = (
-    connectionOptions: MobyConnection.MobyConnectionOptions
-): Effect.Effect<undici.Dispatcher, never, Scope.Scope> =>
-    Effect.flatMap(
-        Effect.promise(() => import("undici")),
-        (undiciLazy) => {
-            const AcquireUndiciDispatcher = internalConnection.MobyConnectionOptions.$match({
-                socket: (options) =>
-                    Effect.succeed(
-                        new undiciLazy.Agent({
-                            connect: { socketPath: options.socketPath },
-                        })
-                    ),
-                http: (options) =>
-                    Effect.succeed(
-                        new undiciLazy.Agent({
-                            connect: { host: options.host, port: options.port, path: options.path },
-                        })
-                    ),
-                https: (options) =>
-                    Effect.succeed(
-                        new undiciLazy.Agent({
-                            connect: {
-                                ca: options.ca,
-                                key: options.key,
-                                cert: options.cert,
-                                passphrase: options.passphrase,
-                                host: options.host,
-                                port: options.port,
-                                path: options.path,
-                            },
-                        })
-                    ),
-                ssh: (options) =>
-                    Effect.map(
-                        makeUndiciSshConnector(options),
-                        (connector) => new undiciLazy.Agent({ connect: connector })
-                    ),
-            });
+export const makeSshDispatcher: (
+    connectionOptions: MobyConnection.SshConnectionOptions
+) => Effect.Effect<undici.Agent, never, Scope.Scope> = Effect.fnUntraced(function* (
+    connectionOptions: MobyConnection.SshConnectionOptions
+) {
+    const ssh2Lazy = yield* Effect.promise(() => import("ssh2"));
+    const undiciLazy = yield* Effect.promise(() => import("undici"));
+    const sshClient = new ssh2Lazy.Client();
 
-            const releaseUndiciDispatcher = (dispatcher: undici.Dispatcher) =>
-                Effect.promise(() => dispatcher.destroy());
+    let sshConnection: "unopened" | "connecting" | "open-failed" | "ready" = "unopened";
+    let openFailedError: Error | null = null;
 
-            return Effect.acquireRelease(AcquireUndiciDispatcher(connectionOptions), releaseUndiciDispatcher);
+    const connector: undici.buildConnector.connector = (
+        _options: undici.buildConnector.Options,
+        callback: undici.buildConnector.Callback
+    ) => {
+        const onError = (error: Error): void => callback(error, null);
+
+        // No connection yet, start connecting
+        if (sshConnection === "unopened") {
+            sshConnection = "connecting";
+            const unableToOpen = (error: Error & ssh2.ClientErrorExtensions) => {
+                sshConnection = "open-failed";
+                openFailedError = error;
+                onError(error);
+            };
+            sshClient
+                .once("ready", () => {
+                    sshConnection = "ready";
+                    sshClient.off("error", unableToOpen);
+                    connector(_options, callback);
+                })
+                .once("error", unableToOpen)
+                .connect(connectionOptions);
         }
-    );
+
+        // Already tried to connect but failed
+        else if (sshConnection === "open-failed") {
+            callback(openFailedError!, null);
+        }
+
+        // Another connection attempt is already in progress, wait for it
+        else if (sshConnection === "connecting") {
+            sshClient
+                .once("ready", () => {
+                    sshClient.off("error", onError);
+                    connector(_options, callback);
+                })
+                .once("error", onError);
+        }
+
+        // We are connected to the ssh server, now forward our stream local
+        else if (sshConnection === "ready") {
+            sshClient
+                .openssh_forwardOutStreamLocal(
+                    connectionOptions.remoteSocketPath,
+                    (error: Error | undefined, stream: ssh2.ClientChannel) => {
+                        sshClient.off("error", onError);
+                        if (error) return callback(error, null);
+                        else return callback(null, stream as unknown as net.Socket);
+                    }
+                )
+                .once("error", onError);
+        }
+
+        // Should never happen
+        else {
+            return Function.absurd<undefined>(sshConnection);
+        }
+    };
+
+    const acquire = Effect.sync(() => new undiciLazy.Agent({ connect: connector }));
+    const release = (_agent: undici.Dispatcher) =>
+        Effect.promise(async () => {
+            sshClient.end();
+            sshClient.destroy();
+            // await agent.close();
+            // await agent.destroy();
+        });
+
+    const resource = Effect.acquireRelease(acquire, release);
+    return yield* resource;
+});
+
+/** @internal */
+export const getUndiciDispatcher: (
+    connectionOptions: MobyConnection.MobyConnectionOptions
+) => Effect.Effect<undici.Dispatcher, never, Scope.Scope> = internalConnection.MobyConnectionOptions.$match({
+    ssh: (options) => makeSshDispatcher(options),
+    socket: (options) =>
+        makeDispatcher({
+            connect: {
+                socketPath: options.socketPath,
+            },
+        }),
+    http: (options) =>
+        makeDispatcher({
+            connect: {
+                host: options.host,
+                port: options.port,
+                path: options.path,
+            },
+        }),
+    https: (options) =>
+        makeDispatcher({
+            connect: {
+                ca: options.ca,
+                key: options.key,
+                cert: options.cert,
+                passphrase: options.passphrase,
+                host: options.host,
+                port: options.port,
+                path: options.path,
+            },
+        }),
+});
 
 /** @internal */
 export const getUndiciWebsocketConstructor = (
