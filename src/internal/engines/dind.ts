@@ -103,7 +103,7 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
     Effect.gen(function* () {
         const acquireScopedVolume = Effect.acquireRelease(
             MobyEndpoints.Volumes.use((volumes) => volumes.create({})),
-            ({ Name }) => Effect.orDie(MobyEndpoints.Volumes.use((volumes) => volumes.delete(Name)))
+            ({ Name }) => Effect.orDie(MobyEndpoints.Volumes.use((volumes) => volumes.delete(Name, { force: true })))
         );
 
         const volume1 = yield* acquireScopedVolume;
