@@ -550,7 +550,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     Effect.flatMap(
                         HttpClientResponse.schemaHeaders(
                             Schema.Struct({
-                                "X-Docker-Container-Path-Stat": Schema.compose(
+                                "x-docker-container-path-stat": Schema.compose(
                                     Schema.StringFromBase64,
                                     Schema.parseJson()
                                 ).pipe(Schema.optional),
@@ -558,7 +558,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                         )
                     )
                 )
-                .pipe(Effect.map(({ "X-Docker-Container-Path-Stat": pathStat }) => pathStat))
+                .pipe(Effect.map(({ "x-docker-container-path-stat": pathStat }) => pathStat))
                 .pipe(Effect.mapError(ContainersError("archiveInfo")));
         const putArchive_ = <E, R>(
             identifier: ContainerIdentifier,
