@@ -27,27 +27,32 @@ describe.each(testMatrix)(
         });
 
         layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Swarm tests", (it) => {
-            it.effect("Should leave, rejoin, unlock, update, and get the unlock key of the swarm", () =>
-                Effect.gen(function* () {
-                    const swarm = yield* MobyEndpoints.Swarm;
-                    const inspect = yield* swarm.inspect();
+            it.effect(
+                "Should leave, rejoin, unlock, update, and get the unlock key of the swarm",
+                () =>
+                    Effect.gen(function* () {
+                        const swarm = yield* MobyEndpoints.Swarm;
+                        const inspect = yield* swarm.inspect();
 
-                    const spec = inspect.Spec;
-                    const version = inspect.Version;
-                    expect(inspect).toBeDefined();
-                    expect(spec).toBeDefined();
-                    expect(version).toBeDefined();
-                    expect(version?.Index).toBeDefined();
+                        const spec = inspect.Spec;
+                        const version = inspect.Version;
+                        expect(inspect).toBeDefined();
+                        expect(spec).toBeDefined();
+                        expect(version).toBeDefined();
+                        expect(version?.Index).toBeDefined();
 
-                    yield* swarm.update(spec!, version!.Index!, {
-                        rotateWorkerToken: true,
-                        rotateManagerToken: true,
-                        rotateManagerUnlockKey: true,
-                    });
+                        yield* swarm.update(spec!, version!.Index!, {
+                            rotateWorkerToken: true,
+                            rotateManagerToken: true,
+                            rotateManagerUnlockKey: true,
+                        });
 
-                    const { UnlockKey } = yield* swarm.unlockkey();
-                    expect(UnlockKey).toBeDefined();
-                })
+                        const { UnlockKey } = yield* swarm.unlockkey();
+                        expect(UnlockKey).toBeDefined();
+                    }),
+                {
+                    timeout: Duration.seconds(30).pipe(Duration.toMillis),
+                }
             );
         });
     }
