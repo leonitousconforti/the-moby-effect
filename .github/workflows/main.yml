@@ -46,8 +46,8 @@ jobs:
           { platform: '20.x', variant: 'node-20.x' },
           { platform: '20.x', variant: 'node-20.x-undici' },
           { platform: '22.x', variant: 'node-22.x' },
-          { platform: '22.x', variant: 'node-22.x' },
-          { platform: '24.x', variant: 'node-24.x-undici' },
+          { platform: '22.x', variant: 'node-22.x-undici' },
+          { platform: '24.x', variant: 'node-24.x' },
           { platform: '24.x', variant: 'node-24.x-undici' },
         ]
     env:
