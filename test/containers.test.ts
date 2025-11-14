@@ -77,9 +77,9 @@ describe.each(testMatrix)(
 
                         // Get the FS changes, get details about a path, and get a tarball for a path
                         yield* containers.changes(id);
-                        yield* containers.archiveInfo(id, { path: "/bin" });
-                        // const archiveStream = containers.archive(id, { path: "/bin" });
-                        // yield* containers.putArchive(id, archiveStream, { path: "/bin" });
+                        yield* containers.archiveInfo(id, { path: "/etc" });
+                        const archiveStream = containers.archive(id, { path: "/etc" });
+                        yield* containers.putArchive(id, archiveStream, { path: "/etc" });
 
                         // Export the container
                         const exportStream = containers.export(id);
@@ -91,7 +91,7 @@ describe.each(testMatrix)(
                         yield* containers.prune();
                     }),
                 {
-                    timeout: Duration.minutes(3).pipe(Duration.toMillis),
+                    timeout: Duration.minutes(1).pipe(Duration.toMillis),
                 }
             );
 
