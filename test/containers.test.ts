@@ -36,7 +36,7 @@ describe.each(testMatrix)(
             )
             .pipe(Layer.provide(NodeContext.layer));
 
-        layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
+        layer(testLayer, { timeout: Duration.minutes(4) })((it) => {
             it.effect(
                 "Should create, list, pause, unpause, top, stats, resize, kill, start, restart, stop, rename, changes, prune, and finally force delete a container (this test could be flaky because it pulls the alpine image from docker hub)",
                 () =>
