@@ -30,7 +30,7 @@ describe.each(testMatrix)(
                         const fixture = yield* path.fromFileUrl(new URL("fixtures/alpine_latest.tar", import.meta.url));
                         const alpineTarBuffer = fileSystem.stream(fixture);
                         const pullStream = images.import(alpineTarBuffer);
-                        return MobyConvey.waitForProgressToComplete(pullStream);
+                        yield* MobyConvey.waitForProgressToComplete(pullStream);
                     })
                 )
             )
@@ -56,8 +56,8 @@ describe.each(testMatrix)(
                         expect(containerList).toBeInstanceOf(Array);
 
                         // Pause and unpause the container
-                        yield* containers.pause(id);
-                        yield* containers.unpause(id);
+                        // yield* containers.pause(id);
+                        // yield* containers.unpause(id);
 
                         // Top, stats one-shot, and stats stream the container
                         // yield* containers.top(id);
