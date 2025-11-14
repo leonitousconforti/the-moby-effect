@@ -1,6 +1,7 @@
+import { FileSystem, Path } from "@effect/platform";
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Layer, Stream } from "effect";
+import { Context, Duration, Effect, Layer, Stream } from "effect";
 import { I64 } from "effect-schemas/Number";
 import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
@@ -20,6 +21,19 @@ describe.each(testMatrix)(
                 )
             )
             .pipe(Layer.unwrapEffect)
+            .pipe(
+                Layer.tap((context) =>
+                    Effect.gen(function* () {
+                        const path = yield* Path.Path;
+                        const fileSystem = yield* FileSystem.FileSystem;
+                        const images = Context.get(context, MobyEndpoints.Images);
+                        const fixture = yield* path.fromFileUrl(new URL("fixtures/alpine_latest.tar", import.meta.url));
+                        const alpineTarBuffer = fileSystem.stream(fixture);
+                        const pullStream = images.import(alpineTarBuffer);
+                        return MobyConvey.waitForProgressToComplete(pullStream);
+                    })
+                )
+            )
             .pipe(Layer.provide(NodeContext.layer));
 
         layer(testLayer, { timeout: Duration.minutes(2) })((it) => {

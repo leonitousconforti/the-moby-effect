@@ -385,25 +385,42 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
         const commit_ = (payload: ContainerCreateRequest, options: Options<"commit">) =>
             Effect.mapError(client.commit({ urlParams: { ...options }, payload }), ImagesError("commit"));
         const export_ = (name: string, options?: Options<"export">) =>
-            Stream.mapError(
-                HttpApiStreamingResponse(
-                    ImagesApi,
-                    "images",
-                    "export",
-                    httpClient
-                )({ path: { name }, urlParams: { ...options } }),
-                ImagesError("export")
-            );
+            HttpApiStreamingResponse(
+                ImagesApi,
+                "images",
+                "export",
+                httpClient
+            )({ path: { name }, urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
+                .pipe(Stream.mapError(ImagesError("export")));
         const exportMany_ = (options?: Options<"exportMany">) =>
-            Stream.mapError(
-                HttpApiStreamingResponse(ImagesApi, "images", "exportMany", httpClient)({ urlParams: { ...options } }),
-                ImagesError("exportMany")
-            );
+            HttpApiStreamingResponse(
+                ImagesApi,
+                "images",
+                "exportMany",
+                httpClient
+            )({ urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
+                .pipe(Stream.mapError(ImagesError("exportMany")));
         const import_ = <E>(context: Stream.Stream<Uint8Array, E, never>, options?: Options<"import">) =>
-            Stream.mapError(
-                HttpApiStreamingBoth(ImagesApi, "images", "import", httpClient, context)({ urlParams: { ...options } }),
-                ImagesError("import")
-            );
+            HttpApiStreamingBoth(
+                ImagesApi,
+                "images",
+                "import",
+                httpClient,
+                context
+            )({ urlParams: { ...options } })
+                .pipe(Stream.decodeText())
+                .pipe(Stream.splitLines)
+                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(mapError)
+                .pipe(Stream.mapError(ImagesError("import")));
 
         return {
             list: list_,
