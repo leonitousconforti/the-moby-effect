@@ -1,6 +1,6 @@
 {
     "name": "the-moby-effect",
-    "version": "1.51.0",
+    "version": "1.51.1",
     "description": "Moby/Docker API client built using effect-ts",
     "keywords": [
         "moby",
