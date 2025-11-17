@@ -442,7 +442,7 @@ declare const ContainersApi: HttpApi<
           readonly stdin?: boolean | undefined
         },
         never,
-        { readonly Upgrade: "tcp"; readonly Connection: "Upgrade" },
+        never,
         void,
         BadRequest | NotFound,
         never,
@@ -632,7 +632,7 @@ declare const ExecsApi: HttpApi<
         { readonly id: string & Brand<"ExecId"> },
         never,
         ContainerExecStartOptions,
-        { readonly Upgrade: "tcp"; readonly Connection: "Upgrade" },
+        never,
         void,
         NotFound | Conflict,
         never,

@@ -261,13 +261,13 @@ const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:identifier/att
             stderr: Schema.optional(Schema.BooleanFromString),
         })
     )
-    .setHeaders(
-        Schema.Struct({
-            // Broken on undici
-            // Upgrade: Schema.Literal("tcp"),
-            Connection: Schema.Literal("Upgrade"),
-        })
-    )
+    // Broken on undici
+    // .setHeaders(
+    //     Schema.Struct({
+    //         Upgrade: Schema.Literal("tcp"),
+    //         Connection: Schema.Literal("Upgrade"),
+    //     })
+    // )
     .addSuccess(HttpApiSchema.Empty(101)) // 101 Switching Protocols
     .addSuccess(HttpApiSchema.Empty(200)) // 200 OK
     .addError(BadRequest) // 400 Bad parameter
@@ -513,7 +513,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 )({
                     path: { identifier },
                     urlParams: { ...options },
-                    headers: { Connection: "Upgrade" },
+                    // headers: { Connection: "Upgrade", Upgrade: "tcp" },
                 }),
                 ContainersError("attach")
             );
