@@ -13,6 +13,7 @@ export default defineConfig({
         fakeTimers: {
             toFake: undefined,
         },
+        fileParallelism: false,
         sequence: {
             concurrent: true,
         },

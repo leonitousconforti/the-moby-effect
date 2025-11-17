@@ -1,14 +1,14 @@
 import type { MobyConnection } from "the-moby-effect";
 import type { RecommendedDindBaseImages } from "../src/internal/blobs/constants.js";
 
-import { Array } from "effect";
+import { Array, pipe } from "effect";
 
 export const testMatrix: Array<{
     dindBaseImage: RecommendedDindBaseImages;
     exposeDindContainerBy: MobyConnection.MobyConnectionOptions["_tag"];
-}> = Array.map(
+}> = pipe(
     Array.cartesian(
-        Array.make("http" as const, "ssh" as const, "socket" as const),
+        Array.make("http" as const, "https" as const, "ssh" as const, "socket" as const),
         Array.make(
             "docker.io/library/docker:dind-rootless" as const,
             // "docker.io/library/docker:23-dind-rootless" as const
@@ -19,5 +19,13 @@ export const testMatrix: Array<{
             "docker.io/library/docker:28-dind-rootless" as const
         )
     ),
-    ([exposeDindContainerBy, dindBaseImage]) => ({ dindBaseImage, exposeDindContainerBy })
+    Array.map(([exposeDindContainerBy, dindBaseImage]) => ({ dindBaseImage, exposeDindContainerBy })),
+    Array.filter(
+        ({ dindBaseImage, exposeDindContainerBy }) =>
+            !(
+                exposeDindContainerBy === "https" &&
+                (dindBaseImage === "docker.io/library/docker:28-dind-rootless" ||
+                    dindBaseImage === "docker.io/library/docker:dind-rootless")
+            )
+    )
 );
