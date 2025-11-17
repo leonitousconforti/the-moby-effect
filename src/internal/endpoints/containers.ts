@@ -263,7 +263,8 @@ const attachContainerEndpoint = HttpApiEndpoint.post("attach", "/:identifier/att
     )
     .setHeaders(
         Schema.Struct({
-            Upgrade: Schema.Literal("tcp"),
+            // Broken on undici
+            // Upgrade: Schema.Literal("tcp"),
             Connection: Schema.Literal("Upgrade"),
         })
     )
@@ -512,7 +513,7 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                 )({
                     path: { identifier },
                     urlParams: { ...options },
-                    headers: { Connection: "Upgrade", Upgrade: "tcp" },
+                    headers: { Connection: "Upgrade" },
                 }),
                 ContainersError("attach")
             );

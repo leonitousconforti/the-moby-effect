@@ -24,7 +24,13 @@ const createExecEndpoint = HttpApiEndpoint.post("container", "/containers/:id/ex
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecStart */
 const startExecEndpoint = HttpApiEndpoint.post("start", "/exec/:id/start")
     .setPath(Schema.Struct({ id: ExecIdentifier }))
-    .setHeaders(Schema.Struct({ Upgrade: Schema.Literal("tcp"), Connection: Schema.Literal("Upgrade") }))
+    .setHeaders(
+        Schema.Struct({
+            // Broken on undici
+            // Upgrade: Schema.Literal("tcp"),
+            Connection: Schema.Literal("Upgrade"),
+        })
+    )
     .setPayload(ContainerExecStartOptions)
     .addSuccess(HttpApiSchema.Empty(101))
     .addSuccess(HttpApiSchema.Empty(200))
@@ -102,7 +108,7 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
             )({
                 path: { id },
                 payload: ContainerExecStartOptions.make(payload),
-                headers: { Connection: "Upgrade", Upgrade: "tcp" },
+                headers: { Connection: "Upgrade" },
             })
                 .pipe(
                     Effect.map(
