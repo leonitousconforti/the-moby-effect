@@ -10,15 +10,6 @@
         "editor.defaultFormatter": "golang.go"
     },
 
-    "files.exclude": {
-        "**/.git": true,
-        "**/.svn": true,
-        "**/.hg": true,
-        "**/.DS_Store": true,
-        "**/Thumbs.db": true,
-        "**/coverage": true
-    },
-
     "cSpell.enabled": true,
     "cSpell.words": [
         "aaahhhhh",
