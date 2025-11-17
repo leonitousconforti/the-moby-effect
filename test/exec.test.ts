@@ -1,8 +1,8 @@
 import { FileSystem, Path } from "@effect/platform";
 import { NodeContext } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Context, Duration, Effect, Layer } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
+import { Context, Duration, Effect, Layer, Sink, Stream } from "effect";
+import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
@@ -26,10 +26,21 @@ describe.each(testMatrix)(
                         const path = yield* Path.Path;
                         const fileSystem = yield* FileSystem.FileSystem;
                         const images = Context.get(context, MobyEndpoints.Images);
-                        const fixture = yield* path.fromFileUrl(new URL("fixtures/alpine_latest.tar", import.meta.url));
-                        const alpineTarBuffer = fileSystem.stream(fixture);
+
+                        const fixture1 = yield* path.fromFileUrl(
+                            new URL("fixtures/alpine_latest.tar", import.meta.url)
+                        );
+                        const fixture2 = yield* path.fromFileUrl(
+                            new URL("fixtures/ubuntu_latest.tar", import.meta.url)
+                        );
+
+                        const alpineTarBuffer = fileSystem.stream(fixture1);
                         const pullStream = images.import(alpineTarBuffer);
                         yield* MobyConvey.waitForProgressToComplete(pullStream);
+
+                        const ubuntuTarBuffer = fileSystem.stream(fixture2);
+                        const pullStream2 = images.import(ubuntuTarBuffer);
+                        yield* MobyConvey.waitForProgressToComplete(pullStream2);
                     })
                 )
             )
@@ -53,20 +64,34 @@ describe.each(testMatrix)(
                 })
             );
 
-            it.scoped("execWebsockets", () =>
+            it.scoped("execWebsocketsNonBlocking", () =>
                 Effect.gen(function* () {
                     const { Id: id } = yield* DockerEngine.runScoped({
-                        Image: "docker.io/library/alpine:latest",
-                        Entrypoint: ["/bin/sh", "-c"],
+                        OpenStdin: true,
+                        AttachStdin: true,
+                        AttachStdout: true,
+                        AttachStderr: true,
+                        Entrypoint: ["/bin/bash"],
+                        Image: "docker.io/library/ubuntu:latest",
                     });
 
-                    const [stdout, stderr] = yield* DockerEngine.execWebsockets({
+                    const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({
                         containerId: id,
-                        command: ["echo", "hello world"],
+                        command: ["read", "-p", '">"', "ah", "&&", "echo", "$ah"],
                     });
+
+                    const fanned = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
+                    const packed = yield* MobyDemux.pack(fanned, { requestedCapacity: 16 });
+
+                    const [stdout, stderr] = yield* MobyDemux.demuxMultiplexedToSeparateSinks(
+                        packed,
+                        Stream.make("ah2\n"),
+                        Sink.mkString,
+                        Sink.mkString
+                    );
 
                     expect(stderr).toBe("");
-                    expect(stdout).toBe("hello world\n");
+                    expect(stdout).toBe("ah2\n");
                 })
             );
         });

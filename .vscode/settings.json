@@ -16,11 +16,7 @@
         "**/.hg": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
-        "**/.direnv": true,
-        "**/.tsbuildinfo": true,
-        "**/build": true,
-        "**/coverage": true,
-        "**/dist": true
+        "**/coverage": true
     },
 
     "cSpell.enabled": true,

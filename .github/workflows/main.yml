@@ -70,7 +70,9 @@ jobs:
           docker pull docker.io/library/docker:27-dind-rootless
           docker pull docker.io/library/docker:28-dind-rootless
           docker pull alpine:latest
+          docker pull ubuntu:latest
           docker save --output test/fixtures/alpine_latest.tar alpine:latest
+          docker save --output test/fixtures/ubuntu_latest.tar ubuntu:latest
 
       - if: startsWith(matrix.config.variant, 'node')
         uses: ./.github/actions/setup-node
