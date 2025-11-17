@@ -522,7 +522,10 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
                     ContainersApi,
                     "containers",
                     "attachWebsocket"
-                )({ path: { identifier }, urlParams: { ...options } }).pipe(Effect.provide(context)),
+                )({
+                    path: { identifier },
+                    urlParams: { ...options },
+                }).pipe(Effect.provide(context)),
                 ContainersError("attachWebsocket")
             );
         const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
