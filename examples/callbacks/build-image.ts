@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/callbacks/build-image.ts
+// Run with: pnpx tsx examples/callbacks/build-image.ts
 
 import * as url from "node:url";
 

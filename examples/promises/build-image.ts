@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/promises/build-image.ts
+// Run with: pnpx tsx examples/promises/build-image.ts
 
 import * as url from "node:url";
 

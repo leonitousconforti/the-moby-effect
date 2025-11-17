@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/info.ts
+// Run with: pnpx tsx examples/effect/info.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Effect, Function, Layer } from "effect";

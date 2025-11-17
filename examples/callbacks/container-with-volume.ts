@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/callbacks/container-with-volume.ts
+// Run with: pnpx tsx examples/callbacks/container-with-volume.ts
 
 import * as url from "node:url";
 

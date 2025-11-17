@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/pull-image.ts
+// Run with: pnpx tsx examples/effect/pull-image.ts
 
 import type { Stream } from "effect";
 import type { MobyEndpoints, MobySchemas } from "the-moby-effect";

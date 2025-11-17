@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/docker-compose.ts
+// Run with: pnpx tsx examples/effect/docker-compose.ts
 
 import { Path, Error as PlatformError } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";

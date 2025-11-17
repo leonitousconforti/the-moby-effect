@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/container-with-volume.ts
+// Run with: pnpx tsx examples/effect/container-with-volume.ts
 
 import { Path } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";

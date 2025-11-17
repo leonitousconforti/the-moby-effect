@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/build-image.ts
+// Run with: pnpx tsx examples/effect/build-image.ts
 
 import { Path } from "@effect/platform";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";

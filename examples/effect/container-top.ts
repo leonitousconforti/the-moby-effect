@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/container-top.ts
+// Run with: pnpx tsx examples/effect/container-top.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer, Stream } from "effect";

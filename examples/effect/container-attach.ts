@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/container-attach.ts
+// Run with: pnpx tsx examples/effect/container-attach.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import * as assert from "assert";

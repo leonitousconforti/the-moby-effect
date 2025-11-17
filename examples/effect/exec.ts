@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/effect/exec.ts
+// Run with: pnpx tsx examples/effect/exec.ts
 
 import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer, Sink, Stream } from "effect";

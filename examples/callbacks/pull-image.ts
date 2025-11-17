@@ -1,4 +1,4 @@
-// Run with: npx tsx examples/callbacks/pull-image.ts
+// Run with: pnpx tsx examples/callbacks/pull-image.ts
 
 import { Effect, Function, Layer } from "effect";
 import { Callbacks, DockerEngine, MobyConnection } from "the-moby-effect";
