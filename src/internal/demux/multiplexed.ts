@@ -71,6 +71,15 @@ export const isMultiplexedChannel = <IE = unknown, OE = Socket.SocketError, R = 
 ): u is MobyDemux.MultiplexedChannel<IE, IE | OE, R> => Predicate.hasProperty(u, MultiplexedChannelTypeId);
 
 /** @internal */
+export const never: MobyDemux.MultiplexedChannel<never, never, never> = makeMultiplexedChannel<never, never, never>(
+    Channel.never
+);
+
+/** @internal */
+export const neverWith = <IE>(): MobyDemux.MultiplexedChannel<IE, IE, never> =>
+    makeMultiplexedChannel<IE, never, never>(Channel.never);
+
+/** @internal */
 export const responseIsMultiplexedResponse = (response: HttpClientResponse.HttpClientResponse): boolean =>
     response.headers["content-type"] === MultiplexedContentType;
 

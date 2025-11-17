@@ -406,6 +406,30 @@ export const isMultiplexedChannel: <IE = unknown, OE = Socket.SocketError, R = n
 
 /**
  * @since 1.0.0
+ * @category Constructors
+ */
+export const rawNever: RawChannel<never, never, never> = internalRaw.never;
+
+/**
+ * @since 1.0.0
+ * @category Constructors
+ */
+export const rawNeverWith: <IE>() => RawChannel<IE, IE, never> = internalRaw.neverWith;
+
+/**
+ * @since 1.0.0
+ * @category Constructors
+ */
+export const multiplexedNever: MultiplexedChannel<never, never, never> = internalMultiplexed.never;
+
+/**
+ * @since 1.0.0
+ * @category Constructors
+ */
+export const multiplexedNeverWith: <IE>() => MultiplexedChannel<IE, IE, never> = internalMultiplexed.neverWith;
+
+/**
+ * @since 1.0.0
  * @category Predicates
  */
 export const responseIsRawResponse: (response: HttpClientResponse.HttpClientResponse) => boolean =

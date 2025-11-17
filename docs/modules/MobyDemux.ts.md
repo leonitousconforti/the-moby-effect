@@ -24,6 +24,10 @@ Since v1.0.0
   - [makeMultiplexedSocket](#makemultiplexedsocket)
   - [makeRawChannel](#makerawchannel)
   - [makeRawSocket](#makerawsocket)
+  - [multiplexedNever](#multiplexednever)
+  - [multiplexedNeverWith](#multiplexedneverwith)
+  - [rawNever](#rawnever)
+  - [rawNeverWith](#rawneverwith)
 - [Conversions](#conversions)
   - [asMultiplexedChannel](#asmultiplexedchannel)
   - [asRawChannel](#asrawchannel)
@@ -277,6 +281,54 @@ declare const makeRawSocket: (underlying: Socket.Socket) => RawSocket
 
 Since v1.0.0
 
+## multiplexedNever
+
+**Signature**
+
+```ts
+declare const multiplexedNever: MultiplexedChannel<never, never, never>
+```
+
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L423)
+
+Since v1.0.0
+
+## multiplexedNeverWith
+
+**Signature**
+
+```ts
+declare const multiplexedNeverWith: <IE>() => MultiplexedChannel<IE, IE, never>
+```
+
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L429)
+
+Since v1.0.0
+
+## rawNever
+
+**Signature**
+
+```ts
+declare const rawNever: RawChannel<never, never, never>
+```
+
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L411)
+
+Since v1.0.0
+
+## rawNeverWith
+
+**Signature**
+
+```ts
+declare const rawNeverWith: <IE>() => RawChannel<IE, IE, never>
+```
+
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L417)
+
+Since v1.0.0
+
 # Conversions
 
 ## asMultiplexedChannel
@@ -289,7 +341,7 @@ declare const asMultiplexedChannel: <IE = never, OE = Socket.SocketError, R = ne
 ) => MultiplexedChannel<IE, OE, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L464)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L488)
 
 Since v1.0.0
 
@@ -303,7 +355,7 @@ declare const asRawChannel: <IE = never, OE = Socket.SocketError, R = never>(
 ) => RawChannel<IE, OE, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L456)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L480)
 
 Since v1.0.0
 
@@ -325,7 +377,7 @@ declare const interleaveRaw: <
 ) => Stream.Stream<Uint8Array, IE1 | IE2 | OE1 | OE2, R1 | R2>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L551)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L575)
 
 Since v1.0.0
 
@@ -352,7 +404,7 @@ declare const mergeRawToTaggedStream: <
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L567)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L591)
 
 Since v1.0.0
 
@@ -366,7 +418,7 @@ declare const multiplexedFromSink: <E, R>(
 ) => MultiplexedChannel<never, E, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L543)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L567)
 
 Since v1.0.0
 
@@ -378,7 +430,7 @@ Since v1.0.0
 declare const multiplexedFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => MultiplexedChannel<never, E, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L528)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L552)
 
 Since v1.0.0
 
@@ -392,7 +444,7 @@ declare const multiplexedFromStreamWith: <IE>() => <E, R>(
 ) => MultiplexedChannel<IE, IE | E, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L513)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L537)
 
 Since v1.0.0
 
@@ -406,7 +458,7 @@ declare const multiplexedToSink: <IE = never, OE = Socket.SocketError, R = never
 ) => Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L496)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L520)
 
 Since v1.0.0
 
@@ -420,7 +472,7 @@ declare const multiplexedToStream: <IE = never, OE = Socket.SocketError, R = nev
 ) => Stream.Stream<Uint8Array, IE | OE, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L480)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L504)
 
 Since v1.0.0
 
@@ -434,7 +486,7 @@ declare const rawFromSink: <E, R>(
 ) => RawChannel<never, E, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L535)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L559)
 
 Since v1.0.0
 
@@ -446,7 +498,7 @@ Since v1.0.0
 declare const rawFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => RawChannel<never, E, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L521)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L545)
 
 Since v1.0.0
 
@@ -460,7 +512,7 @@ declare const rawFromStreamWith: <IE>() => <E, R>(
 ) => RawChannel<IE, IE | E, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L505)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L529)
 
 Since v1.0.0
 
@@ -474,7 +526,7 @@ declare const rawToSink: <IE = never, OE = Socket.SocketError, R = never>(
 ) => Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L488)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L512)
 
 Since v1.0.0
 
@@ -488,7 +540,7 @@ declare const rawToStream: <IE = never, OE = Socket.SocketError, R = never>(
 ) => Stream.Stream<Uint8Array, IE | OE, R>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L472)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L496)
 
 Since v1.0.0
 
@@ -532,7 +584,7 @@ declare const demuxMultiplexedToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3, R1,
   >)
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L661)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L685)
 
 Since v1.0.0
 
@@ -566,7 +618,7 @@ declare const demuxMultiplexedToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   >)
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L647)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L671)
 
 Since v1.0.0
 
@@ -602,7 +654,7 @@ declare const demuxRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   >)
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L603)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L627)
 
 Since v1.0.0
 
@@ -686,7 +738,7 @@ declare const demuxStdioRawToSeparateSinks: (<A1, A2, L1, L2, E1, E2, E3, R1, R2
   >)
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L639)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L663)
 
 Since v1.0.0
 
@@ -758,7 +810,7 @@ declare const demuxStdioRawToSingleSink: (<A1, L1, E1, E2, R1, R2>(
   >)
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L627)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L651)
 
 Since v1.0.0
 
@@ -828,7 +880,7 @@ declare const demuxStdioRawTupled: <
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L615)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L639)
 
 Since v1.0.0
 
@@ -864,7 +916,7 @@ declare const demuxToSingleSink: {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L669)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L693)
 
 Since v1.0.0
 
@@ -893,7 +945,7 @@ declare const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketEr
 ) => Effect.Effect<void, IE | OE | PlatformError.PlatformError | ParseResult.ParseError, Exclude<R, Scope.Scope>>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L843)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L867)
 
 Since v1.0.0
 
@@ -919,7 +971,7 @@ declare const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketErr
 ) => Effect.Effect<void, E | IE | OE | ParseResult.ParseError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L815)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L839)
 
 Since v1.0.0
 
@@ -967,7 +1019,7 @@ declare const fan: {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L759)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L783)
 
 Since v1.0.0
 
@@ -1027,7 +1079,7 @@ declare const pack: {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L699)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L723)
 
 Since v1.0.0
 
@@ -1093,7 +1145,7 @@ Since v1.0.0
 declare const responseIsMultiplexedResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L418)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L442)
 
 Since v1.0.0
 
@@ -1105,7 +1157,7 @@ Since v1.0.0
 declare const responseIsRawResponse: (response: HttpClientResponse.HttpClientResponse) => boolean
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L411)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L435)
 
 Since v1.0.0
 
@@ -1127,7 +1179,7 @@ declare const responseToStreamingSocketOrFailUnsafe: (
 ) => Effect.Effect<RawSocket | MultiplexedSocket, Socket.SocketError, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L447)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L471)
 
 Since v1.0.0
 
@@ -1149,7 +1201,7 @@ declare const hijackResponseUnsafe: (
 ) => Effect.Effect<Socket.Socket, Socket.SocketError, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L431)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyDemux.ts#L455)
 
 Since v1.0.0
 

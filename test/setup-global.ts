@@ -28,7 +28,7 @@ export const setup = async function ({ provide }: TestProject): Promise<void> {
             "node-20.x-undici",
             "node-22.x-undici",
             "node-24.x-undici"
-        )("__PLATFORM_VARIANT").pipe(Config.orElse(() => Config.succeed("node-20.x" as const)));
+        )("__PLATFORM_VARIANT").pipe(Config.orElse(() => Config.succeed("node-24.x" as const)));
 
         provide("__PLATFORM_VARIANT", platformVariant);
 

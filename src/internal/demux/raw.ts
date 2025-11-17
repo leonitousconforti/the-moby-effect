@@ -66,6 +66,12 @@ export const isRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
 ): u is MobyDemux.RawChannel<IE, IE | OE, R> => Predicate.hasProperty(u, RawChannelTypeId);
 
 /** @internal */
+export const never: MobyDemux.RawChannel<never, never, never> = makeRawChannel<never, never, never>(Channel.never);
+
+/** @internal */
+export const neverWith = <IE>(): MobyDemux.RawChannel<IE, IE, never> => makeRawChannel<IE, never, never>(Channel.never);
+
+/** @internal */
 export const responseIsRawResponse = (response: HttpClientResponse.HttpClientResponse): boolean =>
     response.headers["content-type"] === RawContentType;
 
