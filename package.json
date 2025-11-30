@@ -1,5 +1,5 @@
 {
-    "name": "@xuxucode/docker-api-types",
+    "name": "docker-api-types",
     "version": "1.51.0",
     "description": "Docker/Moby API types",
     "keywords": [
