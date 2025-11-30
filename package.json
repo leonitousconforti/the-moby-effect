@@ -1,6 +1,6 @@
 {
     "name": "the-moby-effect",
-    "version": "1.51.1",
+    "version": "1.51.2",
     "description": "Moby/Docker API client built using effect-ts",
     "keywords": [
         "moby",
@@ -141,8 +141,8 @@
         "access": "public",
         "exports": {
             "./package.json": "./package.json",
-            ".": "./dist/src/index.ts",
-            "./*": "./dist/src/*.ts",
+            ".": "./dist/index.ts",
+            "./*": "./dist/*.ts",
             "./internal/*": null
         }
     },
