@@ -104,10 +104,9 @@ export type MultiplexedAccumulator = {
 };
 
 /** @internal */
-export interface $MultiplexedSchema
-    extends Schema.Tuple<
-        [Schema.Enums<typeof MultiplexedHeaderType>, Schema.Schema<Uint8Array, ReadonlyArray<number>, never>]
-    > {}
+export interface $MultiplexedSchema extends Schema.Tuple<
+    [Schema.Enums<typeof MultiplexedHeaderType>, Schema.Schema<Uint8Array, ReadonlyArray<number>, never>]
+> {}
 
 /** @internal */
 export const MultiplexedSchema: $MultiplexedSchema = Schema.Tuple(
