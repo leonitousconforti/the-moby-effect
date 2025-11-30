@@ -1,10 +1,18 @@
 {
     "$schema": "http://json.schemastore.org/tsconfig",
-    "extends": "./tsconfig.src.json",
     "compilerOptions": {
-        "tsBuildInfoFile": ".tsbuildinfo/build.tsbuildinfo",
+        "lib": ["ESNext"],
+        "target": "ESNext",
+        "module": "Preserve",
+        "moduleDetection": "force",
+        // Bundler mode
+        "moduleResolution": "bundler",
+        "verbatimModuleSyntax": true,
+        "allowImportingTsExtensions": true,
+        "rootDir": "src",
         "outDir": "dist",
-        "types": ["node"],
-        "stripInternal": true
-    }
+        "declaration": true,
+        "emitDeclarationOnly": true,
+    },
+    "include": ["src/index.ts"]
 }

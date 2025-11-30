@@ -1,6 +1,5 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
 import { Effect, Schema, type Layer } from "effect";
-import { I64 } from "effect-schemas/Number";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -78,7 +77,7 @@ const pruneVolumeEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .addSuccess(
         Schema.Struct({
             VolumesDeleted: Schema.optional(Schema.Array(VolumeIdentifier)),
-            SpaceReclaimed: I64,
+            SpaceReclaimed: Schema.Number,
         }),
         { status: 200 }
     ); // 200 OK

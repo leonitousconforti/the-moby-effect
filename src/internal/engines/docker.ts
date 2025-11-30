@@ -1,5 +1,4 @@
 import type * as Socket from "@effect/platform/Socket";
-import type * as EffectSchemas from "effect-schemas";
 import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
 import type * as DockerEngine from "../../DockerEngine.js";
@@ -197,7 +196,7 @@ export const exec = ({
     containerId: IdSchemas.ContainerIdentifier;
     command: string | Array<string>;
 }): Effect.Effect<
-    [exitCode: Schema.Schema.Type<EffectSchemas.Number.I64>, output: string],
+    [exitCode: Schema.Schema.Type<Schema.Number>, output: string],
     DockerEngine.DockerError | ParseResult.ParseError | Socket.SocketError,
     MobyEndpoints.Execs
 > =>

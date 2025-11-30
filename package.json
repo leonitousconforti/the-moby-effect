@@ -1,155 +1,38 @@
 {
-    "name": "the-moby-effect",
+    "name": "@xuxucode/docker-api-types",
     "version": "1.51.0",
-    "description": "Moby/Docker API client built using effect-ts",
+    "description": "Docker/Moby API types",
     "keywords": [
-        "moby",
         "docker",
-        "podman",
-        "effect-ts"
+        "moby"
     ],
-    "homepage": "https://github.com/leonitousconforti/the-moby-effect",
+    "homepage": "https://github.com/xuxucode/docker-api-types",
     "bugs": {
-        "url": "https://github.com/leonitousconforti/the-moby-effect/issues",
-        "email": "leo@leoconforti.us"
+        "url": "https://github.com/xuxucode/docker-api-types/issues"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/leonitousconforti/the-moby-effect.git"
+        "url": "git+https://github.com/xuxucode/docker-api-types.git"
     },
     "license": "GPL-3.0-only",
-    "author": "Leo Conforti <leo@leoconforti.us> (https://leoconforti.us)",
-    "sideEffects": [],
+    "author": "Edward Xu",
     "type": "module",
-    "exports": {
-        "./package.json": "./package.json",
-        ".": "./src/index.ts",
-        "./*": "./src/*.ts",
-        "./internal/*": null
-    },
+    "types": "./dist/index.d.ts",
     "files": [
-        "src/**/*.ts",
-        "dist/**/*.js",
-        "dist/**/*.js.map",
-        "dist/**/*.d.ts",
-        "dist/**/*.d.ts.map"
+        "dist/**/*.d.ts"
     ],
     "scripts": {
-        "build": "pnpm clean && pnpm codegen && tsc -b tsconfig.build.json && babel dist --plugins annotate-pure-calls --out-dir dist --source-maps",
-        "check": "tsc -b tsconfig.json",
-        "circular": "madge --circular src/*.ts",
-        "clean": "rimraf .tsbuildinfo docs build dist coverage",
-        "codegen": "build-utils prepare-v4",
-        "codemod": "node scripts/codemod.mjs",
-        "coverage": "vitest --coverage",
-        "lint": "eslint \"**/{src,test,examples,scripts,dtslint}/**/*.{ts,mjs}\"",
-        "prepare": "effect-language-service patch",
-        "schemagen": "(cd reflection && go build && ./reflection) && eslint ./src/internal/generated/ --fix",
-        "test": "vitest",
-        "update-blobs": "tsx ./scripts/update-blobs.ts"
-    },
-    "dependencies": {
-        "effect-schemas": "0.0.8",
-        "eftar": "0.0.70"
+        "build": "bun run schemagen && bun run clean && tsc -b tsconfig.build.json",
+        "clean": "rm -rf dist",
+        "schemagen": "(cd reflection && go build && ./reflection)"
     },
     "devDependencies": {
-        "@babel/cli": "7.28.3",
-        "@babel/core": "7.28.5",
-        "@babel/plugin-transform-export-namespace-from": "7.27.1",
-        "@babel/plugin-transform-modules-commonjs": "7.27.1",
-        "@changesets/cli": "2.29.7",
-        "@effect/build-utils": "0.8.9",
-        "@effect/cli": "0.72.1",
-        "@effect/cluster": "0.52.7",
-        "@effect/docgen": "https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897",
-        "@effect/experimental": "0.57.0",
-        "@effect/language-service": "0.55.2",
         "@effect/platform": "0.93.0",
-        "@effect/platform-browser": "0.73.0",
-        "@effect/platform-bun": "0.83.0",
-        "@effect/platform-node": "0.100.0",
-        "@effect/printer": "0.47.0",
-        "@effect/printer-ansi": "0.47.0",
-        "@effect/rpc": "0.72.1",
-        "@effect/sql": "0.48.0",
-        "@effect/typeclass": "0.38.0",
-        "@effect/vitest": "0.27.0",
-        "@effect/workflow": "0.12.2",
-        "@eslint/js": "9.39.1",
-        "@types/node": "24.10.0",
         "@types/ssh2": "1.15.5",
-        "@types/ws": "8.18.1",
-        "@typescript-eslint/parser": "8.46.3",
-        "@vitest/coverage-v8": "3.2.4",
-        "ast-types": "0.14.2",
-        "babel-plugin-annotate-pure-calls": "0.5.0",
-        "changesets-gitlab": "0.13.4",
         "effect": "3.19.3",
-        "eslint": "9.39.1",
-        "eslint-config-prettier": "10.1.8",
-        "eslint-import-resolver-typescript": "4.4.4",
-        "eslint-plugin-import-x": "4.16.1",
-        "eslint-plugin-prettier": "5.5.4",
-        "eslint-plugin-simple-import-sort": "12.1.1",
-        "eslint-plugin-sort-destructure-keys": "2.0.0",
-        "fast-check": "4.3.0",
-        "glob": "11.0.3",
-        "jscodeshift": "17.3.0",
-        "madge": "8.0.0",
-        "prettier": "3.6.2",
-        "prettier-plugin-jsdoc": "1.5.0",
-        "prettier-plugin-packagejson": "2.5.19",
-        "rimraf": "6.1.0",
-        "ssh2": "1.17.0",
-        "tsx": "4.20.6",
-        "typescript": "5.9.3",
-        "typescript-eslint": "8.46.3",
-        "undici": "7.16.0",
-        "vite": "7.2.2",
-        "vite-tsconfig-paths": "5.1.4",
-        "vitest": "3.2.4",
-        "ws": "8.18.3"
+        "typescript": "5.9.3"
     },
     "peerDependencies": {
-        "@effect/platform": "0.93.0",
-        "@effect/platform-browser": "0.73.0",
-        "@effect/platform-bun": "0.83.0",
-        "@effect/platform-node": "0.100.0",
-        "effect": "3.19.3"
-    },
-    "peerDependenciesMeta": {
-        "@effect/platform-browser": {
-            "optional": true
-        },
-        "@effect/platform-bun": {
-            "optional": true
-        },
-        "@effect/platform-node": {
-            "optional": true
-        }
-    },
-    "optionalDependencies": {
-        "ssh2": "^1.17.0",
-        "undici": "^7.16.0",
-        "ws": "^8.18.3"
-    },
-    "packageManager": "pnpm@9.15.9",
-    "engines": {
-        "node": ">=18.0.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "exports": {
-            "./package.json": "./package.json",
-            ".": "./dist/src/index.ts",
-            "./*": "./dist/src/*.ts",
-            "./internal/*": null
-        }
-    },
-    "tags": [
-        "moby",
-        "docker",
-        "podman",
-        "effect-ts"
-    ]
+        "@effect/platform-node": "0.100.0"
+    }
 }

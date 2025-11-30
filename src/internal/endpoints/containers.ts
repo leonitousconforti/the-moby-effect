@@ -9,7 +9,6 @@ import {
     type Socket,
 } from "@effect/platform";
 import { Effect, Schema, Stream, Tuple, type Layer } from "effect";
-import { I64 } from "effect-schemas/Number";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
@@ -350,7 +349,7 @@ const pruneContainersEndpoint = HttpApiEndpoint.post("prune", "/prune")
     .addSuccess(
         Schema.Struct({
             ContainersDeleted: Schema.NullOr(Schema.Array(ContainerIdentifier)),
-            SpaceReclaimed: I64,
+            SpaceReclaimed: Schema.Number,
         }),
         { status: 200 }
     ); // 200 OK

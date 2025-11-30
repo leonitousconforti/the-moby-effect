@@ -38,19 +38,19 @@ var TSInboxTypesMap = map[reflect.Kind]TSType{
 	reflect.String:  {"Schema.String", false},
 	reflect.Bool:    {"Schema.Boolean", false},
 
-	// In practice most clients are 64bit so in go Int will be too
-	reflect.Int:   {"EffectSchemas.Number.I64", false},
-	reflect.Int8:  {"EffectSchemas.Number.I8", false},
-	reflect.Int16: {"EffectSchemas.Number.I16", false},
-	reflect.Int32: {"EffectSchemas.Number.I32", false},
-	reflect.Int64: {"EffectSchemas.Number.I64", false},
+	// Force to number since JSON does not support BigInt.
+	reflect.Int:   {"Schema.Number", false},
+	reflect.Int8:  {"Schema.Number", false},
+	reflect.Int16: {"Schema.Number", false},
+	reflect.Int32: {"Schema.Number", false},
+	reflect.Int64: {"Schema.Number", false},
 
-	// In practice most clients are 64bit so in go Uint will be too.
-	reflect.Uint:   {"EffectSchemas.Number.U64", false},
-	reflect.Uint8:  {"EffectSchemas.Number.U8", false},
-	reflect.Uint16: {"EffectSchemas.Number.U16", false},
-	reflect.Uint32: {"EffectSchemas.Number.U32", false},
-	reflect.Uint64: {"EffectSchemas.Number.U64", false},
+	// Force to number since JSON does not support BigInt.
+	reflect.Uint:   {"Schema.Number", false},
+	reflect.Uint8:  {"Schema.Number", false},
+	reflect.Uint16: {"Schema.Number", false},
+	reflect.Uint32: {"Schema.Number", false},
+	reflect.Uint64: {"Schema.Number", false},
 }
 
 func tsTypeToString(t TSType) string {
