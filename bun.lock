@@ -4,10 +4,12 @@
   "workspaces": {
     "": {
       "name": "docker-api-types",
-      "devDependencies": {
+      "dependencies": {
         "@effect/platform": "^0.93.5",
-        "@types/ssh2": "^1.15.5",
         "effect": "^3.19.8",
+      },
+      "devDependencies": {
+        "@types/ssh2": "^1.15.5",
         "typescript": "^5.9.3",
       },
     },

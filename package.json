@@ -1,6 +1,6 @@
 {
     "name": "docker-api-types",
-    "version": "1.51.2",
+    "version": "1.51.3",
     "description": "Docker/Moby API types",
     "keywords": [
         "docker",
@@ -26,10 +26,12 @@
         "clean": "rm -rf dist",
         "schemagen": "(cd reflection && go build && ./reflection)"
     },
-    "devDependencies": {
+    "dependencies": {
         "@effect/platform": "^0.93.5",
+        "effect": "^3.19.8"
+    },
+    "devDependencies": {
         "@types/ssh2": "^1.15.5",
-        "effect": "^3.19.8",
         "typescript": "^5.9.3"
     }
 }
