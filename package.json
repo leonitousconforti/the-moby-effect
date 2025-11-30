@@ -1,6 +1,6 @@
 {
     "name": "docker-api-types",
-    "version": "1.51.0",
+    "version": "1.51.1",
     "description": "Docker/Moby API types",
     "keywords": [
         "docker",
@@ -31,8 +31,5 @@
         "@types/ssh2": "1.15.5",
         "effect": "3.19.3",
         "typescript": "5.9.3"
-    },
-    "peerDependencies": {
-        "@effect/platform-node": "0.100.0"
     }
 }

@@ -1,4 +1,4 @@
-# Moby API types
+# Docker API types
 
 This package only contains TypeScript declaration files.
 In case you do not want to introduce `effect-ts` in your project, only need the TypeScript types for API parameters and return types.
