@@ -421,8 +421,18 @@ export class Containers extends Effect.Service<Containers>()("@the-moby-effect/e
             group: "containers",
         });
 
-        const list_ = (filters?: Schema.Schema.Type<ListFilters> | undefined) =>
-            Effect.mapError(client.list({ urlParams: { filters } }), ContainersError("list"));
+        const list_ = (options?: Options<"list"> | undefined) =>
+            Effect.mapError(
+                client.list({
+                    urlParams: {
+                        all: options?.all,
+                        limit: options?.limit,
+                        size: options?.size,
+                        filters: options?.filters,
+                    },
+                }),
+                ContainersError("list")
+            );
         const create_ = (
             options: Omit<ConstructorParameters<typeof ContainerCreateRequest>[0], "HostConfig"> & {
                 readonly Name?: string | undefined;

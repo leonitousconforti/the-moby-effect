@@ -1427,7 +1427,6 @@ declare const ServicesApi: HttpApi<
         "GET",
         never,
         {
-          readonly status?: boolean | undefined
           readonly filters?:
             | {
                 readonly label?: ReadonlyArray<string> | undefined
@@ -1435,6 +1434,7 @@ declare const ServicesApi: HttpApi<
                 readonly mode?: ReadonlyArray<"replicated" | "global"> | undefined
               }
             | undefined
+          readonly status?: boolean | undefined
         },
         never,
         never,
@@ -1912,8 +1912,8 @@ declare const VolumesApi: HttpApi<
         {
           readonly filters?:
             | {
-                readonly label?: ReadonlyArray<string> | undefined
                 readonly all?: ReadonlyArray<"0" | "true" | "false" | "1"> | undefined
+                readonly label?: ReadonlyArray<string> | undefined
               }
             | undefined
         },

@@ -121,21 +121,28 @@ declare const callbackClient: <E>(
   ps: (
     z:
       | {
-          readonly identifier?: ReadonlyArray<string & Brand<"ContainerId">> | undefined
-          readonly volume?: string | undefined
-          readonly name?: ReadonlyArray<string> | undefined
-          readonly ancestor?: ReadonlyArray<string> | undefined
-          readonly before?: ReadonlyArray<string> | undefined
-          readonly expose?: ReadonlyArray<string> | undefined
-          readonly exited?: ReadonlyArray<number> | undefined
-          readonly health?: ReadonlyArray<"none" | "starting" | "healthy" | "unhealthy"> | undefined
-          readonly "is-task"?: boolean | undefined
-          readonly label?: ReadonlyArray<string> | undefined
-          readonly network?: ReadonlyArray<string> | undefined
-          readonly publish?: ReadonlyArray<string> | undefined
-          readonly since?: ReadonlyArray<string> | undefined
-          readonly status?:
-            | ReadonlyArray<"exited" | "created" | "restarting" | "running" | "removing" | "paused" | "dead">
+          readonly all?: boolean | undefined
+          readonly limit?: number | undefined
+          readonly size?: boolean | undefined
+          readonly filters?:
+            | {
+                readonly identifier?: ReadonlyArray<string & Brand<"ContainerId">> | undefined
+                readonly volume?: string | undefined
+                readonly name?: ReadonlyArray<string> | undefined
+                readonly ancestor?: ReadonlyArray<string> | undefined
+                readonly before?: ReadonlyArray<string> | undefined
+                readonly expose?: ReadonlyArray<string> | undefined
+                readonly exited?: ReadonlyArray<number> | undefined
+                readonly health?: ReadonlyArray<"none" | "starting" | "healthy" | "unhealthy"> | undefined
+                readonly "is-task"?: boolean | undefined
+                readonly label?: ReadonlyArray<string> | undefined
+                readonly network?: ReadonlyArray<string> | undefined
+                readonly publish?: ReadonlyArray<string> | undefined
+                readonly since?: ReadonlyArray<string> | undefined
+                readonly status?:
+                  | ReadonlyArray<"exited" | "created" | "restarting" | "running" | "removing" | "paused" | "dead">
+                  | undefined
+              }
             | undefined
         }
       | undefined,
