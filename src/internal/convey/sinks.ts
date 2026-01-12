@@ -36,10 +36,10 @@ export const followProgressInConsole = <E1, R1>(
 /** @internal */
 export const mapError = <E1, R1>(
     stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
-): Stream.Stream<MobySchemas.JSONMessage, E1 | Error, R1> =>
+): Stream.Stream<MobySchemas.JSONMessage, E1 | string, R1> =>
     Stream.mapEffect(stream, (message) => {
         if (Predicate.isNotUndefined(message.error)) {
-            const cause = Function.pipe(
+            const cause: string = Function.pipe(
                 Match.value(message.errorDetail!),
                 Match.when(
                     { code: Match.undefined, message: Match.undefined },
@@ -51,8 +51,7 @@ export const mapError = <E1, R1>(
                     { code: Match.number, message: Match.string },
                     ({ code, message }) => `Errored with ${message} and code ${code}`
                 ),
-                Match.orElseAbsurd,
-                (message) => new Error(message)
+                Match.orElseAbsurd
             );
 
             return Effect.fail(cause);
