@@ -21,7 +21,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 default:
-  image: node:lts-alpine@sha256:ad1aedbcc1b0575074a91ac146d6956476c1f9985994810e4ee02efd932a68fd
+  image: node:lts-alpine@sha256:2bdb65ed1dab192432bc31c95f94155ca5ad7fc1392fb7eb7526ab682fa5bf14
   tags: [docker]
   timeout: 10 minutes
   before_script:
