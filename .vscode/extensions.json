@@ -1,12 +1,9 @@
 {
     "recommendations": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
         "editorconfig.editorconfig",
         "streetsidesoftware.code-spell-checker",
         "yoavbls.pretty-ts-errors",
-        "redhat.vscode-yaml",
         "vitest.explorer",
-        "golang.Go"
+        "oxc.oxc-vscode"
     ]
 }

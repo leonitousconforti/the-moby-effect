@@ -6,6 +6,5 @@
 /build/
 /.direnv/
 /coverage/
-/.pnpm-store/
 /node_modules/
 /docs/examples/

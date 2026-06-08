@@ -1,64 +1,42 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:best-practices"
-    ],
-    "labels": [
-        "dependency"
-    ],
-    "prHourlyLimit": 0,
+    "extends": ["config:recommended", ":dependencyDashboard", "helpers:pinGitHubActionDigests"],
+    "labels": ["dependencies", "renovate"],
+    "ignorePaths": ["**/node_modules/**", "repos/effect/**", "repos/effect-smol/**"],
+    "enabledManagers": ["github-actions", "nix", "git-submodules", "pip_requirements", "npm"],
     "git-submodules": {
         "enabled": true
     },
-    "postUpgradeTasks": {
-        "executionMode": "branch",
-        "commands": [
-            "rm .prettierrc.json",
-            "npm install -g @changesets/cli",
-            "./.changeset/automate.exp \"{{isGroup}}\" \"{{depTypes}}\" \"{{packageFile}}\" \"patch\" \"{{depName}}\" \"{{currentVersion}}\" \"{{newVersion}}\""
-        ],
-        "fileFilters": [
-            ".changeset/*.md"
-        ]
+    "nix": {
+        "enabled": true
+    },
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": ["before 5am on monday"],
+        "commitMessageAction": "Refresh",
+        "addLabels": ["lockfile-maintenance"]
     },
     "packageRules": [
         {
-            "description": "Group @effect Node.JS packages together",
-            "groupName": "Effect-ts",
-            "groupSlug": "effect-ts",
-            "matchDatasources": [
-                "npm"
-            ],
-            "matchPackageNames": [
-                "@effect/**",
-                "effect",
-                "eftar"
-            ],
-            "automerge": true,
-            "automergeType": "pr",
-            "platformAutomerge": true
+            "matchManagers": ["npm"],
+            "enabled": false
         },
         {
-            "matchUpdateTypes": [
-                "minor",
-                "patch"
-            ],
-            "matchCurrentVersion": "!/^0/",
-            "automerge": true,
-            "automergeType": "pr",
-            "platformAutomerge": true
+            "description": "Pin GitHub Actions to a full commit SHA and keep that SHA at the latest release",
+            "matchManagers": ["github-actions"],
+            "pinDigests": true,
+            "addLabels": ["github-actions"]
         },
         {
-            "matchPackageNames": [
-                "pnpm"
-            ],
-            "automerge": false
+            "description": "Group all git submodule (repos/frida-*) bumps into one PR",
+            "matchManagers": ["git-submodules"],
+            "groupName": "git submodules",
+            "addLabels": ["git-submodule"]
+        },
+        {
+            "description": "Keep the Nix flake inputs (flake.lock) current",
+            "matchManagers": ["nix"],
+            "addLabels": ["nix"]
         }
-    ],
-    "lockFileMaintenance": {
-        "enabled": true,
-        "automerge": true,
-        "automergeType": "pr",
-        "platformAutomerge": true
-    }
+    ]
 }

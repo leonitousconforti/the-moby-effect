@@ -1,0 +1,15 @@
+hoist: false
+hoistPattern: []
+autoInstallPeers: false
+dedupePeerDependents: false
+strictPeerDependencies: true
+
+publicHoistPattern:
+    - "vitest"
+    - "@types/*"
+    - "@vitest/*"
+    - "@effect/vitest"
+
+allowBuilds:
+    esbuild: true
+    msgpackr-extract: true

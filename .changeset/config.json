@@ -1,5 +1,5 @@
 {
-    "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+    "$schema": "../node_modules/@changesets/config/schema.json",
     "changelog": "@changesets/cli/changelog",
     "commit": false,
     "fixed": [],
@@ -7,5 +7,9 @@
     "access": "public",
     "baseBranch": "main",
     "updateInternalDependencies": "patch",
-    "ignore": []
+    "privatePackages": false,
+    "snapshot": {
+        "useCalculatedVersion": false,
+        "prereleaseTemplate": "{tag}-{commit}"
+    }
 }
