@@ -1,0 +1,105 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "mergeConfidence:all-badges",
+        "config:recommended",
+        ":dependencyDashboard",
+        "helpers:pinGitHubActionDigests"
+    ],
+    "labels": ["dependencies", "renovate"],
+    "ignorePaths": ["**/node_modules/**", "repos/effect/**", "repos/effect-smol/**"],
+    "enabledManagers": ["github-actions", "nix", "git-submodules", "pip_requirements", "npm"],
+    "git-submodules": {
+        "enabled": true
+    },
+    "nix": {
+        "enabled": true
+    },
+    "lockFileMaintenance": {
+        "enabled": true,
+        "schedule": ["before 5am on monday"],
+        "commitMessageAction": "Refresh",
+        "addLabels": ["lockfile-maintenance"]
+    },
+    "packageRules": [
+        {
+            "description": "Group all @types/* packages into one PR",
+            "matchPackageNames": ["/^@types//"],
+            "groupName": "types packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Group all @babel/* packages into one PR",
+            "matchPackageNames": ["/^@babel//", "babel-plugin-annotate-pure-calls"],
+            "groupName": "babel packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Group all @vitest/* packages into one PR",
+            "matchPackageNames": ["/^@vitest//", "vitest", "vite"],
+            "groupName": "vitest packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Group all @changesets/* packages into one PR",
+            "matchPackageNames": ["/^@changesets//"],
+            "groupName": "changesets packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Group all @bufbuild/* packages into one PR",
+            "matchPackageNames": ["/^@bufbuild//"],
+            "groupName": "bufbuild packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Group all Effect-TS packages into one PR",
+            "matchPackageNames": [
+                "effect",
+                "effect-schemas",
+                "/^@effect//",
+                "!@effect/docgen",
+                "!@effect/build-utils",
+                "!@effect/language-service"
+            ],
+            "groupName": "Effect-TS packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Group build tools packages into one PR",
+            "matchPackageNames": [
+                "oxfmt",
+                "oxlint",
+                "@effect/build-utils",
+                "@effect/docgen",
+                "@effect/language-service",
+                "typescript",
+                "tsx"
+            ],
+            "groupName": "build tools packages",
+            "addLabels": ["pnpm"]
+        },
+        {
+            "description": "Match pnpm's default minimumReleaseAge of 1440 minutes so Renovate never proposes a version pnpm would refuse to install",
+            "matchManagers": ["npm"],
+            "minimumReleaseAge": "1 day"
+        },
+        {
+            "description": "Pin GitHub Actions to a full commit SHA and keep that SHA at the latest release",
+            "matchManagers": ["github-actions"],
+            "pinDigests": true,
+            "addLabels": ["github-actions"]
+        },
+        {
+            "description": "Group all git submodule (repos/frida-*) bumps into one PR",
+            "matchManagers": ["git-submodules"],
+            "groupName": "git submodules",
+            "addLabels": ["git-submodule"]
+        },
+        {
+            "description": "Keep the Nix flake inputs (flake.lock) current",
+            "matchManagers": ["nix"],
+            "addLabels": ["nix"]
+        }
+    ]
+}

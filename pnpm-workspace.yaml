@@ -13,3 +13,11 @@ publicHoistPattern:
 allowBuilds:
     esbuild: true
     msgpackr-extract: true
+
+overrides:
+    "@effect/docgen>typescript": "6.0.3"
+    "madge>typescript": "6.0.3"
+
+peerDependencyRules:
+    allowedVersions:
+        typescript: "6.0.3"

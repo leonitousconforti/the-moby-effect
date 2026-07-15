@@ -1,7 +1,13 @@
 {
+    "oxc.useExecPath": true,
+    "oxc.path.oxfmt": "node_modules/oxfmt/bin/oxfmt",
+    "oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
+
     "js/ts.tsdk.path": "node_modules/typescript/lib",
     "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+    "js/ts.preferences.autoImportFileExcludePatterns": [".direnv/**", "repos/**"],
     "editor.defaultFormatter": "EditorConfig.EditorConfig",
+
     "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc]": {
         "editor.defaultFormatter": "oxc.oxc-vscode"
     },
@@ -13,8 +19,8 @@
     },
 
     "vitest.runtime": "node",
-    "js/ts.preferences.autoImportFileExcludePatterns": [".direnv/**", "repos/**"],
     "vitest.configSearchPatternExclude": "{**/node_modules/**,**/vendor/**,**/repos/**,**/.*/**,**/*.d.ts}",
+
     "files.watcherExclude": {
         ".direnv/**": true,
         "repos/**": true
