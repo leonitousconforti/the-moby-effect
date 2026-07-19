@@ -1,12 +1,6 @@
 import * as Schema from "effect/Schema";
 
-/**
- * Counterparts to the error classes in "effect/unstable/httpapi/HttpApiError",
- * but with the tag omitted from the wire format and an optional message field
- * decoded from the Docker daemon's error response body ({"message": "..."}).
- *
- * @since 1.0.0
- */
+/** @since 1.0.0 */
 export class BadRequest extends Schema.ErrorClass<BadRequest>("@the-moby-effect/endpoints/BadRequest")(
     {
         _tag: Schema.tagDefaultOmit("BadRequest"),
