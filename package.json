@@ -67,7 +67,7 @@
     "devDependencies": {
         "@babel/cli": "7.28.6",
         "@babel/core": "7.28.6",
-        "@changesets/cli": "2.29.8",
+        "@changesets/cli": "2.31.1",
         "@effect/build-utils": "0.8.9",
         "@effect/docgen": "https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897",
         "@effect/language-service": "0.64.1",
