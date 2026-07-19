@@ -16,7 +16,6 @@ import {
     RegistryAuthenticateOKBody as AuthResponse, TypesDiskUsage as DiskUsage, RegistryAuthConfig, SystemInfo, TypesVersion as SystemVersion, } from "../generated/index.js";
 import { DockerError } from "./circular.ts";
 import { BadRequest, InternalServerError, Unauthorized } from "./errors.ts";
-import { HttpApiStreamingResponse } from "./httpApiHacks.js";
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/System/operation/SystemAuth */
 const authEndpoint = HttpApiEndpoint.post("auth", "/auth", {
@@ -119,13 +118,15 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
         const ping_ = () => Effect.mapError(client.ping(), SystemsError("ping"));
         const pingHead_ = () => Effect.mapError(client.pingHead(), SystemsError("pingHead"));
         const events_ = (options?: Options<"events">) =>
-            Stream.mapError(
-                HttpApiStreamingResponse(SystemApi, "system", "events", httpClient)({ query: { ...options } }),
-                SystemsError("events")
-            )
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => Schema.decodeEffect(Schema.UnknownFromJsonString)(line)));
+            client
+                .events({ query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.mapError(SystemsError("events"))),
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapEffect((line) => Schema.decodeEffect(Schema.UnknownFromJsonString)(line))),
+                    Effect.mapError(SystemsError("events"))
+                );
         const dataUsage_ = (params?: Options<"dataUsage">) =>
             Effect.mapError(client.dataUsage({ query: { ...params } }), SystemsError("dataUsage"));
 

@@ -13,12 +13,15 @@ import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.js";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.ts";
 import {
-    ContainerExecStartOptions, ContainerExecOptions as ExecConfig, ContainerExecInspect as ExecInspectResponse, } from "../generated/index.js";
+    ContainerExecStartOptions,
+    ContainerExecOptions as ExecConfig,
+    ContainerExecInspect as ExecInspectResponse,
+} from "../generated/index.js";
 import { ExecIdentifier } from "../schemas/id.js";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
-import { HttpApiSocket } from "./httpApiHacks.js";
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ContainerExec */
 const createExecEndpoint = HttpApiEndpoint.post("container", "/containers/:id/exec", {
@@ -111,25 +114,23 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
             id: ExecIdentifier,
             payload: Omit<ConstructorParameters<typeof ContainerExecStartOptions>[0], "Detach"> & { Detach: T }
         ): Effect.Effect<[T] extends [false] ? RawSocket | MultiplexedSocket : void, DockerError, never> =>
-            HttpApiSocket(
-                ExecsApi,
-                "exec",
-                "start",
-                httpClient
-            )({
-                params: { id },
-                payload: new ContainerExecStartOptions(payload),
-                headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
-            })
+            client
+                .start({
+                    params: { id },
+                    payload: new ContainerExecStartOptions(payload),
+                    headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
+                    responseMode: "response-only",
+                })
                 .pipe(
+                    Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
                     Effect.map(
                         (socket) =>
                             (payload.Detach === true ? void 0 : socket) as [T] extends [false]
                                 ? RawSocket | MultiplexedSocket
                                 : void
-                    )
-                )
-                .pipe(Effect.mapError(ExecsError("start")));
+                    ),
+                    Effect.mapError(ExecsError("start"))
+                );
         const resize_ = (id: ExecIdentifier, params: { w: number; h: number }) =>
             Effect.mapError(client.resize({ params: { id }, query: { ...params } }), ExecsError("resize"));
         const inspect_ = (id: ExecIdentifier) =>

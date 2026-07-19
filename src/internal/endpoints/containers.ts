@@ -16,6 +16,7 @@ import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.ts";
 import {
     ArchiveChange,
     ContainerConfig,
@@ -397,6 +398,7 @@ const archiveInfoContainerEndpoint = HttpApiEndpoint.head("archiveInfo", "/:iden
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/PutContainerArchive */
 const putArchiveContainerEndpoint = HttpApiEndpoint.put("putArchive", "/:identifier/archive", {
     params: { identifier: ContainerIdentifier },
+    payload: HttpApiSchema.StreamUint8Array(),
     query: {
         path: Schema.String,
         noOverwriteDirNonDir: Schema.optional(Schema.String),
@@ -576,19 +578,17 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
         const unpause_ = (identifier: ContainerIdentifier) =>
             Effect.mapError(client.unpause({ params: { identifier } }), ContainersError("unpause"));
         const attach_ = (identifier: ContainerIdentifier, options?: Options<"attach">) =>
-            Effect.mapError(
-                HttpApiSocket(
-                    ContainersApi,
-                    "containers",
-                    "attach",
-                    httpClient
-                )({
+            client
+                .attach({
                     params: { identifier },
                     query: { ...options },
                     headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
-                }),
-                ContainersError("attach")
-            );
+                    responseMode: "response-only",
+                })
+                .pipe(
+                    Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
+                    Effect.mapError(ContainersError("attach"))
+                );
         const attachWebsocket_ = (identifier: ContainerIdentifier, options?: Options<"attachWebsocket">) =>
             Effect.mapError(
                 HttpApiWebsocket(
@@ -609,15 +609,12 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 ContainersError("delete")
             );
         const archive_ = (identifier: ContainerIdentifier, options: Options<"archive">) =>
-            Stream.mapError(
-                HttpApiStreamingResponse(
-                    ContainersApi,
-                    "containers",
-                    "archive",
-                    httpClient
-                )({ params: { identifier }, query: { ...options } }),
-                ContainersError("archive")
-            );
+            client
+                .archive({ params: { identifier }, query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.mapError(ContainersError("archive"))),
+                    Effect.mapError(ContainersError("archive"))
+                );
         const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
             client
                 .archiveInfo({ params: { identifier }, query: { ...options }, responseMode: "response-only" })
@@ -639,16 +636,13 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
             stream: Stream.Stream<Uint8Array, E, R>,
             options: Options<"putArchive">
         ) =>
-            Effect.mapError(
-                HttpApiStreamingRequest(
-                    ContainersApi,
-                    "containers",
-                    "putArchive",
-                    httpClient,
-                    stream
-                )({ params: { identifier }, query: { ...options } }),
-                ContainersError("putArchive")
-            );
+            Effect.contextWith((context: Context.Context<R>) =>
+                client.putArchive({
+                    params: { identifier },
+                    query: { ...options },
+                    payload: Stream.provideContext(stream, context),
+                })
+            ).pipe(Effect.mapError(ContainersError("putArchive")));
         const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters> | undefined) =>
             Effect.mapError(client.prune({ query: { filters } }), ContainersError("prune"));
 

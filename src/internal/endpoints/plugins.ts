@@ -16,12 +16,10 @@ import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { mapError } from "../convey/sinks.ts";
 import { JSONMessage, TypesPlugin as Plugin, RuntimePluginPrivilege as PluginPrivilege } from "../generated/index.js";
 import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound } from "./errors.ts";
-import { HttpApiStreamingRequest, HttpApiStreamingResponse } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
@@ -63,10 +61,7 @@ const pullPluginEndpoint = HttpApiEndpoint.post("pull", "/pull", {
     query: { remote: Schema.String, name: Schema.optional(Schema.String) },
     headers: { "X-Registry-Auth": Schema.optional(Schema.String) },
     payload: Schema.Array(PluginPrivilege),
-    success: [
-        HttpApiSchema.Empty(200), // 200 OK
-        HttpApiSchema.Empty(204), // 204 No Content
-    ],
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
     error: [InternalServerError],
 });
 
@@ -132,6 +127,7 @@ const upgradePluginEndpoint = HttpApiEndpoint.post("upgrade", "/:name/upgrade", 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginCreate */
 const createPluginEndpoint = HttpApiEndpoint.post("create", "/create", {
     query: { name: Schema.String },
+    payload: HttpApiSchema.StreamUint8Array(),
     success: HttpApiSchema.NoContent, // 204 No Content
     error: [InternalServerError],
 });
@@ -213,21 +209,19 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
                 privileges?: Array<ConstructorParameters<typeof PluginPrivilege>[0]> | undefined;
             }
         ) =>
-            HttpApiStreamingResponse(
-                PluginsApi,
-                "plugins",
-                "pull",
-                httpClient
-            )({
-                headers: {},
-                query: { remote, name: options?.name },
-                payload: Array.map(options?.privileges ?? [], (privilege) => new PluginPrivilege(privilege)),
-            })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(JSONMessage))(line)))
-                .pipe(mapError)
-                .pipe(Stream.mapError(PluginsError("pull")));
+            client
+                .pull({
+                    headers: {},
+                    query: { remote, name: options?.name },
+                    payload: Array.map(options?.privileges ?? [], (privilege) => new PluginPrivilege(privilege)),
+                })
+                .pipe(
+                    Stream.unwrap,
+                    Stream.decodeText(),
+                    Stream.splitLines,
+                    Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(JSONMessage))(line)),
+                    Stream.mapError(PluginsError("pull"))
+                );
         const inspect_ = (name: string) =>
             Effect.mapError(client.inspect({ params: { name } }), PluginsError("inspect"));
         const delete_ = (name: string, options?: Options<"delete">) =>
@@ -257,10 +251,9 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
                 PluginsError("upgrade")
             );
         const create_ = <E, R>(name: string, tar: Stream.Stream<Uint8Array, E, R>) =>
-            Effect.mapError(
-                HttpApiStreamingRequest(PluginsApi, "plugins", "create", httpClient, tar)({ query: { name } }),
-                PluginsError("create")
-            );
+            Effect.contextWith((context: Context.Context<R>) =>
+                client.create({ query: { name }, payload: Stream.provideContext(tar, context) })
+            ).pipe(Effect.mapError(PluginsError("create")));
         const push_ = (name: string) => Effect.mapError(client.push({ params: { name } }), PluginsError("push"));
         const set_ = (name: string, body: ReadonlyArray<string>) =>
             Effect.mapError(client.set({ params: { name }, payload: body }), PluginsError("set"));

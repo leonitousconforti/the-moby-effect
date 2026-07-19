@@ -17,12 +17,18 @@ import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { mapError } from "../convey/sinks.ts";
 import {
-    ContainerCreateRequest, ImageDeleteResponse, ImageHistoryResponseItem, ImageInspectResponse, ImageSummary, JSONMessage, RegistrySearchResult, } from "../generated/index.js";
+    ContainerCreateRequest,
+    ImageDeleteResponse,
+    ImageHistoryResponseItem,
+    ImageInspectResponse,
+    ImageSummary,
+    JSONMessage,
+    RegistrySearchResult,
+} from "../generated/index.js";
 import { BooleanFromString } from "../schemas/booleanFromString.js";
 import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
-import { HttpApiStreamingBoth, HttpApiStreamingResponse } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
@@ -107,6 +113,7 @@ const buildImageEndpoint = HttpApiEndpoint.post("build", "/build", {
         "Content-type": Schema.optional(Schema.String),
         "X-Registry-Config": Schema.optional(Schema.String),
     },
+    payload: HttpApiSchema.StreamUint8Array(),
     success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
     error: [
         BadRequest, // 400 Bad parameter
@@ -339,59 +346,47 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
 
         const list_ = (options?: Options<"list">) =>
             Effect.mapError(client.list({ query: { ...options } }), ImagesError("list"));
-        const build_ = <E1>(context: Stream.Stream<Uint8Array, E1, never>, options?: Options<"build">) =>
-            HttpApiStreamingBoth(
-                ImagesApi,
-                "images",
-                "build",
-                httpClient,
-                context
-            )({
-                query: { ...options },
-                headers: { "Content-type": "application/tar" },
-            })
+        const build_ = <E, R>(build: Stream.Stream<Uint8Array, E, R>, options?: Options<"build">) =>
+            Effect.contextWith((context: Context.Context<R>) =>
+                client.build({
+                    query: { ...options },
+                    headers: { "Content-type": "application/tar" },
+                    payload: Stream.provideContext(build, context),
+                })
+            )
+                .pipe(Stream.unwrap)
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
                 .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
-                .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("build")));
         const buildPrune_ = (options?: Options<"buildPrune">) =>
             Effect.mapError(client.buildPrune({ query: { ...options } }), ImagesError("buildPrune"));
         const create_ = (options?: Options<"create">) =>
-            HttpApiStreamingResponse(
-                ImagesApi,
-                "images",
-                "create",
-                httpClient
-            )({
-                headers: {},
-                query: { ...options },
-            })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
-                .pipe(mapError)
-                .pipe(Stream.mapError(ImagesError("create")));
+            client
+                .create({ headers: {}, query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapEffect((line) => decodeJsonMessage(line))),
+                    Effect.map(mapError),
+                    Effect.map(Stream.mapError(ImagesError("create"))),
+                    Effect.mapError(ImagesError("create"))
+                );
         const inspect_ = (name: string, options?: Options<"inspect">) =>
             Effect.mapError(client.inspect({ params: { name }, query: { ...options } }), ImagesError("inspect"));
         const history_ = (name: string, options?: Options<"history">) =>
             Effect.mapError(client.history({ params: { name }, query: { ...options } }), ImagesError("history"));
         const push_ = (name: string, options?: Options<"push">) =>
-            HttpApiStreamingResponse(
-                ImagesApi,
-                "images",
-                "push",
-                httpClient
-            )({
-                params: { name },
-                query: { ...options },
-                headers: {},
-            })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
-                .pipe(mapError)
-                .pipe(Stream.mapError(ImagesError("push")));
+            client
+                .push({ params: { name }, query: { ...options }, headers: {} })
+                .pipe(
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapEffect((line) => decodeJsonMessage(line))),
+                    Effect.map(mapError),
+                    Effect.map(Stream.mapError(ImagesError("push"))),
+                    Effect.mapError(ImagesError("push"))
+                );
         const tag_ = (name: string, options?: Options<"tag">) =>
             Effect.mapError(client.tag({ params: { name }, query: { ...options } }), ImagesError("tag"));
         const delete_ = (name: string, options?: Options<"delete">) =>
@@ -400,35 +395,36 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
             Effect.mapError(client.search({ query: { ...options } }), ImagesError("search"));
         const prune_ = (options?: Options<"prune">) =>
             Effect.mapError(client.prune({ query: { ...options } }), ImagesError("prune"));
-        const commit_ = (payload: ConstructorParameters<typeof ContainerCreateRequest>[0], options: Options<"commit">) =>
+        const commit_ = (
+            payload: ConstructorParameters<typeof ContainerCreateRequest>[0],
+            options: Options<"commit">
+        ) =>
             Effect.mapError(
                 client.commit({ query: { ...options }, payload: new ContainerCreateRequest(payload) }),
                 ImagesError("commit")
             );
         const export_ = (name: string, options?: Options<"export">) =>
-            HttpApiStreamingResponse(
-                ImagesApi,
-                "images",
-                "export",
-                httpClient
-            )({ params: { name }, query: { ...options } })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
-                .pipe(mapError)
-                .pipe(Stream.mapError(ImagesError("export")));
+            client
+                .export({ params: { name }, query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapEffect((line) => decodeJsonMessage(line))),
+                    Effect.map(mapError),
+                    Effect.map(Stream.mapError(ImagesError("export"))),
+                    Effect.mapError(ImagesError("export"))
+                );
         const exportMany_ = (options?: Options<"exportMany">) =>
-            HttpApiStreamingResponse(
-                ImagesApi,
-                "images",
-                "exportMany",
-                httpClient
-            )({ query: { ...options } })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
-                .pipe(mapError)
-                .pipe(Stream.mapError(ImagesError("exportMany")));
+            client
+                .exportMany({ query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapEffect((line) => decodeJsonMessage(line))),
+                    Effect.map(mapError),
+                    Effect.map(Stream.mapError(ImagesError("exportMany"))),
+                    Effect.mapError(ImagesError("exportMany"))
+                );
         const import_ = <E>(context: Stream.Stream<Uint8Array, E, never>, options?: Options<"import">) =>
             HttpApiStreamingBoth(
                 ImagesApi,

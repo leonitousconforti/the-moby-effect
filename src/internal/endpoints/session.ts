@@ -11,8 +11,8 @@ import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { hijackResponseUnsafe } from "../demux/hijack.ts";
 import { DockerError } from "./circular.ts";
-import { HttpApiTcp } from "./httpApiHacks.js";
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Session/operation/Session */
 const sessionEndpoint = HttpApiEndpoint.post("session", "/session", {
@@ -45,23 +45,18 @@ export class Sessions extends Context.Service<Sessions>()("@the-moby-effect/endp
     make: Effect.gen(function* () {
         const httpClient = yield* HttpClient.HttpClient;
         const SessionsError = DockerError.WrapForModule("session");
-        yield* HttpApiClient.group(SessionApi, { group: "session", httpClient });
+        const client = yield* HttpApiClient.group(SessionApi, { group: "session", httpClient });
 
         const session_ = () =>
-            Effect.mapError(
-                HttpApiTcp(
-                    SessionApi,
-                    "session",
-                    "session",
-                    httpClient
-                )({
+            client
+                .session({
                     headers: {
                         Upgrade: "h2c",
                         Connection: "Upgrade",
                     },
-                }),
-                SessionsError("session")
-            );
+                    responseMode: "response-only",
+                })
+                .pipe(Effect.map(hijackResponseUnsafe), Effect.mapError(SessionsError("session")));
 
         return { session: session_ };
     }),

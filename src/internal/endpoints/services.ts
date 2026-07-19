@@ -17,7 +17,6 @@ import { ServiceIdentifier } from "../schemas/id.js";
 import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, Forbidden, InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
-import { HttpApiStreamingResponse } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
@@ -194,15 +193,14 @@ export class Services extends Context.Service<Services>()("@the-moby-effect/endp
                 ServicesError("update")
             );
         const logs_ = (id: string, options?: Options<"logs">) =>
-            HttpApiStreamingResponse(
-                ServicesApi,
-                "services",
-                "logs",
-                httpClient
-            )({ params: { id }, query: { ...options } })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapError(ServicesError("logs")));
+            client
+                .logs({ params: { id }, query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapError(ServicesError("logs"))),
+                    Effect.mapError(ServicesError("logs"))
+                );
 
         return {
             list: list_,

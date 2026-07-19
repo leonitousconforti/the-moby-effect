@@ -15,7 +15,6 @@ import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmTask } from "../generated/index.js";
 import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
-import { HttpApiStreamingResponse } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
 export const TaskListFilters = Schema.fromJsonString(
@@ -109,15 +108,14 @@ export class Tasks extends Context.Service<Tasks>()("@the-moby-effect/endpoints/
             Effect.mapError(client.list({ query: { filters } }), TasksError("list"));
         const inspect_ = (id: string) => Effect.mapError(client.inspect({ params: { id } }), TasksError("inspect"));
         const logs_ = (id: string, options?: Options<"logs">) =>
-            HttpApiStreamingResponse(
-                TasksApi,
-                "tasks",
-                "logs",
-                httpClient
-            )({ params: { id }, query: { ...options } })
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapError(TasksError("logs")));
+            client
+                .logs({ params: { id }, query: { ...options } })
+                .pipe(
+                    Effect.map(Stream.decodeText()),
+                    Effect.map(Stream.splitLines),
+                    Effect.map(Stream.mapError(TasksError("logs"))),
+                    Effect.mapError(TasksError("logs"))
+                );
 
         return {
             list: list_,
