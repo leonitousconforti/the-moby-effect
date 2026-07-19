@@ -83,7 +83,7 @@
         "babel-plugin-annotate-pure-calls": "0.5.0",
         "changesets-gitlab": "0.13.4",
         "effect": "4.0.0-beta.98",
-        "glob": "13.0.0",
+        "glob": "13.0.6",
         "madge": "8.0.0",
         "oxfmt": "0.53.0",
         "oxlint": "1.68.0",
