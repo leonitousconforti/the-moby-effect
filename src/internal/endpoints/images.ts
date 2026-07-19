@@ -1,287 +1,312 @@
-import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
-import { Effect, Schema, Stream, type Layer } from "effect";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
+import * as Schema from "effect/Schema";
+import * as SchemaGetter from "effect/SchemaGetter";
+import * as SchemaIssue from "effect/SchemaIssue";
+import * as Stream from "effect/Stream";
+import * as HttpClient from "effect/unstable/http/HttpClient";
+import * as HttpApi from "effect/unstable/httpapi/HttpApi";
+import * as HttpApiClient from "effect/unstable/httpapi/HttpApiClient";
+import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
+import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
+import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import * as ParseResult from "effect/ParseResult";
 import { MobyConnectionOptions } from "../../MobyConnection.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { mapError } from "../convey/sinks.ts";
 import {
-    ContainerCreateRequest,
-    ImageDeleteResponse,
-    ImageHistoryResponseItem,
-    ImageInspectResponse,
-    ImageSummary,
-    JSONMessage,
-    RegistrySearchResult,
-} from "../generated/index.js";
+    ContainerCreateRequest, ImageDeleteResponse, ImageHistoryResponseItem, ImageInspectResponse, ImageSummary, JSONMessage, RegistrySearchResult, } from "../generated/index.js";
+import { BooleanFromString } from "../schemas/booleanFromString.js";
 import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
-import {
-    BadRequest,
-    Conflict,
-    HttpApiStreamingBoth,
-    HttpApiStreamingResponse,
-    InternalServerError,
-    NotFound,
-} from "./httpApiHacks.js";
+import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
+import { HttpApiStreamingBoth, HttpApiStreamingResponse } from "./httpApiHacks.js";
 
 /** @since 1.0.0 */
-export class ListFilters extends Schema.parseJson(
+export const ListFilters = Schema.fromJsonString(
     Schema.Struct({
         before: Schema.optional(Schema.Array(Schema.String)),
-        dangling: Schema.optional(Schema.BooleanFromString),
+        dangling: Schema.optional(BooleanFromString),
         label: Schema.optional(Schema.Array(Schema.String)),
         reference: Schema.optional(Schema.Array(Schema.String)),
         since: Schema.optional(Schema.Array(Schema.String)),
         until: Schema.optional(Schema.String),
     })
-) {}
+);
 
-/** @since 1.0.0 */
-export class SearchFilters extends Schema.parseJson(
-    Schema.Struct({
-        "is-official": Schema.transformOrFail(Schema.Tuple(Schema.String), Schema.BooleanFromString, {
-            decode: (_fromA, _options, ast) =>
-                ParseResult.fail(
-                    new ParseResult.Forbidden(ast, _fromA, "Decoding 'is-official' filter is not supported")
-                ),
-            encode: (automated) => ParseResult.succeed([automated] as const),
-        }).pipe(Schema.optional),
-        "is-automated": Schema.transformOrFail(Schema.Tuple(Schema.String), Schema.BooleanFromString, {
-            decode: (_fromA, _options, ast) =>
-                ParseResult.fail(
-                    new ParseResult.Forbidden(ast, _fromA, "Decoding 'is-automated' filter is not supported")
-                ),
-            encode: (automated) => ParseResult.succeed([automated] as const),
-        }).pipe(Schema.optional),
-        stars: Schema.optional(Schema.NumberFromString),
-    })
-) {}
-
-/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageList */
-const listImagesEndpoint = HttpApiEndpoint.get("list", "/images/json")
-    .setUrlParams(
-        Schema.Struct({
-            filters: Schema.optional(ListFilters),
-            all: Schema.optional(Schema.BooleanFromString),
-            digests: Schema.optional(Schema.BooleanFromString),
-            "shared-size": Schema.optional(Schema.BooleanFromString),
-        })
-    )
-    .addSuccess(Schema.Array(ImageSummary), { status: 200 });
-
-/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageBuild */
-const buildImageEndpoint = HttpApiEndpoint.post("build", "/build")
-    .setUrlParams(
-        Schema.Struct({
-            dockerfile: Schema.optional(Schema.String),
-            t: Schema.optional(Schema.String),
-            extrahosts: Schema.optional(Schema.String),
-            remote: Schema.optional(Schema.String),
-            q: Schema.optional(Schema.BooleanFromString),
-            nocache: Schema.optional(Schema.BooleanFromString),
-            cachefrom: Schema.optional(Schema.String),
-            pull: Schema.optional(Schema.String),
-            rm: Schema.optional(Schema.BooleanFromString),
-            forcerm: Schema.optional(Schema.BooleanFromString),
-            memory: Schema.optional(Schema.NumberFromString),
-            memswap: Schema.optional(Schema.NumberFromString),
-            cpushares: Schema.optional(Schema.NumberFromString),
-            cpusetcpus: Schema.optional(Schema.String),
-            cpuperiod: Schema.optional(Schema.NumberFromString),
-            cpuquota: Schema.optional(Schema.NumberFromString),
-            buildargs: Schema.optional(
-                Schema.parseJson(
-                    Schema.Record({
-                        key: Schema.String,
-                        value: Schema.NullishOr(Schema.String),
+/** @internal */
+const BooleanFromStringTuple = (filterName: string) =>
+    Schema.Tuple([Schema.String]).pipe(
+        Schema.decodeTo(Schema.Boolean, {
+            decode: SchemaGetter.transformOrFail((fromA: readonly [string]) =>
+                Effect.fail(
+                    new SchemaIssue.InvalidValue(Option.some(fromA), {
+                        message: `Decoding '${filterName}' filter is not supported`,
                     })
                 )
             ),
-            shmsize: Schema.optional(Schema.NumberFromString),
-            squash: Schema.optional(Schema.BooleanFromString),
-            labels: Schema.optional(Schema.String),
-            networkmode: Schema.optional(Schema.String),
-            platform: Schema.optional(Schema.String),
-            target: Schema.optional(Schema.String),
-            outputs: Schema.optional(Schema.String),
-            version: Schema.optional(Schema.Literal("1")),
+            encode: SchemaGetter.transform((bool: boolean) => [bool ? "true" : "false"] as const),
         })
-    )
-    .setHeaders(
-        Schema.Struct({
-            "Content-type": Schema.optional(Schema.String),
-            "X-Registry-Config": Schema.optional(Schema.String),
-        })
-    )
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(BadRequest); // 400 Bad parameter
+    );
+
+/** @since 1.0.0 */
+export const SearchFilters = Schema.fromJsonString(
+    Schema.Struct({
+        "is-official": BooleanFromStringTuple("is-official").pipe(Schema.optional),
+        "is-automated": BooleanFromStringTuple("is-automated").pipe(Schema.optional),
+        stars: Schema.optional(Schema.NumberFromString),
+    })
+);
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageList */
+const listImagesEndpoint = HttpApiEndpoint.get("list", "/images/json", {
+    query: {
+        filters: Schema.optional(ListFilters),
+        all: Schema.optional(Schema.Boolean),
+        digests: Schema.optional(Schema.Boolean),
+        "shared-size": Schema.optional(Schema.Boolean),
+    },
+    success: Schema.Array(ImageSummary), // 200 OK
+    error: [InternalServerError],
+});
+
+/** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageBuild */
+const buildImageEndpoint = HttpApiEndpoint.post("build", "/build", {
+    query: {
+        dockerfile: Schema.optional(Schema.String),
+        t: Schema.optional(Schema.String),
+        extrahosts: Schema.optional(Schema.String),
+        remote: Schema.optional(Schema.String),
+        q: Schema.optional(Schema.Boolean),
+        nocache: Schema.optional(Schema.Boolean),
+        cachefrom: Schema.optional(Schema.String),
+        pull: Schema.optional(Schema.String),
+        rm: Schema.optional(Schema.Boolean),
+        forcerm: Schema.optional(Schema.Boolean),
+        memory: Schema.optional(Schema.Number),
+        memswap: Schema.optional(Schema.Number),
+        cpushares: Schema.optional(Schema.Number),
+        cpusetcpus: Schema.optional(Schema.String),
+        cpuperiod: Schema.optional(Schema.Number),
+        cpuquota: Schema.optional(Schema.Number),
+        buildargs: Schema.optional(
+            Schema.fromJsonString(Schema.Record(Schema.String, Schema.NullishOr(Schema.String)))
+        ),
+        shmsize: Schema.optional(Schema.Number),
+        squash: Schema.optional(Schema.Boolean),
+        labels: Schema.optional(Schema.String),
+        networkmode: Schema.optional(Schema.String),
+        platform: Schema.optional(Schema.String),
+        target: Schema.optional(Schema.String),
+        outputs: Schema.optional(Schema.String),
+        version: Schema.optional(Schema.Literal("1")),
+    },
+    headers: {
+        "Content-type": Schema.optional(Schema.String),
+        "X-Registry-Config": Schema.optional(Schema.String),
+    },
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
+    error: [
+        BadRequest, // 400 Bad parameter
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/BuildPrune */
-const buildPruneEndpoint = HttpApiEndpoint.post("buildPrune", "/build/prune")
-    .setUrlParams(
-        Schema.Struct({
-            "keep-storage": Schema.optional(Schema.NumberFromString),
-            all: Schema.optional(Schema.BooleanFromString),
-            filters: Schema.optional(Schema.String),
-        })
-    )
-    .addSuccess(
-        Schema.Struct({
-            SpaceReclaimed: Schema.Number,
-            CachesDeleted: Schema.Array(Schema.String),
-        }),
-        { status: 200 }
-    );
+const buildPruneEndpoint = HttpApiEndpoint.post("buildPrune", "/build/prune", {
+    query: {
+        "keep-storage": Schema.optional(Schema.Number),
+        all: Schema.optional(Schema.Boolean),
+        filters: Schema.optional(Schema.String),
+    },
+    success: Schema.Struct({
+        SpaceReclaimed: Schema.Number,
+        CachesDeleted: Schema.Array(Schema.String),
+    }), // 200 OK
+    error: [InternalServerError],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCreate */
-const createImageEndpoint = HttpApiEndpoint.post("create", "/images/create")
-    .setUrlParams(
-        Schema.Struct({
-            fromImage: Schema.optional(Schema.String),
-            fromSrc: Schema.optional(Schema.String),
-            repo: Schema.optional(Schema.String),
-            tag: Schema.optional(Schema.String),
-            message: Schema.optional(Schema.String),
-            changes: Schema.optional(Schema.String),
-            platform: Schema.optional(Schema.String),
-        })
-    )
-    .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(NotFound); // 404 Repository not found or no read access
+const createImageEndpoint = HttpApiEndpoint.post("create", "/images/create", {
+    query: {
+        fromImage: Schema.optional(Schema.String),
+        fromSrc: Schema.optional(Schema.String),
+        repo: Schema.optional(Schema.String),
+        tag: Schema.optional(Schema.String),
+        message: Schema.optional(Schema.String),
+        changes: Schema.optional(Schema.String),
+        platform: Schema.optional(Schema.String),
+    },
+    headers: { "X-Registry-Auth": Schema.optional(Schema.String) },
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
+    error: [
+        NotFound, // 404 Repository not found or no read access
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageInspect */
-const inspectImageEndpoint = HttpApiEndpoint.get("inspect", "/images/:name/json")
-    .setPath(Schema.Struct({ name: Schema.String }))
-    .setUrlParams(Schema.Struct({ manifests: Schema.optional(Schema.BooleanFromString) }))
-    .addSuccess(ImageInspectResponse, { status: 200 })
-    .addError(NotFound); // 404 No such image
+const inspectImageEndpoint = HttpApiEndpoint.get("inspect", "/images/:name/json", {
+    params: { name: Schema.String },
+    query: { manifests: Schema.optional(Schema.Boolean) },
+    success: ImageInspectResponse, // 200 OK
+    error: [
+        NotFound, // 404 No such image
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageHistory */
-const historyImageEndpoint = HttpApiEndpoint.get("history", "/images/:name/history")
-    .setPath(Schema.Struct({ name: Schema.String }))
-    .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
-    .addSuccess(Schema.Array(ImageHistoryResponseItem), { status: 200 })
-    .addError(NotFound); // 404 No such image
+const historyImageEndpoint = HttpApiEndpoint.get("history", "/images/:name/history", {
+    params: { name: Schema.String },
+    query: { platform: Schema.optional(Schema.String) },
+    success: Schema.Array(ImageHistoryResponseItem), // 200 OK
+    error: [
+        NotFound, // 404 No such image
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePush */
-const pushImageEndpoint = HttpApiEndpoint.post("push", "/images/:name/push")
-    .setPath(Schema.Struct({ name: Schema.String }))
-    .setUrlParams(Schema.Struct({ tag: Schema.optional(Schema.String), platform: Schema.optional(Schema.String) }))
-    .setHeaders(Schema.Struct({ "X-Registry-Auth": Schema.optional(Schema.String) }))
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(NotFound); // 404 No such image
+const pushImageEndpoint = HttpApiEndpoint.post("push", "/images/:name/push", {
+    params: { name: Schema.String },
+    query: { tag: Schema.optional(Schema.String), platform: Schema.optional(Schema.String) },
+    headers: { "X-Registry-Auth": Schema.optional(Schema.String) },
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
+    error: [
+        NotFound, // 404 No such image
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageTag */
-const tagImageEndpoint = HttpApiEndpoint.post("tag", "/images/:name/tag")
-    .setPath(Schema.Struct({ name: Schema.String }))
-    .setUrlParams(Schema.Struct({ repo: Schema.optional(Schema.String), tag: Schema.optional(Schema.String) }))
-    .addSuccess(HttpApiSchema.Empty(201))
-    .addError(BadRequest) // 400 Bad parameter
-    .addError(NotFound) // 404 No such image
-    .addError(Conflict); // 409 Conflict
+const tagImageEndpoint = HttpApiEndpoint.post("tag", "/images/:name/tag", {
+    params: { name: Schema.String },
+    query: { repo: Schema.optional(Schema.String), tag: Schema.optional(Schema.String) },
+    success: HttpApiSchema.Empty(201), // 201 Created
+    error: [
+        BadRequest, // 400 Bad parameter
+        NotFound, // 404 No such image
+        Conflict, // 409 Conflict
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageDelete */
-const deleteImageEndpoint = HttpApiEndpoint.del("delete", "/images/:name")
-    .setPath(Schema.Struct({ name: Schema.String }))
-    .setUrlParams(
-        Schema.Struct({
-            force: Schema.optional(Schema.BooleanFromString),
-            noprune: Schema.optional(Schema.BooleanFromString),
-            platforms: Schema.optional(Schema.Array(Schema.String)),
-        })
-    )
-    .addSuccess(Schema.Array(ImageDeleteResponse), { status: 200 })
-    .addError(NotFound) // 404 No such image
-    .addError(Conflict); // 409 Conflict
+const deleteImageEndpoint = HttpApiEndpoint.delete("delete", "/images/:name", {
+    params: { name: Schema.String },
+    query: {
+        force: Schema.optional(Schema.Boolean),
+        noprune: Schema.optional(Schema.Boolean),
+        platforms: Schema.optional(Schema.Array(Schema.String)),
+    },
+    success: Schema.Array(ImageDeleteResponse), // 200 OK
+    error: [
+        NotFound, // 404 No such image
+        Conflict, // 409 Conflict
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageSearch */
-const searchImagesEndpoint = HttpApiEndpoint.get("search", "/images/search")
-    .setUrlParams(
-        Schema.Struct({
-            term: Schema.String,
-            limit: Schema.optional(Schema.NumberFromString),
-            filters: Schema.optional(SearchFilters),
-        })
-    )
-    .addSuccess(Schema.Array(RegistrySearchResult), { status: 200 });
+const searchImagesEndpoint = HttpApiEndpoint.get("search", "/images/search", {
+    query: {
+        term: Schema.String,
+        limit: Schema.optional(Schema.Number),
+        filters: Schema.optional(SearchFilters),
+    },
+    success: Schema.Array(RegistrySearchResult), // 200 OK
+    error: [InternalServerError],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImagePrune */
-const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/images/prune")
-    .setUrlParams(
-        Schema.Struct({
-            filters: Schema.optional(Schema.String),
-        })
-    )
-    .addSuccess(
-        Schema.Struct({
-            SpaceReclaimed: Schema.Number,
-            ImagesDeleted: Schema.NullishOr(Schema.Array(ImageDeleteResponse)),
-        }),
-        { status: 200 }
-    );
+const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/images/prune", {
+    query: {
+        filters: Schema.optional(Schema.String),
+    },
+    success: Schema.Struct({
+        SpaceReclaimed: Schema.Number,
+        ImagesDeleted: Schema.NullishOr(Schema.Array(ImageDeleteResponse)),
+    }), // 200 OK
+    error: [InternalServerError],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageCommit */
-const commitImageEndpoint = HttpApiEndpoint.post("commit", "/images/commit")
-    .setUrlParams(
-        Schema.Struct({
-            container: Schema.String,
-            repo: Schema.optional(Schema.String),
-            tag: Schema.optional(Schema.String),
-            comment: Schema.optional(Schema.String),
-            author: Schema.optional(Schema.String),
-            pause: Schema.optional(Schema.BooleanFromString),
-            changes: Schema.optional(Schema.String),
-        })
-    )
-    .setPayload(ContainerCreateRequest)
-    .addSuccess(ImageInspectResponse, { status: 201 })
-    .addError(NotFound); // 404 No such container
+const commitImageEndpoint = HttpApiEndpoint.post("commit", "/images/commit", {
+    query: {
+        container: Schema.String,
+        repo: Schema.optional(Schema.String),
+        tag: Schema.optional(Schema.String),
+        comment: Schema.optional(Schema.String),
+        author: Schema.optional(Schema.String),
+        pause: Schema.optional(Schema.Boolean),
+        changes: Schema.optional(Schema.String),
+    },
+    payload: ContainerCreateRequest,
+    success: ImageInspectResponse.pipe(HttpApiSchema.status(201)), // 201 Created
+    error: [
+        NotFound, // 404 No such container
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGet */
-const exportImageEndpoint = HttpApiEndpoint.get("export", "/images/:name/get")
-    .setPath(Schema.Struct({ name: Schema.String }))
-    .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(NotFound); // 404 No such image
+const exportImageEndpoint = HttpApiEndpoint.get("export", "/images/:name/get", {
+    params: { name: Schema.String },
+    query: { platform: Schema.optional(Schema.String) },
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
+    error: [
+        NotFound, // 404 No such image
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageGetAll */
-const exportManyImagesEndpoint = HttpApiEndpoint.get("exportMany", "/images/get")
-    .setUrlParams(Schema.Struct({ names: Schema.optional(Schema.String) }))
-    .setUrlParams(Schema.Struct({ platform: Schema.optional(Schema.String) }))
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(NotFound); // 404 No such image
+const exportManyImagesEndpoint = HttpApiEndpoint.get("exportMany", "/images/get", {
+    query: {
+        names: Schema.optional(Schema.String),
+        platform: Schema.optional(Schema.String),
+    },
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
+    error: [
+        NotFound, // 404 No such image
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageLoad */
-const importImageEndpoint = HttpApiEndpoint.post("import", "/images/load")
-    .setUrlParams(
-        Schema.Struct({
-            platform: Schema.optional(Schema.String),
-            quiet: Schema.optional(Schema.BooleanFromString),
-        })
-    )
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(BadRequest); // 400 Bad parameter
+const importImageEndpoint = HttpApiEndpoint.post("import", "/images/load", {
+    query: {
+        platform: Schema.optional(Schema.String),
+        quiet: Schema.optional(Schema.Boolean),
+    },
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming response)
+    error: [
+        BadRequest, // 400 Bad parameter
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image */
-const ImagesGroup = HttpApiGroup.make("images")
-    .add(listImagesEndpoint)
-    .add(buildImageEndpoint)
-    .add(buildPruneEndpoint)
-    .add(createImageEndpoint)
-    .add(inspectImageEndpoint)
-    .add(historyImageEndpoint)
-    .add(pushImageEndpoint)
-    .add(tagImageEndpoint)
-    .add(deleteImageEndpoint)
-    .add(searchImagesEndpoint)
-    .add(pruneImagesEndpoint)
-    .add(commitImageEndpoint)
-    .add(exportImageEndpoint)
-    .add(exportManyImagesEndpoint)
-    .add(importImageEndpoint)
-    .addError(InternalServerError);
+const ImagesGroup = HttpApiGroup.make("images").add(
+    listImagesEndpoint,
+    buildImageEndpoint,
+    buildPruneEndpoint,
+    createImageEndpoint,
+    inspectImageEndpoint,
+    historyImageEndpoint,
+    pushImageEndpoint,
+    tagImageEndpoint,
+    deleteImageEndpoint,
+    searchImagesEndpoint,
+    pruneImagesEndpoint,
+    commitImageEndpoint,
+    exportImageEndpoint,
+    exportManyImagesEndpoint,
+    importImageEndpoint
+);
 
 /**
  * @since 1.0.0
@@ -295,21 +320,13 @@ export const ImagesApi = HttpApi.make("ImagesApi").add(ImagesGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
  */
-export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints/Images", {
-    accessors: false,
-    dependencies: [
-        makeAgnosticHttpClientLayer(
-            MobyConnectionOptions.socket({
-                socketPath: "/var/run/docker.sock",
-            })
-        ),
-    ],
-
-    effect: Effect.gen(function* () {
-        type Options<Name extends (typeof ImagesGroup.endpoints)[number]["name"]> =
-            HttpApiEndpoint.HttpApiEndpoint.UrlParams<
-                HttpApiEndpoint.HttpApiEndpoint.WithName<(typeof ImagesGroup.endpoints)[number], Name>
-            >;
+export class Images extends Context.Service<Images>()("@the-moby-effect/endpoints/Images", {
+    make: Effect.gen(function* () {
+        type ImagesEndpoints = HttpApiGroup.Endpoints<typeof ImagesGroup>;
+        type Options<Name extends ImagesEndpoints["identifier"]> = HttpApiEndpoint.WithIdentifier<
+            ImagesEndpoints,
+            Name
+        >["~Query"]["Type"];
 
         const httpClient = yield* Effect.map(
             HttpClient.HttpClient,
@@ -318,9 +335,10 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
 
         const ImagesError = DockerError.WrapForModule("images");
         const client = yield* HttpApiClient.group(ImagesApi, { group: "images", httpClient });
+        const decodeJsonMessage = Schema.decodeEffect(Schema.fromJsonString(JSONMessage));
 
         const list_ = (options?: Options<"list">) =>
-            Effect.mapError(client.list({ urlParams: { ...options } }), ImagesError("list"));
+            Effect.mapError(client.list({ query: { ...options } }), ImagesError("list"));
         const build_ = <E1>(context: Stream.Stream<Uint8Array, E1, never>, options?: Options<"build">) =>
             HttpApiStreamingBoth(
                 ImagesApi,
@@ -329,16 +347,16 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 httpClient,
                 context
             )({
-                urlParams: { ...options },
+                query: { ...options },
                 headers: { "Content-type": "application/tar" },
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
                 .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("build")));
         const buildPrune_ = (options?: Options<"buildPrune">) =>
-            Effect.mapError(client.buildPrune({ urlParams: { ...options } }), ImagesError("buildPrune"));
+            Effect.mapError(client.buildPrune({ query: { ...options } }), ImagesError("buildPrune"));
         const create_ = (options?: Options<"create">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
@@ -347,17 +365,17 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 httpClient
             )({
                 headers: {},
-                urlParams: { ...options },
+                query: { ...options },
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
                 .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("create")));
         const inspect_ = (name: string, options?: Options<"inspect">) =>
-            Effect.mapError(client.inspect({ path: { name }, urlParams: { ...options } }), ImagesError("inspect"));
+            Effect.mapError(client.inspect({ params: { name }, query: { ...options } }), ImagesError("inspect"));
         const history_ = (name: string, options?: Options<"history">) =>
-            Effect.mapError(client.history({ path: { name }, urlParams: { ...options } }), ImagesError("history"));
+            Effect.mapError(client.history({ params: { name }, query: { ...options } }), ImagesError("history"));
         const push_ = (name: string, options?: Options<"push">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
@@ -365,35 +383,38 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 "push",
                 httpClient
             )({
-                path: { name },
-                urlParams: { ...options },
+                params: { name },
+                query: { ...options },
                 headers: {},
             })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
                 .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("push")));
         const tag_ = (name: string, options?: Options<"tag">) =>
-            Effect.mapError(client.tag({ path: { name }, urlParams: { ...options } }), ImagesError("tag"));
+            Effect.mapError(client.tag({ params: { name }, query: { ...options } }), ImagesError("tag"));
         const delete_ = (name: string, options?: Options<"delete">) =>
-            Effect.mapError(client.delete({ path: { name }, urlParams: { ...options } }), ImagesError("delete"));
+            Effect.mapError(client.delete({ params: { name }, query: { ...options } }), ImagesError("delete"));
         const search_ = (options: Options<"search">) =>
-            Effect.mapError(client.search({ urlParams: { ...options } }), ImagesError("search"));
+            Effect.mapError(client.search({ query: { ...options } }), ImagesError("search"));
         const prune_ = (options?: Options<"prune">) =>
-            Effect.mapError(client.prune({ urlParams: { ...options } }), ImagesError("prune"));
-        const commit_ = (payload: ContainerCreateRequest, options: Options<"commit">) =>
-            Effect.mapError(client.commit({ urlParams: { ...options }, payload }), ImagesError("commit"));
+            Effect.mapError(client.prune({ query: { ...options } }), ImagesError("prune"));
+        const commit_ = (payload: ConstructorParameters<typeof ContainerCreateRequest>[0], options: Options<"commit">) =>
+            Effect.mapError(
+                client.commit({ query: { ...options }, payload: new ContainerCreateRequest(payload) }),
+                ImagesError("commit")
+            );
         const export_ = (name: string, options?: Options<"export">) =>
             HttpApiStreamingResponse(
                 ImagesApi,
                 "images",
                 "export",
                 httpClient
-            )({ path: { name }, urlParams: { ...options } })
+            )({ params: { name }, query: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
                 .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("export")));
         const exportMany_ = (options?: Options<"exportMany">) =>
@@ -402,10 +423,10 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 "images",
                 "exportMany",
                 httpClient
-            )({ urlParams: { ...options } })
+            )({ query: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
                 .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("exportMany")));
         const import_ = <E>(context: Stream.Stream<Uint8Array, E, never>, options?: Options<"import">) =>
@@ -415,10 +436,10 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
                 "import",
                 httpClient,
                 context
-            )({ urlParams: { ...options } })
+            )({ query: { ...options } })
                 .pipe(Stream.decodeText())
                 .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect(Schema.decode(Schema.parseJson(JSONMessage))))
+                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
                 .pipe(mapError)
                 .pipe(Stream.mapError(ImagesError("import")));
 
@@ -447,11 +468,19 @@ export class Images extends Effect.Service<Images>()("@the-moby-effect/endpoints
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
  */
-export const ImagesLayerLocalSocket: Layer.Layer<Images, never, HttpClient.HttpClient> = Images.Default;
+export const ImagesLayer: Layer.Layer<Images, never, HttpClient.HttpClient> = Layer.effect(Images, Images.make);
 
 /**
  * @since 1.0.0
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Image
  */
-export const ImagesLayer: Layer.Layer<Images, never, HttpClient.HttpClient> = Images.DefaultWithoutDependencies;
+export const ImagesLayerLocalSocket: Layer.Layer<Images, never, HttpClient.HttpClient> = ImagesLayer.pipe(
+    Layer.provide(
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        )
+    )
+);

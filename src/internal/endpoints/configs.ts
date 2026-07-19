@@ -6,7 +6,6 @@ import * as HttpClient from "effect/unstable/http/HttpClient";
 import * as HttpApi from "effect/unstable/httpapi/HttpApi";
 import * as HttpApiClient from "effect/unstable/httpapi/HttpApiClient";
 import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
-import * as HttpApiError from "effect/unstable/httpapi/HttpApiError";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
@@ -15,6 +14,7 @@ import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import { SwarmConfig, SwarmConfigSpec } from "../generated/index.js";
 import { ConfigIdentifier } from "../schemas/id.js";
 import { DockerError } from "./circular.ts";
+import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
 import { NodeNotPartOfSwarm } from "./swarm.js";
 
 /** @since 1.0.0 */
@@ -31,7 +31,7 @@ const listConfigsEndpoint = HttpApiEndpoint.get("list", "/", {
     success: Schema.Array(SwarmConfig), // 200 OK
     error: [
         NodeNotPartOfSwarm, // 503 Node is not part of a swarm
-        HttpApiError.InternalServerError, // 500 Internal Server Error
+        InternalServerError, // 500 Internal Server Error
     ],
 });
 
@@ -42,9 +42,9 @@ const createConfigEndpoint = HttpApiEndpoint.post("create", "/create", {
         .pipe(Schema.encodeKeys({ Id: "ID" }))
         .pipe(HttpApiSchema.status(201)), // 201 Created
     error: [
-        HttpApiError.Conflict, // 409 Name conflicts with existing object
+        Conflict, // 409 Name conflicts with existing object
         NodeNotPartOfSwarm, // 503 Node is not part of a swarm
-        HttpApiError.InternalServerError, // 500 Internal Server Error
+        InternalServerError, // 500 Internal Server Error
     ],
 });
 
@@ -53,9 +53,9 @@ const inspectConfigEndpoint = HttpApiEndpoint.get("inspect", "/:identifier", {
     params: { identifier: ConfigIdentifier },
     success: SwarmConfig, // 200 OK
     error: [
-        HttpApiError.NotFound, // 404 Config not found
+        NotFound, // 404 Config not found
         NodeNotPartOfSwarm, // 503 Node is not part of a swarm
-        HttpApiError.InternalServerError, // 500 Internal Server Error
+        InternalServerError, // 500 Internal Server Error
     ],
 });
 
@@ -64,9 +64,9 @@ const deleteConfigEndpoint = HttpApiEndpoint.delete("delete", "/:identifier", {
     params: { identifier: ConfigIdentifier },
     success: HttpApiSchema.NoContent, // 204 No Content
     error: [
-        HttpApiError.NotFound, // 404 Config not found
+        NotFound, // 404 Config not found
         NodeNotPartOfSwarm, // 503 Node is not part of a swarm
-        HttpApiError.InternalServerError, // 500 Internal Server Error
+        InternalServerError, // 500 Internal Server Error
     ],
 });
 
@@ -77,10 +77,10 @@ const updateConfigEndpoint = HttpApiEndpoint.post("update", "/:identifier/update
     payload: SwarmConfigSpec, // Note: Docker API states only Labels can be updated
     success: HttpApiSchema.Empty(200), // 200 OK, no response body
     error: [
-        HttpApiError.BadRequest, // 400 Bad parameter
-        HttpApiError.NotFound, // 404 Config not found
+        BadRequest, // 400 Bad parameter
+        NotFound, // 404 Config not found
         NodeNotPartOfSwarm, // 503 Node is not part of a swarm
-        HttpApiError.InternalServerError, // 500 Internal Server Error
+        InternalServerError, // 500 Internal Server Error
     ],
 });
 

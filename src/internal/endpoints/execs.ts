@@ -1,67 +1,88 @@
-import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiGroup, HttpApiSchema, HttpClient } from "@effect/platform";
-import { Effect, Schema, type Layer } from "effect";
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Layer from "effect/Layer";
+import * as Schema from "effect/Schema";
+import * as HttpClient from "effect/unstable/http/HttpClient";
+import * as HttpApi from "effect/unstable/httpapi/HttpApi";
+import * as HttpApiClient from "effect/unstable/httpapi/HttpApiClient";
+import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
+import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
+import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
+
+import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.js";
 
 import { MobyConnectionOptions } from "../../MobyConnection.js";
-import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.js";
 import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
 import {
-    ContainerExecStartOptions,
-    ContainerExecOptions as ExecConfig,
-    ContainerExecInspect as ExecInspectResponse,
-} from "../generated/index.js";
+    ContainerExecStartOptions, ContainerExecOptions as ExecConfig, ContainerExecInspect as ExecInspectResponse, } from "../generated/index.js";
 import { ExecIdentifier } from "../schemas/id.js";
 import { DockerError } from "./circular.ts";
-import { BadRequest, Conflict, HttpApiSocket, InternalServerError, NotFound } from "./httpApiHacks.js";
+import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
+import { HttpApiSocket } from "./httpApiHacks.js";
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ContainerExec */
-const createExecEndpoint = HttpApiEndpoint.post("container", "/containers/:id/exec")
-    .setPath(Schema.Struct({ id: Schema.String }))
-    .setPayload(ExecConfig)
-    .addSuccess(Schema.Struct({ Id: ExecIdentifier }), { status: 201 })
-    .addError(NotFound) // 404 No such container
-    .addError(Conflict); // 409 Container is not running
+const createExecEndpoint = HttpApiEndpoint.post("container", "/containers/:id/exec", {
+    params: { id: Schema.String },
+    payload: ExecConfig,
+    success: Schema.Struct({ Id: ExecIdentifier }).pipe(HttpApiSchema.status(201)), // 201 Created
+    error: [
+        NotFound, // 404 No such container
+        Conflict, // 409 Container is not running
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecStart */
-const startExecEndpoint = HttpApiEndpoint.post("start", "/exec/:id/start")
-    .setPath(Schema.Struct({ id: ExecIdentifier }))
-    .setHeaders(
-        Schema.Struct({
-            Upgrade: Schema.Literal("tcp"),
-            Connection: Schema.Literal("Upgrade"),
-        })
-    )
-    .setPayload(ContainerExecStartOptions)
-    .addSuccess(HttpApiSchema.Empty(101))
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(NotFound) // 404 No such Exec instance
-    .addError(Conflict); // 409 Container is not running
+const startExecEndpoint = HttpApiEndpoint.post("start", "/exec/:id/start", {
+    params: { id: ExecIdentifier },
+    headers: {
+        Upgrade: Schema.Literal("tcp"),
+        Connection: Schema.Literal("Upgrade"),
+    },
+    payload: ContainerExecStartOptions,
+    success: [
+        HttpApiSchema.Empty(101), // 101 Switching Protocols
+        HttpApiSchema.Empty(200), // 200 OK
+    ],
+    error: [
+        NotFound, // 404 No such Exec instance
+        Conflict, // 409 Container is not running
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecResize */
-const resizeExecEndpoint = HttpApiEndpoint.post("resize", "/exec/:id/resize")
-    .setPath(Schema.Struct({ id: ExecIdentifier }))
-    .setUrlParams(
-        Schema.Struct({
-            h: Schema.NumberFromString,
-            w: Schema.NumberFromString,
-        })
-    )
-    .addSuccess(HttpApiSchema.Empty(200))
-    .addError(BadRequest) // 400 Invalid parameters
-    .addError(NotFound); // 404 No such Exec instance
+const resizeExecEndpoint = HttpApiEndpoint.post("resize", "/exec/:id/resize", {
+    params: { id: ExecIdentifier },
+    query: {
+        h: Schema.Number,
+        w: Schema.Number,
+    },
+    success: HttpApiSchema.Empty(200), // 200 OK
+    error: [
+        BadRequest, // 400 Invalid parameters
+        NotFound, // 404 No such Exec instance
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec/operation/ExecInspect */
-const inspectExecEndpoint = HttpApiEndpoint.get("inspect", "/exec/:id/json")
-    .setPath(Schema.Struct({ id: ExecIdentifier }))
-    .addSuccess(ExecInspectResponse, { status: 200 })
-    .addError(NotFound);
+const inspectExecEndpoint = HttpApiEndpoint.get("inspect", "/exec/:id/json", {
+    params: { id: ExecIdentifier },
+    success: ExecInspectResponse, // 200 OK
+    error: [
+        NotFound, // 404 No such Exec instance
+        InternalServerError,
+    ],
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec */
-const ExecsGroup = HttpApiGroup.make("exec")
-    .add(createExecEndpoint)
-    .add(startExecEndpoint)
-    .add(resizeExecEndpoint)
-    .add(inspectExecEndpoint)
-    .addError(InternalServerError);
+const ExecsGroup = HttpApiGroup.make("exec").add(
+    createExecEndpoint,
+    startExecEndpoint,
+    resizeExecEndpoint,
+    inspectExecEndpoint
+);
 
 /**
  * @since 1.0.0
@@ -75,24 +96,15 @@ export const ExecsApi = HttpApi.make("ExecsApi").add(ExecsGroup);
  * @category Services
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
-export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/Execs", {
-    accessors: false,
-    dependencies: [
-        makeAgnosticHttpClientLayer(
-            MobyConnectionOptions.socket({
-                socketPath: "/var/run/docker.sock",
-            })
-        ),
-    ],
-
-    effect: Effect.gen(function* () {
+export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/Execs", {
+    make: Effect.gen(function* () {
         const httpClient = yield* HttpClient.HttpClient;
         const ExecsError = DockerError.WrapForModule("execs");
         const client = yield* HttpApiClient.group(ExecsApi, { group: "exec", httpClient });
 
         const container_ = (id: string, payload: ConstructorParameters<typeof ExecConfig>[0]) =>
             Effect.mapError(
-                client.container({ path: { id }, payload: ExecConfig.make(payload) }),
+                client.container({ params: { id }, payload: new ExecConfig(payload) }),
                 ExecsError("container")
             );
         const start_ = <const T extends boolean = false>(
@@ -105,8 +117,8 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 "start",
                 httpClient
             )({
-                path: { id },
-                payload: ContainerExecStartOptions.make(payload),
+                params: { id },
+                payload: new ContainerExecStartOptions(payload),
                 headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
             })
                 .pipe(
@@ -119,9 +131,9 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
                 )
                 .pipe(Effect.mapError(ExecsError("start")));
         const resize_ = (id: ExecIdentifier, params: { w: number; h: number }) =>
-            Effect.mapError(client.resize({ path: { id }, urlParams: { ...params } }), ExecsError("resize"));
+            Effect.mapError(client.resize({ params: { id }, query: { ...params } }), ExecsError("resize"));
         const inspect_ = (id: ExecIdentifier) =>
-            Effect.mapError(client.inspect({ path: { id } }), ExecsError("inspect"));
+            Effect.mapError(client.inspect({ params: { id } }), ExecsError("inspect"));
 
         return {
             container: container_,
@@ -137,11 +149,19 @@ export class Execs extends Effect.Service<Execs>()("@the-moby-effect/endpoints/E
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
-export const ExecsLayerLocalSocket: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.Default;
+export const ExecsLayer: Layer.Layer<Execs, never, HttpClient.HttpClient> = Layer.effect(Execs, Execs.make);
 
 /**
  * @since 1.0.0
  * @category Layers
  * @see https://docs.docker.com/reference/api/engine/latest/#tag/Exec
  */
-export const ExecsLayer: Layer.Layer<Execs, never, HttpClient.HttpClient> = Execs.DefaultWithoutDependencies;
+export const ExecsLayerLocalSocket: Layer.Layer<Execs, never, HttpClient.HttpClient> = ExecsLayer.pipe(
+    Layer.provide(
+        makeAgnosticHttpClientLayer(
+            MobyConnectionOptions.socket({
+                socketPath: "/var/run/docker.sock",
+            })
+        )
+    )
+);
