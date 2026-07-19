@@ -3,7 +3,7 @@ import * as Schema from "effect/Schema";
 export class EventsActor extends Schema.Class<EventsActor>("EventsActor")(
     {
         ID: Schema.String,
-        Attributes: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        Attributes: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
     },
     {
         identifier: "EventsActor",

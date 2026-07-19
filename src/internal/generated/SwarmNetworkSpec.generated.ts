@@ -1,19 +1,19 @@
 import * as Schema from "effect/Schema";
-import * as NetworkConfigReference from "./NetworkConfigReference.generated.js";
-import * as SwarmAnnotations from "./SwarmAnnotations.generated.js";
-import * as SwarmDriver from "./SwarmDriver.generated.js";
-import * as SwarmIPAMOptions from "./SwarmIPAMOptions.generated.js";
+import * as NetworkConfigReference from "./NetworkConfigReference.generated.ts";
+import * as SwarmAnnotations from "./SwarmAnnotations.generated.ts";
+import * as SwarmDriver from "./SwarmDriver.generated.ts";
+import * as SwarmIPAMOptions from "./SwarmIPAMOptions.generated.ts";
 
 export class SwarmNetworkSpec extends Schema.Class<SwarmNetworkSpec>("SwarmNetworkSpec")(
     {
         ...SwarmAnnotations.SwarmAnnotations.fields,
-        DriverConfiguration: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
+        DriverConfiguration: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
         IPv6Enabled: Schema.optional(Schema.Boolean),
         Internal: Schema.optional(Schema.Boolean),
         Attachable: Schema.optional(Schema.Boolean),
         Ingress: Schema.optional(Schema.Boolean),
-        IPAMOptions: Schema.optionalWith(SwarmIPAMOptions.SwarmIPAMOptions, { nullable: true }),
-        ConfigFrom: Schema.optionalWith(NetworkConfigReference.NetworkConfigReference, { nullable: true }),
+        IPAMOptions: Schema.optional(Schema.NullOr(SwarmIPAMOptions.SwarmIPAMOptions)),
+        ConfigFrom: Schema.optional(Schema.NullOr(NetworkConfigReference.NetworkConfigReference)),
         Scope: Schema.optional(Schema.String),
     },
     {

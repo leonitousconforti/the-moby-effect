@@ -1,9 +1,9 @@
 import * as Schema from "effect/Schema";
-import * as SwarmPortConfig from "./SwarmPortConfig.generated.js";
+import * as SwarmPortConfig from "./SwarmPortConfig.generated.ts";
 
 export class SwarmPortStatus extends Schema.Class<SwarmPortStatus>("SwarmPortStatus")(
     {
-        Ports: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmPortConfig.SwarmPortConfig)), { nullable: true }),
+        Ports: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmPortConfig.SwarmPortConfig)))),
     },
     {
         identifier: "SwarmPortStatus",

@@ -1,11 +1,10 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmServiceStatus extends Schema.Class<SwarmServiceStatus>("SwarmServiceStatus")(
     {
-        RunningTasks: EffectSchemas.Number.U64,
-        DesiredTasks: EffectSchemas.Number.U64,
-        CompletedTasks: EffectSchemas.Number.U64,
+        RunningTasks: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        DesiredTasks: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        CompletedTasks: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
     },
     {
         identifier: "SwarmServiceStatus",

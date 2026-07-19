@@ -2,7 +2,7 @@ import * as Schema from "effect/Schema";
 
 export class VolumeTopology extends Schema.Class<VolumeTopology>("VolumeTopology")(
     {
-        Segments: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        Segments: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
     },
     {
         identifier: "VolumeTopology",

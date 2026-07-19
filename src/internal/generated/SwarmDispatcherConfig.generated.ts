@@ -1,14 +1,12 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmDispatcherConfig extends Schema.Class<SwarmDispatcherConfig>("SwarmDispatcherConfig")(
     {
-        HeartbeatPeriod: Schema.optional(EffectSchemas.Number.I64),
+        HeartbeatPeriod: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
     },
     {
         identifier: "SwarmDispatcherConfig",
         title: "swarm.DispatcherConfig",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#DispatcherConfig",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#DispatcherConfig",
     }
 ) {}

@@ -2,7 +2,7 @@ import * as Schema from "effect/Schema";
 
 export class SwarmAppArmorOpts extends Schema.Class<SwarmAppArmorOpts>("SwarmAppArmorOpts")(
     {
-        Mode: Schema.optional(Schema.Literal("default", "disabled")),
+        Mode: Schema.optional(Schema.Literals(["default", "disabled"])),
     },
     {
         identifier: "SwarmAppArmorOpts",

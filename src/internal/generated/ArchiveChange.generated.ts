@@ -1,10 +1,9 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class ArchiveChange extends Schema.Class<ArchiveChange>("ArchiveChange")(
     {
         Path: Schema.String,
-        Kind: EffectSchemas.Number.I64,
+        Kind: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
     },
     {
         identifier: "ArchiveChange",

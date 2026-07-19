@@ -1,13 +1,13 @@
 import * as Schema from "effect/Schema";
-import * as VolumeTypeBlock from "./VolumeTypeBlock.generated.js";
-import * as VolumeTypeMount from "./VolumeTypeMount.generated.js";
+import * as VolumeTypeBlock from "./VolumeTypeBlock.generated.ts";
+import * as VolumeTypeMount from "./VolumeTypeMount.generated.ts";
 
 export class VolumeAccessMode extends Schema.Class<VolumeAccessMode>("VolumeAccessMode")(
     {
-        Scope: Schema.optional(Schema.Literal("single", "multi")),
-        Sharing: Schema.optional(Schema.Literal("none", "readonly", "onewriter", "all")),
-        MountVolume: Schema.optionalWith(VolumeTypeMount.VolumeTypeMount, { nullable: true }),
-        BlockVolume: Schema.optionalWith(VolumeTypeBlock.VolumeTypeBlock, { nullable: true }),
+        Scope: Schema.optional(Schema.Literals(["single", "multi"])),
+        Sharing: Schema.optional(Schema.Literals(["none", "readonly", "onewriter", "all"])),
+        MountVolume: Schema.optional(Schema.NullOr(VolumeTypeMount.VolumeTypeMount)),
+        BlockVolume: Schema.optional(Schema.NullOr(VolumeTypeBlock.VolumeTypeBlock)),
     },
     {
         identifier: "VolumeAccessMode",

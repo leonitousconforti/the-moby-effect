@@ -1,33 +1,15 @@
 import * as Schema from "effect/Schema";
-import * as SwarmContainerStatus from "./SwarmContainerStatus.generated.js";
-import * as SwarmPortStatus from "./SwarmPortStatus.generated.js";
+import * as SwarmContainerStatus from "./SwarmContainerStatus.generated.ts";
+import * as SwarmPortStatus from "./SwarmPortStatus.generated.ts";
 
 export class SwarmTaskStatus extends Schema.Class<SwarmTaskStatus>("SwarmTaskStatus")(
     {
-        Timestamp: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
-        State: Schema.optional(
-            Schema.Literal(
-                "new",
-                "allocated",
-                "pending",
-                "assigned",
-                "accepted",
-                "preparing",
-                "ready",
-                "starting",
-                "running",
-                "complete",
-                "shutdown",
-                "failed",
-                "rejected",
-                "remove",
-                "orphaned"
-            )
-        ),
+        Timestamp: Schema.optional(Schema.NullOr(Schema.DateFromString)),
+        State: Schema.optional(Schema.Literals(["new", "allocated", "pending", "assigned", "accepted", "preparing", "ready", "starting", "running", "complete", "shutdown", "failed", "rejected", "remove", "orphaned"])),
         Message: Schema.optional(Schema.String),
         Err: Schema.optional(Schema.String),
-        ContainerStatus: Schema.optionalWith(SwarmContainerStatus.SwarmContainerStatus, { nullable: true }),
-        PortStatus: Schema.optionalWith(SwarmPortStatus.SwarmPortStatus, { nullable: true }),
+        ContainerStatus: Schema.optional(Schema.NullOr(SwarmContainerStatus.SwarmContainerStatus)),
+        PortStatus: Schema.optional(Schema.NullOr(SwarmPortStatus.SwarmPortStatus)),
     },
     {
         identifier: "SwarmTaskStatus",

@@ -1,10 +1,10 @@
 import * as Schema from "effect/Schema";
-import * as NetworkIPAMConfig from "./NetworkIPAMConfig.generated.js";
+import * as NetworkIPAMConfig from "./NetworkIPAMConfig.generated.ts";
 
 export class NetworkIPAM extends Schema.Class<NetworkIPAM>("NetworkIPAM")(
     {
         Driver: Schema.String,
-        Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Config: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkIPAMConfig.NetworkIPAMConfig))),
     },
     {

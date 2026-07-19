@@ -1,10 +1,9 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmReplicatedJob extends Schema.Class<SwarmReplicatedJob>("SwarmReplicatedJob")(
     {
-        MaxConcurrent: Schema.optionalWith(EffectSchemas.Number.U64, { nullable: true }),
-        TotalCompletions: Schema.optionalWith(EffectSchemas.Number.U64, { nullable: true }),
+        MaxConcurrent: Schema.optional(Schema.NullOr(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })))),
+        TotalCompletions: Schema.optional(Schema.NullOr(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })))),
     },
     {
         identifier: "SwarmReplicatedJob",

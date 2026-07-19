@@ -1,16 +1,13 @@
 import * as Schema from "effect/Schema";
-import * as TypesComponentVersion from "./TypesComponentVersion.generated.js";
+import * as TypesComponentVersion from "./TypesComponentVersion.generated.ts";
 
 export class TypesVersion extends Schema.Class<TypesVersion>("TypesVersion")(
     {
-        Platform: Schema.optional(
-            Schema.Struct({
-                Name: Schema.String,
-            })
-        ),
-        Components: Schema.optionalWith(Schema.Array(Schema.NullOr(TypesComponentVersion.TypesComponentVersion)), {
-            nullable: true,
-        }),
+        Platform: Schema.optional(Schema.Struct({
+        Name: Schema.String,
+})
+),
+        Components: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(TypesComponentVersion.TypesComponentVersion)))),
         Version: Schema.String,
         ApiVersion: Schema.String,
         MinAPIVersion: Schema.optional(Schema.String),

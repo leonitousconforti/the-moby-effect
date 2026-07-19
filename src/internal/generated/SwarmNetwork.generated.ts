@@ -1,16 +1,17 @@
 import * as Schema from "effect/Schema";
-import * as SwarmDriver from "./SwarmDriver.generated.js";
-import * as SwarmIPAMOptions from "./SwarmIPAMOptions.generated.js";
-import * as SwarmMeta from "./SwarmMeta.generated.js";
-import * as SwarmNetworkSpec from "./SwarmNetworkSpec.generated.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
+import * as SwarmDriver from "./SwarmDriver.generated.ts";
+import * as SwarmIPAMOptions from "./SwarmIPAMOptions.generated.ts";
+import * as SwarmMeta from "./SwarmMeta.generated.ts";
+import * as SwarmNetworkSpec from "./SwarmNetworkSpec.generated.ts";
 
 export class SwarmNetwork extends Schema.Class<SwarmNetwork>("SwarmNetwork")(
     {
-        ID: Schema.String,
+        ID: MobyIdentifiers.NetworkIdentifier,
         ...SwarmMeta.SwarmMeta.fields,
-        Spec: Schema.optionalWith(SwarmNetworkSpec.SwarmNetworkSpec, { nullable: true }),
-        DriverState: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
-        IPAMOptions: Schema.optionalWith(SwarmIPAMOptions.SwarmIPAMOptions, { nullable: true }),
+        Spec: Schema.optional(Schema.NullOr(SwarmNetworkSpec.SwarmNetworkSpec)),
+        DriverState: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
+        IPAMOptions: Schema.optional(Schema.NullOr(SwarmIPAMOptions.SwarmIPAMOptions)),
     },
     {
         identifier: "SwarmNetwork",

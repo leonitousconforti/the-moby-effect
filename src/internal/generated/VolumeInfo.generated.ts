@@ -1,17 +1,12 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as VolumeTopology from "./VolumeTopology.generated.js";
+import * as VolumeTopology from "./VolumeTopology.generated.ts";
 
 export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
     {
-        CapacityBytes: Schema.optional(EffectSchemas.Number.I64),
-        VolumeContext: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
-            nullable: true,
-        }),
+        CapacityBytes: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        VolumeContext: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         VolumeID: Schema.optional(Schema.String),
-        AccessibleTopology: Schema.optionalWith(Schema.Array(Schema.NullOr(VolumeTopology.VolumeTopology)), {
-            nullable: true,
-        }),
+        AccessibleTopology: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(VolumeTopology.VolumeTopology)))),
     },
     {
         identifier: "VolumeInfo",

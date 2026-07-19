@@ -1,23 +1,20 @@
 import * as Schema from "effect/Schema";
-import * as SwarmAnnotations from "./SwarmAnnotations.generated.js";
-import * as SwarmEndpointSpec from "./SwarmEndpointSpec.generated.js";
-import * as SwarmNetworkAttachmentConfig from "./SwarmNetworkAttachmentConfig.generated.js";
-import * as SwarmServiceMode from "./SwarmServiceMode.generated.js";
-import * as SwarmTaskSpec from "./SwarmTaskSpec.generated.js";
-import * as SwarmUpdateConfig from "./SwarmUpdateConfig.generated.js";
+import * as SwarmAnnotations from "./SwarmAnnotations.generated.ts";
+import * as SwarmEndpointSpec from "./SwarmEndpointSpec.generated.ts";
+import * as SwarmNetworkAttachmentConfig from "./SwarmNetworkAttachmentConfig.generated.ts";
+import * as SwarmServiceMode from "./SwarmServiceMode.generated.ts";
+import * as SwarmTaskSpec from "./SwarmTaskSpec.generated.ts";
+import * as SwarmUpdateConfig from "./SwarmUpdateConfig.generated.ts";
 
 export class SwarmServiceSpec extends Schema.Class<SwarmServiceSpec>("SwarmServiceSpec")(
     {
         ...SwarmAnnotations.SwarmAnnotations.fields,
-        TaskTemplate: Schema.optionalWith(SwarmTaskSpec.SwarmTaskSpec, { nullable: true }),
-        Mode: Schema.optionalWith(SwarmServiceMode.SwarmServiceMode, { nullable: true }),
-        UpdateConfig: Schema.optionalWith(SwarmUpdateConfig.SwarmUpdateConfig, { nullable: true }),
-        RollbackConfig: Schema.optionalWith(SwarmUpdateConfig.SwarmUpdateConfig, { nullable: true }),
-        Networks: Schema.optionalWith(
-            Schema.Array(Schema.NullOr(SwarmNetworkAttachmentConfig.SwarmNetworkAttachmentConfig)),
-            { nullable: true }
-        ),
-        EndpointSpec: Schema.optionalWith(SwarmEndpointSpec.SwarmEndpointSpec, { nullable: true }),
+        TaskTemplate: Schema.optional(Schema.NullOr(SwarmTaskSpec.SwarmTaskSpec)),
+        Mode: Schema.optional(Schema.NullOr(SwarmServiceMode.SwarmServiceMode)),
+        UpdateConfig: Schema.optional(Schema.NullOr(SwarmUpdateConfig.SwarmUpdateConfig)),
+        RollbackConfig: Schema.optional(Schema.NullOr(SwarmUpdateConfig.SwarmUpdateConfig)),
+        Networks: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmNetworkAttachmentConfig.SwarmNetworkAttachmentConfig)))),
+        EndpointSpec: Schema.optional(Schema.NullOr(SwarmEndpointSpec.SwarmEndpointSpec)),
     },
     {
         identifier: "SwarmServiceSpec",

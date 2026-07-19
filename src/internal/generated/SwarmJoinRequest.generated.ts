@@ -7,7 +7,7 @@ export class SwarmJoinRequest extends Schema.Class<SwarmJoinRequest>("SwarmJoinR
         DataPathAddr: Schema.String,
         RemoteAddrs: Schema.NullOr(Schema.Array(Schema.String)),
         JoinToken: Schema.String,
-        Availability: Schema.Literal("active", "pause", "drain"),
+        Availability: Schema.Literals(["active", "pause", "drain"]),
     },
     {
         identifier: "SwarmJoinRequest",

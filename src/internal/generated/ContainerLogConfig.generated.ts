@@ -3,7 +3,7 @@ import * as Schema from "effect/Schema";
 export class ContainerLogConfig extends Schema.Class<ContainerLogConfig>("ContainerLogConfig")(
     {
         Type: Schema.String,
-        Config: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        Config: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
     },
     {
         identifier: "ContainerLogConfig",

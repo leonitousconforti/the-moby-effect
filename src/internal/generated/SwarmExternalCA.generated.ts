@@ -4,7 +4,7 @@ export class SwarmExternalCA extends Schema.Class<SwarmExternalCA>("SwarmExterna
     {
         Protocol: Schema.Literal("cfssl"),
         URL: Schema.String,
-        Options: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        Options: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         CACert: Schema.String,
     },
     {

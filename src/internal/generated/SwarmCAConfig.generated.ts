@@ -1,16 +1,13 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as SwarmExternalCA from "./SwarmExternalCA.generated.js";
+import * as SwarmExternalCA from "./SwarmExternalCA.generated.ts";
 
 export class SwarmCAConfig extends Schema.Class<SwarmCAConfig>("SwarmCAConfig")(
     {
-        NodeCertExpiry: Schema.optional(EffectSchemas.Number.I64),
-        ExternalCAs: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmExternalCA.SwarmExternalCA)), {
-            nullable: true,
-        }),
+        NodeCertExpiry: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        ExternalCAs: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmExternalCA.SwarmExternalCA)))),
         SigningCACert: Schema.optional(Schema.String),
         SigningCAKey: Schema.optional(Schema.String),
-        ForceRotate: Schema.optional(EffectSchemas.Number.U64),
+        ForceRotate: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
     },
     {
         identifier: "SwarmCAConfig",

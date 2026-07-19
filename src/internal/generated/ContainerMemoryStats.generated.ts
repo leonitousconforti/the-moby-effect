@@ -1,23 +1,19 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class ContainerMemoryStats extends Schema.Class<ContainerMemoryStats>("ContainerMemoryStats")(
     {
-        usage: Schema.optional(EffectSchemas.Number.U64),
-        max_usage: Schema.optional(EffectSchemas.Number.U64),
-        stats: Schema.optionalWith(Schema.Record({ key: Schema.String, value: EffectSchemas.Number.U64 }), {
-            nullable: true,
-        }),
-        failcnt: Schema.optional(EffectSchemas.Number.U64),
-        limit: Schema.optional(EffectSchemas.Number.U64),
-        commitbytes: Schema.optional(EffectSchemas.Number.U64),
-        commitpeakbytes: Schema.optional(EffectSchemas.Number.U64),
-        privateworkingset: Schema.optional(EffectSchemas.Number.U64),
+        usage: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        max_usage: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        stats: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))))),
+        failcnt: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        limit: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        commitbytes: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        commitpeakbytes: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        privateworkingset: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
     },
     {
         identifier: "ContainerMemoryStats",
         title: "container.MemoryStats",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#MemoryStats",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#MemoryStats",
     }
 ) {}

@@ -1,15 +1,13 @@
 import * as Schema from "effect/Schema";
-import * as SwarmEndpointSpec from "./SwarmEndpointSpec.generated.js";
-import * as SwarmEndpointVirtualIP from "./SwarmEndpointVirtualIP.generated.js";
-import * as SwarmPortConfig from "./SwarmPortConfig.generated.js";
+import * as SwarmEndpointSpec from "./SwarmEndpointSpec.generated.ts";
+import * as SwarmEndpointVirtualIP from "./SwarmEndpointVirtualIP.generated.ts";
+import * as SwarmPortConfig from "./SwarmPortConfig.generated.ts";
 
 export class SwarmEndpoint extends Schema.Class<SwarmEndpoint>("SwarmEndpoint")(
     {
-        Spec: Schema.optionalWith(SwarmEndpointSpec.SwarmEndpointSpec, { nullable: true }),
-        Ports: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmPortConfig.SwarmPortConfig)), { nullable: true }),
-        VirtualIPs: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmEndpointVirtualIP.SwarmEndpointVirtualIP)), {
-            nullable: true,
-        }),
+        Spec: Schema.optional(Schema.NullOr(SwarmEndpointSpec.SwarmEndpointSpec)),
+        Ports: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmPortConfig.SwarmPortConfig)))),
+        VirtualIPs: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmEndpointVirtualIP.SwarmEndpointVirtualIP)))),
     },
     {
         identifier: "SwarmEndpoint",

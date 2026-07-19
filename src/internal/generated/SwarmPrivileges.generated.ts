@@ -1,15 +1,15 @@
 import * as Schema from "effect/Schema";
-import * as SwarmAppArmorOpts from "./SwarmAppArmorOpts.generated.js";
-import * as SwarmCredentialSpec from "./SwarmCredentialSpec.generated.js";
-import * as SwarmSELinuxContext from "./SwarmSELinuxContext.generated.js";
-import * as SwarmSeccompOpts from "./SwarmSeccompOpts.generated.js";
+import * as SwarmAppArmorOpts from "./SwarmAppArmorOpts.generated.ts";
+import * as SwarmCredentialSpec from "./SwarmCredentialSpec.generated.ts";
+import * as SwarmSELinuxContext from "./SwarmSELinuxContext.generated.ts";
+import * as SwarmSeccompOpts from "./SwarmSeccompOpts.generated.ts";
 
 export class SwarmPrivileges extends Schema.Class<SwarmPrivileges>("SwarmPrivileges")(
     {
         CredentialSpec: Schema.NullOr(SwarmCredentialSpec.SwarmCredentialSpec),
         SELinuxContext: Schema.NullOr(SwarmSELinuxContext.SwarmSELinuxContext),
-        Seccomp: Schema.optionalWith(SwarmSeccompOpts.SwarmSeccompOpts, { nullable: true }),
-        AppArmor: Schema.optionalWith(SwarmAppArmorOpts.SwarmAppArmorOpts, { nullable: true }),
+        Seccomp: Schema.optional(Schema.NullOr(SwarmSeccompOpts.SwarmSeccompOpts)),
+        AppArmor: Schema.optional(Schema.NullOr(SwarmAppArmorOpts.SwarmAppArmorOpts)),
         NoNewPrivileges: Schema.Boolean,
     },
     {

@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema";
-import * as SwarmClusterInfo from "./SwarmClusterInfo.generated.js";
-import * as SwarmJoinTokens from "./SwarmJoinTokens.generated.js";
+import * as SwarmClusterInfo from "./SwarmClusterInfo.generated.ts";
+import * as SwarmJoinTokens from "./SwarmJoinTokens.generated.ts";
 
 export class SwarmSwarm extends Schema.Class<SwarmSwarm>("SwarmSwarm")(
     {

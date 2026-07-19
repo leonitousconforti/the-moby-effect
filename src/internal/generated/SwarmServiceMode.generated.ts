@@ -1,15 +1,15 @@
 import * as Schema from "effect/Schema";
-import * as SwarmGlobalJob from "./SwarmGlobalJob.generated.js";
-import * as SwarmGlobalService from "./SwarmGlobalService.generated.js";
-import * as SwarmReplicatedJob from "./SwarmReplicatedJob.generated.js";
-import * as SwarmReplicatedService from "./SwarmReplicatedService.generated.js";
+import * as SwarmGlobalJob from "./SwarmGlobalJob.generated.ts";
+import * as SwarmGlobalService from "./SwarmGlobalService.generated.ts";
+import * as SwarmReplicatedJob from "./SwarmReplicatedJob.generated.ts";
+import * as SwarmReplicatedService from "./SwarmReplicatedService.generated.ts";
 
 export class SwarmServiceMode extends Schema.Class<SwarmServiceMode>("SwarmServiceMode")(
     {
-        Replicated: Schema.optionalWith(SwarmReplicatedService.SwarmReplicatedService, { nullable: true }),
-        Global: Schema.optionalWith(SwarmGlobalService.SwarmGlobalService, { nullable: true }),
-        ReplicatedJob: Schema.optionalWith(SwarmReplicatedJob.SwarmReplicatedJob, { nullable: true }),
-        GlobalJob: Schema.optionalWith(SwarmGlobalJob.SwarmGlobalJob, { nullable: true }),
+        Replicated: Schema.optional(Schema.NullOr(SwarmReplicatedService.SwarmReplicatedService)),
+        Global: Schema.optional(Schema.NullOr(SwarmGlobalService.SwarmGlobalService)),
+        ReplicatedJob: Schema.optional(Schema.NullOr(SwarmReplicatedJob.SwarmReplicatedJob)),
+        GlobalJob: Schema.optional(Schema.NullOr(SwarmGlobalJob.SwarmGlobalJob)),
     },
     {
         identifier: "SwarmServiceMode",

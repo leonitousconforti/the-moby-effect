@@ -1,12 +1,12 @@
 import * as Schema from "effect/Schema";
-import * as TypesPluginConfigArgs from "./TypesPluginConfigArgs.generated.js";
-import * as TypesPluginConfigInterface from "./TypesPluginConfigInterface.generated.js";
-import * as TypesPluginConfigLinux from "./TypesPluginConfigLinux.generated.js";
-import * as TypesPluginConfigNetwork from "./TypesPluginConfigNetwork.generated.js";
-import * as TypesPluginConfigRootfs from "./TypesPluginConfigRootfs.generated.js";
-import * as TypesPluginConfigUser from "./TypesPluginConfigUser.generated.js";
-import * as TypesPluginEnv from "./TypesPluginEnv.generated.js";
-import * as TypesPluginMount from "./TypesPluginMount.generated.js";
+import * as TypesPluginConfigArgs from "./TypesPluginConfigArgs.generated.ts";
+import * as TypesPluginConfigInterface from "./TypesPluginConfigInterface.generated.ts";
+import * as TypesPluginConfigLinux from "./TypesPluginConfigLinux.generated.ts";
+import * as TypesPluginConfigNetwork from "./TypesPluginConfigNetwork.generated.ts";
+import * as TypesPluginConfigRootfs from "./TypesPluginConfigRootfs.generated.ts";
+import * as TypesPluginConfigUser from "./TypesPluginConfigUser.generated.ts";
+import * as TypesPluginEnv from "./TypesPluginEnv.generated.ts";
+import * as TypesPluginMount from "./TypesPluginMount.generated.ts";
 
 export class TypesPluginConfig extends Schema.Class<TypesPluginConfig>("TypesPluginConfig")(
     {
@@ -23,9 +23,9 @@ export class TypesPluginConfig extends Schema.Class<TypesPluginConfig>("TypesPlu
         Network: Schema.NullOr(TypesPluginConfigNetwork.TypesPluginConfigNetwork),
         PidHost: Schema.Boolean,
         PropagatedMount: Schema.String,
-        User: Schema.optionalWith(TypesPluginConfigUser.TypesPluginConfigUser, { nullable: true }),
+        User: Schema.optional(Schema.NullOr(TypesPluginConfigUser.TypesPluginConfigUser)),
         WorkDir: Schema.String,
-        rootfs: Schema.optionalWith(TypesPluginConfigRootfs.TypesPluginConfigRootfs, { nullable: true }),
+        rootfs: Schema.optional(Schema.NullOr(TypesPluginConfigRootfs.TypesPluginConfigRootfs)),
     },
     {
         identifier: "TypesPluginConfig",

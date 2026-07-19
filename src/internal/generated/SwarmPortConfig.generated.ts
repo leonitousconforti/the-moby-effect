@@ -1,13 +1,12 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmPortConfig extends Schema.Class<SwarmPortConfig>("SwarmPortConfig")(
     {
         Name: Schema.optional(Schema.String),
-        Protocol: Schema.optional(Schema.Literal("tcp", "udp", "sctp")),
-        TargetPort: Schema.optional(EffectSchemas.Number.U32),
-        PublishedPort: Schema.optional(EffectSchemas.Number.U32),
-        PublishMode: Schema.optional(Schema.Literal("ingress", "host")),
+        Protocol: Schema.optional(Schema.Literals(["tcp", "udp", "sctp"])),
+        TargetPort: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
+        PublishedPort: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
+        PublishMode: Schema.optional(Schema.Literals(["ingress", "host"])),
     },
     {
         identifier: "SwarmPortConfig",

@@ -1,11 +1,11 @@
 import * as Schema from "effect/Schema";
-import * as SwarmDriver from "./SwarmDriver.generated.js";
-import * as SwarmIPAMConfig from "./SwarmIPAMConfig.generated.js";
+import * as SwarmDriver from "./SwarmDriver.generated.ts";
+import * as SwarmIPAMConfig from "./SwarmIPAMConfig.generated.ts";
 
 export class SwarmIPAMOptions extends Schema.Class<SwarmIPAMOptions>("SwarmIPAMOptions")(
     {
-        Driver: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
-        Configs: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmIPAMConfig.SwarmIPAMConfig)), { nullable: true }),
+        Driver: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
+        Configs: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmIPAMConfig.SwarmIPAMConfig)))),
     },
     {
         identifier: "SwarmIPAMOptions",

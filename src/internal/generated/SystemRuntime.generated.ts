@@ -3,9 +3,9 @@ import * as Schema from "effect/Schema";
 export class SystemRuntime extends Schema.Class<SystemRuntime>("SystemRuntime")(
     {
         path: Schema.optional(Schema.String),
-        runtimeArgs: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        runtimeArgs: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         runtimeType: Schema.optional(Schema.String),
-        options: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.Object }), { nullable: true }),
+        options: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.ObjectKeyword))),
     },
     {
         identifier: "SystemRuntime",

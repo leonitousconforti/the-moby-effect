@@ -8,7 +8,6 @@ export class SwarmPluginDescription extends Schema.Class<SwarmPluginDescription>
     {
         identifier: "SwarmPluginDescription",
         title: "swarm.PluginDescription",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#PluginDescription",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#PluginDescription",
     }
 ) {}

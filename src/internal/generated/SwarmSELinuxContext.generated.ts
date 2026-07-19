@@ -11,7 +11,6 @@ export class SwarmSELinuxContext extends Schema.Class<SwarmSELinuxContext>("Swar
     {
         identifier: "SwarmSELinuxContext",
         title: "swarm.SELinuxContext",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#SELinuxContext",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#SELinuxContext",
     }
 ) {}

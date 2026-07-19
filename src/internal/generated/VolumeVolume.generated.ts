@@ -1,19 +1,20 @@
 import * as Schema from "effect/Schema";
-import * as VolumeClusterVolume from "./VolumeClusterVolume.generated.js";
-import * as VolumeUsageData from "./VolumeUsageData.generated.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
+import * as VolumeClusterVolume from "./VolumeClusterVolume.generated.ts";
+import * as VolumeUsageData from "./VolumeUsageData.generated.ts";
 
 export class VolumeVolume extends Schema.Class<VolumeVolume>("VolumeVolume")(
     {
-        ClusterVolume: Schema.optionalWith(VolumeClusterVolume.VolumeClusterVolume, { nullable: true }),
-        CreatedAt: Schema.optional(Schema.DateFromString),
+        ClusterVolume: Schema.optional(Schema.NullOr(VolumeClusterVolume.VolumeClusterVolume)),
+        CreatedAt: Schema.optional(Schema.String),
         Driver: Schema.String,
-        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Mountpoint: Schema.String,
-        Name: Schema.String,
-        Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
+        Name: MobyIdentifiers.VolumeIdentifier,
+        Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Scope: Schema.String,
-        Status: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.Object }), { nullable: true }),
-        UsageData: Schema.optionalWith(VolumeUsageData.VolumeUsageData, { nullable: true }),
+        Status: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.ObjectKeyword))),
+        UsageData: Schema.optional(Schema.NullOr(VolumeUsageData.VolumeUsageData)),
     },
     {
         identifier: "VolumeVolume",

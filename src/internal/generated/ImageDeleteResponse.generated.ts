@@ -8,7 +8,6 @@ export class ImageDeleteResponse extends Schema.Class<ImageDeleteResponse>("Imag
     {
         identifier: "ImageDeleteResponse",
         title: "image.DeleteResponse",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image#DeleteResponse",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image#DeleteResponse",
     }
 ) {}

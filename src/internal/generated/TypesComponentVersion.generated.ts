@@ -4,7 +4,7 @@ export class TypesComponentVersion extends Schema.Class<TypesComponentVersion>("
     {
         Name: Schema.String,
         Version: Schema.String,
-        Details: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        Details: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
     },
     {
         identifier: "TypesComponentVersion",

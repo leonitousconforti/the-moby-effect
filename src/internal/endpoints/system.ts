@@ -123,15 +123,13 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
         const ping_ = () => Effect.mapError(client.ping(), SystemsError("ping"));
         const pingHead_ = () => Effect.mapError(client.pingHead(), SystemsError("pingHead"));
         const events_ = (options?: Options<"events">) =>
-            client
-                .events({ query: { ...options } })
-                .pipe(
-                    Effect.map(Stream.mapError(SystemsError("events"))),
-                    Effect.map(Stream.decodeText()),
-                    Effect.map(Stream.splitLines),
-                    Effect.map(Stream.mapEffect((line) => Schema.decodeEffect(Schema.UnknownFromJsonString)(line))),
-                    Effect.mapError(SystemsError("events"))
-                );
+            client.events({ query: { ...options } }).pipe(
+                Stream.unwrap,
+                Stream.decodeText(),
+                Stream.splitLines,
+                Stream.mapEffect((line) => Schema.decodeEffect(Schema.UnknownFromJsonString)(line)),
+                Stream.mapError(SystemsError("events"))
+            );
         const dataUsage_ = (params?: Options<"dataUsage">) =>
             Effect.mapError(client.dataUsage({ query: { ...params } }), SystemsError("dataUsage"));
 

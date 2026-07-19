@@ -1,12 +1,11 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class ContainerCPUUsage extends Schema.Class<ContainerCPUUsage>("ContainerCPUUsage")(
     {
-        total_usage: EffectSchemas.Number.U64,
-        percpu_usage: Schema.optionalWith(Schema.Array(EffectSchemas.Number.U64), { nullable: true }),
-        usage_in_kernelmode: EffectSchemas.Number.U64,
-        usage_in_usermode: EffectSchemas.Number.U64,
+        total_usage: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        percpu_usage: Schema.optional(Schema.NullOr(Schema.Array(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))))),
+        usage_in_kernelmode: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        usage_in_usermode: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
     },
     {
         identifier: "ContainerCPUUsage",

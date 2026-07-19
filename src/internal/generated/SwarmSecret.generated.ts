@@ -1,10 +1,11 @@
 import * as Schema from "effect/Schema";
-import * as SwarmMeta from "./SwarmMeta.generated.js";
-import * as SwarmSecretSpec from "./SwarmSecretSpec.generated.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
+import * as SwarmMeta from "./SwarmMeta.generated.ts";
+import * as SwarmSecretSpec from "./SwarmSecretSpec.generated.ts";
 
 export class SwarmSecret extends Schema.Class<SwarmSecret>("SwarmSecret")(
     {
-        ID: Schema.String,
+        ID: MobyIdentifiers.SecretIdentifier,
         ...SwarmMeta.SwarmMeta.fields,
         Spec: Schema.NullOr(SwarmSecretSpec.SwarmSecretSpec),
     },

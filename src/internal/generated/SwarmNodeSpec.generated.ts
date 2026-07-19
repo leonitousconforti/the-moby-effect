@@ -1,11 +1,11 @@
 import * as Schema from "effect/Schema";
-import * as SwarmAnnotations from "./SwarmAnnotations.generated.js";
+import * as SwarmAnnotations from "./SwarmAnnotations.generated.ts";
 
 export class SwarmNodeSpec extends Schema.Class<SwarmNodeSpec>("SwarmNodeSpec")(
     {
         ...SwarmAnnotations.SwarmAnnotations.fields,
-        Role: Schema.optional(Schema.Literal("worker", "manager")),
-        Availability: Schema.optional(Schema.Literal("active", "pause", "drain")),
+        Role: Schema.optional(Schema.Literals(["worker", "manager"])),
+        Availability: Schema.optional(Schema.Literals(["active", "pause", "drain"])),
     },
     {
         identifier: "SwarmNodeSpec",

@@ -2,7 +2,7 @@ import * as Schema from "effect/Schema";
 
 export class SwarmNodeStatus extends Schema.Class<SwarmNodeStatus>("SwarmNodeStatus")(
     {
-        State: Schema.optional(Schema.Literal("unknown", "down", "ready", "disconnected")),
+        State: Schema.optional(Schema.Literals(["unknown", "down", "ready", "disconnected"])),
         Message: Schema.optional(Schema.String),
         Addr: Schema.optional(Schema.String),
     },

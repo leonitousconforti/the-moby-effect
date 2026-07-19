@@ -1,14 +1,13 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as ContainerCPUUsage from "./ContainerCPUUsage.generated.js";
-import * as ContainerThrottlingData from "./ContainerThrottlingData.generated.js";
+import * as ContainerCPUUsage from "./ContainerCPUUsage.generated.ts";
+import * as ContainerThrottlingData from "./ContainerThrottlingData.generated.ts";
 
 export class ContainerCPUStats extends Schema.Class<ContainerCPUStats>("ContainerCPUStats")(
     {
         cpu_usage: Schema.NullOr(ContainerCPUUsage.ContainerCPUUsage),
-        system_cpu_usage: Schema.optional(EffectSchemas.Number.U64),
-        online_cpus: Schema.optional(EffectSchemas.Number.U32),
-        throttling_data: Schema.optionalWith(ContainerThrottlingData.ContainerThrottlingData, { nullable: true }),
+        system_cpu_usage: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        online_cpus: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
+        throttling_data: Schema.optional(Schema.NullOr(ContainerThrottlingData.ContainerThrottlingData)),
     },
     {
         identifier: "ContainerCPUStats",

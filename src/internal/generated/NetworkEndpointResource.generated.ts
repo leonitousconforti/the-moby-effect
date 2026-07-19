@@ -11,7 +11,6 @@ export class NetworkEndpointResource extends Schema.Class<NetworkEndpointResourc
     {
         identifier: "NetworkEndpointResource",
         title: "network.EndpointResource",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#EndpointResource",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#EndpointResource",
     }
 ) {}

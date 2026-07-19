@@ -1,47 +1,42 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as MountMount from "./MountMount.generated.js";
-import * as SwarmConfigReference from "./SwarmConfigReference.generated.js";
-import * as SwarmDNSConfig from "./SwarmDNSConfig.generated.js";
-import * as SwarmPrivileges from "./SwarmPrivileges.generated.js";
-import * as SwarmSecretReference from "./SwarmSecretReference.generated.js";
-import * as UnitsUlimit from "./UnitsUlimit.generated.js";
-import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.js";
+import * as MountMount from "./MountMount.generated.ts";
+import * as SwarmConfigReference from "./SwarmConfigReference.generated.ts";
+import * as SwarmDNSConfig from "./SwarmDNSConfig.generated.ts";
+import * as SwarmPrivileges from "./SwarmPrivileges.generated.ts";
+import * as SwarmSecretReference from "./SwarmSecretReference.generated.ts";
+import * as UnitsUlimit from "./UnitsUlimit.generated.ts";
+import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.ts";
 
 export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmContainerSpec")(
     {
         Image: Schema.optional(Schema.String),
-        Labels: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
-        Command: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Args: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+        Command: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        Args: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         Hostname: Schema.optional(Schema.String),
-        Env: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        Env: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         Dir: Schema.optional(Schema.String),
         User: Schema.optional(Schema.String),
-        Groups: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Privileges: Schema.optionalWith(SwarmPrivileges.SwarmPrivileges, { nullable: true }),
-        Init: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        Groups: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        Privileges: Schema.optional(Schema.NullOr(SwarmPrivileges.SwarmPrivileges)),
+        Init: Schema.optional(Schema.NullOr(Schema.Boolean)),
         StopSignal: Schema.optional(Schema.String),
         TTY: Schema.optional(Schema.Boolean),
         OpenStdin: Schema.optional(Schema.Boolean),
         ReadOnly: Schema.optional(Schema.Boolean),
-        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MountMount.MountMount)), { nullable: true }),
-        StopGracePeriod: Schema.optionalWith(EffectSchemas.Number.I64, { nullable: true }),
-        Healthcheck: Schema.optionalWith(V1HealthcheckConfig.V1HealthcheckConfig, { nullable: true }),
-        Hosts: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        DNSConfig: Schema.optionalWith(SwarmDNSConfig.SwarmDNSConfig, { nullable: true }),
-        Secrets: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmSecretReference.SwarmSecretReference)), {
-            nullable: true,
-        }),
-        Configs: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmConfigReference.SwarmConfigReference)), {
-            nullable: true,
-        }),
-        Isolation: Schema.optional(Schema.Literal("", "default", "process", "hyperv")),
-        Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
-        CapabilityAdd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        CapabilityDrop: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Ulimits: Schema.optionalWith(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)), { nullable: true }),
-        OomScoreAdj: Schema.optional(EffectSchemas.Number.I64),
+        Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(MountMount.MountMount)))),
+        StopGracePeriod: Schema.optional(Schema.NullOr(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })))),
+        Healthcheck: Schema.optional(Schema.NullOr(V1HealthcheckConfig.V1HealthcheckConfig)),
+        Hosts: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        DNSConfig: Schema.optional(Schema.NullOr(SwarmDNSConfig.SwarmDNSConfig)),
+        Secrets: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmSecretReference.SwarmSecretReference)))),
+        Configs: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmConfigReference.SwarmConfigReference)))),
+        Isolation: Schema.optional(Schema.Literals(["", "default", "process", "hyperv"])),
+        Sysctls: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+        CapabilityAdd: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        CapabilityDrop: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        Ulimits: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)))),
+        OomScoreAdj: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
     },
     {
         identifier: "SwarmContainerSpec",

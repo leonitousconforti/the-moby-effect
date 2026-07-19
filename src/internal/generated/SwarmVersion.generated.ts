@@ -1,9 +1,8 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmVersion extends Schema.Class<SwarmVersion>("SwarmVersion")(
     {
-        Index: Schema.optional(EffectSchemas.Number.U64),
+        Index: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
     },
     {
         identifier: "SwarmVersion",

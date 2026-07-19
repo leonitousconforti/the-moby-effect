@@ -1,5 +1,5 @@
 import * as Schema from "effect/Schema";
-import * as SwarmSpreadOver from "./SwarmSpreadOver.generated.js";
+import * as SwarmSpreadOver from "./SwarmSpreadOver.generated.ts";
 
 export class SwarmPlacementPreference extends Schema.Class<SwarmPlacementPreference>("SwarmPlacementPreference")(
     {
@@ -8,7 +8,6 @@ export class SwarmPlacementPreference extends Schema.Class<SwarmPlacementPrefere
     {
         identifier: "SwarmPlacementPreference",
         title: "swarm.PlacementPreference",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#PlacementPreference",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#PlacementPreference",
     }
 ) {}

@@ -1,13 +1,12 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmRaftConfig extends Schema.Class<SwarmRaftConfig>("SwarmRaftConfig")(
     {
-        SnapshotInterval: Schema.optional(EffectSchemas.Number.U64),
-        KeepOldSnapshots: Schema.optionalWith(EffectSchemas.Number.U64, { nullable: true }),
-        LogEntriesForSlowFollowers: Schema.optional(EffectSchemas.Number.U64),
-        ElectionTick: EffectSchemas.Number.I64,
-        HeartbeatTick: EffectSchemas.Number.I64,
+        SnapshotInterval: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        KeepOldSnapshots: Schema.optional(Schema.NullOr(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })))),
+        LogEntriesForSlowFollowers: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        ElectionTick: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        HeartbeatTick: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
     },
     {
         identifier: "SwarmRaftConfig",

@@ -1,10 +1,10 @@
 import * as Schema from "effect/Schema";
-import * as SwarmPortConfig from "./SwarmPortConfig.generated.js";
+import * as SwarmPortConfig from "./SwarmPortConfig.generated.ts";
 
 export class SwarmEndpointSpec extends Schema.Class<SwarmEndpointSpec>("SwarmEndpointSpec")(
     {
-        Mode: Schema.optional(Schema.Literal("vip", "dnsrr")),
-        Ports: Schema.optionalWith(Schema.Array(Schema.NullOr(SwarmPortConfig.SwarmPortConfig)), { nullable: true }),
+        Mode: Schema.optional(Schema.Literals(["vip", "dnsrr"])),
+        Ports: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmPortConfig.SwarmPortConfig)))),
     },
     {
         identifier: "SwarmEndpointSpec",

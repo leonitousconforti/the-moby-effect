@@ -1,12 +1,12 @@
 import * as Schema from "effect/Schema";
-import * as MountDriver from "./MountDriver.generated.js";
+import * as MountDriver from "./MountDriver.generated.ts";
 
 export class MountVolumeOptions extends Schema.Class<MountVolumeOptions>("MountVolumeOptions")(
     {
         NoCopy: Schema.optional(Schema.Boolean),
-        Labels: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         Subpath: Schema.optional(Schema.String),
-        DriverConfig: Schema.optionalWith(MountDriver.MountDriver, { nullable: true }),
+        DriverConfig: Schema.optional(Schema.NullOr(MountDriver.MountDriver)),
     },
     {
         identifier: "MountVolumeOptions",

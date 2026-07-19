@@ -1,9 +1,9 @@
 import * as Schema from "effect/Schema";
-import * as SwarmDriver from "./SwarmDriver.generated.js";
+import * as SwarmDriver from "./SwarmDriver.generated.ts";
 
 export class SwarmTaskDefaults extends Schema.Class<SwarmTaskDefaults>("SwarmTaskDefaults")(
     {
-        LogDriver: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
+        LogDriver: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
     },
     {
         identifier: "SwarmTaskDefaults",

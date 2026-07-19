@@ -3,15 +3,13 @@ import * as Schema from "effect/Schema";
 export class V1ImageConfig extends Schema.Class<V1ImageConfig>("V1ImageConfig")(
     {
         User: Schema.optional(Schema.String),
-        ExposedPorts: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.Object }), {
-            nullable: true,
-        }),
-        Env: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Entrypoint: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Cmd: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
-        Volumes: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.Object }), { nullable: true }),
+        ExposedPorts: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.ObjectKeyword))),
+        Env: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        Entrypoint: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        Cmd: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
+        Volumes: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.ObjectKeyword))),
         WorkingDir: Schema.optional(Schema.String),
-        Labels: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        Labels: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         StopSignal: Schema.optional(Schema.String),
         ArgsEscaped: Schema.optional(Schema.Boolean),
     },

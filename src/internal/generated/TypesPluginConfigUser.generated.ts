@@ -1,10 +1,9 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class TypesPluginConfigUser extends Schema.Class<TypesPluginConfigUser>("TypesPluginConfigUser")(
     {
-        GID: Schema.optional(EffectSchemas.Number.U32),
-        UID: Schema.optional(EffectSchemas.Number.U32),
+        GID: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
+        UID: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
     },
     {
         identifier: "TypesPluginConfigUser",

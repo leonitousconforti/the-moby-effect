@@ -8,7 +8,6 @@ export class RegistryAuthenticateOKBody extends Schema.Class<RegistryAuthenticat
     {
         identifier: "RegistryAuthenticateOKBody",
         title: "registry.AuthenticateOKBody",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/registry#AuthenticateOKBody",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/registry#AuthenticateOKBody",
     }
 ) {}

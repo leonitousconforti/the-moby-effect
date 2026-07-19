@@ -1,12 +1,11 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmUpdateConfig extends Schema.Class<SwarmUpdateConfig>("SwarmUpdateConfig")(
     {
-        Parallelism: EffectSchemas.Number.U64,
-        Delay: Schema.optional(EffectSchemas.Number.I64),
+        Parallelism: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        Delay: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
         FailureAction: Schema.optional(Schema.String),
-        Monitor: Schema.optional(EffectSchemas.Number.I64),
+        Monitor: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
         MaxFailureRatio: Schema.Number,
         Order: Schema.String,
     },

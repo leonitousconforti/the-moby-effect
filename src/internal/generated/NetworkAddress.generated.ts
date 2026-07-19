@@ -1,10 +1,9 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class NetworkAddress extends Schema.Class<NetworkAddress>("NetworkAddress")(
     {
         Addr: Schema.String,
-        PrefixLen: EffectSchemas.Number.I64,
+        PrefixLen: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
     },
     {
         identifier: "NetworkAddress",

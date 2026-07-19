@@ -1,10 +1,9 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class BlkiodevThrottleDevice extends Schema.Class<BlkiodevThrottleDevice>("BlkiodevThrottleDevice")(
     {
         Path: Schema.String,
-        Rate: EffectSchemas.Number.U64,
+        Rate: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
     },
     {
         identifier: "BlkiodevThrottleDevice",

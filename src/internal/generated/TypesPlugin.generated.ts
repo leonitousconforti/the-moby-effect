@@ -1,7 +1,7 @@
 import * as Schema from "effect/Schema";
 import * as MobyIdentifiers from "../schemas/id.ts";
-import * as TypesPluginConfig from "./TypesPluginConfig.generated.js";
-import * as TypesPluginSettings from "./TypesPluginSettings.generated.js";
+import * as TypesPluginConfig from "./TypesPluginConfig.generated.ts";
+import * as TypesPluginSettings from "./TypesPluginSettings.generated.ts";
 
 export class TypesPlugin extends Schema.Class<TypesPlugin>("TypesPlugin")(
     {

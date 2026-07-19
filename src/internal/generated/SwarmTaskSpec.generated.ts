@@ -1,31 +1,25 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as RuntimePluginSpec from "./RuntimePluginSpec.generated.js";
-import * as SwarmContainerSpec from "./SwarmContainerSpec.generated.js";
-import * as SwarmDriver from "./SwarmDriver.generated.js";
-import * as SwarmNetworkAttachmentConfig from "./SwarmNetworkAttachmentConfig.generated.js";
-import * as SwarmNetworkAttachmentSpec from "./SwarmNetworkAttachmentSpec.generated.js";
-import * as SwarmPlacement from "./SwarmPlacement.generated.js";
-import * as SwarmResourceRequirements from "./SwarmResourceRequirements.generated.js";
-import * as SwarmRestartPolicy from "./SwarmRestartPolicy.generated.js";
+import * as RuntimePluginSpec from "./RuntimePluginSpec.generated.ts";
+import * as SwarmContainerSpec from "./SwarmContainerSpec.generated.ts";
+import * as SwarmDriver from "./SwarmDriver.generated.ts";
+import * as SwarmNetworkAttachmentConfig from "./SwarmNetworkAttachmentConfig.generated.ts";
+import * as SwarmNetworkAttachmentSpec from "./SwarmNetworkAttachmentSpec.generated.ts";
+import * as SwarmPlacement from "./SwarmPlacement.generated.ts";
+import * as SwarmResourceRequirements from "./SwarmResourceRequirements.generated.ts";
+import * as SwarmRestartPolicy from "./SwarmRestartPolicy.generated.ts";
 
 export class SwarmTaskSpec extends Schema.Class<SwarmTaskSpec>("SwarmTaskSpec")(
     {
-        ContainerSpec: Schema.optionalWith(SwarmContainerSpec.SwarmContainerSpec, { nullable: true }),
-        PluginSpec: Schema.optionalWith(RuntimePluginSpec.RuntimePluginSpec, { nullable: true }),
-        NetworkAttachmentSpec: Schema.optionalWith(SwarmNetworkAttachmentSpec.SwarmNetworkAttachmentSpec, {
-            nullable: true,
-        }),
-        Resources: Schema.optionalWith(SwarmResourceRequirements.SwarmResourceRequirements, { nullable: true }),
-        RestartPolicy: Schema.optionalWith(SwarmRestartPolicy.SwarmRestartPolicy, { nullable: true }),
-        Placement: Schema.optionalWith(SwarmPlacement.SwarmPlacement, { nullable: true }),
-        Networks: Schema.optionalWith(
-            Schema.Array(Schema.NullOr(SwarmNetworkAttachmentConfig.SwarmNetworkAttachmentConfig)),
-            { nullable: true }
-        ),
-        LogDriver: Schema.optionalWith(SwarmDriver.SwarmDriver, { nullable: true }),
-        ForceUpdate: EffectSchemas.Number.U64,
-        Runtime: Schema.optional(Schema.Literal("container", "plugin", "attachment")),
+        ContainerSpec: Schema.optional(Schema.NullOr(SwarmContainerSpec.SwarmContainerSpec)),
+        PluginSpec: Schema.optional(Schema.NullOr(RuntimePluginSpec.RuntimePluginSpec)),
+        NetworkAttachmentSpec: Schema.optional(Schema.NullOr(SwarmNetworkAttachmentSpec.SwarmNetworkAttachmentSpec)),
+        Resources: Schema.optional(Schema.NullOr(SwarmResourceRequirements.SwarmResourceRequirements)),
+        RestartPolicy: Schema.optional(Schema.NullOr(SwarmRestartPolicy.SwarmRestartPolicy)),
+        Placement: Schema.optional(Schema.NullOr(SwarmPlacement.SwarmPlacement)),
+        Networks: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmNetworkAttachmentConfig.SwarmNetworkAttachmentConfig)))),
+        LogDriver: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
+        ForceUpdate: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        Runtime: Schema.optional(Schema.Literals(["container", "plugin", "attachment"])),
     },
     {
         identifier: "SwarmTaskSpec",

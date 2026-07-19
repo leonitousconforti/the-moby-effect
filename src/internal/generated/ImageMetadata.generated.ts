@@ -2,7 +2,7 @@ import * as Schema from "effect/Schema";
 
 export class ImageMetadata extends Schema.Class<ImageMetadata>("ImageMetadata")(
     {
-        LastTagTime: Schema.optionalWith(Schema.DateFromString, { nullable: true }),
+        LastTagTime: Schema.optional(Schema.NullOr(Schema.DateFromString)),
     },
     {
         identifier: "ImageMetadata",

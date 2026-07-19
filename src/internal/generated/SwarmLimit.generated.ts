@@ -1,11 +1,10 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
 export class SwarmLimit extends Schema.Class<SwarmLimit>("SwarmLimit")(
     {
-        NanoCPUs: Schema.optional(EffectSchemas.Number.I64),
-        MemoryBytes: Schema.optional(EffectSchemas.Number.I64),
-        Pids: Schema.optional(EffectSchemas.Number.I64),
+        NanoCPUs: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        MemoryBytes: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        Pids: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
     },
     {
         identifier: "SwarmLimit",

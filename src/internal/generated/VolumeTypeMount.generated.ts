@@ -3,7 +3,7 @@ import * as Schema from "effect/Schema";
 export class VolumeTypeMount extends Schema.Class<VolumeTypeMount>("VolumeTypeMount")(
     {
         FsType: Schema.optional(Schema.String),
-        MountFlags: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        MountFlags: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
     },
     {
         identifier: "VolumeTypeMount",

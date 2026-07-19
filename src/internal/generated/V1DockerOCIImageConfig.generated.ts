@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema";
-import * as V1DockerOCIImageConfigExt from "./V1DockerOCIImageConfigExt.generated.js";
-import * as V1ImageConfig from "./V1ImageConfig.generated.js";
+import * as V1DockerOCIImageConfigExt from "./V1DockerOCIImageConfigExt.generated.ts";
+import * as V1ImageConfig from "./V1ImageConfig.generated.ts";
 
 export class V1DockerOCIImageConfig extends Schema.Class<V1DockerOCIImageConfig>("V1DockerOCIImageConfig")(
     {

@@ -1,17 +1,13 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
 
-export class SwarmDiscreteGenericResource extends Schema.Class<SwarmDiscreteGenericResource>(
-    "SwarmDiscreteGenericResource"
-)(
+export class SwarmDiscreteGenericResource extends Schema.Class<SwarmDiscreteGenericResource>("SwarmDiscreteGenericResource")(
     {
         Kind: Schema.optional(Schema.String),
-        Value: Schema.optional(EffectSchemas.Number.I64),
+        Value: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
     },
     {
         identifier: "SwarmDiscreteGenericResource",
         title: "swarm.DiscreteGenericResource",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#DiscreteGenericResource",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#DiscreteGenericResource",
     }
 ) {}

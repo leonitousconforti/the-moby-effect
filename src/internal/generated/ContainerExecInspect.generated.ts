@@ -1,18 +1,17 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
+import * as MobyIdentifiers from "../schemas/id.ts";
 
 export class ContainerExecInspect extends Schema.Class<ContainerExecInspect>("ContainerExecInspect")(
     {
-        ID: Schema.String,
-        ContainerID: Schema.String,
+        ID: MobyIdentifiers.ExecIdentifier,
+        ContainerID: MobyIdentifiers.ContainerIdentifier,
         Running: Schema.Boolean,
-        ExitCode: EffectSchemas.Number.I64,
-        Pid: EffectSchemas.Number.I64,
+        ExitCode: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Pid: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
     },
     {
         identifier: "ContainerExecInspect",
         title: "container.ExecInspect",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#ExecInspect",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#ExecInspect",
     }
 ) {}

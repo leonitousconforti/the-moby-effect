@@ -3,7 +3,7 @@ import * as Schema from "effect/Schema";
 export class ImageRootFS extends Schema.Class<ImageRootFS>("ImageRootFS")(
     {
         Type: Schema.optional(Schema.String),
-        Layers: Schema.optionalWith(Schema.Array(Schema.String), { nullable: true }),
+        Layers: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
     },
     {
         identifier: "ImageRootFS",

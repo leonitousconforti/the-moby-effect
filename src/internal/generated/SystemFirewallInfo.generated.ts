@@ -3,9 +3,7 @@ import * as Schema from "effect/Schema";
 export class SystemFirewallInfo extends Schema.Class<SystemFirewallInfo>("SystemFirewallInfo")(
     {
         Driver: Schema.String,
-        Info: Schema.optionalWith(Schema.Array(Schema.Array(Schema.String).pipe(Schema.itemsCount(2))), {
-            nullable: true,
-        }),
+        Info: Schema.optional(Schema.NullOr(Schema.Array(Schema.Array(Schema.String).pipe(Schema.check(Schema.isLengthBetween(2, 2)))))),
     },
     {
         identifier: "SystemFirewallInfo",

@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema";
-import * as TypesPluginDevice from "./TypesPluginDevice.generated.js";
-import * as TypesPluginMount from "./TypesPluginMount.generated.js";
+import * as TypesPluginDevice from "./TypesPluginDevice.generated.ts";
+import * as TypesPluginMount from "./TypesPluginMount.generated.ts";
 
 export class TypesPluginSettings extends Schema.Class<TypesPluginSettings>("TypesPluginSettings")(
     {

@@ -8,7 +8,6 @@ export class SwarmNamedGenericResource extends Schema.Class<SwarmNamedGenericRes
     {
         identifier: "SwarmNamedGenericResource",
         title: "swarm.NamedGenericResource",
-        documentation:
-            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#NamedGenericResource",
+        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#NamedGenericResource",
     }
 ) {}
