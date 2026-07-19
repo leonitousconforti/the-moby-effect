@@ -3,7 +3,7 @@ import * as Schema from "effect/Schema";
 export class SwarmSeccompOpts extends Schema.Class<SwarmSeccompOpts>("SwarmSeccompOpts")(
     {
         Mode: Schema.optional(Schema.Literals(["default", "unconfined", "custom"])),
-        Profile: Schema.optional(Schema.NullOr(Schema.Array(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 8 - 1 }))))),
+        Profile: Schema.optional(Schema.NullOr(Schema.Uint8ArrayFromBase64)),
     },
     {
         identifier: "SwarmSeccompOpts",

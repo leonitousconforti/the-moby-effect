@@ -1,11 +1,10 @@
 import * as Schema from "effect/Schema";
-import * as TypesPluginInterfaceType from "./TypesPluginInterfaceType.generated.ts";
 
 export class TypesPluginConfigInterface extends Schema.Class<TypesPluginConfigInterface>("TypesPluginConfigInterface")(
     {
         ProtocolScheme: Schema.optional(Schema.String),
         Socket: Schema.String,
-        Types: Schema.NullOr(Schema.Array(Schema.NullOr(TypesPluginInterfaceType.TypesPluginInterfaceType))),
+        Types: Schema.NullOr(Schema.Array(Schema.NullOr(Schema.TemplateLiteral([Schema.String, ".", Schema.String, "/", Schema.String])))),
     },
     {
         identifier: "TypesPluginConfigInterface",

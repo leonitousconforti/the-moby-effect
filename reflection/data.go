@@ -32,6 +32,8 @@ var typesToReplace = map[reflect.Type]TSType{
 	reflect.TypeOf(json.RawMessage{}): {StrRepresentation: "Schema.Unknown", Nullable: false},
 	// container.IpcMode wire values include dynamic forms like "container:<id>", so const-based literals would reject them
 	reflect.TypeOf(container.IpcMode("")): {StrRepresentation: "Schema.String", Nullable: false},
+	// types.PluginInterfaceType has a custom MarshalJSON emitting "prefix.capability/version"
+	reflect.TypeOf(types.PluginInterfaceType{}): {StrRepresentation: `Schema.TemplateLiteral([Schema.String, ".", Schema.String, "/", Schema.String])`, Nullable: false},
 	// registry.NetIPNet marshals itself as a CIDR string (custom MarshalJSON)
 	reflect.TypeOf(registry.NetIPNet{}): {StrRepresentation: "EffectSchemas.Internet.CidrBlockFromString", Nullable: false},
 	reflect.TypeOf(nat.Port("")):        {StrRepresentation: "PortSchemas.PortWithMaybeProtocol", Nullable: false},
@@ -71,6 +73,16 @@ var fieldsToReplace = map[string]TSType{
 	"swarm.NodeCSIInfo.NodeID":                {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
 	"volume.Volume.Name":                      {StrRepresentation: "MobyIdentifiers.VolumeIdentifier", Nullable: false},
 	"volume.PublishStatus.NodeID":             {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
+
+	// Fields whose Go type is string/[]byte but whose wire content is richer:
+	// timestamps kept as RFC3339 strings and []byte marshaled as base64.
+	"volume.Volume.CreatedAt":             {StrRepresentation: "Schema.DateFromString", Nullable: false},
+	"swarm.ConfigSpec.Data":               {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"swarm.SecretSpec.Data":               {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"swarm.TLSInfo.CertIssuerSubject":     {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
+	"swarm.TLSInfo.CertIssuerPublicKey":   {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
+	"swarm.SeccompOpts.Profile":           {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"v1.Descriptor.Data":                  {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
 }
 
 var dockerTypesToReflect = []reflect.Type{

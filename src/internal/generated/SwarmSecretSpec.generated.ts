@@ -5,7 +5,7 @@ import * as SwarmDriver from "./SwarmDriver.generated.ts";
 export class SwarmSecretSpec extends Schema.Class<SwarmSecretSpec>("SwarmSecretSpec")(
     {
         ...SwarmAnnotations.SwarmAnnotations.fields,
-        Data: Schema.optional(Schema.NullOr(Schema.Array(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 8 - 1 }))))),
+        Data: Schema.optional(Schema.NullOr(Schema.Uint8ArrayFromBase64)),
         Driver: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
         Templating: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
     },

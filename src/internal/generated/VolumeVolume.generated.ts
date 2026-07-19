@@ -6,7 +6,7 @@ import * as VolumeUsageData from "./VolumeUsageData.generated.ts";
 export class VolumeVolume extends Schema.Class<VolumeVolume>("VolumeVolume")(
     {
         ClusterVolume: Schema.optional(Schema.NullOr(VolumeClusterVolume.VolumeClusterVolume)),
-        CreatedAt: Schema.optional(Schema.String),
+        CreatedAt: Schema.optional(Schema.DateFromString),
         Driver: Schema.String,
         Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Mountpoint: Schema.String,
