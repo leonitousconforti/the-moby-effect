@@ -10,10 +10,15 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
 import {
-    RegistryAuthenticateOKBody as AuthResponse, TypesDiskUsage as DiskUsage, RegistryAuthConfig, SystemInfo, TypesVersion as SystemVersion, } from "../generated/index.js";
+    RegistryAuthenticateOKBody as AuthResponse,
+    TypesDiskUsage as DiskUsage,
+    RegistryAuthConfig,
+    SystemInfo,
+    TypesVersion as SystemVersion,
+} from "../generated/index.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, InternalServerError, Unauthorized } from "./errors.ts";
 

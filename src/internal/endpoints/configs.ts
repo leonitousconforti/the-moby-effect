@@ -9,13 +9,13 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { SwarmConfig, SwarmConfigSpec } from "../generated/index.js";
-import { ConfigIdentifier } from "../schemas/id.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
+import { SwarmConfig, SwarmConfigSpec } from "../generated/index.ts";
+import { ConfigIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
-import { NodeNotPartOfSwarm } from "./swarm.js";
+import { NodeNotPartOfSwarm } from "./swarm.ts";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.Struct({

@@ -8,9 +8,9 @@ import * as HttpApiClient from "effect/unstable/httpapi/HttpApiClient";
 import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { RegistryDistributionInspect } from "../generated/index.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
+import { RegistryDistributionInspect } from "../generated/index.ts";
 import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound, Unauthorized } from "./errors.ts";
 

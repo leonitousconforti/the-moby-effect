@@ -9,21 +9,19 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { SwarmSecret, SwarmSecretSpec } from "../generated/index.js";
-import { SecretIdentifier } from "../schemas/id.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
+import { SwarmSecret, SwarmSecretSpec } from "../generated/index.ts";
+import { SecretIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.fromJsonString(
-    Schema.Struct({
-        id: Schema.optional(Schema.Array(Schema.String)),
-        label: Schema.optional(Schema.Array(Schema.String)),
-        name: Schema.optional(Schema.Array(Schema.String)),
-    })
-);
+export const ListFilters = Schema.Struct({
+    id: Schema.optional(Schema.Array(Schema.String)),
+    label: Schema.optional(Schema.Array(Schema.String)),
+    name: Schema.optional(Schema.Array(Schema.String)),
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretList */
 const listSecretsEndpoint = HttpApiEndpoint.get("list", "/", {

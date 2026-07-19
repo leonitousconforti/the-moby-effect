@@ -9,23 +9,21 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { SwarmNode, SwarmNodeSpec } from "../generated/index.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
+import { SwarmNode, SwarmNodeSpec } from "../generated/index.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.fromJsonString(
-    Schema.Struct({
-        id: Schema.optional(Schema.Array(Schema.String)),
-        label: Schema.optional(Schema.Array(Schema.String)),
-        membership: Schema.optional(Schema.Array(Schema.Literals(["accepted", "pending"]))),
-        name: Schema.optional(Schema.Array(Schema.String)),
-        "node.label": Schema.optional(Schema.Array(Schema.String)),
-        role: Schema.optional(Schema.Array(Schema.Literals(["manager", "worker"]))),
-    })
-);
+export const ListFilters = Schema.Struct({
+    id: Schema.optional(Schema.Array(Schema.String)),
+    label: Schema.optional(Schema.Array(Schema.String)),
+    membership: Schema.optional(Schema.Array(Schema.Literals(["accepted", "pending"]))),
+    name: Schema.optional(Schema.Array(Schema.String)),
+    "node.label": Schema.optional(Schema.Array(Schema.String)),
+    role: Schema.optional(Schema.Array(Schema.Literals(["manager", "worker"]))),
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeList */
 const listNodesEndpoint = HttpApiEndpoint.get("list", "/", {

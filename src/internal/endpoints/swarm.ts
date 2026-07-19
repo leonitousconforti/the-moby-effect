@@ -9,9 +9,9 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { SwarmSwarm as SwarmData, SwarmInitRequest, SwarmJoinRequest, SwarmSpec } from "../generated/index.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
+import { SwarmSwarm as SwarmData, SwarmInitRequest, SwarmJoinRequest, SwarmSpec } from "../generated/index.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, InternalServerError, NotFound } from "./errors.ts";
 

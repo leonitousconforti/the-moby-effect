@@ -1,22 +1,25 @@
-import type * as Socket from "effect/unstable/socket/Socket";
-
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
+import * as String from "effect/String";
 import * as HttpClient from "effect/unstable/http/HttpClient";
 import * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
+import * as Url from "effect/unstable/http/Url";
 import * as HttpApi from "effect/unstable/httpapi/HttpApi";
 import * as HttpApiClient from "effect/unstable/httpapi/HttpApiClient";
 import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
+import * as HttpApiError from "effect/unstable/httpapi/HttpApiError";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
+import * as Socket from "effect/unstable/socket/Socket";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.ts";
+import { makeRawSocket } from "../demux/raw.ts";
 import {
     ArchiveChange,
     ContainerConfig,
@@ -29,41 +32,35 @@ import {
     ContainerSummary,
     ContainerTopResponse,
     ContainerWaitResponse,
-} from "../generated/index.js";
-import { BooleanFromString } from "../schemas/booleanFromString.js";
-import { ContainerIdentifier } from "../schemas/id.js";
-import { I64 } from "../schemas/number.js";
+} from "../generated/index.ts";
+import { ContainerIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, Forbidden, InternalServerError, NotAcceptable, NotFound } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.fromJsonString(
-    Schema.Struct({
-        ancestor: Schema.optional(Schema.Array(Schema.String)),
-        before: Schema.optional(Schema.Array(Schema.String)),
-        expose: Schema.optional(Schema.Array(Schema.String)),
-        exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
-        health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
-        identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
-        // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
-        "is-task": Schema.optional(BooleanFromString),
-        label: Schema.optional(Schema.Array(Schema.String)),
-        name: Schema.optional(Schema.Array(Schema.String)),
-        network: Schema.optional(Schema.Array(Schema.String)),
-        publish: Schema.optional(Schema.Array(Schema.String)),
-        since: Schema.optional(Schema.Array(Schema.String)),
-        status: Schema.optional(Schema.Array(ContainerState.fields["Status"])),
-        volume: Schema.optional(Schema.String),
-    })
-);
+export const ListFilters = Schema.Struct({
+    ancestor: Schema.optional(Schema.Array(Schema.String)),
+    before: Schema.optional(Schema.Array(Schema.String)),
+    expose: Schema.optional(Schema.Array(Schema.String)),
+    exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
+    health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
+    identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
+    // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
+    "is-task": Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+    label: Schema.optional(Schema.Array(Schema.String)),
+    name: Schema.optional(Schema.Array(Schema.String)),
+    network: Schema.optional(Schema.Array(Schema.String)),
+    publish: Schema.optional(Schema.Array(Schema.String)),
+    since: Schema.optional(Schema.Array(Schema.String)),
+    status: Schema.optional(Schema.Array(ContainerState.fields["Status"])),
+    volume: Schema.optional(Schema.String),
+});
 
 /** @since 1.0.0 */
-export const PruneFilters = Schema.fromJsonString(
-    Schema.Struct({
-        until: Schema.optional(Schema.String),
-        label: Schema.optional(Schema.Array(Schema.String)),
-    })
-);
+export const PruneFilters = Schema.Struct({
+    until: Schema.optional(Schema.String),
+    label: Schema.optional(Schema.Array(Schema.String)),
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerList */
 const listContainersEndpoint = HttpApiEndpoint.get("list", "/json", {
@@ -418,7 +415,7 @@ const pruneContainersEndpoint = HttpApiEndpoint.post("prune", "/prune", {
     query: { filters: Schema.optional(PruneFilters) },
     success: Schema.Struct({
         ContainersDeleted: Schema.NullOr(Schema.Array(ContainerIdentifier)),
-        SpaceReclaimed: I64,
+        SpaceReclaimed: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 63 - 1 })),
     }), // 200 OK
     error: [InternalServerError],
 });
@@ -476,7 +473,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
 
         const httpClient = yield* HttpClient.HttpClient;
         const ContainersError = DockerError.WrapForModule("containers");
-        const context = yield* Effect.context<Socket.WebSocketConstructor>();
+        const websocketConstructor = yield* Socket.WebSocketConstructor;
         const client = yield* HttpApiClient.group(ContainersApi, {
             httpClient,
             group: "containers",
@@ -590,17 +587,43 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                     Effect.mapError(ContainersError("attach"))
                 );
         const attachWebsocket_ = (identifier: ContainerIdentifier, options?: Options<"attachWebsocket">) =>
-            Effect.mapError(
-                HttpApiWebsocket(
-                    ContainersApi,
-                    "containers",
-                    "attachWebsocket"
-                )({
+            Effect.gen(function* () {
+                const baseUrl = "ws://0.0.0.0";
+                const stripBaseUrl = String.replace(baseUrl, String.empty);
+                const emptyResponse = new Response(undefined, { status: 200 });
+                const noopHttpClient = HttpClient.make((request) =>
+                    Effect.succeed(HttpClientResponse.fromWeb(request, emptyResponse))
+                );
+
+                const client = yield* HttpApiClient.endpoint(ContainersApi, {
+                    endpoint: "attachWebsocket",
+                    httpClient: noopHttpClient,
+                    group: "containers",
+                    baseUrl,
+                });
+
+                const response = yield* client({
+                    responseMode: "response-only",
                     params: { identifier },
                     query: { ...options },
-                }).pipe(Effect.provide(context)),
-                ContainersError("attachWebsocket")
-            );
+                });
+
+                const { hash, url, urlParams } = response.request;
+                const wsUrl = yield* Url.make(url, urlParams, hash.valueOrUndefined).pipe(
+                    Effect.fromResult,
+                    Effect.mapError((_cause) => new HttpApiError.BadRequest()),
+                    Effect.map((url) => url.toString()),
+                    Effect.map(stripBaseUrl)
+                );
+
+                const websocket = yield* Effect.provideService(
+                    Socket.makeWebSocket(wsUrl),
+                    Socket.WebSocketConstructor,
+                    websocketConstructor
+                );
+
+                return makeRawSocket(websocket);
+            });
         const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
             Effect.mapError(client.wait({ params: { identifier }, query: { ...options } }), ContainersError("wait"));
         const delete_ = (identifier: ContainerIdentifier, options?: Options<"delete">) =>

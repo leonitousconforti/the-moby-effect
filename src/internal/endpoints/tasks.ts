@@ -10,23 +10,21 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
-import { SwarmTask } from "../generated/index.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
+import { SwarmTask } from "../generated/index.ts";
 import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const TaskListFilters = Schema.fromJsonString(
-    Schema.Struct({
-        "desired-state": Schema.optional(Schema.Array(Schema.Literals(["running", "shutdown", "accepted"]))),
-        id: Schema.optional(Schema.Array(Schema.String)),
-        name: Schema.optional(Schema.Array(Schema.String)),
-        node: Schema.optional(Schema.Array(Schema.String)),
-        service: Schema.optional(Schema.Array(Schema.String)),
-        label: Schema.optional(Schema.Array(Schema.String)),
-    })
-);
+export const TaskListFilters = Schema.Struct({
+    "desired-state": Schema.optional(Schema.Array(Schema.Literals(["running", "shutdown", "accepted"]))),
+    id: Schema.optional(Schema.Array(Schema.String)),
+    name: Schema.optional(Schema.Array(Schema.String)),
+    node: Schema.optional(Schema.Array(Schema.String)),
+    service: Schema.optional(Schema.Array(Schema.String)),
+    label: Schema.optional(Schema.Array(Schema.String)),
+});
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskList */
 const listTasksEndpoint = HttpApiEndpoint.get("list", "/", {

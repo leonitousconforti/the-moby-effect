@@ -9,17 +9,17 @@ import * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
 import * as HttpApiGroup from "effect/unstable/httpapi/HttpApiGroup";
 import * as HttpApiSchema from "effect/unstable/httpapi/HttpApiSchema";
 
-import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.js";
+import type { MultiplexedSocket, RawSocket } from "../../MobyDemux.ts";
 
-import { MobyConnectionOptions } from "../../MobyConnection.js";
-import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.js";
+import { MobyConnectionOptions } from "../../MobyConnection.ts";
+import { makeAgnosticHttpClientLayer } from "../../MobyPlatforms.ts";
 import { responseToStreamingSocketOrFailUnsafe } from "../demux/hijack.ts";
 import {
     ContainerExecStartOptions,
     ContainerExecOptions as ExecConfig,
     ContainerExecInspect as ExecInspectResponse,
-} from "../generated/index.js";
-import { ExecIdentifier } from "../schemas/id.js";
+} from "../generated/index.ts";
+import { ExecIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
 
