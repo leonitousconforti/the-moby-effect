@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"reflect"
 	"time"
 
@@ -26,11 +27,50 @@ var typesToRename = map[string]string{
 
 var typesToReplace = map[reflect.Type]TSType{
 	reflect.TypeOf(time.Time{}):       {StrRepresentation: "Schema.DateFromString", Nullable: false},
-	reflect.TypeOf(digest.Digest("")): {StrRepresentation: "MobySchemas.Digest", Nullable: false},
-	reflect.TypeOf(nat.Port("")):      {StrRepresentation: "MobySchemas.PortWithMaybeProtocol", Nullable: false},
-	reflect.TypeOf(nat.PortMap{}):     {StrRepresentation: "MobySchemas.PortMap", Nullable: false},
-	reflect.TypeOf(nat.PortSet{}):     {StrRepresentation: "MobySchemas.PortSet", Nullable: false},
-	reflect.TypeOf(nat.PortBinding{}): {StrRepresentation: "MobySchemas.PortBinding", Nullable: false},
+	reflect.TypeOf(digest.Digest("")): {StrRepresentation: "MobyIdentifiers.Digest", Nullable: false},
+	// json.RawMessage holds arbitrary JSON (e.g. JSONMessage.aux), not a byte array
+	reflect.TypeOf(json.RawMessage{}): {StrRepresentation: "Schema.Unknown", Nullable: false},
+	// container.IpcMode wire values include dynamic forms like "container:<id>", so const-based literals would reject them
+	reflect.TypeOf(container.IpcMode("")): {StrRepresentation: "Schema.String", Nullable: false},
+	// registry.NetIPNet marshals itself as a CIDR string (custom MarshalJSON)
+	reflect.TypeOf(registry.NetIPNet{}): {StrRepresentation: "EffectSchemas.Internet.CidrBlockFromString", Nullable: false},
+	reflect.TypeOf(nat.Port("")):        {StrRepresentation: "PortSchemas.PortWithMaybeProtocol", Nullable: false},
+	reflect.TypeOf(nat.PortMap{}):       {StrRepresentation: "PortSchemas.PortMap", Nullable: false},
+	reflect.TypeOf(nat.PortSet{}):       {StrRepresentation: "PortSchemas.PortSet", Nullable: false},
+	reflect.TypeOf(nat.PortBinding{}):   {StrRepresentation: "PortSchemas.PortBinding", Nullable: false},
+}
+
+// Branded identifier overrides applied per Go struct field, keyed by
+// "<go type>.<go field name>". Identifiers only for now — the old overrides
+// system's constructor defaults were intentionally dropped.
+var fieldsToReplace = map[string]TSType{
+	"container.Summary.ID":                    {StrRepresentation: "MobyIdentifiers.ContainerIdentifier", Nullable: false},
+	"container.Summary.ImageID":               {StrRepresentation: "MobyIdentifiers.ImageIdentifier", Nullable: false},
+	"container.ContainerJSONBase.ID":          {StrRepresentation: "MobyIdentifiers.ContainerIdentifier", Nullable: false},
+	"container.ExecInspect.ExecID":            {StrRepresentation: "MobyIdentifiers.ExecIdentifier", Nullable: false},
+	"container.ExecInspect.ContainerID":       {StrRepresentation: "MobyIdentifiers.ContainerIdentifier", Nullable: false},
+	"image.Summary.ID":                        {StrRepresentation: "MobyIdentifiers.ImageIdentifier", Nullable: false},
+	"image.Summary.RepoDigests":               {StrRepresentation: "Schema.Array(MobyIdentifiers.Digest)", Nullable: true},
+	"image.InspectResponse.ID":                {StrRepresentation: "MobyIdentifiers.ImageIdentifier", Nullable: false},
+	"image.InspectResponse.RepoDigests":       {StrRepresentation: "Schema.Array(MobyIdentifiers.Digest)", Nullable: true},
+	"types.Plugin.ID":                         {StrRepresentation: "MobyIdentifiers.PluginIdentifier", Nullable: false},
+	"image.HistoryResponseItem.ID":            {StrRepresentation: "MobyIdentifiers.ImageIdentifier", Nullable: false},
+	"network.Inspect.ID":                      {StrRepresentation: "MobyIdentifiers.NetworkIdentifier", Nullable: false},
+	"swarm.Config.ID":                         {StrRepresentation: "MobyIdentifiers.ConfigIdentifier", Nullable: false},
+	"swarm.Secret.ID":                         {StrRepresentation: "MobyIdentifiers.SecretIdentifier", Nullable: false},
+	"swarm.Service.ID":                        {StrRepresentation: "MobyIdentifiers.ServiceIdentifier", Nullable: false},
+	"swarm.Node.ID":                           {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
+	"swarm.Network.ID":                        {StrRepresentation: "MobyIdentifiers.NetworkIdentifier", Nullable: false},
+	"swarm.Task.ID":                           {StrRepresentation: "MobyIdentifiers.TaskIdentifier", Nullable: false},
+	"swarm.Task.ServiceID":                    {StrRepresentation: "MobyIdentifiers.ServiceIdentifier", Nullable: false},
+	"swarm.Task.NodeID":                       {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
+	"swarm.ContainerStatus.ContainerID":       {StrRepresentation: "MobyIdentifiers.ContainerIdentifier", Nullable: false},
+	"swarm.NetworkAttachmentSpec.ContainerID": {StrRepresentation: "MobyIdentifiers.ContainerIdentifier", Nullable: false},
+	"swarm.Info.NodeID":                       {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
+	"swarm.Peer.NodeID":                       {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
+	"swarm.NodeCSIInfo.NodeID":                {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
+	"volume.Volume.Name":                      {StrRepresentation: "MobyIdentifiers.VolumeIdentifier", Nullable: false},
+	"volume.PublishStatus.NodeID":             {StrRepresentation: "MobyIdentifiers.NodeIdentifier", Nullable: false},
 }
 
 var dockerTypesToReflect = []reflect.Type{

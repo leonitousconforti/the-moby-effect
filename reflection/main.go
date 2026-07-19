@@ -26,6 +26,11 @@ func reflectTypeMembers(t reflect.Type, m *TSModelType) {
 	for index := 0; index < t.NumField(); index++ {
 		field := t.Field(index)
 
+		// encoding/json never marshals unexported fields
+		if !field.IsExported() && !field.Anonymous {
+			continue
+		}
+
 		jsonTag, _ := JsonTagFromString(field.Tag.Get("json"))
 		if jsonTag.Skip {
 			continue
@@ -69,6 +74,9 @@ func reflectTypeMembers(t reflect.Type, m *TSModelType) {
 			}
 		}
 		tsProp := TSProperty{FieldName: name, Type: goTypeToTsType(field.Type), IsOpt: jsonTag.OmitEmpty}
+		if replacement, willReplace := fieldsToReplace[t.String()+"."+field.Name]; willReplace {
+			tsProp.Type = replacement
+		}
 		m.Properties = append(m.Properties, tsProp)
 	}
 }
@@ -147,7 +155,7 @@ func main() {
 	defer f.Close()
 	b := bufio.NewWriter(f)
 	for _, z := range reflectedTypes {
-		fmt.Fprintln(b, "export * from \"./"+z.Name()+".generated.js\";")
+		fmt.Fprintln(b, "export * from \"./"+z.Name()+".generated.ts\";")
 	}
 	err = b.Flush()
 	if err != nil {
