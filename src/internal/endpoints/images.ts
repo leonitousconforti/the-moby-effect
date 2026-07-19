@@ -346,12 +346,13 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
                     headers: { "Content-type": "application/tar" },
                     payload: Stream.provideContext(build, context),
                 })
-            )
-                .pipe(Stream.unwrap)
-                .pipe(Stream.decodeText())
-                .pipe(Stream.splitLines)
-                .pipe(Stream.mapEffect((line) => decodeJsonMessage(line)))
-                .pipe(Stream.mapError(ImagesError("build")));
+            ).pipe(
+                Stream.unwrap,
+                Stream.decodeText(),
+                Stream.splitLines,
+                Stream.mapEffect((line) => decodeJsonMessage(line)),
+                Stream.mapError(ImagesError("build"))
+            );
         const buildPrune_ = (options?: Options<"buildPrune">) =>
             Effect.mapError(client.buildPrune({ query: { ...options } }), ImagesError("buildPrune"));
         const create_ = (options?: Options<"create">) =>
@@ -406,8 +407,10 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
                 Stream.mapEffect((line) => decodeJsonMessage(line)),
                 Stream.mapError(ImagesError("exportMany"))
             );
-        const import_ = <E>(context: Stream.Stream<Uint8Array, E, never>, options?: Options<"import">) =>
-            client.import({ query: { ...options }, payload: context }).pipe(
+        const import_ = <E, R>(build: Stream.Stream<Uint8Array, E, R>, options?: Options<"import">) =>
+            Effect.contextWith((context: Context.Context<R>) =>
+                client.import({ query: { ...options }, payload: Stream.provideContext(build, context) })
+            ).pipe(
                 Stream.unwrap,
                 Stream.decodeText(),
                 Stream.splitLines,

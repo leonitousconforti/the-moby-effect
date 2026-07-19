@@ -1,6 +1,5 @@
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
@@ -518,34 +517,19 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
         const logs_ = (identifier: ContainerIdentifier, options?: Options<"logs">) =>
             client
                 .logs({ params: { identifier }, query: { ...options } })
-                .pipe(
-                    Effect.map(
-                        Function.flow(Stream.decodeText(), Stream.splitLines, Stream.mapError(ContainersError("logs")))
-                    ),
-                    Effect.mapError(ContainersError("logs"))
-                );
+                .pipe(Stream.unwrap, Stream.decodeText(), Stream.splitLines, Stream.mapError(ContainersError("logs")));
         const changes_ = (identifier: ContainerIdentifier) =>
             Effect.mapError(client.changes({ params: { identifier } }), ContainersError("changes"));
         const export_ = (identifier: ContainerIdentifier) =>
-            client
-                .export({ params: { identifier } })
-                .pipe(
-                    Effect.map(Stream.mapError(ContainersError("export"))),
-                    Effect.mapError(ContainersError("export"))
-                );
+            client.export({ params: { identifier } }).pipe(Stream.unwrap, Stream.mapError(ContainersError("export")));
         const stats_ = (identifier: ContainerIdentifier, options?: Options<"stats">) =>
-            client
-                .stats({ params: { identifier }, query: { ...options } })
-                .pipe(
-                    Effect.map(Stream.decodeText()),
-                    Effect.map(Stream.splitLines),
-                    Effect.map(
-                        Stream.mapEffect((line) =>
-                            Schema.decodeEffect(Schema.fromJsonString(ContainerStatsResponse))(line)
-                        )
-                    ),
-                    Effect.mapError(ContainersError("stats"))
-                );
+            client.stats({ params: { identifier }, query: { ...options } }).pipe(
+                Stream.unwrap,
+                Stream.decodeText(),
+                Stream.splitLines,
+                Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(ContainerStatsResponse))(line)),
+                Stream.mapError(ContainersError("stats"))
+            );
 
         const resize_ = (identifier: ContainerIdentifier, options?: Options<"resize">) =>
             Effect.mapError(
@@ -634,10 +618,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
         const archive_ = (identifier: ContainerIdentifier, options: Options<"archive">) =>
             client
                 .archive({ params: { identifier }, query: { ...options } })
-                .pipe(
-                    Effect.map(Stream.mapError(ContainersError("archive"))),
-                    Effect.mapError(ContainersError("archive"))
-                );
+                .pipe(Stream.unwrap, Stream.mapError(ContainersError("archive")));
         const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
             client
                 .archiveInfo({ params: { identifier }, query: { ...options }, responseMode: "response-only" })
