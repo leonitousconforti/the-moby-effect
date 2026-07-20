@@ -1,6 +1,7 @@
+import { Effect, Function, Layer } from "effect";
+
 import { Command } from "@effect/cli";
 import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Effect, Function, Layer } from "effect";
 import { DockerEngine, MobyConnection } from "the-moby-effect";
 
 import { command as buildCommand } from "./build.js";
