@@ -76,13 +76,13 @@ var fieldsToReplace = map[string]TSType{
 
 	// Fields whose Go type is string/[]byte but whose wire content is richer:
 	// timestamps kept as RFC3339 strings and []byte marshaled as base64.
-	"volume.Volume.CreatedAt":             {StrRepresentation: "Schema.DateFromString", Nullable: false},
-	"swarm.ConfigSpec.Data":               {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
-	"swarm.SecretSpec.Data":               {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
-	"swarm.TLSInfo.CertIssuerSubject":     {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
-	"swarm.TLSInfo.CertIssuerPublicKey":   {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
-	"swarm.SeccompOpts.Profile":           {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
-	"v1.Descriptor.Data":                  {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"volume.Volume.CreatedAt":           {StrRepresentation: "Schema.DateFromString", Nullable: false},
+	"swarm.ConfigSpec.Data":             {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"swarm.SecretSpec.Data":             {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"swarm.TLSInfo.CertIssuerSubject":   {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
+	"swarm.TLSInfo.CertIssuerPublicKey": {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
+	"swarm.SeccompOpts.Profile":         {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+	"v1.Descriptor.Data":                {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
 }
 
 var dockerTypesToReflect = []reflect.Type{
