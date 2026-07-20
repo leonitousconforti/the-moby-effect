@@ -38,9 +38,14 @@ const listConfigsEndpoint = HttpApiEndpoint.get("list", "/", {
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigCreate */
 const createConfigEndpoint = HttpApiEndpoint.post("create", "/create", {
     payload: SwarmConfigSpec,
-    success: Schema.Struct({ Id: ConfigIdentifier })
-        .pipe(Schema.encodeKeys({ Id: "ID" }))
-        .pipe(HttpApiSchema.status(201)), // 201 Created
+    success: Schema.Struct({
+        Id: ConfigIdentifier,
+    }).pipe(
+        Schema.encodeKeys({
+            Id: "ID",
+        }),
+        HttpApiSchema.status(201)
+    ), // 201 Created
     error: [
         Conflict, // 409 Name conflicts with existing object
         NodeNotPartOfSwarm, // 503 Node is not part of a swarm

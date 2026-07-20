@@ -112,7 +112,9 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
             );
         const start_ = <const T extends boolean = false>(
             id: ExecIdentifier,
-            payload: Omit<ConstructorParameters<typeof ContainerExecStartOptions>[0], "Detach"> & { Detach: T }
+            payload: Omit<NonNullable<ConstructorParameters<typeof ContainerExecStartOptions>[0]>, "Detach"> & {
+                Detach: T;
+            }
         ): Effect.Effect<[T] extends [false] ? RawSocket | MultiplexedSocket : void, DockerError, never> =>
             client
                 .start({

@@ -80,7 +80,7 @@ const listContainersEndpoint = HttpApiEndpoint.get("list", "/json", {
 const createContainerEndpoint = HttpApiEndpoint.post("create", "/create", {
     query: {
         platform: Schema.optional(Schema.String),
-        name: Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-zA-Z0-9][a-zA-Z0-9_.-]+/))).pipe(Schema.optional),
+        name: Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-zA-Z0-9][a-zA-Z0-9_.-]+/)), Schema.optional),
     },
     payload: ContainerCreateRequest,
     success: Schema.Struct({
@@ -491,7 +491,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 ContainersError("list")
             );
         const create_ = (
-            options: Omit<ConstructorParameters<typeof ContainerCreateRequest>[0], "HostConfig"> & {
+            options: Omit<NonNullable<ConstructorParameters<typeof ContainerCreateRequest>[0]>, "HostConfig"> & {
                 readonly Name?: string | undefined;
                 readonly Platform?: string | undefined;
                 readonly HostConfig?: ConstructorParameters<typeof ContainerHostConfig>[0] | undefined;
@@ -607,7 +607,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 );
 
                 return makeRawSocket(websocket);
-            });
+            }).pipe(Effect.mapError(ContainersError("attachWebsocket")));
         const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
             Effect.mapError(client.wait({ params: { identifier }, query: { ...options } }), ContainersError("wait"));
         const delete_ = (identifier: ContainerIdentifier, options?: Options<"delete">) =>
@@ -620,21 +620,20 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 .archive({ params: { identifier }, query: { ...options } })
                 .pipe(Stream.unwrap, Stream.mapError(ContainersError("archive")));
         const archiveInfo_ = (identifier: ContainerIdentifier, options: Options<"archiveInfo">) =>
-            client
-                .archiveInfo({ params: { identifier }, query: { ...options }, responseMode: "response-only" })
-                .pipe(
-                    Effect.flatMap(
-                        HttpClientResponse.schemaHeaders(
-                            Schema.Struct({
-                                "x-docker-container-path-stat": Schema.StringFromBase64.pipe(
-                                    Schema.decodeTo(Schema.UnknownFromJsonString)
-                                ).pipe(Schema.optional),
-                            })
-                        )
+            client.archiveInfo({ params: { identifier }, query: { ...options }, responseMode: "response-only" }).pipe(
+                Effect.flatMap(
+                    HttpClientResponse.schemaHeaders(
+                        Schema.Struct({
+                            "x-docker-container-path-stat": Schema.StringFromBase64.pipe(
+                                Schema.decodeTo(Schema.UnknownFromJsonString),
+                                Schema.optional
+                            ),
+                        })
                     )
-                )
-                .pipe(Effect.map(({ "x-docker-container-path-stat": pathStat }) => pathStat))
-                .pipe(Effect.mapError(ContainersError("archiveInfo")));
+                ),
+                Effect.map(({ "x-docker-container-path-stat": pathStat }) => pathStat),
+                Effect.mapError(ContainersError("archiveInfo"))
+            );
         const putArchive_ = <E, R>(
             identifier: ContainerIdentifier,
             stream: Stream.Stream<Uint8Array, E, R>,

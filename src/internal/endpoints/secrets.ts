@@ -36,9 +36,14 @@ const listSecretsEndpoint = HttpApiEndpoint.get("list", "/", {
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretCreate */
 const createSecretEndpoint = HttpApiEndpoint.post("create", "/create", {
     payload: SwarmSecretSpec,
-    success: Schema.Struct({ Id: SecretIdentifier })
-        .pipe(Schema.encodeKeys({ Id: "ID" }))
-        .pipe(HttpApiSchema.status(201)), // 201 Created
+    success: Schema.Struct({
+        Id: SecretIdentifier,
+    }).pipe(
+        Schema.encodeKeys({
+            Id: "ID",
+        }),
+        HttpApiSchema.status(201)
+    ), // 201 Created
     error: [
         Conflict, // 409 name conflicts with an existing object
         ServiceUnavailable, // 503 Node is not part of a swarm

@@ -56,7 +56,7 @@ export class Sessions extends Context.Service<Sessions>()("@the-moby-effect/endp
                     },
                     responseMode: "response-only",
                 })
-                .pipe(Effect.map(hijackResponseUnsafe), Effect.mapError(SessionsError("session")));
+                .pipe(Effect.flatMap(hijackResponseUnsafe), Effect.mapError(SessionsError("session")));
 
         return { session: session_ };
     }),
