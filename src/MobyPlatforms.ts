@@ -4,11 +4,12 @@
  * @since 1.0.0
  */
 
-import type * as HttpClient from "@effect/platform/HttpClient";
-import type * as Socket from "@effect/platform/Socket";
+import type * as Layer from "effect/Layer";
+import type * as HttpClient from "effect/unstable/http/HttpClient";
+import type * as Socket from "effect/unstable/socket/Socket";
+
 import type * as MobyConnection from "./MobyConnection.ts";
 
-import type * as Layer from "effect/Layer";
 import * as internalAgnostic from "./internal/platforms/agnostic.ts";
 import * as internalBun from "./internal/platforms/bun.ts";
 import * as internalDeno from "./internal/platforms/deno.ts";

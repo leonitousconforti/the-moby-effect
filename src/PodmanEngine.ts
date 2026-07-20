@@ -4,12 +4,14 @@
  * @since 1.0.0
  */
 
-import type * as HttpClient from "@effect/platform/HttpClient";
-import type * as Socket from "@effect/platform/Socket";
-import type * as MobyConnection from "./MobyConnection.ts";
+import type * as HttpClient from "effect/unstable/http/HttpClient";
+import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
+
+import type * as MobyConnection from "./MobyConnection.ts";
+
 import * as MobyEndpoints from "./MobyEndpoints.ts";
 import * as MobyPlatforms from "./MobyPlatforms.ts";
 
@@ -34,9 +36,9 @@ export type PodmanLayer = Layer.Layer<
  * @category Types
  */
 export type PodmanLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
-    Layer.Layer.Success<PodmanLayer>,
-    Layer.Layer.Error<PodmanLayer>,
-    Layer.Layer.Context<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
+    Layer.Success<PodmanLayer>,
+    Layer.Error<PodmanLayer>,
+    Layer.Services<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**
