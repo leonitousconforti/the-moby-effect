@@ -6,7 +6,7 @@ export class ContainerCPUStats extends Schema.Class<ContainerCPUStats>("Containe
     {
         cpu_usage: Schema.NullOr(ContainerCPUUsage.ContainerCPUUsage),
         system_cpu_usage: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
-        online_cpus: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
+        online_cpus: Schema.optional(Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))),
         throttling_data: Schema.optional(Schema.NullOr(ContainerThrottlingData.ContainerThrottlingData)),
     },
     {

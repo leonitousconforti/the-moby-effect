@@ -3,8 +3,8 @@ import * as Schema from "effect/Schema";
 export class ContainerPort extends Schema.Class<ContainerPort>("ContainerPort")(
     {
         IP: Schema.optional(Schema.String),
-        PrivatePort: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 })),
-        PublicPort: Schema.optional(Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 }))),
+        PrivatePort: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 })),
+        PublicPort: Schema.optional(Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 }))),
         Type: Schema.String,
     },
     {

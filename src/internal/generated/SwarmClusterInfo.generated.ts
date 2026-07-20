@@ -11,8 +11,8 @@ export class SwarmClusterInfo extends Schema.Class<SwarmClusterInfo>("SwarmClust
         TLSInfo: Schema.NullOr(SwarmTLSInfo.SwarmTLSInfo),
         RootRotationInProgress: Schema.Boolean,
         DefaultAddrPool: Schema.NullOr(Schema.Array(Schema.String)),
-        SubnetSize: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
-        DataPathPort: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
+        SubnetSize: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
+        DataPathPort: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
     },
     {
         identifier: "SwarmClusterInfo",

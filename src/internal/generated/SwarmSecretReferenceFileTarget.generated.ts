@@ -5,7 +5,7 @@ export class SwarmSecretReferenceFileTarget extends Schema.Class<SwarmSecretRefe
         Name: Schema.String,
         UID: Schema.String,
         GID: Schema.String,
-        Mode: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
+        Mode: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
     },
     {
         identifier: "SwarmSecretReferenceFileTarget",

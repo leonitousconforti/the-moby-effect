@@ -4,7 +4,7 @@ export class ContainerExecStartOptions extends Schema.Class<ContainerExecStartOp
     {
         Detach: Schema.Boolean,
         Tty: Schema.Boolean,
-        ConsoleSize: Schema.optional(Schema.NullOr(Schema.Array(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))).pipe(Schema.check(Schema.isLengthBetween(2, 2))))),
+        ConsoleSize: Schema.optional(Schema.NullOr(Schema.Array(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))).check(Schema.isLengthBetween(2, 2)))),
     },
     {
         identifier: "ContainerExecStartOptions",

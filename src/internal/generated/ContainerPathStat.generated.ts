@@ -4,7 +4,7 @@ export class ContainerPathStat extends Schema.Class<ContainerPathStat>("Containe
     {
         name: Schema.String,
         size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
-        mode: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
+        mode: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
         mtime: Schema.NullOr(Schema.DateFromString),
         linkTarget: Schema.String,
     },
