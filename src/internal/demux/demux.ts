@@ -1,13 +1,13 @@
-import type * as Socket from "@effect/platform/Socket";
 import type * as Effect from "effect/Effect";
-import type * as ParseResult from "effect/ParseResult";
-import type * as Scope from "effect/Scope";
+import type * as Schema from "effect/Schema";
 import type * as Stream from "effect/Stream";
-import type * as MobyDemux from "../../MobyDemux.js";
+import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as Function from "effect/Function";
 import * as Sink from "effect/Sink";
 import * as Tuple from "effect/Tuple";
+
+import type * as MobyDemux from "../../MobyDemux.js";
 
 import { demuxMultiplexedToSingleSink, isMultiplexedChannel, isMultiplexedSocket } from "./multiplexed.js";
 import { demuxRawToSingleSink, isRawChannel, isRawSocket } from "./raw.js";
@@ -26,22 +26,14 @@ export const demuxToSingleSink = Function.dual<
         options?: { encoding?: string | undefined } | undefined
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
         sockets: MobyDemux.EitherRawInput<E1 | IE, OE, R3> | MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >,
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>,
     // Data-first signature.
     <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
         sockets: MobyDemux.EitherRawInput<E1 | IE, OE, R3> | MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>
 >(
     /**
      * We are data-first if the first argument is a channel or if the first
@@ -59,17 +51,13 @@ export const demuxToSingleSink = Function.dual<
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
-    ): Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    > => {
+    ): Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3> => {
         if (isRawSocket(socketOptions) || isRawChannel<E1 | IE, OE, R3>(socketOptions)) {
             return demuxRawToSingleSink(socketOptions, source, sink, options);
         }
 
         if (isMultiplexedSocket(socketOptions) || isMultiplexedChannel<E1 | IE, OE, R3>(socketOptions)) {
-            return demuxMultiplexedToSingleSink(socketOptions, source, Sink.mapInput(sink, Tuple.getSecond), options);
+            return demuxMultiplexedToSingleSink(socketOptions, source, Sink.mapInput(sink, Tuple.get(1)), options);
         }
 
         return Function.absurd(socketOptions);

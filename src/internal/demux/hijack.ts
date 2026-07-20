@@ -1,10 +1,11 @@
-import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import type * as MobyDemux from "../../MobyDemux.js";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
 
-import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
+import * as Socket from "effect/unstable/socket/Socket";
 
+import type * as MobyDemux from "../../MobyDemux.js";
 import type { IExposeSocketOnEffectClientResponseHack } from "../platforms/node.js";
+
 import { makeMultiplexedSocket, responseIsMultiplexedResponse } from "./multiplexed.js";
 import { makeRawSocket, responseIsRawResponse } from "./raw.js";
 
@@ -15,7 +16,7 @@ export const hijackResponseUnsafe = (
     Effect.flatMap(
         Effect.promise(() => import("@effect/platform-node/NodeSocket")),
         (nodeSocketLazy) => {
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).original.source.socket;
+            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
             return nodeSocketLazy.fromDuplex(Effect.sync(() => socket));
         }
     );
@@ -26,9 +27,10 @@ export const responseToMultiplexedStreamSocketOrFailUnsafe = (
 ): Effect.Effect<MobyDemux.MultiplexedSocket, Socket.SocketError, never> => {
     if (!responseIsMultiplexedResponse(response)) {
         return Effect.fail(
-            new Socket.SocketGenericError({
-                reason: "Read",
-                cause: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
+            new Socket.SocketError({
+                reason: new Socket.SocketReadError({
+                    cause: `Response with content type "${response.headers["content-type"]}" is not a multiplexed streaming socket`,
+                }),
             })
         );
     }
@@ -42,9 +44,10 @@ export const responseToRawStreamSocketOrFailUnsafe = (
 ): Effect.Effect<MobyDemux.RawSocket, Socket.SocketError, never> => {
     if (!responseIsRawResponse(response)) {
         return Effect.fail(
-            new Socket.SocketGenericError({
-                reason: "Read",
-                cause: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
+            new Socket.SocketError({
+                reason: new Socket.SocketReadError({
+                    cause: `Response with content type "${response.headers["content-type"]}" is not a raw streaming socket`,
+                }),
             })
         );
     }
@@ -64,5 +67,11 @@ export const responseToStreamingSocketOrFailUnsafe = (
         return responseToRawStreamSocketOrFailUnsafe(response);
     }
 
-    return Effect.fail(new Socket.SocketGenericError({ reason: "Read", cause: "Response is not a streaming socket" }));
+    return Effect.fail(
+        new Socket.SocketError({
+            reason: new Socket.SocketReadError({
+                cause: "Response is not a streaming socket",
+            }),
+        })
+    );
 };

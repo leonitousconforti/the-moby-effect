@@ -1,6 +1,6 @@
-import type * as MobyDemux from "../../MobyDemux.js";
-
 import * as Predicate from "effect/Predicate";
+
+import type * as MobyDemux from "../../MobyDemux.js";
 
 /** @internal */
 export const compressDemuxOutput = <A1, A2>(
