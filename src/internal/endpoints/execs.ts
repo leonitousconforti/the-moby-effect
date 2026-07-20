@@ -105,14 +105,14 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
         const ExecsError = DockerError.WrapForModule("execs");
         const client = yield* HttpApiClient.group(ExecsApi, { group: "exec", httpClient });
 
-        const container_ = (id: string, payload: ConstructorParameters<typeof ExecConfig>[0]) =>
+        const container_ = (id: string, payload: (typeof ExecConfig)["~type.make.in"]) =>
             Effect.mapError(
                 client.container({ params: { id }, payload: new ExecConfig(payload) }),
                 ExecsError("container")
             );
         const start_ = <const T extends boolean = false>(
             id: ExecIdentifier,
-            payload: Omit<NonNullable<ConstructorParameters<typeof ContainerExecStartOptions>[0]>, "Detach"> & {
+            payload: Omit<(typeof ContainerExecStartOptions)["~type.make.in"], "Detach"> & {
                 Detach: T;
             }
         ): Effect.Effect<[T] extends [false] ? RawSocket | MultiplexedSocket : void, DockerError, never> =>

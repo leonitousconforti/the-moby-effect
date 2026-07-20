@@ -203,14 +203,14 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
             remote: string,
             options?: {
                 name?: string | undefined;
-                privileges?: Array<ConstructorParameters<typeof PluginPrivilege>[0]> | undefined;
+                privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined;
             }
         ) =>
             client
                 .pull({
                     headers: {},
                     query: { remote, name: options?.name },
-                    payload: Array.map(options?.privileges ?? [], (privilege) => new PluginPrivilege(privilege)),
+                    payload: Array.map(options?.privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
                 })
                 .pipe(
                     Stream.unwrap,
@@ -236,14 +236,14 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
         const upgrade_ = (
             name: string,
             remote: string,
-            privileges?: Array<ConstructorParameters<typeof PluginPrivilege>[0]> | undefined
+            privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined
         ) =>
             Effect.mapError(
                 client.upgrade({
                     headers: {},
                     params: { name },
                     query: { remote },
-                    payload: Array.map(privileges ?? [], (privilege) => new PluginPrivilege(privilege)),
+                    payload: Array.map(privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
                 }),
                 PluginsError("upgrade")
             );

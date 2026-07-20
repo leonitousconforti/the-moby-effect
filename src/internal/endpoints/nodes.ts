@@ -100,7 +100,7 @@ export class Nodes extends Context.Service<Nodes>()("@the-moby-effect/endpoints/
         const inspect_ = (id: string) => Effect.mapError(client.inspect({ params: { id } }), NodesError("inspect"));
         const delete_ = (id: string, options?: { force?: boolean | undefined } | undefined) =>
             Effect.mapError(client.delete({ params: { id }, query: { ...options } }), NodesError("delete"));
-        const update_ = (id: string, version: number, payload: ConstructorParameters<typeof SwarmNodeSpec>[0]) =>
+        const update_ = (id: string, version: number, payload: (typeof SwarmNodeSpec)["~type.make.in"]) =>
             Effect.mapError(
                 client.update({ params: { id }, query: { version }, payload: new SwarmNodeSpec(payload) }),
                 NodesError("update")

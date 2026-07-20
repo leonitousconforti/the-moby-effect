@@ -161,14 +161,14 @@ export class Swarm extends Context.Service<Swarm>()("@the-moby-effect/endpoints/
         const client = yield* HttpApiClient.group(SwarmApi, { group: "swarm", httpClient });
 
         const inspect_ = () => Effect.mapError(client.inspect(), SwarmsError("inspect"));
-        const init_ = (payload: ConstructorParameters<typeof SwarmInitRequest>[0]) =>
-            Effect.mapError(client.init({ payload: new SwarmInitRequest(payload) }), SwarmsError("init"));
-        const join_ = (payload: ConstructorParameters<typeof SwarmJoinRequest>[0]) =>
+        const init_ = (payload: (typeof SwarmInitRequest)["~type.make.in"]) =>
+            Effect.mapError(client.init({ payload: SwarmInitRequest.make(payload) }), SwarmsError("init"));
+        const join_ = (payload: (typeof SwarmJoinRequest)["~type.make.in"]) =>
             Effect.mapError(client.join({ payload: new SwarmJoinRequest(payload) }), SwarmsError("join"));
         const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
             Effect.mapError(client.leave({ query: { ...options } }), SwarmsError("leave"));
         const update_ = (
-            spec: ConstructorParameters<typeof SwarmSpec>[0],
+            spec: (typeof SwarmSpec)["~type.make.in"],
             version: bigint,
             rotate?:
                 | {

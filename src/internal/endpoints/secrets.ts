@@ -118,11 +118,11 @@ export class Secrets extends Context.Service<Secrets>()("@the-moby-effect/endpoi
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
             Effect.mapError(client.list({ query: { filters } }), SecretsError("list"));
-        const create_ = (payload: ConstructorParameters<typeof SwarmSecretSpec>[0]) =>
+        const create_ = (payload: (typeof SwarmSecretSpec)["~type.make.in"]) =>
             Effect.mapError(client.create({ payload: new SwarmSecretSpec(payload) }), SecretsError("create"));
         const inspect_ = (id: string) => Effect.mapError(client.inspect({ params: { id } }), SecretsError("inspect"));
         const delete_ = (id: string) => Effect.mapError(client.delete({ params: { id } }), SecretsError("delete"));
-        const update_ = (id: string, version: bigint, payload: ConstructorParameters<typeof SwarmSecretSpec>[0]) =>
+        const update_ = (id: string, version: bigint, payload: (typeof SwarmSecretSpec)["~type.make.in"]) =>
             Effect.mapError(
                 client.update({ params: { id }, query: { version }, payload: new SwarmSecretSpec(payload) }),
                 SecretsError("update")

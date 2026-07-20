@@ -491,10 +491,10 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 ContainersError("list")
             );
         const create_ = (
-            options: Omit<NonNullable<ConstructorParameters<typeof ContainerCreateRequest>[0]>, "HostConfig"> & {
+            options: Omit<(typeof ContainerCreateRequest)["~type.make.in"], "HostConfig"> & {
                 readonly Name?: string | undefined;
                 readonly Platform?: string | undefined;
-                readonly HostConfig?: ConstructorParameters<typeof ContainerHostConfig>[0] | undefined;
+                readonly HostConfig?: (typeof ContainerHostConfig)["~type.make.in"] | undefined;
             }
         ) =>
             Effect.mapError(
@@ -547,7 +547,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
             );
         const kill_ = (identifier: ContainerIdentifier, options?: Options<"kill">) =>
             Effect.mapError(client.kill({ params: { identifier }, query: { ...options } }), ContainersError("kill"));
-        const update_ = (identifier: ContainerIdentifier, config: ConstructorParameters<typeof ContainerConfig>[0]) =>
+        const update_ = (identifier: ContainerIdentifier, config: (typeof ContainerConfig)["~type.make.in"]) =>
             Effect.mapError(
                 client.update({ params: { identifier }, payload: new ContainerConfig(config) }),
                 ContainersError("update")

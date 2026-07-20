@@ -116,8 +116,8 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
         const SystemsError = DockerError.WrapForModule("system");
         const client = yield* HttpApiClient.group(SystemApi, { group: "system", httpClient });
 
-        const auth_ = (payload: ConstructorParameters<typeof RegistryAuthConfig>[0]) =>
-            Effect.mapError(client.auth({ payload: new RegistryAuthConfig(payload) }), SystemsError("auth"));
+        const auth_ = (payload: (typeof RegistryAuthConfig)["~type.make.in"]) =>
+            Effect.mapError(client.auth({ payload: RegistryAuthConfig.make(payload) }), SystemsError("auth"));
         const info_ = () => Effect.mapError(client.info(), SystemsError("info"));
         const version_ = () => Effect.mapError(client.version(), SystemsError("version"));
         const ping_ = () => Effect.mapError(client.ping(), SystemsError("ping"));

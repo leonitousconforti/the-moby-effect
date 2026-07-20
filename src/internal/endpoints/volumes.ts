@@ -129,15 +129,15 @@ export class Volumes extends Context.Service<Volumes>()("@the-moby-effect/endpoi
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
             Effect.mapError(client.list({ query: { filters } }), VolumesError("list"));
-        const create_ = (options: ConstructorParameters<typeof VolumeCreateOptions>[0]) =>
-            Effect.mapError(client.create({ payload: new VolumeCreateOptions(options) }), VolumesError("create"));
+        const create_ = (options: (typeof VolumeCreateOptions)["~type.make.in"]) =>
+            Effect.mapError(client.create({ payload: VolumeCreateOptions.make(options) }), VolumesError("create"));
         const inspect_ = (name: string) =>
             Effect.mapError(client.inspect({ params: { name } }), VolumesError("inspect"));
         const delete_ = (name: string, options?: { force?: boolean | undefined } | undefined) =>
             Effect.mapError(client.delete({ params: { name }, query: { ...options } }), VolumesError("delete"));
-        const update_ = (name: string, version: number, spec: ConstructorParameters<typeof ClusterVolumeSpec>[0]) =>
+        const update_ = (name: string, version: number, spec: (typeof ClusterVolumeSpec)["~type.make.in"]) =>
             Effect.mapError(
-                client.update({ params: { name }, query: { version }, payload: new ClusterVolumeSpec(spec) }),
+                client.update({ params: { name }, query: { version }, payload: ClusterVolumeSpec.make(spec) }),
                 VolumesError("update")
             );
         const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters>) =>

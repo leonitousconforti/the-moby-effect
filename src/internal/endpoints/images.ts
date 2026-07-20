@@ -384,7 +384,7 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
         const prune_ = (options?: Options<"prune">) =>
             Effect.mapError(client.prune({ query: { ...options } }), ImagesError("prune"));
         const commit_ = (
-            payload: ConstructorParameters<typeof ContainerCreateRequest>[0],
+            payload: (typeof ContainerCreateRequest)["~type.make.in"],
             options: Options<"commit">
         ) =>
             Effect.mapError(
