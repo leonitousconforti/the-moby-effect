@@ -62,7 +62,7 @@
     },
     "dependencies": {
         "effect-schemas": "0.0.16",
-        "eftar": "0.0.77"
+        "eftar": "0.0.78"
     },
     "devDependencies": {
         "@babel/cli": "7.29.7",

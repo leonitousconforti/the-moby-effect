@@ -11,7 +11,7 @@ publicHoistPattern:
   - "@effect/vitest"
 
 allowBuilds:
-  '@parcel/watcher': true
+  "@parcel/watcher": true
   cpu-features: true
   esbuild: true
   msgpackr-extract: true
@@ -25,3 +25,6 @@ overrides:
 peerDependencyRules:
   allowedVersions:
     typescript: "5.9.3"
+
+minimumReleaseAgeExclude:
+  - eftar@0.0.78

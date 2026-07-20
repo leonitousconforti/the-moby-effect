@@ -16,8 +16,8 @@ importers:
         specifier: 0.0.16
         version: 0.0.16(effect@4.0.0-beta.99)
       eftar:
-        specifier: 0.0.77
-        version: 0.0.77(effect@4.0.0-beta.99)
+        specifier: 0.0.78
+        version: 0.0.78(effect@4.0.0-beta.99)
     devDependencies:
       '@babel/cli':
         specifier: 7.29.7
@@ -1318,8 +1318,8 @@ packages:
   effect@4.0.0-beta.99:
     resolution: {integrity: sha512-hP1C61uzINfLl/4kKMwcqksxd34s4sQ3VSjsWjhGrkx9CRlXaqnfOK9dpTEKynQ6rA7wU9rb3c+48eDYw7uzxA==}
 
-  eftar@0.0.77:
-    resolution: {integrity: sha512-1sqYltMohHTmJwREJ2nKAwzQAPsjEuINdCwMpFsqDlLbvv8RyQfOdCPxFIZe0pP5ZqbfJuentfAtDhHG00YwmQ==}
+  eftar@0.0.78:
+    resolution: {integrity: sha512-rt+EfpC755I9bwUYkxOriKmf8BNe4vOLGV0dk18MiF+0SyIOdM21tRC/O9VPM77JO4io3xKO+WjGAsy2wTDfkg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       effect: 4.0.0-beta.99
@@ -3718,7 +3718,7 @@ snapshots:
       uuid: 14.0.1
       yaml: 2.9.0
 
-  eftar@0.0.77(effect@4.0.0-beta.99):
+  eftar@0.0.78(effect@4.0.0-beta.99):
     dependencies:
       effect: 4.0.0-beta.99
 
