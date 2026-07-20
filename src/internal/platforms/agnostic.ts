@@ -54,11 +54,7 @@ export const makeAgnosticHttpClientLayer = (
                         const handler: ProxyHandler<HttpClientResponse.HttpClientResponse> = {
                             get: (target, prop, receiver) => {
                                 const replacer = (str: string): string =>
-                                    str.replace(/\b\d{10,}\b/g, (numStr) =>
-                                        Number.isSafeInteger(Number(numStr)) && Number(numStr) <= 2 ** 32 - 1
-                                            ? numStr
-                                            : `"${numStr}"`
-                                    );
+                                    str.replace(/\b\d+\b/g, (numStr) => `"${numStr}"`);
 
                                 if (prop === "text") {
                                     const ogText = Reflect.get(target, prop, receiver);

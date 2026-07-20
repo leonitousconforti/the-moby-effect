@@ -92,7 +92,7 @@ const pruneVolumeEndpoint = HttpApiEndpoint.post("prune", "/prune", {
     query: { filters: Schema.optional(PruneFilters) },
     success: Schema.Struct({
         VolumesDeleted: Schema.optional(Schema.Array(VolumeIdentifier)),
-        SpaceReclaimed: Schema.Int.check(Schema.isBetween({ minimum: 0, maximum: 2 ** 63 - 1 })),
+        SpaceReclaimed: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
     }), // 200 OK
     error: [InternalServerError],
 });
