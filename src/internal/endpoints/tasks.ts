@@ -103,8 +103,9 @@ export class Tasks extends Context.Service<Tasks>()("@the-moby-effect/endpoints/
         const client = yield* HttpApiClient.group(TasksApi, { group: "tasks", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof TaskListFilters>) =>
-            Effect.mapError(client.list({ query: { filters } }), TasksError("list"));
-        const inspect_ = (id: string) => Effect.mapError(client.inspect({ params: { id } }), TasksError("inspect"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(TasksError("list")));
+        const inspect_ = (id: string) =>
+            client.inspect({ params: { id } }).pipe(Effect.mapError(TasksError("inspect")));
         const logs_ = (id: string, options?: Options<"logs">) =>
             client
                 .logs({ params: { id }, query: { ...options } })

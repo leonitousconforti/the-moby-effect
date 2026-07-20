@@ -479,17 +479,16 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
         });
 
         const list_ = (options?: Options<"list"> | undefined) =>
-            Effect.mapError(
-                client.list({
+            client
+                .list({
                     query: {
                         all: options?.all,
                         limit: options?.limit,
                         size: options?.size,
                         filters: options?.filters,
                     },
-                }),
-                ContainersError("list")
-            );
+                })
+                .pipe(Effect.mapError(ContainersError("list")));
         const create_ = (
             options: Omit<(typeof ContainerCreateRequest)["~type.make.in"], "HostConfig"> & {
                 readonly Name?: string | undefined;
@@ -505,18 +504,17 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 return yield* client.create({ query: { name: options.Name, platform: options.Platform }, payload });
             }).pipe(Effect.mapError(ContainersError("create")));
         const inspect_ = (identifier: ContainerIdentifier, options?: Options<"inspect">) =>
-            Effect.mapError(
-                client.inspect({ params: { identifier }, query: { ...options } }),
-                ContainersError("inspect")
-            );
+            client
+                .inspect({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("inspect")));
         const top_ = (identifier: ContainerIdentifier, options?: Options<"top">) =>
-            Effect.mapError(client.top({ params: { identifier }, query: { ...options } }), ContainersError("top"));
+            client.top({ params: { identifier }, query: { ...options } }).pipe(Effect.mapError(ContainersError("top")));
         const logs_ = (identifier: ContainerIdentifier, options?: Options<"logs">) =>
             client
                 .logs({ params: { identifier }, query: { ...options } })
                 .pipe(Stream.unwrap, Stream.decodeText(), Stream.splitLines, Stream.mapError(ContainersError("logs")));
         const changes_ = (identifier: ContainerIdentifier) =>
-            Effect.mapError(client.changes({ params: { identifier } }), ContainersError("changes"));
+            client.changes({ params: { identifier } }).pipe(Effect.mapError(ContainersError("changes")));
         const export_ = (identifier: ContainerIdentifier) =>
             client.export({ params: { identifier } }).pipe(Stream.unwrap, Stream.mapError(ContainersError("export")));
         const stats_ = (identifier: ContainerIdentifier, options?: Options<"stats">) =>
@@ -529,34 +527,36 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
             );
 
         const resize_ = (identifier: ContainerIdentifier, options?: Options<"resize">) =>
-            Effect.mapError(
-                client.resize({ params: { identifier }, query: { ...options } }),
-                ContainersError("resize")
-            );
+            client
+                .resize({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("resize")));
         const start_ = (identifier: ContainerIdentifier, options?: Options<"start">) =>
-            Effect.mapError(client.start({ params: { identifier }, query: { ...options } }), ContainersError("start"));
+            client
+                .start({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("start")));
         const stop_ = (identifier: ContainerIdentifier, options?: Options<"stop">) =>
-            Effect.mapError(client.stop({ params: { identifier }, query: { ...options } }), ContainersError("stop"));
+            client
+                .stop({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("stop")));
         const restart_ = (identifier: ContainerIdentifier, options?: Options<"restart">) =>
-            Effect.mapError(
-                client.restart({ params: { identifier }, query: { ...options } }),
-                ContainersError("restart")
-            );
+            client
+                .restart({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("restart")));
         const kill_ = (identifier: ContainerIdentifier, options?: Options<"kill">) =>
-            Effect.mapError(client.kill({ params: { identifier }, query: { ...options } }), ContainersError("kill"));
+            client
+                .kill({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("kill")));
         const update_ = (identifier: ContainerIdentifier, config: (typeof ContainerConfig)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(ContainerConfig.makeEffect(config), (payload) =>
-                    client.update({ params: { identifier }, payload })
-                ),
-                ContainersError("update")
+            ContainerConfig.makeEffect(config).pipe(
+                Effect.flatMap((payload) => client.update({ params: { identifier }, payload })),
+                Effect.mapError(ContainersError("update"))
             );
         const rename_ = (identifier: ContainerIdentifier, name: string) =>
-            Effect.mapError(client.rename({ params: { identifier }, query: { name } }), ContainersError("rename"));
+            client.rename({ params: { identifier }, query: { name } }).pipe(Effect.mapError(ContainersError("rename")));
         const pause_ = (identifier: ContainerIdentifier) =>
-            Effect.mapError(client.pause({ params: { identifier } }), ContainersError("pause"));
+            client.pause({ params: { identifier } }).pipe(Effect.mapError(ContainersError("pause")));
         const unpause_ = (identifier: ContainerIdentifier) =>
-            Effect.mapError(client.unpause({ params: { identifier } }), ContainersError("unpause"));
+            client.unpause({ params: { identifier } }).pipe(Effect.mapError(ContainersError("unpause")));
         const attach_ = (identifier: ContainerIdentifier, options?: Options<"attach">) =>
             client
                 .attach({
@@ -608,12 +608,13 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 return makeRawSocket(websocket);
             }).pipe(Effect.mapError(ContainersError("attachWebsocket")));
         const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
-            Effect.mapError(client.wait({ params: { identifier }, query: { ...options } }), ContainersError("wait"));
+            client
+                .wait({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("wait")));
         const delete_ = (identifier: ContainerIdentifier, options?: Options<"delete">) =>
-            Effect.mapError(
-                client.delete({ params: { identifier }, query: { ...options } }),
-                ContainersError("delete")
-            );
+            client
+                .delete({ params: { identifier }, query: { ...options } })
+                .pipe(Effect.mapError(ContainersError("delete")));
         const archive_ = (identifier: ContainerIdentifier, options: Options<"archive">) =>
             client
                 .archive({ params: { identifier }, query: { ...options } })
@@ -646,7 +647,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 })
             ).pipe(Effect.mapError(ContainersError("putArchive")));
         const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters> | undefined) =>
-            Effect.mapError(client.prune({ query: { filters } }), ContainersError("prune"));
+            client.prune({ query: { filters } }).pipe(Effect.mapError(ContainersError("prune")));
 
         return {
             list: list_,

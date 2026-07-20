@@ -96,16 +96,15 @@ export class Nodes extends Context.Service<Nodes>()("@the-moby-effect/endpoints/
         const client = yield* HttpApiClient.group(NodesApi, { group: "nodes", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
-            Effect.mapError(client.list({ query: { filters } }), NodesError("list"));
-        const inspect_ = (id: string) => Effect.mapError(client.inspect({ params: { id } }), NodesError("inspect"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(NodesError("list")));
+        const inspect_ = (id: string) =>
+            client.inspect({ params: { id } }).pipe(Effect.mapError(NodesError("inspect")));
         const delete_ = (id: string, options?: { force?: boolean | undefined } | undefined) =>
-            Effect.mapError(client.delete({ params: { id }, query: { ...options } }), NodesError("delete"));
+            client.delete({ params: { id }, query: { ...options } }).pipe(Effect.mapError(NodesError("delete")));
         const update_ = (id: string, version: number, payload: (typeof SwarmNodeSpec)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmNodeSpec.makeEffect(payload), (payload) =>
-                    client.update({ params: { id }, query: { version }, payload })
-                ),
-                NodesError("update")
+            SwarmNodeSpec.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.update({ params: { id }, query: { version }, payload })),
+                Effect.mapError(NodesError("update"))
             );
 
         return {

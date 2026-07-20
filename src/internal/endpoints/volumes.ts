@@ -128,25 +128,23 @@ export class Volumes extends Context.Service<Volumes>()("@the-moby-effect/endpoi
         const client = yield* HttpApiClient.group(VolumesApi, { group: "volumes", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
-            Effect.mapError(client.list({ query: { filters } }), VolumesError("list"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(VolumesError("list")));
         const create_ = (options: (typeof VolumeCreateOptions)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(VolumeCreateOptions.makeEffect(options), (payload) => client.create({ payload })),
-                VolumesError("create")
+            VolumeCreateOptions.makeEffect(options).pipe(
+                Effect.flatMap((payload) => client.create({ payload })),
+                Effect.mapError(VolumesError("create"))
             );
         const inspect_ = (name: string) =>
-            Effect.mapError(client.inspect({ params: { name } }), VolumesError("inspect"));
+            client.inspect({ params: { name } }).pipe(Effect.mapError(VolumesError("inspect")));
         const delete_ = (name: string, options?: { force?: boolean | undefined } | undefined) =>
-            Effect.mapError(client.delete({ params: { name }, query: { ...options } }), VolumesError("delete"));
+            client.delete({ params: { name }, query: { ...options } }).pipe(Effect.mapError(VolumesError("delete")));
         const update_ = (name: string, version: number, spec: (typeof ClusterVolumeSpec)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(ClusterVolumeSpec.makeEffect(spec), (payload) =>
-                    client.update({ params: { name }, query: { version }, payload })
-                ),
-                VolumesError("update")
+            ClusterVolumeSpec.makeEffect(spec).pipe(
+                Effect.flatMap((payload) => client.update({ params: { name }, query: { version }, payload })),
+                Effect.mapError(VolumesError("update"))
             );
         const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters>) =>
-            Effect.mapError(client.prune({ query: { filters } }), VolumesError("prune"));
+            client.prune({ query: { filters } }).pipe(Effect.mapError(VolumesError("prune")));
 
         return {
             list: list_,

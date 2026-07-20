@@ -117,14 +117,14 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
         const client = yield* HttpApiClient.group(SystemApi, { group: "system", httpClient });
 
         const auth_ = (payload: (typeof RegistryAuthConfig)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(RegistryAuthConfig.makeEffect(payload), (payload) => client.auth({ payload })),
-                SystemsError("auth")
+            RegistryAuthConfig.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.auth({ payload })),
+                Effect.mapError(SystemsError("auth"))
             );
-        const info_ = () => Effect.mapError(client.info(), SystemsError("info"));
-        const version_ = () => Effect.mapError(client.version(), SystemsError("version"));
-        const ping_ = () => Effect.mapError(client.ping(), SystemsError("ping"));
-        const pingHead_ = () => Effect.mapError(client.pingHead(), SystemsError("pingHead"));
+        const info_ = () => client.info().pipe(Effect.mapError(SystemsError("info")));
+        const version_ = () => client.version().pipe(Effect.mapError(SystemsError("version")));
+        const ping_ = () => client.ping().pipe(Effect.mapError(SystemsError("ping")));
+        const pingHead_ = () => client.pingHead().pipe(Effect.mapError(SystemsError("pingHead")));
         const events_ = (options?: Options<"events">) =>
             client.events({ query: { ...options } }).pipe(
                 Stream.unwrap,
@@ -134,7 +134,7 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
                 Stream.mapError(SystemsError("events"))
             );
         const dataUsage_ = (params?: Options<"dataUsage">) =>
-            Effect.mapError(client.dataUsage({ query: { ...params } }), SystemsError("dataUsage"));
+            client.dataUsage({ query: { ...params } }).pipe(Effect.mapError(SystemsError("dataUsage")));
 
         return {
             auth: auth_,

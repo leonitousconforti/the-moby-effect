@@ -160,19 +160,19 @@ export class Swarm extends Context.Service<Swarm>()("@the-moby-effect/endpoints/
         const SwarmsError = DockerError.WrapForModule("swarm");
         const client = yield* HttpApiClient.group(SwarmApi, { group: "swarm", httpClient });
 
-        const inspect_ = () => Effect.mapError(client.inspect(), SwarmsError("inspect"));
+        const inspect_ = () => client.inspect().pipe(Effect.mapError(SwarmsError("inspect")));
         const init_ = (payload: (typeof SwarmInitRequest)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmInitRequest.makeEffect(payload), (payload) => client.init({ payload })),
-                SwarmsError("init")
+            SwarmInitRequest.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.init({ payload })),
+                Effect.mapError(SwarmsError("init"))
             );
         const join_ = (payload: (typeof SwarmJoinRequest)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmJoinRequest.makeEffect(payload), (payload) => client.join({ payload })),
-                SwarmsError("join")
+            SwarmJoinRequest.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.join({ payload })),
+                Effect.mapError(SwarmsError("join"))
             );
         const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
-            Effect.mapError(client.leave({ query: { ...options } }), SwarmsError("leave"));
+            client.leave({ query: { ...options } }).pipe(Effect.mapError(SwarmsError("leave")));
         const update_ = (
             spec: (typeof SwarmSpec)["~type.make.in"],
             version: bigint,
@@ -184,18 +184,18 @@ export class Swarm extends Context.Service<Swarm>()("@the-moby-effect/endpoints/
                   }
                 | undefined
         ) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmSpec.makeEffect(spec), (payload) =>
+            SwarmSpec.makeEffect(spec).pipe(
+                Effect.flatMap((payload) =>
                     client.update({
                         payload,
                         query: { version, ...rotate },
                     })
                 ),
-                SwarmsError("update")
+                Effect.mapError(SwarmsError("update"))
             );
-        const unlockkey_ = () => Effect.mapError(client.unlockkey(), SwarmsError("unlockkey"));
+        const unlockkey_ = () => client.unlockkey().pipe(Effect.mapError(SwarmsError("unlockkey")));
         const unlock_ = (unlockKey: string) =>
-            Effect.mapError(client.unlock({ payload: { UnlockKey: unlockKey } }), SwarmsError("unlock"));
+            client.unlock({ payload: { UnlockKey: unlockKey } }).pipe(Effect.mapError(SwarmsError("unlock")));
 
         return {
             inspect: inspect_,

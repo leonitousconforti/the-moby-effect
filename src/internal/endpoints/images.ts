@@ -338,7 +338,7 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
         const decodeJsonMessage = Schema.decodeEffect(Schema.fromJsonString(JSONMessage));
 
         const list_ = (options?: Options<"list">) =>
-            Effect.mapError(client.list({ query: { ...options } }), ImagesError("list"));
+            client.list({ query: { ...options } }).pipe(Effect.mapError(ImagesError("list")));
         const build_ = <E, R>(build: Stream.Stream<Uint8Array, E, R>, options?: Options<"build">) =>
             Effect.contextWith((context: Context.Context<R>) =>
                 client.build({
@@ -354,7 +354,7 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
                 Stream.mapError(ImagesError("build"))
             );
         const buildPrune_ = (options?: Options<"buildPrune">) =>
-            Effect.mapError(client.buildPrune({ query: { ...options } }), ImagesError("buildPrune"));
+            client.buildPrune({ query: { ...options } }).pipe(Effect.mapError(ImagesError("buildPrune")));
         const create_ = (options?: Options<"create">) =>
             client.create({ headers: {}, query: { ...options } }).pipe(
                 Stream.unwrap,
@@ -364,9 +364,9 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
                 Stream.mapError(ImagesError("create"))
             );
         const inspect_ = (name: string, options?: Options<"inspect">) =>
-            Effect.mapError(client.inspect({ params: { name }, query: { ...options } }), ImagesError("inspect"));
+            client.inspect({ params: { name }, query: { ...options } }).pipe(Effect.mapError(ImagesError("inspect")));
         const history_ = (name: string, options?: Options<"history">) =>
-            Effect.mapError(client.history({ params: { name }, query: { ...options } }), ImagesError("history"));
+            client.history({ params: { name }, query: { ...options } }).pipe(Effect.mapError(ImagesError("history")));
         const push_ = (name: string, options?: Options<"push">) =>
             client.push({ params: { name }, query: { ...options }, headers: {} }).pipe(
                 Stream.unwrap,
@@ -376,22 +376,17 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
                 Stream.mapError(ImagesError("push"))
             );
         const tag_ = (name: string, options?: Options<"tag">) =>
-            Effect.mapError(client.tag({ params: { name }, query: { ...options } }), ImagesError("tag"));
+            client.tag({ params: { name }, query: { ...options } }).pipe(Effect.mapError(ImagesError("tag")));
         const delete_ = (name: string, options?: Options<"delete">) =>
-            Effect.mapError(client.delete({ params: { name }, query: { ...options } }), ImagesError("delete"));
+            client.delete({ params: { name }, query: { ...options } }).pipe(Effect.mapError(ImagesError("delete")));
         const search_ = (options: Options<"search">) =>
-            Effect.mapError(client.search({ query: { ...options } }), ImagesError("search"));
+            client.search({ query: { ...options } }).pipe(Effect.mapError(ImagesError("search")));
         const prune_ = (options?: Options<"prune">) =>
-            Effect.mapError(client.prune({ query: { ...options } }), ImagesError("prune"));
-        const commit_ = (
-            payload: (typeof ContainerCreateRequest)["~type.make.in"],
-            options: Options<"commit">
-        ) =>
-            Effect.mapError(
-                Effect.flatMap(ContainerCreateRequest.makeEffect(payload), (payload) =>
-                    client.commit({ query: { ...options }, payload })
-                ),
-                ImagesError("commit")
+            client.prune({ query: { ...options } }).pipe(Effect.mapError(ImagesError("prune")));
+        const commit_ = (payload: (typeof ContainerCreateRequest)["~type.make.in"], options: Options<"commit">) =>
+            ContainerCreateRequest.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.commit({ query: { ...options }, payload })),
+                Effect.mapError(ImagesError("commit"))
             );
         const export_ = (name: string, options?: Options<"export">) =>
             client.export({ params: { name }, query: { ...options } }).pipe(

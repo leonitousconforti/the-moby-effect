@@ -195,9 +195,9 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
         const client = yield* HttpApiClient.group(PluginsApi, { group: "plugins", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters> | undefined) =>
-            Effect.mapError(client.list({ query: { filters } }), PluginsError("list"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(PluginsError("list")));
         const getPrivileges_ = (remote: string) =>
-            Effect.mapError(client.getPrivileges({ query: { remote } }), PluginsError("getPrivileges"));
+            client.getPrivileges({ query: { remote } }).pipe(Effect.mapError(PluginsError("getPrivileges")));
         const pull_ = (
             remote: string,
             options?: {
@@ -205,60 +205,56 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
                 privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined;
             }
         ) =>
-            Effect.forEach(options?.privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege))
-                .pipe(
-                    Effect.flatMap((payload) =>
-                        client.pull({
-                            headers: {},
-                            query: { remote, name: options?.name },
-                            payload,
-                        })
-                    ),
-                    Stream.unwrap,
-                    Stream.decodeText(),
-                    Stream.splitLines,
-                    Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(JSONMessage))(line)),
-                    Stream.mapError(PluginsError("pull"))
-                );
+            Effect.forEach(options?.privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege)).pipe(
+                Effect.flatMap((payload) =>
+                    client.pull({
+                        headers: {},
+                        query: { remote, name: options?.name },
+                        payload,
+                    })
+                ),
+                Stream.unwrap,
+                Stream.decodeText(),
+                Stream.splitLines,
+                Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(JSONMessage))(line)),
+                Stream.mapError(PluginsError("pull"))
+            );
         const inspect_ = (name: string) =>
-            Effect.mapError(client.inspect({ params: { name } }), PluginsError("inspect"));
+            client.inspect({ params: { name } }).pipe(Effect.mapError(PluginsError("inspect")));
         const delete_ = (name: string, options?: Options<"delete">) =>
-            Effect.mapError(client.delete({ params: { name }, query: { ...options } }), PluginsError("delete"));
+            client.delete({ params: { name }, query: { ...options } }).pipe(Effect.mapError(PluginsError("delete")));
         const enable_ = (name: string, options?: Options<"enable">) =>
-            Effect.mapError(
-                client.enable({
+            client
+                .enable({
                     params: { name },
                     query: { timeout: options?.timeout ?? 0 },
-                }),
-                PluginsError("enable")
-            );
+                })
+                .pipe(Effect.mapError(PluginsError("enable")));
         const disable_ = (name: string, options?: Options<"disable">) =>
-            Effect.mapError(client.disable({ params: { name }, query: { ...options } }), PluginsError("disable"));
+            client.disable({ params: { name }, query: { ...options } }).pipe(Effect.mapError(PluginsError("disable")));
         const upgrade_ = (
             name: string,
             remote: string,
             privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined
         ) =>
-            Effect.mapError(
-                Effect.flatMap(
-                    Effect.forEach(privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege)),
-                    (payload) =>
-                        client.upgrade({
-                            headers: {},
-                            params: { name },
-                            query: { remote },
-                            payload,
-                        })
+            Effect.forEach(privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege)).pipe(
+                Effect.flatMap((payload) =>
+                    client.upgrade({
+                        headers: {},
+                        params: { name },
+                        query: { remote },
+                        payload,
+                    })
                 ),
-                PluginsError("upgrade")
+                Effect.mapError(PluginsError("upgrade"))
             );
         const create_ = <E, R>(name: string, tar: Stream.Stream<Uint8Array, E, R>) =>
             Effect.contextWith((context: Context.Context<R>) =>
                 client.create({ query: { name }, payload: Stream.provideContext(tar, context) })
             ).pipe(Effect.mapError(PluginsError("create")));
-        const push_ = (name: string) => Effect.mapError(client.push({ params: { name } }), PluginsError("push"));
+        const push_ = (name: string) => client.push({ params: { name } }).pipe(Effect.mapError(PluginsError("push")));
         const set_ = (name: string, body: ReadonlyArray<string>) =>
-            Effect.mapError(client.set({ params: { name }, payload: body }), PluginsError("set"));
+            client.set({ params: { name }, payload: body }).pipe(Effect.mapError(PluginsError("set")));
 
         return {
             list: list_,

@@ -106,11 +106,9 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
         const client = yield* HttpApiClient.group(ExecsApi, { group: "exec", httpClient });
 
         const container_ = (id: string, payload: (typeof ExecConfig)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(ExecConfig.makeEffect(payload), (payload) =>
-                    client.container({ params: { id }, payload })
-                ),
-                ExecsError("container")
+            ExecConfig.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.container({ params: { id }, payload })),
+                Effect.mapError(ExecsError("container"))
             );
         const start_ = <const T extends boolean = false>(
             id: ExecIdentifier,
@@ -118,29 +116,28 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
                 Detach: T;
             }
         ): Effect.Effect<[T] extends [false] ? RawSocket | MultiplexedSocket : void, DockerError, never> =>
-            ContainerExecStartOptions.makeEffect(payload)
-                .pipe(
-                    Effect.flatMap((startOptions) =>
-                        client.start({
-                            params: { id },
-                            payload: startOptions,
-                            headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
-                            responseMode: "response-only",
-                        })
-                    ),
-                    Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
-                    Effect.map(
-                        (socket) =>
-                            (payload.Detach === true ? void 0 : socket) as [T] extends [false]
-                                ? RawSocket | MultiplexedSocket
-                                : void
-                    ),
-                    Effect.mapError(ExecsError("start"))
-                );
+            ContainerExecStartOptions.makeEffect(payload).pipe(
+                Effect.flatMap((startOptions) =>
+                    client.start({
+                        params: { id },
+                        payload: startOptions,
+                        headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
+                        responseMode: "response-only",
+                    })
+                ),
+                Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
+                Effect.map(
+                    (socket) =>
+                        (payload.Detach === true ? void 0 : socket) as [T] extends [false]
+                            ? RawSocket | MultiplexedSocket
+                            : void
+                ),
+                Effect.mapError(ExecsError("start"))
+            );
         const resize_ = (id: ExecIdentifier, params: { w: number; h: number }) =>
-            Effect.mapError(client.resize({ params: { id }, query: { ...params } }), ExecsError("resize"));
+            client.resize({ params: { id }, query: { ...params } }).pipe(Effect.mapError(ExecsError("resize")));
         const inspect_ = (id: ExecIdentifier) =>
-            Effect.mapError(client.inspect({ params: { id } }), ExecsError("inspect"));
+            client.inspect({ params: { id } }).pipe(Effect.mapError(ExecsError("inspect")));
 
         return {
             container: container_,

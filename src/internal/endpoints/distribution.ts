@@ -46,7 +46,7 @@ export class Distributions extends Context.Service<Distributions>()("@the-moby-e
         const DistributionsError = DockerError.WrapForModule("distributions");
         const client = yield* HttpApiClient.group(DistributionsApi, { group: "distributions", httpClient });
         const inspect_ = (name: string) =>
-            Effect.mapError(client.inspect({ params: { name } }), DistributionsError("inspect"));
+            client.inspect({ params: { name } }).pipe(Effect.mapError(DistributionsError("inspect")));
         return { inspect: inspect_ };
     }),
 }) {}

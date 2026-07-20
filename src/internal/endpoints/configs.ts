@@ -119,30 +119,30 @@ export class Configs extends Context.Service<Configs>()("@the-moby-effect/endpoi
         const client = yield* HttpApiClient.group(ConfigsApi, { group: "configs", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters> | undefined) =>
-            Effect.mapError(client.list({ query: { filters } }), ConfigsError("list"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(ConfigsError("list")));
         const create_ = (config: (typeof SwarmConfigSpec)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmConfigSpec.makeEffect(config), (payload) => client.create({ payload })),
-                ConfigsError("create")
+            SwarmConfigSpec.makeEffect(config).pipe(
+                Effect.flatMap((payload) => client.create({ payload })),
+                Effect.mapError(ConfigsError("create"))
             );
         const inspect_ = (identifier: ConfigIdentifier) =>
-            Effect.mapError(client.inspect({ params: { identifier } }), ConfigsError("inspect"));
+            client.inspect({ params: { identifier } }).pipe(Effect.mapError(ConfigsError("inspect")));
         const delete_ = (identifier: ConfigIdentifier) =>
-            Effect.mapError(client.delete({ params: { identifier } }), ConfigsError("delete"));
+            client.delete({ params: { identifier } }).pipe(Effect.mapError(ConfigsError("delete")));
         const update_ = (
             identifier: ConfigIdentifier,
             version: bigint,
             config: (typeof SwarmConfigSpec)["~type.make.in"]
         ) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmConfigSpec.makeEffect(config), (payload) =>
+            SwarmConfigSpec.makeEffect(config).pipe(
+                Effect.flatMap((payload) =>
                     client.update({
                         params: { identifier },
                         query: { version },
                         payload,
                     })
                 ),
-                ConfigsError("update")
+                Effect.mapError(ConfigsError("update"))
             );
 
         return {

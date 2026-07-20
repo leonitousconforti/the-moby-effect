@@ -147,39 +147,39 @@ export class Networks extends Context.Service<Networks>()("@the-moby-effect/endp
         const client = yield* HttpApiClient.group(NetworksApi, { group: "networks", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
-            Effect.mapError(client.list({ query: { filters } }), NetworksError("list"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(NetworksError("list")));
         const create_ = (payload: (typeof NetworkCreateRequest)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(NetworkCreateRequest.makeEffect(payload), (payload) => client.create({ payload })),
-                NetworksError("create")
+            NetworkCreateRequest.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.create({ payload })),
+                Effect.mapError(NetworksError("create"))
             );
         const inspect_ = (id: string, options?: Options<"inspect">) =>
-            Effect.mapError(client.inspect({ params: { id }, query: { ...options } }), NetworksError("inspect"));
-        const delete_ = (id: string) => Effect.mapError(client.delete({ params: { id } }), NetworksError("delete"));
+            client.inspect({ params: { id }, query: { ...options } }).pipe(Effect.mapError(NetworksError("inspect")));
+        const delete_ = (id: string) =>
+            client.delete({ params: { id } }).pipe(Effect.mapError(NetworksError("delete")));
         const connect_ = (id: string, payload: (typeof NetworkConnectOptions)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(NetworkConnectOptions.makeEffect(payload), (payload) =>
+            NetworkConnectOptions.makeEffect(payload).pipe(
+                Effect.flatMap((payload) =>
                     client.connect({
                         params: { id },
                         payload,
                     })
                 ),
-                NetworksError("connect")
+                Effect.mapError(NetworksError("connect"))
             );
         const disconnect_ = (
             id: string,
             containerId: ContainerIdentifier,
             options?: { force?: boolean | undefined } | undefined
         ) =>
-            Effect.mapError(
-                client.disconnect({
+            client
+                .disconnect({
                     params: { id },
                     payload: { Container: containerId, Force: options?.force ?? false },
-                }),
-                NetworksError("disconnect")
-            );
+                })
+                .pipe(Effect.mapError(NetworksError("disconnect")));
         const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters>) =>
-            Effect.mapError(client.prune({ query: { filters } }), NetworksError("prune"));
+            client.prune({ query: { filters } }).pipe(Effect.mapError(NetworksError("prune")));
 
         return {
             list: list_,

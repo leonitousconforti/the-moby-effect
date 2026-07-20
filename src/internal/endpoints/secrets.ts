@@ -117,20 +117,19 @@ export class Secrets extends Context.Service<Secrets>()("@the-moby-effect/endpoi
         const client = yield* HttpApiClient.group(SecretsApi, { group: "secrets", httpClient });
 
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
-            Effect.mapError(client.list({ query: { filters } }), SecretsError("list"));
+            client.list({ query: { filters } }).pipe(Effect.mapError(SecretsError("list")));
         const create_ = (payload: (typeof SwarmSecretSpec)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmSecretSpec.makeEffect(payload), (payload) => client.create({ payload })),
-                SecretsError("create")
+            SwarmSecretSpec.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.create({ payload })),
+                Effect.mapError(SecretsError("create"))
             );
-        const inspect_ = (id: string) => Effect.mapError(client.inspect({ params: { id } }), SecretsError("inspect"));
-        const delete_ = (id: string) => Effect.mapError(client.delete({ params: { id } }), SecretsError("delete"));
+        const inspect_ = (id: string) =>
+            client.inspect({ params: { id } }).pipe(Effect.mapError(SecretsError("inspect")));
+        const delete_ = (id: string) => client.delete({ params: { id } }).pipe(Effect.mapError(SecretsError("delete")));
         const update_ = (id: string, version: bigint, payload: (typeof SwarmSecretSpec)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmSecretSpec.makeEffect(payload), (payload) =>
-                    client.update({ params: { id }, query: { version }, payload })
-                ),
-                SecretsError("update")
+            SwarmSecretSpec.makeEffect(payload).pipe(
+                Effect.flatMap((payload) => client.update({ params: { id }, query: { version }, payload })),
+                Effect.mapError(SecretsError("update"))
             );
 
         return {

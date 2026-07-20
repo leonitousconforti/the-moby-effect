@@ -164,27 +164,24 @@ export class Services extends Context.Service<Services>()("@the-moby-effect/endp
         const client = yield* HttpApiClient.group(ServicesApi, { group: "services", httpClient });
 
         const list_ = (options?: Options<"list">) =>
-            Effect.mapError(client.list({ query: { ...options } }), ServicesError("list"));
+            client.list({ query: { ...options } }).pipe(Effect.mapError(ServicesError("list")));
         const create_ = (payload: (typeof SwarmServiceSpec)["~type.make.in"]) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmServiceSpec.makeEffect(payload), (payload) =>
+            SwarmServiceSpec.makeEffect(payload).pipe(
+                Effect.flatMap((payload) =>
                     client.create({
                         headers: {},
                         payload,
                     })
                 ),
-                ServicesError("create")
+                Effect.mapError(ServicesError("create"))
             );
-        const delete_ = (id: string) => Effect.mapError(client.delete({ params: { id } }), ServicesError("delete"));
+        const delete_ = (id: string) =>
+            client.delete({ params: { id } }).pipe(Effect.mapError(ServicesError("delete")));
         const inspect_ = (id: string, options?: Options<"inspect">) =>
-            Effect.mapError(client.inspect({ params: { id }, query: { ...options } }), ServicesError("inspect"));
-        const update_ = (
-            id: string,
-            options: Options<"update">,
-            payload: (typeof SwarmServiceSpec)["~type.make.in"]
-        ) =>
-            Effect.mapError(
-                Effect.flatMap(SwarmServiceSpec.makeEffect(payload), (payload) =>
+            client.inspect({ params: { id }, query: { ...options } }).pipe(Effect.mapError(ServicesError("inspect")));
+        const update_ = (id: string, options: Options<"update">, payload: (typeof SwarmServiceSpec)["~type.make.in"]) =>
+            SwarmServiceSpec.makeEffect(payload).pipe(
+                Effect.flatMap((payload) =>
                     client.update({
                         headers: {},
                         params: { id },
@@ -192,7 +189,7 @@ export class Services extends Context.Service<Services>()("@the-moby-effect/endp
                         payload,
                     })
                 ),
-                ServicesError("update")
+                Effect.mapError(ServicesError("update"))
             );
         const logs_ = (id: string, options?: Options<"logs">) =>
             client
