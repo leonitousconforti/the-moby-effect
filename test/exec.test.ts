@@ -1,53 +1,47 @@
-import { FileSystem, Path } from "@effect/platform";
-import { NodeContext } from "@effect/platform-node";
+import { Context, Duration, Effect, Function, FileSystem, Layer, Path, Sink, Stream } from "effect";
+
+import { NodeServices } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Context, Duration, Effect, Layer, Sink, Stream } from "effect";
 import { DindEngine, DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
+
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
 describe.each(testMatrix)(
     "MobyApi Execs tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
-        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-            .pipe(
-                Effect.map((connectionOptionsToHost) =>
-                    makePlatformDindLayer({
-                        dindBaseImage,
-                        exposeDindContainerBy,
-                        connectionOptionsToHost,
-                    })
-                )
-            )
-            .pipe(Layer.unwrapEffect)
-            .pipe(
-                Layer.tap((context) =>
-                    Effect.gen(function* () {
-                        const path = yield* Path.Path;
-                        const fileSystem = yield* FileSystem.FileSystem;
-                        const images = Context.get(context, MobyEndpoints.Images);
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault.pipe(
+            Effect.map((connectionOptionsToHost) =>
+                makePlatformDindLayer({
+                    dindBaseImage,
+                    exposeDindContainerBy,
+                    connectionOptionsToHost,
+                })
+            ),
+            Layer.unwrap,
+            Layer.tap((context) =>
+                Effect.gen(function* () {
+                    const path = yield* Path.Path;
+                    const fileSystem = yield* FileSystem.FileSystem;
+                    const images = Context.get(context, MobyEndpoints.Images);
 
-                        const fixture1 = yield* path.fromFileUrl(
-                            new URL("fixtures/alpine_latest.tar", import.meta.url)
-                        );
-                        const fixture2 = yield* path.fromFileUrl(
-                            new URL("fixtures/ubuntu_latest.tar", import.meta.url)
-                        );
+                    const fixture1 = yield* path.fromFileUrl(new URL("fixtures/alpine_latest.tar", import.meta.url));
+                    const fixture2 = yield* path.fromFileUrl(new URL("fixtures/ubuntu_latest.tar", import.meta.url));
 
-                        const alpineTarBuffer = fileSystem.stream(fixture1);
-                        const pullStream = images.import(alpineTarBuffer);
-                        yield* MobyConvey.waitForProgressToComplete(pullStream);
+                    const alpineTarBuffer = fileSystem.stream(fixture1);
+                    const pullStream = images.import(alpineTarBuffer);
+                    yield* MobyConvey.waitForProgressToComplete(pullStream);
 
-                        const ubuntuTarBuffer = fileSystem.stream(fixture2);
-                        const pullStream2 = images.import(ubuntuTarBuffer);
-                        yield* MobyConvey.waitForProgressToComplete(pullStream2);
-                    })
-                )
-            )
-            .pipe(Layer.provide(NodeContext.layer));
+                    const ubuntuTarBuffer = fileSystem.stream(fixture2);
+                    const pullStream2 = images.import(ubuntuTarBuffer);
+                    yield* MobyConvey.waitForProgressToComplete(pullStream2);
+                })
+            ),
+            Layer.provide(NodeServices.layer)
+        );
 
         layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Execs tests", (it) => {
-            it.scoped("exec", () =>
+            it.effect("exec", () =>
                 Effect.gen(function* () {
                     // FIXME: can't send the right headers on undici
                     if (makePlatformDindLayer === DindEngine.layerUndici) return;
@@ -67,7 +61,7 @@ describe.each(testMatrix)(
                 })
             );
 
-            it.scoped("execWebsocketsNonBlocking", () =>
+            it.effect("execWebsocketsNonBlocking", () =>
                 Effect.gen(function* () {
                     // FIXME: websockets non blocking is broken on docker:26-dind-rootless and docker:27-dind-rootless
                     if (
@@ -97,8 +91,16 @@ describe.each(testMatrix)(
                     const [stdout, stderr] = yield* MobyDemux.demuxMultiplexedToSeparateSinks(
                         packed,
                         Stream.make("ah2\n"),
-                        Sink.mkString,
-                        Sink.mkString
+                        Sink.fold(
+                            () => "",
+                            Function.constTrue,
+                            (acc, chunk) => Effect.succeed(acc + chunk)
+                        ),
+                        Sink.fold(
+                            () => "",
+                            Function.constTrue,
+                            (acc, chunk) => Effect.succeed(acc + chunk)
+                        )
                     );
 
                     expect(stderr).toBe("");

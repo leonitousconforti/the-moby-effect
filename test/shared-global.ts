@@ -1,7 +1,7 @@
-import type { MobyConnection } from "the-moby-effect";
-import type { RecommendedDindBaseImages } from "../src/internal/blobs/constants.js";
-
 import { Array, pipe } from "effect";
+
+import type { RecommendedDindBaseImages } from "../src/internal/blobs/constants.js";
+import type { MobyConnection } from "the-moby-effect";
 
 export const testMatrix: Array<{
     dindBaseImage: RecommendedDindBaseImages;

@@ -1,25 +1,26 @@
-import { NodeContext } from "@effect/platform-node";
-import { describe, expect, layer } from "@effect/vitest";
 import { Context, Duration, Effect, Layer } from "effect";
+
+import { NodeServices } from "@effect/platform-node";
+import { describe, expect, layer } from "@effect/vitest";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
 describe.each(testMatrix)(
     "MobyApi Services tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
-        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-            .pipe(
-                Effect.map((connectionOptionsToHost) =>
-                    makePlatformDindLayer({
-                        dindBaseImage,
-                        exposeDindContainerBy,
-                        connectionOptionsToHost,
-                    })
-                )
-            )
-            .pipe(Layer.unwrapEffect)
-            .pipe(Layer.provide(NodeContext.layer));
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault.pipe(
+            Effect.map((connectionOptionsToHost) =>
+                makePlatformDindLayer({
+                    dindBaseImage,
+                    exposeDindContainerBy,
+                    connectionOptionsToHost,
+                })
+            ),
+            Layer.unwrap,
+            Layer.provide(NodeServices.layer)
+        );
 
         const withSwarmEnabled = Layer.tap(testLayer, (context) => {
             const swarm = Context.get(context, MobyEndpoints.Swarm);

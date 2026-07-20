@@ -1,5 +1,6 @@
-import { inject } from "@effect/vitest";
 import { Function, Match } from "effect";
+
+import { inject } from "@effect/vitest";
 import { DindEngine } from "the-moby-effect";
 
 export const makePlatformDindLayer = Function.pipe(

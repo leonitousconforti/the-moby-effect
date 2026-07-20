@@ -1,25 +1,26 @@
-import { NodeContext } from "@effect/platform-node";
+import { Duration, Effect, Fiber, Layer, Option, Result, Schema, SchemaGetter, Stream } from "effect";
+
+import { NodeServices } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Duration, Effect, Either, Layer, Option, Schema, Stream } from "effect";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
 describe.each(testMatrix)(
     "MobyApi System tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
-        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-            .pipe(
-                Effect.map((connectionOptionsToHost) =>
-                    makePlatformDindLayer({
-                        dindBaseImage,
-                        exposeDindContainerBy,
-                        connectionOptionsToHost,
-                    })
-                )
-            )
-            .pipe(Layer.unwrapEffect)
-            .pipe(Layer.provide(NodeContext.layer));
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault.pipe(
+            Effect.map((connectionOptionsToHost) =>
+                makePlatformDindLayer({
+                    dindBaseImage,
+                    exposeDindContainerBy,
+                    connectionOptionsToHost,
+                })
+            ),
+            Layer.unwrap,
+            Layer.provide(NodeServices.layer)
+        );
 
         layer(testLayer, {
             timeout: Duration.minutes(2),
@@ -39,31 +40,28 @@ describe.each(testMatrix)(
                         const versionResponse = yield* system.version();
                         expect(versionResponse).toBeDefined();
 
-                        const schema = Schema.transform(
-                            Schema.Union(
-                                Schema.Literal("docker.io/library/docker:dind-rootless"),
-                                Schema.TemplateLiteral("docker.io/library/docker:", Schema.String, "-dind-rootless")
-                            ),
-                            Schema.EitherFromSelf({
-                                right: Schema.NumberFromString,
-                                left: Schema.Literal("latest"),
-                            }),
-                            {
-                                decode: (str) =>
+                        const schema = Schema.Union([
+                            Schema.Literal("docker.io/library/docker:dind-rootless"),
+                            Schema.TemplateLiteral(["docker.io/library/docker:", Schema.String, "-dind-rootless"]),
+                        ]).pipe(
+                            Schema.decodeTo(Schema.Result(Schema.NumberFromString, Schema.Literal("latest")), {
+                                decode: SchemaGetter.transform((str) =>
                                     str === "docker.io/library/docker:dind-rootless"
-                                        ? Either.left("latest" as const)
-                                        : Either.right(str.split(":")[1].replace("-dind-rootless", "")),
-                                encode: (version) =>
-                                    Either.match(version, {
-                                        onLeft: () => `docker.io/library/docker:dind-rootless` as const,
-                                        onRight: (v) => `docker.io/library/docker:${v}-dind-rootless` as const,
-                                    }),
-                            }
+                                        ? Result.fail("latest" as const)
+                                        : Result.succeed(str.split(":")[1]!.replace("-dind-rootless", ""))
+                                ),
+                                encode: SchemaGetter.transform((version) =>
+                                    Result.match(version, {
+                                        onFailure: () => `docker.io/library/docker:dind-rootless` as const,
+                                        onSuccess: (v) => `docker.io/library/docker:${v}-dind-rootless` as const,
+                                    })
+                                ),
+                            })
                         );
 
-                        const runningMajorVersion = yield* Schema.decode(schema)(dindBaseImage);
-                        if (Either.isRight(runningMajorVersion)) {
-                            expect(versionResponse.Version).toContain(runningMajorVersion.right);
+                        const runningMajorVersion = yield* Schema.decodeEffect(schema)(dindBaseImage);
+                        if (Result.isSuccess(runningMajorVersion)) {
+                            expect(versionResponse.Version).toContain(runningMajorVersion.success);
                         }
                     })
                 );
@@ -104,9 +102,7 @@ describe.each(testMatrix)(
                         const system = yield* MobyEndpoints.System;
                         const fiber = yield* system
                             .events({ since: `${Date.now()}` })
-                            .pipe(Stream.take(1))
-                            .pipe(Stream.runHead)
-                            .pipe(Effect.fork);
+                            .pipe(Stream.take(1), Stream.runHead, Effect.forkChild);
 
                         // Create an event
                         yield* Effect.sleep("1 second");
@@ -114,7 +110,7 @@ describe.each(testMatrix)(
                         yield* volumes.create({ Name: "events-test-volume-2" });
 
                         // Gather the event
-                        const data = yield* fiber;
+                        const data = yield* Fiber.join(fiber);
                         expect(Option.getOrUndefined(data)).toBeDefined();
                     })
                 );

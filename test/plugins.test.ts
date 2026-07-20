@@ -1,25 +1,26 @@
-import { NodeContext } from "@effect/platform-node";
-import { describe, expect, layer } from "@effect/vitest";
 import { Duration, Effect, Layer, Stream } from "effect";
+
+import { NodeServices } from "@effect/platform-node";
+import { describe, expect, layer } from "@effect/vitest";
 import { MobyConnection, MobyEndpoints } from "the-moby-effect";
+
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
 describe.each(testMatrix)(
     "MobyApi Plugins tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
-        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-            .pipe(
-                Effect.map((connectionOptionsToHost) =>
-                    makePlatformDindLayer({
-                        dindBaseImage,
-                        exposeDindContainerBy,
-                        connectionOptionsToHost,
-                    })
-                )
-            )
-            .pipe(Layer.unwrapEffect)
-            .pipe(Layer.provide(NodeContext.layer));
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault.pipe(
+            Effect.map((connectionOptionsToHost) =>
+                makePlatformDindLayer({
+                    dindBaseImage,
+                    exposeDindContainerBy,
+                    connectionOptionsToHost,
+                })
+            ),
+            Layer.unwrap,
+            Layer.provide(NodeServices.layer)
+        );
 
         layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
             describe.sequential("MobyApi Plugins tests", () => {
@@ -46,9 +47,9 @@ describe.each(testMatrix)(
                                 name: "test-plugin:latest",
                                 privileges: [
                                     {
-                                        Name: privileges[0].Name,
-                                        Value: privileges[0].Value,
-                                        Description: privileges[0].Description,
+                                        name: privileges[0]!.name,
+                                        value: privileges[0]!.value,
+                                        description: privileges[0]!.description,
                                     },
                                 ],
                             });
@@ -82,9 +83,9 @@ describe.each(testMatrix)(
                         const privileges = yield* plugins.getPrivileges("docker.io/grafana/loki-docker-driver:main");
                         yield* plugins.upgrade("test-plugin:latest", "docker.io/grafana/loki-docker-driver:main", [
                             {
-                                Name: privileges[0].Name,
-                                Value: privileges[0].Value,
-                                Description: privileges[0].Description,
+                                name: privileges[0]!.name,
+                                value: privileges[0]!.value,
+                                description: privileges[0]!.description,
                             },
                         ]);
                     })

@@ -1,40 +1,37 @@
-import { FileSystem, Path } from "@effect/platform";
-import { NodeContext } from "@effect/platform-node";
+import { Context, Duration, Effect, FileSystem, Layer, Path, Stream } from "effect";
+
+import { NodeServices } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
-import { Context, Duration, Effect, Layer, Stream } from "effect";
-import { I64 } from "effect-schemas/Number";
 import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
+
 import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
 describe.each(testMatrix)(
     "MobyApi Containers tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
-        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault
-            .pipe(
-                Effect.map((connectionOptionsToHost) =>
-                    makePlatformDindLayer({
-                        dindBaseImage,
-                        exposeDindContainerBy,
-                        connectionOptionsToHost,
-                    })
-                )
-            )
-            .pipe(Layer.unwrapEffect)
-            .pipe(
-                Layer.tap((context) =>
-                    Effect.gen(function* () {
-                        const path = yield* Path.Path;
-                        const fileSystem = yield* FileSystem.FileSystem;
-                        const images = Context.get(context, MobyEndpoints.Images);
-                        const fixture = yield* path.fromFileUrl(new URL("fixtures/alpine_latest.tar", import.meta.url));
-                        const alpineTarBuffer = fileSystem.stream(fixture);
-                        const pullStream = images.import(alpineTarBuffer);
-                        yield* MobyConvey.waitForProgressToComplete(pullStream);
-                    })
-                )
-            )
-            .pipe(Layer.provide(NodeContext.layer));
+        const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault.pipe(
+            Effect.map((connectionOptionsToHost) =>
+                makePlatformDindLayer({
+                    dindBaseImage,
+                    exposeDindContainerBy,
+                    connectionOptionsToHost,
+                })
+            ),
+            Layer.unwrap,
+            Layer.tap((context) =>
+                Effect.gen(function* () {
+                    const path = yield* Path.Path;
+                    const fileSystem = yield* FileSystem.FileSystem;
+                    const images = Context.get(context, MobyEndpoints.Images);
+                    const fixture = yield* path.fromFileUrl(new URL("fixtures/alpine_latest.tar", import.meta.url));
+                    const alpineTarBuffer = fileSystem.stream(fixture);
+                    const pullStream = images.import(alpineTarBuffer);
+                    yield* MobyConvey.waitForProgressToComplete(pullStream);
+                })
+            ),
+            Layer.provide(NodeServices.layer)
+        );
 
         layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
             it.effect(
@@ -46,7 +43,7 @@ describe.each(testMatrix)(
                         yield* MobyConvey.waitForProgressToComplete(pullStream);
 
                         const { Id: id } = yield* DockerEngine.run({
-                            StopTimeout: I64.make(10n),
+                            StopTimeout: 10n,
                             Image: "docker.io/library/alpine:latest",
                             Cmd: ["sleep", "1m"],
                         });
@@ -63,7 +60,7 @@ describe.each(testMatrix)(
                         // yield* containers.top(id);
                         yield* Stream.runCollect(containers.stats(id, { stream: false }));
                         const statsStream = containers.stats(id, { stream: true });
-                        yield* statsStream.pipe(Stream.take(1)).pipe(Stream.runCollect);
+                        yield* statsStream.pipe(Stream.take(1), Stream.runCollect);
 
                         // Update and resize the container
                         // yield* containers.update({ id, spec: { Devices: [] } });
@@ -95,11 +92,11 @@ describe.each(testMatrix)(
                 }
             );
 
-            it("Should wait for a container to exit and get its logs", () =>
+            it.effect("Should wait for a container to exit and get its logs", () =>
                 Effect.gen(function* () {
                     const containers = yield* MobyEndpoints.Containers;
                     const { Id: id } = yield* DockerEngine.run({
-                        StopTimeout: I64.make(10n),
+                        StopTimeout: 10n,
                         Image: "docker.io/library/alpine:latest",
                         Cmd: ["sleep", "1s"],
                     });
@@ -107,7 +104,8 @@ describe.each(testMatrix)(
                     yield* containers.wait(id);
                     const logs = containers.logs(id, { follow: false, stdout: true, stderr: true });
                     yield* Stream.runCollect(logs);
-                }));
+                })
+            );
         });
     }
 );
