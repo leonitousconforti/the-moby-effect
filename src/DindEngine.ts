@@ -4,11 +4,12 @@
  * @since 1.0.0
  */
 
-import type * as PlatformError from "@effect/platform/Error";
-import type * as FileSystem from "@effect/platform/FileSystem";
-import type * as Path from "@effect/platform/Path";
+import type * as FileSystem from "effect/FileSystem";
 import type * as Layer from "effect/Layer";
-import type * as ParseResult from "effect/ParseResult";
+import type * as Path from "effect/Path";
+import type * as PlatformError from "effect/PlatformError";
+import type * as Schema from "effect/Schema";
+
 import type * as BlobConstants from "./internal/blobs/constants.ts";
 import type * as MobyConnection from "./MobyConnection.ts";
 
@@ -22,21 +23,21 @@ import * as internal from "./internal/engines/dind.ts";
 export type MakeDindLayerFromPlatformConstructor<
     PlatformLayerConstructor extends (
         connectionOptions: any
-    ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
+    ) => Layer.Layer<Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
     SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (
         connectionOptions: infer C
-    ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
+    ) => Layer.Layer<Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
         ? C
         : never,
     PlatformLayerConstructorError = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
-        Layer.Layer.Success<DockerEngine.DockerLayer>,
+        Layer.Success<DockerEngine.DockerLayer>,
         infer E,
         infer _R
     >
         ? E
         : never,
     PlatformLayerConstructorContext = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
-        Layer.Layer.Success<DockerEngine.DockerLayer>,
+        Layer.Success<DockerEngine.DockerLayer>,
         infer _E,
         infer R
     >
@@ -50,9 +51,9 @@ export type MakeDindLayerFromPlatformConstructor<
     connectionOptionsToHost: ConnectionOptionsToHost;
     dindBaseImage: BlobConstants.RecommendedDindBaseImages;
 }) => Layer.Layer<
-    Layer.Layer.Success<DockerEngine.DockerLayer>,
+    Layer.Success<DockerEngine.DockerLayer>,
     | DockerEngine.DockerError
-    | ParseResult.ParseError
+    | Schema.SchemaError
     | PlatformLayerConstructorError
     | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
     | PlatformLayerConstructorContext

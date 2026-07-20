@@ -4,13 +4,14 @@
  * @since 1.0.0
  */
 
-import type * as Socket from "@effect/platform/Socket";
 import type * as Array from "effect/Array";
 import type * as Context from "effect/Context";
 import type * as Effect from "effect/Effect";
 import type * as Layer from "effect/Layer";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
+import type * as Socket from "effect/unstable/socket/Socket";
+
 import type * as DockerEngine from "./DockerEngine.ts";
 import type * as MobyDemux from "./MobyDemux.ts";
 import type * as MobyEndpoints from "./MobyEndpoints.ts";
@@ -905,7 +906,7 @@ export interface DockerCompose {
  * @since 1.0.0
  * @category Tags
  */
-export const DockerCompose: Context.Tag<DockerCompose, DockerCompose> = internal.DockerCompose;
+export const DockerCompose: Context.Service<DockerCompose, DockerCompose> = internal.DockerCompose;
 
 /**
  * @since 1.0.0
@@ -1080,7 +1081,7 @@ export const layerProject: <E1>(
     project: Stream.Stream<Uint8Array, E1, never>,
     tagIdentifier: string
 ) => {
-    readonly tag: Context.Tag<DockerComposeProject, DockerComposeProject>;
+    readonly tag: Context.Service<DockerComposeProject, DockerComposeProject>;
     readonly layer: Layer.Layer<
         DockerComposeProject,
         E1 | internal.DockerComposeError | DockerEngine.DockerError,
