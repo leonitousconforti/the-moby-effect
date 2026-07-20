@@ -65,8 +65,8 @@
         "eftar": "0.0.77"
     },
     "devDependencies": {
-        "@babel/cli": "7.28.6",
-        "@babel/core": "7.28.6",
+        "@babel/cli": "8.0.4",
+        "@babel/core": "8.0.1",
         "@changesets/cli": "2.31.1",
         "@effect/build-utils": "0.8.9",
         "@effect/docgen": "https://pkg.pr.new/Effect-TS/docgen/@effect/docgen@57ff897",
