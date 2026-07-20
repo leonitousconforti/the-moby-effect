@@ -1,14 +1,16 @@
-import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import type * as MobyConnection from "../../MobyConnection.js";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
 
-import * as HttpClient from "@effect/platform/HttpClient";
-import * as HttpClientRequest from "@effect/platform/HttpClientRequest";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Predicate from "effect/Predicate";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
+import * as HttpClient from "effect/unstable/http/HttpClient";
+import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest";
+
+import type * as MobyConnection from "../../MobyConnection.js";
+
 import * as internalConnection from "./connection.js";
 
 /** @internal */
@@ -37,60 +39,64 @@ export const makeWebsocketRequestUrl: (connectionOptions: MobyConnection.MobyCon
 export const makeAgnosticHttpClientLayer = (
     connectionOptions: MobyConnection.MobyConnectionOptions
 ): Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient> =>
-    Layer.function(
+    Layer.effect(
         HttpClient.HttpClient,
-        HttpClient.HttpClient,
-        Function.flow(
-            HttpClient.mapRequest((request) => {
-                const httpUrl = makeHttpRequestUrl(connectionOptions);
-                const urlPrepended = HttpClientRequest.prependUrl(request, httpUrl);
-                return urlPrepended;
-            }),
-            HttpClient.transformResponse(
-                Effect.map((response) => {
-                    const handler: ProxyHandler<HttpClientResponse.HttpClientResponse> = {
-                        get: (target, prop, receiver) => {
-                            const replacer = (str: string): string =>
-                                str.replace(/\b\d{16,}\b/g, (numStr) =>
-                                    Number.isSafeInteger(Number(numStr)) ? numStr : `"${numStr}"`
-                                );
+        Effect.map(
+            HttpClient.HttpClient,
+            Function.flow(
+                HttpClient.mapRequest((request) => {
+                    const httpUrl = makeHttpRequestUrl(connectionOptions);
+                    const urlPrepended = HttpClientRequest.prependUrl(request, httpUrl);
+                    return urlPrepended;
+                }),
+                HttpClient.transformResponse(
+                    Effect.map((response) => {
+                        const handler: ProxyHandler<HttpClientResponse.HttpClientResponse> = {
+                            get: (target, prop, receiver) => {
+                                const replacer = (str: string): string =>
+                                    str.replace(/\b\d{10,}\b/g, (numStr) =>
+                                        Number.isSafeInteger(Number(numStr)) && Number(numStr) <= 2 ** 32 - 1
+                                            ? numStr
+                                            : `"${numStr}"`
+                                    );
 
-                            if (prop === "text") {
-                                const ogText = Reflect.get(target, prop, receiver);
-                                return Function.pipe(ogText, Effect.map(replacer));
-                            }
+                                if (prop === "text") {
+                                    const ogText = Reflect.get(target, prop, receiver);
+                                    return Function.pipe(ogText, Effect.map(replacer));
+                                }
 
-                            if (prop === "arrayBuffer") {
-                                const ogArrayBuffer = Reflect.get(target, prop, receiver);
-                                return Function.pipe(
-                                    ogArrayBuffer,
-                                    Effect.map((ab) => new TextDecoder().decode(ab)),
-                                    Effect.map(replacer),
-                                    Effect.map((str) => new TextEncoder().encode(str))
-                                );
-                            }
+                                if (prop === "arrayBuffer") {
+                                    const ogArrayBuffer = Reflect.get(target, prop, receiver);
+                                    return Function.pipe(
+                                        ogArrayBuffer,
+                                        Effect.map((ab) => new TextDecoder().decode(ab)),
+                                        Effect.map(replacer),
+                                        Effect.map((str) => new TextEncoder().encode(str).buffer as ArrayBuffer)
+                                    );
+                                }
 
-                            if (prop === "stream") {
-                                const ogStream = Reflect.get(target, prop, receiver);
-                                return Function.pipe(
-                                    ogStream,
-                                    Stream.decodeText(),
-                                    Stream.splitLines,
-                                    Stream.map(replacer),
-                                    Stream.map(String.concat("\n")),
-                                    Stream.encodeText
-                                );
-                            }
+                                if (prop === "stream") {
+                                    const ogStream = Reflect.get(target, prop, receiver);
+                                    return Function.pipe(
+                                        ogStream,
+                                        Stream.decodeText(),
+                                        Stream.splitLines,
+                                        Stream.map(replacer),
+                                        Stream.map(String.concat("\n")),
+                                        Stream.encodeText
+                                    );
+                                }
 
-                            return Reflect.get(target, prop, receiver);
-                        },
-                        set: (target, prop, value, receiver) => {
-                            return Reflect.set(target, prop, value, receiver);
-                        },
-                    };
+                                return Reflect.get(target, prop, receiver);
+                            },
+                            set: (target, prop, value, receiver) => {
+                                return Reflect.set(target, prop, value, receiver);
+                            },
+                        };
 
-                    return new Proxy(response, handler);
-                })
+                        return new Proxy(response, handler);
+                    })
+                )
             )
         )
     );

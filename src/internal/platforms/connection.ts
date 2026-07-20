@@ -1,13 +1,13 @@
-import type * as MobyConnection from "../../MobyConnection.js";
-
-import * as Path from "@effect/platform/Path";
 import * as Config from "effect/Config";
-import * as ConfigError from "effect/ConfigError";
+import * as ConfigProvider from "effect/ConfigProvider";
 import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
+import * as Path from "effect/Path";
 import * as Redacted from "effect/Redacted";
+
+import type * as MobyConnection from "../../MobyConnection.js";
 
 /**
  * Connection options for how to connect to your moby/docker instance. Can be a
@@ -82,7 +82,7 @@ export const HttpsConnectionOptions = MobyConnectionOptions.https;
  */
 export const connectionOptionsFromUrl = (
     dockerHost: string
-): Effect.Effect<MobyConnection.MobyConnectionOptions, ConfigError.ConfigError, never> => {
+): Effect.Effect<MobyConnection.MobyConnectionOptions, Config.ConfigError, never> => {
     const url: URL = new URL(dockerHost);
 
     if (url.protocol === "unix:") {
@@ -133,7 +133,13 @@ export const connectionOptionsFromUrl = (
     }
 
     // Any other protocols are not supported
-    return Effect.fail(ConfigError.InvalidData([], `Unsupported protocol ${url.protocol}`));
+    return Effect.fail(
+        new Config.ConfigError(
+            new ConfigProvider.SourceError({
+                message: `Unsupported protocol ${url.protocol}`,
+            })
+        )
+    );
 };
 
 /**
@@ -144,12 +150,13 @@ export const connectionOptionsFromUrl = (
  */
 export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
     MobyConnection.MobyConnectionOptions,
-    ConfigError.ConfigError,
+    Config.ConfigError,
     never
-> = Config.redacted("DOCKER_HOST")
-    .pipe(Config.withDefault(Redacted.make("unix:///var/run/docker.sock")))
-    .pipe(Config.map(Redacted.value))
-    .pipe(Effect.flatMap(connectionOptionsFromUrl));
+> = Config.redacted("DOCKER_HOST").pipe(
+    Config.withDefault(Redacted.make("unix:///var/run/docker.sock")),
+    Config.map(Redacted.value),
+    Effect.flatMap(connectionOptionsFromUrl)
+);
 
 /**
  * Creates a MobyApi layer from the platform default system socket location.
@@ -159,14 +166,22 @@ export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
  */
 export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
     MobyConnection.MobyConnectionOptions,
-    ConfigError.ConfigError,
+    Config.ConfigError,
     never
 > = Function.pipe(
     Match.value(process.platform),
     Match.when("linux", () => Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }))),
     Match.when("darwin", () => Effect.succeed(SocketConnectionOptions({ socketPath: "/var/run/docker.sock" }))),
     Match.when("win32", () => Effect.succeed(SocketConnectionOptions({ socketPath: "//./pipe/docker_engine" }))),
-    Match.orElse(() => Effect.fail(ConfigError.InvalidData([], `Unsupported platform ${process.platform}`)))
+    Match.orElse(() =>
+        Effect.fail(
+            new Config.ConfigError(
+                new ConfigProvider.SourceError({
+                    message: `Unsupported platform ${process.platform}`,
+                })
+            )
+        )
+    )
 );
 
 /**

@@ -1,14 +1,17 @@
-import type * as HttpClient from "@effect/platform/HttpClient";
 import type * as Scope from "effect/Scope";
-import type * as net from "node:net";
-import type * as ssh2 from "ssh2";
-import type * as undici from "undici";
-import type * as MobyConnection from "../../MobyConnection.js";
+import type * as HttpClient from "effect/unstable/http/HttpClient";
 
-import * as Socket from "@effect/platform/Socket";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
+import * as Socket from "effect/unstable/socket/Socket";
+
+import type * as net from "node:net";
+
+import type * as MobyConnection from "../../MobyConnection.js";
+import type * as ssh2 from "ssh2";
+import type * as undici from "undici";
+
 import * as internalAgnostic from "./agnostic.js";
 import * as internalConnection from "./connection.js";
 
@@ -39,6 +42,7 @@ export const makeSshDispatcher: (
     let openFailedError: Error | null = null;
 
     const connector: undici.buildConnector.connector = (
+        // oxlint-disable-next-line only-used-in-recursion
         _options: undici.buildConnector.Options,
         callback: undici.buildConnector.Callback
     ) => {
@@ -163,9 +167,9 @@ export const makeUndiciHttpClientLayer = (
     const dispatcherLive = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
         Effect.map((nodeHttpClientLazy) =>
-            Layer.scoped(nodeHttpClientLazy.Dispatcher, getUndiciDispatcher(connectionOptions))
+            Layer.effect(nodeHttpClientLazy.Dispatcher, getUndiciDispatcher(connectionOptions))
         ),
-        Layer.unwrapEffect
+        Layer.unwrap
     );
 
     const websocketConstructorLive = Layer.effect(
@@ -175,14 +179,15 @@ export const makeUndiciHttpClientLayer = (
 
     const undiciHttpClientLive = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
-        Effect.map((nodeHttpClientLazy) => nodeHttpClientLazy.layerUndiciWithoutDispatcher),
-        Layer.unwrapEffect
+        Effect.map((nodeHttpClientLazy) => nodeHttpClientLazy.layerUndiciNoDispatcher),
+        Layer.unwrap
     );
 
     const agnosticHttpClientLayer = internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions);
 
-    return agnosticHttpClientLayer
-        .pipe(Layer.merge(websocketConstructorLive))
-        .pipe(Layer.provide(undiciHttpClientLive))
-        .pipe(Layer.provide(dispatcherLive));
+    return agnosticHttpClientLayer.pipe(
+        Layer.merge(websocketConstructorLive),
+        Layer.provide(undiciHttpClientLive),
+        Layer.provide(dispatcherLive)
+    );
 };

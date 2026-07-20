@@ -1,18 +1,21 @@
-import type * as NodeHttpClient from "@effect/platform-node/NodeHttpClient";
-import type * as HttpClient from "@effect/platform/HttpClient";
-import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
 import type * as Scope from "effect/Scope";
+import type * as HttpClient from "effect/unstable/http/HttpClient";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
+
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Socket from "effect/unstable/socket/Socket";
+
 import type * as http from "node:http";
 import type * as https from "node:https";
 import type * as net from "node:net";
 import type * as stream from "node:stream";
-import type * as ssh2 from "ssh2";
-import type * as MobyConnection from "../../MobyConnection.js";
 
-import * as Socket from "@effect/platform/Socket";
-import * as Effect from "effect/Effect";
-import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
+import type * as MobyConnection from "../../MobyConnection.js";
+import type * as NodeHttpClient from "@effect/platform-node/NodeHttpClient";
+import type * as ssh2 from "ssh2";
+
 import * as internalAgnostic from "./agnostic.js";
 import * as internalConnection from "./connection.js";
 
@@ -26,10 +29,8 @@ import * as internalConnection from "./connection.js";
  * @internal
  */
 export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
-    original: {
-        source: {
-            socket: net.Socket;
-        };
+    source: {
+        socket: net.Socket;
     };
 }
 
@@ -154,17 +155,16 @@ export const makeNodeSshAgent = (
 /** @internal */
 export const getNodeAgent = (
     connectionOptions: MobyConnection.MobyConnectionOptions
-): Effect.Effect<NodeHttpClient.HttpAgent, never, Scope.Scope> =>
+): Effect.Effect<NodeHttpClient.HttpAgent["Service"], never, Scope.Scope> =>
     Function.pipe(
         Effect.all(
             {
                 httpLazy: Effect.promise(() => import("node:http")),
                 httpsLazy: Effect.promise(() => import("node:https")),
-                nodeHttpClientLazy: Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
             },
-            { concurrency: 3 }
+            { concurrency: 2 }
         ),
-        Effect.flatMap(({ httpLazy, httpsLazy, nodeHttpClientLazy }) => {
+        Effect.flatMap(({ httpLazy, httpsLazy }) => {
             const AcquireNodeHttpAgent = internalConnection.MobyConnectionOptions.$match({
                 http: (options) => Effect.succeed(new httpLazy.Agent({ host: options.host, port: options.port })),
                 socket: (options) =>
@@ -193,7 +193,6 @@ export const getNodeAgent = (
             return Effect.map(resource, (agent) => ({
                 http: agent as http.Agent,
                 https: agent as https.Agent,
-                [nodeHttpClientLazy.HttpAgentTypeId]: nodeHttpClientLazy.HttpAgentTypeId,
             }));
         })
     );
@@ -224,22 +223,23 @@ export const makeNodeHttpClientLayer = (
 ): Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never> => {
     const httpAgentLive = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
-        Effect.map((nodeHttpClientLazy) => Layer.scoped(nodeHttpClientLazy.HttpAgent, getNodeAgent(connectionOptions))),
-        Layer.unwrapEffect
+        Effect.map((nodeHttpClientLazy) => Layer.effect(nodeHttpClientLazy.HttpAgent, getNodeAgent(connectionOptions))),
+        Layer.unwrap
     );
 
     const websocketConstructorLive = getWebsocketConstructor(connectionOptions);
 
     const nodeHttpClientLive = Function.pipe(
         Effect.promise(() => import("@effect/platform-node/NodeHttpClient")),
-        Effect.map((nodeHttpClientLazy) => nodeHttpClientLazy.layerWithoutAgent),
-        Layer.unwrapEffect
+        Effect.map((nodeHttpClientLazy) => nodeHttpClientLazy.layerNodeHttpNoAgent),
+        Layer.unwrap
     );
 
     const agnosticHttpClientLayer = internalAgnostic.makeAgnosticHttpClientLayer(connectionOptions);
 
-    return agnosticHttpClientLayer
-        .pipe(Layer.merge(websocketConstructorLive))
-        .pipe(Layer.provide(nodeHttpClientLive))
-        .pipe(Layer.provide(httpAgentLive));
+    return agnosticHttpClientLayer.pipe(
+        Layer.merge(websocketConstructorLive),
+        Layer.provide(nodeHttpClientLive),
+        Layer.provide(httpAgentLive)
+    );
 };
