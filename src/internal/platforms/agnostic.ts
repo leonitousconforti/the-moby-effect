@@ -35,6 +35,69 @@ export const makeWebsocketRequestUrl: (connectionOptions: MobyConnection.MobyCon
         https: (options) => `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
     });
 
+/**
+ * Matches one complete JSON number token (integer or float, optional sign and
+ * exponent) anchored at the current scan position.
+ *
+ * @internal
+ */
+const numberToken = /-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/y;
+
+/**
+ * Wraps every JSON number that is not inside a quoted string in quotes, so
+ * that 64-bit fields can be decoded losslessly as bigints from strings. A
+ * plain regex cannot do this: digits inside quoted strings (dates like
+ * "2023-08-30T22:26:00.000000000Z", ip addresses like "127.0.0.1", or any
+ * label value containing ": 123,") must not be touched, value-position
+ * matching misses array elements and negative numbers, and tokens like
+ * -1.5e9 must be quoted whole. So this walks the text tracking whether the
+ * position is inside a string (honoring backslash escapes) and quotes only
+ * complete number tokens found outside of strings.
+ *
+ * @internal
+ */
+export const replacer = (text: string): string => {
+    let output = "";
+    let index = 0;
+    let insideString = false;
+
+    while (index < text.length) {
+        const char = text[index]!;
+
+        if (insideString) {
+            output += char;
+            if (char === "\\") {
+                output += text[index + 1] ?? "";
+                index += 2;
+                continue;
+            }
+            if (char === '"') insideString = false;
+            index += 1;
+            continue;
+        }
+
+        if (char === '"') {
+            insideString = true;
+            output += char;
+            index += 1;
+            continue;
+        }
+
+        numberToken.lastIndex = index;
+        const match = numberToken.exec(text);
+        if (Predicate.isNotNull(match)) {
+            output += `"${match[0]}"`;
+            index += match[0].length;
+            continue;
+        }
+
+        output += char;
+        index += 1;
+    }
+
+    return output;
+};
+
 /** @internal */
 export const makeAgnosticHttpClientLayer = (
     connectionOptions: MobyConnection.MobyConnectionOptions
@@ -53,8 +116,13 @@ export const makeAgnosticHttpClientLayer = (
                     Effect.map((response) => {
                         const handler: ProxyHandler<HttpClientResponse.HttpClientResponse> = {
                             get: (target, prop, receiver) => {
-                                const replacer = (str: string): string =>
-                                    str.replace(/\b\d+\b/g, (numStr) => `"${numStr}"`);
+                                // Binary bodies (tarballs, multiplexed log streams) must
+                                // pass through untouched - only json bodies carry numbers
+                                // that need re-quoting for lossless bigint decoding.
+                                const contentType = target.headers["content-type"] ?? "";
+                                if (!contentType.includes("application/json")) {
+                                    return Reflect.get(target, prop, receiver);
+                                }
 
                                 if (prop === "text") {
                                     const ogText = Reflect.get(target, prop, receiver);
