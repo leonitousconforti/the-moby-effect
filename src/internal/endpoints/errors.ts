@@ -1,7 +1,7 @@
 import * as Schema from "effect/Schema";
 
 /** @since 1.0.0 */
-export class BadRequest extends Schema.ErrorClass<BadRequest>("@the-moby-effect/endpoints/BadRequest")(
+export class BadRequest extends Schema.ErrorClass<BadRequest>("BadRequest")(
     {
         _tag: Schema.tagDefaultOmit("BadRequest"),
         message: Schema.optionalKey(Schema.String),
@@ -14,7 +14,7 @@ export class BadRequest extends Schema.ErrorClass<BadRequest>("@the-moby-effect/
 ) {}
 
 /** @since 1.0.0 */
-export class Unauthorized extends Schema.ErrorClass<Unauthorized>("@the-moby-effect/endpoints/Unauthorized")(
+export class Unauthorized extends Schema.ErrorClass<Unauthorized>("Unauthorized")(
     {
         _tag: Schema.tagDefaultOmit("Unauthorized"),
         message: Schema.optionalKey(Schema.String),
@@ -27,7 +27,7 @@ export class Unauthorized extends Schema.ErrorClass<Unauthorized>("@the-moby-eff
 ) {}
 
 /** @since 1.0.0 */
-export class Forbidden extends Schema.ErrorClass<Forbidden>("@the-moby-effect/endpoints/Forbidden")(
+export class Forbidden extends Schema.ErrorClass<Forbidden>("Forbidden")(
     {
         _tag: Schema.tagDefaultOmit("Forbidden"),
         message: Schema.optionalKey(Schema.String),
@@ -40,7 +40,7 @@ export class Forbidden extends Schema.ErrorClass<Forbidden>("@the-moby-effect/en
 ) {}
 
 /** @since 1.0.0 */
-export class NotFound extends Schema.ErrorClass<NotFound>("@the-moby-effect/endpoints/NotFound")(
+export class NotFound extends Schema.ErrorClass<NotFound>("NotFound")(
     {
         _tag: Schema.tagDefaultOmit("NotFound"),
         message: Schema.optionalKey(Schema.String),
@@ -53,9 +53,7 @@ export class NotFound extends Schema.ErrorClass<NotFound>("@the-moby-effect/endp
 ) {}
 
 /** @since 1.0.0 */
-export class MethodNotAllowed extends Schema.ErrorClass<MethodNotAllowed>(
-    "@the-moby-effect/endpoints/MethodNotAllowed"
-)(
+export class MethodNotAllowed extends Schema.ErrorClass<MethodNotAllowed>("MethodNotAllowed")(
     {
         _tag: Schema.tagDefaultOmit("MethodNotAllowed"),
         message: Schema.optionalKey(Schema.String),
@@ -68,7 +66,7 @@ export class MethodNotAllowed extends Schema.ErrorClass<MethodNotAllowed>(
 ) {}
 
 /** @since 1.0.0 */
-export class NotAcceptable extends Schema.ErrorClass<NotAcceptable>("@the-moby-effect/endpoints/NotAcceptable")(
+export class NotAcceptable extends Schema.ErrorClass<NotAcceptable>("NotAcceptable")(
     {
         _tag: Schema.tagDefaultOmit("NotAcceptable"),
         message: Schema.optionalKey(Schema.String),
@@ -81,7 +79,7 @@ export class NotAcceptable extends Schema.ErrorClass<NotAcceptable>("@the-moby-e
 ) {}
 
 /** @since 1.0.0 */
-export class RequestTimeout extends Schema.ErrorClass<RequestTimeout>("@the-moby-effect/endpoints/RequestTimeout")(
+export class RequestTimeout extends Schema.ErrorClass<RequestTimeout>("RequestTimeout")(
     {
         _tag: Schema.tagDefaultOmit("RequestTimeout"),
         message: Schema.optionalKey(Schema.String),
@@ -94,7 +92,7 @@ export class RequestTimeout extends Schema.ErrorClass<RequestTimeout>("@the-moby
 ) {}
 
 /** @since 1.0.0 */
-export class Conflict extends Schema.ErrorClass<Conflict>("@the-moby-effect/endpoints/Conflict")(
+export class Conflict extends Schema.ErrorClass<Conflict>("Conflict")(
     {
         _tag: Schema.tagDefaultOmit("Conflict"),
         message: Schema.optionalKey(Schema.String),
@@ -107,7 +105,7 @@ export class Conflict extends Schema.ErrorClass<Conflict>("@the-moby-effect/endp
 ) {}
 
 /** @since 1.0.0 */
-export class Gone extends Schema.ErrorClass<Gone>("@the-moby-effect/endpoints/Gone")(
+export class Gone extends Schema.ErrorClass<Gone>("Gone")(
     {
         _tag: Schema.tagDefaultOmit("Gone"),
         message: Schema.optionalKey(Schema.String),
@@ -120,9 +118,7 @@ export class Gone extends Schema.ErrorClass<Gone>("@the-moby-effect/endpoints/Go
 ) {}
 
 /** @since 1.0.0 */
-export class UnprocessableEntity extends Schema.ErrorClass<UnprocessableEntity>(
-    "@the-moby-effect/endpoints/UnprocessableEntity"
-)(
+export class UnprocessableEntity extends Schema.ErrorClass<UnprocessableEntity>("UnprocessableEntity")(
     {
         _tag: Schema.tagDefaultOmit("UnprocessableEntity"),
         message: Schema.optionalKey(Schema.String),
@@ -135,9 +131,7 @@ export class UnprocessableEntity extends Schema.ErrorClass<UnprocessableEntity>(
 ) {}
 
 /** @since 1.0.0 */
-export class InternalServerError extends Schema.ErrorClass<InternalServerError>(
-    "@the-moby-effect/endpoints/InternalServerError"
-)(
+export class InternalServerError extends Schema.ErrorClass<InternalServerError>("InternalServerError")(
     {
         _tag: Schema.tagDefaultOmit("InternalServerError"),
         message: Schema.optionalKey(Schema.String),
@@ -150,7 +144,7 @@ export class InternalServerError extends Schema.ErrorClass<InternalServerError>(
 ) {}
 
 /** @since 1.0.0 */
-export class NotImplemented extends Schema.ErrorClass<NotImplemented>("@the-moby-effect/endpoints/NotImplemented")(
+export class NotImplemented extends Schema.ErrorClass<NotImplemented>("NotImplemented")(
     {
         _tag: Schema.tagDefaultOmit("NotImplemented"),
         message: Schema.optionalKey(Schema.String),
@@ -163,9 +157,7 @@ export class NotImplemented extends Schema.ErrorClass<NotImplemented>("@the-moby
 ) {}
 
 /** @since 1.0.0 */
-export class ServiceUnavailable extends Schema.ErrorClass<ServiceUnavailable>(
-    "@the-moby-effect/endpoints/ServiceUnavailable"
-)(
+export class ServiceUnavailable extends Schema.ErrorClass<ServiceUnavailable>("ServiceUnavailable")(
     {
         _tag: Schema.tagDefaultOmit("ServiceUnavailable"),
         message: Schema.optionalKey(Schema.String),
