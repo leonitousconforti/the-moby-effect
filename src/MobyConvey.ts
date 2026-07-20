@@ -4,11 +4,10 @@
  * @since 1.0.0
  */
 
-import type * as Chunk from "effect/Chunk";
 import type * as Effect from "effect/Effect";
-import type * as Scope from "effect/Scope";
 import type * as Sink from "effect/Sink";
 import type * as Stream from "effect/Stream";
+
 import type * as MobySchemas from "./MobySchemas.ts";
 
 import * as internal from "./internal/convey/sinks.ts";
@@ -21,8 +20,7 @@ import * as internal from "./internal/convey/sinks.ts";
  */
 export const waitForProgressToComplete: <E1, R1>(
     stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>> =
-    internal.waitForProgressToComplete;
+) => Effect.Effect<Array<MobySchemas.JSONMessage>, E1, R1> = internal.waitForProgressToComplete;
 
 /**
  * Consumes the progress stream and logs it to the console.
@@ -41,5 +39,4 @@ export const followProgressSink: Sink.Sink<void, MobySchemas.JSONMessage, never,
  */
 export const followProgressInConsole: <E1, R1>(
     stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>> =
-    internal.followProgressInConsole;
+) => Effect.Effect<Array<MobySchemas.JSONMessage>, E1, R1> = internal.followProgressInConsole;

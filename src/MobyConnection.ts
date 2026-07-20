@@ -4,10 +4,11 @@
  * @since 1.0.0
  */
 
-import type * as Path from "@effect/platform/Path";
-import type * as ConfigError from "effect/ConfigError";
+import type * as Config from "effect/Config";
 import type * as Data from "effect/Data";
 import type * as Effect from "effect/Effect";
+import type * as Path from "effect/Path";
+
 import type * as ssh2 from "ssh2";
 
 import * as internal from "./internal/platforms/connection.ts";
@@ -201,7 +202,7 @@ export const HttpsConnectionOptions = internal.HttpsConnectionOptions;
  */
 export const connectionOptionsFromUrl: (
     dockerHost: string
-) => Effect.Effect<MobyConnectionOptions, ConfigError.ConfigError, never> = internal.connectionOptionsFromUrl;
+) => Effect.Effect<MobyConnectionOptions, Config.ConfigError, never> = internal.connectionOptionsFromUrl;
 
 /**
  * Creates a MobyApi layer from the DOCKER_HOST environment variable as a url.
@@ -211,7 +212,7 @@ export const connectionOptionsFromUrl: (
  */
 export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
     MobyConnectionOptions,
-    ConfigError.ConfigError,
+    Config.ConfigError,
     never
 > = internal.connectionOptionsFromDockerHostEnvironmentVariable;
 
@@ -223,7 +224,7 @@ export const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
  */
 export const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
     MobyConnectionOptions,
-    ConfigError.ConfigError,
+    Config.ConfigError,
     never
 > = internal.connectionOptionsFromPlatformSystemSocketDefault;
 
