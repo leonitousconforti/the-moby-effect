@@ -17,11 +17,11 @@ The motivation for this project come from working with dockerode and I became fr
 - [x] - streaming, multiplexing, demultiplexing, and connection hijacking (this is more than just [dockerode](https://github.com/apocas/dockerode) passing streams directly through to you)
 - [x] - tests, examples, and in-line JSDoc comments based on the moby api documentation
 - [x] - Strong focus on types and typescript support
-- [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, __currently only docker is tested against__
+- [x] - Support multiple "engines" (docker, podman, ect). If its built on top of [moby](https://github.com/moby/moby) then it _should_ just work, however, **currently only docker is tested against**
 - [x] - Implement all common docker commands except for login/logout because I don't want to interact with credential helpers
-- [X] - support multiple environments: NodeJs, Bun, Deno, and Web should all be supported but are laking tests
-- [X] - Callbacks, promise, and effect apis making everyone happy
-- [X] - Docker compose support
+- [x] - support multiple environments: NodeJs, Bun, Deno, and Web should all be supported but are laking tests
+- [x] - Callbacks, promise, and effect apis making everyone happy
+- [x] - Docker compose support
 
 ## Non-Goals :wastebasket:
 
@@ -46,6 +46,7 @@ Basic docker compose support has been implemented, more to come in the future.
 the-moby-effect targets the current stable version of the moby api, which is v1.43 at the time of writing. If you are curious what that translates to for docker versions then take a look at [this](https://docs.docker.com/engine/api/#api-version-matrix) api version matrix published by Docker. As stated in the api version matrix, only Docker v24.0 would be officially supported by the-moby-effect, however, we still test against docker v20, v23, v24, and the next release candidate which is v25 (there is no v21 or v22 btw). Here is another note from Docker:
 
 "The Docker daemon and client don't necessarily need to be the same version at all times. However, keep the following in mind":
+
 1. "If the daemon is newer than the client, the client doesn't know about new features or deprecated API endpoints in the daemon" (shouldn't really happen because the-moby-effect will always target the latest stable api version)
 2. "If the client is newer than the daemon, the client can request API endpoints that the daemon doesn't know about" (this could happen, although most of the endpoints are pretty stable at this point so its more like an endpoint parameter might change).
 
