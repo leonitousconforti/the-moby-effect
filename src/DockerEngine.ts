@@ -4,26 +4,25 @@
  * @since 1.0.0
  */
 
-import type * as HttpClient from "@effect/platform/HttpClient";
-import type * as Socket from "@effect/platform/Socket";
-import type * as Schemas from "effect-schemas";
 import type * as Effect from "effect/Effect";
-import type * as ParseResult from "effect/ParseResult";
 import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
 import type * as Stream from "effect/Stream";
+import type * as HttpClient from "effect/unstable/http/HttpClient";
+import type * as Socket from "effect/unstable/socket/Socket";
+
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+
 import type * as IdSchemas from "./internal/schemas/id.ts";
 import type * as MobyConnection from "./MobyConnection.ts";
 import type * as MobyDemux from "./MobyDemux.ts";
 import type * as MobySchemas from "./MobySchemas.ts";
 
-import * as Function from "effect/Function";
-import * as Layer from "effect/Layer";
-import * as MobyEndpoints from "./MobyEndpoints.ts";
-import * as MobyPlatforms from "./MobyPlatforms.ts";
-
 import * as internalCircular from "./internal/endpoints/circular.ts";
 import * as internalDocker from "./internal/engines/docker.ts";
+import * as MobyEndpoints from "./MobyEndpoints.ts";
+import * as MobyPlatforms from "./MobyPlatforms.ts";
 
 /**
  * @since 1.0.0
@@ -84,9 +83,9 @@ export type DockerLayer = Layer.Layer<
  * @category Layers
  */
 export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
-    Layer.Layer.Success<DockerLayer>,
-    Layer.Layer.Error<DockerLayer>,
-    Layer.Layer.Context<DockerLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
+    Layer.Success<DockerLayer>,
+    Layer.Error<DockerLayer>,
+    Layer.Services<DockerLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**
@@ -248,8 +247,8 @@ export const exec: ({
     command: string | Array<string>;
     containerId: IdSchemas.ContainerIdentifier;
 }) => Effect.Effect<
-    [exitCode: Schema.Schema.Type<Schemas.Number.I64>, output: string],
-    Socket.SocketError | ParseResult.ParseError | DockerError,
+    [exitCode: bigint, output: string],
+    Socket.SocketError | Schema.SchemaError | DockerError,
     MobyEndpoints.Execs
 > = internalDocker.exec;
 
@@ -270,7 +269,7 @@ export const execNonBlocking: <const T extends boolean = false>({
     containerId: IdSchemas.ContainerIdentifier;
 }) => Effect.Effect<
     [[T] extends [false] ? MobyDemux.RawSocket | MobyDemux.MultiplexedSocket : void, IdSchemas.ExecIdentifier],
-    Socket.SocketError | ParseResult.ParseError | DockerError,
+    Socket.SocketError | Schema.SchemaError | DockerError,
     MobyEndpoints.Execs
 > = internalDocker.execNonBlocking;
 
@@ -290,7 +289,7 @@ export const execWebsockets: ({
     containerId: IdSchemas.ContainerIdentifier;
 }) => Effect.Effect<
     readonly [stdout: string, stderr: string],
-    Socket.SocketError | ParseResult.ParseError | DockerError,
+    Socket.SocketError | Schema.SchemaError | DockerError,
     MobyEndpoints.Containers
 > = internalDocker.execWebsockets;
 
@@ -323,7 +322,7 @@ export const execWebsocketsNonBlocking: ({
  * @category Docker
  */
 export const images: (
-    options?: Parameters<MobyEndpoints.Images["list"]>[0]
+    options?: Parameters<MobyEndpoints.Images["Service"]["list"]>[0]
 ) => Effect.Effect<ReadonlyArray<MobySchemas.ImageSummary>, DockerError, MobyEndpoints.Images> = internalDocker.images;
 
 /**
@@ -357,7 +356,7 @@ export const pingHead: () => Effect.Effect<void, DockerError, MobyEndpoints.Syst
  * @category Docker
  */
 export const ps: (
-    options?: Parameters<MobyEndpoints.Containers["list"]>[0]
+    options?: Parameters<MobyEndpoints.Containers["Service"]["list"]>[0]
 ) => Effect.Effect<ReadonlyArray<MobySchemas.ContainerSummary>, DockerError, MobyEndpoints.Containers> =
     internalDocker.ps;
 
@@ -404,7 +403,7 @@ export const pullScoped: ({
  */
 export const push: (
     name: string,
-    options: Parameters<MobyEndpoints.Images["push"]>[1]
+    options: Parameters<MobyEndpoints.Images["Service"]["push"]>[1]
 ) => Stream.Stream<MobySchemas.JSONMessage, DockerError, MobyEndpoints.Images> = internalDocker.push;
 
 /**
@@ -414,7 +413,7 @@ export const push: (
  * @category Docker
  */
 export const run: (
-    options: Omit<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0], "HostConfig"> & {
+    options: Omit<NonNullable<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0]>, "HostConfig"> & {
         readonly name?: string | undefined;
         readonly platform?: string | undefined;
         readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
@@ -429,7 +428,7 @@ export const run: (
  * @category Docker
  */
 export const runScoped: (
-    options: Omit<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0], "HostConfig"> & {
+    options: Omit<NonNullable<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0]>, "HostConfig"> & {
         readonly name?: string | undefined;
         readonly platform?: string | undefined;
         readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
@@ -444,7 +443,7 @@ export const runScoped: (
  * @category Docker
  */
 export const search: (
-    options: Parameters<MobyEndpoints.Images["search"]>[0]
+    options: Parameters<MobyEndpoints.Images["Service"]["search"]>[0]
 ) => Effect.Effect<ReadonlyArray<MobySchemas.RegistrySearchResult>, DockerError, MobyEndpoints.Images> =
     internalDocker.search;
 
