@@ -38,18 +38,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config: [
-          { platform: 'bun', variant: 'bun' },
-          { platform: 'bun', variant: 'bun-undici' },
-          { platform: 'deno', variant: 'deno' },
-          { platform: 'deno', variant: 'deno-undici' },
-          { platform: '20.x', variant: 'node-20.x' },
-          { platform: '20.x', variant: 'node-20.x-undici' },
-          { platform: '22.x', variant: 'node-22.x' },
-          { platform: '22.x', variant: 'node-22.x-undici' },
-          { platform: '24.x', variant: 'node-24.x' },
-          { platform: '24.x', variant: 'node-24.x-undici' },
-        ]
+        config:
+          [
+            { platform: "bun", variant: "bun" },
+            { platform: "bun", variant: "bun-undici" },
+            { platform: "deno", variant: "deno" },
+            { platform: "deno", variant: "deno-undici" },
+            { platform: "20.x", variant: "node-20.x" },
+            { platform: "20.x", variant: "node-20.x-undici" },
+            { platform: "22.x", variant: "node-22.x" },
+            { platform: "22.x", variant: "node-22.x-undici" },
+            { platform: "24.x", variant: "node-24.x" },
+            { platform: "24.x", variant: "node-24.x-undici" },
+          ]
     env:
       __PLATFORM_VARIANT: ${{ matrix.config.variant }}
     steps:
