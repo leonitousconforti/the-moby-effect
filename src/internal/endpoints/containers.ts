@@ -497,16 +497,13 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 readonly HostConfig?: (typeof ContainerHostConfig)["~type.make.in"] | undefined;
             }
         ) =>
-            Effect.mapError(
-                client.create({
-                    query: { name: options.Name, platform: options.Platform },
-                    payload: new ContainerCreateRequest({
-                        ...options,
-                        HostConfig: options.HostConfig ? new ContainerHostConfig(options.HostConfig) : undefined,
-                    }),
-                }),
-                ContainersError("create")
-            );
+            Effect.gen(function* () {
+                const hostConfig = options.HostConfig
+                    ? yield* ContainerHostConfig.makeEffect(options.HostConfig)
+                    : undefined;
+                const payload = yield* ContainerCreateRequest.makeEffect({ ...options, HostConfig: hostConfig });
+                return yield* client.create({ query: { name: options.Name, platform: options.Platform }, payload });
+            }).pipe(Effect.mapError(ContainersError("create")));
         const inspect_ = (identifier: ContainerIdentifier, options?: Options<"inspect">) =>
             Effect.mapError(
                 client.inspect({ params: { identifier }, query: { ...options } }),
@@ -549,7 +546,9 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
             Effect.mapError(client.kill({ params: { identifier }, query: { ...options } }), ContainersError("kill"));
         const update_ = (identifier: ContainerIdentifier, config: (typeof ContainerConfig)["~type.make.in"]) =>
             Effect.mapError(
-                client.update({ params: { identifier }, payload: new ContainerConfig(config) }),
+                Effect.flatMap(ContainerConfig.makeEffect(config), (payload) =>
+                    client.update({ params: { identifier }, payload })
+                ),
                 ContainersError("update")
             );
         const rename_ = (identifier: ContainerIdentifier, name: string) =>

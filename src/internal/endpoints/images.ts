@@ -388,7 +388,9 @@ export class Images extends Context.Service<Images>()("@the-moby-effect/endpoint
             options: Options<"commit">
         ) =>
             Effect.mapError(
-                client.commit({ query: { ...options }, payload: new ContainerCreateRequest(payload) }),
+                Effect.flatMap(ContainerCreateRequest.makeEffect(payload), (payload) =>
+                    client.commit({ query: { ...options }, payload })
+                ),
                 ImagesError("commit")
             );
         const export_ = (name: string, options?: Options<"export">) =>

@@ -167,10 +167,12 @@ export class Services extends Context.Service<Services>()("@the-moby-effect/endp
             Effect.mapError(client.list({ query: { ...options } }), ServicesError("list"));
         const create_ = (payload: (typeof SwarmServiceSpec)["~type.make.in"]) =>
             Effect.mapError(
-                client.create({
-                    headers: {},
-                    payload: new SwarmServiceSpec(payload),
-                }),
+                Effect.flatMap(SwarmServiceSpec.makeEffect(payload), (payload) =>
+                    client.create({
+                        headers: {},
+                        payload,
+                    })
+                ),
                 ServicesError("create")
             );
         const delete_ = (id: string) => Effect.mapError(client.delete({ params: { id } }), ServicesError("delete"));
@@ -182,12 +184,14 @@ export class Services extends Context.Service<Services>()("@the-moby-effect/endp
             payload: (typeof SwarmServiceSpec)["~type.make.in"]
         ) =>
             Effect.mapError(
-                client.update({
-                    headers: {},
-                    params: { id },
-                    query: { ...options },
-                    payload: new SwarmServiceSpec(payload),
-                }),
+                Effect.flatMap(SwarmServiceSpec.makeEffect(payload), (payload) =>
+                    client.update({
+                        headers: {},
+                        params: { id },
+                        query: { ...options },
+                        payload,
+                    })
+                ),
                 ServicesError("update")
             );
         const logs_ = (id: string, options?: Options<"logs">) =>

@@ -149,16 +149,21 @@ export class Networks extends Context.Service<Networks>()("@the-moby-effect/endp
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
             Effect.mapError(client.list({ query: { filters } }), NetworksError("list"));
         const create_ = (payload: (typeof NetworkCreateRequest)["~type.make.in"]) =>
-            Effect.mapError(client.create({ payload: new NetworkCreateRequest(payload) }), NetworksError("create"));
+            Effect.mapError(
+                Effect.flatMap(NetworkCreateRequest.makeEffect(payload), (payload) => client.create({ payload })),
+                NetworksError("create")
+            );
         const inspect_ = (id: string, options?: Options<"inspect">) =>
             Effect.mapError(client.inspect({ params: { id }, query: { ...options } }), NetworksError("inspect"));
         const delete_ = (id: string) => Effect.mapError(client.delete({ params: { id } }), NetworksError("delete"));
         const connect_ = (id: string, payload: (typeof NetworkConnectOptions)["~type.make.in"]) =>
             Effect.mapError(
-                client.connect({
-                    params: { id },
-                    payload: new NetworkConnectOptions(payload),
-                }),
+                Effect.flatMap(NetworkConnectOptions.makeEffect(payload), (payload) =>
+                    client.connect({
+                        params: { id },
+                        payload,
+                    })
+                ),
                 NetworksError("connect")
             );
         const disconnect_ = (

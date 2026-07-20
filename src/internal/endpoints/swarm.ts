@@ -162,9 +162,15 @@ export class Swarm extends Context.Service<Swarm>()("@the-moby-effect/endpoints/
 
         const inspect_ = () => Effect.mapError(client.inspect(), SwarmsError("inspect"));
         const init_ = (payload: (typeof SwarmInitRequest)["~type.make.in"]) =>
-            Effect.mapError(client.init({ payload: SwarmInitRequest.make(payload) }), SwarmsError("init"));
+            Effect.mapError(
+                Effect.flatMap(SwarmInitRequest.makeEffect(payload), (payload) => client.init({ payload })),
+                SwarmsError("init")
+            );
         const join_ = (payload: (typeof SwarmJoinRequest)["~type.make.in"]) =>
-            Effect.mapError(client.join({ payload: new SwarmJoinRequest(payload) }), SwarmsError("join"));
+            Effect.mapError(
+                Effect.flatMap(SwarmJoinRequest.makeEffect(payload), (payload) => client.join({ payload })),
+                SwarmsError("join")
+            );
         const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
             Effect.mapError(client.leave({ query: { ...options } }), SwarmsError("leave"));
         const update_ = (
@@ -179,10 +185,12 @@ export class Swarm extends Context.Service<Swarm>()("@the-moby-effect/endpoints/
                 | undefined
         ) =>
             Effect.mapError(
-                client.update({
-                    payload: new SwarmSpec(spec),
-                    query: { version, ...rotate },
-                }),
+                Effect.flatMap(SwarmSpec.makeEffect(spec), (payload) =>
+                    client.update({
+                        payload,
+                        query: { version, ...rotate },
+                    })
+                ),
                 SwarmsError("update")
             );
         const unlockkey_ = () => Effect.mapError(client.unlockkey(), SwarmsError("unlockkey"));

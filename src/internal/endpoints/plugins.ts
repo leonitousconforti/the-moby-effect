@@ -1,4 +1,3 @@
-import * as Array from "effect/Array";
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
@@ -206,13 +205,15 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
                 privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined;
             }
         ) =>
-            client
-                .pull({
-                    headers: {},
-                    query: { remote, name: options?.name },
-                    payload: Array.map(options?.privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
-                })
+            Effect.forEach(options?.privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege))
                 .pipe(
+                    Effect.flatMap((payload) =>
+                        client.pull({
+                            headers: {},
+                            query: { remote, name: options?.name },
+                            payload,
+                        })
+                    ),
                     Stream.unwrap,
                     Stream.decodeText(),
                     Stream.splitLines,
@@ -239,12 +240,16 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
             privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined
         ) =>
             Effect.mapError(
-                client.upgrade({
-                    headers: {},
-                    params: { name },
-                    query: { remote },
-                    payload: Array.map(privileges ?? [], (privilege) => PluginPrivilege.make(privilege)),
-                }),
+                Effect.flatMap(
+                    Effect.forEach(privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege)),
+                    (payload) =>
+                        client.upgrade({
+                            headers: {},
+                            params: { name },
+                            query: { remote },
+                            payload,
+                        })
+                ),
                 PluginsError("upgrade")
             );
         const create_ = <E, R>(name: string, tar: Stream.Stream<Uint8Array, E, R>) =>

@@ -121,7 +121,10 @@ export class Configs extends Context.Service<Configs>()("@the-moby-effect/endpoi
         const list_ = (filters?: Schema.Schema.Type<typeof ListFilters> | undefined) =>
             Effect.mapError(client.list({ query: { filters } }), ConfigsError("list"));
         const create_ = (config: (typeof SwarmConfigSpec)["~type.make.in"]) =>
-            Effect.mapError(client.create({ payload: SwarmConfigSpec.make(config) }), ConfigsError("create"));
+            Effect.mapError(
+                Effect.flatMap(SwarmConfigSpec.makeEffect(config), (payload) => client.create({ payload })),
+                ConfigsError("create")
+            );
         const inspect_ = (identifier: ConfigIdentifier) =>
             Effect.mapError(client.inspect({ params: { identifier } }), ConfigsError("inspect"));
         const delete_ = (identifier: ConfigIdentifier) =>
@@ -132,11 +135,13 @@ export class Configs extends Context.Service<Configs>()("@the-moby-effect/endpoi
             config: (typeof SwarmConfigSpec)["~type.make.in"]
         ) =>
             Effect.mapError(
-                client.update({
-                    params: { identifier },
-                    query: { version },
-                    payload: SwarmConfigSpec.make(config),
-                }),
+                Effect.flatMap(SwarmConfigSpec.makeEffect(config), (payload) =>
+                    client.update({
+                        params: { identifier },
+                        query: { version },
+                        payload,
+                    })
+                ),
                 ConfigsError("update")
             );
 

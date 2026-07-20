@@ -107,7 +107,9 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
 
         const container_ = (id: string, payload: (typeof ExecConfig)["~type.make.in"]) =>
             Effect.mapError(
-                client.container({ params: { id }, payload: new ExecConfig(payload) }),
+                Effect.flatMap(ExecConfig.makeEffect(payload), (payload) =>
+                    client.container({ params: { id }, payload })
+                ),
                 ExecsError("container")
             );
         const start_ = <const T extends boolean = false>(
@@ -116,14 +118,16 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
                 Detach: T;
             }
         ): Effect.Effect<[T] extends [false] ? RawSocket | MultiplexedSocket : void, DockerError, never> =>
-            client
-                .start({
-                    params: { id },
-                    payload: new ContainerExecStartOptions(payload),
-                    headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
-                    responseMode: "response-only",
-                })
+            ContainerExecStartOptions.makeEffect(payload)
                 .pipe(
+                    Effect.flatMap((startOptions) =>
+                        client.start({
+                            params: { id },
+                            payload: startOptions,
+                            headers: { Connection: "Upgrade", Upgrade: "tcp" }, // FIXME: Broken on undici
+                            responseMode: "response-only",
+                        })
+                    ),
                     Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
                     Effect.map(
                         (socket) =>

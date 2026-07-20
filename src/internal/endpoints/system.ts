@@ -117,7 +117,10 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
         const client = yield* HttpApiClient.group(SystemApi, { group: "system", httpClient });
 
         const auth_ = (payload: (typeof RegistryAuthConfig)["~type.make.in"]) =>
-            Effect.mapError(client.auth({ payload: RegistryAuthConfig.make(payload) }), SystemsError("auth"));
+            Effect.mapError(
+                Effect.flatMap(RegistryAuthConfig.makeEffect(payload), (payload) => client.auth({ payload })),
+                SystemsError("auth")
+            );
         const info_ = () => Effect.mapError(client.info(), SystemsError("info"));
         const version_ = () => Effect.mapError(client.version(), SystemsError("version"));
         const ping_ = () => Effect.mapError(client.ping(), SystemsError("ping"));
