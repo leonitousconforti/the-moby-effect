@@ -1,7 +1,8 @@
 // Run with: pnpx tsx examples/effect/container-attach-ws.ts
 
-import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer } from "effect";
+
+import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
@@ -13,7 +14,7 @@ import { DockerEngine, MobyConnection, MobyConvey, MobyDemux, MobyEndpoints } fr
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    Layer.unwrap
 );
 
 const program = Effect.gen(function* () {
@@ -51,4 +52,4 @@ const program = Effect.gen(function* () {
     yield* Console.log("Disconnected from container");
 });
 
-program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped, Effect.provide([localDocker, NodeServices.layer]), NodeRuntime.runMain);

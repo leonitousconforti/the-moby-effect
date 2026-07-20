@@ -1,10 +1,12 @@
 // Run with: pnpx tsx examples/effect/pull-image.ts
 
 import type { Stream } from "effect";
+
+import { Effect, Function, Layer } from "effect";
+
 import type { MobyEndpoints, MobySchemas } from "the-moby-effect";
 
 import { NodeRuntime } from "@effect/platform-node";
-import { Effect, Function, Layer } from "effect";
 import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
@@ -16,7 +18,7 @@ import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    Layer.unwrap
 );
 
 // Pull the hello world image, will be removed when the scope is closed
@@ -29,4 +31,4 @@ const program = Effect.gen(function* () {
     yield* MobyConvey.followProgressInConsole(pullStream);
 });
 
-program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped, Effect.provide(localDocker), NodeRuntime.runMain);

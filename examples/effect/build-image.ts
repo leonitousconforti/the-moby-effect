@@ -1,8 +1,8 @@
 // Run with: pnpx tsx examples/effect/build-image.ts
 
-import { Path } from "@effect/platform";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Effect, Function, Layer, Stream } from "effect";
+import { Effect, Function, Layer, Path, Stream } from "effect";
+
+import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Tar } from "eftar";
 import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
@@ -15,7 +15,7 @@ import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    Layer.unwrap
 );
 
 // Step 1/1 : FROM ubuntu:latest
@@ -53,7 +53,7 @@ const program = Effect.gen(function* () {
     const cwd = yield* path.fromFileUrl(new URL(".", import.meta.url));
     const buildContext = Function.pipe(
         Tar.tarballFromFilesystem(cwd, ["build-image.dockerfile"]),
-        Stream.provideLayer(NodeContext.layer)
+        Stream.provide(NodeServices.layer)
     );
 
     const buildStream = yield* DockerEngine.buildScoped({
@@ -65,8 +65,4 @@ const program = Effect.gen(function* () {
     yield* MobyConvey.followProgressInConsole(buildStream);
 });
 
-program
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.provide(NodeContext.layer))
-    .pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped, Effect.provide([localDocker, NodeServices.layer]), NodeRuntime.runMain);

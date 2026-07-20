@@ -1,8 +1,11 @@
 // Run with: pnpx tsx examples/effect/container-top.ts
 
-import { NodeRuntime } from "@effect/platform-node";
 import { Console, Effect, Function, Layer, Stream } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } from "the-moby-effect";
+
+import type { MobySchemas } from "the-moby-effect";
+
+import { NodeRuntime } from "@effect/platform-node";
+import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -13,7 +16,7 @@ import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } 
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    Layer.unwrap
 );
 
 // {
@@ -56,4 +59,4 @@ const program = Effect.gen(function* () {
     yield* containers.stats(containerInspectResponse.Id, { stream: false }).pipe(Stream.runDrain);
 });
 
-program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped, Effect.provide(localDocker), NodeRuntime.runMain);

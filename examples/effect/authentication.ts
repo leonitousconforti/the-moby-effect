@@ -1,7 +1,8 @@
 // Run with: tsx examples/effect/authentication.ts
 
-import { NodeRuntime } from "@effect/platform-node";
 import { Effect, Function, Layer, Redacted } from "effect";
+
+import { NodeRuntime } from "@effect/platform-node";
 import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 // Put your docker hub credentials here
@@ -20,7 +21,7 @@ const registryAuth = DockerEngine.RegistryAuth.Credentials({
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect,
+    Layer.unwrap,
     Layer.provide(registryAuth)
 );
 
@@ -41,4 +42,4 @@ const program = Effect.gen(function* () {
     yield* MobyConvey.followProgressInConsole(pullStream);
 });
 
-program.pipe(Effect.scoped).pipe(Effect.provide(localDocker)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped, Effect.provide(localDocker), NodeRuntime.runMain);

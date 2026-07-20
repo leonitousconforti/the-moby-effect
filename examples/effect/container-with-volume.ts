@@ -1,9 +1,11 @@
 // Run with: pnpx tsx examples/effect/container-with-volume.ts
 
-import { Path } from "@effect/platform";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Effect, Function, Layer } from "effect";
-import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } from "the-moby-effect";
+import { Effect, Function, Layer, Path } from "effect";
+
+import type { MobySchemas } from "the-moby-effect";
+
+import { NodeRuntime, NodeServices } from "@effect/platform-node";
+import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints } from "the-moby-effect";
 
 // Connect to the local docker engine at "/var/run/docker.sock"
 // const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
@@ -14,7 +16,7 @@ import { DockerEngine, MobyConnection, MobyConvey, MobyEndpoints, MobySchemas } 
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    Layer.unwrap
 );
 
 // Recommended reading: https://blog.logrocket.com/docker-volumes-vs-bind-mounts/
@@ -39,8 +41,4 @@ const program = Effect.gen(function* () {
     yield* containers.delete(containerInspectResponse.Id);
 });
 
-program
-    .pipe(Effect.scoped)
-    .pipe(Effect.provide(localDocker))
-    .pipe(Effect.provide(NodeContext.layer))
-    .pipe(NodeRuntime.runMain);
+program.pipe(Effect.scoped, Effect.provide([localDocker, NodeServices.layer]), NodeRuntime.runMain);

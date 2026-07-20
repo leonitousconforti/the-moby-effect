@@ -1,8 +1,10 @@
 // Run with: pnpx tsx examples/effect/docker-compose.ts
 
-import { Path, Error as PlatformError } from "@effect/platform";
-import { NodeContext, NodeRuntime } from "@effect/platform-node";
-import { Array, ConfigError, Console, Effect, Function, Layer, ParseResult, Stream } from "effect";
+import type { Config, PlatformError, Schema } from "effect";
+
+import { Array, Console, Effect, Function, Layer, Path, Stream } from "effect";
+
+import { NodeRuntime, NodeServices } from "@effect/platform-node";
 import { Tar } from "eftar";
 import { DockerComposeEngine, DockerEngine, MobyConnection } from "the-moby-effect";
 
@@ -15,7 +17,7 @@ import { DockerComposeEngine, DockerEngine, MobyConnection } from "the-moby-effe
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
     Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
+    Layer.unwrap
 );
 
 // Create a docker compose layer, using the local docker engine layer
@@ -27,7 +29,7 @@ const project = Effect.Do.pipe(
     Effect.bind("entries", () => Effect.succeed(Array.make("docker-compose.yml"))),
     Effect.map(({ cwd, entries }) => Tar.tarballFromFilesystem(cwd, entries)),
     Stream.unwrap,
-    Stream.provideLayer(NodeContext.layer)
+    Stream.provide(NodeServices.layer)
 );
 
 // Create a layer for the specific docker compose project
@@ -39,10 +41,11 @@ const { layer: composeForProjectLayer, tag: composeForProjectTag } = DockerCompo
 // Provide the local docker compose engine to the specific docker compose project layer
 const dockerComposeProjectLive: Layer.Layer<
     DockerComposeEngine.DockerComposeProject,
-    | ConfigError.ConfigError
+    | Config.ConfigError
     | DockerEngine.DockerError
     | PlatformError.PlatformError
-    | ParseResult.ParseError
+    | PlatformError.BadArgument
+    | Schema.SchemaError
     | DockerComposeEngine.DockerComposeError,
     never
 > = Layer.provide(composeForProjectLayer, localDockerCompose);
@@ -58,4 +61,4 @@ const program = Effect.gen(function* () {
     yield* compose.rm();
 });
 
-program.pipe(Effect.provide(dockerComposeProjectLive)).pipe(NodeRuntime.runMain);
+program.pipe(Effect.provide(dockerComposeProjectLive), NodeRuntime.runMain);
