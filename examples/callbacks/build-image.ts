@@ -1,26 +1,15 @@
 // Run with: pnpx tsx examples/callbacks/build-image.ts
 
+import { Function, Stream } from "effect";
+
 import * as url from "node:url";
 
-import { NodeContext } from "@effect/platform-node";
-import { Effect, Function, Layer, Stream } from "effect";
+import { NodeServices } from "@effect/platform-node";
 import { Tar } from "eftar";
-import { Callbacks, DockerEngine, MobyConnection } from "the-moby-effect";
-
-// Connect to the local docker engine at "/var/run/docker.sock"
-// const localDocker: DockerEngine.DockerLayer = DockerEngine.layerNodeJS(
-//     MobyConnection.SocketConnectionOptions({
-//         socketPath: "/var/run/docker.sock",
-//     })
-// );
-const localDocker = Function.pipe(
-    MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
-    Effect.map(DockerEngine.layerNodeJS),
-    Layer.unwrapEffect
-);
+import { Callbacks, DockerEngine } from "the-moby-effect";
 
 // Create a callbacks client from the local docker engine
-const callbacksClient = await Callbacks.callbackClient(localDocker);
+const callbacksClient = await Callbacks.callbackClient(DockerEngine.layerNodeJS);
 
 // Step 1/1 : FROM ubuntu:latest
 // Pulling from library/ubuntu
@@ -55,7 +44,7 @@ const callbacksClient = await Callbacks.callbackClient(localDocker);
 const cwd = url.fileURLToPath(new URL(".", import.meta.url));
 const buildContext = Function.pipe(
     Tar.tarballFromFilesystem(cwd, ["build-image.dockerfile"]),
-    Stream.provideLayer(NodeContext.layer)
+    Stream.provide(NodeServices.layer)
 );
 
 const buildStream = callbacksClient.build({
@@ -64,10 +53,6 @@ const buildStream = callbacksClient.build({
     dockerfile: "build-image.dockerfile",
 });
 
-callbacksClient.followProgressInConsole(
-    () => buildStream,
-    (error) => error,
-    (exit) => {
-        console.log(exit);
-    }
-);
+callbacksClient.followProgressInConsole(buildStream, (exit) => {
+    console.log(exit);
+});
