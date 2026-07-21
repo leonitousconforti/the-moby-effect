@@ -28,6 +28,7 @@ import * as internalConnection from "./connection.js";
  * @category NodeJS
  * @internal
  */
+// oxlint-disable-next-line import/namespace -- HttpClientResponse is a type-only export, invisible to oxlint's runtime export check
 export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
     source: {
         socket: net.Socket;
