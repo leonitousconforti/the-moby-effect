@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as NetworkCreateOptions from "./NetworkCreateOptions.generated.ts";
 
 export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("NetworkCreateRequest")(
@@ -10,6 +11,7 @@ export class NetworkCreateRequest extends Schema.Class<NetworkCreateRequest>("Ne
     {
         identifier: "NetworkCreateRequest",
         title: "network.CreateRequest",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#CreateRequest",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#CreateRequest",
     }
 ) {}

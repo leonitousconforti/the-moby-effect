@@ -6,7 +6,13 @@ export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("Co
         User: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
         Privileged: Schema.Boolean.pipe(Schema.withConstructorDefault(Effect.succeed(false))),
         Tty: Schema.Boolean.pipe(Schema.withConstructorDefault(Effect.succeed(false))),
-        ConsoleSize: Schema.optional(Schema.NullOr(Schema.Array(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))).check(Schema.isLengthBetween(2, 2)))),
+        ConsoleSize: Schema.optional(
+            Schema.NullOr(
+                Schema.Array(
+                    Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+                ).check(Schema.isLengthBetween(2, 2))
+            )
+        ),
         AttachStdin: Schema.Boolean,
         AttachStderr: Schema.Boolean,
         AttachStdout: Schema.Boolean,
@@ -19,6 +25,7 @@ export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("Co
     {
         identifier: "ContainerExecOptions",
         title: "container.ExecOptions",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#ExecOptions",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#ExecOptions",
     }
 ) {}

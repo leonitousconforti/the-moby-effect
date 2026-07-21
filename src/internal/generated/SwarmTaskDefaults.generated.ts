@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmDriver from "./SwarmDriver.generated.ts";
 
 export class SwarmTaskDefaults extends Schema.Class<SwarmTaskDefaults>("SwarmTaskDefaults")(

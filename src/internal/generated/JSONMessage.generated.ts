@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as JsonmessageJSONError from "./JsonmessageJSONError.generated.ts";
 import * as JsonmessageJSONProgress from "./JsonmessageJSONProgress.generated.ts";
 
@@ -10,8 +11,12 @@ export class JSONMessage extends Schema.Class<JSONMessage>("JSONMessage")(
         progress: Schema.optional(Schema.String),
         id: Schema.optional(Schema.String),
         from: Schema.optional(Schema.String),
-        time: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
-        timeNano: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        time: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+        ),
+        timeNano: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+        ),
         errorDetail: Schema.optional(Schema.NullOr(JsonmessageJSONError.JsonmessageJSONError)),
         error: Schema.optional(Schema.String),
         aux: Schema.optional(Schema.NullOr(Schema.Unknown)),

@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmAnnotations from "./SwarmAnnotations.generated.ts";
 
 export class SwarmNodeSpec extends Schema.Class<SwarmNodeSpec>("SwarmNodeSpec")(

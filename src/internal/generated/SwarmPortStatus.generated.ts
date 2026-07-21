@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmPortConfig from "./SwarmPortConfig.generated.ts";
 
 export class SwarmPortStatus extends Schema.Class<SwarmPortStatus>("SwarmPortStatus")(

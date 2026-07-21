@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as MountMount from "./MountMount.generated.ts";
 import * as SwarmConfigReference from "./SwarmConfigReference.generated.ts";
 import * as SwarmDNSConfig from "./SwarmDNSConfig.generated.ts";
@@ -25,7 +26,13 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         OpenStdin: Schema.optional(Schema.Boolean),
         ReadOnly: Schema.optional(Schema.Boolean),
         Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(MountMount.MountMount)))),
-        StopGracePeriod: Schema.optional(Schema.NullOr(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })))),
+        StopGracePeriod: Schema.optional(
+            Schema.NullOr(
+                Schema.BigIntFromString.check(
+                    Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+                )
+            )
+        ),
         Healthcheck: Schema.optional(Schema.NullOr(V1HealthcheckConfig.V1HealthcheckConfig)),
         Hosts: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         DNSConfig: Schema.optional(Schema.NullOr(SwarmDNSConfig.SwarmDNSConfig)),
@@ -36,7 +43,9 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         CapabilityAdd: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         CapabilityDrop: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         Ulimits: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)))),
-        OomScoreAdj: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        OomScoreAdj: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+        ),
     },
     {
         identifier: "SwarmContainerSpec",

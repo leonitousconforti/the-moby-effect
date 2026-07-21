@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmEngineDescription from "./SwarmEngineDescription.generated.ts";
 import * as SwarmNodeCSIInfo from "./SwarmNodeCSIInfo.generated.ts";
 import * as SwarmPlatform from "./SwarmPlatform.generated.ts";
@@ -17,6 +18,7 @@ export class SwarmNodeDescription extends Schema.Class<SwarmNodeDescription>("Sw
     {
         identifier: "SwarmNodeDescription",
         title: "swarm.NodeDescription",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#NodeDescription",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#NodeDescription",
     }
 ) {}

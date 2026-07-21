@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmLimit from "./SwarmLimit.generated.ts";
 import * as SwarmResources from "./SwarmResources.generated.ts";
 
@@ -10,6 +11,7 @@ export class SwarmResourceRequirements extends Schema.Class<SwarmResourceRequire
     {
         identifier: "SwarmResourceRequirements",
         title: "swarm.ResourceRequirements",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ResourceRequirements",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ResourceRequirements",
     }
 ) {}

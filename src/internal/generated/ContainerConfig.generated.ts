@@ -1,5 +1,6 @@
-import * as Schema from "effect/Schema";
 import * as Effect from "effect/Effect";
+import * as Schema from "effect/Schema";
+
 import * as PortSchemas from "../schemas/port.ts";
 import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.ts";
 
@@ -20,15 +21,27 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         Healthcheck: Schema.optional(Schema.NullOr(V1HealthcheckConfig.V1HealthcheckConfig)),
         ArgsEscaped: Schema.optional(Schema.Boolean),
         Image: Schema.String,
-        Volumes: Schema.NullOr(Schema.Record(Schema.String, Schema.ObjectKeyword)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        Volumes: Schema.NullOr(Schema.Record(Schema.String, Schema.ObjectKeyword)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
         WorkingDir: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
-        Entrypoint: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        Entrypoint: Schema.NullOr(Schema.Array(Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
         NetworkDisabled: Schema.optional(Schema.Boolean),
         MacAddress: Schema.optional(Schema.String),
         OnBuild: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
-        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
         StopSignal: Schema.optional(Schema.String),
-        StopTimeout: Schema.optional(Schema.NullOr(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })))),
+        StopTimeout: Schema.optional(
+            Schema.NullOr(
+                Schema.BigIntFromString.check(
+                    Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+                )
+            )
+        ),
         Shell: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
     },
     {

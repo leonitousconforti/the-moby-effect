@@ -9,6 +9,7 @@ export class NetworkEndpointIPAMConfig extends Schema.Class<NetworkEndpointIPAMC
     {
         identifier: "NetworkEndpointIPAMConfig",
         title: "network.EndpointIPAMConfig",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#EndpointIPAMConfig",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#EndpointIPAMConfig",
     }
 ) {}

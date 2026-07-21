@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.ts";
 
 export class V1DockerOCIImageConfigExt extends Schema.Class<V1DockerOCIImageConfigExt>("V1DockerOCIImageConfigExt")(

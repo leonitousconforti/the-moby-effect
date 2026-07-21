@@ -8,6 +8,7 @@ export class SystemNetworkAddressPool extends Schema.Class<SystemNetworkAddressP
     {
         identifier: "SystemNetworkAddressPool",
         title: "system.NetworkAddressPool",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#NetworkAddressPool",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#NetworkAddressPool",
     }
 ) {}

@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as MobyIdentifiers from "../schemas/id.ts";
 import * as NetworkConfigReference from "./NetworkConfigReference.generated.ts";
 import * as NetworkEndpointResource from "./NetworkEndpointResource.generated.ts";
@@ -21,11 +22,15 @@ export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect
         Ingress: Schema.Boolean,
         ConfigFrom: Schema.NullOr(NetworkConfigReference.NetworkConfigReference),
         ConfigOnly: Schema.Boolean,
-        Containers: Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource))),
+        Containers: Schema.NullOr(
+            Schema.Record(Schema.String, Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource))
+        ),
         Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Peers: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(NetworkPeerInfo.NetworkPeerInfo)))),
-        Services: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkServiceInfo.NetworkServiceInfo)))),
+        Services: Schema.optional(
+            Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkServiceInfo.NetworkServiceInfo)))
+        ),
     },
     {
         identifier: "NetworkInspect",

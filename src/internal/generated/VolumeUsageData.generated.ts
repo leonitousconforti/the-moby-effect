@@ -2,7 +2,9 @@ import * as Schema from "effect/Schema";
 
 export class VolumeUsageData extends Schema.Class<VolumeUsageData>("VolumeUsageData")(
     {
-        RefCount: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        RefCount: Schema.BigIntFromString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
     },
     {

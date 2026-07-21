@@ -9,6 +9,7 @@ export class ContainerDeviceMapping extends Schema.Class<ContainerDeviceMapping>
     {
         identifier: "ContainerDeviceMapping",
         title: "container.DeviceMapping",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#DeviceMapping",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#DeviceMapping",
     }
 ) {}

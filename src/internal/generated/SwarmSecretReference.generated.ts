@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmSecretReferenceFileTarget from "./SwarmSecretReferenceFileTarget.generated.ts";
 
 export class SwarmSecretReference extends Schema.Class<SwarmSecretReference>("SwarmSecretReference")(
@@ -10,6 +11,7 @@ export class SwarmSecretReference extends Schema.Class<SwarmSecretReference>("Sw
     {
         identifier: "SwarmSecretReference",
         title: "swarm.SecretReference",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#SecretReference",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#SecretReference",
     }
 ) {}

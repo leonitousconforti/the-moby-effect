@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as TypesPluginConfigArgs from "./TypesPluginConfigArgs.generated.ts";
 import * as TypesPluginConfigInterface from "./TypesPluginConfigInterface.generated.ts";
 import * as TypesPluginConfigLinux from "./TypesPluginConfigLinux.generated.ts";

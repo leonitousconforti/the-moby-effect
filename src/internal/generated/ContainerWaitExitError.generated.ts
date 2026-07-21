@@ -7,6 +7,7 @@ export class ContainerWaitExitError extends Schema.Class<ContainerWaitExitError>
     {
         identifier: "ContainerWaitExitError",
         title: "container.WaitExitError",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#WaitExitError",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#WaitExitError",
     }
 ) {}

@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmConfigReferenceFileTarget from "./SwarmConfigReferenceFileTarget.generated.ts";
 import * as SwarmConfigReferenceRuntimeTarget from "./SwarmConfigReferenceRuntimeTarget.generated.ts";
 
@@ -12,6 +13,7 @@ export class SwarmConfigReference extends Schema.Class<SwarmConfigReference>("Sw
     {
         identifier: "SwarmConfigReference",
         title: "swarm.ConfigReference",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ConfigReference",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#ConfigReference",
     }
 ) {}

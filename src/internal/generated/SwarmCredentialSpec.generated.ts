@@ -9,6 +9,7 @@ export class SwarmCredentialSpec extends Schema.Class<SwarmCredentialSpec>("Swar
     {
         identifier: "SwarmCredentialSpec",
         title: "swarm.CredentialSpec",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#CredentialSpec",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#CredentialSpec",
     }
 ) {}

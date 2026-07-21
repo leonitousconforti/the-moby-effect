@@ -5,12 +5,12 @@
         "**/build",
         "**/docs",
         "**/.tsbuildinfo",
-        "**/generated/**",
         ".agents/**/*",
         "**/index.ts",
         "repos/**",
         "**/CHANGELOG.md",
-        "submodules/**"
+        "submodules/**",
+        "!src/internal/generated/index.ts"
     ],
     "sortPackageJson": true,
     "trailingComma": "es5",

@@ -16,6 +16,7 @@ export class ContainerNetworkStats extends Schema.Class<ContainerNetworkStats>("
     {
         identifier: "ContainerNetworkStats",
         title: "container.NetworkStats",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#NetworkStats",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#NetworkStats",
     }
 ) {}

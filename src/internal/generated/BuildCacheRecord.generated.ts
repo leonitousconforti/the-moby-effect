@@ -12,7 +12,9 @@ export class BuildCacheRecord extends Schema.Class<BuildCacheRecord>("BuildCache
         Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
         CreatedAt: Schema.NullOr(Schema.DateFromString),
         LastUsedAt: Schema.NullOr(Schema.DateFromString),
-        UsageCount: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        UsageCount: Schema.BigIntFromString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
     },
     {
         identifier: "BuildCacheRecord",

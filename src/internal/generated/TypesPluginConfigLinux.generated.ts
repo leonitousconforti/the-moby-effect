@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as TypesPluginDevice from "./TypesPluginDevice.generated.ts";
 
 export class TypesPluginConfigLinux extends Schema.Class<TypesPluginConfigLinux>("TypesPluginConfigLinux")(

@@ -8,6 +8,7 @@ export class ContainerTopResponse extends Schema.Class<ContainerTopResponse>("Co
     {
         identifier: "ContainerTopResponse",
         title: "container.TopResponse",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#TopResponse",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#TopResponse",
     }
 ) {}

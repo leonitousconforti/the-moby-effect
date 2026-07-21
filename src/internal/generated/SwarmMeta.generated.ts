@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmVersion from "./SwarmVersion.generated.ts";
 
 export class SwarmMeta extends Schema.Class<SwarmMeta>("SwarmMeta")(

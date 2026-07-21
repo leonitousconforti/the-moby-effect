@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as VolumeAccessMode from "./VolumeAccessMode.generated.ts";
 import * as VolumeCapacityRange from "./VolumeCapacityRange.generated.ts";
 import * as VolumeSecret from "./VolumeSecret.generated.ts";
@@ -16,6 +17,7 @@ export class VolumeClusterVolumeSpec extends Schema.Class<VolumeClusterVolumeSpe
     {
         identifier: "VolumeClusterVolumeSpec",
         title: "volume.ClusterVolumeSpec",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/volume#ClusterVolumeSpec",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/volume#ClusterVolumeSpec",
     }
 ) {}

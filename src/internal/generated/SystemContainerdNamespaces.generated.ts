@@ -8,6 +8,7 @@ export class SystemContainerdNamespaces extends Schema.Class<SystemContainerdNam
     {
         identifier: "SystemContainerdNamespaces",
         title: "system.ContainerdNamespaces",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#ContainerdNamespaces",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#ContainerdNamespaces",
     }
 ) {}

@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as ContainerConfig from "./ContainerConfig.generated.ts";
 import * as ContainerContainerJSONBase from "./ContainerContainerJSONBase.generated.ts";
 import * as ContainerMountPoint from "./ContainerMountPoint.generated.ts";
@@ -16,6 +17,7 @@ export class ContainerInspectResponse extends Schema.Class<ContainerInspectRespo
     {
         identifier: "ContainerInspectResponse",
         title: "container.InspectResponse",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#InspectResponse",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#InspectResponse",
     }
 ) {}

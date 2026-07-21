@@ -1,8 +1,9 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmAppArmorOpts from "./SwarmAppArmorOpts.generated.ts";
 import * as SwarmCredentialSpec from "./SwarmCredentialSpec.generated.ts";
-import * as SwarmSELinuxContext from "./SwarmSELinuxContext.generated.ts";
 import * as SwarmSeccompOpts from "./SwarmSeccompOpts.generated.ts";
+import * as SwarmSELinuxContext from "./SwarmSELinuxContext.generated.ts";
 
 export class SwarmPrivileges extends Schema.Class<SwarmPrivileges>("SwarmPrivileges")(
     {

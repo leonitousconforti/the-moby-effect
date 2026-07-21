@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as NetworkEndpointSettings from "./NetworkEndpointSettings.generated.ts";
 
 export class NetworkConnectOptions extends Schema.Class<NetworkConnectOptions>("NetworkConnectOptions")(
@@ -9,6 +10,7 @@ export class NetworkConnectOptions extends Schema.Class<NetworkConnectOptions>("
     {
         identifier: "NetworkConnectOptions",
         title: "network.ConnectOptions",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#ConnectOptions",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#ConnectOptions",
     }
 ) {}

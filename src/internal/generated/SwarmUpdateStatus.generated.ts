@@ -2,7 +2,16 @@ import * as Schema from "effect/Schema";
 
 export class SwarmUpdateStatus extends Schema.Class<SwarmUpdateStatus>("SwarmUpdateStatus")(
     {
-        State: Schema.optional(Schema.Literals(["updating", "paused", "completed", "rollback_started", "rollback_paused", "rollback_completed"])),
+        State: Schema.optional(
+            Schema.Literals([
+                "updating",
+                "paused",
+                "completed",
+                "rollback_started",
+                "rollback_paused",
+                "rollback_completed",
+            ])
+        ),
         StartedAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
         CompletedAt: Schema.optional(Schema.NullOr(Schema.DateFromString)),
         Message: Schema.optional(Schema.String),

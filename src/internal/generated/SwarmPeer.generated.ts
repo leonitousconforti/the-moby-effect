@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as MobyIdentifiers from "../schemas/id.ts";
 
 export class SwarmPeer extends Schema.Class<SwarmPeer>("SwarmPeer")(

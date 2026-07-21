@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as MobyIdentifiers from "../schemas/id.ts";
 import * as ContainerConfig from "./ContainerConfig.generated.ts";
 import * as ImageManifestSummary from "./ImageManifestSummary.generated.ts";
@@ -26,16 +27,21 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Os: Schema.String,
         OsVersion: Schema.optional(Schema.String),
         Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
-        VirtualSize: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        VirtualSize: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+        ),
         GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
         RootFS: Schema.NullOr(ImageRootFS.ImageRootFS),
         Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),
         Descriptor: Schema.optional(Schema.NullOr(V1Descriptor.V1Descriptor)),
-        Manifests: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(ImageManifestSummary.ImageManifestSummary)))),
+        Manifests: Schema.optional(
+            Schema.NullOr(Schema.Array(Schema.NullOr(ImageManifestSummary.ImageManifestSummary)))
+        ),
     },
     {
         identifier: "ImageInspectResponse",
         title: "image.InspectResponse",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image#InspectResponse",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/image#InspectResponse",
     }
 ) {}

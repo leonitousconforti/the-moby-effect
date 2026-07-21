@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as NetworkIPAMConfig from "./NetworkIPAMConfig.generated.ts";
 
 export class NetworkIPAM extends Schema.Class<NetworkIPAM>("NetworkIPAM")(

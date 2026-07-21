@@ -2,8 +2,12 @@ import * as Schema from "effect/Schema";
 
 export class ContainerPidsStats extends Schema.Class<ContainerPidsStats>("ContainerPidsStats")(
     {
-        current: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
-        limit: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))),
+        current: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+        ),
+        limit: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+        ),
     },
     {
         identifier: "ContainerPidsStats",

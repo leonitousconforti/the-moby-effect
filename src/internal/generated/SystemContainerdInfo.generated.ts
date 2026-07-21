@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SystemContainerdNamespaces from "./SystemContainerdNamespaces.generated.ts";
 
 export class SystemContainerdInfo extends Schema.Class<SystemContainerdInfo>("SystemContainerdInfo")(
@@ -9,6 +10,7 @@ export class SystemContainerdInfo extends Schema.Class<SystemContainerdInfo>("Sy
     {
         identifier: "SystemContainerdInfo",
         title: "system.ContainerdInfo",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#ContainerdInfo",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/system#ContainerdInfo",
     }
 ) {}

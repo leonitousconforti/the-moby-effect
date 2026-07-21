@@ -14,6 +14,7 @@ export class ContainerMountPoint extends Schema.Class<ContainerMountPoint>("Cont
     {
         identifier: "ContainerMountPoint",
         title: "container.MountPoint",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#MountPoint",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#MountPoint",
     }
 ) {}

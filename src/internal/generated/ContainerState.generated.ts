@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as ContainerHealth from "./ContainerHealth.generated.ts";
 
 export class ContainerState extends Schema.Class<ContainerState>("ContainerState")(
@@ -10,7 +11,9 @@ export class ContainerState extends Schema.Class<ContainerState>("ContainerState
         OOMKilled: Schema.Boolean,
         Dead: Schema.Boolean,
         Pid: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
-        ExitCode: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        ExitCode: Schema.BigIntFromString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         Error: Schema.String,
         StartedAt: Schema.String,
         FinishedAt: Schema.String,

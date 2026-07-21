@@ -54,7 +54,7 @@
         "lint": "oxlint --disable-nested-config && oxfmt --check !repos/** !submodules/**",
         "lint-fix": "oxlint --disable-nested-config --fix && oxfmt --write !repos/** !submodules/**",
         "prepare": "effect-language-service patch",
-        "schemagen": "cd reflection && go build && ./reflection",
+        "schemagen": "(cd reflection && go build && ./reflection) && oxfmt --write src/internal/generated",
         "test": "vitest",
         "update-blobs": "tsx ./scripts/update-blobs.ts",
         "changeset-version": "changeset version",

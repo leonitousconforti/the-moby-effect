@@ -1,8 +1,7 @@
 import * as Schema from "effect/Schema";
 
 export class SwarmGlobalJob extends Schema.Class<SwarmGlobalJob>("SwarmGlobalJob")(
-    {
-    },
+    {},
     {
         identifier: "SwarmGlobalJob",
         title: "swarm.GlobalJob",

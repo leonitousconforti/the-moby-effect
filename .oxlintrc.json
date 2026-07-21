@@ -5,11 +5,11 @@
         "**/build",
         "**/docs",
         "**/.tsbuildinfo",
-        "**/generated/**",
         "!scratchpad/**/*",
         ".agents/**/*",
         "repos/**",
-        "submodules/**"
+        "submodules/**",
+        "!src/internal/generated/index.ts"
     ],
     "plugins": ["typescript", "import", "oxc", "eslint", "unicorn", "node"],
     "categories": {

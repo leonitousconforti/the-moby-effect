@@ -9,6 +9,7 @@ export class SwarmVolumeAttachment extends Schema.Class<SwarmVolumeAttachment>("
     {
         identifier: "SwarmVolumeAttachment",
         title: "swarm.VolumeAttachment",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#VolumeAttachment",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#VolumeAttachment",
     }
 ) {}

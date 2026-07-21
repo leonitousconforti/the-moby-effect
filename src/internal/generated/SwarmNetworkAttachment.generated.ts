@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as SwarmNetwork from "./SwarmNetwork.generated.ts";
 
 export class SwarmNetworkAttachment extends Schema.Class<SwarmNetworkAttachment>("SwarmNetworkAttachment")(
@@ -9,6 +10,7 @@ export class SwarmNetworkAttachment extends Schema.Class<SwarmNetworkAttachment>
     {
         identifier: "SwarmNetworkAttachment",
         title: "swarm.NetworkAttachment",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#NetworkAttachment",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/swarm#NetworkAttachment",
     }
 ) {}

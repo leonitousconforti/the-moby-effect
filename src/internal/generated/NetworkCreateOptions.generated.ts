@@ -1,5 +1,6 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
+
 import * as NetworkConfigReference from "./NetworkConfigReference.generated.ts";
 import * as NetworkIPAM from "./NetworkIPAM.generated.ts";
 
@@ -21,6 +22,7 @@ export class NetworkCreateOptions extends Schema.Class<NetworkCreateOptions>("Ne
     {
         identifier: "NetworkCreateOptions",
         title: "network.CreateOptions",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#CreateOptions",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/network#CreateOptions",
     }
 ) {}

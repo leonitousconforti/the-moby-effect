@@ -1,4 +1,5 @@
 import * as Schema from "effect/Schema";
+
 import * as MobyIdentifiers from "../schemas/id.ts";
 import * as SwarmAnnotations from "./SwarmAnnotations.generated.ts";
 import * as SwarmGenericResource from "./SwarmGenericResource.generated.ts";
@@ -16,12 +17,36 @@ export class SwarmTask extends Schema.Class<SwarmTask>("SwarmTask")(
         ...SwarmAnnotations.SwarmAnnotations.fields,
         Spec: Schema.optional(Schema.NullOr(SwarmTaskSpec.SwarmTaskSpec)),
         ServiceID: Schema.optional(MobyIdentifiers.ServiceIdentifier),
-        Slot: Schema.optional(Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))),
+        Slot: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+        ),
         NodeID: Schema.optional(MobyIdentifiers.NodeIdentifier),
         Status: Schema.optional(Schema.NullOr(SwarmTaskStatus.SwarmTaskStatus)),
-        DesiredState: Schema.optional(Schema.Literals(["new", "allocated", "pending", "assigned", "accepted", "preparing", "ready", "starting", "running", "complete", "shutdown", "failed", "rejected", "remove", "orphaned"])),
-        NetworksAttachments: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmNetworkAttachment.SwarmNetworkAttachment)))),
-        GenericResources: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(SwarmGenericResource.SwarmGenericResource)))),
+        DesiredState: Schema.optional(
+            Schema.Literals([
+                "new",
+                "allocated",
+                "pending",
+                "assigned",
+                "accepted",
+                "preparing",
+                "ready",
+                "starting",
+                "running",
+                "complete",
+                "shutdown",
+                "failed",
+                "rejected",
+                "remove",
+                "orphaned",
+            ])
+        ),
+        NetworksAttachments: Schema.optional(
+            Schema.NullOr(Schema.Array(Schema.NullOr(SwarmNetworkAttachment.SwarmNetworkAttachment)))
+        ),
+        GenericResources: Schema.optional(
+            Schema.NullOr(Schema.Array(Schema.NullOr(SwarmGenericResource.SwarmGenericResource)))
+        ),
         JobIteration: Schema.optional(Schema.NullOr(SwarmVersion.SwarmVersion)),
         Volumes: Schema.NullOr(Schema.Array(Schema.NullOr(SwarmVolumeAttachment.SwarmVolumeAttachment))),
     },

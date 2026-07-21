@@ -10,6 +10,7 @@ export class ContainerBlkioStatEntry extends Schema.Class<ContainerBlkioStatEntr
     {
         identifier: "ContainerBlkioStatEntry",
         title: "container.BlkioStatEntry",
-        documentation: "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#BlkioStatEntry",
+        documentation:
+            "https://pkg.go.dev/github.com/docker/docker@v28.4.0+incompatible/api/types/container#BlkioStatEntry",
     }
 ) {}
