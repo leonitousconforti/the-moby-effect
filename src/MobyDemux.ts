@@ -4,17 +4,18 @@
  * @since 1.0.0
  */
 
-import type * as PlatformError from "@effect/platform/Error";
-import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import type * as Socket from "@effect/platform/Socket";
+import type * as Array from "effect/Array";
 import type * as Channel from "effect/Channel";
-import type * as Chunk from "effect/Chunk";
 import type * as Effect from "effect/Effect";
-import type * as ParseResult from "effect/ParseResult";
 import type * as Pipeable from "effect/Pipeable";
+import type * as PlatformError from "effect/PlatformError";
+import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
 import type * as Sink from "effect/Sink";
+import type * as Stdio from "effect/Stdio";
 import type * as Stream from "effect/Stream";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
+import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as internal from "./internal/demux/demux.ts";
 import * as internalFan from "./internal/demux/fan.ts";
@@ -96,6 +97,7 @@ export type MultiplexedChannelTypeId = typeof MultiplexedChannelTypeId;
  * @since 1.0.0
  * @category Branded Types
  */
+// oxlint-disable-next-line import/namespace
 export interface RawSocket extends Pipeable.Pipeable {
     readonly "content-type": typeof RawContentType;
     readonly [RawSocketTypeId]: typeof RawSocketTypeId;
@@ -115,15 +117,16 @@ export interface RawSocket extends Pipeable.Pipeable {
  * @since 1.0.0
  * @category Branded Types
  */
+// oxlint-disable-next-line import/namespace
 export interface RawChannel<in IE = unknown, out OE = Socket.SocketError, out R = never> extends Pipeable.Pipeable {
     readonly "content-type": typeof RawContentType;
     readonly [RawChannelTypeId]: typeof RawChannelTypeId;
     readonly underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+        Array.NonEmptyReadonlyArray<Uint8Array>,
         OE,
-        IE,
         void,
+        Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
+        IE,
         unknown,
         R
     >;
@@ -142,6 +145,7 @@ export interface RawChannel<in IE = unknown, out OE = Socket.SocketError, out R 
  * @since 1.0.0
  * @category Branded Types
  */
+// oxlint-disable-next-line import/namespace
 export interface MultiplexedSocket extends Pipeable.Pipeable {
     readonly "content-type": typeof MultiplexedContentType;
     readonly [MultiplexedSocketTypeId]: MultiplexedSocketTypeId;
@@ -164,15 +168,16 @@ export interface MultiplexedSocket extends Pipeable.Pipeable {
  * @category Branded Types
  */
 export interface MultiplexedChannel<in IE = unknown, out OE = Socket.SocketError, out R = never>
+    // oxlint-disable-next-line import/namespace
     extends Pipeable.Pipeable {
     readonly "content-type": typeof MultiplexedContentType;
     readonly [MultiplexedChannelTypeId]: MultiplexedChannelTypeId;
     readonly underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+        Array.NonEmptyReadonlyArray<Uint8Array>,
         OE,
-        IE,
         void,
+        Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
+        IE,
         unknown,
         R
     >;
@@ -343,11 +348,11 @@ export const makeRawSocket: (underlying: Socket.Socket) => RawSocket = internalR
  */
 export const makeRawChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
     underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+        Array.NonEmptyReadonlyArray<Uint8Array>,
         OE,
-        IE,
         void,
+        Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
+        IE,
         unknown,
         R
     >
@@ -366,11 +371,11 @@ export const makeMultiplexedSocket: (underlying: Socket.Socket) => MultiplexedSo
  */
 export const makeMultiplexedChannel: <IE = unknown, OE = Socket.SocketError, R = never>(
     underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+        Array.NonEmptyReadonlyArray<Uint8Array>,
         OE,
-        IE,
         void,
+        Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
+        IE,
         unknown,
         R
     >
@@ -700,7 +705,7 @@ export const demuxToSingleSink: {
         sockets: EitherRawInput<E1 | IE, OE, R3> | EitherMultiplexedInput<E1 | IE, OE, R3>
     ) => Effect.Effect<
         A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
+        E1 | E2 | IE | OE | Schema.SchemaError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
     // Data-first signature.
@@ -711,7 +716,7 @@ export const demuxToSingleSink: {
         options?: { encoding?: string | undefined } | undefined
     ): Effect.Effect<
         A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
+        E1 | E2 | IE | OE | Schema.SchemaError,
         Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
     >;
 } = internal.demuxToSingleSink;
@@ -792,9 +797,9 @@ export const fan: {
         readonly encoding?: string | undefined;
     }): (multiplexedInput: EitherMultiplexedInput<IE, OE, R>) => Effect.Effect<
         {
-            stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
-            stdout: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
-            stderr: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stdin: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
+            stdout: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
+            stderr: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
         Exclude<R, Scope.Scope>
@@ -813,9 +818,9 @@ export const fan: {
         }
     ): Effect.Effect<
         {
-            stdin: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
-            stdout: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
-            stderr: RawChannel<IE, IE | OE | ParseResult.ParseError, never>;
+            stdin: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
+            stdout: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
+            stderr: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
         Exclude<R, Scope.Scope>
@@ -845,7 +850,7 @@ export const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketErro
               encoding?: string | undefined;
           }
         | undefined
-) => Effect.Effect<void, E | IE | OE | ParseResult.ParseError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =
+) => Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =
     internalStdio.demuxWithInputToConsole;
 
 /**
@@ -872,5 +877,8 @@ export const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketErr
               encoding?: string | undefined;
           }
         | undefined
-) => Effect.Effect<void, IE | OE | PlatformError.PlatformError | ParseResult.ParseError, Exclude<R, Scope.Scope>> =
-    internalStdio.demuxFromStdinToStdoutAndStderr;
+) => Effect.Effect<
+    void,
+    IE | OE | PlatformError.PlatformError | Schema.SchemaError,
+    Exclude<R, Scope.Scope> | Stdio.Stdio
+> = internalStdio.demuxFromStdinToStdoutAndStderr;
