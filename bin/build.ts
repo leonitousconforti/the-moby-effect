@@ -1,8 +1,8 @@
 import { Effect, Stream } from "effect";
+import { Argument, Command, Flag } from "effect/unstable/cli";
 
 import { NodeServices } from "@effect/platform-node";
 import { Tar } from "eftar";
-import { Argument, Command, Flag } from "effect/unstable/cli";
 import { DockerEngine, MobyConvey } from "the-moby-effect";
 
 export const command = Command.make(
