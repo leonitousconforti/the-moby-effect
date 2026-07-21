@@ -413,10 +413,10 @@ export const push: (
  * @category Docker
  */
 export const run: (
-    options: Omit<NonNullable<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0]>, "HostConfig"> & {
+    options: Omit<(typeof MobySchemas.ContainerCreateRequest)["~type.make.in"], "HostConfig"> & {
         readonly name?: string | undefined;
         readonly platform?: string | undefined;
-        readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
+        readonly HostConfig?: (typeof MobySchemas.ContainerHostConfig)["~type.make.in"] | undefined;
     }
 ) => Effect.Effect<MobySchemas.ContainerInspectResponse, DockerError, MobyEndpoints.Containers> = internalDocker.run;
 
@@ -428,10 +428,10 @@ export const run: (
  * @category Docker
  */
 export const runScoped: (
-    options: Omit<NonNullable<ConstructorParameters<typeof MobySchemas.ContainerCreateRequest>[0]>, "HostConfig"> & {
+    options: Omit<(typeof MobySchemas.ContainerCreateRequest)["~type.make.in"], "HostConfig"> & {
         readonly name?: string | undefined;
         readonly platform?: string | undefined;
-        readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined;
+        readonly HostConfig?: (typeof MobySchemas.ContainerHostConfig)["~type.make.in"] | undefined;
     }
 ) => Effect.Effect<MobySchemas.ContainerInspectResponse, DockerError, Scope.Scope | MobyEndpoints.Containers> =
     internalDocker.runScoped;
