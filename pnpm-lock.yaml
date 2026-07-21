@@ -8,16 +8,19 @@ overrides:
   '@effect/docgen>typescript': 5.9.3
   madge>typescript: 5.9.3
 
+patchedDependencies:
+  effect@4.0.0-beta.99: 2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707
+
 importers:
 
   .:
     dependencies:
       effect-schemas:
         specifier: 0.0.16
-        version: 0.0.16(effect@4.0.0-beta.99)
+        version: 0.0.16(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))
       eftar:
         specifier: 0.0.78
-        version: 0.0.78(effect@4.0.0-beta.99)
+        version: 0.0.78(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))
     devDependencies:
       '@babel/cli':
         specifier: 7.29.7
@@ -39,16 +42,16 @@ importers:
         version: 0.87.0
       '@effect/platform-browser':
         specifier: 4.0.0-beta.99
-        version: 4.0.0-beta.99(effect@4.0.0-beta.99)
+        version: 4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))
       '@effect/platform-bun':
         specifier: 4.0.0-beta.99
-        version: 4.0.0-beta.99(effect@4.0.0-beta.99)
+        version: 4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))
       '@effect/platform-node':
         specifier: 4.0.0-beta.99
-        version: 4.0.0-beta.99(effect@4.0.0-beta.99)(ioredis@5.11.1)
+        version: 4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))(ioredis@5.11.1)
       '@effect/vitest':
         specifier: 4.0.0-beta.99
-        version: 4.0.0-beta.99(effect@4.0.0-beta.99)(vitest@4.1.10)
+        version: 4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))(vitest@4.1.10)
       '@types/node':
         specifier: 26.1.1
         version: 26.1.1
@@ -66,7 +69,7 @@ importers:
         version: 0.5.0(@babel/core@7.29.7)
       effect:
         specifier: 4.0.0-beta.99
-        version: 4.0.0-beta.99
+        version: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
       ioredis:
         specifier: 5.11.1
         version: 5.11.1
@@ -2870,32 +2873,32 @@ snapshots:
       repeat-string: 1.6.1
       strip-color: 0.1.0
 
-  '@effect/platform-browser@4.0.0-beta.99(effect@4.0.0-beta.99)':
+  '@effect/platform-browser@4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))':
     dependencies:
-      effect: 4.0.0-beta.99
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
       multipasta: 0.2.8
 
-  '@effect/platform-bun@4.0.0-beta.99(effect@4.0.0-beta.99)':
+  '@effect/platform-bun@4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.99(effect@4.0.0-beta.99)
-      effect: 4.0.0-beta.99
+      '@effect/platform-node-shared': 4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node-shared@4.0.0-beta.99(effect@4.0.0-beta.99)':
+  '@effect/platform-node-shared@4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))':
     dependencies:
       '@types/ws': 8.18.1
-      effect: 4.0.0-beta.99
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
       ws: 8.21.1
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform-node@4.0.0-beta.99(effect@4.0.0-beta.99)(ioredis@5.11.1)':
+  '@effect/platform-node@4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))(ioredis@5.11.1)':
     dependencies:
-      '@effect/platform-node-shared': 4.0.0-beta.99(effect@4.0.0-beta.99)
-      effect: 4.0.0-beta.99
+      '@effect/platform-node-shared': 4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
       ioredis: 5.11.1
       mime: 4.1.0
       undici: 8.7.0
@@ -2903,9 +2906,9 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/vitest@4.0.0-beta.99(effect@4.0.0-beta.99)(vitest@4.1.10)':
+  '@effect/vitest@4.0.0-beta.99(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707))(vitest@4.1.10)':
     dependencies:
-      effect: 4.0.0-beta.99
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
       vitest: 4.1.10(@types/node@26.1.1)(@vitest/coverage-v8@4.1.10)(vite@8.1.5(@types/node@26.1.1)(tsx@4.23.1))
 
   '@emnapi/core@1.11.1':
@@ -3701,11 +3704,11 @@ snapshots:
     dependencies:
       esutils: 2.0.3
 
-  effect-schemas@0.0.16(effect@4.0.0-beta.99):
+  effect-schemas@0.0.16(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)):
     dependencies:
-      effect: 4.0.0-beta.99
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
 
-  effect@4.0.0-beta.99:
+  effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707):
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 4.9.0
@@ -3718,9 +3721,9 @@ snapshots:
       uuid: 14.0.1
       yaml: 2.9.0
 
-  eftar@0.0.78(effect@4.0.0-beta.99):
+  eftar@0.0.78(effect@4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)):
     dependencies:
-      effect: 4.0.0-beta.99
+      effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
 
   electron-to-chromium@1.5.393: {}
 

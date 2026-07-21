@@ -28,3 +28,6 @@ peerDependencyRules:
 
 minimumReleaseAgeExclude:
   - eftar@0.0.78
+
+patchedDependencies:
+  effect@4.0.0-beta.99: patches/effect@4.0.0-beta.99.patch

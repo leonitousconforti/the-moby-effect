@@ -1,0 +1,39 @@
+diff --git a/dist/unstable/httpapi/HttpApiClient.js b/dist/unstable/httpapi/HttpApiClient.js
+index 0f150d72b43a642dad107f18df808b333e99ff0b..907c77da7a08b9f4de5bbc5b014c55421e517f44 100644
+--- a/dist/unstable/httpapi/HttpApiClient.js
++++ b/dist/unstable/httpapi/HttpApiClient.js
+@@ -495,6 +495,20 @@ function getEncodePayloadSchemaFromBody(schema, method) {
+   if (cached !== undefined) {
+     return cached;
+   }
++  if (HttpApiSchema.isStreamUint8Array(schema)) {
++    const out = $HttpBody.pipe(Schema.decodeTo(schema, SchemaTransformation.transformOrFail({
++      decode(httpBody) {
++        return Effect.fail(new SchemaIssue.Forbidden(Option.some(httpBody), {
++          message: "Encode only schema"
++        }));
++      },
++      encode(t) {
++        return Effect.succeed(HttpBody.stream(t, schema.contentType));
++      }
++    })));
++    bodyFromPayloadCache.set(ast, out);
++    return out;
++  }
+   const encoding = HttpApiSchema.getPayloadEncoding(ast, method);
+   const out = $HttpBody.pipe(Schema.decodeTo(schema, SchemaTransformation.transformOrFail({
+     decode(httpBody) {
+diff --git a/dist/unstable/httpapi/HttpApiEndpoint.js b/dist/unstable/httpapi/HttpApiEndpoint.js
+index 84b80015eb679998caa2b0a8a19169cc30c487cf..e48ede3d922369c97be335f446a1436a7142c311 100644
+--- a/dist/unstable/httpapi/HttpApiEndpoint.js
++++ b/dist/unstable/httpapi/HttpApiEndpoint.js
+@@ -284,6 +284,9 @@ function transformResponse(schema) {
+   }
+ }
+ function transformPayload(schema, method) {
++  if (HttpApiSchema.isStreamSchema(schema)) {
++    return schema;
++  }
+   const encoding = HttpApiSchema.getPayloadEncoding(schema.ast, method);
+   switch (encoding._tag) {
+     case "Json":
