@@ -1,19 +1,26 @@
-import { Console, Effect } from "effect";
+import { Console, Effect, Option } from "effect";
 
-import { Command, Options } from "@effect/cli";
+import { Command, Flag } from "effect/unstable/cli";
 import { DockerEngine } from "the-moby-effect";
 
 export const command = Command.make(
     "search",
     {
-        term: Options.text("term"),
-        limit: Options.integer("limit").pipe(Options.withDefault(undefined)),
-        stars: Options.integer("stars").pipe(Options.withDefault(undefined)),
-        onlyOfficial: Options.boolean("only-official").pipe(Options.withDefault(undefined)),
+        term: Flag.string("term"),
+        limit: Flag.integer("limit").pipe(Flag.optional),
+        stars: Flag.integer("stars").pipe(Flag.optional),
+        onlyOfficial: Flag.boolean("only-official").pipe(Flag.optional),
     },
     ({ limit, onlyOfficial, stars, term }) =>
         Effect.gen(function* () {
-            const version = yield* DockerEngine.search({ limit, stars, term, "is-official": onlyOfficial });
-            yield* Console.log(version);
+            const results = yield* DockerEngine.search({
+                term,
+                limit: Option.getOrUndefined(limit),
+                filters: {
+                    stars: Option.getOrUndefined(stars),
+                    "is-official": Option.getOrUndefined(onlyOfficial),
+                },
+            });
+            yield* Console.log(results);
         })
 );

@@ -1,17 +1,17 @@
 import { Console, Effect } from "effect";
 
-import { Command, Options } from "@effect/cli";
+import { Command, Flag } from "effect/unstable/cli";
 import { DockerEngine } from "the-moby-effect";
 
 export const command = Command.make(
     "run",
     {
-        cmd: Options.text("cmd"),
-        image: Options.text("image"),
+        cmd: Flag.string("cmd"),
+        image: Flag.string("image"),
     },
     ({ cmd, image }) =>
         Effect.gen(function* () {
-            const { Id } = yield* DockerEngine.run({ spec: { Cmd: [cmd], Image: image } });
+            const { Id } = yield* DockerEngine.run({ Cmd: [cmd], Image: image });
             yield* Console.log(Id);
         })
 );

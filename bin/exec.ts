@@ -1,16 +1,17 @@
 import { Effect } from "effect";
 
-import { Command, Options } from "@effect/cli";
-import { DockerEngine } from "the-moby-effect";
+import { Command, Flag } from "effect/unstable/cli";
+import { DockerEngine, MobySchemas } from "the-moby-effect";
 
 export const command = Command.make(
     "exec",
     {
-        cmd: Options.text("cmd"),
-        containerId: Options.text("container"),
+        cmd: Flag.string("cmd"),
+        containerId: Flag.string("container"),
     },
     ({ cmd, containerId }) =>
         Effect.gen(function* () {
-            yield* DockerEngine.exec({ containerId, command: cmd.split(" ") });
+            const id = yield* MobySchemas.ContainerIdentifier.makeEffect(containerId);
+            yield* DockerEngine.exec({ containerId: id, command: cmd.split(" ") });
         })
 );

@@ -1,12 +1,12 @@
 import { Effect } from "effect";
 
-import { Command, Options } from "@effect/cli";
+import { Command, Flag } from "effect/unstable/cli";
 import { DockerEngine, MobyConvey } from "the-moby-effect";
 
 export const command = Command.make(
     "pull",
     {
-        image: Options.text("image"),
+        image: Flag.string("image"),
     },
     ({ image }) =>
         Effect.gen(function* () {

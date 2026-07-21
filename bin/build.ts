@@ -1,23 +1,20 @@
 import { Effect, Stream } from "effect";
 
-import { Args, Command, Options } from "@effect/cli";
-import { NodeContext } from "@effect/platform-node";
+import { NodeServices } from "@effect/platform-node";
 import { Tar } from "eftar";
+import { Argument, Command, Flag } from "effect/unstable/cli";
 import { DockerEngine, MobyConvey } from "the-moby-effect";
 
 export const command = Command.make(
     "build",
     {
-        tag: Options.text("tag"),
-        dockerfile: Options.text("dockerfile").pipe(Options.withDefault("Dockerfile")),
-        context: Args.directory({ exists: "yes" }),
+        tag: Flag.string("tag"),
+        dockerfile: Flag.string("dockerfile").pipe(Flag.withDefault("Dockerfile")),
+        context: Argument.directory("context", { mustExist: true }),
     },
     ({ context, dockerfile, tag }) =>
         Effect.gen(function* () {
-            const contextStream = Stream.provideSomeLayer(
-                Tar.tarballFromFilesystem(context, [dockerfile]),
-                NodeContext.layer
-            );
+            const contextStream = Stream.provide(Tar.tarballFromFilesystem(context, [dockerfile]), NodeServices.layer);
 
             const buildStream = DockerEngine.build({
                 tag,

@@ -1,6 +1,6 @@
 import { Console, Effect } from "effect";
 
-import { Command } from "@effect/cli";
+import { Command } from "effect/unstable/cli";
 import { DockerEngine } from "the-moby-effect";
 
 export const command = Command.make("images", {}, () =>
