@@ -1,8 +1,9 @@
+import * as Effect from "effect/Effect";
+
 import * as NodeContext from "@effect/platform-node/NodeContext";
 import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as FileSystem from "@effect/platform/FileSystem";
 import * as Path from "@effect/platform/Path";
-import * as Effect from "effect/Effect";
 
 import * as HttpBlob from "../src/internal/blobs/Http.js";
 import * as HttpsBlob from "../src/internal/blobs/Https.js";
