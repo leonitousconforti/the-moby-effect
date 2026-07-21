@@ -1,18 +1,19 @@
 import * as Schema from "effect/Schema";
-import * as NetworkConfigReference from "./NetworkConfigReference.generated.js";
-import * as NetworkEndpointResource from "./NetworkEndpointResource.generated.js";
-import * as NetworkIPAM from "./NetworkIPAM.generated.js";
-import * as NetworkPeerInfo from "./NetworkPeerInfo.generated.js";
-import * as NetworkServiceInfo from "./NetworkServiceInfo.generated.js";
+import * as MobyIdentifiers from "../schemas/id.ts";
+import * as NetworkConfigReference from "./NetworkConfigReference.generated.ts";
+import * as NetworkEndpointResource from "./NetworkEndpointResource.generated.ts";
+import * as NetworkIPAM from "./NetworkIPAM.generated.ts";
+import * as NetworkPeerInfo from "./NetworkPeerInfo.generated.ts";
+import * as NetworkServiceInfo from "./NetworkServiceInfo.generated.ts";
 
 export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect")(
     {
         Name: Schema.String,
-        Id: Schema.String,
+        Id: MobyIdentifiers.NetworkIdentifier,
         Created: Schema.NullOr(Schema.DateFromString),
         Scope: Schema.String,
         Driver: Schema.String,
-        EnableIPv4: Schema.optional(Schema.Boolean), // optional for docker.io/library/docker:27-dind-rootless
+        EnableIPv4: Schema.Boolean,
         EnableIPv6: Schema.Boolean,
         IPAM: Schema.NullOr(NetworkIPAM.NetworkIPAM),
         Internal: Schema.Boolean,
@@ -20,16 +21,11 @@ export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect
         Ingress: Schema.Boolean,
         ConfigFrom: Schema.NullOr(NetworkConfigReference.NetworkConfigReference),
         ConfigOnly: Schema.Boolean,
-        Containers: Schema.NullishOr(
-            Schema.Record({ key: Schema.String, value: Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource) }) // optional for docker.io/library/docker:26-dind-rootless
-        ),
-        Options: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
-        Labels: Schema.NullOr(Schema.Record({ key: Schema.String, value: Schema.String })),
-        Peers: Schema.optionalWith(Schema.Array(Schema.NullOr(NetworkPeerInfo.NetworkPeerInfo)), { nullable: true }),
-        Services: Schema.optionalWith(
-            Schema.Record({ key: Schema.String, value: Schema.NullOr(NetworkServiceInfo.NetworkServiceInfo) }),
-            { nullable: true }
-        ),
+        Containers: Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource))),
+        Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
+        Peers: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(NetworkPeerInfo.NetworkPeerInfo)))),
+        Services: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkServiceInfo.NetworkServiceInfo)))),
     },
     {
         identifier: "NetworkInspect",

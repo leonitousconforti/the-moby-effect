@@ -1,21 +1,20 @@
-import * as EffectSchemas from "effect-schemas";
 import * as Schema from "effect/Schema";
-import * as ContainerHealth from "./ContainerHealth.generated.js";
+import * as ContainerHealth from "./ContainerHealth.generated.ts";
 
 export class ContainerState extends Schema.Class<ContainerState>("ContainerState")(
     {
-        Status: Schema.Literal("created", "restarting", "running", "removing", "paused", "exited", "dead"),
+        Status: Schema.Literals(["created", "restarting", "running", "removing", "paused", "exited", "dead"]),
         Running: Schema.Boolean,
         Paused: Schema.Boolean,
         Restarting: Schema.Boolean,
         OOMKilled: Schema.Boolean,
         Dead: Schema.Boolean,
-        Pid: EffectSchemas.Number.I64,
-        ExitCode: EffectSchemas.Number.I64,
+        Pid: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        ExitCode: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
         Error: Schema.String,
         StartedAt: Schema.String,
         FinishedAt: Schema.String,
-        Health: Schema.optionalWith(ContainerHealth.ContainerHealth, { nullable: true }),
+        Health: Schema.optional(Schema.NullOr(ContainerHealth.ContainerHealth)),
     },
     {
         identifier: "ContainerState",
