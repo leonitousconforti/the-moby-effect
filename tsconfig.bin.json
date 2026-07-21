@@ -1,11 +1,19 @@
 {
-    "extends": "./tsconfig.base.json",
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.base.jsonc",
     "include": ["bin"],
-    "references": [{ "path": "tsconfig.src.json" }],
+    "references": [{ "path": "./tsconfig.src.json" }],
     "compilerOptions": {
+        "tsBuildInfoFile": ".tsbuildinfo/bin.tsbuildinfo",
+        "outDir": ".tsbuildinfo/bin",
         "noEmit": true,
-        "rootDir": "bin",
+        "erasableSyntaxOnly": false,
         "resolveJsonModule": true,
-        "tsBuildInfoFile": ".tsbuildinfo/bin.tsbuildinfo"
+        "baseUrl": ".",
+        "paths": {
+            "the-moby-effect": ["src/index.ts"],
+            "the-moby-effect/*": ["src/*.ts"]
+        },
+        "types": ["node"]
     }
 }
