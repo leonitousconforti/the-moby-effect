@@ -47,7 +47,7 @@ declare const makeWebHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L116)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L117)
 
 Since v1.0.0
 
@@ -66,7 +66,7 @@ declare const makeAgnosticHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient, never, HttpClient.HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L27)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L28)
 
 Since v1.0.0
 
@@ -86,7 +86,7 @@ declare const makeBunHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L41)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L42)
 
 Since v1.0.0
 
@@ -110,7 +110,7 @@ declare const makeDenoHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L58)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L59)
 
 Since v1.0.0
 
@@ -132,7 +132,7 @@ declare const makeFetchHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L73)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L74)
 
 Since v1.0.0
 
@@ -153,7 +153,7 @@ declare const makeNodeHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L87)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L88)
 
 Since v1.0.0
 
@@ -175,6 +175,6 @@ declare const makeUndiciHttpClientLayer: (
 ) => Layer.Layer<HttpClient.HttpClient | Socket.WebSocketConstructor, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L102)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyPlatforms.ts#L103)
 
 Since v1.0.0

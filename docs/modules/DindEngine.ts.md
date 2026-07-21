@@ -46,9 +46,9 @@ type MakeDindLayerFromPlatformConstructor<
   connectionOptionsToHost: ConnectionOptionsToHost
   dindBaseImage: BlobConstants.RecommendedDindBaseImages
 }) => Layer.Layer<
-  Layer.Layer.Success<DockerEngine.DockerLayer>,
+  Layer.Success<DockerEngine.DockerLayer>,
   | DockerEngine.DockerError
-  | ParseResult.ParseError
+  | Schema.SchemaError
   | PlatformLayerConstructorError
   | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
   | PlatformLayerConstructorContext
@@ -56,7 +56,7 @@ type MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L22)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L23)
 
 Since v1.0.0
 
@@ -92,7 +92,7 @@ declare const layerAgnostic: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L108)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L109)
 
 Since v1.0.0
 
@@ -114,8 +114,7 @@ declare const layerBun: MakeDindLayerFromPlatformConstructor<
       readonly forceIPv6?: boolean | undefined
       readonly hostHash?: string | undefined
       readonly hostVerifier?:
-        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
-        | undefined
+        (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier) | undefined
       readonly username?: string | undefined
       readonly password?: string | undefined
       readonly agent?: (BaseAgent | string) | undefined
@@ -161,7 +160,7 @@ declare const layerBun: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L73)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L74)
 
 Since v1.0.0
 
@@ -183,8 +182,7 @@ declare const layerDeno: MakeDindLayerFromPlatformConstructor<
       readonly forceIPv6?: boolean | undefined
       readonly hostHash?: string | undefined
       readonly hostVerifier?:
-        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
-        | undefined
+        (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier) | undefined
       readonly username?: string | undefined
       readonly password?: string | undefined
       readonly agent?: (BaseAgent | string) | undefined
@@ -230,7 +228,7 @@ declare const layerDeno: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L80)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L81)
 
 Since v1.0.0
 
@@ -266,7 +264,7 @@ declare const layerFetch: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L101)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L102)
 
 Since v1.0.0
 
@@ -288,8 +286,7 @@ declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
       readonly forceIPv6?: boolean | undefined
       readonly hostHash?: string | undefined
       readonly hostVerifier?:
-        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
-        | undefined
+        (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier) | undefined
       readonly username?: string | undefined
       readonly password?: string | undefined
       readonly agent?: (BaseAgent | string) | undefined
@@ -335,7 +332,7 @@ declare const layerNodeJS: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L66)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L67)
 
 Since v1.0.0
 
@@ -357,8 +354,7 @@ declare const layerUndici: MakeDindLayerFromPlatformConstructor<
       readonly forceIPv6?: boolean | undefined
       readonly hostHash?: string | undefined
       readonly hostVerifier?:
-        | (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier)
-        | undefined
+        (HostVerifier | SyncHostVerifier | HostFingerprintVerifier | SyncHostFingerprintVerifier) | undefined
       readonly username?: string | undefined
       readonly password?: string | undefined
       readonly agent?: (BaseAgent | string) | undefined
@@ -404,7 +400,7 @@ declare const layerUndici: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L87)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L88)
 
 Since v1.0.0
 
@@ -440,6 +436,6 @@ declare const layerWeb: MakeDindLayerFromPlatformConstructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L94)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DindEngine.ts#L95)
 
 Since v1.0.0

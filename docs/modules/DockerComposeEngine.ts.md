@@ -70,7 +70,7 @@ Since v1.0.0
 declare const DockerComposeError: typeof internal.DockerComposeError
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L48)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L49)
 
 Since v1.0.0
 
@@ -82,7 +82,7 @@ Since v1.0.0
 type DockerComposeError = internal.DockerComposeError
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L42)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L43)
 
 Since v1.0.0
 
@@ -94,7 +94,7 @@ Since v1.0.0
 declare const DockerComposeErrorTypeId: unique symbol
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L24)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L25)
 
 Since v1.0.0
 
@@ -106,7 +106,7 @@ Since v1.0.0
 type DockerComposeErrorTypeId = typeof DockerComposeErrorTypeId
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L30)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L31)
 
 Since v1.0.0
 
@@ -118,7 +118,7 @@ Since v1.0.0
 declare const isDockerComposeError: (u: unknown) => u is DockerComposeError
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L36)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L37)
 
 Since v1.0.0
 
@@ -138,7 +138,7 @@ declare const layer: (
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L1067)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L1068)
 
 Since v1.0.0
 
@@ -151,7 +151,7 @@ declare const layerProject: <E1>(
   project: Stream.Stream<Uint8Array, E1, never>,
   tagIdentifier: string
 ) => {
-  readonly tag: Context.Tag<DockerComposeProject, DockerComposeProject>
+  readonly tag: Context.Service<DockerComposeProject, DockerComposeProject>
   readonly layer: Layer.Layer<
     DockerComposeProject,
     E1 | internal.DockerComposeError | DockerEngine.DockerError,
@@ -160,7 +160,7 @@ declare const layerProject: <E1>(
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L1079)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L1080)
 
 Since v1.0.0
 
@@ -352,7 +352,7 @@ export interface DockerCompose {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L724)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L725)
 
 Since v1.0.0
 
@@ -490,7 +490,7 @@ export interface DockerComposeProject {
     options?: UpOptions | undefined
   ) => Effect.Effect<void, DockerComposeError, never>
 
-  readonly version: (options?: VersionOptions | undefined) => Stream.Stream<string, DockerComposeError, never>
+  readonly version: (options?: VersionOptions | undefined) => Effect.Effect<string, DockerComposeError, never>
 
   readonly wait: (
     services: Array.NonEmptyReadonlyArray<string>,
@@ -499,7 +499,7 @@ export interface DockerComposeProject {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L926)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L927)
 
 Since v1.0.0
 
@@ -543,7 +543,7 @@ export interface BuildOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L93)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L94)
 
 Since v1.0.0
 
@@ -588,7 +588,7 @@ export interface ComposeOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L54)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L55)
 
 Since v1.0.0
 
@@ -645,7 +645,7 @@ export interface ConfigOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L129)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L130)
 
 Since v1.0.0
 
@@ -669,7 +669,7 @@ export interface CopyOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L180)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L181)
 
 Since v1.0.0
 
@@ -714,7 +714,7 @@ export interface CreateOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L198)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L199)
 
 Since v1.0.0
 
@@ -744,7 +744,7 @@ export interface DownOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L237)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L238)
 
 Since v1.0.0
 
@@ -759,7 +759,7 @@ export interface EventsOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L261)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L262)
 
 Since v1.0.0
 
@@ -797,7 +797,7 @@ export interface ExecOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L270)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L271)
 
 Since v1.0.0
 
@@ -815,7 +815,7 @@ export interface ImagesOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L302)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L303)
 
 Since v1.0.0
 
@@ -833,7 +833,7 @@ export interface KillOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L314)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L315)
 
 Since v1.0.0
 
@@ -857,7 +857,7 @@ export interface ListOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L362)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L363)
 
 Since v1.0.0
 
@@ -899,7 +899,7 @@ export interface LogsOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L326)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L327)
 
 Since v1.0.0
 
@@ -917,7 +917,7 @@ export interface PortOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L380)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L381)
 
 Since v1.0.0
 
@@ -958,7 +958,7 @@ export interface PsOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L392)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L393)
 
 Since v1.0.0
 
@@ -985,7 +985,7 @@ export interface PullOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L427)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L428)
 
 Since v1.0.0
 
@@ -1006,7 +1006,7 @@ export interface PushOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L448)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L449)
 
 Since v1.0.0
 
@@ -1024,7 +1024,7 @@ export interface RestartOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L463)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L464)
 
 Since v1.0.0
 
@@ -1045,7 +1045,7 @@ export interface RmOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L475)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L476)
 
 Since v1.0.0
 
@@ -1123,7 +1123,7 @@ export interface RunOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L490)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L491)
 
 Since v1.0.0
 
@@ -1138,7 +1138,7 @@ export interface StopOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L562)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L563)
 
 Since v1.0.0
 
@@ -1264,7 +1264,7 @@ export interface UpOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L571)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L572)
 
 Since v1.0.0
 
@@ -1282,7 +1282,7 @@ export interface VersionOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L691)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L692)
 
 Since v1.0.0
 
@@ -1297,7 +1297,7 @@ export interface WaitOptions {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L703)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L704)
 
 Since v1.0.0
 
@@ -1308,10 +1308,10 @@ Since v1.0.0
 **Signature**
 
 ```ts
-declare const DockerCompose: Context.Tag<DockerCompose, DockerCompose>
+declare const DockerCompose: Context.Service<DockerCompose, DockerCompose>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L908)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L909)
 
 Since v1.0.0
 
@@ -1325,7 +1325,7 @@ Since v1.0.0
 declare const DockerComposeProjectTypeId: unique symbol
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L914)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L915)
 
 Since v1.0.0
 
@@ -1337,7 +1337,7 @@ Since v1.0.0
 type DockerComposeProjectTypeId = typeof DockerComposeProjectTypeId
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L920)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L921)
 
 Since v1.0.0
 
@@ -1349,7 +1349,7 @@ Since v1.0.0
 declare const TypeId: unique symbol
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L712)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L713)
 
 Since v1.0.0
 
@@ -1361,6 +1361,6 @@ Since v1.0.0
 type TypeId = typeof TypeId
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L718)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/DockerComposeEngine.ts#L719)
 
 Since v1.0.0

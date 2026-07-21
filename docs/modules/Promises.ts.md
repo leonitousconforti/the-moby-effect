@@ -30,9 +30,9 @@ Create a promise client for the docker engine
 ```ts
 declare const promiseClient: <E>(
   layer: Layer.Layer<
-    Layer.Layer.Success<DockerEngine.DockerLayer>,
-    Layer.Layer.Error<DockerEngine.DockerLayer> | E,
-    Layer.Layer.Context<DockerEngine.DockerLayer>
+    Layer.Success<DockerEngine.DockerLayer>,
+    Layer.Error<DockerEngine.DockerLayer> | E,
+    Layer.Services<DockerEngine.DockerLayer>
   >
 ) => Promise<{
   pull: (a: { image: string; platform?: string | undefined }) => ReadableStream<MobySchemas.JSONMessage>
@@ -61,13 +61,14 @@ declare const promiseClient: <E>(
               readonly [x: `${number}/tcp`]: object
               readonly [x: `${number}/udp`]: object
             }
+          | null
           | undefined
         readonly Tty?: boolean | undefined
         readonly OpenStdin?: boolean | undefined
         readonly StdinOnce?: boolean | undefined
         readonly Env?: ReadonlyArray<string> | null | undefined
         readonly Cmd?: ReadonlyArray<string> | null | undefined
-        readonly Healthcheck?: MobySchemas.V1HealthcheckConfig | undefined
+        readonly Healthcheck?: MobySchemas.V1HealthcheckConfig | null | undefined
         readonly ArgsEscaped?: boolean | undefined
         readonly Volumes?: { readonly [x: string]: object } | null | undefined
         readonly WorkingDir?: string | undefined
@@ -77,22 +78,22 @@ declare const promiseClient: <E>(
         readonly OnBuild?: ReadonlyArray<string> | null | undefined
         readonly Labels?: { readonly [x: string]: string } | null | undefined
         readonly StopSignal?: string | undefined
-        readonly StopTimeout?: (bigint & Brand<"I64">) | undefined
-        readonly Shell?: ReadonlyArray<string> | undefined
-        readonly HostConfig?: MobySchemas.ContainerHostConfig | undefined
-        readonly NetworkingConfig?: MobySchemas.NetworkNetworkingConfig | undefined
+        readonly StopTimeout?: bigint | null | undefined
+        readonly Shell?: ReadonlyArray<string> | null | undefined
+        readonly HostConfig?: MobySchemas.ContainerHostConfig | null | undefined
+        readonly NetworkingConfig?: MobySchemas.NetworkNetworkingConfig | null | undefined
       },
       "HostConfig"
     > & {
       readonly name?: string | undefined
       readonly platform?: string | undefined
-      readonly HostConfig?: ConstructorParameters<typeof MobySchemas.ContainerHostConfig>[0] | undefined
+      readonly HostConfig?: (typeof MobySchemas.ContainerHostConfig)["~type.make.in"] | undefined
     }
   ) => Promise<MobySchemas.ContainerInspectResponse>
   exec: (a_0: {
     command: string | Array<string>
     containerId: MobySchemas.ContainerIdentifier
-  }) => Promise<[exitCode: bigint & Brand<"I64">, output: string]>
+  }) => Promise<[exitCode: bigint, output: string]>
   execNonBlocking: <const T extends boolean = false>(a_0: {
     detach: T
     command: string | Array<string>
@@ -117,7 +118,6 @@ declare const promiseClient: <E>(
             | {
                 readonly identifier?: ReadonlyArray<string & Brand<"ContainerId">> | undefined
                 readonly volume?: string | undefined
-                readonly name?: ReadonlyArray<string> | undefined
                 readonly ancestor?: ReadonlyArray<string> | undefined
                 readonly before?: ReadonlyArray<string> | undefined
                 readonly expose?: ReadonlyArray<string> | undefined
@@ -125,6 +125,7 @@ declare const promiseClient: <E>(
                 readonly health?: ReadonlyArray<"none" | "starting" | "healthy" | "unhealthy"> | undefined
                 readonly "is-task"?: boolean | undefined
                 readonly label?: ReadonlyArray<string> | undefined
+                readonly name?: ReadonlyArray<string> | undefined
                 readonly network?: ReadonlyArray<string> | undefined
                 readonly publish?: ReadonlyArray<string> | undefined
                 readonly since?: ReadonlyArray<string> | undefined
@@ -160,6 +161,7 @@ declare const promiseClient: <E>(
       | undefined
   ) => Promise<ReadonlyArray<MobySchemas.ImageSummary>>
   search: (options: {
+    readonly term: string
     readonly limit?: number | undefined
     readonly filters?:
       | {
@@ -168,20 +170,17 @@ declare const promiseClient: <E>(
           readonly stars?: number | undefined
         }
       | undefined
-    readonly term: string
   }) => Promise<ReadonlyArray<MobySchemas.RegistrySearchResult>>
   version: () => Promise<MobySchemas.TypesVersion>
   info: () => Promise<MobySchemas.SystemInfo>
   ping: () => Promise<void>
   pingHead: () => Promise<void>
   followProgressInConsole: (
-    evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
-    onError: (error: unknown) => unknown
-  ) => Promise<ReadonlyArray<MobySchemas.JSONMessage>>
+    readable: ReadableStream<MobySchemas.JSONMessage>
+  ) => Promise<Array<MobySchemas.JSONMessage>>
   waitForProgressToComplete: (
-    evaluate: Function.LazyArg<ReadableStream<MobySchemas.JSONMessage>>,
-    onError: (error: unknown) => unknown
-  ) => Promise<ReadonlyArray<MobySchemas.JSONMessage>>
+    readable: ReadableStream<MobySchemas.JSONMessage>
+  ) => Promise<Array<MobySchemas.JSONMessage>>
 }>
 ```
 

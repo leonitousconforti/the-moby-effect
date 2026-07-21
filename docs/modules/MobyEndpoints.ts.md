@@ -101,78 +101,88 @@ declare const ConfigsApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/configs/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly names?: ReadonlyArray<string> | undefined
-                readonly id?: ReadonlyArray<string & Brand<"ConfigId">> | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly id: optional<$Array<brand<String, "ConfigId">>>
+                readonly name: optional<$Array<String>>
+                readonly names: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<SwarmConfig>,
-        never,
+        toCodecJson<$Array<typeof SwarmConfig>>,
+        toCodecJson<typeof InternalServerError | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "create",
         "POST",
+        "/configs/create",
         never,
         never,
-        SwarmConfigSpec,
+        toCodecJson<typeof SwarmConfigSpec>,
         never,
-        { readonly Id: string & Brand<"ConfigId"> },
-        Conflict,
+        toCodecJson<
+          decodeTo<
+            Struct<{ readonly Id: brand<String, "ConfigId"> }>,
+            Struct<{ readonly ID: toEncoded<brand<String, "ConfigId">> }>,
+            never,
+            never
+          >
+        >,
+        toCodecJson<typeof InternalServerError | typeof Conflict | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly identifier: string & Brand<"ConfigId"> },
+        "/configs/:identifier",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ConfigId"> }>>,
         never,
         never,
         never,
-        SwarmConfig,
-        NotFound,
+        toCodecJson<typeof SwarmConfig>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly identifier: string & Brand<"ConfigId"> },
+        "/configs/:identifier",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ConfigId"> }>>,
         never,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<NoContent>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "POST",
-        { readonly identifier: string & Brand<"ConfigId"> },
-        { readonly version: bigint },
-        SwarmConfigSpec,
+        "/configs/:identifier/update",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ConfigId"> }>>,
+        toCodecStringTree<Struct<{ version: BigIntFromString }>>,
+        toCodecJson<typeof SwarmConfigSpec>,
         never,
-        void,
-        BadRequest | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof NodeNotPartOfSwarm>,
         never,
         never
       >,
-    InternalServerError | NodeNotPartOfSwarm,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -196,366 +206,411 @@ declare const ContainersApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/containers/json",
         never,
-        {
-          readonly all?: boolean | undefined
-          readonly limit?: number | undefined
-          readonly size?: boolean | undefined
-          readonly filters?:
-            | {
-                readonly identifier?: ReadonlyArray<string & Brand<"ContainerId">> | undefined
-                readonly volume?: string | undefined
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly ancestor?: ReadonlyArray<string> | undefined
-                readonly before?: ReadonlyArray<string> | undefined
-                readonly expose?: ReadonlyArray<string> | undefined
-                readonly exited?: ReadonlyArray<number> | undefined
-                readonly health?: ReadonlyArray<"none" | "starting" | "healthy" | "unhealthy"> | undefined
-                readonly "is-task"?: boolean | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly network?: ReadonlyArray<string> | undefined
-                readonly publish?: ReadonlyArray<string> | undefined
-                readonly since?: ReadonlyArray<string> | undefined
-                readonly status?:
-                  | ReadonlyArray<"exited" | "created" | "restarting" | "running" | "removing" | "paused" | "dead">
-                  | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            all: optional<Boolean>
+            limit: optional<Number>
+            size: optional<Boolean>
+            filters: optional<
+              Struct<{
+                readonly ancestor: optional<$Array<String>>
+                readonly before: optional<$Array<String>>
+                readonly expose: optional<$Array<String>>
+                readonly exited: optional<$Array<NumberFromString>>
+                readonly health: optional<$Array<Literals<readonly ["none", "starting", "healthy", "unhealthy"]>>>
+                readonly identifier: optional<$Array<brand<String, "ContainerId">>>
+                readonly "is-task": optional<
+                  Union<
+                    readonly [
+                      decodeTo<Literal<true>, Literal<"true">, never, never>,
+                      decodeTo<Literal<false>, Literal<"false">, never, never>
+                    ]
+                  >
+                >
+                readonly label: optional<$Array<String>>
+                readonly name: optional<$Array<String>>
+                readonly network: optional<$Array<String>>
+                readonly publish: optional<$Array<String>>
+                readonly since: optional<$Array<String>>
+                readonly status: optional<
+                  $Array<
+                    Literals<readonly ["created", "restarting", "running", "removing", "paused", "exited", "dead"]>
+                  >
+                >
+                readonly volume: optional<String>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<ContainerSummary>,
-        BadRequest,
+        toCodecJson<$Array<typeof ContainerSummary>>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "create",
         "POST",
+        "/containers/create",
         never,
-        { readonly name?: string | undefined; readonly platform?: string | undefined },
-        ContainerCreateRequest,
+        toCodecStringTree<Struct<{ platform: optional<String>; name: optional<String> }>>,
+        toCodecJson<typeof ContainerCreateRequest>,
         never,
-        { readonly Id: string & Brand<"ContainerId">; readonly Warnings: ReadonlyArray<string> | null },
-        BadRequest | Forbidden | NotFound | NotAcceptable | Conflict,
+        toCodecJson<Struct<{ readonly Id: brand<String, "ContainerId">; readonly Warnings: NullOr<$Array<String>> }>>,
+        toCodecJson<
+          | typeof BadRequest
+          | typeof InternalServerError
+          | typeof Forbidden
+          | typeof NotFound
+          | typeof NotAcceptable
+          | typeof Conflict
+        >,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly size?: boolean | undefined },
+        "/containers/:identifier/json",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ size: optional<Boolean> }>>,
         never,
         never,
-        ContainerInspectResponse,
-        NotFound,
+        toCodecJson<typeof ContainerInspectResponse>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "top",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly ps_args?: string | undefined },
+        "/containers/:identifier/top",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ ps_args: optional<String> }>>,
         never,
         never,
-        ContainerTopResponse,
-        NotFound,
+        toCodecJson<typeof ContainerTopResponse>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "logs",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        {
-          readonly since?: number | undefined
-          readonly follow?: boolean | undefined
-          readonly stdout?: boolean | undefined
-          readonly stderr?: boolean | undefined
-          readonly until?: number | undefined
-          readonly timestamps?: boolean | undefined
-          readonly tail?: string | undefined
-        },
+        "/containers/:identifier/logs",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<
+          Struct<{
+            follow: optional<Boolean>
+            stdout: optional<Boolean>
+            stderr: optional<Boolean>
+            since: optional<Number>
+            until: optional<Number>
+            timestamps: optional<Boolean>
+            tail: optional<String>
+          }>
+        >,
         never,
         never,
-        void,
-        NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "changes",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
+        "/containers/:identifier/changes",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
         never,
         never,
         never,
-        ReadonlyArray<ArchiveChange> | null,
-        NotFound,
+        toCodecJson<NullOr<$Array<typeof ArchiveChange>>>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "export",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
+        "/containers/:identifier/export",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
         never,
         never,
         never,
-        void,
-        NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "stats",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly stream?: boolean | undefined; readonly "one-shot"?: boolean | undefined },
+        "/containers/:identifier/stats",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ stream: optional<Boolean>; "one-shot": optional<Boolean> }>>,
         never,
         never,
-        void,
-        NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "resize",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly h?: number | undefined; readonly w?: number | undefined },
+        "/containers/:identifier/resize",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ h: optional<Number>; w: optional<Number> }>>,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "start",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly detachKeys?: string | undefined },
+        "/containers/:identifier/start",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ detachKeys: optional<String> }>>,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "stop",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly signal?: string | undefined; readonly t?: number | undefined },
+        "/containers/:identifier/stop",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ signal: optional<String>; t: optional<Number> }>>,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "restart",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly signal?: string | undefined; readonly t?: number | undefined },
+        "/containers/:identifier/restart",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ signal: optional<String>; t: optional<Number> }>>,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "kill",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly signal?: string | undefined },
+        "/containers/:identifier/kill",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ signal: optional<String> }>>,
         never,
         never,
-        void,
-        NotFound | Conflict,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
+        "/containers/:identifier/update",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
         never,
-        ContainerConfig,
+        toCodecJson<typeof ContainerConfig>,
         never,
-        { readonly Warnings: ReadonlyArray<string> | null },
-        NotFound,
+        toCodecJson<Struct<{ readonly Warnings: NullOr<$Array<String>> }>>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "rename",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly name: string },
+        "/containers/:identifier/rename",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ name: String }>>,
         never,
         never,
-        void,
-        NotFound | Conflict,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "pause",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
+        "/containers/:identifier/pause",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
         never,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "unpause",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
+        "/containers/:identifier/unpause",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
         never,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "attach",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        {
-          readonly logs?: boolean | undefined
-          readonly stdout?: boolean | undefined
-          readonly stderr?: boolean | undefined
-          readonly stream?: boolean | undefined
-          readonly detachKeys?: string | undefined
-          readonly stdin?: boolean | undefined
-        },
+        "/containers/:identifier/attach",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<
+          Struct<{
+            detachKeys: optional<String>
+            logs: optional<Boolean>
+            stream: optional<Boolean>
+            stdin: optional<Boolean>
+            stdout: optional<Boolean>
+            stderr: optional<Boolean>
+          }>
+        >,
         never,
-        { readonly Upgrade: "tcp"; readonly Connection: "Upgrade" },
-        void,
-        BadRequest | NotFound,
+        toCodecStringTree<Struct<{ Upgrade: Literal<"tcp">; Connection: Literal<"Upgrade"> }>>,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "attachWebsocket",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        {
-          readonly logs?: boolean | undefined
-          readonly stdout?: boolean | undefined
-          readonly stderr?: boolean | undefined
-          readonly stream?: boolean | undefined
-          readonly detachKeys?: string | undefined
-          readonly stdin?: boolean | undefined
-        },
+        "/containers/:identifier/attach/ws",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<
+          Struct<{
+            detachKeys: optional<String>
+            logs: optional<Boolean>
+            stream: optional<Boolean>
+            stdin: optional<Boolean>
+            stdout: optional<Boolean>
+            stderr: optional<Boolean>
+          }>
+        >,
         never,
         never,
-        void,
-        BadRequest | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "wait",
         "POST",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly condition?: string | undefined },
+        "/containers/:identifier/wait",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ condition: optional<String> }>>,
         never,
         never,
-        ContainerWaitResponse,
-        BadRequest | NotFound,
+        toCodecJson<typeof ContainerWaitResponse>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly link?: boolean | undefined; readonly v?: boolean | undefined; readonly force?: boolean | undefined },
+        "/containers/:identifier",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ v: optional<Boolean>; force: optional<Boolean>; link: optional<Boolean> }>>,
         never,
         never,
-        void,
-        BadRequest | NotFound | Conflict,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "archive",
         "GET",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly path: string },
+        "/containers/:identifier/archive",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ path: String }>>,
         never,
         never,
-        void,
-        BadRequest | NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "archiveInfo",
         "HEAD",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        { readonly path: string },
+        "/containers/:identifier/archive",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<Struct<{ path: String }>>,
         never,
         never,
-        void,
-        BadRequest | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "putArchive",
         "PUT",
-        { readonly identifier: string & Brand<"ContainerId"> },
-        {
-          readonly path: string
-          readonly noOverwriteDirNonDir?: string | undefined
-          readonly copyUIDGidentifier?: string | undefined
-        },
+        "/containers/:identifier/archive",
+        toCodecStringTree<Struct<{ identifier: brand<String, "ContainerId"> }>>,
+        toCodecStringTree<
+          Struct<{ path: String; noOverwriteDirNonDir: optional<String>; copyUIDGidentifier: optional<String> }>
+        >,
+        toCodecJson<StreamUint8Array>,
         never,
-        never,
-        void,
-        BadRequest | Forbidden | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof Forbidden | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "prune",
         "POST",
+        "/containers/prune",
         never,
-        {
-          readonly filters?:
-            | { readonly label?: ReadonlyArray<string> | undefined; readonly until?: string | undefined }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<Struct<{ readonly until: optional<String>; readonly label: optional<$Array<String>> }>>
+          }>
+        >,
         never,
         never,
-        {
-          readonly ContainersDeleted: ReadonlyArray<string & Brand<"ContainerId">> | null
-          readonly SpaceReclaimed: bigint & Brand<"I64">
-        },
-        never,
+        toCodecJson<
+          Struct<{
+            readonly ContainersDeleted: NullOr<$Array<brand<String, "ContainerId">>>
+            readonly SpaceReclaimed: BigIntFromString
+          }>
+        >,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -579,21 +634,18 @@ declare const DistributionsApi: HttpApi<
     HttpApiEndpoint<
       "inspect",
       "GET",
-      { readonly name: string },
+      "/distribution/:name/json",
+      toCodecStringTree<Struct<{ name: String }>>,
       never,
       never,
       never,
-      RegistryDistributionInspect,
-      NotFound | Unauthorized,
+      toCodecJson<typeof RegistryDistributionInspect>,
+      toCodecJson<typeof InternalServerError | typeof NotFound | typeof Unauthorized>,
       never,
       never
     >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -617,57 +669,57 @@ declare const ExecsApi: HttpApi<
     | HttpApiEndpoint<
         "container",
         "POST",
-        { readonly id: string },
+        "/containers/:id/exec",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
-        ContainerExecOptions,
+        toCodecJson<typeof ContainerExecOptions>,
         never,
-        { readonly Id: string & Brand<"ExecId"> },
-        NotFound | Conflict,
+        toCodecJson<Struct<{ readonly Id: brand<String, "ExecId"> }>>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "start",
         "POST",
-        { readonly id: string & Brand<"ExecId"> },
+        "/exec/:id/start",
+        toCodecStringTree<Struct<{ id: brand<String, "ExecId"> }>>,
         never,
-        ContainerExecStartOptions,
-        { readonly Upgrade: "tcp"; readonly Connection: "Upgrade" },
-        void,
-        NotFound | Conflict,
+        toCodecJson<typeof ContainerExecStartOptions>,
+        toCodecStringTree<Struct<{ Upgrade: Literal<"tcp">; Connection: Literal<"Upgrade"> }>>,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "resize",
         "POST",
-        { readonly id: string & Brand<"ExecId"> },
-        { readonly h: number; readonly w: number },
+        "/exec/:id/resize",
+        toCodecStringTree<Struct<{ id: brand<String, "ExecId"> }>>,
+        toCodecStringTree<Struct<{ h: Number; w: Number }>>,
         never,
         never,
-        void,
-        BadRequest | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly id: string & Brand<"ExecId"> },
+        "/exec/:id/json",
+        toCodecStringTree<Struct<{ id: brand<String, "ExecId"> }>>,
         never,
         never,
         never,
-        ContainerExecInspect,
-        NotFound,
+        toCodecJson<typeof ContainerExecInspect>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -691,266 +743,678 @@ declare const ImagesApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/images/json",
         never,
-        {
-          readonly all?: boolean | undefined
-          readonly filters?:
-            | {
-                readonly before?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly since?: ReadonlyArray<string> | undefined
-                readonly until?: string | undefined
-                readonly dangling?: boolean | undefined
-                readonly reference?: ReadonlyArray<string> | undefined
-              }
-            | undefined
-          readonly digests?: boolean | undefined
-          readonly "shared-size"?: boolean | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly before: optional<$Array<String>>
+                readonly dangling: optional<
+                  Union<
+                    readonly [
+                      decodeTo<Literal<true>, Literal<"true">, never, never>,
+                      decodeTo<Literal<false>, Literal<"false">, never, never>
+                    ]
+                  >
+                >
+                readonly label: optional<$Array<String>>
+                readonly reference: optional<$Array<String>>
+                readonly since: optional<$Array<String>>
+                readonly until: optional<String>
+              }>
+            >
+            all: optional<Boolean>
+            digests: optional<Boolean>
+            "shared-size": optional<Boolean>
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<ImageSummary>,
-        never,
+        toCodecJson<$Array<typeof ImageSummary>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "build",
         "POST",
+        "/build",
         never,
-        {
-          readonly version?: "1" | undefined
-          readonly platform?: string | undefined
-          readonly t?: string | undefined
-          readonly dockerfile?: string | undefined
-          readonly extrahosts?: string | undefined
-          readonly remote?: string | undefined
-          readonly q?: boolean | undefined
-          readonly nocache?: boolean | undefined
-          readonly cachefrom?: string | undefined
-          readonly pull?: string | undefined
-          readonly rm?: boolean | undefined
-          readonly forcerm?: boolean | undefined
-          readonly memory?: number | undefined
-          readonly memswap?: number | undefined
-          readonly cpushares?: number | undefined
-          readonly cpusetcpus?: string | undefined
-          readonly cpuperiod?: number | undefined
-          readonly cpuquota?: number | undefined
-          readonly buildargs?: { readonly [x: string]: string | null | undefined } | undefined
-          readonly shmsize?: number | undefined
-          readonly squash?: boolean | undefined
-          readonly labels?: string | undefined
-          readonly networkmode?: string | undefined
-          readonly target?: string | undefined
-          readonly outputs?: string | undefined
-        },
-        never,
-        { readonly "Content-type"?: string | undefined; readonly "X-Registry-Config"?: string | undefined },
-        void,
-        BadRequest,
+        toCodecStringTree<
+          Struct<{
+            dockerfile: optional<String>
+            t: optional<String>
+            extrahosts: optional<String>
+            remote: optional<String>
+            q: optional<Boolean>
+            nocache: optional<Boolean>
+            cachefrom: optional<String>
+            pull: optional<String>
+            rm: optional<Boolean>
+            forcerm: optional<Boolean>
+            memory: optional<Number>
+            memswap: optional<Number>
+            cpushares: optional<Number>
+            cpusetcpus: optional<String>
+            cpuperiod: optional<Number>
+            cpuquota: optional<Number>
+            buildargs: optional<$Record<String, NullishOr<String>>>
+            shmsize: optional<Number>
+            squash: optional<Boolean>
+            labels: optional<String>
+            networkmode: optional<String>
+            platform: optional<String>
+            target: optional<String>
+            outputs: optional<String>
+            version: optional<Literal<"1">>
+          }>
+        >,
+        toCodecJson<StreamUint8Array>,
+        toCodecStringTree<Struct<{ "Content-type": optional<String>; "X-Registry-Config": optional<String> }>>,
+        StreamUint8Array,
+        toCodecJson<typeof BadRequest | typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "buildPrune",
         "POST",
+        "/build/prune",
         never,
-        {
-          readonly all?: boolean | undefined
-          readonly filters?: string | undefined
-          readonly "keep-storage"?: number | undefined
-        },
+        toCodecStringTree<
+          Struct<{ "keep-storage": optional<Number>; all: optional<Boolean>; filters: optional<String> }>
+        >,
         never,
         never,
-        { readonly SpaceReclaimed: number; readonly CachesDeleted: ReadonlyArray<string> },
-        never,
+        toCodecJson<Struct<{ readonly SpaceReclaimed: Number; readonly CachesDeleted: $Array<String> }>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "create",
         "POST",
+        "/images/create",
         never,
-        {
-          readonly changes?: string | undefined
-          readonly platform?: string | undefined
-          readonly tag?: string | undefined
-          readonly fromImage?: string | undefined
-          readonly fromSrc?: string | undefined
-          readonly repo?: string | undefined
-          readonly message?: string | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            fromImage: optional<String>
+            fromSrc: optional<String>
+            repo: optional<String>
+            tag: optional<String>
+            message: optional<String>
+            changes: optional<String>
+            platform: optional<String>
+          }>
+        >,
         never,
-        { readonly "X-Registry-Auth"?: string | undefined },
-        void,
-        NotFound,
+        toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly name: string },
-        { readonly manifests?: boolean | undefined },
+        "/images/:name/json",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ manifests: optional<Boolean> }>>,
         never,
         never,
-        ImageInspectResponse,
-        NotFound,
+        toCodecJson<typeof ImageInspectResponse>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "history",
         "GET",
-        { readonly name: string },
-        { readonly platform?: string | undefined },
+        "/images/:name/history",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ platform: optional<String> }>>,
         never,
         never,
-        ReadonlyArray<ImageHistoryResponseItem>,
-        NotFound,
+        toCodecJson<$Array<typeof ImageHistoryResponseItem>>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "push",
         "POST",
-        { readonly name: string },
-        { readonly platform?: string | undefined; readonly tag?: string | undefined },
+        "/images/:name/push",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ tag: optional<String>; platform: optional<String> }>>,
         never,
-        { readonly "X-Registry-Auth"?: string | undefined },
-        void,
-        NotFound,
+        toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "tag",
         "POST",
-        { readonly name: string },
-        { readonly tag?: string | undefined; readonly repo?: string | undefined },
+        "/images/:name/tag",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ repo: optional<String>; tag: optional<String> }>>,
         never,
         never,
-        void,
-        BadRequest | NotFound | Conflict,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly name: string },
-        {
-          readonly force?: boolean | undefined
-          readonly noprune?: boolean | undefined
-          readonly platforms?: ReadonlyArray<string> | undefined
-        },
+        "/images/:name",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<
+          Struct<{ force: optional<Boolean>; noprune: optional<Boolean>; platforms: optional<$Array<String>> }>
+        >,
         never,
         never,
-        ReadonlyArray<ImageDeleteResponse>,
-        NotFound | Conflict,
+        toCodecJson<$Array<typeof ImageDeleteResponse>>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "search",
         "GET",
+        "/images/search",
         never,
-        {
-          readonly limit?: number | undefined
-          readonly filters?:
-            | {
-                readonly "is-official"?: boolean | undefined
-                readonly "is-automated"?: boolean | undefined
-                readonly stars?: number | undefined
-              }
-            | undefined
-          readonly term: string
-        },
+        toCodecStringTree<
+          Struct<{
+            term: String
+            limit: optional<Number>
+            filters: optional<
+              Struct<{
+                readonly "is-official": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                readonly "is-automated": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                readonly stars: optional<NumberFromString>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<RegistrySearchResult>,
-        never,
+        toCodecJson<$Array<typeof RegistrySearchResult>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "prune",
         "POST",
+        "/images/prune",
         never,
-        { readonly filters?: string | undefined },
+        toCodecStringTree<Struct<{ filters: optional<String> }>>,
         never,
         never,
-        {
-          readonly SpaceReclaimed: number
-          readonly ImagesDeleted: ReadonlyArray<ImageDeleteResponse> | null | undefined
-        },
-        never,
+        toCodecJson<
+          Struct<{
+            readonly SpaceReclaimed: Number
+            readonly ImagesDeleted: NullishOr<$Array<typeof ImageDeleteResponse>>
+          }>
+        >,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "commit",
         "POST",
+        "/images/commit",
         never,
-        {
-          readonly container: string
-          readonly changes?: string | undefined
-          readonly pause?: boolean | undefined
-          readonly tag?: string | undefined
-          readonly repo?: string | undefined
-          readonly comment?: string | undefined
-          readonly author?: string | undefined
-        },
-        ContainerCreateRequest,
+        toCodecStringTree<
+          Struct<{
+            container: String
+            repo: optional<String>
+            tag: optional<String>
+            comment: optional<String>
+            author: optional<String>
+            pause: optional<Boolean>
+            changes: optional<String>
+          }>
+        >,
+        toCodecJson<typeof ContainerCreateRequest>,
         never,
-        ImageInspectResponse,
-        NotFound,
+        toCodecJson<
+          decodeTo<
+            declareConstructor<
+              ImageInspectResponse,
+              {
+                readonly Config: {
+                  readonly User?: string | undefined
+                  readonly ExposedPorts?: { readonly [x: string]: object } | null | undefined
+                  readonly Env?: ReadonlyArray<string> | null | undefined
+                  readonly Cmd?: ReadonlyArray<string> | null | undefined
+                  readonly Healthcheck?:
+                    | {
+                        readonly Test?: ReadonlyArray<string> | null | undefined
+                        readonly Interval?: string | undefined
+                        readonly Timeout?: string | undefined
+                        readonly StartPeriod?: string | undefined
+                        readonly StartInterval?: string | undefined
+                        readonly Retries?: string | undefined
+                      }
+                    | null
+                    | undefined
+                  readonly ArgsEscaped?: boolean | undefined
+                  readonly Volumes?: { readonly [x: string]: object } | null | undefined
+                  readonly WorkingDir?: string | undefined
+                  readonly Entrypoint?: ReadonlyArray<string> | null | undefined
+                  readonly OnBuild?: ReadonlyArray<string> | null | undefined
+                  readonly Labels?: { readonly [x: string]: string } | null | undefined
+                  readonly StopSignal?: string | undefined
+                  readonly Shell?: ReadonlyArray<string> | null | undefined
+                } | null
+                readonly Id: string
+                readonly GraphDriver: Struct.ReadonlySide<
+                  { readonly Data: NullOr<$Record<String, String>>; readonly Name: String },
+                  "Encoded"
+                > | null
+                readonly Size: string
+                readonly RepoDigests: ReadonlyArray<string> | null
+                readonly RepoTags: ReadonlyArray<string> | null
+                readonly RootFS: {
+                  readonly Type?: string | undefined
+                  readonly Layers?: ReadonlyArray<string> | null | undefined
+                } | null
+                readonly Metadata: { readonly LastTagTime?: string | null | undefined } | null
+                readonly Parent: string
+                readonly Comment: string
+                readonly DockerVersion: string
+                readonly Author: string
+                readonly Architecture: string
+                readonly Os: string
+                readonly ContainerConfig?:
+                  | {
+                      readonly Hostname: string
+                      readonly Domainname: string
+                      readonly User: string
+                      readonly AttachStdin: boolean
+                      readonly AttachStdout: boolean
+                      readonly AttachStderr: boolean
+                      readonly Tty: boolean
+                      readonly OpenStdin: boolean
+                      readonly StdinOnce: boolean
+                      readonly Env: ReadonlyArray<string> | null
+                      readonly Cmd: ReadonlyArray<string> | null
+                      readonly Volumes: { readonly [x: string]: object } | null
+                      readonly WorkingDir: string
+                      readonly Entrypoint: ReadonlyArray<string> | null
+                      readonly OnBuild: ReadonlyArray<string> | null
+                      readonly Labels: { readonly [x: string]: string } | null
+                      readonly Image: string
+                      readonly ExposedPorts?:
+                        | {
+                            readonly [x: `${number}`]: object
+                            readonly [x: `${number}/tcp`]: object
+                            readonly [x: `${number}/udp`]: object
+                          }
+                        | null
+                        | undefined
+                      readonly Healthcheck?:
+                        | {
+                            readonly Test?: ReadonlyArray<string> | null | undefined
+                            readonly Interval?: string | undefined
+                            readonly Timeout?: string | undefined
+                            readonly StartPeriod?: string | undefined
+                            readonly StartInterval?: string | undefined
+                            readonly Retries?: string | undefined
+                          }
+                        | null
+                        | undefined
+                      readonly ArgsEscaped?: boolean | undefined
+                      readonly NetworkDisabled?: boolean | undefined
+                      readonly MacAddress?: string | undefined
+                      readonly StopSignal?: string | undefined
+                      readonly StopTimeout?: string | null | undefined
+                      readonly Shell?: ReadonlyArray<string> | null | undefined
+                    }
+                  | null
+                  | undefined
+                readonly Created?: string | undefined
+                readonly Descriptor?:
+                  | {
+                      readonly size: string
+                      readonly mediaType: string
+                      readonly digest: string
+                      readonly urls?: ReadonlyArray<string> | null | undefined
+                      readonly annotations?: { readonly [x: string]: string } | null | undefined
+                      readonly data?: string | null | undefined
+                      readonly platform?:
+                        | {
+                            readonly architecture: string
+                            readonly os: string
+                            readonly "os.version"?: string | undefined
+                            readonly "os.features"?: ReadonlyArray<string> | null | undefined
+                            readonly variant?: string | undefined
+                          }
+                        | null
+                        | undefined
+                      readonly artifactType?: string | undefined
+                    }
+                  | null
+                  | undefined
+                readonly Manifests?:
+                  | ReadonlyArray<{
+                      readonly Kind: "image" | "attestation" | "unknown"
+                      readonly Descriptor: {
+                        readonly size: string
+                        readonly mediaType: string
+                        readonly digest: string
+                        readonly urls?: ReadonlyArray<string> | null | undefined
+                        readonly annotations?: { readonly [x: string]: string } | null | undefined
+                        readonly data?: string | null | undefined
+                        readonly platform?:
+                          | {
+                              readonly architecture: string
+                              readonly os: string
+                              readonly "os.version"?: string | undefined
+                              readonly "os.features"?: ReadonlyArray<string> | null | undefined
+                              readonly variant?: string | undefined
+                            }
+                          | null
+                          | undefined
+                        readonly artifactType?: string | undefined
+                      } | null
+                      readonly Size: Struct.ReadonlySide<
+                        { readonly Content: BigIntFromString; readonly Total: BigIntFromString },
+                        "Encoded"
+                      >
+                      readonly ID: string
+                      readonly Available: boolean
+                      readonly ImageData?:
+                        | Struct.ReadonlySide<
+                            {
+                              readonly Platform: NullOr<typeof V1Platform>
+                              readonly Size: Struct<{ readonly Unpacked: BigIntFromString }>
+                              readonly Containers: NullOr<$Array<String>>
+                            },
+                            "Encoded"
+                          >
+                        | null
+                        | undefined
+                      readonly AttestationData?:
+                        Struct.ReadonlySide<{ readonly For: brand<String, "Digest"> }, "Encoded"> | null | undefined
+                    } | null>
+                  | null
+                  | undefined
+                readonly VirtualSize?: string | undefined
+                readonly Container?: string | undefined
+                readonly Variant?: string | undefined
+                readonly OsVersion?: string | undefined
+              },
+              readonly [
+                Struct<{
+                  readonly Id: brand<String, "ImageId">
+                  readonly RepoTags: NullOr<$Array<String>>
+                  readonly RepoDigests: NullOr<$Array<brand<String, "Digest">>>
+                  readonly Parent: String
+                  readonly Comment: String
+                  readonly Created: optional<String>
+                  readonly Container: optional<String>
+                  readonly ContainerConfig: optional<NullOr<typeof ContainerConfig>>
+                  readonly DockerVersion: String
+                  readonly Author: String
+                  readonly Config: NullOr<typeof V1DockerOCIImageConfig>
+                  readonly Architecture: String
+                  readonly Variant: optional<String>
+                  readonly Os: String
+                  readonly OsVersion: optional<String>
+                  readonly Size: BigIntFromString
+                  readonly VirtualSize: optional<BigIntFromString>
+                  readonly GraphDriver: NullOr<typeof StorageDriverData>
+                  readonly RootFS: NullOr<typeof ImageRootFS>
+                  readonly Metadata: NullOr<typeof ImageMetadata>
+                  readonly Descriptor: optional<NullOr<typeof V1Descriptor>>
+                  readonly Manifests: optional<NullOr<$Array<NullOr<typeof ImageManifestSummary>>>>
+                }>
+              ],
+              {
+                readonly Config: {
+                  readonly User?: string | undefined
+                  readonly ExposedPorts?: { readonly [x: string]: object } | null | undefined
+                  readonly Env?: ReadonlyArray<string> | null | undefined
+                  readonly Cmd?: ReadonlyArray<string> | null | undefined
+                  readonly Healthcheck?:
+                    | {
+                        readonly Test?: ReadonlyArray<string> | null | undefined
+                        readonly Interval?: bigint | undefined
+                        readonly Timeout?: bigint | undefined
+                        readonly StartPeriod?: bigint | undefined
+                        readonly StartInterval?: bigint | undefined
+                        readonly Retries?: bigint | undefined
+                      }
+                    | null
+                    | undefined
+                  readonly ArgsEscaped?: boolean | undefined
+                  readonly Volumes?: { readonly [x: string]: object } | null | undefined
+                  readonly WorkingDir?: string | undefined
+                  readonly Entrypoint?: ReadonlyArray<string> | null | undefined
+                  readonly OnBuild?: ReadonlyArray<string> | null | undefined
+                  readonly Labels?: { readonly [x: string]: string } | null | undefined
+                  readonly StopSignal?: string | undefined
+                  readonly Shell?: ReadonlyArray<string> | null | undefined
+                } | null
+                readonly Id: string & Brand<"ImageId">
+                readonly GraphDriver: Struct.ReadonlySide<
+                  { readonly Data: NullOr<$Record<String, String>>; readonly Name: String },
+                  "Iso"
+                > | null
+                readonly Size: bigint
+                readonly RepoDigests: ReadonlyArray<string & Brand<"Digest">> | null
+                readonly RepoTags: ReadonlyArray<string> | null
+                readonly RootFS: {
+                  readonly Type?: string | undefined
+                  readonly Layers?: ReadonlyArray<string> | null | undefined
+                } | null
+                readonly Metadata: { readonly LastTagTime?: Date | null | undefined } | null
+                readonly Parent: string
+                readonly Comment: string
+                readonly DockerVersion: string
+                readonly Author: string
+                readonly Architecture: string
+                readonly Os: string
+                readonly ContainerConfig?:
+                  | {
+                      readonly Hostname: string
+                      readonly Domainname: string
+                      readonly User: string
+                      readonly AttachStdin: boolean
+                      readonly AttachStdout: boolean
+                      readonly AttachStderr: boolean
+                      readonly Tty: boolean
+                      readonly OpenStdin: boolean
+                      readonly StdinOnce: boolean
+                      readonly Env: ReadonlyArray<string> | null
+                      readonly Cmd: ReadonlyArray<string> | null
+                      readonly Volumes: { readonly [x: string]: object } | null
+                      readonly WorkingDir: string
+                      readonly Entrypoint: ReadonlyArray<string> | null
+                      readonly OnBuild: ReadonlyArray<string> | null
+                      readonly Labels: { readonly [x: string]: string } | null
+                      readonly Image: string
+                      readonly ExposedPorts?:
+                        | {
+                            readonly [x: `${number}`]: object
+                            readonly [x: `${number}/tcp`]: object
+                            readonly [x: `${number}/udp`]: object
+                          }
+                        | null
+                        | undefined
+                      readonly Healthcheck?:
+                        | {
+                            readonly Test?: ReadonlyArray<string> | null | undefined
+                            readonly Interval?: bigint | undefined
+                            readonly Timeout?: bigint | undefined
+                            readonly StartPeriod?: bigint | undefined
+                            readonly StartInterval?: bigint | undefined
+                            readonly Retries?: bigint | undefined
+                          }
+                        | null
+                        | undefined
+                      readonly ArgsEscaped?: boolean | undefined
+                      readonly NetworkDisabled?: boolean | undefined
+                      readonly MacAddress?: string | undefined
+                      readonly StopSignal?: string | undefined
+                      readonly StopTimeout?: bigint | null | undefined
+                      readonly Shell?: ReadonlyArray<string> | null | undefined
+                    }
+                  | null
+                  | undefined
+                readonly Created?: string | undefined
+                readonly Descriptor?:
+                  | {
+                      readonly size: bigint
+                      readonly mediaType: string
+                      readonly digest: string & Brand<"Digest">
+                      readonly urls?: ReadonlyArray<string> | null | undefined
+                      readonly annotations?: { readonly [x: string]: string } | null | undefined
+                      readonly data?: Uint8Array<ArrayBufferLike> | null | undefined
+                      readonly platform?:
+                        | {
+                            readonly architecture: string
+                            readonly os: string
+                            readonly "os.version"?: string | undefined
+                            readonly "os.features"?: ReadonlyArray<string> | null | undefined
+                            readonly variant?: string | undefined
+                          }
+                        | null
+                        | undefined
+                      readonly artifactType?: string | undefined
+                    }
+                  | null
+                  | undefined
+                readonly Manifests?:
+                  | ReadonlyArray<{
+                      readonly Kind: "image" | "attestation" | "unknown"
+                      readonly Descriptor: {
+                        readonly size: bigint
+                        readonly mediaType: string
+                        readonly digest: string & Brand<"Digest">
+                        readonly urls?: ReadonlyArray<string> | null | undefined
+                        readonly annotations?: { readonly [x: string]: string } | null | undefined
+                        readonly data?: Uint8Array<ArrayBufferLike> | null | undefined
+                        readonly platform?:
+                          | {
+                              readonly architecture: string
+                              readonly os: string
+                              readonly "os.version"?: string | undefined
+                              readonly "os.features"?: ReadonlyArray<string> | null | undefined
+                              readonly variant?: string | undefined
+                            }
+                          | null
+                          | undefined
+                        readonly artifactType?: string | undefined
+                      } | null
+                      readonly Size: Struct.ReadonlySide<
+                        { readonly Content: BigIntFromString; readonly Total: BigIntFromString },
+                        "Iso"
+                      >
+                      readonly ID: string
+                      readonly Available: boolean
+                      readonly ImageData?:
+                        | Struct.ReadonlySide<
+                            {
+                              readonly Platform: NullOr<typeof V1Platform>
+                              readonly Size: Struct<{ readonly Unpacked: BigIntFromString }>
+                              readonly Containers: NullOr<$Array<String>>
+                            },
+                            "Iso"
+                          >
+                        | null
+                        | undefined
+                      readonly AttestationData?:
+                        Struct.ReadonlySide<{ readonly For: brand<String, "Digest"> }, "Iso"> | null | undefined
+                    } | null>
+                  | null
+                  | undefined
+                readonly VirtualSize?: bigint | undefined
+                readonly Container?: string | undefined
+                readonly Variant?: string | undefined
+                readonly OsVersion?: string | undefined
+              }
+            >,
+            Struct<{
+              readonly Id: brand<String, "ImageId">
+              readonly RepoTags: NullOr<$Array<String>>
+              readonly RepoDigests: NullOr<$Array<brand<String, "Digest">>>
+              readonly Parent: String
+              readonly Comment: String
+              readonly Created: optional<String>
+              readonly Container: optional<String>
+              readonly ContainerConfig: optional<NullOr<typeof ContainerConfig>>
+              readonly DockerVersion: String
+              readonly Author: String
+              readonly Config: NullOr<typeof V1DockerOCIImageConfig>
+              readonly Architecture: String
+              readonly Variant: optional<String>
+              readonly Os: String
+              readonly OsVersion: optional<String>
+              readonly Size: BigIntFromString
+              readonly VirtualSize: optional<BigIntFromString>
+              readonly GraphDriver: NullOr<typeof StorageDriverData>
+              readonly RootFS: NullOr<typeof ImageRootFS>
+              readonly Metadata: NullOr<typeof ImageMetadata>
+              readonly Descriptor: optional<NullOr<typeof V1Descriptor>>
+              readonly Manifests: optional<NullOr<$Array<NullOr<typeof ImageManifestSummary>>>>
+            }>,
+            never,
+            never
+          >
+        >,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "export",
         "GET",
-        { readonly name: string },
-        { readonly platform?: string | undefined },
+        "/images/:name/get",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ platform: optional<String> }>>,
         never,
         never,
-        void,
-        NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "exportMany",
         "GET",
+        "/images/get",
         never,
-        { readonly platform?: string | undefined },
+        toCodecStringTree<Struct<{ names: optional<String>; platform: optional<String> }>>,
         never,
         never,
-        void,
-        NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "import",
         "POST",
+        "/images/load",
         never,
-        { readonly platform?: string | undefined; readonly quiet?: boolean | undefined },
+        toCodecStringTree<Struct<{ platform: optional<String>; quiet: optional<Boolean> }>>,
+        toCodecJson<StreamUint8Array>,
         never,
-        never,
-        void,
-        BadRequest,
+        StreamUint8Array,
+        toCodecJson<typeof BadRequest | typeof InternalServerError>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -974,109 +1438,121 @@ declare const NetworksApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/networks/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly dangling?: boolean | undefined
-                readonly id?: ReadonlyArray<string> | undefined
-                readonly driver?: ReadonlyArray<string> | undefined
-                readonly scope?: ReadonlyArray<string> | undefined
-                readonly type?: "custom" | "builtin" | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly dangling: optional<
+                  Union<
+                    readonly [
+                      decodeTo<Literal<true>, Literal<"true">, never, never>,
+                      decodeTo<Literal<false>, Literal<"false">, never, never>
+                    ]
+                  >
+                >
+                readonly driver: optional<$Array<String>>
+                readonly id: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+                readonly name: optional<$Array<String>>
+                readonly scope: optional<$Array<String>>
+                readonly type: optional<Literals<readonly ["custom", "builtin"]>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<NetworkInspect>,
-        never,
+        toCodecJson<$Array<typeof NetworkInspect>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "create",
         "POST",
+        "/networks/create",
         never,
         never,
-        NetworkCreateRequest,
+        toCodecJson<typeof NetworkCreateRequest>,
         never,
-        { readonly Id: string & Brand<"NetworkId"> },
-        BadRequest | Forbidden | NotFound,
+        toCodecJson<Struct<{ readonly Id: brand<String, "NetworkId"> }>>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof Forbidden | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly id: string },
-        { readonly scope?: string | undefined; readonly verbose?: boolean | undefined },
+        "/networks/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<Struct<{ verbose: optional<Boolean>; scope: optional<String> }>>,
         never,
         never,
-        NetworkInspect,
-        NotFound,
+        toCodecJson<typeof NetworkInspect>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly id: string },
+        "/networks/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
         never,
         never,
-        void,
-        Forbidden | NotFound,
+        toCodecJson<NoContent>,
+        toCodecJson<typeof InternalServerError | typeof Forbidden | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "connect",
         "POST",
-        { readonly id: string },
+        "/networks/:id/connect",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
-        NetworkConnectOptions,
+        toCodecJson<typeof NetworkConnectOptions>,
         never,
-        void,
-        BadRequest | Forbidden | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof Forbidden | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "disconnect",
         "POST",
-        { readonly id: string },
+        "/networks/:id/disconnect",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
-        { readonly Container: string & Brand<"ContainerId">; readonly Force: boolean },
+        toCodecJson<Struct<{ readonly Container: brand<String, "ContainerId">; readonly Force: Boolean }>>,
         never,
-        void,
-        Forbidden | NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof Forbidden | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "prune",
         "POST",
+        "/networks/prune",
         never,
-        {
-          readonly filters?:
-            | { readonly label?: ReadonlyArray<string> | undefined; readonly until?: string | undefined }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<Struct<{ readonly label: optional<$Array<String>>; readonly until: optional<String> }>>
+          }>
+        >,
         never,
         never,
-        { readonly NetworksDeleted: ReadonlyArray<string> | null | undefined },
-        never,
+        toCodecJson<Struct<{ readonly NetworksDeleted: NullishOr<$Array<String>> }>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1100,68 +1576,70 @@ declare const NodesApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/nodes/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly id?: ReadonlyArray<string> | undefined
-                readonly membership?: ReadonlyArray<"accepted" | "pending"> | undefined
-                readonly "node.label"?: ReadonlyArray<string> | undefined
-                readonly role?: ReadonlyArray<"manager" | "worker"> | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly id: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+                readonly membership: optional<$Array<Literals<readonly ["accepted", "pending"]>>>
+                readonly name: optional<$Array<String>>
+                readonly "node.label": optional<$Array<String>>
+                readonly role: optional<$Array<Literals<readonly ["manager", "worker"]>>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<SwarmNode>,
-        NodeNotPartOfSwarm,
+        toCodecJson<$Array<typeof SwarmNode>>,
+        toCodecJson<typeof InternalServerError | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly id: string },
+        "/nodes/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
         never,
         never,
-        SwarmNode,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<typeof SwarmNode>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly id: string },
-        { readonly force?: boolean | undefined },
+        "/nodes/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<Struct<{ force: optional<Boolean> }>>,
         never,
         never,
-        void,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "POST",
-        { readonly id: string },
-        { readonly version: number },
-        SwarmNodeSpec,
+        "/nodes/:id/update",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<Struct<{ version: Number }>>,
+        toCodecJson<typeof SwarmNodeSpec>,
         never,
-        void,
-        BadRequest | NotFound | NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1185,123 +1663,157 @@ declare const PluginsApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/plugins/",
         never,
-        {
-          readonly filters?:
-            | { readonly capability?: ReadonlyArray<string> | undefined; readonly enabled?: boolean | undefined }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly capability: optional<$Array<String>>
+                readonly enabled: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<TypesPlugin>,
-        never,
+        toCodecJson<$Array<typeof TypesPlugin>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "getPrivileges",
         "GET",
+        "/plugins/privileges",
         never,
-        { readonly remote: string },
+        toCodecStringTree<Struct<{ remote: String }>>,
         never,
         never,
-        ReadonlyArray<RuntimePluginPrivilege>,
-        never,
+        toCodecJson<$Array<typeof RuntimePluginPrivilege>>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "pull",
         "POST",
+        "/plugins/pull",
         never,
-        { readonly name?: string | undefined; readonly remote: string },
-        ReadonlyArray<RuntimePluginPrivilege>,
-        { readonly "X-Registry-Auth"?: string | undefined },
-        void,
-        never,
+        toCodecStringTree<Struct<{ remote: String; name: optional<String> }>>,
+        toCodecJson<$Array<typeof RuntimePluginPrivilege>>,
+        toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly name: string },
+        "/plugins/:name/json",
+        toCodecStringTree<Struct<{ name: String }>>,
         never,
         never,
         never,
-        TypesPlugin,
-        NotFound,
+        toCodecJson<typeof TypesPlugin>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly name: string },
-        { readonly force?: boolean | undefined },
+        "/plugins/:name",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ force: optional<Boolean> }>>,
         never,
         never,
-        void,
-        NotFound,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "enable",
         "POST",
-        { readonly name: string },
-        { readonly timeout?: number | undefined },
+        "/plugins/:name/enable",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ timeout: optional<Number> }>>,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "disable",
         "POST",
-        { readonly name: string },
-        { readonly force?: boolean | undefined },
+        "/plugins/:name/disable",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ force: optional<Boolean> }>>,
         never,
         never,
-        void,
-        NotFound,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "upgrade",
         "POST",
-        { readonly name: string },
-        { readonly remote: string },
-        ReadonlyArray<RuntimePluginPrivilege>,
-        { readonly "X-Registry-Auth"?: string | undefined },
-        void,
-        NotFound,
+        "/plugins/:name/upgrade",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ remote: String }>>,
+        toCodecJson<$Array<typeof RuntimePluginPrivilege>>,
+        toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
-    | HttpApiEndpoint<"create", "POST", never, { readonly name: string }, never, never, void, never, never, never>
-    | HttpApiEndpoint<"push", "POST", { readonly name: string }, never, never, never, void, NotFound, never, never>
+    | HttpApiEndpoint<
+        "create",
+        "POST",
+        "/plugins/create",
+        never,
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecJson<StreamUint8Array>,
+        never,
+        toCodecJson<NoContent>,
+        toCodecJson<typeof InternalServerError>,
+        never,
+        never
+      >
+    | HttpApiEndpoint<
+        "push",
+        "POST",
+        "/plugins/:name/push",
+        toCodecStringTree<Struct<{ name: String }>>,
+        never,
+        never,
+        never,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
+        never,
+        never
+      >
     | HttpApiEndpoint<
         "set",
         "POST",
-        { readonly name: string },
+        "/plugins/:name/set",
+        toCodecStringTree<Struct<{ name: String }>>,
         never,
-        ReadonlyArray<string>,
+        toCodecJson<$Array<String>>,
         never,
-        void,
-        NotFound,
+        toCodecJson<NoContent>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1328,77 +1840,87 @@ declare const SecretsApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/secrets/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly id?: ReadonlyArray<string> | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly id: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+                readonly name: optional<$Array<String>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<SwarmSecret>,
-        NodeNotPartOfSwarm,
+        toCodecJson<$Array<typeof SwarmSecret>>,
+        toCodecJson<typeof InternalServerError | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "create",
         "POST",
+        "/secrets/create",
         never,
         never,
-        SwarmSecretSpec,
+        toCodecJson<typeof SwarmSecretSpec>,
         never,
-        { readonly Id: string & Brand<"SecretId"> },
-        Conflict | NodeNotPartOfSwarm,
+        toCodecJson<
+          decodeTo<
+            Struct<{ readonly Id: brand<String, "SecretId"> }>,
+            Struct<{ readonly ID: toEncoded<brand<String, "SecretId">> }>,
+            never,
+            never
+          >
+        >,
+        toCodecJson<typeof InternalServerError | typeof Conflict | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly id: string },
+        "/secrets/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
         never,
         never,
-        SwarmSecret,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<typeof SwarmSecret>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly id: string },
+        "/secrets/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
         never,
         never,
-        void,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<NoContent>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "POST",
-        { readonly id: string },
-        { readonly version: bigint },
-        SwarmSecretSpec,
+        "/secrets/:id/update",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<Struct<{ version: BigIntFromString }>>,
+        toCodecJson<typeof SwarmSecretSpec>,
         never,
-        void,
-        BadRequest | NotFound | NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1425,102 +1947,110 @@ declare const ServicesApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/services/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly id?: ReadonlyArray<string> | undefined
-                readonly mode?: ReadonlyArray<"replicated" | "global"> | undefined
-              }
-            | undefined
-          readonly status?: boolean | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly id: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+                readonly mode: optional<$Array<Literals<readonly ["replicated", "global"]>>>
+              }>
+            >
+            status: optional<Boolean>
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<SwarmService>,
-        NodeNotPartOfSwarm,
+        toCodecJson<$Array<typeof SwarmService>>,
+        toCodecJson<typeof InternalServerError | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "create",
         "POST",
+        "/services/create",
         never,
         never,
-        SwarmServiceSpec,
-        { readonly "X-Registry-Auth"?: string | undefined },
-        { readonly Warnings?: ReadonlyArray<string> | undefined; readonly ID: string & Brand<"ServiceId"> },
-        BadRequest | Forbidden | Conflict | NodeNotPartOfSwarm,
+        toCodecJson<typeof SwarmServiceSpec>,
+        toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
+        toCodecJson<Struct<{ readonly ID: brand<String, "ServiceId">; readonly Warnings: optional<$Array<String>> }>>,
+        toCodecJson<
+          | typeof BadRequest
+          | typeof InternalServerError
+          | typeof Forbidden
+          | typeof Conflict
+          | typeof ServiceUnavailable
+        >,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly id: string },
+        "/services/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
         never,
         never,
-        void,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly id: string },
-        { readonly insertDefaults?: boolean | undefined },
+        "/services/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<Struct<{ insertDefaults: optional<Boolean> }>>,
         never,
         never,
-        SwarmService,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<typeof SwarmService>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "POST",
-        { readonly id: string },
-        {
-          readonly version: number
-          readonly rollback?: string | undefined
-          readonly registryAuthFrom?: string | undefined
-        },
-        SwarmServiceSpec,
-        { readonly "X-Registry-Auth"?: string | undefined },
-        { readonly Warnings?: ReadonlyArray<string> | undefined },
-        BadRequest | NotFound | NodeNotPartOfSwarm,
+        "/services/:id/update",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<Struct<{ version: Number; rollback: optional<String>; registryAuthFrom: optional<String> }>>,
+        toCodecJson<typeof SwarmServiceSpec>,
+        toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
+        toCodecJson<Struct<{ readonly Warnings: optional<$Array<String>> }>>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "logs",
         "GET",
-        { readonly id: string },
-        {
-          readonly since?: number | undefined
-          readonly follow?: boolean | undefined
-          readonly stdout?: boolean | undefined
-          readonly stderr?: boolean | undefined
-          readonly timestamps?: boolean | undefined
-          readonly tail?: string | undefined
-          readonly details?: boolean | undefined
-        },
+        "/services/:id/logs",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<
+          Struct<{
+            details: optional<Boolean>
+            follow: optional<Boolean>
+            stdout: optional<Boolean>
+            stderr: optional<Boolean>
+            since: optional<Number>
+            timestamps: optional<Boolean>
+            tail: optional<String>
+          }>
+        >,
         never,
         never,
-        void,
-        NotFound | NodeNotPartOfSwarm,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1544,21 +2074,18 @@ declare const SessionApi: HttpApi<
     HttpApiEndpoint<
       "session",
       "POST",
+      "/session",
       never,
       never,
       never,
-      { readonly Upgrade: "h2c"; readonly Connection: "Upgrade" },
-      void,
+      toCodecStringTree<Struct<{ Upgrade: Literal<"h2c">; Connection: Literal<"Upgrade"> }>>,
+      toCodecJson<Void>,
       never,
       never,
       never
     >,
-    never,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1585,98 +2112,103 @@ declare const SwarmApi: HttpApi<
     | HttpApiEndpoint<
         "inspect",
         "GET",
+        "/swarm/",
         never,
         never,
         never,
         never,
-        SwarmSwarm,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<typeof SwarmSwarm>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "init",
         "POST",
+        "/swarm/init",
         never,
         never,
-        SwarmInitRequest,
+        toCodecJson<typeof SwarmInitRequest>,
         never,
-        string,
-        BadRequest | NodeAlreadyPartOfSwarm,
+        toCodecJson<String>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NodeAlreadyPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "join",
         "POST",
+        "/swarm/join",
         never,
         never,
-        SwarmJoinRequest,
+        toCodecJson<typeof SwarmJoinRequest>,
         never,
-        void,
-        BadRequest | NodeAlreadyPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NodeAlreadyPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "leave",
         "POST",
+        "/swarm/leave",
         never,
-        { readonly force?: boolean | undefined },
+        toCodecStringTree<Struct<{ force: optional<Boolean> }>>,
         never,
         never,
-        void,
-        NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "POST",
+        "/swarm/update",
         never,
-        {
-          readonly version: bigint
-          readonly rotateWorkerToken?: boolean | undefined
-          readonly rotateManagerToken?: boolean | undefined
-          readonly rotateManagerUnlockKey?: boolean | undefined
-        },
-        SwarmSpec,
+        toCodecStringTree<
+          Struct<{
+            version: BigIntFromString
+            rotateWorkerToken: optional<Boolean>
+            rotateManagerToken: optional<Boolean>
+            rotateManagerUnlockKey: optional<Boolean>
+          }>
+        >,
+        toCodecJson<typeof SwarmSpec>,
         never,
-        void,
-        BadRequest | NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "unlockkey",
         "GET",
+        "/swarm/unlockkey",
         never,
         never,
         never,
         never,
-        { readonly UnlockKey: string },
-        NodeNotPartOfSwarm,
+        toCodecJson<Struct<{ readonly UnlockKey: String }>>,
+        toCodecJson<typeof InternalServerError | typeof NodeNotPartOfSwarm>,
         never,
         never
       >
     | HttpApiEndpoint<
         "unlock",
         "POST",
+        "/swarm/unlock",
         never,
         never,
-        { readonly UnlockKey: string },
+        toCodecJson<Struct<{ readonly UnlockKey: String }>>,
         never,
-        void,
-        NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError | typeof NodeNotPartOfSwarm>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1700,49 +2232,98 @@ declare const SystemApi: HttpApi<
     | HttpApiEndpoint<
         "auth",
         "POST",
+        "/auth",
         never,
         never,
-        RegistryAuthConfig,
+        toCodecJson<typeof RegistryAuthConfig>,
         never,
-        void | RegistryAuthenticateOKBody,
-        Unauthorized,
+        toCodecJson<Void | typeof RegistryAuthenticateOKBody>,
+        toCodecJson<typeof InternalServerError | typeof Unauthorized>,
         never,
         never
       >
-    | HttpApiEndpoint<"info", "GET", never, never, never, never, SystemInfo, never, never, never>
-    | HttpApiEndpoint<"version", "GET", never, never, never, never, TypesVersion, never, never, never>
-    | HttpApiEndpoint<"ping", "GET", never, never, never, never, "OK", never, never, never>
-    | HttpApiEndpoint<"pingHead", "HEAD", never, never, never, never, void, never, never, never>
+    | HttpApiEndpoint<
+        "info",
+        "GET",
+        "/info",
+        never,
+        never,
+        never,
+        never,
+        toCodecJson<typeof SystemInfo>,
+        toCodecJson<typeof InternalServerError>,
+        never,
+        never
+      >
+    | HttpApiEndpoint<
+        "version",
+        "GET",
+        "/version",
+        never,
+        never,
+        never,
+        never,
+        toCodecJson<typeof TypesVersion>,
+        toCodecJson<typeof InternalServerError>,
+        never,
+        never
+      >
+    | HttpApiEndpoint<
+        "ping",
+        "GET",
+        "/_ping",
+        never,
+        never,
+        never,
+        never,
+        toCodecJson<Literal<"OK">>,
+        toCodecJson<typeof InternalServerError>,
+        never,
+        never
+      >
+    | HttpApiEndpoint<
+        "pingHead",
+        "HEAD",
+        "/_ping",
+        never,
+        never,
+        never,
+        never,
+        toCodecJson<Void>,
+        toCodecJson<typeof InternalServerError>,
+        never,
+        never
+      >
     | HttpApiEndpoint<
         "events",
         "GET",
+        "/events",
         never,
-        { readonly since?: string | undefined; readonly until?: string | undefined },
+        toCodecStringTree<Struct<{ since: optional<String>; until: optional<String> }>>,
         never,
         never,
-        void,
-        BadRequest,
+        StreamUint8Array,
+        toCodecJson<typeof BadRequest | typeof InternalServerError>,
         never,
         never
       >
     | HttpApiEndpoint<
         "dataUsage",
         "GET",
+        "/system/df",
         never,
-        { readonly type?: ReadonlyArray<"container" | "volume" | "image" | "build-cache"> | undefined },
+        toCodecStringTree<
+          Struct<{ type: optional<$Array<Literals<readonly ["container", "image", "volume", "build-cache"]>>> }>
+        >,
         never,
         never,
-        TypesDiskUsage,
-        never,
+        toCodecJson<typeof TypesDiskUsage>,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1769,64 +2350,67 @@ declare const TasksApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/tasks/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly id?: ReadonlyArray<string> | undefined
-                readonly "desired-state"?: ReadonlyArray<"running" | "accepted" | "shutdown"> | undefined
-                readonly node?: ReadonlyArray<string> | undefined
-                readonly service?: ReadonlyArray<string> | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly "desired-state": optional<$Array<Literals<readonly ["running", "shutdown", "accepted"]>>>
+                readonly id: optional<$Array<String>>
+                readonly name: optional<$Array<String>>
+                readonly node: optional<$Array<String>>
+                readonly service: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        ReadonlyArray<SwarmTask>,
-        NodeNotPartOfSwarm,
+        toCodecJson<$Array<typeof SwarmTask>>,
+        toCodecJson<typeof InternalServerError | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly id: string },
+        "/tasks/:id",
+        toCodecStringTree<Struct<{ id: String }>>,
         never,
         never,
         never,
-        SwarmTask,
-        NotFound | NodeNotPartOfSwarm,
+        toCodecJson<typeof SwarmTask>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "logs",
         "GET",
-        { readonly id: string },
-        {
-          readonly since?: number | undefined
-          readonly follow?: boolean | undefined
-          readonly stdout?: boolean | undefined
-          readonly stderr?: boolean | undefined
-          readonly timestamps?: boolean | undefined
-          readonly tail?: string | undefined
-          readonly details?: boolean | undefined
-        },
+        "/tasks/:id/logs",
+        toCodecStringTree<Struct<{ id: String }>>,
+        toCodecStringTree<
+          Struct<{
+            details: optional<Boolean>
+            follow: optional<Boolean>
+            stdout: optional<Boolean>
+            stderr: optional<Boolean>
+            since: optional<Number>
+            timestamps: optional<Boolean>
+            tail: optional<String>
+          }>
+        >,
         never,
         never,
-        void,
-        NotFound | NodeNotPartOfSwarm,
+        StreamUint8Array,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 
@@ -1850,89 +2434,347 @@ declare const VolumesApi: HttpApi<
     | HttpApiEndpoint<
         "list",
         "GET",
+        "/volumes/",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly name?: ReadonlyArray<string> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-                readonly dangling?: ReadonlyArray<"0" | "true" | "false" | "1"> | undefined
-                readonly driver?: ReadonlyArray<string> | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly name: optional<$Array<String>>
+                readonly driver: optional<$Array<String>>
+                readonly label: optional<$Array<String>>
+                readonly dangling: optional<$Array<Literals<readonly ["true", "false", "1", "0"]>>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        { readonly Volumes: ReadonlyArray<VolumeVolume>; readonly Warnings: ReadonlyArray<string> | null },
-        never,
+        toCodecJson<
+          Struct<{ readonly Volumes: $Array<typeof VolumeVolume>; readonly Warnings: NullOr<$Array<String>> }>
+        >,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >
-    | HttpApiEndpoint<"create", "POST", never, never, VolumeCreateOptions, never, VolumeVolume, never, never, never>
+    | HttpApiEndpoint<
+        "create",
+        "POST",
+        "/volumes/create",
+        never,
+        never,
+        toCodecJson<typeof VolumeCreateOptions>,
+        never,
+        toCodecJson<
+          decodeTo<
+            declareConstructor<
+              VolumeVolume,
+              {
+                readonly Labels: { readonly [x: string]: string } | null
+                readonly Name: string
+                readonly Options: { readonly [x: string]: string } | null
+                readonly Driver: string
+                readonly Scope: string
+                readonly Mountpoint: string
+                readonly Status?: { readonly [x: string]: object } | null | undefined
+                readonly CreatedAt?: string | undefined
+                readonly ClusterVolume?:
+                  | {
+                      readonly ID: string
+                      readonly Spec: {
+                        readonly Availability?: "pause" | "active" | "drain" | undefined
+                        readonly Secrets?:
+                          | ReadonlyArray<Struct.ReadonlySide<
+                              { readonly Key: String; readonly Secret: String },
+                              "Encoded"
+                            > | null>
+                          | null
+                          | undefined
+                        readonly Group?: string | undefined
+                        readonly AccessMode?:
+                          | {
+                              readonly Scope?: "single" | "multi" | undefined
+                              readonly Sharing?: "readonly" | "all" | "none" | "onewriter" | undefined
+                              readonly MountVolume?:
+                                | {
+                                    readonly FsType?: string | undefined
+                                    readonly MountFlags?: ReadonlyArray<string> | null | undefined
+                                  }
+                                | null
+                                | undefined
+                              readonly BlockVolume?: Struct.ReadonlySide<{}, "Encoded"> | null | undefined
+                            }
+                          | null
+                          | undefined
+                        readonly AccessibilityRequirements?:
+                          | {
+                              readonly Requisite?:
+                                | ReadonlyArray<{
+                                    readonly Segments?: { readonly [x: string]: string } | null | undefined
+                                  } | null>
+                                | null
+                                | undefined
+                              readonly Preferred?:
+                                | ReadonlyArray<{
+                                    readonly Segments?: { readonly [x: string]: string } | null | undefined
+                                  } | null>
+                                | null
+                                | undefined
+                            }
+                          | null
+                          | undefined
+                        readonly CapacityRange?:
+                          | Struct.ReadonlySide<
+                              { readonly RequiredBytes: BigIntFromString; readonly LimitBytes: BigIntFromString },
+                              "Encoded"
+                            >
+                          | null
+                          | undefined
+                      } | null
+                      readonly Version?: { readonly Index?: string | undefined } | null | undefined
+                      readonly CreatedAt?: string | null | undefined
+                      readonly UpdatedAt?: string | null | undefined
+                      readonly Info?:
+                        | {
+                            readonly AccessibleTopology?:
+                              | ReadonlyArray<{
+                                  readonly Segments?: { readonly [x: string]: string } | null | undefined
+                                } | null>
+                              | null
+                              | undefined
+                            readonly CapacityBytes?: string | undefined
+                            readonly VolumeContext?: { readonly [x: string]: string } | null | undefined
+                            readonly VolumeID?: string | undefined
+                          }
+                        | null
+                        | undefined
+                      readonly PublishStatus?:
+                        | ReadonlyArray<{
+                            readonly State?:
+                              | "pending-publish"
+                              | "published"
+                              | "pending-node-unpublish"
+                              | "pending-controller-unpublish"
+                              | undefined
+                            readonly NodeID?: string | undefined
+                            readonly PublishContext?: { readonly [x: string]: string } | null | undefined
+                          } | null>
+                        | null
+                        | undefined
+                    }
+                  | null
+                  | undefined
+                readonly UsageData?:
+                  | Struct.ReadonlySide<
+                      { readonly RefCount: BigIntFromString; readonly Size: BigIntFromString },
+                      "Encoded"
+                    >
+                  | null
+                  | undefined
+              },
+              readonly [
+                Struct<{
+                  readonly ClusterVolume: optional<NullOr<typeof VolumeClusterVolume>>
+                  readonly CreatedAt: optional<DateFromString>
+                  readonly Driver: String
+                  readonly Labels: NullOr<$Record<String, String>>
+                  readonly Mountpoint: String
+                  readonly Name: brand<String, "VolumeId">
+                  readonly Options: NullOr<$Record<String, String>>
+                  readonly Scope: String
+                  readonly Status: optional<NullOr<$Record<String, ObjectKeyword>>>
+                  readonly UsageData: optional<NullOr<typeof VolumeUsageData>>
+                }>
+              ],
+              {
+                readonly Labels: { readonly [x: string]: string } | null
+                readonly Name: string & Brand<"VolumeId">
+                readonly Options: { readonly [x: string]: string } | null
+                readonly Driver: string
+                readonly Scope: string
+                readonly Mountpoint: string
+                readonly Status?: { readonly [x: string]: object } | null | undefined
+                readonly CreatedAt?: Date | undefined
+                readonly ClusterVolume?:
+                  | {
+                      readonly ID: string
+                      readonly Spec: {
+                        readonly Availability?: "pause" | "active" | "drain" | undefined
+                        readonly Secrets?:
+                          | ReadonlyArray<Struct.ReadonlySide<
+                              { readonly Key: String; readonly Secret: String },
+                              "Iso"
+                            > | null>
+                          | null
+                          | undefined
+                        readonly Group?: string | undefined
+                        readonly AccessMode?:
+                          | {
+                              readonly Scope?: "single" | "multi" | undefined
+                              readonly Sharing?: "readonly" | "all" | "none" | "onewriter" | undefined
+                              readonly MountVolume?:
+                                | {
+                                    readonly FsType?: string | undefined
+                                    readonly MountFlags?: ReadonlyArray<string> | null | undefined
+                                  }
+                                | null
+                                | undefined
+                              readonly BlockVolume?: Struct.ReadonlySide<{}, "Iso"> | null | undefined
+                            }
+                          | null
+                          | undefined
+                        readonly AccessibilityRequirements?:
+                          | {
+                              readonly Requisite?:
+                                | ReadonlyArray<{
+                                    readonly Segments?: { readonly [x: string]: string } | null | undefined
+                                  } | null>
+                                | null
+                                | undefined
+                              readonly Preferred?:
+                                | ReadonlyArray<{
+                                    readonly Segments?: { readonly [x: string]: string } | null | undefined
+                                  } | null>
+                                | null
+                                | undefined
+                            }
+                          | null
+                          | undefined
+                        readonly CapacityRange?:
+                          | Struct.ReadonlySide<
+                              { readonly RequiredBytes: BigIntFromString; readonly LimitBytes: BigIntFromString },
+                              "Iso"
+                            >
+                          | null
+                          | undefined
+                      } | null
+                      readonly Version?: { readonly Index?: bigint | undefined } | null | undefined
+                      readonly CreatedAt?: Date | null | undefined
+                      readonly UpdatedAt?: Date | null | undefined
+                      readonly Info?:
+                        | {
+                            readonly AccessibleTopology?:
+                              | ReadonlyArray<{
+                                  readonly Segments?: { readonly [x: string]: string } | null | undefined
+                                } | null>
+                              | null
+                              | undefined
+                            readonly CapacityBytes?: bigint | undefined
+                            readonly VolumeContext?: { readonly [x: string]: string } | null | undefined
+                            readonly VolumeID?: string | undefined
+                          }
+                        | null
+                        | undefined
+                      readonly PublishStatus?:
+                        | ReadonlyArray<{
+                            readonly State?:
+                              | "pending-publish"
+                              | "published"
+                              | "pending-node-unpublish"
+                              | "pending-controller-unpublish"
+                              | undefined
+                            readonly NodeID?: (string & Brand<"NodeId">) | undefined
+                            readonly PublishContext?: { readonly [x: string]: string } | null | undefined
+                          } | null>
+                        | null
+                        | undefined
+                    }
+                  | null
+                  | undefined
+                readonly UsageData?:
+                  | Struct.ReadonlySide<{ readonly RefCount: BigIntFromString; readonly Size: BigIntFromString }, "Iso">
+                  | null
+                  | undefined
+              }
+            >,
+            Struct<{
+              readonly ClusterVolume: optional<NullOr<typeof VolumeClusterVolume>>
+              readonly CreatedAt: optional<DateFromString>
+              readonly Driver: String
+              readonly Labels: NullOr<$Record<String, String>>
+              readonly Mountpoint: String
+              readonly Name: brand<String, "VolumeId">
+              readonly Options: NullOr<$Record<String, String>>
+              readonly Scope: String
+              readonly Status: optional<NullOr<$Record<String, ObjectKeyword>>>
+              readonly UsageData: optional<NullOr<typeof VolumeUsageData>>
+            }>,
+            never,
+            never
+          >
+        >,
+        toCodecJson<typeof InternalServerError>,
+        never,
+        never
+      >
     | HttpApiEndpoint<
         "inspect",
         "GET",
-        { readonly name: string },
+        "/volumes/:name",
+        toCodecStringTree<Struct<{ name: String }>>,
         never,
         never,
         never,
-        VolumeVolume,
-        NotFound,
+        toCodecJson<typeof VolumeVolume>,
+        toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
       >
     | HttpApiEndpoint<
         "delete",
         "DELETE",
-        { readonly name: string },
-        { readonly force?: boolean | undefined },
+        "/volumes/:name",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ force: optional<Boolean> }>>,
         never,
         never,
-        void,
-        NotFound | Conflict,
+        toCodecJson<NoContent>,
+        toCodecJson<typeof InternalServerError | typeof NotFound | typeof Conflict>,
         never,
         never
       >
     | HttpApiEndpoint<
         "update",
         "PUT",
-        { readonly name: string },
-        { readonly version: number },
-        VolumeClusterVolumeSpec,
+        "/volumes/:name",
+        toCodecStringTree<Struct<{ name: String }>>,
+        toCodecStringTree<Struct<{ version: Number }>>,
+        toCodecJson<typeof VolumeClusterVolumeSpec>,
         never,
-        void,
-        BadRequest | NotFound | NodeNotPartOfSwarm,
+        toCodecJson<Void>,
+        toCodecJson<typeof BadRequest | typeof InternalServerError | typeof NotFound | typeof ServiceUnavailable>,
         never,
         never
       >
     | HttpApiEndpoint<
         "prune",
         "POST",
+        "/volumes/prune",
         never,
-        {
-          readonly filters?:
-            | {
-                readonly all?: ReadonlyArray<"0" | "true" | "false" | "1"> | undefined
-                readonly label?: ReadonlyArray<string> | undefined
-              }
-            | undefined
-        },
+        toCodecStringTree<
+          Struct<{
+            filters: optional<
+              Struct<{
+                readonly label: optional<$Array<String>>
+                readonly all: optional<$Array<Literals<readonly ["true", "false", "1", "0"]>>>
+              }>
+            >
+          }>
+        >,
         never,
         never,
-        {
-          readonly SpaceReclaimed: bigint & Brand<"I64">
-          readonly VolumesDeleted?: ReadonlyArray<string & Brand<"VolumeId">> | undefined
-        },
-        never,
+        toCodecJson<
+          Struct<{
+            readonly VolumesDeleted: optional<$Array<brand<String, "VolumeId">>>
+            readonly SpaceReclaimed: BigIntFromString
+          }>
+        >,
+        toCodecJson<typeof InternalServerError>,
         never,
         never
       >,
-    InternalServerError,
-    never,
     false
-  >,
-  HttpApiDecodeError,
-  never
+  >
 >
 ```
 

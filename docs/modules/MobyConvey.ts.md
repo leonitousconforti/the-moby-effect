@@ -32,10 +32,10 @@ Tracks the progress stream in the console and returns the result.
 ```ts
 declare const followProgressInConsole: <E1, R1>(
   stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>>
+) => Effect.Effect<Array<MobySchemas.JSONMessage>, E1, R1>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConvey.ts#L42)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConvey.ts#L40)
 
 Since v1.0.0
 
@@ -49,7 +49,7 @@ Consumes the progress stream and logs it to the console.
 declare const followProgressSink: Sink.Sink<void, MobySchemas.JSONMessage, never, never, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConvey.ts#L33)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConvey.ts#L31)
 
 Since v1.0.0
 
@@ -62,9 +62,9 @@ Waits for the progress stream to complete and returns the result.
 ```ts
 declare const waitForProgressToComplete: <E1, R1>(
   stream: Stream.Stream<MobySchemas.JSONMessage, E1, R1>
-) => Effect.Effect<Chunk.Chunk<MobySchemas.JSONMessage>, E1, Exclude<R1, Scope.Scope>>
+) => Effect.Effect<Array<MobySchemas.JSONMessage>, E1, R1>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConvey.ts#L22)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConvey.ts#L21)
 
 Since v1.0.0

@@ -56,7 +56,7 @@ const connectionOptions = HttpConnectionOptions({
 **Signature**
 
 ```ts
-declare const HttpConnectionOptions: Data.Case.Constructor<
+declare const HttpConnectionOptions: Data.TaggedEnum.ConstructorFrom<
   {
     readonly _tag: "http"
     readonly host: string
@@ -68,7 +68,7 @@ declare const HttpConnectionOptions: Data.Case.Constructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L155)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L156)
 
 Since v1.0.0
 
@@ -92,7 +92,7 @@ const connectionOptions = HttpsConnectionOptions({
 **Signature**
 
 ```ts
-declare const HttpsConnectionOptions: Data.Case.Constructor<
+declare const HttpsConnectionOptions: Data.TaggedEnum.ConstructorFrom<
   {
     readonly _tag: "https"
     readonly host: string
@@ -108,7 +108,7 @@ declare const HttpsConnectionOptions: Data.Case.Constructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L172)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L173)
 
 Since v1.0.0
 
@@ -126,13 +126,13 @@ const connectionOptions = SocketConnectionOptions({
 **Signature**
 
 ```ts
-declare const SocketConnectionOptions: Data.Case.Constructor<
+declare const SocketConnectionOptions: Data.TaggedEnum.ConstructorFrom<
   { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined },
   "_tag"
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L121)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L122)
 
 Since v1.0.0
 
@@ -160,7 +160,7 @@ const connectionOptions = SshConnectionOptions({
 **Signature**
 
 ```ts
-declare const SshConnectionOptions: Data.Case.Constructor<
+declare const SshConnectionOptions: Data.TaggedEnum.ConstructorFrom<
   {
     readonly _tag: "ssh"
     readonly remoteSocketPath: string
@@ -199,7 +199,7 @@ declare const SshConnectionOptions: Data.Case.Constructor<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L142)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L143)
 
 Since v1.0.0
 
@@ -213,7 +213,7 @@ Since v1.0.0
 type HttpConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "http">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L67)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L68)
 
 Since v1.0.0
 
@@ -225,7 +225,7 @@ Since v1.0.0
 type HttpConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "http">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L73)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L74)
 
 Since v1.0.0
 
@@ -237,7 +237,7 @@ Since v1.0.0
 type HttpsConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "https">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L79)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L80)
 
 Since v1.0.0
 
@@ -249,7 +249,7 @@ Since v1.0.0
 type HttpsConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "https">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L85)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L86)
 
 Since v1.0.0
 
@@ -266,11 +266,11 @@ path, cert, ca, key, and passphrase.
 
 ```ts
 declare const MobyConnectionOptions: {
-  readonly socket: Data.Case.Constructor<
+  readonly socket: Data.TaggedEnum.ConstructorFrom<
     { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined },
     "_tag"
   >
-  readonly ssh: Data.Case.Constructor<
+  readonly ssh: Data.TaggedEnum.ConstructorFrom<
     {
       readonly _tag: "ssh"
       readonly remoteSocketPath: string
@@ -307,7 +307,7 @@ declare const MobyConnectionOptions: {
     },
     "_tag"
   >
-  readonly http: Data.Case.Constructor<
+  readonly http: Data.TaggedEnum.ConstructorFrom<
     {
       readonly _tag: "http"
       readonly host: string
@@ -317,7 +317,7 @@ declare const MobyConnectionOptions: {
     },
     "_tag"
   >
-  readonly https: Data.Case.Constructor<
+  readonly https: Data.TaggedEnum.ConstructorFrom<
     {
       readonly _tag: "https"
       readonly host: string
@@ -375,8 +375,7 @@ declare const MobyConnectionOptions: {
           readonly algorithms?: ssh2.Algorithms | undefined
           readonly debug?: ssh2.DebugFunction | undefined
           readonly authHandler?:
-            | (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[])
-            | undefined
+            (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]) | undefined
           readonly localAddress?: string | undefined
           readonly localPort?: number | undefined
           readonly timeout?: number | undefined
@@ -410,7 +409,7 @@ declare const MobyConnectionOptions: {
       >
   readonly $match: {
     <
-      const Cases extends {
+      Cases extends {
         readonly socket: (args: {
           readonly _tag: "socket"
           readonly socketPath: string
@@ -450,8 +449,7 @@ declare const MobyConnectionOptions: {
           readonly algorithms?: ssh2.Algorithms | undefined
           readonly debug?: ssh2.DebugFunction | undefined
           readonly authHandler?:
-            | (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[])
-            | undefined
+            (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]) | undefined
           readonly localAddress?: string | undefined
           readonly localPort?: number | undefined
           readonly timeout?: number | undefined
@@ -477,7 +475,7 @@ declare const MobyConnectionOptions: {
         }) => any
       }
     >(
-      cases: Cases & { [K in Exclude<keyof Cases, "socket" | "ssh" | "http" | "https">]: never }
+      cases: Cases
     ): (
       value:
         | { readonly _tag: "socket"; readonly socketPath: string; readonly version?: string | undefined | undefined }
@@ -515,8 +513,7 @@ declare const MobyConnectionOptions: {
             readonly algorithms?: ssh2.Algorithms | undefined
             readonly debug?: ssh2.DebugFunction | undefined
             readonly authHandler?:
-              | (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[])
-              | undefined
+              (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]) | undefined
             readonly localAddress?: string | undefined
             readonly localPort?: number | undefined
             readonly timeout?: number | undefined
@@ -542,7 +539,7 @@ declare const MobyConnectionOptions: {
           }
     ) => Unify<ReturnType<Cases["socket" | "ssh" | "http" | "https"]>>
     <
-      const Cases extends {
+      Cases extends {
         readonly socket: (args: {
           readonly _tag: "socket"
           readonly socketPath: string
@@ -582,8 +579,7 @@ declare const MobyConnectionOptions: {
           readonly algorithms?: ssh2.Algorithms | undefined
           readonly debug?: ssh2.DebugFunction | undefined
           readonly authHandler?:
-            | (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[])
-            | undefined
+            (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]) | undefined
           readonly localAddress?: string | undefined
           readonly localPort?: number | undefined
           readonly timeout?: number | undefined
@@ -645,8 +641,7 @@ declare const MobyConnectionOptions: {
             readonly algorithms?: ssh2.Algorithms | undefined
             readonly debug?: ssh2.DebugFunction | undefined
             readonly authHandler?:
-              | (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[])
-              | undefined
+              (ssh2.AuthenticationType[] | ssh2.AuthHandlerMiddleware | ssh2.AuthMethod[]) | undefined
             readonly localAddress?: string | undefined
             readonly localPort?: number | undefined
             readonly timeout?: number | undefined
@@ -670,13 +665,13 @@ declare const MobyConnectionOptions: {
             readonly key?: string | undefined | undefined
             readonly passphrase?: string | undefined | undefined
           },
-      cases: Cases & { [K in Exclude<keyof Cases, "socket" | "ssh" | "http" | "https">]: never }
+      cases: Cases
     ): Unify<ReturnType<Cases["socket" | "ssh" | "http" | "https"]>>
   }
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L110)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L111)
 
 Since v1.0.0
 
@@ -718,7 +713,7 @@ type MobyConnectionOptions = Data.TaggedEnum<{
 }>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L26)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L27)
 
 Since v1.0.0
 
@@ -730,7 +725,7 @@ Since v1.0.0
 type SocketConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "socket">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L55)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L56)
 
 Since v1.0.0
 
@@ -742,7 +737,7 @@ Since v1.0.0
 type SocketConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "socket">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L61)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L62)
 
 Since v1.0.0
 
@@ -754,7 +749,7 @@ Since v1.0.0
 type SshConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "ssh">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L91)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L92)
 
 Since v1.0.0
 
@@ -766,7 +761,7 @@ Since v1.0.0
 type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "ssh">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L97)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L98)
 
 Since v1.0.0
 
@@ -833,12 +828,12 @@ declare const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
       readonly key?: string | undefined | undefined
       readonly passphrase?: string | undefined | undefined
     },
-  ConfigError.ConfigError,
+  Config.ConfigError,
   never
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L212)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L213)
 
 Since v1.0.0
 
@@ -903,12 +898,12 @@ declare const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
       readonly key?: string | undefined | undefined
       readonly passphrase?: string | undefined | undefined
     },
-  ConfigError.ConfigError,
+  Config.ConfigError,
   never
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L224)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L225)
 
 Since v1.0.0
 
@@ -943,10 +938,10 @@ For example:
 ```ts
 declare const connectionOptionsFromUrl: (
   dockerHost: string
-) => Effect.Effect<MobyConnectionOptions, ConfigError.ConfigError, never>
+) => Effect.Effect<MobyConnectionOptions, Config.ConfigError, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L202)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L203)
 
 Since v1.0.0
 
@@ -1016,6 +1011,6 @@ declare const connectionOptionsFromUserSocketDefault: Effect.Effect<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L236)
+[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L237)
 
 Since v1.0.0
