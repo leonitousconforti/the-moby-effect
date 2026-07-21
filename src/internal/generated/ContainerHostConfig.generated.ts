@@ -1,120 +1,83 @@
-import * as EffectSchemas from "effect-schemas";
+import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
+
 import * as PortSchemas from "../schemas/port.ts";
-import * as ContainerLogConfig from "./ContainerLogConfig.generated.js";
-import * as ContainerResources from "./ContainerResources.generated.js";
-import * as ContainerRestartPolicy from "./ContainerRestartPolicy.generated.js";
-import * as MountMount from "./MountMount.generated.js";
+import * as ContainerLogConfig from "./ContainerLogConfig.generated.ts";
+import * as ContainerResources from "./ContainerResources.generated.ts";
+import * as ContainerRestartPolicy from "./ContainerRestartPolicy.generated.ts";
+import * as MountMount from "./MountMount.generated.ts";
 
 export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("ContainerHostConfig")(
     {
-        Binds: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        ContainerIDFile: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        LogConfig: Schema.NullOr(ContainerLogConfig.ContainerLogConfig)
-            .pipe(Schema.propertySignature)
-            .pipe(
-                Schema.withConstructorDefault(
-                    () => new ContainerLogConfig.ContainerLogConfig({ Type: "json-file", Config: null })
-                )
-            ),
-        NetworkMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "default")),
-        PortBindings: Schema.NullOr(PortSchemas.PortMap)
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        RestartPolicy: Schema.NullOr(ContainerRestartPolicy.ContainerRestartPolicy)
-            .pipe(Schema.propertySignature)
-            .pipe(
-                Schema.withConstructorDefault(
-                    () =>
-                        new ContainerRestartPolicy.ContainerRestartPolicy({
-                            Name: "no",
-                            MaximumRetryCount: EffectSchemas.Number.I64.make(0n),
-                        })
-                )
-            ),
-        AutoRemove: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
-        VolumeDriver: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        VolumesFrom: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        ConsoleSize: Schema.Array(EffectSchemas.Number.U64)
-            .pipe(Schema.itemsCount(2))
-            .pipe(Schema.propertySignature)
-            .pipe(
-                Schema.withConstructorDefault(() => [
-                    EffectSchemas.Number.U64.make(0n),
-                    EffectSchemas.Number.U64.make(0n),
-                ])
-            ),
-        Annotations: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
-            nullable: true,
-        }),
-        CapAdd: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        CapDrop: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        CgroupnsMode: Schema.Literal("", "private", "host")
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => "")),
-        Dns: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => [])),
-        DnsOptions: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => [])),
-        DnsSearch: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => [])),
-        ExtraHosts: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        GroupAdd: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        IpcMode: Schema.Literal("", "none", "host", "container", "private", "shareable")
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => "")),
-        Cgroup: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        Links: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        OomScoreAdj: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0n))
+        Binds: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        ContainerIDFile: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        LogConfig: Schema.NullOr(ContainerLogConfig.ContainerLogConfig).pipe(
+            Schema.withConstructorDefault(
+                Effect.succeed(new ContainerLogConfig.ContainerLogConfig({ Type: "json-file", Config: null }))
+            )
         ),
-        PidMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        Privileged: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
-        PublishAllPorts: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
-        ReadonlyRootfs: Schema.Boolean.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => false)),
-        SecurityOpt: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        StorageOpt: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), {
-            nullable: true,
-        }),
-        Tmpfs: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
-        UTSMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        UsernsMode: Schema.String.pipe(Schema.propertySignature).pipe(Schema.withConstructorDefault(() => "")),
-        ShmSize: EffectSchemas.Number.I64.pipe(Schema.propertySignature).pipe(
-            Schema.withConstructorDefault(() => EffectSchemas.Number.I64.make(0n))
+        NetworkMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed("default"))),
+        PortBindings: Schema.NullOr(PortSchemas.PortMap).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        RestartPolicy: Schema.NullOr(ContainerRestartPolicy.ContainerRestartPolicy).pipe(
+            Schema.withConstructorDefault(
+                Effect.succeed(new ContainerRestartPolicy.ContainerRestartPolicy({ Name: "no", MaximumRetryCount: 0n }))
+            )
         ),
-        Sysctls: Schema.optionalWith(Schema.Record({ key: Schema.String, value: Schema.String }), { nullable: true }),
+        AutoRemove: Schema.Boolean.pipe(Schema.withConstructorDefault(Effect.succeed(false))),
+        VolumeDriver: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        VolumesFrom: Schema.NullOr(Schema.Array(Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
+        ConsoleSize: Schema.Array(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+        )
+            .check(Schema.isLengthBetween(2, 2))
+            .pipe(Schema.withConstructorDefault(Effect.succeed([0n, 0n]))),
+        Annotations: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+        CapAdd: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        CapDrop: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        CgroupnsMode: Schema.Literals(["", "private", "host"]).pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        Dns: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed([]))),
+        DnsOptions: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed([]))),
+        DnsSearch: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed([]))),
+        ExtraHosts: Schema.NullOr(Schema.Array(Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
+        GroupAdd: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        IpcMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        Cgroup: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        Links: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
+        OomScoreAdj: Schema.BigIntFromString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
+        PidMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        Privileged: Schema.Boolean.pipe(Schema.withConstructorDefault(Effect.succeed(false))),
+        PublishAllPorts: Schema.Boolean.pipe(Schema.withConstructorDefault(Effect.succeed(false))),
+        ReadonlyRootfs: Schema.Boolean.pipe(Schema.withConstructorDefault(Effect.succeed(false))),
+        SecurityOpt: Schema.NullOr(Schema.Array(Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
+        StorageOpt: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+        Tmpfs: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
+        UTSMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        UsernsMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
+        ShmSize: Schema.BigIntFromString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
+        Sysctls: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         Runtime: Schema.optional(Schema.String),
-        Isolation: Schema.Literal("", "default", "process", "hyperv")
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => "")),
+        Isolation: Schema.Literals(["", "default", "process", "hyperv"]).pipe(
+            Schema.withConstructorDefault(Effect.succeed(""))
+        ),
         ...ContainerResources.ContainerResources.fields,
-        Mounts: Schema.optionalWith(Schema.Array(Schema.NullOr(MountMount.MountMount)), { nullable: true }),
-        MaskedPaths: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        ReadonlyPaths: Schema.NullOr(Schema.Array(Schema.String))
-            .pipe(Schema.propertySignature)
-            .pipe(Schema.withConstructorDefault(() => null)),
-        Init: Schema.optionalWith(Schema.Boolean, { nullable: true }),
+        Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(MountMount.MountMount)))),
+        MaskedPaths: Schema.NullOr(Schema.Array(Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
+        ReadonlyPaths: Schema.NullOr(Schema.Array(Schema.String)).pipe(
+            Schema.withConstructorDefault(Effect.succeed(null))
+        ),
+        Init: Schema.optional(Schema.NullOr(Schema.Boolean)),
     },
     {
         identifier: "ContainerHostConfig",
