@@ -7,17 +7,21 @@ export class ContainerNetworkSettingsBase extends Schema.Class<ContainerNetworkS
     "ContainerNetworkSettingsBase"
 )(
     {
-        Bridge: Schema.String,
+        Bridge: Schema.optional(Schema.String),
         SandboxID: Schema.String,
         SandboxKey: Schema.String,
         Ports: Schema.NullOr(PortSchemas.PortMap),
-        HairpinMode: Schema.Boolean,
-        LinkLocalIPv6Address: Schema.String,
-        LinkLocalIPv6PrefixLen: Schema.BigIntFromString.check(
-            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        HairpinMode: Schema.optional(Schema.Boolean),
+        LinkLocalIPv6Address: Schema.optional(Schema.String),
+        LinkLocalIPv6PrefixLen: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
         ),
-        SecondaryIPAddresses: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))),
-        SecondaryIPv6Addresses: Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress))),
+        SecondaryIPAddresses: Schema.optional(
+            Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress)))
+        ),
+        SecondaryIPv6Addresses: Schema.optional(
+            Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress)))
+        ),
     },
     {
         identifier: "ContainerNetworkSettingsBase",

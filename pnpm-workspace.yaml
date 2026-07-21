@@ -5,29 +5,29 @@ dedupePeerDependents: false
 strictPeerDependencies: true
 
 publicHoistPattern:
-  - "vitest"
-  - "@types/*"
-  - "@vitest/*"
-  - "@effect/vitest"
+    - "vitest"
+    - "@types/*"
+    - "@vitest/*"
+    - "@effect/vitest"
 
 allowBuilds:
-  "@parcel/watcher": true
-  cpu-features: true
-  esbuild: true
-  msgpackr-extract: true
-  ssh2: true
-  unrs-resolver: true
+    "@parcel/watcher": true
+    cpu-features: true
+    esbuild: true
+    msgpackr-extract: true
+    ssh2: true
+    unrs-resolver: true
 
 overrides:
-  "@effect/docgen>typescript": "5.9.3"
-  "madge>typescript": "5.9.3"
+    "@effect/docgen>typescript": "5.9.3"
+    "madge>typescript": "5.9.3"
 
 peerDependencyRules:
-  allowedVersions:
-    typescript: "5.9.3"
+    allowedVersions:
+        typescript: "5.9.3"
 
 minimumReleaseAgeExclude:
-  - eftar@0.0.78
+    - eftar@0.0.78
 
 patchedDependencies:
-  effect@4.0.0-beta.99: patches/effect@4.0.0-beta.99.patch
+    effect@4.0.0-beta.99: patches/effect@4.0.0-beta.99.patch

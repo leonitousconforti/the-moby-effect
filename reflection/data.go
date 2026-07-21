@@ -43,8 +43,7 @@ var typesToReplace = map[reflect.Type]TSType{
 }
 
 // Branded identifier overrides applied per Go struct field, keyed by
-// "<go type>.<go field name>". Identifiers only for now — the old overrides
-// system's constructor defaults were intentionally dropped.
+// "<go type>.<go field name>".
 var fieldsToReplace = map[string]TSType{
 	"container.Summary.ID":                    {StrRepresentation: "MobyIdentifiers.ContainerIdentifier", Nullable: false},
 	"container.Summary.ImageID":               {StrRepresentation: "MobyIdentifiers.ImageIdentifier", Nullable: false},

@@ -4,18 +4,18 @@ export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefau
     "ContainerDefaultNetworkSettings"
 )(
     {
-        EndpointID: Schema.String,
-        Gateway: Schema.String,
-        GlobalIPv6Address: Schema.String,
-        GlobalIPv6PrefixLen: Schema.BigIntFromString.check(
-            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        EndpointID: Schema.optional(Schema.String),
+        Gateway: Schema.optional(Schema.String),
+        GlobalIPv6Address: Schema.optional(Schema.String),
+        GlobalIPv6PrefixLen: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
         ),
-        IPAddress: Schema.String,
-        IPPrefixLen: Schema.BigIntFromString.check(
-            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        IPAddress: Schema.optional(Schema.String),
+        IPPrefixLen: Schema.optional(
+            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
         ),
-        IPv6Gateway: Schema.String,
-        MacAddress: Schema.String,
+        IPv6Gateway: Schema.optional(Schema.String),
+        MacAddress: Schema.optional(Schema.String),
     },
     {
         identifier: "ContainerDefaultNetworkSettings",

@@ -28,7 +28,7 @@ export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJ
         AppArmorProfile: Schema.String,
         ExecIDs: Schema.NullOr(Schema.Array(Schema.String)),
         HostConfig: Schema.NullOr(ContainerHostConfig.ContainerHostConfig),
-        GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
+        GraphDriver: Schema.optional(Schema.NullOr(StorageDriverData.StorageDriverData)),
         SizeRw: Schema.optional(
             Schema.NullOr(
                 Schema.BigIntFromString.check(
