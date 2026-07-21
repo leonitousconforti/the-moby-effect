@@ -1,5 +1,15 @@
-import { HttpClient, HttpClientRequest, type HttpApiEndpoint } from "@effect/platform";
-import { Effect, Layer, Option, pipe, Predicate, Redacted, type Array } from "effect";
+import type * as Array from "effect/Array";
+import type * as HttpApiEndpoint from "effect/unstable/httpapi/HttpApiEndpoint";
+
+import * as Context from "effect/Context";
+import * as Effect from "effect/Effect";
+import * as Function from "effect/Function";
+import * as Layer from "effect/Layer";
+import * as Option from "effect/Option";
+import * as Predicate from "effect/Predicate";
+import * as Redacted from "effect/Redacted";
+import * as HttpClient from "effect/unstable/http/HttpClient";
+import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest";
 
 import { DockerError } from "./circular.ts";
 import { System } from "./system.js";
@@ -9,15 +19,13 @@ import { System } from "./system.js";
  * @category Auth
  * @see https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
  */
-export class RegistryAuth extends Effect.Service<RegistryAuth>()(
+export class RegistryAuth extends Context.Service<RegistryAuth>()(
     "the-moby-effect/endpoints/httpApiHacks/RegistryAuth",
     {
-        accessors: false,
-        dependencies: [],
-        effect: (authHeader: Redacted.Redacted<string>) =>
-            Effect.gen(function* () {
-                return { authHeader } as const;
-            }),
+        make: (authHeader: Redacted.Redacted<string>) =>
+            Effect.succeed({
+                authHeader,
+            } as const),
     }
 ) {
     /**
@@ -25,7 +33,8 @@ export class RegistryAuth extends Effect.Service<RegistryAuth>()(
      * @category Auth
      * @see https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
      */
-    static readonly Live = RegistryAuth.Default;
+    static readonly Live = (authHeader: Redacted.Redacted<string>): Layer.Layer<RegistryAuth, never, never> =>
+        Layer.effect(RegistryAuth, RegistryAuth.make(authHeader));
 
     /**
      * @since 1.0.0
@@ -49,7 +58,7 @@ export class RegistryAuth extends Effect.Service<RegistryAuth>()(
             ).toString("base64");
 
             const redacted = Redacted.make(encoded);
-            return RegistryAuth.make({ authHeader: redacted });
+            return { authHeader: redacted } as const;
         });
 
     /**
@@ -63,7 +72,7 @@ export class RegistryAuth extends Effect.Service<RegistryAuth>()(
         password: Redacted.Redacted<string>;
         email?: Redacted.Redacted<string> | undefined;
     }) =>
-        pipe(
+        Function.pipe(
             System.use((systems) =>
                 systems.auth({
                     serveraddress: credentials.serverAddress,
@@ -75,17 +84,19 @@ export class RegistryAuth extends Effect.Service<RegistryAuth>()(
             Effect.flatMap((response) => {
                 const WrapError = DockerError.WrapForModule("system")("auth");
 
-                if (Predicate.isObject(response) && "IdentityToken" in response) {
+                if (
+                    Predicate.isObject(response) &&
+                    "IdentityToken" in response &&
+                    Predicate.isString(response.IdentityToken)
+                ) {
                     return Effect.succeed(response.IdentityToken);
                 }
 
                 return WrapError(new Error("Registry authentication returned no response"));
             }),
-            Effect.map((token) =>
-                RegistryAuth.make({
-                    authHeader: Redacted.make(token),
-                })
-            ),
+            Effect.map((token) => ({
+                authHeader: Redacted.make(token),
+            })),
             Layer.effect(RegistryAuth)
         );
 }
@@ -96,7 +107,11 @@ export class RegistryAuth extends Effect.Service<RegistryAuth>()(
  * @see https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
  */
 export const WithRegistryAuthHeader = (
-    ...sendHeaderWithEndpoints: Array.NonEmptyReadonlyArray<HttpApiEndpoint.HttpApiEndpoint.Any & { path: string }>
+    ...sendHeaderWithEndpoints: Array.NonEmptyReadonlyArray<
+        HttpApiEndpoint.Constraint & {
+            readonly path: string;
+        }
+    >
 ) =>
     HttpClient.mapRequestEffect(
         Effect.fn("HttpApiHacks.withRegistryAUthHeader")(function* (request: HttpClientRequest.HttpClientRequest) {
