@@ -44,15 +44,13 @@ const program = Effect.gen(function* () {
     const [data1, data2] = yield* MobyDemux.demuxMultiplexedToSeparateSinks(
         packed,
         Stream.make("ah\n"),
-        Sink.fold(
+        Sink.reduce(
             () => "",
-            Function.constTrue,
-            (acc, chunk) => Effect.succeed(acc + chunk)
+            (acc, chunk) => acc + chunk
         ),
-        Sink.fold(
+        Sink.reduce(
             () => "",
-            Function.constTrue,
-            (acc, chunk) => Effect.succeed(acc + chunk)
+            (acc, chunk) => acc + chunk
         )
     );
 

@@ -1,4 +1,4 @@
-import { Context, Duration, Effect, Function, FileSystem, Layer, Path, Sink, Stream } from "effect";
+import { Context, Duration, Effect, FileSystem, Layer, Path, Sink, Stream } from "effect";
 
 import { NodeServices } from "@effect/platform-node";
 import { describe, expect, layer } from "@effect/vitest";
@@ -91,15 +91,13 @@ describe.each(testMatrix)(
                     const [stdout, stderr] = yield* MobyDemux.demuxMultiplexedToSeparateSinks(
                         packed,
                         Stream.make("ah2\n"),
-                        Sink.fold(
+                        Sink.reduce(
                             () => "",
-                            Function.constTrue,
-                            (acc, chunk) => Effect.succeed(acc + chunk)
+                            (acc, chunk) => acc + chunk
                         ),
-                        Sink.fold(
+                        Sink.reduce(
                             () => "",
-                            Function.constTrue,
-                            (acc, chunk) => Effect.succeed(acc + chunk)
+                            (acc, chunk) => acc + chunk
                         )
                     );
 
