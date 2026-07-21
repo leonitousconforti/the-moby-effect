@@ -1,29 +1,31 @@
-import type * as PlatformError from "@effect/platform/Error";
-import type * as ParseResult from "effect/ParseResult";
+import type * as PlatformError from "effect/PlatformError";
 import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
-import type * as TarHeader from "eftar/Header";
-import type * as DindEngine from "../../DindEngine.js";
-import type * as BlobConstants from "../blobs/constants.js";
-import type * as IdSchemas from "../schemas/id.js";
 
-import * as FileSystem from "@effect/platform/FileSystem";
-import * as Path from "@effect/platform/Path";
-import * as InternetSchemas from "effect-schemas/Internet";
 import * as Array from "effect/Array";
 import * as Effect from "effect/Effect";
+import * as FileSystem from "effect/FileSystem";
 import * as Function from "effect/Function";
 import * as HashMap from "effect/HashMap";
 import * as HashSet from "effect/HashSet";
 import * as Layer from "effect/Layer";
 import * as Match from "effect/Match";
 import * as Option from "effect/Option";
+import * as Path from "effect/Path";
 import * as Schedule from "effect/Schedule";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
+
+import type * as DindEngine from "../../DindEngine.js";
+import type * as BlobConstants from "../blobs/constants.js";
+import type * as IdSchemas from "../schemas/id.js";
+import type * as TarHeader from "eftar/Header";
+
+import * as InternetSchemas from "effect-schemas/Internet";
 import * as Tar from "eftar/Tar";
 import * as Untar from "eftar/Untar";
+
 import * as DockerEngine from "../../DockerEngine.js";
 import * as MobyConnection from "../../MobyConnection.js";
 import * as MobyConvey from "../../MobyConvey.js";
@@ -32,6 +34,7 @@ import * as internalHttpBlob from "../blobs/http.js";
 import * as internalHttpsBlob from "../blobs/https.js";
 import * as internalSocketBlob from "../blobs/socket.js";
 import * as internalSshBlob from "../blobs/ssh.js";
+import * as PortSchemas from "../schemas/port.js";
 
 /** @internal */
 const downloadDindCertificates = (
@@ -42,7 +45,7 @@ const downloadDindCertificates = (
         key: string;
         cert: string;
     },
-    DockerEngine.DockerError | ParseResult.ParseError,
+    DockerEngine.DockerError | Schema.SchemaError,
     MobyEndpoints.Containers
 > =>
     Effect.gen(function* () {
@@ -53,7 +56,7 @@ const downloadDindCertificates = (
                 HashSet.make("certs/server/ca.pem", "certs/server/key.pem", "certs/server/cert.pem")
             ),
             "MissingEntries",
-            () => Effect.dieMessage("Missing dind certificates in container")
+            () => Effect.die("Missing dind certificates in container")
         );
 
         const readAndAssemble = (
@@ -67,7 +70,7 @@ const downloadDindCertificates = (
             Function.flow(
                 HashMap.findFirst((_stream, header) => header.filename === path),
                 Option.getOrThrow,
-                Tuple.getSecond,
+                Tuple.get(1),
                 Stream.decodeText(),
                 Stream.mkString
             );
@@ -109,21 +112,18 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
         const volume1 = yield* acquireScopedVolume;
         const volume2 = yield* acquireScopedVolume;
 
-        const tempSocketDirectory = yield* Effect.if(exposeDindBy === "socket", {
-            onFalse: () => Effect.succeed(""),
-            onTrue: () =>
-                Effect.gen(function* () {
-                    const fs = yield* FileSystem.FileSystem;
-                    const folder = yield* fs.makeTempDirectoryScoped();
-                    yield* fs.chmod(folder, 0o777); // Ew, for github actions where uid != 1000 🤮
-                    return folder;
-                }),
-        });
+        const tempSocketDirectory = yield* exposeDindBy === "socket"
+            ? Effect.gen(function* () {
+                  const fs = yield* FileSystem.FileSystem;
+                  const folder = yield* fs.makeTempDirectoryScoped();
+                  yield* fs.chmod(folder, 0o777); // Ew, for github actions where uid != 1000 🤮
+                  return folder;
+              })
+            : Effect.succeed("");
 
-        const boundDockerSocket = yield* Effect.if(exposeDindBy === "socket", {
-            onFalse: () => Effect.succeed(""),
-            onTrue: () => Effect.map(Path.Path, (path) => path.join(tempSocketDirectory, "docker.sock")),
-        });
+        const boundDockerSocket = yield* exposeDindBy === "socket"
+            ? Effect.map(Path.Path, (path) => path.join(tempSocketDirectory, "docker.sock"))
+            : Effect.succeed("");
 
         const mountBinds = exposeDindBy === "socket" ? [`${tempSocketDirectory}:/run/user/1000`] : [];
         const volumeBinds = Tuple.make(
@@ -150,7 +150,7 @@ const waitForDindContainerToBeReady = (
     dindContainerId: IdSchemas.ContainerIdentifier
 ): Effect.Effect<void, DockerEngine.DockerError, MobyEndpoints.Containers> =>
     Function.pipe(
-        MobyEndpoints.Containers.use((containers) =>
+        Effect.map(MobyEndpoints.Containers, (containers) =>
             containers.logs(dindContainerId, {
                 follow: true,
                 stdout: true,
@@ -173,10 +173,10 @@ export const makeDindLayerFromPlatformConstructor =
     <
         PlatformLayerConstructor extends (
             connectionOptions: any
-        ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
+        ) => Layer.Layer<Layer.Success<DockerEngine.DockerLayer>, unknown, unknown>,
         SupportedConnectionOptions extends MobyConnection.MobyConnectionOptions = PlatformLayerConstructor extends (
             connectionOptions: infer C
-        ) => Layer.Layer<Layer.Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
+        ) => Layer.Layer<Layer.Success<DockerEngine.DockerLayer>, infer _E, infer _R>
             ? C
             : never,
     >(
@@ -186,14 +186,14 @@ export const makeDindLayerFromPlatformConstructor =
         ConnectionOptionsToHost extends SupportedConnectionOptions,
         ConnectionOptionsToDind extends SupportedConnectionOptions["_tag"],
         PlatformLayerConstructorError = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
-            Layer.Layer.Success<DockerEngine.DockerLayer>,
+            Layer.Success<DockerEngine.DockerLayer>,
             infer E,
             infer _R
         >
             ? E
             : never,
         PlatformLayerConstructorContext = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
-            Layer.Layer.Success<DockerEngine.DockerLayer>,
+            Layer.Success<DockerEngine.DockerLayer>,
             infer _E,
             infer R
         >
@@ -204,9 +204,9 @@ export const makeDindLayerFromPlatformConstructor =
         connectionOptionsToHost: ConnectionOptionsToHost;
         dindBaseImage: BlobConstants.RecommendedDindBaseImages;
     }): Layer.Layer<
-        Layer.Layer.Success<DockerEngine.DockerLayer>,
+        Layer.Success<DockerEngine.DockerLayer>,
         | DockerEngine.DockerError
-        | ParseResult.ParseError
+        | Schema.SchemaError
         | PlatformLayerConstructorError
         | (ConnectionOptionsToDind extends "socket" ? PlatformError.PlatformError : never),
         | PlatformLayerConstructorContext
@@ -218,7 +218,7 @@ export const makeDindLayerFromPlatformConstructor =
             const platformLayerConstructorCasted = platformLayerConstructor as (
                 connectionOptions: SupportedConnectionOptions
             ) => Layer.Layer<
-                Layer.Layer.Success<DockerEngine.DockerLayer>,
+                Layer.Success<DockerEngine.DockerLayer>,
                 PlatformLayerConstructorError,
                 PlatformLayerConstructorContext
             >;
@@ -232,7 +232,7 @@ export const makeDindLayerFromPlatformConstructor =
             // Test that the host docker is reachable
             yield* Function.pipe(
                 DockerEngine.pingHead(),
-                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => "3 seconds"))),
+                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => Effect.succeed("3 seconds")))),
                 effectWithHostDocker
             );
 
@@ -257,6 +257,8 @@ export const makeDindLayerFromPlatformConstructor =
             );
 
             // Create the dind container
+            const zeroHostPort = yield* InternetSchemas.Port.makeEffect(0);
+            const zeroHostPortBinding = yield* PortSchemas.PortBinding.makeEffect({ HostPort: zeroHostPort });
             const containerInspectResponse = yield* effectWithHostDocker(
                 DockerEngine.runScoped({
                     Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
@@ -270,16 +272,16 @@ export const makeDindLayerFromPlatformConstructor =
                         Privileged: true,
                         Binds: binds,
                         PortBindings: {
-                            "22/tcp": [{ HostPort: InternetSchemas.Port.make(0) }],
-                            "2375/tcp": [{ HostPort: InternetSchemas.Port.make(0) }],
-                            "2376/tcp": [{ HostPort: InternetSchemas.Port.make(0) }],
+                            "22/tcp": [zeroHostPortBinding],
+                            "2375/tcp": [zeroHostPortBinding],
+                            "2376/tcp": [zeroHostPortBinding],
                         },
                     },
                 })
             );
 
             // Extract the ports from the container inspect response
-            const tryGetPort = Function.flow(Option.fromNullable<number | undefined>, Option.getOrThrow);
+            const tryGetPort = Function.flow(Option.fromNullishOr<number | undefined>, Option.getOrThrow);
             const sshPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["22/tcp"]?.[0]?.HostPort);
             const httpPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2375/tcp"]?.[0]?.HostPort);
             const httpsPort = tryGetPort(containerInspectResponse.NetworkSettings?.Ports?.["2376/tcp"]?.[0]?.HostPort);
@@ -295,10 +297,9 @@ export const makeDindLayerFromPlatformConstructor =
             yield* effectWithHostDocker(waitForDindContainerToBeReady(containerInspectResponse.Id));
 
             // Get the engine certificates if we are exposing the dind container by https
-            const { ca, cert, key } = yield* Effect.if(options.exposeDindContainerBy === "https", {
-                onFalse: () => Effect.succeed({ ca: "", cert: "", key: "" } as const),
-                onTrue: () => effectWithHostDocker(downloadDindCertificates(containerInspectResponse.Id)),
-            });
+            const { ca, cert, key } = yield* options.exposeDindContainerBy === "https"
+                ? effectWithHostDocker(downloadDindCertificates(containerInspectResponse.Id))
+                : Effect.succeed({ ca: "", cert: "", key: "" } as const);
 
             // Craft the connection options
             const connectionOptions = Function.pipe(
@@ -341,9 +342,9 @@ export const makeDindLayerFromPlatformConstructor =
             // Test that the dind container is reachable
             yield* Function.pipe(
                 DockerEngine.pingHead(),
-                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => "3 seconds"))),
+                Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => Effect.succeed("3 seconds")))),
                 Effect.provide(layer)
             );
 
             return layer;
-        }).pipe(Layer.unwrapScoped);
+        }).pipe(Layer.unwrap);
