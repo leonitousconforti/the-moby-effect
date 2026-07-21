@@ -1,12 +1,8 @@
-import type * as ParseResult from "effect/ParseResult";
 import type * as Scope from "effect/Scope";
-import type * as DockerComposeEngine from "../../DockerComposeEngine.js";
-import type * as IdSchemas from "../schemas/id.js";
 
-import * as PlatformError from "@effect/platform/Error";
-import * as Socket from "@effect/platform/Socket";
 import * as Array from "effect/Array";
 import * as Context from "effect/Context";
+import * as Data from "effect/Data";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
@@ -19,6 +15,11 @@ import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
+import * as Socket from "effect/unstable/socket/Socket";
+
+import type * as DockerComposeEngine from "../../DockerComposeEngine.js";
+import type * as IdSchemas from "../schemas/id.js";
+
 import * as DockerEngine from "../../DockerEngine.js";
 import * as MobyDemux from "../../MobyDemux.js";
 import * as MobyEndpoints from "../../MobyEndpoints.js";
@@ -48,9 +49,9 @@ const makeTempDirScoped = (
                 });
             }
 
-            class schema extends Schema.startsWith<typeof Schema.String>("/tmp/")(Schema.String) {}
+            const schema = Schema.String.pipe(Schema.check(Schema.isStartsWith("/tmp/")));
             const tempDir = yield* Effect.mapError(
-                Schema.decode(schema)(stdout),
+                Schema.decodeEffect(schema)(stdout),
                 (cause) =>
                     new DockerComposeError({
                         cause,
@@ -62,16 +63,18 @@ const makeTempDirScoped = (
             return tempDir;
         }),
         (tempDir) =>
-            Effect.orDieWith(
-                DockerEngine.execWebsockets({
-                    containerId,
-                    command: `rm -rf ${tempDir}`,
-                }),
-                (cause) =>
-                    new DockerComposeError({
-                        cause,
-                        method: "makeTempDirScoped",
-                    })
+            Effect.orDie(
+                Effect.mapError(
+                    DockerEngine.execWebsockets({
+                        containerId,
+                        command: `rm -rf ${tempDir}`,
+                    }),
+                    (cause) =>
+                        new DockerComposeError({
+                            cause,
+                            method: "makeTempDirScoped",
+                        })
+                )
             )
     );
 
@@ -128,13 +131,13 @@ const stringifyOptions = (
     Function.pipe(
         options,
         Record.toEntries,
-        Array.filter(Function.flow(Tuple.getSecond, Predicate.isNotUndefined)),
+        Array.filter(([, value]) => Predicate.isNotUndefined(value)),
         Array.flatMap(([key, value]): Array<readonly [string, string | number | boolean]> => {
             if (Predicate.isString(value) || Predicate.isNumber(value) || Predicate.isBoolean(value)) {
                 return [Tuple.make(key, value)];
             } else if (Array.isArray(value)) {
                 return Array.map(value, (v) => [key, v]);
-            } else if (Predicate.isRecord(value)) {
+            } else if (Predicate.isObject(value)) {
                 return Record.toEntries(value);
             } else {
                 return Function.absurd(value as never);
@@ -220,18 +223,20 @@ export const isDockerComposeError = (u: unknown): u is DockerComposeError =>
     Predicate.hasProperty(u, DockerComposeErrorTypeId);
 
 /** @internal */
-export class DockerComposeError extends PlatformError.TypeIdError(DockerComposeErrorTypeId, "DockerComposeError")<{
+export class DockerComposeError extends Data.TaggedError("DockerComposeError")<{
     method: string;
-    cause: ParseResult.ParseError | Socket.SocketError | DockerEngine.DockerError | unknown;
+    cause: Schema.SchemaError | Socket.SocketError | DockerEngine.DockerError | unknown;
 }> {
+    public readonly [DockerComposeErrorTypeId]: DockerComposeEngine.DockerComposeErrorTypeId = DockerComposeErrorTypeId;
+
     public override get message() {
         return `${String.capitalize(this.method)}`;
     }
 }
 
 /** @internal */
-export const DockerCompose: Context.Tag<DockerComposeEngine.DockerCompose, DockerComposeEngine.DockerCompose> =
-    Context.GenericTag<DockerComposeEngine.DockerCompose>("@the-moby-effect/engines/DockerCompose");
+export const DockerCompose: Context.Service<DockerComposeEngine.DockerCompose, DockerComposeEngine.DockerCompose> =
+    Context.Service<DockerComposeEngine.DockerCompose>("@the-moby-effect/engines/DockerCompose");
 
 /** @internal */
 export const make: (options?: {
@@ -267,7 +272,7 @@ export const make: (options?: {
                 runCommandHelper(dindContainerId, projectPath, "config", services, { ...options }),
                 Stream.decodeText(),
                 Stream.splitLines,
-                Stream.run(Sink.mkString)
+                Stream.mkString
             );
 
     const cpTo =
@@ -302,7 +307,9 @@ export const make: (options?: {
             options?: DockerComposeEngine.CopyOptions | undefined
         ): Stream.Stream<Uint8Array, DockerComposeError, never> =>
             Function.pipe(
-                Stream.scoped(makeTempDirScoped(dindContainerId)),
+                makeTempDirScoped(dindContainerId),
+                Stream.fromEffect,
+                Stream.scoped,
                 Stream.provideService(MobyEndpoints.Containers, containers),
                 Stream.tap((remoteTransferDir) =>
                     Stream.runDrain(
@@ -579,7 +586,7 @@ export const make: (options?: {
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "version", [], { ...options }),
                 Stream.decodeText(),
-                Stream.run(Sink.mkString)
+                Stream.mkString
             );
 
     const wait =
@@ -622,10 +629,11 @@ export const make: (options?: {
             project: Stream.Stream<Uint8Array, E1, R1>,
             ...args: P
         ): Effect.Effect<A, E | E1 | DockerComposeError, Exclude<R, Scope.Scope> | Exclude<R1, Scope.Scope>> =>
-            uploadProject(project)(dindContainerId)
-                .pipe(Effect.provideService(MobyEndpoints.Containers, containers))
-                .pipe(Effect.flatMap((cwd) => func(dindContainerId, cwd)(...args)))
-                .pipe(Effect.scoped);
+            uploadProject(project)(dindContainerId).pipe(
+                Effect.provideService(MobyEndpoints.Containers, containers),
+                Effect.flatMap((cwd) => func(dindContainerId, cwd)(...args)),
+                Effect.scoped
+            );
 
     const uncurryStreamWithUploadProject =
         (dindContainerId: IdSchemas.ContainerIdentifier) =>
@@ -639,10 +647,12 @@ export const make: (options?: {
             project: Stream.Stream<Uint8Array, E1, R1>,
             ...args: P
         ): Stream.Stream<A, E | E1 | DockerComposeError, R | R1> =>
-            uploadProject(project)(dindContainerId)
-                .pipe(Stream.scoped)
-                .pipe(Stream.provideService(MobyEndpoints.Containers, containers))
-                .pipe(Stream.flatMap((cwd) => func(dindContainerId, cwd)(...args)));
+            uploadProject(project)(dindContainerId).pipe(
+                Stream.fromEffect,
+                Stream.scoped,
+                Stream.provideService(MobyEndpoints.Containers, containers),
+                Stream.flatMap((cwd) => func(dindContainerId, cwd)(...args))
+            );
 
     const uncurryEffect = uncurryEffectWithUploadProject(dindContainerIdResource);
     const uncurryStream = uncurryStreamWithUploadProject(dindContainerIdResource);
@@ -711,9 +721,10 @@ export const make: (options?: {
                         Privileged: true,
                         Binds: [`${options?.dockerEngineSocket ?? "/var/run/docker.sock"}:/var/run/docker.sock`],
                     },
-                })
-                    .pipe(Effect.map(({ Id }) => Id))
-                    .pipe(Effect.provideService(MobyEndpoints.Containers, containers));
+                }).pipe(
+                    Effect.map(({ Id }) => Id),
+                    Effect.provideService(MobyEndpoints.Containers, containers)
+                );
 
                 const cwd = yield* Effect.provideService(
                     uploadProject(projectDindContainerIdResource, project),
@@ -762,22 +773,22 @@ export const layer = (
     DockerComposeEngine.DockerCompose,
     DockerEngine.DockerError,
     MobyEndpoints.Containers | MobyEndpoints.System | MobyEndpoints.Images
-> => Layer.scoped(DockerCompose, make(options));
+> => Layer.effect(DockerCompose, make(options));
 
 /** @internal */
 export const layerProject: <E1>(
     project: Stream.Stream<Uint8Array, E1, never>,
     tagIdentifier: string
 ) => {
-    readonly tag: Context.Tag<DockerComposeEngine.DockerComposeProject, DockerComposeEngine.DockerComposeProject>;
+    readonly tag: Context.Service<DockerComposeEngine.DockerComposeProject, DockerComposeEngine.DockerComposeProject>;
     readonly layer: Layer.Layer<
         DockerComposeEngine.DockerComposeProject,
         E1 | DockerComposeError | DockerEngine.DockerError,
         DockerComposeEngine.DockerCompose
     >;
 } = <E1>(project: Stream.Stream<Uint8Array, E1, never>, tagIdentifier: string) => {
-    const tag = Context.GenericTag<DockerComposeEngine.DockerComposeProject>(tagIdentifier);
+    const tag = Context.Service<DockerComposeEngine.DockerComposeProject>(tagIdentifier);
     const effect = Effect.flatMap(DockerCompose, ({ forProject }) => forProject(project));
-    const layer = Layer.scoped(tag, effect);
+    const layer = Layer.effect(tag, effect);
     return { tag, layer } as const;
 };

@@ -1053,7 +1053,7 @@ export interface DockerComposeProject {
         options?: UpOptions | undefined
     ) => Effect.Effect<void, DockerComposeError, never>;
 
-    readonly version: (options?: VersionOptions | undefined) => Stream.Stream<string, DockerComposeError, never>;
+    readonly version: (options?: VersionOptions | undefined) => Effect.Effect<string, DockerComposeError, never>;
 
     readonly wait: (
         services: Array.NonEmptyReadonlyArray<string>,
