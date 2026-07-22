@@ -1,7 +1,6 @@
 import type * as Array from "effect/Array";
 import type * as Cause from "effect/Cause";
 import type * as Schema from "effect/Schema";
-import type * as Scope from "effect/Scope";
 import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as Channel from "effect/Channel";
@@ -36,7 +35,7 @@ export const fan = Function.dual<
             stderr: MobyDemux.RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        Exclude<R, Scope.Scope>
+        R
     >,
     <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
@@ -57,7 +56,7 @@ export const fan = Function.dual<
             stderr: MobyDemux.RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        Exclude<R, Scope.Scope>
+        R
     >
 >(
     (arguments_) => isMultiplexedChannel(arguments_[0]) || isMultiplexedSocket(arguments_[0]),
@@ -77,10 +76,9 @@ export const fan = Function.dual<
         type CanReceive = string | Uint8Array | Socket.CloseEvent;
 
         const mutex = yield* Semaphore.make(1);
-        const context = yield* Effect.context<Exclude<R, Scope.Scope>>();
+        const context = yield* Effect.context<R>();
 
-        // Internal buffers. In effect v4 queues carry their failure/done
-        // signals natively, so no Either<Chunk, Exit> encoding is needed.
+        // Internal buffers.
         const capacity = options.requestedCapacity;
         const stdoutConsumerQueue = yield* Queue.bounded<string, Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stdoutCapacity
@@ -97,7 +95,7 @@ export const fan = Function.dual<
         // this more than once because it is wrapped with a mutex.
         const motherEffect = demuxMultiplexedToSeparateSinks(
             multiplexedInput,
-            Stream.fromQueue(stdinProducerQueue) as Stream.Stream<CanReceive, IE, never>,
+            Stream.fromQueue(stdinProducerQueue),
             Sink.fromQueue(stdoutConsumerQueue),
             Sink.fromQueue(stderrConsumerQueue),
             {
