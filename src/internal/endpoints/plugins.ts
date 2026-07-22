@@ -21,22 +21,24 @@ import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.fromJsonString(Schema.Struct({
-    capability: Schema.optional(Schema.Array(Schema.String)),
-    enabled: Schema.Tuple([Schema.String]).pipe(
-        Schema.decodeTo(Schema.Boolean, {
-            decode: SchemaGetter.transformOrFail((fromA: readonly [string]) =>
-                Effect.fail(
-                    new SchemaIssue.InvalidValue(Option.some(fromA), {
-                        message: "Decoding 'enabled' filter is not supported",
-                    })
-                )
-            ),
-            encode: SchemaGetter.transform((enabled: boolean) => [enabled ? "true" : "false"] as const),
-        }),
-        Schema.optional
-    ),
-}));
+export const ListFilters = Schema.fromJsonString(
+    Schema.Struct({
+        capability: Schema.optional(Schema.Array(Schema.String)),
+        enabled: Schema.Tuple([Schema.String]).pipe(
+            Schema.decodeTo(Schema.Boolean, {
+                decode: SchemaGetter.transformOrFail((fromA: readonly [string]) =>
+                    Effect.fail(
+                        new SchemaIssue.InvalidValue(Option.some(fromA), {
+                            message: "Decoding 'enabled' filter is not supported",
+                        })
+                    )
+                ),
+                encode: SchemaGetter.transform((enabled: boolean) => [enabled ? "true" : "false"] as const),
+            }),
+            Schema.optional
+        ),
+    })
+);
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginList */
 const listPluginsEndpoint = HttpApiEndpoint.get("list", "/", {

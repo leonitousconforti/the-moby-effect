@@ -21,18 +21,22 @@ import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.fromJsonString(Schema.Struct({
-    name: Schema.optional(Schema.Array(Schema.String)),
-    driver: Schema.optional(Schema.Array(Schema.String)),
-    label: Schema.optional(Schema.Array(Schema.String)),
-    dangling: Schema.optional(Schema.Array(Schema.Literals(["true", "false", "1", "0"]))),
-}));
+export const ListFilters = Schema.fromJsonString(
+    Schema.Struct({
+        name: Schema.optional(Schema.Array(Schema.String)),
+        driver: Schema.optional(Schema.Array(Schema.String)),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        dangling: Schema.optional(Schema.Array(Schema.Literals(["true", "false", "1", "0"]))),
+    })
+);
 
 /** @since 1.0.0 */
-export const PruneFilters = Schema.fromJsonString(Schema.Struct({
-    label: Schema.optional(Schema.Array(Schema.String)),
-    all: Schema.optional(Schema.Array(Schema.Literals(["true", "false", "1", "0"]))),
-}));
+export const PruneFilters = Schema.fromJsonString(
+    Schema.Struct({
+        label: Schema.optional(Schema.Array(Schema.String)),
+        all: Schema.optional(Schema.Array(Schema.Literals(["true", "false", "1", "0"]))),
+    })
+);
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeList */
 const listVolumesEndpoint = HttpApiEndpoint.get("list", "/", {

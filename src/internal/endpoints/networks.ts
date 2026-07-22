@@ -17,21 +17,25 @@ import { DockerError } from "./circular.ts";
 import { BadRequest, Forbidden, InternalServerError, NotFound } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.fromJsonString(Schema.Struct({
-    dangling: Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
-    driver: Schema.optional(Schema.Array(Schema.String)),
-    id: Schema.optional(Schema.Array(Schema.String)),
-    label: Schema.optional(Schema.Array(Schema.String)),
-    name: Schema.optional(Schema.Array(Schema.String)),
-    scope: Schema.optional(Schema.Array(Schema.String)),
-    type: Schema.optional(Schema.Literals(["custom", "builtin"])),
-}));
+export const ListFilters = Schema.fromJsonString(
+    Schema.Struct({
+        dangling: Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+        driver: Schema.optional(Schema.Array(Schema.String)),
+        id: Schema.optional(Schema.Array(Schema.String)),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        name: Schema.optional(Schema.Array(Schema.String)),
+        scope: Schema.optional(Schema.Array(Schema.String)),
+        type: Schema.optional(Schema.Literals(["custom", "builtin"])),
+    })
+);
 
 /** @since 1.0.0 */
-export const PruneFilters = Schema.fromJsonString(Schema.Struct({
-    label: Schema.optional(Schema.Array(Schema.String)),
-    until: Schema.optional(Schema.String),
-}));
+export const PruneFilters = Schema.fromJsonString(
+    Schema.Struct({
+        label: Schema.optional(Schema.Array(Schema.String)),
+        until: Schema.optional(Schema.String),
+    })
+);
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Network/operation/NetworkList */
 const listNetworksEndpoint = HttpApiEndpoint.get("list", "/", {
