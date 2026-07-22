@@ -187,12 +187,7 @@ export const demuxRawToSingleSink = Function.dual<
     ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>
 >(
     (arguments_) => isRawSocket(arguments_[0]) || isRawChannel(arguments_[0]),
-    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
-        socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>,
-        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
-        sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
-    ) =>
+    (socket, source, sink, options) =>
         Function.pipe(
             source,
             Stream.pipeThroughChannelOrFail(asRawChannel(socket).underlying),
