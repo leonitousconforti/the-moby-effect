@@ -1,5 +1,7 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefaultNetworkSettings>(
     "ContainerDefaultNetworkSettings"
 )(
@@ -8,11 +10,15 @@ export class ContainerDefaultNetworkSettings extends Schema.Class<ContainerDefau
         Gateway: Schema.optional(Schema.String),
         GlobalIPv6Address: Schema.optional(Schema.String),
         GlobalIPv6PrefixLen: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         IPAddress: Schema.optional(Schema.String),
         IPPrefixLen: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         IPv6Gateway: Schema.optional(Schema.String),
         MacAddress: Schema.optional(Schema.String),

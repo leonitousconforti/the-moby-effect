@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as PortSchemas from "../schemas/port.ts";
 import * as V1HealthcheckConfig from "./V1HealthcheckConfig.generated.ts";
 
@@ -39,7 +40,7 @@ export class ContainerConfig extends Schema.Class<ContainerConfig>("ContainerCon
         StopSignal: Schema.optional(Schema.String),
         StopTimeout: Schema.optional(
             Schema.NullOr(
-                Schema.BigIntFromString.check(
+                MobyNumber.BigIntFromWireString.check(
                     Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
                 )
             )

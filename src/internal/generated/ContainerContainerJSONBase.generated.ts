@@ -1,6 +1,7 @@
 import * as Schema from "effect/Schema";
 
 import * as MobyIdentifiers from "../schemas/id.ts";
+import * as MobyNumber from "../schemas/number.ts";
 import * as ContainerHostConfig from "./ContainerHostConfig.generated.ts";
 import * as ContainerState from "./ContainerState.generated.ts";
 import * as StorageDriverData from "./StorageDriverData.generated.ts";
@@ -8,7 +9,7 @@ import * as StorageDriverData from "./StorageDriverData.generated.ts";
 export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJSONBase>("ContainerContainerJSONBase")(
     {
         Id: MobyIdentifiers.ContainerIdentifier,
-        Created: Schema.String,
+        Created: Schema.DateFromString,
         Path: Schema.String,
         Args: Schema.NullOr(Schema.Array(Schema.String)),
         State: Schema.NullOr(ContainerState.ContainerState),
@@ -18,7 +19,7 @@ export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJ
         HostsPath: Schema.String,
         LogPath: Schema.String,
         Name: Schema.String,
-        RestartCount: Schema.BigIntFromString.check(
+        RestartCount: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         Driver: Schema.String,
@@ -31,14 +32,14 @@ export class ContainerContainerJSONBase extends Schema.Class<ContainerContainerJ
         GraphDriver: Schema.optional(Schema.NullOr(StorageDriverData.StorageDriverData)),
         SizeRw: Schema.optional(
             Schema.NullOr(
-                Schema.BigIntFromString.check(
+                MobyNumber.BigIntFromWireString.check(
                     Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
                 )
             )
         ),
         SizeRootFs: Schema.optional(
             Schema.NullOr(
-                Schema.BigIntFromString.check(
+                MobyNumber.BigIntFromWireString.check(
                     Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
                 )
             )

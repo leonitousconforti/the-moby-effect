@@ -82,6 +82,11 @@ var fieldsToReplace = map[string]TSType{
 	"swarm.TLSInfo.CertIssuerPublicKey": {StrRepresentation: "Schema.StringFromBase64", Nullable: true},
 	"swarm.SeccompOpts.Profile":         {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
 	"v1.Descriptor.Data":                {StrRepresentation: "Schema.Uint8ArrayFromBase64", Nullable: true},
+
+	// Enum-typed fields where the daemon also sends the Go zero value "",
+	// which is not among the declared consts: MountPoint.Propagation is
+	// empty for volume mounts (propagation only applies to bind mounts).
+	"container.MountPoint.Propagation": {StrRepresentation: `Schema.Literals(["", "rprivate", "private", "rshared", "shared", "rslave", "slave"])`, Nullable: false},
 }
 
 var dockerTypesToReflect = []reflect.Type{

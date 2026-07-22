@@ -1,19 +1,25 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerCPUUsage extends Schema.Class<ContainerCPUUsage>("ContainerCPUUsage")(
     {
-        total_usage: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        total_usage: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
         percpu_usage: Schema.optional(
             Schema.NullOr(
                 Schema.Array(
-                    Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+                    MobyNumber.BigIntFromWireString.check(
+                        Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+                    )
                 )
             )
         ),
-        usage_in_kernelmode: Schema.BigIntFromString.check(
+        usage_in_kernelmode: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
         ),
-        usage_in_usermode: Schema.BigIntFromString.check(
+        usage_in_usermode: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
         ),
     },

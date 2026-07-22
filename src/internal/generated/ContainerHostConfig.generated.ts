@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as PortSchemas from "../schemas/port.ts";
 import * as ContainerLogConfig from "./ContainerLogConfig.generated.ts";
 import * as ContainerResources from "./ContainerResources.generated.ts";
@@ -29,7 +30,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
             Schema.withConstructorDefault(Effect.succeed(null))
         ),
         ConsoleSize: Schema.Array(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+            MobyNumber.BigIntFromWireString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
         )
             .check(Schema.isLengthBetween(2, 2))
             .pipe(Schema.withConstructorDefault(Effect.succeed([0n, 0n]))),
@@ -47,7 +48,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         IpcMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
         Cgroup: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
         Links: Schema.NullOr(Schema.Array(Schema.String)).pipe(Schema.withConstructorDefault(Effect.succeed(null))),
-        OomScoreAdj: Schema.BigIntFromString.check(
+        OomScoreAdj: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
         PidMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
@@ -61,7 +62,7 @@ export class ContainerHostConfig extends Schema.Class<ContainerHostConfig>("Cont
         Tmpfs: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         UTSMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
         UsernsMode: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
-        ShmSize: Schema.BigIntFromString.check(
+        ShmSize: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
         Sysctls: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),

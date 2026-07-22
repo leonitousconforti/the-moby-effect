@@ -1,9 +1,13 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ArchiveChange extends Schema.Class<ArchiveChange>("ArchiveChange")(
     {
         Path: Schema.String,
-        Kind: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Kind: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
     },
     {
         identifier: "ArchiveChange",

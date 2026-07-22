@@ -33,23 +33,26 @@ var EmptyStruct = reflect.TypeOf(struct{}{})
 
 // TSInboxTypesMap is a map from Go type kind to TS type.
 var TSInboxTypesMap = map[reflect.Kind]TSType{
-	reflect.Float32: {"Schema.Number", false},
-	reflect.Float64: {"Schema.Number", false},
+	// Numeric fields marshal as bare JSON numbers on the wire, but are carried
+	// as strings between the agnostic http client and the schemas so 64-bit
+	// values decode losslessly (see src/internal/schemas/number.ts).
+	reflect.Float32: {"MobyNumber.NumberFromWireString", false},
+	reflect.Float64: {"MobyNumber.NumberFromWireString", false},
 	reflect.String:  {"Schema.String", false},
 	reflect.Bool:    {"Schema.Boolean", false},
 
 	// In practice most clients are 64bit so in go Int will be too.
-	reflect.Int:   {"Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))", false},
-	reflect.Int8:  {"Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: -(2 ** 7), maximum: 2 ** 7 - 1 }))", false},
-	reflect.Int16: {"Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: -(2 ** 15), maximum: 2 ** 15 - 1 }))", false},
-	reflect.Int32: {"Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: -(2 ** 31), maximum: 2 ** 31 - 1 }))", false},
-	reflect.Int64: {"Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))", false},
+	reflect.Int:   {"MobyNumber.BigIntFromWireString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))", false},
+	reflect.Int8:  {"MobyNumber.NumberFromWireString.check(Schema.isInt(), Schema.isBetween({ minimum: -(2 ** 7), maximum: 2 ** 7 - 1 }))", false},
+	reflect.Int16: {"MobyNumber.NumberFromWireString.check(Schema.isInt(), Schema.isBetween({ minimum: -(2 ** 15), maximum: 2 ** 15 - 1 }))", false},
+	reflect.Int32: {"MobyNumber.NumberFromWireString.check(Schema.isInt(), Schema.isBetween({ minimum: -(2 ** 31), maximum: 2 ** 31 - 1 }))", false},
+	reflect.Int64: {"MobyNumber.BigIntFromWireString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))", false},
 
-	reflect.Uint:   {"Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))", false},
-	reflect.Uint8:  {"Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 8 - 1 }))", false},
-	reflect.Uint16: {"Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 }))", false},
-	reflect.Uint32: {"Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))", false},
-	reflect.Uint64: {"Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))", false},
+	reflect.Uint:   {"MobyNumber.BigIntFromWireString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))", false},
+	reflect.Uint8:  {"MobyNumber.NumberFromWireString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 8 - 1 }))", false},
+	reflect.Uint16: {"MobyNumber.NumberFromWireString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 }))", false},
+	reflect.Uint32: {"MobyNumber.NumberFromWireString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))", false},
+	reflect.Uint64: {"MobyNumber.BigIntFromWireString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))", false},
 }
 
 func tsTypeToString(t TSType) string {
@@ -213,6 +216,7 @@ func (t *TSModelType) WriteClass(w io.Writer) {
 		{"Effect", "import * as Effect from \"effect/Effect\";\n"},
 		{"Schema", "import * as Schema from \"effect/Schema\";\n"},
 		{"MobyIdentifiers", "import * as MobyIdentifiers from \"../schemas/id.ts\";\n"},
+		{"MobyNumber", "import * as MobyNumber from \"../schemas/number.ts\";\n"},
 		{"PortSchemas", "import * as PortSchemas from \"../schemas/port.ts\";\n"},
 	}
 	for _, imp := range knownImports {

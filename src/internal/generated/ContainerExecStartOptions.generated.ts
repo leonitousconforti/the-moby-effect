@@ -1,5 +1,7 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerExecStartOptions extends Schema.Class<ContainerExecStartOptions>("ContainerExecStartOptions")(
     {
         Detach: Schema.Boolean,
@@ -7,7 +9,9 @@ export class ContainerExecStartOptions extends Schema.Class<ContainerExecStartOp
         ConsoleSize: Schema.optional(
             Schema.NullOr(
                 Schema.Array(
-                    Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+                    MobyNumber.BigIntFromWireString.check(
+                        Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+                    )
                 ).check(Schema.isLengthBetween(2, 2))
             )
         ),

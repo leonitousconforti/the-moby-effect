@@ -1,6 +1,8 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("ContainerExecOptions")(
     {
         User: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
@@ -9,7 +11,9 @@ export class ContainerExecOptions extends Schema.Class<ContainerExecOptions>("Co
         ConsoleSize: Schema.optional(
             Schema.NullOr(
                 Schema.Array(
-                    Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+                    MobyNumber.BigIntFromWireString.check(
+                        Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+                    )
                 ).check(Schema.isLengthBetween(2, 2))
             )
         ),

@@ -1,9 +1,11 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerDeviceRequest extends Schema.Class<ContainerDeviceRequest>("ContainerDeviceRequest")(
     {
         Driver: Schema.String,
-        Count: Schema.BigIntFromString.check(
+        Count: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         DeviceIDs: Schema.NullOr(Schema.Array(Schema.String)),

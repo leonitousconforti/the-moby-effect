@@ -1,5 +1,7 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class BuildCacheRecord extends Schema.Class<BuildCacheRecord>("BuildCacheRecord")(
     {
         ID: Schema.String,
@@ -9,10 +11,12 @@ export class BuildCacheRecord extends Schema.Class<BuildCacheRecord>("BuildCache
         Description: Schema.String,
         InUse: Schema.Boolean,
         Shared: Schema.Boolean,
-        Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Size: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         CreatedAt: Schema.NullOr(Schema.DateFromString),
         LastUsedAt: Schema.NullOr(Schema.DateFromString),
-        UsageCount: Schema.BigIntFromString.check(
+        UsageCount: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
     },
