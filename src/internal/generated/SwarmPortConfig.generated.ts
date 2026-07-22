@@ -1,14 +1,22 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class SwarmPortConfig extends Schema.Class<SwarmPortConfig>("SwarmPortConfig")(
     {
         Name: Schema.optional(Schema.String),
         Protocol: Schema.optional(Schema.Literals(["tcp", "udp", "sctp"])),
         TargetPort: Schema.optional(
-            Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))
+            MobyNumber.NumberFromWireString.check(
+                Schema.isInt(),
+                Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })
+            )
         ),
         PublishedPort: Schema.optional(
-            Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 }))
+            MobyNumber.NumberFromWireString.check(
+                Schema.isInt(),
+                Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })
+            )
         ),
         PublishMode: Schema.optional(Schema.Literals(["ingress", "host"])),
     },

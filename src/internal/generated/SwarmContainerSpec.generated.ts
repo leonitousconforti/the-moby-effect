@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as MountMount from "./MountMount.generated.ts";
 import * as SwarmConfigReference from "./SwarmConfigReference.generated.ts";
 import * as SwarmDNSConfig from "./SwarmDNSConfig.generated.ts";
@@ -28,7 +29,7 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         Mounts: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(MountMount.MountMount)))),
         StopGracePeriod: Schema.optional(
             Schema.NullOr(
-                Schema.BigIntFromString.check(
+                MobyNumber.BigIntFromWireString.check(
                     Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
                 )
             )
@@ -44,7 +45,9 @@ export class SwarmContainerSpec extends Schema.Class<SwarmContainerSpec>("SwarmC
         CapabilityDrop: Schema.optional(Schema.NullOr(Schema.Array(Schema.String))),
         Ulimits: Schema.optional(Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit)))),
         OomScoreAdj: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
     },
     {

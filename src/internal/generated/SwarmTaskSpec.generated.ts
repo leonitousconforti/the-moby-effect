@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as RuntimePluginSpec from "./RuntimePluginSpec.generated.ts";
 import * as SwarmContainerSpec from "./SwarmContainerSpec.generated.ts";
 import * as SwarmDriver from "./SwarmDriver.generated.ts";
@@ -21,7 +22,9 @@ export class SwarmTaskSpec extends Schema.Class<SwarmTaskSpec>("SwarmTaskSpec")(
             Schema.NullOr(Schema.Array(Schema.NullOr(SwarmNetworkAttachmentConfig.SwarmNetworkAttachmentConfig)))
         ),
         LogDriver: Schema.optional(Schema.NullOr(SwarmDriver.SwarmDriver)),
-        ForceUpdate: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        ForceUpdate: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
         Runtime: Schema.optional(Schema.Literals(["container", "plugin", "attachment"])),
     },
     {

@@ -1,12 +1,16 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class SwarmDiscreteGenericResource extends Schema.Class<SwarmDiscreteGenericResource>(
     "SwarmDiscreteGenericResource"
 )(
     {
         Kind: Schema.optional(Schema.String),
         Value: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
     },
     {

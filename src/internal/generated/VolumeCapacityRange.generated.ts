@@ -1,11 +1,13 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class VolumeCapacityRange extends Schema.Class<VolumeCapacityRange>("VolumeCapacityRange")(
     {
-        RequiredBytes: Schema.BigIntFromString.check(
+        RequiredBytes: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        LimitBytes: Schema.BigIntFromString.check(
+        LimitBytes: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
     },

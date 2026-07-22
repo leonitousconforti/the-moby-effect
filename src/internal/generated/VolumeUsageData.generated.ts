@@ -1,11 +1,15 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class VolumeUsageData extends Schema.Class<VolumeUsageData>("VolumeUsageData")(
     {
-        RefCount: Schema.BigIntFromString.check(
+        RefCount: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Size: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
     },
     {
         identifier: "VolumeUsageData",

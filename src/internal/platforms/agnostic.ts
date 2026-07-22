@@ -11,6 +11,7 @@ import * as HttpClientRequest from "effect/unstable/http/HttpClientRequest";
 
 import type * as MobyConnection from "../../MobyConnection.js";
 
+import * as MobyNumber from "../schemas/number.js";
 import * as internalConnection from "./connection.js";
 
 /** @internal */
@@ -98,6 +99,27 @@ export const replacer = (text: string): string => {
     return output;
 };
 
+/**
+ * Matches a quoted number token carrying the wire-number sentinel, i.e. the
+ * encoded form produced by the schemas in ../schemas/number.ts.
+ *
+ * @internal
+ */
+const sentinelNumberToken = new RegExp(`"${MobyNumber.wireNumberSentinel}(${numberToken.source})"`, "g");
+
+/**
+ * The inverse of {@link replacer} for request bodies. Numeric schema fields
+ * encode to strings (so 64-bit fields survive the JavaScript number type),
+ * but the daemon expects bare JSON numbers. A blind inverse cannot work -
+ * `{"Memory":"1024"}` (was a bigint) is indistinguishable from a genuine
+ * string field containing digits - so the schemas prefix the strings they
+ * encode with a sentinel character and this strips the quotes and the
+ * sentinel from exactly those tokens.
+ *
+ * @internal
+ */
+export const unreplacer = (text: string): string => text.replace(sentinelNumberToken, "$1");
+
 /** @internal */
 export const makeAgnosticHttpClientLayer = (
     connectionOptions: MobyConnection.MobyConnectionOptions
@@ -110,6 +132,16 @@ export const makeAgnosticHttpClientLayer = (
                 HttpClient.mapRequest((request) => {
                     const httpUrl = makeHttpRequestUrl(connectionOptions);
                     const urlPrepended = HttpClientRequest.prependUrl(request, httpUrl);
+
+                    // Json bodies may carry sentinel-marked numeric strings that
+                    // the daemon must receive as bare JSON numbers - binary and
+                    // streaming bodies never do and pass through untouched.
+                    const body = urlPrepended.body;
+                    if (body._tag === "Uint8Array" && body.contentType.includes("application/json")) {
+                        const text = new TextDecoder().decode(body.body);
+                        return HttpClientRequest.bodyText(urlPrepended, unreplacer(text), body.contentType);
+                    }
+
                     return urlPrepended;
                 }),
                 HttpClient.transformResponse(

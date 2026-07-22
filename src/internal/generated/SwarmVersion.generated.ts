@@ -1,9 +1,11 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class SwarmVersion extends Schema.Class<SwarmVersion>("SwarmVersion")(
     {
         Index: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
+            MobyNumber.BigIntFromWireString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n }))
         ),
     },
     {

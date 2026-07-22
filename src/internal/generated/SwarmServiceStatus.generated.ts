@@ -1,10 +1,18 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class SwarmServiceStatus extends Schema.Class<SwarmServiceStatus>("SwarmServiceStatus")(
     {
-        RunningTasks: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
-        DesiredTasks: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
-        CompletedTasks: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        RunningTasks: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
+        DesiredTasks: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
+        CompletedTasks: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
     },
     {
         identifier: "SwarmServiceStatus",

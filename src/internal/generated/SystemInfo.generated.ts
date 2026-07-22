@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as RegistryServiceConfig from "./RegistryServiceConfig.generated.ts";
 import * as SwarmGenericResource from "./SwarmGenericResource.generated.ts";
 import * as SwarmInfo from "./SwarmInfo.generated.ts";
@@ -14,19 +15,19 @@ import * as SystemRuntimeWithStatus from "./SystemRuntimeWithStatus.generated.ts
 export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")(
     {
         ID: Schema.String,
-        Containers: Schema.BigIntFromString.check(
+        Containers: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        ContainersRunning: Schema.BigIntFromString.check(
+        ContainersRunning: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        ContainersPaused: Schema.BigIntFromString.check(
+        ContainersPaused: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        ContainersStopped: Schema.BigIntFromString.check(
+        ContainersStopped: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        Images: Schema.BigIntFromString.check(
+        Images: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         Driver: Schema.String,
@@ -46,16 +47,18 @@ export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")(
         PidsLimit: Schema.Boolean,
         IPv4Forwarding: Schema.Boolean,
         Debug: Schema.Boolean,
-        NFd: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        NFd: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         OomKillDisable: Schema.Boolean,
-        NGoroutines: Schema.BigIntFromString.check(
+        NGoroutines: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         SystemTime: Schema.String,
         LoggingDriver: Schema.String,
         CgroupDriver: Schema.String,
         CgroupVersion: Schema.optional(Schema.String),
-        NEventsListener: Schema.BigIntFromString.check(
+        NEventsListener: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         KernelVersion: Schema.String,
@@ -65,8 +68,10 @@ export class SystemInfo extends Schema.Class<SystemInfo>("SystemInfo")(
         Architecture: Schema.String,
         IndexServerAddress: Schema.String,
         RegistryConfig: Schema.NullOr(RegistryServiceConfig.RegistryServiceConfig),
-        NCPU: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
-        MemTotal: Schema.BigIntFromString.check(
+        NCPU: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
+        MemTotal: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         GenericResources: Schema.NullOr(Schema.Array(Schema.NullOr(SwarmGenericResource.SwarmGenericResource))),

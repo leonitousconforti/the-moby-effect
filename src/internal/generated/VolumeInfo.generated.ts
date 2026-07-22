@@ -1,11 +1,14 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as VolumeTopology from "./VolumeTopology.generated.ts";
 
 export class VolumeInfo extends Schema.Class<VolumeInfo>("VolumeInfo")(
     {
         CapacityBytes: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         VolumeContext: Schema.optional(Schema.NullOr(Schema.Record(Schema.String, Schema.String))),
         VolumeID: Schema.optional(Schema.String),

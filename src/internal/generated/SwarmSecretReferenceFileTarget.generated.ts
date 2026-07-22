@@ -1,5 +1,7 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class SwarmSecretReferenceFileTarget extends Schema.Class<SwarmSecretReferenceFileTarget>(
     "SwarmSecretReferenceFileTarget"
 )(
@@ -7,7 +9,10 @@ export class SwarmSecretReferenceFileTarget extends Schema.Class<SwarmSecretRefe
         Name: Schema.String,
         UID: Schema.String,
         GID: Schema.String,
-        Mode: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
+        Mode: MobyNumber.NumberFromWireString.check(
+            Schema.isInt(),
+            Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })
+        ),
     },
     {
         identifier: "SwarmSecretReferenceFileTarget",

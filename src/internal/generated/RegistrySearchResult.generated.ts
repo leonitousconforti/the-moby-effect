@@ -1,8 +1,10 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class RegistrySearchResult extends Schema.Class<RegistrySearchResult>("RegistrySearchResult")(
     {
-        star_count: Schema.BigIntFromString.check(
+        star_count: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         is_official: Schema.Boolean,
