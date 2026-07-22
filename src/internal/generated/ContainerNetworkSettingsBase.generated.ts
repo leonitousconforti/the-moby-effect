@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as PortSchemas from "../schemas/port.ts";
 import * as NetworkAddress from "./NetworkAddress.generated.ts";
 
@@ -14,7 +15,9 @@ export class ContainerNetworkSettingsBase extends Schema.Class<ContainerNetworkS
         HairpinMode: Schema.optional(Schema.Boolean),
         LinkLocalIPv6Address: Schema.optional(Schema.String),
         LinkLocalIPv6PrefixLen: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         SecondaryIPAddresses: Schema.optional(
             Schema.NullOr(Schema.Array(Schema.NullOr(NetworkAddress.NetworkAddress)))

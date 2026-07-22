@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as EventsActor from "./EventsActor.generated.ts";
 
 export class EventsMessage extends Schema.Class<EventsMessage>("EventsMessage")(
@@ -72,10 +73,14 @@ export class EventsMessage extends Schema.Class<EventsMessage>("EventsMessage")(
         Actor: Schema.NullOr(EventsActor.EventsActor),
         scope: Schema.optional(Schema.String),
         time: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         timeNano: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
     },
     {

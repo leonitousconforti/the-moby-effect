@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect";
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as BlkiodevThrottleDevice from "./BlkiodevThrottleDevice.generated.ts";
 import * as BlkiodevWeightDevice from "./BlkiodevWeightDevice.generated.ts";
 import * as ContainerDeviceMapping from "./ContainerDeviceMapping.generated.ts";
@@ -9,17 +10,17 @@ import * as UnitsUlimit from "./UnitsUlimit.generated.ts";
 
 export class ContainerResources extends Schema.Class<ContainerResources>("ContainerResources")(
     {
-        CpuShares: Schema.BigIntFromString.check(
+        CpuShares: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        Memory: Schema.BigIntFromString.check(
+        Memory: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        NanoCpus: Schema.BigIntFromString.check(
+        NanoCpus: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
         CgroupParent: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
-        BlkioWeight: Schema.NumberFromString.check(
+        BlkioWeight: MobyNumber.NumberFromWireString.check(
             Schema.isInt(),
             Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0))),
@@ -38,16 +39,16 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
         BlkioDeviceWriteIOps: Schema.NullOr(
             Schema.Array(Schema.NullOr(BlkiodevThrottleDevice.BlkiodevThrottleDevice))
         ).pipe(Schema.withConstructorDefault(Effect.succeed([]))),
-        CpuPeriod: Schema.BigIntFromString.check(
+        CpuPeriod: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        CpuQuota: Schema.BigIntFromString.check(
+        CpuQuota: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        CpuRealtimePeriod: Schema.BigIntFromString.check(
+        CpuRealtimePeriod: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        CpuRealtimeRuntime: Schema.BigIntFromString.check(
+        CpuRealtimeRuntime: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
         CpusetCpus: Schema.String.pipe(Schema.withConstructorDefault(Effect.succeed(""))),
@@ -62,37 +63,45 @@ export class ContainerResources extends Schema.Class<ContainerResources>("Contai
             Schema.withConstructorDefault(Effect.succeed([]))
         ),
         KernelMemory: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         KernelMemoryTCP: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
-        MemoryReservation: Schema.BigIntFromString.check(
+        MemoryReservation: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        MemorySwap: Schema.BigIntFromString.check(
+        MemorySwap: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
         MemorySwappiness: Schema.NullOr(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ).pipe(Schema.withConstructorDefault(Effect.succeed(-1n))),
         OomKillDisable: Schema.NullOr(Schema.Boolean).pipe(Schema.withConstructorDefault(Effect.succeed(false))),
         PidsLimit: Schema.NullOr(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
         Ulimits: Schema.NullOr(Schema.Array(Schema.NullOr(UnitsUlimit.UnitsUlimit))).pipe(
             Schema.withConstructorDefault(Effect.succeed([]))
         ),
-        CpuCount: Schema.BigIntFromString.check(
+        CpuCount: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        CpuPercent: Schema.BigIntFromString.check(
+        CpuPercent: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        IOMaximumIOps: Schema.BigIntFromString.check(
+        IOMaximumIOps: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
-        IOMaximumBandwidth: Schema.BigIntFromString.check(
+        IOMaximumBandwidth: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
         ).pipe(Schema.withConstructorDefault(Effect.succeed(0n))),
     },

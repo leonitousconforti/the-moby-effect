@@ -1,14 +1,19 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerPort extends Schema.Class<ContainerPort>("ContainerPort")(
     {
         IP: Schema.optional(Schema.String),
-        PrivatePort: Schema.NumberFromString.check(
+        PrivatePort: MobyNumber.NumberFromWireString.check(
             Schema.isInt(),
             Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 })
         ),
         PublicPort: Schema.optional(
-            Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 }))
+            MobyNumber.NumberFromWireString.check(
+                Schema.isInt(),
+                Schema.isBetween({ minimum: 0, maximum: 2 ** 16 - 1 })
+            )
         ),
         Type: Schema.String,
     },

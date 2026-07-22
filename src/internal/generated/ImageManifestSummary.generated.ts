@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as ImageAttestationProperties from "./ImageAttestationProperties.generated.ts";
 import * as ImageImageProperties from "./ImageImageProperties.generated.ts";
 import * as V1Descriptor from "./V1Descriptor.generated.ts";
@@ -10,10 +11,10 @@ export class ImageManifestSummary extends Schema.Class<ImageManifestSummary>("Im
         Descriptor: Schema.NullOr(V1Descriptor.V1Descriptor),
         Available: Schema.Boolean,
         Size: Schema.Struct({
-            Content: Schema.BigIntFromString.check(
+            Content: MobyNumber.BigIntFromWireString.check(
                 Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
             ),
-            Total: Schema.BigIntFromString.check(
+            Total: MobyNumber.BigIntFromWireString.check(
                 Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
             ),
         }),

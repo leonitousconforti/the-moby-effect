@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as ContainerBlkioStats from "./ContainerBlkioStats.generated.ts";
 import * as ContainerCPUStats from "./ContainerCPUStats.generated.ts";
 import * as ContainerMemoryStats from "./ContainerMemoryStats.generated.ts";
@@ -15,7 +16,7 @@ export class ContainerStatsResponse extends Schema.Class<ContainerStatsResponse>
         preread: Schema.NullOr(Schema.DateFromString),
         pids_stats: Schema.optional(Schema.NullOr(ContainerPidsStats.ContainerPidsStats)),
         blkio_stats: Schema.optional(Schema.NullOr(ContainerBlkioStats.ContainerBlkioStats)),
-        num_procs: Schema.NumberFromString.check(
+        num_procs: MobyNumber.NumberFromWireString.check(
             Schema.isInt(),
             Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })
         ),

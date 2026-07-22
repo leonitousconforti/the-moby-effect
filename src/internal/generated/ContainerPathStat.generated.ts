@@ -1,10 +1,17 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerPathStat extends Schema.Class<ContainerPathStat>("ContainerPathStat")(
     {
         name: Schema.String,
-        size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
-        mode: Schema.NumberFromString.check(Schema.isInt(), Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })),
+        size: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
+        mode: MobyNumber.NumberFromWireString.check(
+            Schema.isInt(),
+            Schema.isBetween({ minimum: 0, maximum: 2 ** 32 - 1 })
+        ),
         mtime: Schema.NullOr(Schema.DateFromString),
         linkTarget: Schema.String,
     },

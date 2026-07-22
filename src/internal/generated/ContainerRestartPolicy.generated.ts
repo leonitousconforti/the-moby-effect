@@ -1,9 +1,11 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerRestartPolicy extends Schema.Class<ContainerRestartPolicy>("ContainerRestartPolicy")(
     {
         Name: Schema.Literals(["no", "always", "on-failure", "unless-stopped"]),
-        MaximumRetryCount: Schema.BigIntFromString.check(
+        MaximumRetryCount: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
     },

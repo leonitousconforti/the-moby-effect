@@ -1,5 +1,6 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
 import * as ContainerHealth from "./ContainerHealth.generated.ts";
 
 export class ContainerState extends Schema.Class<ContainerState>("ContainerState")(
@@ -10,8 +11,10 @@ export class ContainerState extends Schema.Class<ContainerState>("ContainerState
         Restarting: Schema.Boolean,
         OOMKilled: Schema.Boolean,
         Dead: Schema.Boolean,
-        Pid: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
-        ExitCode: Schema.BigIntFromString.check(
+        Pid: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
+        ExitCode: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         Error: Schema.String,

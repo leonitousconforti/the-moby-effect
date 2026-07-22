@@ -1,6 +1,7 @@
 import * as Schema from "effect/Schema";
 
 import * as MobyIdentifiers from "../schemas/id.ts";
+import * as MobyNumber from "../schemas/number.ts";
 import * as ContainerConfig from "./ContainerConfig.generated.ts";
 import * as ImageManifestSummary from "./ImageManifestSummary.generated.ts";
 import * as ImageMetadata from "./ImageMetadata.generated.ts";
@@ -26,9 +27,13 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Variant: Schema.optional(Schema.String),
         Os: Schema.String,
         OsVersion: Schema.optional(Schema.String),
-        Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Size: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         VirtualSize: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
         RootFS: Schema.NullOr(ImageRootFS.ImageRootFS),

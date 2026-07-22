@@ -1,12 +1,18 @@
 import * as Schema from "effect/Schema";
 
+import * as MobyNumber from "../schemas/number.ts";
+
 export class ContainerThrottlingData extends Schema.Class<ContainerThrottlingData>("ContainerThrottlingData")(
     {
-        periods: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
-        throttled_periods: Schema.BigIntFromString.check(
+        periods: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
         ),
-        throttled_time: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
+        throttled_periods: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
+        throttled_time: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })
+        ),
     },
     {
         identifier: "ContainerThrottlingData",

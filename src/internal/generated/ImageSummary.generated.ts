@@ -1,15 +1,16 @@
 import * as Schema from "effect/Schema";
 
 import * as MobyIdentifiers from "../schemas/id.ts";
+import * as MobyNumber from "../schemas/number.ts";
 import * as ImageManifestSummary from "./ImageManifestSummary.generated.ts";
 import * as V1Descriptor from "./V1Descriptor.generated.ts";
 
 export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
     {
-        Containers: Schema.BigIntFromString.check(
+        Containers: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        Created: Schema.BigIntFromString.check(
+        Created: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         Id: MobyIdentifiers.ImageIdentifier,
@@ -21,12 +22,16 @@ export class ImageSummary extends Schema.Class<ImageSummary>("ImageSummary")(
         ),
         RepoDigests: Schema.NullOr(Schema.Array(MobyIdentifiers.Digest)),
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
-        SharedSize: Schema.BigIntFromString.check(
+        SharedSize: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
-        Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Size: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         VirtualSize: Schema.optional(
-            Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n }))
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
     },
     {

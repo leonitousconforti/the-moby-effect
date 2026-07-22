@@ -1,16 +1,19 @@
 import * as Schema from "effect/Schema";
 
 import * as MobyIdentifiers from "../schemas/id.ts";
+import * as MobyNumber from "../schemas/number.ts";
 
 export class ImageHistoryResponseItem extends Schema.Class<ImageHistoryResponseItem>("ImageHistoryResponseItem")(
     {
         Comment: Schema.String,
-        Created: Schema.BigIntFromString.check(
+        Created: MobyNumber.BigIntFromWireString.check(
             Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
         ),
         CreatedBy: Schema.String,
         Id: MobyIdentifiers.ImageIdentifier,
-        Size: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })),
+        Size: MobyNumber.BigIntFromWireString.check(
+            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        ),
         Tags: Schema.NullOr(Schema.Array(Schema.String)),
     },
     {
