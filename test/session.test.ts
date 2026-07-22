@@ -9,7 +9,7 @@ import { testMatrix } from "./shared-global.js";
 
 // FIXME: Sessions over Undici HTTP clients currently might not work due to inability to set required headers?
 const skipForUndiciHttpClients = Match.value(inject("__PLATFORM_VARIANT")).pipe(
-    Match.whenOr("node-20.x-undici", "node-22.x-undici", "node-24.x-undici", "deno-undici", "bun-undici", () => true),
+    Match.whenOr("node-22.x-undici", "node-24.x-undici", "node-26.x-undici", "deno-undici", "bun-undici", () => true),
     Match.orElse(() => false)
 );
 

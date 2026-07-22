@@ -18,7 +18,7 @@ const makePlatformDockerLayer = Function.pipe(
     Match.value(process.env["__PLATFORM_VARIANT"] ?? "node-24.x"),
     Match.when("bun", () => DockerEngine.layerBun),
     Match.when("deno", () => DockerEngine.layerDeno),
-    Match.whenOr("node-20.x", "node-22.x", "node-24.x", () => DockerEngine.layerNodeJS),
+    Match.whenOr("node-22.x", "node-24.x", "node-26.x", () => DockerEngine.layerNodeJS),
     Match.orElse(() => DockerEngine.layerUndici)
 );
 
@@ -36,12 +36,12 @@ export const setup = async function ({ provide }: TestProject): Promise<void> {
                 "bun-undici",
                 "deno",
                 "deno-undici",
-                "node-20.x",
                 "node-22.x",
                 "node-24.x",
-                "node-20.x-undici",
+                "node-26.x",
                 "node-22.x-undici",
                 "node-24.x-undici",
+                "node-26.x-undici",
             ],
             "__PLATFORM_VARIANT"
         ).pipe(Config.withDefault("node-24.x" as const));

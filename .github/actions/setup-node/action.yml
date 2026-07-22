@@ -5,18 +5,14 @@ inputs:
   node-version:
     description: "Node.js version"
     required: true
-    default: "20.x"
+    default: "22.x"
 
 runs:
   using: "composite"
   steps:
     # pnpm must be on the PATH before setup-node can resolve the pnpm store
-    # location for its dependency cache. standalone so pnpm brings its own
-    # runtime - pnpm 11 refuses to run on node 20, which this composite must
-    # still be able to select as the test runtime.
+    # location for its dependency cache.
     - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
-      with:
-        standalone: true
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
       with:
         node-version: ${{ inputs.node-version }}
