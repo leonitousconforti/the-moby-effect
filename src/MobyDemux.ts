@@ -703,22 +703,14 @@ export const demuxToSingleSink: {
         options?: { encoding?: string | undefined } | undefined
     ): <IE = never, OE = Socket.SocketError, R3 = never>(
         sockets: EitherRawInput<E1 | IE, OE, R3> | EitherMultiplexedInput<E1 | IE, OE, R3>
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | Schema.SchemaError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >;
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
     // Data-first signature.
     <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
         sockets: EitherRawInput<E1 | IE, OE, R3> | EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
-    ): Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | Schema.SchemaError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >;
+    ): Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
 } = internal.demuxToSingleSink;
 
 /**
