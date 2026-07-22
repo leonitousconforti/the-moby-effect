@@ -296,28 +296,25 @@ export const demuxMultiplexedToSeparateSinks = Function.dual<
                 ),
                 { bufferSize: options?.bufferSize ?? 16 }
             ),
-            Effect.flatMap(([stdoutStream, stderrStream]) =>
-                Effect.all(
+            Effect.map(
+                ([stdoutStream, stderrStream]) =>
                     [
                         Function.pipe(
                             stdoutStream,
-                            Stream.map(([, bytes]) => bytes),
+                            Stream.map(Tuple.get(1)),
                             Stream.decodeText({ encoding: options?.encoding }),
                             Stream.run(sink1)
                         ),
                         Function.pipe(
                             stderrStream,
-                            Stream.map(([, bytes]) => bytes),
+                            Stream.map(Tuple.get(1)),
                             Stream.decodeText({ encoding: options?.encoding }),
                             Stream.run(sink2)
                         ),
-                    ],
-                    { concurrency: 2 }
-                )
+                    ] as const
             ),
-            Effect.map(([ranStdout, ranStderr]) =>
-                internalCompressed.compressDemuxOutput(Tuple.make(ranStdout, ranStderr))
-            ),
+            Effect.flatMap((streamers) => Effect.all(streamers, { concurrency: 2 })),
+            Effect.map(internalCompressed.compressDemuxOutput),
             Effect.scoped
         )
 );
