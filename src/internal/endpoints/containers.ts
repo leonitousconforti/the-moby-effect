@@ -32,34 +32,39 @@ import {
     ContainerTopResponse,
     ContainerWaitResponse,
 } from "../generated/index.ts";
+import { replacer as quoteWireNumbers } from "../platforms/agnostic.ts";
 import { ContainerIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, Forbidden, InternalServerError, NotAcceptable, NotFound } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.Struct({
-    ancestor: Schema.optional(Schema.Array(Schema.String)),
-    before: Schema.optional(Schema.Array(Schema.String)),
-    expose: Schema.optional(Schema.Array(Schema.String)),
-    exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
-    health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
-    identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
-    // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
-    "is-task": Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
-    label: Schema.optional(Schema.Array(Schema.String)),
-    name: Schema.optional(Schema.Array(Schema.String)),
-    network: Schema.optional(Schema.Array(Schema.String)),
-    publish: Schema.optional(Schema.Array(Schema.String)),
-    since: Schema.optional(Schema.Array(Schema.String)),
-    status: Schema.optional(Schema.Array(ContainerState.fields["Status"])),
-    volume: Schema.optional(Schema.String),
-});
+export const ListFilters = Schema.fromJsonString(
+    Schema.Struct({
+        ancestor: Schema.optional(Schema.Array(Schema.String)),
+        before: Schema.optional(Schema.Array(Schema.String)),
+        expose: Schema.optional(Schema.Array(Schema.String)),
+        exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
+        health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
+        identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
+        // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
+        "is-task": Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        name: Schema.optional(Schema.Array(Schema.String)),
+        network: Schema.optional(Schema.Array(Schema.String)),
+        publish: Schema.optional(Schema.Array(Schema.String)),
+        since: Schema.optional(Schema.Array(Schema.String)),
+        status: Schema.optional(Schema.Array(ContainerState.fields["Status"])),
+        volume: Schema.optional(Schema.String),
+    })
+);
 
 /** @since 1.0.0 */
-export const PruneFilters = Schema.Struct({
-    until: Schema.optional(Schema.String),
-    label: Schema.optional(Schema.Array(Schema.String)),
-});
+export const PruneFilters = Schema.fromJsonString(
+    Schema.Struct({
+        until: Schema.optional(Schema.String),
+        label: Schema.optional(Schema.Array(Schema.String)),
+    })
+);
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Container/operation/ContainerList */
 const listContainersEndpoint = HttpApiEndpoint.get("list", "/json", {
@@ -522,6 +527,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 Stream.unwrap,
                 Stream.decodeText(),
                 Stream.splitLines,
+                Stream.map(quoteWireNumbers),
                 Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(ContainerStatsResponse))(line)),
                 Stream.mapError(ContainersError("stats"))
             );
@@ -600,7 +606,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                 );
 
                 const websocket = yield* Effect.provideService(
-                    Socket.makeWebSocket(wsUrl),
+                    Socket.makeWebSocket(wsUrl, { closeCodeIsError: (code) => code !== 1000 }),
                     Socket.WebSocketConstructor,
                     websocketConstructor
                 );
