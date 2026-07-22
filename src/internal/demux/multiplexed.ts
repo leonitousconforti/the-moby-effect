@@ -142,15 +142,11 @@ export const multiplexedToSink = <IE = never, OE = Socket.SocketError, R = never
     input: MobyDemux.EitherMultiplexedInput<IE, OE, R>
 ): Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R> =>
     Sink.fromChannel(
-        asMultiplexedChannel(input).underlying as unknown as Channel.Channel<
-            never,
-            OE | IE,
-            Sink.End<void, Uint8Array>,
-            Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
-            never,
-            void,
-            R
-        >
+        Function.pipe(
+            asMultiplexedChannel(input).underlying,
+            Channel.drain,
+            Channel.mapDone(() => [void 0] as const)
+        )
     );
 
 /** @internal */
@@ -163,6 +159,11 @@ export const multiplexedFromStreamWith =
 export const multiplexedFromStream = <E, R>(
     input: Stream.Stream<Uint8Array, E, R>
 ): MobyDemux.MultiplexedChannel<never, E, R> => multiplexedFromStreamWith<never>()(input);
+
+// /** @internal */
+// export const multiplexedFromSink = <E, R>(
+//     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
+// ): MobyDemux.MultiplexedChannel<never, E, R> => makeMultiplexedChannel<never, E, R>(Sink.toChannel(input));
 
 /** @internal */
 export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, number, number> = Sink.reduceWhile(
