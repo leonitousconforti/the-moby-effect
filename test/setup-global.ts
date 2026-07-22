@@ -3,6 +3,7 @@ import * as Config from "effect/Config";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
+import * as Match from "effect/Match";
 
 import type { TestProject } from "vitest/node";
 
@@ -10,9 +11,20 @@ import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 import { testMatrix } from "./shared-global.js";
 
+// The node http client can not reach the daemon's unix socket under bun or
+// deno (their node compat does not honor socketPath agents), so the setup
+// must talk to the host daemon with the same platform layer the tests use.
+const makePlatformDockerLayer = Function.pipe(
+    Match.value(process.env["__PLATFORM_VARIANT"] ?? "node-24.x"),
+    Match.when("bun", () => DockerEngine.layerBun),
+    Match.when("deno", () => DockerEngine.layerDeno),
+    Match.whenOr("node-20.x", "node-22.x", "node-24.x", () => DockerEngine.layerNodeJS),
+    Match.orElse(() => DockerEngine.layerUndici)
+);
+
 const localDocker = Function.pipe(
     MobyConnection.connectionOptionsFromPlatformSystemSocketDefault,
-    Effect.map(DockerEngine.layerNodeJS),
+    Effect.map(makePlatformDockerLayer),
     Layer.unwrap
 );
 
