@@ -22,6 +22,10 @@ export default defineConfig({
         // runners the default of 5 concurrent bootstraps contend so badly
         // that layer construction blows through its timeout.
         maxConcurrency: process.env["CI"] !== undefined ? 2 : 5,
+        // These are integration tests against real docker daemons - even a
+        // single-request test can exceed the 5s default while the host is
+        // busy bootstrapping other combos' dind containers.
+        testTimeout: 60_000,
         reporters: ["default", "hanging-process", ["junit", { outputFile: "./coverage/junit.xml" }]],
         coverage: {
             provider: "v8",
