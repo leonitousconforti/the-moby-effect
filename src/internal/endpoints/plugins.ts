@@ -98,10 +98,7 @@ const upgradePluginEndpoint = HttpApiEndpoint.post("upgrade", "/:name/upgrade", 
     query: { remote: Schema.String },
     headers: { "X-Registry-Auth": Schema.optional(Schema.String) },
     payload: Schema.Array(PluginPrivilege),
-    success: [
-        HttpApiSchema.Empty(200), // 200 OK
-        HttpApiSchema.Empty(204), // 204 No Content
-    ],
+    success: HttpApiSchema.StreamUint8Array(), // 200 OK (streaming json progress response)
     error: [
         NotFound, // 404 No such plugin
         InternalServerError,
@@ -234,6 +231,14 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
                         payload,
                     })
                 ),
+                // The daemon streams json progress messages while it downloads
+                // the new plugin version - drain them so the effect completes
+                // only once the upgrade has actually finished.
+                Stream.unwrap,
+                Stream.decodeText(),
+                Stream.splitLines,
+                Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(JSONMessage))(line)),
+                Stream.runDrain,
                 Effect.mapError(PluginsError("upgrade"))
             );
         const create_ = <E, R>(name: string, tar: Stream.Stream<Uint8Array, E, R>) =>
