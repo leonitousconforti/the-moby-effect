@@ -1,5 +1,4 @@
 import type * as Scope from "effect/Scope";
-import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as Array from "effect/Array";
 import * as Channel from "effect/Channel";
@@ -13,6 +12,7 @@ import * as Semaphore from "effect/Semaphore";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
+import * as Socket from "effect/unstable/socket/Socket";
 
 import type * as DockerEngine from "../../DockerEngine.js";
 import type * as MobySchemas from "../../MobySchemas.js";
@@ -354,7 +354,6 @@ export const execWebsocketsNonBlocking = ({
         const use = Effect.gen(function* () {
             const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
             const cwdCommand = Predicate.isUndefined(cwd) ? cmd : `cd ${cwd} && ${cmd}`;
-            const input = Stream.succeed(`${cwdCommand}; exit\n`);
 
             // The attaches connect eagerly, so ordering here is meaningful:
             // attach the output sockets before either stdin socket so no
@@ -368,10 +367,21 @@ export const execWebsocketsNonBlocking = ({
 
             const sockets = { stdin: stdinSocket, stdout: stdoutSocket, stderr: stderrSocket } as const;
             const multiplexedSocket = yield* MobyDemux.pack(sockets, { requestedCapacity: 16 });
-            const producer = Channel.fromEffectDrain(MobyDemux.demuxRawToSingleSink(commandSocket, input, Sink.drain));
-            const consumer = multiplexedSocket.underlying;
-            const zipped = Channel.merge(producer, consumer, { haltStrategy: "both" });
-            return zipped;
+
+            // Write the command and half-close its attach BEFORE exposing the
+            // channel. The command and any downstream input travel on separate
+            // attaches that the daemon merges into the container's stdin, so
+            // writing concurrently would let a fast consumer's input reach the
+            // shell before the command does (observed hanging the exec under
+            // ci load). Completing the write first makes the ordering
+            // structural instead of a race.
+            const input = Stream.make<[string, Socket.CloseEvent]>(
+                `${cwdCommand}; exit\n`,
+                new Socket.CloseEvent(1000, "command written")
+            );
+            yield* MobyDemux.demuxRawToSingleSink(commandSocket, input, Sink.drain);
+
+            return multiplexedSocket.underlying;
         });
 
         const multiplexedChannel = Effect.acquireRelease(acquire, release).pipe(
