@@ -106,7 +106,7 @@ importers:
         version: 1.17.0
       undici:
         specifier: ^8.7.0
-        version: 8.7.0
+        version: 8.8.0
       ws:
         specifier: ^8.21.1
         version: 8.21.1
@@ -2417,8 +2417,8 @@ packages:
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
-  undici@8.7.0:
-    resolution: {integrity: sha512-N7iQtfyLhIMOFgQubvmLV26svHpO0bqKnAiWotTQCVKCmWrcGbBotPuW1x+xwYZ2VHdSTVUfPQQnlEt1/LouTQ==}
+  undici@8.8.0:
+    resolution: {integrity: sha512-ubshXMXwF3MQIMF1y/WxZdNBnjEKeSg2wF5mcGUtU55YTw34tnVVpKRlLf7ruDXZ5344KokPVX4RBx1wJm64Bw==}
     engines: {node: '>=22.19.0'}
 
   universalify@0.1.2:
@@ -2901,7 +2901,7 @@ snapshots:
       effect: 4.0.0-beta.99(patch_hash=2e5fa7d9c643267fe556744050a09db9715b91dc80dace73ff6f0a4a42d30707)
       ioredis: 5.11.1
       mime: 4.1.0
-      undici: 8.7.0
+      undici: 8.8.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -4781,7 +4781,7 @@ snapshots:
 
   undici-types@8.3.0: {}
 
-  undici@8.7.0: {}
+  undici@8.8.0: {}
 
   universalify@0.1.2: {}
 
