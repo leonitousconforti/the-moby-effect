@@ -61,49 +61,49 @@ describe.each(testMatrix)(
                 })
             );
 
-            it.effect("execWebsocketsNonBlocking", () =>
-                Effect.gen(function* () {
-                    // FIXME: websockets non blocking is broken on docker:26-dind-rootless and docker:27-dind-rootless
-                    if (
-                        dindBaseImage === "docker.io/library/docker:26-dind-rootless" ||
-                        dindBaseImage === "docker.io/library/docker:27-dind-rootless"
-                    ) {
-                        return;
-                    }
+            it.effect(
+                "execWebsocketsNonBlocking",
+                () =>
+                    Effect.gen(function* () {
+                        const { Id: id } = yield* DockerEngine.runScoped({
+                            OpenStdin: true,
+                            AttachStdin: true,
+                            AttachStdout: true,
+                            AttachStderr: true,
+                            Entrypoint: ["/bin/bash"],
+                            Image: "docker.io/library/ubuntu:latest",
+                        });
 
-                    const { Id: id } = yield* DockerEngine.runScoped({
-                        OpenStdin: true,
-                        AttachStdin: true,
-                        AttachStdout: true,
-                        AttachStderr: true,
-                        Entrypoint: ["/bin/bash"],
-                        Image: "docker.io/library/ubuntu:latest",
-                    });
+                        const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({
+                            containerId: id,
+                            command: ["read", "-p", '">"', "ah", "&&", "echo", "$ah"],
+                        });
 
-                    const multiplexed = yield* DockerEngine.execWebsocketsNonBlocking({
-                        containerId: id,
-                        command: ["read", "-p", '">"', "ah", "&&", "echo", "$ah"],
-                    });
+                        const fanned = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
+                        const packed = yield* MobyDemux.pack(fanned, { requestedCapacity: 16 });
 
-                    const fanned = yield* MobyDemux.fan(multiplexed, { requestedCapacity: 16 });
-                    const packed = yield* MobyDemux.pack(fanned, { requestedCapacity: 16 });
+                        const [stdout, stderr] = yield* MobyDemux.demuxMultiplexedToSeparateSinks(
+                            packed,
+                            Stream.make("ah2\n"),
+                            Sink.reduce(
+                                () => "",
+                                (acc, chunk) => acc + chunk
+                            ),
+                            Sink.reduce(
+                                () => "",
+                                (acc, chunk) => acc + chunk
+                            )
+                        );
 
-                    const [stdout, stderr] = yield* MobyDemux.demuxMultiplexedToSeparateSinks(
-                        packed,
-                        Stream.make("ah2\n"),
-                        Sink.reduce(
-                            () => "",
-                            (acc, chunk) => acc + chunk
-                        ),
-                        Sink.reduce(
-                            () => "",
-                            (acc, chunk) => acc + chunk
-                        )
-                    );
-
-                    expect(stderr).toBe("");
-                    expect(stdout).toBe("ah2\n");
-                })
+                        expect(stderr).toBe("");
+                        expect(stdout).toBe("ah2\n");
+                    }),
+                {
+                    // Four websocket attaches plus a container wait-and-restart
+                    // through a dind daemon does not fit the default timeout on
+                    // a loaded machine.
+                    timeout: Duration.minutes(1).pipe(Duration.toMillis),
+                }
             );
         });
     }

@@ -230,10 +230,32 @@ export const exec = ({
         else return Tuple.make(execInspectResponse.ExitCode, output);
     });
 
-/** @internal */
-const execWebsocketsRegistry = MutableHashMap.empty<string, Semaphore.Semaphore>();
+/**
+ * Serializes websocket execs per container. Attach websockets talk to the
+ * container's single stdio (there is no exec-create over websockets), so
+ * concurrent execs against the same container would interleave their input
+ * and output. Entries are reference counted and evicted once the last
+ * in-flight exec for a container releases.
+ *
+ * @internal
+ */
+const execWebsocketsRegistry = MutableHashMap.empty<
+    string,
+    { readonly semaphore: Semaphore.Semaphore; pending: number }
+>();
 
-/** @internal */
+/**
+ * Runs a command in a container by typing it into the container's own
+ * stdin-attached shell over attach websockets - the websocket transport has
+ * no exec-create endpoint, attach only talks to the container's main process.
+ * This shapes everything unusual about this function: the container's
+ * entrypoint must be a known shell (the command text is fed to it on stdin),
+ * the command is suffixed with `; exit` so the shell terminates and the
+ * daemon flushes and closes the attach streams, and afterwards the container
+ * is restarted to return it to a usable state for subsequent execs.
+ *
+ * @internal
+ */
 export const execWebsocketsNonBlocking = ({
     command,
     containerId,
@@ -249,14 +271,6 @@ export const execWebsocketsNonBlocking = ({
 > =>
     Effect.gen(function* () {
         const containers = yield* MobyEndpoints.Containers;
-
-        const mutex = MutableHashMap.get(execWebsocketsRegistry, containerId).pipe(
-            Option.getOrElse(() => {
-                const semaphore = Semaphore.makeUnsafe(1);
-                MutableHashMap.set(execWebsocketsRegistry, containerId, semaphore);
-                return semaphore;
-            })
-        );
 
         const acquire = Effect.gen(function* () {
             const inspect = yield* containers.inspect(containerId);
@@ -303,15 +317,39 @@ export const execWebsocketsNonBlocking = ({
                         })
                 )
             );
-            yield* mutex.take(1);
+
+            // The registry lookup, insert, and reference count increment must
+            // stay in one synchronous step so concurrent execs cannot observe
+            // a half-registered entry. The increment happens only after the
+            // validations above so a failed acquire never leaks a reference.
+            const entry = MutableHashMap.get(execWebsocketsRegistry, containerId).pipe(
+                Option.getOrElse(() => {
+                    const fresh = { semaphore: Semaphore.makeUnsafe(1), pending: 0 };
+                    MutableHashMap.set(execWebsocketsRegistry, containerId, fresh);
+                    return fresh;
+                })
+            );
+
+            entry.pending += 1;
+            yield* entry.semaphore.take(1);
+            return entry;
         });
 
         // TODO: should this be un-interuptible?
-        const release = Effect.fnUntraced(function* () {
-            yield* mutex.release(1);
-            yield* containers.wait(containerId, { condition: "not-running" });
-            yield* containers.start(containerId);
-        }, Effect.orDie);
+        const release = (entry: { readonly semaphore: Semaphore.Semaphore; pending: number }) =>
+            entry.semaphore.release(1).pipe(
+                Effect.andThen(containers.wait(containerId, { condition: "not-running" })),
+                Effect.andThen(containers.start(containerId)),
+                Effect.orDie,
+                Effect.ensuring(
+                    Effect.sync(() => {
+                        entry.pending -= 1;
+                        if (entry.pending === 0) {
+                            MutableHashMap.remove(execWebsocketsRegistry, containerId);
+                        }
+                    })
+                )
+            );
 
         const use = Effect.gen(function* () {
             const cmd = Predicate.isString(command) ? command : Array.join(command, " ");

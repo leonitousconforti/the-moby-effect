@@ -1,10 +1,7 @@
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
-import * as SchemaGetter from "effect/SchemaGetter";
-import * as SchemaIssue from "effect/SchemaIssue";
 import * as Stream from "effect/Stream";
 import * as HttpClient from "effect/unstable/http/HttpClient";
 import * as HttpApi from "effect/unstable/httpapi/HttpApi";
@@ -19,24 +16,13 @@ import { JSONMessage, TypesPlugin as Plugin, RuntimePluginPrivilege as PluginPri
 import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound } from "./errors.ts";
+import { BooleanFilter } from "./filters.ts";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
     Schema.Struct({
         capability: Schema.optional(Schema.Array(Schema.String)),
-        enabled: Schema.Tuple([Schema.String]).pipe(
-            Schema.decodeTo(Schema.Boolean, {
-                decode: SchemaGetter.transformOrFail((fromA: readonly [string]) =>
-                    Effect.fail(
-                        new SchemaIssue.InvalidValue(Option.some(fromA), {
-                            message: "Decoding 'enabled' filter is not supported",
-                        })
-                    )
-                ),
-                encode: SchemaGetter.transform((enabled: boolean) => [enabled ? "true" : "false"] as const),
-            }),
-            Schema.optional
-        ),
+        enabled: BooleanFilter("enabled").pipe(Schema.optional),
     })
 );
 

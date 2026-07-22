@@ -1,10 +1,7 @@
 import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
-import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
-import * as SchemaGetter from "effect/SchemaGetter";
-import * as SchemaIssue from "effect/SchemaIssue";
 import * as Stream from "effect/Stream";
 import * as HttpClient from "effect/unstable/http/HttpClient";
 import * as HttpApi from "effect/unstable/httpapi/HttpApi";
@@ -27,40 +24,26 @@ import {
 import { WithRegistryAuthHeader } from "./auth.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
+import { BooleanFilter, NumberFilter, StringFilter } from "./filters.ts";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
     Schema.Struct({
         before: Schema.optional(Schema.Array(Schema.String)),
-        dangling: Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+        dangling: Schema.optional(BooleanFilter("dangling")),
         label: Schema.optional(Schema.Array(Schema.String)),
         reference: Schema.optional(Schema.Array(Schema.String)),
         since: Schema.optional(Schema.Array(Schema.String)),
-        until: Schema.optional(Schema.String),
+        until: Schema.optional(StringFilter),
     })
 );
-
-/** @internal */
-const BooleanFromStringTuple = (filterName: string) =>
-    Schema.Tuple([Schema.String]).pipe(
-        Schema.decodeTo(Schema.Boolean, {
-            decode: SchemaGetter.transformOrFail((fromA: readonly [string]) =>
-                Effect.fail(
-                    new SchemaIssue.InvalidValue(Option.some(fromA), {
-                        message: `Decoding '${filterName}' filter is not supported`,
-                    })
-                )
-            ),
-            encode: SchemaGetter.transform((bool: boolean) => [bool ? "true" : "false"] as const),
-        })
-    );
 
 /** @since 1.0.0 */
 export const SearchFilters = Schema.fromJsonString(
     Schema.Struct({
-        "is-official": BooleanFromStringTuple("is-official").pipe(Schema.optional),
-        "is-automated": BooleanFromStringTuple("is-automated").pipe(Schema.optional),
-        stars: Schema.optional(Schema.NumberFromString),
+        "is-official": BooleanFilter("is-official").pipe(Schema.optional),
+        "is-automated": BooleanFilter("is-automated").pipe(Schema.optional),
+        stars: Schema.optional(NumberFilter),
     })
 );
 
@@ -119,16 +102,30 @@ const buildImageEndpoint = HttpApiEndpoint.post("build", "/build", {
     ],
 });
 
+/** @since 1.0.0 */
+export const BuildPruneFilters = Schema.fromJsonString(
+    Schema.Struct({
+        until: Schema.optional(StringFilter),
+        id: Schema.optional(Schema.Array(Schema.String)),
+        parent: Schema.optional(Schema.Array(Schema.String)),
+        type: Schema.optional(Schema.Array(Schema.String)),
+        description: Schema.optional(Schema.Array(Schema.String)),
+        inuse: Schema.optional(BooleanFilter("inuse")),
+        shared: Schema.optional(BooleanFilter("shared")),
+        private: Schema.optional(BooleanFilter("private")),
+    })
+);
+
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/BuildPrune */
 const buildPruneEndpoint = HttpApiEndpoint.post("buildPrune", "/build/prune", {
     query: {
         "keep-storage": Schema.optional(Schema.Number),
         all: Schema.optional(Schema.Boolean),
-        filters: Schema.optional(Schema.String),
+        filters: Schema.optional(BuildPruneFilters),
     },
     success: Schema.Struct({
         SpaceReclaimed: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
-        CachesDeleted: Schema.Array(Schema.String),
+        CachesDeleted: Schema.NullishOr(Schema.Array(Schema.String)),
     }), // 200 OK
     error: [InternalServerError],
 });

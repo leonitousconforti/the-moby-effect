@@ -2,6 +2,7 @@ import * as Context from "effect/Context";
 import * as Effect from "effect/Effect";
 import * as Layer from "effect/Layer";
 import * as Schema from "effect/Schema";
+import * as SchemaGetter from "effect/SchemaGetter";
 import * as HttpClient from "effect/unstable/http/HttpClient";
 import * as HttpApi from "effect/unstable/httpapi/HttpApi";
 import * as HttpApiClient from "effect/unstable/httpapi/HttpApiClient";
@@ -15,17 +16,25 @@ import { NetworkConnectOptions, NetworkCreateRequest, NetworkInspect } from "../
 import { ContainerIdentifier, NetworkIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Forbidden, InternalServerError, NotFound } from "./errors.ts";
+import { BooleanFilter, StringFilter } from "./filters.ts";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
     Schema.Struct({
-        dangling: Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+        dangling: Schema.optional(BooleanFilter("dangling")),
         driver: Schema.optional(Schema.Array(Schema.String)),
         id: Schema.optional(Schema.Array(Schema.String)),
         label: Schema.optional(Schema.Array(Schema.String)),
         name: Schema.optional(Schema.Array(Schema.String)),
         scope: Schema.optional(Schema.Array(Schema.String)),
-        type: Schema.optional(Schema.Literals(["custom", "builtin"])),
+        type: Schema.optional(
+            Schema.Tuple([Schema.Literals(["custom", "builtin"])]).pipe(
+                Schema.decodeTo(Schema.Literals(["custom", "builtin"]), {
+                    decode: SchemaGetter.transform(([value]: readonly ["custom" | "builtin"]) => value),
+                    encode: SchemaGetter.transform((value: "custom" | "builtin") => [value] as const),
+                })
+            )
+        ),
     })
 );
 
@@ -33,7 +42,7 @@ export const ListFilters = Schema.fromJsonString(
 export const PruneFilters = Schema.fromJsonString(
     Schema.Struct({
         label: Schema.optional(Schema.Array(Schema.String)),
-        until: Schema.optional(Schema.String),
+        until: Schema.optional(StringFilter),
     })
 );
 

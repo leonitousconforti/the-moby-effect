@@ -36,6 +36,7 @@ import { replacer as quoteWireNumbers } from "../platforms/agnostic.ts";
 import { ContainerIdentifier } from "../schemas/id.ts";
 import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, Forbidden, InternalServerError, NotAcceptable, NotFound } from "./errors.ts";
+import { BooleanFilter, StringFilter } from "./filters.ts";
 
 /** @since 1.0.0 */
 export const ListFilters = Schema.fromJsonString(
@@ -47,21 +48,21 @@ export const ListFilters = Schema.fromJsonString(
         health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
         identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
         // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
-        "is-task": Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+        "is-task": Schema.optional(BooleanFilter("is-task")),
         label: Schema.optional(Schema.Array(Schema.String)),
         name: Schema.optional(Schema.Array(Schema.String)),
         network: Schema.optional(Schema.Array(Schema.String)),
         publish: Schema.optional(Schema.Array(Schema.String)),
         since: Schema.optional(Schema.Array(Schema.String)),
         status: Schema.optional(Schema.Array(ContainerState.fields["Status"])),
-        volume: Schema.optional(Schema.String),
+        volume: Schema.optional(StringFilter),
     })
 );
 
 /** @since 1.0.0 */
 export const PruneFilters = Schema.fromJsonString(
     Schema.Struct({
-        until: Schema.optional(Schema.String),
+        until: Schema.optional(StringFilter),
         label: Schema.optional(Schema.Array(Schema.String)),
     })
 );
