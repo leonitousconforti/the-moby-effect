@@ -1,21 +1,22 @@
+import type * as Cause from "effect/Cause";
 import type * as Scope from "effect/Scope";
-import type * as MobyDemux from "../../MobyDemux.js";
 
-import * as Socket from "@effect/platform/Socket";
+import * as Array from "effect/Array";
 import * as Channel from "effect/Channel";
-import * as Chunk from "effect/Chunk";
 import * as Effect from "effect/Effect";
-import * as Either from "effect/Either";
-import * as Exit from "effect/Exit";
 import * as Function from "effect/Function";
 import * as Match from "effect/Match";
-import * as Option from "effect/Option";
 import * as Predicate from "effect/Predicate";
+import * as Pull from "effect/Pull";
 import * as Queue from "effect/Queue";
+import * as Semaphore from "effect/Semaphore";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
+import * as Socket from "effect/unstable/socket/Socket";
 
-import { makeMultiplexedChannel, multiplexedFromStreamWith, MultiplexedHeaderType } from "./multiplexed.js";
+import type * as MobyDemux from "../../MobyDemux.js";
+
+import { makeMultiplexedChannel, MultiplexedHeaderType } from "./multiplexed.js";
 import { demuxStdioRawToSeparateSinks } from "./raw.js";
 
 /** @internal */
@@ -98,56 +99,36 @@ export const pack = Function.dual<
             readonly encoding?: string | undefined;
         }
     ) {
-        const mutex = yield* Effect.makeSemaphore(1);
+        const mutex = yield* Semaphore.make(1);
         const context = yield* Effect.context<
             Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
         >();
 
         const capacity = options.requestedCapacity;
         type CanReceive = Uint8Array | string | Socket.CloseEvent;
-        const stdoutConsumerQueue = yield* Queue.bounded<string>(
+        const stdoutConsumerQueue = yield* Queue.bounded<string, Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stdoutCapacity
         );
-        const stderrConsumerQueue = yield* Queue.bounded<string>(
+        const stderrConsumerQueue = yield* Queue.bounded<string, Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stderrCapacity
         );
-        const stdinProducerQueue = yield* Queue.bounded<Either.Either<Chunk.Chunk<CanReceive>, Exit.Exit<void, IE1>>>(
+        const stdinProducerQueue = yield* Queue.bounded<Uint8Array, IE1 | IE2 | IE3 | Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stdinCapacity
         );
 
         // Demux everything to and fro the correct places. We can touch
         // this more than once because it is wrapped in the mutex.
-        const mother = demuxStdioRawToSeparateSinks(
+        const motherEffect = demuxStdioRawToSeparateSinks(
             stdio,
             {
-                stdin: Function.pipe(
-                    Stream.fromQueue(stdinProducerQueue, { shutdown: true }),
-                    Stream.map(
-                        Either.match({
-                            onRight: Exit.succeed,
-                            onLeft: Function.flow(
-                                Exit.mapBoth({
-                                    onFailure: Option.some,
-                                    onSuccess: Function.compose(Option.none, Exit.fail),
-                                }),
-                                Exit.flatten
-                            ),
-                        })
-                    ),
-                    Stream.flattenExitOption,
-                    Stream.flattenChunks
-                ),
-                stdout: Sink.fromQueue(stdoutConsumerQueue, { shutdown: true }),
-                stderr: Sink.fromQueue(stderrConsumerQueue, { shutdown: true }),
+                stdin: Stream.fromQueue(stdinProducerQueue) as Stream.Stream<Uint8Array, IE1, never>,
+                stdout: Sink.fromQueue(stdoutConsumerQueue),
+                stderr: Sink.fromQueue(stderrConsumerQueue),
             },
             {
                 encoding: options?.encoding,
             }
-        )
-            .pipe(mutex.withPermitsIfAvailable(1))
-            .pipe(Effect.asVoid)
-            .pipe(Channel.fromEffect)
-            .pipe(Channel.provideContext(context));
+        ).pipe(mutex.withPermitsIfAvailable(1), Effect.asVoid, Effect.provideContext(context));
 
         // Convert the streams to the multiplexed streams
         const textEncoder = new TextEncoder();
@@ -181,24 +162,40 @@ export const pack = Function.dual<
                 return result;
             };
 
-        const concurrency = { concurrent: true } as const;
-        const independentStdinChannel = Channel.toQueue(stdinProducerQueue)
-            .pipe(Channel.mapInput(Function.constVoid))
-            .pipe(Channel.mapInputError(Function.unsafeCoerce<unknown, IE1 | IE2 | IE3>))
-            .pipe(Channel.mapInputIn((input: Chunk.Chunk<CanReceive>) => Chunk.map(input, encode)))
-            .pipe(Channel.zipLeft(mother, concurrency));
+        // Forwards this channel's input into the stdin producer queue,
+        // propagating input errors and the end-of-input signal.
+        const feedStdin = (
+            upstream: Pull.Pull<Array.NonEmptyReadonlyArray<CanReceive>, IE1 | IE2 | IE3, unknown>
+        ): Effect.Effect<void> =>
+            upstream.pipe(
+                Effect.flatMap((chunk) => Queue.offerAll(stdinProducerQueue, Array.map(chunk, encode))),
+                Effect.forever,
+                Effect.catchCause((cause) =>
+                    Pull.isDoneCause(cause)
+                        ? Queue.end(stdinProducerQueue)
+                        : Queue.failCause(stdinProducerQueue, cause as Cause.Cause<IE1 | IE2 | IE3>)
+                ),
+                Effect.asVoid
+            );
 
-        const { underlying: independentStdoutChannel } = Stream.fromQueue(stdoutConsumerQueue)
-            .pipe(Stream.encodeText)
-            .pipe(Stream.map(mapOutEntry(MultiplexedHeaderType.Stdout)))
-            .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
+        const independentStdinChannel = Channel.fromEffectDrain(motherEffect).pipe(Channel.embedInput(feedStdin));
 
-        const { underlying: independentStderrChannel } = Stream.fromQueue(stderrConsumerQueue)
-            .pipe(Stream.encodeText)
-            .pipe(Stream.map(mapOutEntry(MultiplexedHeaderType.Stderr)))
-            .pipe(multiplexedFromStreamWith<IE1 | IE2 | IE3>());
+        const independentStdoutChannel = Stream.fromQueue(stdoutConsumerQueue).pipe(
+            Stream.encodeText,
+            Stream.map(mapOutEntry(MultiplexedHeaderType.Stdout)),
+            Stream.toChannel
+        );
 
-        const mixedOutputChannel = Channel.zip(independentStdoutChannel, independentStderrChannel, concurrency);
-        return makeMultiplexedChannel(Channel.zip(independentStdinChannel, mixedOutputChannel, concurrency));
+        const independentStderrChannel = Stream.fromQueue(stderrConsumerQueue).pipe(
+            Stream.encodeText,
+            Stream.map(mapOutEntry(MultiplexedHeaderType.Stderr)),
+            Stream.toChannel
+        );
+
+        const haltStrategy = { haltStrategy: "both" } as const;
+        const mixedOutputChannel = Channel.merge(independentStdoutChannel, independentStderrChannel, haltStrategy);
+        return makeMultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>(
+            Channel.merge(independentStdinChannel, mixedOutputChannel, haltStrategy)
+        );
     })
 );

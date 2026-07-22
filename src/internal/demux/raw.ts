@@ -1,9 +1,6 @@
-import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import type * as Chunk from "effect/Chunk";
-import type * as Scope from "effect/Scope";
-import type * as MobyDemux from "../../MobyDemux.js";
+import type * as Array from "effect/Array";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
 
-import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
 import * as Effect from "effect/Effect";
 import * as Function from "effect/Function";
@@ -12,6 +9,10 @@ import * as Predicate from "effect/Predicate";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
+import * as Socket from "effect/unstable/socket/Socket";
+
+import type * as MobyDemux from "../../MobyDemux.js";
+
 import * as internalCompressed from "./compressed.js";
 
 /** @internal */
@@ -40,11 +41,11 @@ export const makeRawSocket = (underlying: Socket.Socket): MobyDemux.RawSocket =>
 /** @internal */
 export const makeRawChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
     underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+        Array.NonEmptyReadonlyArray<Uint8Array>,
         OE,
-        IE,
         void,
+        Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
+        IE,
         unknown,
         R
     >
@@ -87,13 +88,13 @@ export const asRawChannel = <IE = never, OE = Socket.SocketError, R = never>(
 export const rawToStream = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherRawInput<IE, OE, R>
 ): Stream.Stream<Uint8Array, IE | OE, R> =>
-    Channel.toStream(
+    Stream.fromChannel(
         asRawChannel(input).underlying as Channel.Channel<
-            Chunk.Chunk<Uint8Array>,
-            unknown,
+            Array.NonEmptyReadonlyArray<Uint8Array>,
             IE | OE,
-            unknown,
             void,
+            unknown,
+            unknown,
             unknown,
             R
         >
@@ -103,7 +104,13 @@ export const rawToStream = <IE = never, OE = Socket.SocketError, R = never>(
 export const rawToSink = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherRawInput<IE, OE, R>
 ): Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R> =>
-    Channel.toSink(asRawChannel(input).underlying);
+    Sink.fromChannel(
+        Function.pipe(
+            asRawChannel(input).underlying,
+            Channel.drain,
+            Channel.mapDone(() => [void 0] as const)
+        )
+    );
 
 /** @internal */
 export const rawFromStreamWith =
@@ -115,10 +122,10 @@ export const rawFromStreamWith =
 export const rawFromStream = <E, R>(input: Stream.Stream<Uint8Array, E, R>): MobyDemux.RawChannel<never, E, R> =>
     rawFromStreamWith<never>()(input);
 
-/** @internal */
-export const rawFromSink = <E, R>(
-    input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-): MobyDemux.RawChannel<never, E, R> => makeRawChannel<never, E, R>(Sink.toChannel(input));
+// /** @internal */
+// export const rawFromSink = <E, R>(
+//     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
+// ): MobyDemux.RawChannel<never, E, R> => makeRawChannel<never, E, R>(Sink.toChannel(input));
 
 /** @internal */
 export const interleaveRaw = <
@@ -152,15 +159,13 @@ export const mergeRawToTaggedStream = <
     IE1 | IE2 | OE1 | OE2,
     R1 | R2
 > =>
-    Stream.mergeWithTag(
-        {
-            stdout: rawToStream(asRawChannel(stdout)),
-            stderr: rawToStream(asRawChannel(stderr)),
-        } as const,
-        {
-            concurrency: "unbounded",
-            bufferSize: options?.bufferSize,
-        } as const
+    Function.pipe(
+        Stream.merge(
+            Stream.map(rawToStream(stdout), (value) => ({ _tag: "stdout", value }) as const),
+            Stream.map(rawToStream(stderr), (value) => ({ _tag: "stderr", value }) as const),
+            { haltStrategy: "both" }
+        ),
+        Stream.buffer({ capacity: options?.bufferSize ?? 16 })
     );
 
 /** @internal */
@@ -172,29 +177,21 @@ export const demuxRawToSingleSink = Function.dual<
         options?: { encoding?: string | undefined } | undefined
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
         socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >,
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>,
     // Data-first signature.
     <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
         socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>
 >(
     (arguments_) => isRawSocket(arguments_[0]) || isRawChannel(arguments_[0]),
     (socket, source, sink, options) =>
         Function.pipe(
             source,
             Stream.pipeThroughChannelOrFail(asRawChannel(socket).underlying),
-            Stream.decodeText(options?.encoding),
+            Stream.decodeText({ encoding: options?.encoding }),
             Stream.run(sink)
         )
 );
@@ -246,12 +243,7 @@ export const demuxStdioRawTupled: <
 ) => Effect.Effect<
     MobyDemux.CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
-    | Exclude<R1, Scope.Scope>
-    | Exclude<R2, Scope.Scope>
-    | Exclude<R3, Scope.Scope>
-    | Exclude<R4, Scope.Scope>
-    | Exclude<R5, Scope.Scope>
-    | Exclude<R6, Scope.Scope>
+    R1 | R2 | R3 | R4 | R5 | R6
 > = Effect.fnUntraced(function* (sockets, options) {
     const { stderr, stdin, stdout } = sockets;
 
@@ -297,15 +289,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
         R5 = never,
     >(
         sockets: MobyDemux.HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
-        | Exclude<R1, Scope.Scope>
-        | Exclude<R2, Scope.Scope>
-        | Exclude<R3, Scope.Scope>
-        | Exclude<R4, Scope.Scope>
-        | Exclude<R5, Scope.Scope>
-    >,
+    ) => Effect.Effect<A1, E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3 | R4 | R5>,
     // Single sink, data-first signature.
     <
         A1,
@@ -328,15 +312,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
-        | Exclude<R1, Scope.Scope>
-        | Exclude<R2, Scope.Scope>
-        | Exclude<R3, Scope.Scope>
-        | Exclude<R4, Scope.Scope>
-        | Exclude<R5, Scope.Scope>
-    >
+    ) => Effect.Effect<A1, E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3 | R4 | R5>
 >(
     (arguments_) => "stdin" in arguments_[0] || "stdout" in arguments_[0] || "stderr" in arguments_[0],
     Effect.fnUntraced(function* (sockets, source, sink, options) {
@@ -349,9 +325,10 @@ export const demuxStdioRawToSingleSink = Function.dual<
             ? demuxRawToSingleSink(stdin, source, Sink.drain, options)
             : Stream.run(source, Sink.drain);
 
-        const runOutput = Stream.interleave(stdoutStream, stderrStream)
-            .pipe(Stream.decodeText(options?.encoding))
-            .pipe(Stream.run(sink));
+        const runOutput = Stream.interleave(stdoutStream, stderrStream).pipe(
+            Stream.decodeText({ encoding: options?.encoding }),
+            Stream.run(sink)
+        );
 
         return yield* Effect.map(
             Effect.all({ ranStdin: runInput, ranOutput: runOutput }, { concurrency: 2 }),
@@ -385,12 +362,7 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
     ) => Effect.Effect<
         MobyDemux.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
-        | Exclude<R1, Scope.Scope>
-        | Exclude<R2, Scope.Scope>
-        | Exclude<R3, Scope.Scope>
-        | Exclude<R4, Scope.Scope>
-        | Exclude<R5, Scope.Scope>
-        | Exclude<R6, Scope.Scope>
+        R1 | R2 | R3 | R4 | R5 | R6
     >,
     // Multiple sinks, data-first signature.
     <
@@ -424,15 +396,10 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
     ) => Effect.Effect<
         MobyDemux.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
-        | Exclude<R1, Scope.Scope>
-        | Exclude<R2, Scope.Scope>
-        | Exclude<R3, Scope.Scope>
-        | Exclude<R4, Scope.Scope>
-        | Exclude<R5, Scope.Scope>
-        | Exclude<R6, Scope.Scope>
+        R1 | R2 | R3 | R4 | R5 | R6
     >
 >(
-    (arguments_) => !("stdin" in arguments_[0] && Predicate.hasProperty(arguments_[0]["stdin"], Stream.StreamTypeId)),
+    (arguments_) => !("stdin" in arguments_[0] && Stream.isStream(arguments_[0]["stdin"])),
     Effect.fnUntraced(function* (sockets, io, options) {
         const { stderr, stdin, stdout } = sockets;
 

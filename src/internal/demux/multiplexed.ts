@@ -1,13 +1,12 @@
-import type * as HttpClientResponse from "@effect/platform/HttpClientResponse";
-import type * as ParseResult from "effect/ParseResult";
+import type * as Array from "effect/Array";
 import type * as Scope from "effect/Scope";
-import type * as MobyDemux from "../../MobyDemux.js";
+import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
 
-import * as Socket from "@effect/platform/Socket";
 import * as Channel from "effect/Channel";
 import * as Chunk from "effect/Chunk";
 import * as Duration from "effect/Duration";
 import * as Effect from "effect/Effect";
+import * as Filter from "effect/Filter";
 import * as Function from "effect/Function";
 import * as Pipeable from "effect/Pipeable";
 import * as Predicate from "effect/Predicate";
@@ -16,6 +15,10 @@ import * as Schema from "effect/Schema";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 import * as Tuple from "effect/Tuple";
+import * as Socket from "effect/unstable/socket/Socket";
+
+import type * as MobyDemux from "../../MobyDemux.js";
+
 import * as internalCompressed from "./compressed.js";
 
 /** @internal */
@@ -44,11 +47,11 @@ export const makeMultiplexedSocket = (underlying: Socket.Socket): MobyDemux.Mult
 /** @internal */
 export const makeMultiplexedChannel = <IE = unknown, OE = Socket.SocketError, R = never>(
     underlying: Channel.Channel<
-        Chunk.Chunk<Uint8Array>,
-        Chunk.Chunk<string | Uint8Array | Socket.CloseEvent>,
+        Array.NonEmptyReadonlyArray<Uint8Array>,
         OE,
-        IE,
         void,
+        Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
+        IE,
         unknown,
         R
     >
@@ -104,15 +107,7 @@ export type MultiplexedAccumulator = {
 };
 
 /** @internal */
-export interface $MultiplexedSchema extends Schema.Tuple<
-    [Schema.Enums<typeof MultiplexedHeaderType>, Schema.Schema<Uint8Array, ReadonlyArray<number>, never>]
-> {}
-
-/** @internal */
-export const MultiplexedSchema: $MultiplexedSchema = Schema.Tuple(
-    Schema.Enums(MultiplexedHeaderType),
-    Schema.Uint8Array
-);
+export const MultiplexedSchema = Schema.Tuple([Schema.Enum(MultiplexedHeaderType), Schema.Uint8Array]);
 
 /** @internal */
 export const asMultiplexedChannel = <IE = never, OE = Socket.SocketError, R = never>(
@@ -130,13 +125,13 @@ export const asMultiplexedChannel = <IE = never, OE = Socket.SocketError, R = ne
 export const multiplexedToStream = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherMultiplexedInput<IE, OE, R>
 ): Stream.Stream<Uint8Array, IE | OE, R> =>
-    Channel.toStream(
+    Stream.fromChannel(
         asMultiplexedChannel(input).underlying as Channel.Channel<
-            Chunk.Chunk<Uint8Array>,
-            unknown,
+            Array.NonEmptyReadonlyArray<Uint8Array>,
             IE | OE,
-            unknown,
             void,
+            unknown,
+            unknown,
             unknown,
             R
         >
@@ -146,7 +141,13 @@ export const multiplexedToStream = <IE = never, OE = Socket.SocketError, R = nev
 export const multiplexedToSink = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherMultiplexedInput<IE, OE, R>
 ): Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, IE | OE, R> =>
-    Channel.toSink(asMultiplexedChannel(input).underlying);
+    Sink.fromChannel(
+        Function.pipe(
+            asMultiplexedChannel(input).underlying,
+            Channel.drain,
+            Channel.mapDone(() => [void 0] as const)
+        )
+    );
 
 /** @internal */
 export const multiplexedFromStreamWith =
@@ -159,21 +160,21 @@ export const multiplexedFromStream = <E, R>(
     input: Stream.Stream<Uint8Array, E, R>
 ): MobyDemux.MultiplexedChannel<never, E, R> => multiplexedFromStreamWith<never>()(input);
 
-/** @internal */
-export const multiplexedFromSink = <E, R>(
-    input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-): MobyDemux.MultiplexedChannel<never, E, R> => makeMultiplexedChannel<never, E, R>(Sink.toChannel(input));
+// /** @internal */
+// export const multiplexedFromSink = <E, R>(
+//     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
+// ): MobyDemux.MultiplexedChannel<never, E, R> => makeMultiplexedChannel<never, E, R>(Sink.toChannel(input));
 
 /** @internal */
-export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, number, number, never, never> = Sink.fold(
-    {
+export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, number, number> = Sink.reduceWhile(
+    () => ({
         headerBytesRead: 0,
         messageBytesRead: 0,
         headerBuffer: Chunk.empty<number>(),
         messageBuffer: Chunk.empty<number>(),
         messageSize: undefined as number | undefined,
         messageType: undefined as number | undefined,
-    },
+    }),
     ({ messageBytesRead, messageSize }) => messageSize === undefined || messageBytesRead < messageSize,
     (accumulator, input: number) => {
         // If we have not read the entire header yet
@@ -210,13 +211,13 @@ export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, numbe
 /** @internal */
 export const aggregate = <E, R>(
     multiplexedStream: Stream.Stream<Uint8Array, E, R>
-): Stream.Stream<readonly [MultiplexedHeaderType, Uint8Array], ParseResult.ParseError | E, R> =>
+): Stream.Stream<readonly [MultiplexedHeaderType, Uint8Array], Schema.SchemaError | E, R> =>
     Function.pipe(
         multiplexedStream,
-        Stream.mapConcat(Function.identity),
+        Stream.flattenIterable,
         Stream.aggregateWithin(demuxMultiplexedFolderSink, Schedule.fixed(Duration.infinity)),
         Stream.map(({ messageBuffer, messageType }) => Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))),
-        Stream.flatMap(Schema.decodeUnknown(MultiplexedSchema))
+        Stream.mapEffect((multiplexed) => Schema.decodeUnknownEffect(MultiplexedSchema)(multiplexed))
     );
 
 /** @internal */
@@ -228,28 +229,22 @@ export const demuxMultiplexedToSingleSink = Function.dual<
         options?: { encoding?: string | undefined } | undefined
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
         socket: MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >,
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>,
     // One sink, data-first signature.
     <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
         socket: MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
         options?: { encoding?: string | undefined } | undefined
-    ) => Effect.Effect<
-        A1,
-        E1 | E2 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-    >
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>
 >(
     (arguments_) => isMultiplexedSocket(arguments_[0]) || isMultiplexedChannel(arguments_[0]),
     (socket, source, sink, options) => {
         const { underlying } = asMultiplexedChannel(socket);
         const textDecoder = new TextDecoder(options?.encoding);
-        const toStrings = Tuple.mapSecond((bytes: Uint8Array) => textDecoder.decode(bytes, { stream: true }));
+        const toStrings = ([messageType, bytes]: readonly [MultiplexedHeaderType, Uint8Array]) =>
+            Tuple.make(messageType, textDecoder.decode(bytes, { stream: true }));
+
         return Function.pipe(
             source,
             Stream.pipeThroughChannelOrFail(underlying),
@@ -272,8 +267,8 @@ export const demuxMultiplexedToSeparateSinks = Function.dual<
         socket: MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R4>
     ) => Effect.Effect<
         MobyDemux.CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
+        E1 | E2 | E3 | IE | OE | Schema.SchemaError,
+        Exclude<R1 | R2 | R3 | R4, Scope.Scope>
     >,
     // Two sinks, data-first signature.
     <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
@@ -284,8 +279,8 @@ export const demuxMultiplexedToSeparateSinks = Function.dual<
         options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
     ) => Effect.Effect<
         MobyDemux.CompressedDemuxOutput<A1, A2>,
-        E1 | E2 | E3 | IE | OE | ParseResult.ParseError,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope> | Exclude<R4, Scope.Scope>
+        E1 | E2 | E3 | IE | OE | Schema.SchemaError,
+        Exclude<R1 | R2 | R3 | R4, Scope.Scope>
     >
 >(
     (arguments_) => isMultiplexedSocket(arguments_[0]) || isMultiplexedChannel(arguments_[0]),
@@ -294,25 +289,31 @@ export const demuxMultiplexedToSeparateSinks = Function.dual<
             source,
             Stream.pipeThroughChannelOrFail(asMultiplexedChannel(socket).underlying),
             aggregate,
-            Stream.partition(([messageType]) => messageType === MultiplexedHeaderType.Stderr, {
-                bufferSize: options?.bufferSize,
-            }),
-            Effect.map(
-                Tuple.mapBoth({
-                    onFirst: Function.flow(
-                        Stream.map(Tuple.getSecond),
-                        Stream.decodeText(options?.encoding),
-                        Stream.run(sink1)
-                    ),
-                    onSecond: Function.flow(
-                        Stream.map(Tuple.getSecond),
-                        Stream.decodeText(options?.encoding),
-                        Stream.run(sink2)
-                    ),
-                })
+            Stream.partition(
+                Filter.fromPredicate(
+                    ([messageType]: Schema.Schema.Type<typeof MultiplexedSchema>) =>
+                        messageType === MultiplexedHeaderType.Stderr
+                ),
+                { bufferSize: options?.bufferSize ?? 16 }
             ),
-            Effect.map(Effect.allWith({ concurrency: 2 })),
-            Effect.flatten,
+            Effect.map(
+                ([stdoutStream, stderrStream]) =>
+                    [
+                        Function.pipe(
+                            stdoutStream,
+                            Stream.map(Tuple.get(1)),
+                            Stream.decodeText({ encoding: options?.encoding }),
+                            Stream.run(sink1)
+                        ),
+                        Function.pipe(
+                            stderrStream,
+                            Stream.map(Tuple.get(1)),
+                            Stream.decodeText({ encoding: options?.encoding }),
+                            Stream.run(sink2)
+                        ),
+                    ] as const
+            ),
+            Effect.flatMap((streamers) => Effect.all(streamers, { concurrency: 2 })),
             Effect.map(internalCompressed.compressDemuxOutput),
             Effect.scoped
         )
