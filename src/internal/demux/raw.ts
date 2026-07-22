@@ -88,17 +88,7 @@ export const asRawChannel = <IE = never, OE = Socket.SocketError, R = never>(
 export const rawToStream = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherRawInput<IE, OE, R>
 ): Stream.Stream<Uint8Array, IE | OE, R> =>
-    Stream.fromChannel(
-        asRawChannel(input).underlying as Channel.Channel<
-            Array.NonEmptyReadonlyArray<Uint8Array>,
-            IE | OE,
-            void,
-            unknown,
-            unknown,
-            unknown,
-            R
-        >
-    );
+    Stream.pipeThroughChannelOrFail(Stream.empty, asRawChannel(input).underlying);
 
 /** @internal */
 export const rawToSink = <IE = never, OE = Socket.SocketError, R = never>(

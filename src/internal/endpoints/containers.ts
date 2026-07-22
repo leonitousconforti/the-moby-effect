@@ -605,13 +605,43 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                     Effect.map(stripBaseUrl)
                 );
 
-                const websocket = yield* Effect.provideService(
-                    Socket.makeWebSocket(wsUrl, { closeCodeIsError: (code) => code !== 1000 }),
-                    Socket.WebSocketConstructor,
-                    websocketConstructor
+                const websocket = websocketConstructor(wsUrl);
+                yield* Effect.callback<void, Socket.SocketError>((resume) => {
+                    if (websocket.readyState === 1) {
+                        resume(Effect.void);
+                        return;
+                    }
+                    const onOpen = () => {
+                        cleanup();
+                        resume(Effect.void);
+                    };
+                    const onFailure = (cause: unknown) => {
+                        cleanup();
+                        resume(
+                            Effect.fail(
+                                new Socket.SocketError({
+                                    reason: new Socket.SocketOpenError({ kind: "Unknown", cause }),
+                                })
+                            )
+                        );
+                    };
+                    const cleanup = () => {
+                        websocket.removeEventListener("open", onOpen);
+                        websocket.removeEventListener("error", onFailure);
+                        websocket.removeEventListener("close", onFailure);
+                    };
+                    websocket.addEventListener("open", onOpen, { once: true });
+                    websocket.addEventListener("error", onFailure, { once: true });
+                    websocket.addEventListener("close", onFailure, { once: true });
+                    return Effect.sync(cleanup);
+                });
+
+                const socket = yield* Socket.fromWebSocket(
+                    Effect.acquireRelease(Effect.succeed(websocket), (ws) => Effect.sync(() => ws.close())),
+                    { closeCodeIsError: (code) => code !== 1000 }
                 );
 
-                return makeRawSocket(websocket);
+                return makeRawSocket(socket);
             }).pipe(Effect.mapError(ContainersError("attachWebsocket")));
         const wait_ = (identifier: ContainerIdentifier, options?: Options<"wait">) =>
             client

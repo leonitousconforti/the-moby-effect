@@ -317,12 +317,20 @@ export const execWebsocketsNonBlocking = ({
             const cmd = Predicate.isString(command) ? command : Array.join(command, " ");
             const cwdCommand = Predicate.isUndefined(cwd) ? cmd : `cd ${cwd} && ${cmd}`;
             const input = Stream.succeed(`${cwdCommand}; exit\n`);
-            const stdinSocket = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
+
+            // The attaches connect eagerly, so ordering here is meaningful:
+            // attach the output sockets before either stdin socket so no
+            // output can be produced (and discarded by the daemon) before the
+            // output attaches are complete. The command gets its own attach
+            // because every raw socket is a single-use connection.
             const stdoutSocket = yield* containers.attachWebsocket(containerId, { stdout: true, stream: true });
             const stderrSocket = yield* containers.attachWebsocket(containerId, { stderr: true, stream: true });
+            const stdinSocket = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
+            const commandSocket = yield* containers.attachWebsocket(containerId, { stdin: true, stream: true });
+
             const sockets = { stdin: stdinSocket, stdout: stdoutSocket, stderr: stderrSocket } as const;
             const multiplexedSocket = yield* MobyDemux.pack(sockets, { requestedCapacity: 16 });
-            const producer = Channel.fromEffectDrain(MobyDemux.demuxRawToSingleSink(stdinSocket, input, Sink.drain));
+            const producer = Channel.fromEffectDrain(MobyDemux.demuxRawToSingleSink(commandSocket, input, Sink.drain));
             const consumer = multiplexedSocket.underlying;
             const zipped = Channel.merge(producer, consumer, { haltStrategy: "both" });
             return zipped;

@@ -6,10 +6,10 @@ import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as Channel from "effect/Channel";
 import * as Effect from "effect/Effect";
+import * as Fiber from "effect/Fiber";
 import * as Function from "effect/Function";
 import * as Pull from "effect/Pull";
 import * as Queue from "effect/Queue";
-import * as Semaphore from "effect/Semaphore";
 import * as Sink from "effect/Sink";
 import * as Stream from "effect/Stream";
 
@@ -18,7 +18,15 @@ import type * as MobyDemux from "../../MobyDemux.js";
 import { demuxMultiplexedToSeparateSinks, isMultiplexedChannel, isMultiplexedSocket } from "./multiplexed.js";
 import { makeRawChannel } from "./raw.js";
 
-/** @internal */
+/**
+ * The fan demux driver runs exactly once, forked into the caller's scope, and
+ * the returned channels are pure queue plumbing. This keeps the demux
+ * deterministic - there is no racing over which consumer starts the driver,
+ * and consuming any subset of the returned channels (in any order) observes
+ * all of the data.
+ *
+ * @internal
+ */
 export const fan = Function.dual<
     <IE = never, OE = Socket.SocketError, R = never>(options: {
         readonly requestedCapacity:
@@ -36,7 +44,7 @@ export const fan = Function.dual<
             stderr: MobyDemux.RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        Exclude<R, Scope.Scope>
+        R | Scope.Scope
     >,
     <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
@@ -57,7 +65,7 @@ export const fan = Function.dual<
             stderr: MobyDemux.RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        Exclude<R, Scope.Scope>
+        R | Scope.Scope
     >
 >(
     (arguments_) => isMultiplexedChannel(arguments_[0]) || isMultiplexedSocket(arguments_[0]),
@@ -75,37 +83,43 @@ export const fan = Function.dual<
         }
     ) {
         type CanReceive = string | Uint8Array | Socket.CloseEvent;
+        type FanError = IE | OE | Schema.SchemaError;
 
-        const mutex = yield* Semaphore.make(1);
-        const context = yield* Effect.context<Exclude<R, Scope.Scope>>();
-
-        // Internal buffers.
+        // Internal buffers. The consumer queues carry the driver's failure so
+        // that a demux error surfaces on whichever channels are being read.
         const capacity = options.requestedCapacity;
-        const stdoutConsumerQueue = yield* Queue.bounded<string, Cause.Done>(
+        const stdoutConsumerQueue = yield* Queue.bounded<string, FanError | Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stdoutCapacity
         );
-        const stderrConsumerQueue = yield* Queue.bounded<string, Cause.Done>(
+        const stderrConsumerQueue = yield* Queue.bounded<string, FanError | Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stderrCapacity
         );
         const stdinProducerQueue = yield* Queue.bounded<CanReceive, IE | Cause.Done>(
             typeof capacity === "number" ? capacity : capacity.stdinCapacity
         );
 
-        // We MUST only touch the underlying once!!! Very important!!!
-        // Demux everything to and fro the correct places. We can touch
-        // this more than once because it is wrapped with a mutex.
-        const motherEffect = demuxMultiplexedToSeparateSinks(
+        // The driver demuxes the multiplexed input into the consumer queues
+        // and pumps the stdin producer queue into it. On completion the
+        // consumer queues are ended; on failure the failure is forwarded to
+        // them so it surfaces on whichever channels are being read.
+        const driver = yield* demuxMultiplexedToSeparateSinks(
             multiplexedInput,
             Stream.fromQueue(stdinProducerQueue),
-            Sink.fromQueue(stdoutConsumerQueue),
-            Sink.fromQueue(stderrConsumerQueue),
+            Sink.forEachArray((chunk) => Queue.offerAll(stdoutConsumerQueue, chunk)),
+            Sink.forEachArray((chunk) => Queue.offerAll(stderrConsumerQueue, chunk)),
             {
                 bufferSize: 32,
                 encoding: options.encoding,
             }
-        ).pipe(mutex.withPermitsIfAvailable(1), Effect.asVoid, Effect.provideContext(context));
+        ).pipe(
+            Effect.tap(() => Effect.andThen(Queue.end(stdoutConsumerQueue), Queue.end(stderrConsumerQueue))),
+            Effect.tapCause((cause) =>
+                Effect.andThen(Queue.failCause(stdoutConsumerQueue, cause), Queue.failCause(stderrConsumerQueue, cause))
+            ),
+            Effect.forkScoped
+        );
 
-        // Forwards this channel's input into the stdin producer queue,
+        // Forwards the stdin channel's input into the stdin producer queue,
         // propagating input errors and the end-of-input signal.
         const feedStdin = (
             upstream: Pull.Pull<Array.NonEmptyReadonlyArray<CanReceive>, IE, unknown, never>
@@ -118,25 +132,21 @@ export const fan = Function.dual<
                 Effect.asVoid
             );
 
-        // Any one of these will kick off the mother demux, but only one will
-        const independentStdinChannel = Channel.fromEffectDrain(motherEffect).pipe(
+        // The stdin channel completes (or fails) with the driver.
+        const independentStdinChannel = Channel.fromEffectDrain(Fiber.join(driver)).pipe(
             Channel.embedInput<Array.NonEmptyReadonlyArray<CanReceive>, IE, unknown, never>(feedStdin),
             makeRawChannel<IE, IE | OE | Schema.SchemaError, never>
         );
 
-        // Any one of these will kick off the mother demux, but only one will
         const independentStdoutChannel = Stream.fromQueue(stdoutConsumerQueue).pipe(
             Stream.encodeText,
             Stream.toChannel,
-            Channel.mergeEffect(motherEffect),
             makeRawChannel<IE, IE | OE | Schema.SchemaError, never>
         );
 
-        // Any one of these will kick off the mother demux, but only one will
         const independentStderrChannel = Stream.fromQueue(stderrConsumerQueue).pipe(
             Stream.encodeText,
             Stream.toChannel,
-            Channel.mergeEffect(motherEffect),
             makeRawChannel<IE, IE | OE | Schema.SchemaError, never>
         );
 

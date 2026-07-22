@@ -125,17 +125,7 @@ export const asMultiplexedChannel = <IE = never, OE = Socket.SocketError, R = ne
 export const multiplexedToStream = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherMultiplexedInput<IE, OE, R>
 ): Stream.Stream<Uint8Array, IE | OE, R> =>
-    Stream.fromChannel(
-        asMultiplexedChannel(input).underlying as Channel.Channel<
-            Array.NonEmptyReadonlyArray<Uint8Array>,
-            IE | OE,
-            void,
-            unknown,
-            unknown,
-            unknown,
-            R
-        >
-    );
+    Stream.pipeThroughChannelOrFail(Stream.empty, asMultiplexedChannel(input).underlying);
 
 /** @internal */
 export const multiplexedToSink = <IE = never, OE = Socket.SocketError, R = never>(
@@ -167,13 +157,13 @@ export const multiplexedFromStream = <E, R>(
 
 /** @internal */
 export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, number, number> = Sink.reduceWhile(
-    () => ({
+    (): MultiplexedAccumulator => ({
         headerBytesRead: 0,
         messageBytesRead: 0,
         headerBuffer: Chunk.empty<number>(),
         messageBuffer: Chunk.empty<number>(),
-        messageSize: undefined as number | undefined,
-        messageType: undefined as number | undefined,
+        messageSize: undefined,
+        messageType: undefined,
     }),
     ({ messageBytesRead, messageSize }) => messageSize === undefined || messageBytesRead < messageSize,
     (accumulator, input: number) => {

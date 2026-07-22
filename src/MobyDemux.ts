@@ -969,9 +969,9 @@ export const pack: {
     }): (
         stdio: HeterogeneousStdioRawInput<IE1, IE2, IE3, OE1, OE2, OE3, R1, R2, R3>
     ) => Effect.Effect<
-        MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+        MultiplexedChannel<IE1, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+        R1 | R2 | R3 | Scope.Scope
     >;
     <
         IE1 = never,
@@ -996,9 +996,9 @@ export const pack: {
             readonly encoding?: string | undefined;
         }
     ): Effect.Effect<
-        MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
+        MultiplexedChannel<IE1, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+        R1 | R2 | R3 | Scope.Scope
     >;
 } = internalPack.pack;
 
@@ -1023,7 +1023,7 @@ export const fan: {
             stderr: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        Exclude<R, Scope.Scope>
+        R | Scope.Scope
     >;
     <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: EitherMultiplexedInput<IE, OE, R>,
@@ -1044,7 +1044,7 @@ export const fan: {
             stderr: RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        Exclude<R, Scope.Scope>
+        R | Scope.Scope
     >;
 } = internalFan.fan;
 
