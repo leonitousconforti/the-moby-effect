@@ -23,7 +23,7 @@ describe.each(testMatrix)(
         );
 
         layer(testLayer, {
-            timeout: Duration.minutes(2),
+            timeout: Duration.minutes(5),
             excludeTestServices: true,
         })((it) => {
             describe.sequential("MobyApi System tests", () => {

@@ -17,6 +17,11 @@ export default defineConfig({
         sequence: {
             concurrent: true,
         },
+        // Every concurrent test slot can be bootstrapping its own dind
+        // container (docker build + boot + readiness wait) - on the 4-core CI
+        // runners the default of 5 concurrent bootstraps contend so badly
+        // that layer construction blows through its timeout.
+        maxConcurrency: process.env["CI"] !== undefined ? 2 : 5,
         reporters: ["default", "hanging-process", ["junit", { outputFile: "./coverage/junit.xml" }]],
         coverage: {
             provider: "v8",

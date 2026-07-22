@@ -27,7 +27,7 @@ describe.each(testMatrix)(
             return swarm.init();
         });
 
-        layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Tasks tests", (it) => {
+        layer(withSwarmEnabled, { timeout: Duration.minutes(5) })("MobyApi Tasks tests", (it) => {
             it.effect("Should see no tasks", () =>
                 Effect.gen(function* () {
                     const tasks = yield* MobyEndpoints.Tasks;

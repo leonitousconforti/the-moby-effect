@@ -28,7 +28,7 @@ describe.skipIf(skipForUndiciHttpClients).each(testMatrix)(
             Layer.provide(NodeServices.layer)
         );
 
-        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Session tests", (it) => {
+        layer(testLayer, { timeout: Duration.minutes(5) })("MobyApi Session tests", (it) => {
             it.effect("Should be able to request a session", () =>
                 Effect.gen(function* () {
                     const sessions = yield* MobyEndpoints.Sessions;

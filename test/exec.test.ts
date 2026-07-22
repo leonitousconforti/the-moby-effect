@@ -40,7 +40,7 @@ describe.each(testMatrix)(
             Layer.provide(NodeServices.layer)
         );
 
-        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Execs tests", (it) => {
+        layer(testLayer, { timeout: Duration.minutes(5) })("MobyApi Execs tests", (it) => {
             it.effect("exec", () =>
                 Effect.gen(function* () {
                     // FIXME: can't send the right headers on undici

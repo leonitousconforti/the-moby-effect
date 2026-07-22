@@ -22,7 +22,7 @@ describe.each(testMatrix)(
             Layer.provide(NodeServices.layer)
         );
 
-        layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
+        layer(testLayer, { timeout: Duration.minutes(5) })((it) => {
             describe.sequential("MobyApi Images tests", () => {
                 it.effect(
                     "Should search for an image (this test could be flaky depending on docker hub availability and transient network conditions)",

@@ -22,7 +22,7 @@ describe.each(testMatrix)(
             Layer.provide(NodeServices.layer)
         );
 
-        layer(testLayer, { timeout: Duration.minutes(2) })("MobyApi Distribution tests", (it) => {
+        layer(testLayer, { timeout: Duration.minutes(5) })("MobyApi Distribution tests", (it) => {
             it.effect("Should inspect an image", () =>
                 Effect.gen(function* () {
                     const distribution = yield* MobyEndpoints.Distributions;

@@ -22,7 +22,7 @@ describe.each(testMatrix)(
             Layer.provide(NodeServices.layer)
         );
 
-        layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
+        layer(testLayer, { timeout: Duration.minutes(5) })((it) => {
             describe.sequential("MobyApi Networks tests", () => {
                 it.effect("Should see networks", () =>
                     Effect.gen(function* () {

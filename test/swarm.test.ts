@@ -27,7 +27,7 @@ describe.each(testMatrix)(
             return swarm.init();
         });
 
-        layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Swarm tests", (it) => {
+        layer(withSwarmEnabled, { timeout: Duration.minutes(5) })("MobyApi Swarm tests", (it) => {
             it.effect(
                 "Should leave, rejoin, unlock, update, and get the unlock key of the swarm",
                 () =>

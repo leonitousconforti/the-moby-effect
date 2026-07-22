@@ -27,7 +27,7 @@ describe.each(testMatrix)(
             return swarm.init();
         });
 
-        layer(withSwarmEnabled, { timeout: Duration.minutes(2) })((it) => {
+        layer(withSwarmEnabled, { timeout: Duration.minutes(5) })((it) => {
             describe.sequential("MobyApi Secrets tests", () => {
                 it.effect("Should see no secrets", () =>
                     Effect.gen(function* () {

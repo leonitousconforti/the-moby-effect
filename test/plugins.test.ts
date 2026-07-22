@@ -28,7 +28,7 @@ describe.each(testMatrix)(
         // (dial unix .../loki.sock: no such file or directory). Linux only.
         const daemonCanRunPlugins = process.platform === "linux";
 
-        layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
+        layer(testLayer, { timeout: Duration.minutes(5) })((it) => {
             describe.sequential("MobyApi Plugins tests", () => {
                 it.effect("Should see no plugins", () =>
                     Effect.gen(function* () {

@@ -27,7 +27,7 @@ describe.each(testMatrix)(
             return swarm.init();
         });
 
-        layer(withSwarmEnabled, { timeout: Duration.minutes(2) })("MobyApi Nodes tests", (it) => {
+        layer(withSwarmEnabled, { timeout: Duration.minutes(5) })("MobyApi Nodes tests", (it) => {
             it.effect("Should see and inspect one node", () =>
                 Effect.gen(function* () {
                     const nodes = yield* MobyEndpoints.Nodes;
