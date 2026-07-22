@@ -13,17 +13,20 @@ concurrency:
 jobs:
   typescript-build:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # pnpm must be on the PATH before setup-node can resolve the pnpm store
+      # location for its dependency cache.
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: lts/*
-
-      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+          cache: "pnpm"
       - run: pnpm install
-      - run: pnpm check
-      - run: pnpm check
+      # --force so a restored .tsbuildinfo can never mask errors in files tsc
+      # considers unchanged.
+      - run: pnpm exec tsc -b tsconfig.json --force
       - run: pnpm lint
       - run: pnpm circular
       - run: pnpm build
@@ -31,7 +34,9 @@ jobs:
   docker-engine-tests:
     needs: [typescript-build]
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The full dind matrix bootstraps a dind container per test file per
+    # connection combo - it cannot finish in 10 minutes.
+    timeout-minutes: 90
     defaults:
       run:
         shell: bash
@@ -62,16 +67,50 @@ jobs:
           echo 'kernel.apparmor_restrict_unprivileged_userns=0' | sudo tee /etc/sysctl.d/99-rootless-docker.conf
           sudo sysctl --system
 
-      - run: |
-          docker pull docker.io/library/docker:dind-rootless
-          docker pull docker.io/library/docker:23-dind-rootless
-          docker pull docker.io/library/docker:24-dind-rootless
-          docker pull docker.io/library/docker:25-dind-rootless
-          docker pull docker.io/library/docker:26-dind-rootless
-          docker pull docker.io/library/docker:27-dind-rootless
-          docker pull docker.io/library/docker:28-dind-rootless
-          docker pull alpine:latest
-          docker pull ubuntu:latest
+      # Anonymous Docker Hub pulls from shared runners regularly hit rate
+      # limits, and every matrix job needs the same images - cache them as a
+      # tarball and only pull (with retries) on a cache miss. Keep the image
+      # list in sync with the testMatrix in test/shared-global.ts, which is
+      # also what the cache key watches.
+      - name: Restore docker images
+        id: docker-images
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: /tmp/docker-image-cache
+          key: docker-images-v1-${{ hashFiles('test/shared-global.ts') }}
+
+      - name: Load cached docker images
+        if: steps.docker-images.outputs.cache-hit == 'true'
+        run: docker load --input /tmp/docker-image-cache/images.tar
+
+      - name: Pull docker images
+        if: steps.docker-images.outputs.cache-hit != 'true'
+        run: |
+          pull() {
+            for attempt in 1 2 3 4 5; do
+              docker pull "$1" && return 0
+              echo "pull $1 failed (attempt $attempt), backing off"
+              sleep $((attempt * 30))
+            done
+            return 1
+          }
+          pull docker.io/library/docker:dind-rootless
+          pull docker.io/library/docker:26-dind-rootless
+          pull docker.io/library/docker:27-dind-rootless
+          pull docker.io/library/docker:28-dind-rootless
+          pull docker.io/library/alpine:latest
+          pull docker.io/library/ubuntu:latest
+          mkdir -p /tmp/docker-image-cache
+          docker save --output /tmp/docker-image-cache/images.tar \
+            docker.io/library/docker:dind-rootless \
+            docker.io/library/docker:26-dind-rootless \
+            docker.io/library/docker:27-dind-rootless \
+            docker.io/library/docker:28-dind-rootless \
+            docker.io/library/alpine:latest \
+            docker.io/library/ubuntu:latest
+
+      - name: Generate test fixtures
+        run: |
           docker save --output test/fixtures/alpine_latest.tar alpine:latest
           docker save --output test/fixtures/ubuntu_latest.tar ubuntu:latest
 
@@ -83,6 +122,17 @@ jobs:
         run: |
           PNPM_BIN=$(which pnpm)
           sudo -E $PNPM_BIN test
+
+      # The junit report is the post-mortem for a failed run - upload it even
+      # (especially) when the tests fail.
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: test-results-${{ matrix.config.variant }}
+          path: coverage/junit.xml
+          if-no-files-found: ignore
+          retention-days: 14
 
       - if: false
         uses: ./.github/actions/setup-bun
