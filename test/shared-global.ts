@@ -27,5 +27,7 @@ export const testMatrix: Array<{
                 (dindBaseImage === "docker.io/library/docker:28-dind-rootless" ||
                     dindBaseImage === "docker.io/library/docker:dind-rootless")
             )
-    )
+    ),
+    // https://github.com/docker/desktop-feedback/issues/303
+    Array.filter(({ exposeDindContainerBy }) => exposeDindContainerBy !== "socket" || process.platform === "linux")
 );
