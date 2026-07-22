@@ -39,6 +39,28 @@ export const MultiplexedContentType: "application/vnd.docker.multiplexed-stream"
     internalMultiplexed.MultiplexedContentType;
 
 /**
+ * The header type of a multiplexed message, indicating which stdio stream the
+ * payload belongs to.
+ *
+ * @since 1.0.0
+ * @category Types
+ */
+export const MultiplexedHeaderType: {
+    readonly Stdin: 0;
+    readonly Stdout: 1;
+    readonly Stderr: 2;
+} = internalMultiplexed.MultiplexedHeaderType;
+
+/**
+ * The header type of a multiplexed message, indicating which stdio stream the
+ * payload belongs to.
+ *
+ * @since 1.0.0
+ * @category Types
+ */
+export type MultiplexedHeaderType = (typeof MultiplexedHeaderType)[keyof typeof MultiplexedHeaderType];
+
+/**
  * @since 1.0.0
  * @category Type ids
  */
@@ -629,7 +651,23 @@ export const mergeRawToTaggedStream: <
  * @since 1.0.0
  * @category Demux
  */
-export const demuxRawToSingleSink = internalRaw.demuxRawToSingleSink;
+export const demuxRawToSingleSink: {
+    // Data-last signature.
+    <A1, L1, E1, E2, R1, R2>(
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): <IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherRawInput<E1 | IE, OE, R3>
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>;
+    // Data-first signature.
+    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherRawInput<E1 | IE, OE, R3>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>;
+} = internalRaw.demuxRawToSingleSink;
 
 /**
  * Demux multiple raw sockets, created from multiple container attach requests.
@@ -641,7 +679,54 @@ export const demuxRawToSingleSink = internalRaw.demuxRawToSingleSink;
  * @since 1.0.0
  * @category Demux
  */
-export const demuxStdioRawTupled = internalRaw.demuxStdioRawTupled;
+export const demuxStdioRawTupled: <
+    A1 = void,
+    A2 = void,
+    L1 = never,
+    L2 = never,
+    E1 = never,
+    E2 = never,
+    E3 = never,
+    R1 = never,
+    R2 = never,
+    R3 = never,
+    IE1 = never,
+    IE2 = never,
+    IE3 = never,
+    OE1 = Socket.SocketError,
+    OE2 = Socket.SocketError,
+    OE3 = Socket.SocketError,
+    R4 = never,
+    R5 = never,
+    R6 = never,
+>(
+    sockets: HeterogeneousStdioTupledRawInput<
+        A1,
+        A2,
+        L1,
+        L2,
+        E1,
+        E2,
+        E3,
+        R1,
+        R2,
+        R3,
+        IE1,
+        IE2,
+        IE3,
+        OE1,
+        OE2,
+        OE3,
+        R4,
+        R5,
+        R6
+    >,
+    options?: { encoding?: string | undefined } | undefined
+) => Effect.Effect<
+    CompressedDemuxOutput<A1, A2>,
+    E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
+    R1 | R2 | R3 | R4 | R5 | R6
+> = internalRaw.demuxStdioRawTupled;
 
 /**
  * Demux multiple raw sockets, created from multiple container attach requests.
@@ -653,7 +738,49 @@ export const demuxStdioRawTupled = internalRaw.demuxStdioRawTupled;
  * @since 1.0.0
  * @category Demux
  */
-export const demuxStdioRawToSingleSink = internalRaw.demuxStdioRawToSingleSink;
+export const demuxStdioRawToSingleSink: {
+    // Single sink, data-last signature.
+    <A1, L1, E1, E2, R1, R2>(
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): <
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R3 = never,
+        R4 = never,
+        R5 = never,
+    >(
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>
+    ) => Effect.Effect<A1, E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3 | R4 | R5>;
+    // Single sink, data-first signature.
+    <
+        A1,
+        L1,
+        E1,
+        E2,
+        R1,
+        R2,
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R3 = never,
+        R4 = never,
+        R5 = never,
+    >(
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, string, L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): Effect.Effect<A1, E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3 | R4 | R5>;
+} = internalRaw.demuxStdioRawToSingleSink;
 
 /**
  * Demux multiple raw sockets, created from multiple container attach requests.
@@ -665,7 +792,67 @@ export const demuxStdioRawToSingleSink = internalRaw.demuxStdioRawToSingleSink;
  * @since 1.0.0
  * @category Demux
  */
-export const demuxStdioRawToSeparateSinks = internalRaw.demuxStdioRawToSeparateSinks;
+export const demuxStdioRawToSeparateSinks: {
+    // Multiple sinks, data-last signature.
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
+        io: {
+            stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
+            stdout: Sink.Sink<A1, string, L1, E2, R2>;
+            stderr: Sink.Sink<A2, string, L2, E3, R3>;
+        },
+        options?: { encoding?: string | undefined } | undefined
+    ): <
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R4 = never,
+        R5 = never,
+        R6 = never,
+    >(
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>
+    ) => Effect.Effect<
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
+        R1 | R2 | R3 | R4 | R5 | R6
+    >;
+    // Multiple sinks, data-first signature.
+    <
+        A1,
+        A2,
+        L1,
+        L2,
+        E1,
+        E2,
+        E3,
+        R1,
+        R2,
+        R3,
+        IE1 = never,
+        IE2 = never,
+        IE3 = never,
+        OE1 = Socket.SocketError,
+        OE2 = Socket.SocketError,
+        OE3 = Socket.SocketError,
+        R4 = never,
+        R5 = never,
+        R6 = never,
+    >(
+        sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R4, R5, R6>,
+        io: {
+            stdin: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>;
+            stdout: Sink.Sink<A1, string, L1, E2, R2>;
+            stderr: Sink.Sink<A2, string, L2, E3, R3>;
+        },
+        options?: { encoding?: string | undefined } | undefined
+    ): Effect.Effect<
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
+        R1 | R2 | R3 | R4 | R5 | R6
+    >;
+} = internalRaw.demuxStdioRawToSeparateSinks;
 
 /**
  * Demux a multiplexed socket, all output goes to a single sink.
@@ -673,7 +860,23 @@ export const demuxStdioRawToSeparateSinks = internalRaw.demuxStdioRawToSeparateS
  * @since 1.0.0
  * @category Demux
  */
-export const demuxMultiplexedToSingleSink = internalMultiplexed.demuxMultiplexedToSingleSink;
+export const demuxMultiplexedToSingleSink: {
+    // One sink, data-last signature.
+    <A1, L1, E1, E2, R1, R2>(
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): <IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R3>
+    ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
+    // One sink, data-first signature.
+    <A1, L1, E1, E2, R1, R2, IE = never, OE = Socket.SocketError, R3 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R3>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
+        options?: { encoding?: string | undefined } | undefined
+    ): Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
+} = internalMultiplexed.demuxMultiplexedToSingleSink;
 
 /**
  * Demux a multiplexed socket. When given a multiplexed socket, we must parse
@@ -687,7 +890,33 @@ export const demuxMultiplexedToSingleSink = internalMultiplexed.demuxMultiplexed
  * @since 1.0.0
  * @category Demux
  */
-export const demuxMultiplexedToSeparateSinks = internalMultiplexed.demuxMultiplexedToSeparateSinks;
+export const demuxMultiplexedToSeparateSinks: {
+    // Two sinks, data-last signature.
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3>(
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink1: Sink.Sink<A1, string, L1, E2, R2>,
+        sink2: Sink.Sink<A2, string, L2, E3, R3>,
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    ): <IE = never, OE = Socket.SocketError, R4 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R4>
+    ) => Effect.Effect<
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | IE | OE | Schema.SchemaError,
+        Exclude<R1 | R2 | R3 | R4, Scope.Scope>
+    >;
+    // Two sinks, data-first signature.
+    <A1, A2, L1, L2, E1, E2, E3, R1, R2, R3, IE = never, OE = Socket.SocketError, R4 = never>(
+        socket: EitherMultiplexedInput<E1 | IE, OE, R4>,
+        source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
+        sink1: Sink.Sink<A1, string, L1, E2, R2>,
+        sink2: Sink.Sink<A2, string, L2, E3, R3>,
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    ): Effect.Effect<
+        CompressedDemuxOutput<A1, A2>,
+        E1 | E2 | E3 | IE | OE | Schema.SchemaError,
+        Exclude<R1 | R2 | R3 | R4, Scope.Scope>
+    >;
+} = internalMultiplexed.demuxMultiplexedToSeparateSinks;
 
 /**
  * Demux either a raw socket or a multiplexed socket to a single sink.
