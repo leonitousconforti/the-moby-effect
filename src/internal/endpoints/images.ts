@@ -29,14 +29,16 @@ import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.Struct({
-    before: Schema.optional(Schema.Array(Schema.String)),
-    dangling: Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
-    label: Schema.optional(Schema.Array(Schema.String)),
-    reference: Schema.optional(Schema.Array(Schema.String)),
-    since: Schema.optional(Schema.Array(Schema.String)),
-    until: Schema.optional(Schema.String),
-});
+export const ListFilters = Schema.fromJsonString(
+    Schema.Struct({
+        before: Schema.optional(Schema.Array(Schema.String)),
+        dangling: Schema.optional(Schema.Literals(["true", "false"]).transform([true, false])),
+        label: Schema.optional(Schema.Array(Schema.String)),
+        reference: Schema.optional(Schema.Array(Schema.String)),
+        since: Schema.optional(Schema.Array(Schema.String)),
+        until: Schema.optional(Schema.String),
+    })
+);
 
 /** @internal */
 const BooleanFromStringTuple = (filterName: string) =>
@@ -54,11 +56,13 @@ const BooleanFromStringTuple = (filterName: string) =>
     );
 
 /** @since 1.0.0 */
-export const SearchFilters = Schema.Struct({
-    "is-official": BooleanFromStringTuple("is-official").pipe(Schema.optional),
-    "is-automated": BooleanFromStringTuple("is-automated").pipe(Schema.optional),
-    stars: Schema.optional(Schema.NumberFromString),
-});
+export const SearchFilters = Schema.fromJsonString(
+    Schema.Struct({
+        "is-official": BooleanFromStringTuple("is-official").pipe(Schema.optional),
+        "is-automated": BooleanFromStringTuple("is-automated").pipe(Schema.optional),
+        stars: Schema.optional(Schema.NumberFromString),
+    })
+);
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/ImageList */
 const listImagesEndpoint = HttpApiEndpoint.get("list", "/images/json", {
@@ -91,7 +95,9 @@ const buildImageEndpoint = HttpApiEndpoint.post("build", "/build", {
         cpusetcpus: Schema.optional(Schema.String),
         cpuperiod: Schema.optional(Schema.Number),
         cpuquota: Schema.optional(Schema.Number),
-        buildargs: Schema.optional(Schema.Record(Schema.String, Schema.NullishOr(Schema.String))),
+        buildargs: Schema.optional(
+            Schema.fromJsonString(Schema.Record(Schema.String, Schema.NullishOr(Schema.String)))
+        ),
         shmsize: Schema.optional(Schema.Number),
         squash: Schema.optional(Schema.Boolean),
         labels: Schema.optional(Schema.String),
@@ -121,7 +127,7 @@ const buildPruneEndpoint = HttpApiEndpoint.post("buildPrune", "/build/prune", {
         filters: Schema.optional(Schema.String),
     },
     success: Schema.Struct({
-        SpaceReclaimed: Schema.Number,
+        SpaceReclaimed: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
         CachesDeleted: Schema.Array(Schema.String),
     }), // 200 OK
     error: [InternalServerError],
@@ -226,7 +232,7 @@ const pruneImagesEndpoint = HttpApiEndpoint.post("prune", "/images/prune", {
         filters: Schema.optional(Schema.String),
     },
     success: Schema.Struct({
-        SpaceReclaimed: Schema.Number,
+        SpaceReclaimed: Schema.BigIntFromString.check(Schema.isBetweenBigInt({ minimum: 0n, maximum: 2n ** 64n - 1n })),
         ImagesDeleted: Schema.NullishOr(Schema.Array(ImageDeleteResponse)),
     }), // 200 OK
     error: [InternalServerError],
