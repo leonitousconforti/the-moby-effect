@@ -16,14 +16,14 @@ import { DockerError } from "./circular.ts";
 import { BadRequest, InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.Struct({
+export const ListFilters = Schema.fromJsonString(Schema.Struct({
     id: Schema.optional(Schema.Array(Schema.String)),
     label: Schema.optional(Schema.Array(Schema.String)),
     membership: Schema.optional(Schema.Array(Schema.Literals(["accepted", "pending"]))),
     name: Schema.optional(Schema.Array(Schema.String)),
     "node.label": Schema.optional(Schema.Array(Schema.String)),
     role: Schema.optional(Schema.Array(Schema.Literals(["manager", "worker"]))),
-});
+}));
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeList */
 const listNodesEndpoint = HttpApiEndpoint.get("list", "/", {

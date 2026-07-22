@@ -17,11 +17,11 @@ import { DockerError } from "./circular.ts";
 import { BadRequest, Conflict, InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.Struct({
+export const ListFilters = Schema.fromJsonString(Schema.Struct({
     id: Schema.optional(Schema.Array(Schema.String)),
     label: Schema.optional(Schema.Array(Schema.String)),
     name: Schema.optional(Schema.Array(Schema.String)),
-});
+}));
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Secret/operation/SecretList */
 const listSecretsEndpoint = HttpApiEndpoint.get("list", "/", {

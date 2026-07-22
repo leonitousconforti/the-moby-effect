@@ -17,14 +17,14 @@ import { DockerError } from "./circular.ts";
 import { InternalServerError, NotFound, ServiceUnavailable } from "./errors.ts";
 
 /** @since 1.0.0 */
-export const TaskListFilters = Schema.Struct({
+export const TaskListFilters = Schema.fromJsonString(Schema.Struct({
     "desired-state": Schema.optional(Schema.Array(Schema.Literals(["running", "shutdown", "accepted"]))),
     id: Schema.optional(Schema.Array(Schema.String)),
     name: Schema.optional(Schema.Array(Schema.String)),
     node: Schema.optional(Schema.Array(Schema.String)),
     service: Schema.optional(Schema.Array(Schema.String)),
     label: Schema.optional(Schema.Array(Schema.String)),
-});
+}));
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Task/operation/TaskList */
 const listTasksEndpoint = HttpApiEndpoint.get("list", "/", {

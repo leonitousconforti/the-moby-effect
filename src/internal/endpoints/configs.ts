@@ -18,12 +18,12 @@ import { BadRequest, Conflict, InternalServerError, NotFound } from "./errors.ts
 import { NodeNotPartOfSwarm } from "./swarm.ts";
 
 /** @since 1.0.0 */
-export const ListFilters = Schema.Struct({
+export const ListFilters = Schema.fromJsonString(Schema.Struct({
     id: Schema.optional(Schema.Array(ConfigIdentifier)),
     name: Schema.optional(Schema.Array(Schema.String)),
     names: Schema.optional(Schema.Array(Schema.String)),
     label: Schema.optional(Schema.Array(Schema.String)),
-});
+}));
 
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Config/operation/ConfigList */
 const listConfigsEndpoint = HttpApiEndpoint.get("list", "/", {
