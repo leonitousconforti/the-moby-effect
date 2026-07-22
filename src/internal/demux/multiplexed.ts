@@ -165,24 +165,6 @@ export const multiplexedFromStream = <E, R>(
 ): MobyDemux.MultiplexedChannel<never, E, R> => multiplexedFromStreamWith<never>()(input);
 
 /** @internal */
-export const multiplexedFromSink = <E, R>(
-    input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-): MobyDemux.MultiplexedChannel<never, E, R> =>
-    input.pipe(Sink.toChannel, Channel.mapDone(Function.constVoid), (channel) =>
-        makeMultiplexedChannel<never, E, R>(
-            channel as Channel.Channel<
-                never,
-                E,
-                void,
-                Array.NonEmptyReadonlyArray<string | Uint8Array | Socket.CloseEvent>,
-                never,
-                unknown,
-                R
-            >
-        )
-    );
-
-/** @internal */
 export const demuxMultiplexedFolderSink: Sink.Sink<MultiplexedAccumulator, number, number> = Sink.reduceWhile(
     () => ({
         headerBytesRead: 0,

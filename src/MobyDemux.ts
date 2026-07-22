@@ -557,21 +557,21 @@ export const rawFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => Ra
 export const multiplexedFromStream: <E, R>(input: Stream.Stream<Uint8Array, E, R>) => MultiplexedChannel<never, E, R> =
     internalMultiplexed.multiplexedFromStream;
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
-export const rawFromSink: <E, R>(
-    input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-) => RawChannel<never, E, R> = internalRaw.rawFromSink;
+// /**
+//  * @since 1.0.0
+//  * @category Conversions
+//  */
+// export const rawFromSink: <E, R>(
+//     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
+// ) => RawChannel<never, E, R> = internalRaw.rawFromSink;
 
-/**
- * @since 1.0.0
- * @category Conversions
- */
-export const multiplexedFromSink: <E, R>(
-    input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-) => MultiplexedChannel<never, E, R> = internalMultiplexed.multiplexedFromSink;
+// /**
+//  * @since 1.0.0
+//  * @category Conversions
+//  */
+// export const multiplexedFromSink: <E, R>(
+//     input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
+// ) => MultiplexedChannel<never, E, R> = internalMultiplexed.multiplexedFromSink;
 
 /**
  * @since 1.0.0

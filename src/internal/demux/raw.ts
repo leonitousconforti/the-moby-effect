@@ -123,31 +123,6 @@ export const rawFromStream = <E, R>(input: Stream.Stream<Uint8Array, E, R>): Mob
     rawFromStreamWith<never>()(input);
 
 /** @internal */
-export const rawFromSink = <E, R>(
-    input: Sink.Sink<void, string | Uint8Array | Socket.CloseEvent, Uint8Array, E, R>
-): MobyDemux.RawChannel<never, E, R> => {
-    const test = input.pipe(
-        Sink.toChannel,
-        Channel.mapDone(() => void 0)
-    );
-
-    type t = Channel.Channel<
-        never,
-        E,
-        Sink.End<void, Uint8Array<ArrayBufferLike>>,
-        readonly [
-            string | Uint8Array<ArrayBufferLike> | Socket.CloseEvent,
-            ...(string | Uint8Array<ArrayBufferLike> | Socket.CloseEvent)[],
-        ],
-        never,
-        void,
-        R
-    >;
-
-    makeRawChannel<never, E, R>(Sink.toChannel(input));
-};
-
-/** @internal */
 export const interleaveRaw = <
     IE1 = never,
     IE2 = never,
