@@ -30,9 +30,12 @@ import * as internalConnection from "./connection.js";
  */
 // oxlint-disable-next-line import/namespace
 export interface IExposeSocketOnEffectClientResponseHack extends HttpClientResponse.HttpClientResponse {
-    source: {
-        socket: net.Socket;
-    };
+    original?: IExposeSocketOnEffectClientResponseHack | undefined;
+    source?:
+        | {
+              socket?: net.Socket | undefined;
+          }
+        | undefined;
 }
 
 /** @internal */

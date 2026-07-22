@@ -1,6 +1,7 @@
 import type * as HttpClientResponse from "effect/unstable/http/HttpClientResponse";
 
 import * as Effect from "effect/Effect";
+import * as Predicate from "effect/Predicate";
 import * as Socket from "effect/unstable/socket/Socket";
 
 import type * as MobyDemux from "../../MobyDemux.js";
@@ -16,7 +17,20 @@ export const hijackResponseUnsafe = (
     Effect.flatMap(
         Effect.promise(() => import("@effect/platform-node/NodeSocket")),
         (nodeSocketLazy) => {
-            const socket = (response as IExposeSocketOnEffectClientResponseHack).source.socket;
+            let current = response as IExposeSocketOnEffectClientResponseHack;
+            while (Predicate.isNotUndefined(current.original)) current = current.original;
+
+            const socket = current.source?.socket;
+            if (Predicate.isUndefined(socket)) {
+                return Effect.fail(
+                    new Socket.SocketError({
+                        reason: new Socket.SocketReadError({
+                            cause: "Could not find the underlying tcp socket on the http client response",
+                        }),
+                    })
+                );
+            }
+
             return nodeSocketLazy.fromDuplex(Effect.sync(() => socket));
         }
     );
