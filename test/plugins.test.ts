@@ -22,6 +22,12 @@ describe.each(testMatrix)(
             Layer.provide(NodeServices.layer)
         );
 
+        // Enabling a plugin requires the daemon to actually run the plugin
+        // binary - grafana/loki-docker-driver only ships linux/amd64, and
+        // even a plain `docker plugin install` of it fails on Docker Desktop
+        // (dial unix .../loki.sock: no such file or directory). Linux only.
+        const daemonCanRunPlugins = process.platform === "linux";
+
         layer(testLayer, { timeout: Duration.minutes(2) })((it) => {
             describe.sequential("MobyApi Plugins tests", () => {
                 it.effect("Should see no plugins", () =>
@@ -33,7 +39,7 @@ describe.each(testMatrix)(
                     })
                 );
 
-                it.effect(
+                it.effect.skipIf(!daemonCanRunPlugins)(
                     "Should pull a plugin",
                     () =>
                         Effect.gen(function* () {
@@ -47,9 +53,9 @@ describe.each(testMatrix)(
                                 name: "test-plugin:latest",
                                 privileges: [
                                     {
-                                        name: privileges[0]!.name,
-                                        value: privileges[0]!.value,
-                                        description: privileges[0]!.description,
+                                        Name: privileges[0]!.Name,
+                                        Value: privileges[0]!.Value,
+                                        Description: privileges[0]!.Description,
                                     },
                                 ],
                             });
@@ -61,7 +67,7 @@ describe.each(testMatrix)(
                     }
                 );
 
-                it.effect("Should see one plugin", () =>
+                it.effect.skipIf(!daemonCanRunPlugins)("Should see one plugin", () =>
                     Effect.gen(function* () {
                         const plugins = yield* MobyEndpoints.Plugins;
                         const pluginsList = yield* plugins.list();
@@ -70,22 +76,22 @@ describe.each(testMatrix)(
                     })
                 );
 
-                it.effect("Should disable a plugin", () =>
+                it.effect.skipIf(!daemonCanRunPlugins)("Should disable a plugin", () =>
                     Effect.gen(function* () {
                         const plugins = yield* MobyEndpoints.Plugins;
                         yield* plugins.disable("test-plugin:latest");
                     })
                 );
 
-                it.effect("Should update a plugin", () =>
+                it.effect.skipIf(!daemonCanRunPlugins)("Should update a plugin", () =>
                     Effect.gen(function* () {
                         const plugins = yield* MobyEndpoints.Plugins;
                         const privileges = yield* plugins.getPrivileges("docker.io/grafana/loki-docker-driver:main");
                         yield* plugins.upgrade("test-plugin:latest", "docker.io/grafana/loki-docker-driver:main", [
                             {
-                                name: privileges[0]!.name,
-                                value: privileges[0]!.value,
-                                description: privileges[0]!.description,
+                                Name: privileges[0]!.Name,
+                                Value: privileges[0]!.Value,
+                                Description: privileges[0]!.Description,
                             },
                         ]);
                     })

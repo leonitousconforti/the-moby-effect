@@ -15,13 +15,15 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
         Id: MobyIdentifiers.ImageIdentifier,
         RepoTags: Schema.NullOr(Schema.Array(Schema.String)),
         RepoDigests: Schema.NullOr(Schema.Array(MobyIdentifiers.Digest)),
-        Parent: Schema.String,
+        // optional for docker.io/library/docker:dind-rootless (omitted since docker v29)
+        Parent: Schema.optional(Schema.String),
         Comment: Schema.String,
         Created: Schema.optional(Schema.String),
         Container: Schema.optional(Schema.String),
         ContainerConfig: Schema.optional(Schema.NullOr(ContainerConfig.ContainerConfig)),
-        DockerVersion: Schema.String,
-        Author: Schema.String,
+        // optional for docker.io/library/docker:dind-rootless (omitted since docker v29)
+        DockerVersion: Schema.optional(Schema.String),
+        Author: Schema.optional(Schema.String),
         Config: Schema.NullOr(V1DockerOCIImageConfig.V1DockerOCIImageConfig),
         Architecture: Schema.String,
         Variant: Schema.optional(Schema.String),
@@ -35,7 +37,8 @@ export class ImageInspectResponse extends Schema.Class<ImageInspectResponse>("Im
                 Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
             )
         ),
-        GraphDriver: Schema.NullOr(StorageDriverData.StorageDriverData),
+        // optional for docker.io/library/docker:dind-rootless (omitted since docker v29)
+        GraphDriver: Schema.optional(Schema.NullOr(StorageDriverData.StorageDriverData)),
         RootFS: Schema.NullOr(ImageRootFS.ImageRootFS),
         Metadata: Schema.NullOr(ImageMetadata.ImageMetadata),
         Descriptor: Schema.optional(Schema.NullOr(V1Descriptor.V1Descriptor)),

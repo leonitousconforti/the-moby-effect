@@ -14,7 +14,8 @@ export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect
         Created: Schema.NullOr(Schema.DateFromString),
         Scope: Schema.String,
         Driver: Schema.String,
-        EnableIPv4: Schema.Boolean,
+        // optional for docker.io/library/docker:26-dind-rootless and 27 (added in docker v28)
+        EnableIPv4: Schema.optional(Schema.Boolean),
         EnableIPv6: Schema.Boolean,
         IPAM: Schema.NullOr(NetworkIPAM.NetworkIPAM),
         Internal: Schema.Boolean,
@@ -22,8 +23,9 @@ export class NetworkInspect extends Schema.Class<NetworkInspect>("NetworkInspect
         Ingress: Schema.Boolean,
         ConfigFrom: Schema.NullOr(NetworkConfigReference.NetworkConfigReference),
         ConfigOnly: Schema.Boolean,
-        Containers: Schema.NullOr(
-            Schema.Record(Schema.String, Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource))
+        // optional for docker list responses which omit it on some daemon versions
+        Containers: Schema.optional(
+            Schema.NullOr(Schema.Record(Schema.String, Schema.NullOr(NetworkEndpointResource.NetworkEndpointResource)))
         ),
         Options: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
         Labels: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),

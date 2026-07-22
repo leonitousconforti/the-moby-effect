@@ -10,8 +10,11 @@ export class NetworkEndpointSettings extends Schema.Class<NetworkEndpointSetting
         Aliases: Schema.NullOr(Schema.Array(Schema.String)),
         MacAddress: Schema.String,
         DriverOpts: Schema.NullOr(Schema.Record(Schema.String, Schema.String)),
-        GwPriority: MobyNumber.BigIntFromWireString.check(
-            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        // optional for docker.io/library/docker:26-dind-rootless and 27 (added in docker v28)
+        GwPriority: Schema.optional(
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         NetworkID: Schema.String,
         EndpointID: Schema.String,

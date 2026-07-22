@@ -8,8 +8,11 @@ import * as VolumeVolume from "./VolumeVolume.generated.ts";
 
 export class TypesDiskUsage extends Schema.Class<TypesDiskUsage>("TypesDiskUsage")(
     {
-        LayersSize: MobyNumber.BigIntFromWireString.check(
-            Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+        // optional for docker.io/library/docker:dind-rootless (deprecated, omitted since docker v29)
+        LayersSize: Schema.optional(
+            MobyNumber.BigIntFromWireString.check(
+                Schema.isBetweenBigInt({ minimum: -(2n ** 63n), maximum: 2n ** 63n - 1n })
+            )
         ),
         Images: Schema.NullOr(Schema.Array(Schema.NullOr(ImageSummary.ImageSummary))),
         Containers: Schema.NullOr(Schema.Array(Schema.NullOr(ContainerSummary.ContainerSummary))),
