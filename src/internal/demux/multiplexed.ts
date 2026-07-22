@@ -216,7 +216,9 @@ export const aggregate = <E, R>(
         multiplexedStream,
         Stream.flattenIterable,
         Stream.aggregateWithin(demuxMultiplexedFolderSink, Schedule.fixed(Duration.infinity)),
-        Stream.map(({ messageBuffer, messageType }) => Tuple.make(messageType, Chunk.toReadonlyArray(messageBuffer))),
+        Stream.map(({ messageBuffer, messageType }) =>
+            Tuple.make(messageType, new Uint8Array(Chunk.toReadonlyArray(messageBuffer)))
+        ),
         Stream.mapEffect((multiplexed) => Schema.decodeUnknownEffect(MultiplexedSchema)(multiplexed))
     );
 

@@ -1,6 +1,7 @@
 import type * as Array from "effect/Array";
 import type * as Cause from "effect/Cause";
 import type * as Schema from "effect/Schema";
+import type * as Scope from "effect/Scope";
 import type * as Socket from "effect/unstable/socket/Socket";
 
 import * as Channel from "effect/Channel";
@@ -35,7 +36,7 @@ export const fan = Function.dual<
             stderr: MobyDemux.RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        R
+        Exclude<R, Scope.Scope>
     >,
     <IE = never, OE = Socket.SocketError, R = never>(
         multiplexedInput: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
@@ -56,7 +57,7 @@ export const fan = Function.dual<
             stderr: MobyDemux.RawChannel<IE, IE | OE | Schema.SchemaError, never>;
         },
         never,
-        R
+        Exclude<R, Scope.Scope>
     >
 >(
     (arguments_) => isMultiplexedChannel(arguments_[0]) || isMultiplexedSocket(arguments_[0]),
@@ -76,7 +77,7 @@ export const fan = Function.dual<
         type CanReceive = string | Uint8Array | Socket.CloseEvent;
 
         const mutex = yield* Semaphore.make(1);
-        const context = yield* Effect.context<R>();
+        const context = yield* Effect.context<Exclude<R, Scope.Scope>>();
 
         // Internal buffers.
         const capacity = options.requestedCapacity;
@@ -107,22 +108,19 @@ export const fan = Function.dual<
         // Forwards this channel's input into the stdin producer queue,
         // propagating input errors and the end-of-input signal.
         const feedStdin = (
-            upstream: Pull.Pull<Array.NonEmptyReadonlyArray<CanReceive>, IE, unknown>
+            upstream: Pull.Pull<Array.NonEmptyReadonlyArray<CanReceive>, IE, unknown, never>
         ): Effect.Effect<void> =>
             upstream.pipe(
                 Effect.flatMap((chunk) => Queue.offerAll(stdinProducerQueue, chunk)),
                 Effect.forever,
-                Effect.catchCause((cause) =>
-                    Pull.isDoneCause(cause)
-                        ? Queue.end(stdinProducerQueue)
-                        : Queue.failCause(stdinProducerQueue, cause as Cause.Cause<IE>)
-                ),
+                Pull.catchDone(() => Queue.end(stdinProducerQueue)),
+                Effect.catchCause((cause) => Queue.failCause(stdinProducerQueue, cause)),
                 Effect.asVoid
             );
 
         // Any one of these will kick off the mother demux, but only one will
         const independentStdinChannel = Channel.fromEffectDrain(motherEffect).pipe(
-            Channel.embedInput(feedStdin),
+            Channel.embedInput<Array.NonEmptyReadonlyArray<CanReceive>, IE, unknown, never>(feedStdin),
             makeRawChannel<IE, IE | OE | Schema.SchemaError, never>
         );
 

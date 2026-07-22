@@ -1,5 +1,4 @@
 import type * as Cause from "effect/Cause";
-import type * as Scope from "effect/Scope";
 
 import * as Array from "effect/Array";
 import * as Channel from "effect/Channel";
@@ -45,7 +44,7 @@ export const pack = Function.dual<
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+        R1 | R2 | R3
     >,
     <
         IE1 = never,
@@ -72,7 +71,7 @@ export const pack = Function.dual<
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<IE1 | IE2 | IE3, IE1 | IE2 | IE3 | OE1 | OE2 | OE3, never>,
         never,
-        Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
+        R1 | R2 | R3
     >
 >(
     (arguments_) => "stdin" in arguments_[0] || "stdout" in arguments_[0] || "stderr" in arguments_[0],
@@ -100,9 +99,7 @@ export const pack = Function.dual<
         }
     ) {
         const mutex = yield* Semaphore.make(1);
-        const context = yield* Effect.context<
-            Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope> | Exclude<R3, Scope.Scope>
-        >();
+        const context = yield* Effect.context<R1 | R2 | R3>();
 
         const capacity = options.requestedCapacity;
         type CanReceive = Uint8Array | string | Socket.CloseEvent;
@@ -170,11 +167,8 @@ export const pack = Function.dual<
             upstream.pipe(
                 Effect.flatMap((chunk) => Queue.offerAll(stdinProducerQueue, Array.map(chunk, encode))),
                 Effect.forever,
-                Effect.catchCause((cause) =>
-                    Pull.isDoneCause(cause)
-                        ? Queue.end(stdinProducerQueue)
-                        : Queue.failCause(stdinProducerQueue, cause as Cause.Cause<IE1 | IE2 | IE3>)
-                ),
+                Pull.catchDone(() => Queue.end(stdinProducerQueue)),
+                Effect.catchCause((cause) => Queue.failCause(stdinProducerQueue, cause)),
                 Effect.asVoid
             );
 
