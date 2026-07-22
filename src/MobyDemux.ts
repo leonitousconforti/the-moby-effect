@@ -842,7 +842,7 @@ export const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketErro
               encoding?: string | undefined;
           }
         | undefined
-) => Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =
+) => Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1 | R2, Scope.Scope>> =
     internalStdio.demuxWithInputToConsole;
 
 /**

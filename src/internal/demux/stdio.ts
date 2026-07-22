@@ -53,7 +53,7 @@ export const demuxWithInputToConsole = <E, R1, IE = never, OE = Socket.SocketErr
     sockets: MobyDemux.EitherMultiplexedInput<E | IE, OE, R2>,
     input: Stream.Stream<string | Uint8Array, E, R1>,
     options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
-): Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
+): Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1 | R2, Scope.Scope>> =>
     demuxMultiplexedToSeparateSinks(
         sockets,
         input,
