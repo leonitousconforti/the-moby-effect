@@ -231,9 +231,6 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
                         payload,
                     })
                 ),
-                // The daemon streams json progress messages while it downloads
-                // the new plugin version - drain them so the effect completes
-                // only once the upgrade has actually finished.
                 Stream.unwrap,
                 Stream.decodeText(),
                 Stream.splitLines,
