@@ -88,7 +88,12 @@ describe.each(testMatrix)(
                         yield* containers.prune();
                     }),
                 {
-                    timeout: Duration.minutes(1).pipe(Duration.toMillis),
+                    // The alpine pull from docker hub at the head of this test
+                    // rides anonymous rate limits on shared ci runners, and as
+                    // the first test in the file it can also be charged the
+                    // tail of a contended dind bootstrap - give it the same
+                    // window as the layer itself.
+                    timeout: Duration.minutes(5).pipe(Duration.toMillis),
                 }
             );
 

@@ -37,10 +37,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          [
+        config: [
+            # No bun-undici variant: bun replaces the undici package with an
+            # internal stub whose Agent can not dispatch requests at all.
             { platform: "bun", variant: "bun" },
-            { platform: "bun", variant: "bun-undici" },
             { platform: "deno", variant: "deno" },
             { platform: "deno", variant: "deno-undici" },
             { platform: "22.x", variant: "node-22.x" },
@@ -115,6 +115,20 @@ jobs:
           PNPM_BIN=$(which pnpm)
           sudo -E $PNPM_BIN test
 
+      - if: startsWith(matrix.config.variant, 'bun')
+        uses: ./.github/actions/setup-bun
+      - if: startsWith(matrix.config.variant, 'bun')
+        run: |
+          BUN_BIN=$(which bun)
+          sudo -E $BUN_BIN x --bun vitest run
+
+      - if: startsWith(matrix.config.variant, 'deno')
+        uses: ./.github/actions/setup-deno
+      - if: startsWith(matrix.config.variant, 'deno')
+        run: |
+          DENO_BIN=$(which deno)
+          sudo -E $DENO_BIN task test
+
       # The junit report is the post-mortem for a failed run - upload it even
       # (especially) when the tests fail.
       - name: Upload test results
@@ -125,13 +139,3 @@ jobs:
           path: coverage/junit.xml
           if-no-files-found: ignore
           retention-days: 14
-
-      - if: false
-        uses: ./.github/actions/setup-bun
-      - if: false
-        run: bunx --bun vitest
-
-      - if: false
-        uses: ./.github/actions/setup-deno
-      - if: false
-        run: deno task test --watch=false

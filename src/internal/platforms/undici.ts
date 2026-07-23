@@ -11,6 +11,7 @@ import type * as net from "node:net";
 import type * as MobyConnection from "../../MobyConnection.js";
 import type * as ssh2 from "ssh2";
 import type * as undici from "undici";
+import type * as ws from "ws";
 
 import * as internalAgnostic from "./agnostic.js";
 import * as internalConnection from "./connection.js";
@@ -147,16 +148,31 @@ export const getUndiciDispatcher: (
         }),
 });
 
-/** @internal */
+/**
+ * Websocket constructor backed by the "ws" package: ws+unix urls tunnel the
+ * upgrade over a unix domain socket and https connections receive the custom
+ * certificate material from the connection options.
+ *
+ * @internal
+ */
 export const getUndiciWebsocketConstructor = (
     connectionOptions: MobyConnection.MobyConnectionOptions
 ): Effect.Effect<(url: string, protocols?: string | Array<string> | undefined) => globalThis.WebSocket, never, never> =>
     Function.pipe(
         Effect.promise(() => import("ws")),
-        Effect.map((ws) => {
+        Effect.map((wsLazy) => {
             const prependedUrl = internalAgnostic.makeWebsocketRequestUrl(connectionOptions);
+            const options: ws.ClientOptions | undefined =
+                connectionOptions._tag === "https"
+                    ? {
+                          ca: connectionOptions.ca,
+                          cert: connectionOptions.cert,
+                          key: connectionOptions.key,
+                          passphrase: connectionOptions.passphrase,
+                      }
+                    : undefined;
             return (url: string, protocols?: string | Array<string> | undefined) =>
-                new ws.WebSocket(`${prependedUrl}${url}`, protocols) as unknown as globalThis.WebSocket;
+                new wsLazy.WebSocket(`${prependedUrl}${url}`, protocols, options) as unknown as globalThis.WebSocket;
         })
     );
 
