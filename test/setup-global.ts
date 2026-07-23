@@ -11,9 +11,6 @@ import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 
 import { testMatrix } from "./shared-global.js";
 
-// The node http client can not reach the daemon's unix socket under bun or
-// deno (their node compat does not honor socketPath agents), so the setup
-// must talk to the host daemon with the same platform layer the tests use.
 const makePlatformDockerLayer = Function.pipe(
     Match.value(process.env["__PLATFORM_VARIANT"] ?? "node-24.x"),
     Match.when("bun", () => DockerEngine.layerBun),
