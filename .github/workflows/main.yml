@@ -39,8 +39,9 @@ jobs:
       matrix:
         config:
           [
+            # No bun-undici variant: bun replaces the undici package with an
+            # internal stub whose Agent can not dispatch requests at all.
             { platform: "bun", variant: "bun" },
-            { platform: "bun", variant: "bun-undici" },
             { platform: "deno", variant: "deno" },
             { platform: "deno", variant: "deno-undici" },
             { platform: "22.x", variant: "node-22.x" },

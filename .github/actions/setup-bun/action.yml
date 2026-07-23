@@ -8,5 +8,13 @@ runs:
       with:
         bun-version: "latest"
 
-    - run: bun install
+    # bun install ignores the pnpm lockfile and pnpm's patchedDependencies -
+    # dropping the effect patch that fixes streaming request payloads (image
+    # builds fail with "unexpected EOF" without it). Install with pnpm and
+    # only use bun as the test runtime.
+    - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
+      with:
+        standalone: true
+
+    - run: pnpm install
       shell: bash

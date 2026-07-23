@@ -46,6 +46,13 @@ describe.each(testMatrix)(
                     // FIXME: can't send the right headers on undici
                     if (makePlatformDindLayer === DindEngine.layerUndici) return;
 
+                    // Fetch based http clients can not expose the raw socket
+                    // of the http connection, so the exec hijack is impossible
+                    // on the bun and deno layers - the websocket exec flows
+                    // are the alternative there.
+                    if (makePlatformDindLayer === DindEngine.layerBun || makePlatformDindLayer === DindEngine.layerDeno)
+                        return;
+
                     const { Id: id } = yield* DockerEngine.runScoped({
                         Image: "docker.io/library/alpine:latest",
                         Cmd: ["sleep", "1m"],
