@@ -31,7 +31,7 @@ export const makeHttpRequestUrl: (connectionOptions: MobyConnection.MobyConnecti
 export const makeWebsocketRequestUrl: (connectionOptions: MobyConnection.MobyConnectionOptions) => string =
     internalConnection.MobyConnectionOptions.$match({
         ssh: (options) => `ws://0.0.0.0${makeVersionPath(options)}`,
-        socket: (options) => `ws+unix://${options.socketPath}${makeVersionPath(options)}:`,
+        socket: (options) => `ws+unix://${options.socketPath}:${makeVersionPath(options)}`,
         http: (options) => `ws://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
         https: (options) => `wss://${options.host}:${options.port}${options.path ?? ""}${makeVersionPath(options)}`,
     });
