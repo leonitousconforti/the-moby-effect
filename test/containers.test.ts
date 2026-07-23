@@ -88,7 +88,10 @@ describe.each(testMatrix)(
                         yield* containers.prune();
                     }),
                 {
-                    timeout: Duration.minutes(1).pipe(Duration.toMillis),
+                    // The alpine pull from docker hub at the head of this test
+                    // rides anonymous rate limits on shared ci runners - one
+                    // minute was regularly exceeded on the bun and deno legs.
+                    timeout: Duration.minutes(3).pipe(Duration.toMillis),
                 }
             );
 
