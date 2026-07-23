@@ -89,9 +89,11 @@ describe.each(testMatrix)(
                     }),
                 {
                     // The alpine pull from docker hub at the head of this test
-                    // rides anonymous rate limits on shared ci runners - one
-                    // minute was regularly exceeded on the bun and deno legs.
-                    timeout: Duration.minutes(3).pipe(Duration.toMillis),
+                    // rides anonymous rate limits on shared ci runners, and as
+                    // the first test in the file it can also be charged the
+                    // tail of a contended dind bootstrap - give it the same
+                    // window as the layer itself.
+                    timeout: Duration.minutes(5).pipe(Duration.toMillis),
                 }
             );
 
