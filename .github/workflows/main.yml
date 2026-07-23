@@ -37,8 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          [
+        config: [
             # No bun-undici variant: bun replaces the undici package with an
             # internal stub whose Agent can not dispatch requests at all.
             { platform: "bun", variant: "bun" },
