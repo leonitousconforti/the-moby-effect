@@ -16,17 +16,13 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      # pnpm must be on the PATH before setup-node can resolve the pnpm store
-      # location for its dependency cache.
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: lts/*
           cache: "pnpm"
       - run: pnpm install
-      # --force so a restored .tsbuildinfo can never mask errors in files tsc
-      # considers unchanged.
-      - run: pnpm exec tsc -b tsconfig.json --force
+      - run: pnpm build
       - run: pnpm lint
       - run: pnpm circular
       - run: pnpm build
@@ -34,9 +30,7 @@ jobs:
   docker-engine-tests:
     needs: [typescript-build]
     runs-on: ubuntu-latest
-    # The full dind matrix bootstraps a dind container per test file per
-    # connection combo - it cannot finish in 10 minutes.
-    timeout-minutes: 90
+    timeout-minutes: 30
     defaults:
       run:
         shell: bash
