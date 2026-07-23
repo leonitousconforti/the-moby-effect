@@ -31,13 +31,18 @@ export const makeAgnosticHttpClientLayer: (
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
- * http client that you could use to connect to your moby instance. This is no
- * different than the Node implementation currently.
+ * http client that you could use to connect to your moby instance. Built on
+ * Bun's native fetch: unix socket connections use Bun's `unix` fetch option
+ * and https connections pass their certificate material through Bun's `tls`
+ * fetch option. Ssh connections fall back to the node http layer, which Bun
+ * implements natively.
  *
- * This function will dynamically import the `@effect/platform-node` package.
+ * Note that exec and attach endpoints hijack the underlying socket of the
+ * http connection, which fetch based clients can not expose - use the
+ * websocket based alternatives on this layer.
  *
  * @since 1.0.0
- * @category Connection
+ * @category Bun
  */
 export const makeBunHttpClientLayer: (
     connectionOptions: MobyConnection.MobyConnectionOptions
@@ -46,12 +51,15 @@ export const makeBunHttpClientLayer: (
 
 /**
  * Given the moby connection options, it will construct a layer that provides a
- * http client that you could use to connect to your moby instance. This is no
- * different than the Node implementation currently.
+ * http client that you could use to connect to your moby instance. Built on
+ * Deno's native fetch: unix socket connections and custom https certificate
+ * material use `Deno.createHttpClient`, which is passed to fetch through
+ * Deno's `client` fetch option. Ssh connections fall back to the node http
+ * layer, which Deno implements in its node compat layer.
  *
- * This function will dynamically import the `@effect/platform-node` package.
- *
- * FIXME: https://github.com/denoland/deno/issues/21436?
+ * Note that exec and attach endpoints hijack the underlying socket of the
+ * http connection, which fetch based clients can not expose - use the
+ * websocket based alternatives on this layer.
  *
  * @since 1.0.0
  * @category Deno
