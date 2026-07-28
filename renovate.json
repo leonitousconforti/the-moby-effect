@@ -57,6 +57,7 @@
             "matchPackageNames": [
                 "effect",
                 "eftar",
+                "effect-schemas",
                 "/^@effect//",
                 "!@effect/build-utils",
                 "!@effect/language-service"

@@ -27,7 +27,8 @@ peerDependencyRules:
         typescript: "5.9.3"
 
 minimumReleaseAgeExclude:
-    - eftar@0.0.78
+    - effect-schemas
+    - eftar
 
 patchedDependencies:
     effect@4.0.0-beta.99: patches/effect@4.0.0-beta.99.patch
