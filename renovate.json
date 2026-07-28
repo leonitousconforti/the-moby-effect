@@ -56,9 +56,8 @@
             "description": "Group all Effect-TS packages into one PR",
             "matchPackageNames": [
                 "effect",
-                "effect-schemas",
+                "eftar",
                 "/^@effect//",
-                "!@effect/docgen",
                 "!@effect/build-utils",
                 "!@effect/language-service"
             ],
@@ -71,7 +70,6 @@
                 "oxfmt",
                 "oxlint",
                 "@effect/build-utils",
-                "@effect/docgen",
                 "@effect/language-service",
                 "typescript",
                 "tsx"
