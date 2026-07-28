@@ -41,7 +41,7 @@ declare const layerAgnostic: (
 ) => PodmanLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L118)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L118)
 
 Since v1.0.0
 
@@ -53,7 +53,7 @@ Since v1.0.0
 declare const layerBun: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L71)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L71)
 
 Since v1.0.0
 
@@ -65,7 +65,7 @@ Since v1.0.0
 declare const layerDeno: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L80)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L80)
 
 Since v1.0.0
 
@@ -79,7 +79,7 @@ declare const layerFetch: (
 ) => PodmanLayer
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L108)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L108)
 
 Since v1.0.0
 
@@ -91,7 +91,7 @@ Since v1.0.0
 declare const layerNodeJS: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L62)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L62)
 
 Since v1.0.0
 
@@ -103,7 +103,7 @@ Since v1.0.0
 declare const layerUndici: (connectionOptions: MobyConnection.MobyConnectionOptions) => PodmanLayer
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L89)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L89)
 
 Since v1.0.0
 
@@ -117,7 +117,7 @@ declare const layerWeb: (
 ) => PodmanLayer
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L98)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L98)
 
 Since v1.0.0
 
@@ -129,7 +129,7 @@ Since v1.0.0
 declare const layerWithoutHttpCLient: PodmanLayerWithoutHttpClientOrWebsocketConstructor
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L48)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L48)
 
 Since v1.0.0
 
@@ -153,7 +153,7 @@ type PodmanLayer = Layer.Layer<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L22)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L22)
 
 Since v1.0.0
 
@@ -169,6 +169,6 @@ type PodmanLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/PodmanEngine.ts#L38)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/PodmanEngine.ts#L38)
 
 Since v1.0.0

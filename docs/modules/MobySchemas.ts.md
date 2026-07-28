@@ -6,8 +6,6 @@ parent: Modules
 
 ## MobySchemas.ts overview
 
-Moby schemas.
-
 Since v1.0.0
 
 ---
@@ -32,7 +30,7 @@ Re-exports all named exports from the "./internal/generated/index.ts" module.
 export * from "./internal/generated/index.ts"
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobySchemas.ts#L8)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobySchemas.ts#L8)
 
 Since v1.0.0
 
@@ -46,6 +44,6 @@ Re-exports all named exports from the "./internal/schemas/id.ts" module.
 export * from "./internal/schemas/id.ts"
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobySchemas.ts#L11)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobySchemas.ts#L11)
 
 Since v1.0.0

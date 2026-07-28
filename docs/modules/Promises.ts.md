@@ -28,12 +28,16 @@ Create a promise client for the docker engine
 **Signature**
 
 ```ts
-declare const promiseClient: <E>(
-  layer: Layer.Layer<
+declare const promiseClient: <E1, E2>(
+  layer: (
+    connectionOptions: MobyConnection.MobyConnectionOptions
+  ) => Layer.Layer<
     Layer.Success<DockerEngine.DockerLayer>,
-    Layer.Error<DockerEngine.DockerLayer> | E,
+    Layer.Error<DockerEngine.DockerLayer> | E1,
     Layer.Services<DockerEngine.DockerLayer>
-  >
+  >,
+  connectionOptions?:
+    MobyConnection.MobyConnectionOptions | Effect.Effect<MobyConnection.MobyConnectionOptions, E2, never>
 ) => Promise<{
   pull: (a: { image: string; platform?: string | undefined }) => ReadableStream<MobySchemas.JSONMessage>
   build: <E1>(a: {
@@ -184,6 +188,6 @@ declare const promiseClient: <E>(
 }>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/Promises.ts#L24)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/Promises.ts#L26)
 
 Since v1.0.0

@@ -1,7 +1,9 @@
 {
     "$schema": "./node_modules/@effect/docgen/schema.json",
-    "srcLink": "https://github.com/leonitousconforti/the-moby-effect/tree/main/src/",
+    "srcLink": "https://github.com/leonitousconforti/the-moby-effect/blob/main/src/",
     "exclude": ["src/internal/**/*.ts"],
+    "runExamples": true,
+    "projectHomepage": "https://github.com/leonitousconforti/the-moby-effect/",
     "examplesCompilerOptions": {
         "noEmit": true,
         "strict": true,

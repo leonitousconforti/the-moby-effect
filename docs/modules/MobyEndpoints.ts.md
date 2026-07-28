@@ -106,12 +106,14 @@ declare const ConfigsApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly id: optional<$Array<brand<String, "ConfigId">>>
-                readonly name: optional<$Array<String>>
-                readonly names: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly id: optional<$Array<brand<String, "ConfigId">>>
+                  readonly name: optional<$Array<String>>
+                  readonly names: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                }>
+              >
             >
           }>
         >,
@@ -186,7 +188,7 @@ declare const ConfigsApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L26)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L26)
 
 Since v1.0.0
 
@@ -214,33 +216,28 @@ declare const ContainersApi: HttpApi<
             limit: optional<Number>
             size: optional<Boolean>
             filters: optional<
-              Struct<{
-                readonly ancestor: optional<$Array<String>>
-                readonly before: optional<$Array<String>>
-                readonly expose: optional<$Array<String>>
-                readonly exited: optional<$Array<NumberFromString>>
-                readonly health: optional<$Array<Literals<readonly ["none", "starting", "healthy", "unhealthy"]>>>
-                readonly identifier: optional<$Array<brand<String, "ContainerId">>>
-                readonly "is-task": optional<
-                  Union<
-                    readonly [
-                      decodeTo<Literal<true>, Literal<"true">, never, never>,
-                      decodeTo<Literal<false>, Literal<"false">, never, never>
-                    ]
+              fromJsonString<
+                Struct<{
+                  readonly ancestor: optional<$Array<String>>
+                  readonly before: optional<$Array<String>>
+                  readonly expose: optional<$Array<String>>
+                  readonly exited: optional<$Array<NumberFromString>>
+                  readonly health: optional<$Array<Literals<readonly ["none", "starting", "healthy", "unhealthy"]>>>
+                  readonly identifier: optional<$Array<brand<String, "ContainerId">>>
+                  readonly "is-task": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly label: optional<$Array<String>>
+                  readonly name: optional<$Array<String>>
+                  readonly network: optional<$Array<String>>
+                  readonly publish: optional<$Array<String>>
+                  readonly since: optional<$Array<String>>
+                  readonly status: optional<
+                    $Array<
+                      Literals<readonly ["created", "restarting", "running", "removing", "paused", "exited", "dead"]>
+                    >
                   >
-                >
-                readonly label: optional<$Array<String>>
-                readonly name: optional<$Array<String>>
-                readonly network: optional<$Array<String>>
-                readonly publish: optional<$Array<String>>
-                readonly since: optional<$Array<String>>
-                readonly status: optional<
-                  $Array<
-                    Literals<readonly ["created", "restarting", "running", "removing", "paused", "exited", "dead"]>
-                  >
-                >
-                readonly volume: optional<String>
-              }>
+                  readonly volume: optional<decodeTo<String, Tuple<readonly [String]>, never, never>>
+                }>
+              >
             >
           }>
         >,
@@ -594,7 +591,14 @@ declare const ContainersApi: HttpApi<
         never,
         toCodecStringTree<
           Struct<{
-            filters: optional<Struct<{ readonly until: optional<String>; readonly label: optional<$Array<String>> }>>
+            filters: optional<
+              fromJsonString<
+                Struct<{
+                  readonly until: optional<decodeTo<String, Tuple<readonly [String]>, never, never>>
+                  readonly label: optional<$Array<String>>
+                }>
+              >
+            >
           }>
         >,
         never,
@@ -614,7 +618,7 @@ declare const ContainersApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L62)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L62)
 
 Since v1.0.0
 
@@ -649,7 +653,7 @@ declare const DistributionsApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L92)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L92)
 
 Since v1.0.0
 
@@ -723,7 +727,7 @@ declare const ExecsApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L122)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L122)
 
 Since v1.0.0
 
@@ -748,21 +752,16 @@ declare const ImagesApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly before: optional<$Array<String>>
-                readonly dangling: optional<
-                  Union<
-                    readonly [
-                      decodeTo<Literal<true>, Literal<"true">, never, never>,
-                      decodeTo<Literal<false>, Literal<"false">, never, never>
-                    ]
-                  >
-                >
-                readonly label: optional<$Array<String>>
-                readonly reference: optional<$Array<String>>
-                readonly since: optional<$Array<String>>
-                readonly until: optional<String>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly before: optional<$Array<String>>
+                  readonly dangling: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly label: optional<$Array<String>>
+                  readonly reference: optional<$Array<String>>
+                  readonly since: optional<$Array<String>>
+                  readonly until: optional<decodeTo<String, Tuple<readonly [String]>, never, never>>
+                }>
+              >
             >
             all: optional<Boolean>
             digests: optional<Boolean>
@@ -799,7 +798,7 @@ declare const ImagesApi: HttpApi<
             cpusetcpus: optional<String>
             cpuperiod: optional<Number>
             cpuquota: optional<Number>
-            buildargs: optional<$Record<String, NullishOr<String>>>
+            buildargs: optional<fromJsonString<$Record<String, NullishOr<String>>>>
             shmsize: optional<Number>
             squash: optional<Boolean>
             labels: optional<String>
@@ -823,11 +822,30 @@ declare const ImagesApi: HttpApi<
         "/build/prune",
         never,
         toCodecStringTree<
-          Struct<{ "keep-storage": optional<Number>; all: optional<Boolean>; filters: optional<String> }>
+          Struct<{
+            "keep-storage": optional<Number>
+            all: optional<Boolean>
+            filters: optional<
+              fromJsonString<
+                Struct<{
+                  readonly until: optional<decodeTo<String, Tuple<readonly [String]>, never, never>>
+                  readonly id: optional<$Array<String>>
+                  readonly parent: optional<$Array<String>>
+                  readonly type: optional<$Array<String>>
+                  readonly description: optional<$Array<String>>
+                  readonly inuse: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly shared: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly private: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                }>
+              >
+            >
+          }>
         >,
         never,
         never,
-        toCodecJson<Struct<{ readonly SpaceReclaimed: Number; readonly CachesDeleted: $Array<String> }>>,
+        toCodecJson<
+          Struct<{ readonly SpaceReclaimed: BigIntFromString; readonly CachesDeleted: NullishOr<$Array<String>> }>
+        >,
         toCodecJson<typeof InternalServerError>,
         never,
         never
@@ -932,11 +950,13 @@ declare const ImagesApi: HttpApi<
             term: String
             limit: optional<Number>
             filters: optional<
-              Struct<{
-                readonly "is-official": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
-                readonly "is-automated": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
-                readonly stars: optional<NumberFromString>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly "is-official": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly "is-automated": optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly stars: optional<decodeTo<Number, Tuple<readonly [NumberFromString]>, never, never>>
+                }>
+              >
             >
           }>
         >,
@@ -957,7 +977,7 @@ declare const ImagesApi: HttpApi<
         never,
         toCodecJson<
           Struct<{
-            readonly SpaceReclaimed: Number
+            readonly SpaceReclaimed: BigIntFromString
             readonly ImagesDeleted: NullishOr<$Array<typeof ImageDeleteResponse>>
           }>
         >,
@@ -1014,10 +1034,6 @@ declare const ImagesApi: HttpApi<
                   readonly Shell?: ReadonlyArray<string> | null | undefined
                 } | null
                 readonly Id: string
-                readonly GraphDriver: Struct.ReadonlySide<
-                  { readonly Data: NullOr<$Record<String, String>>; readonly Name: String },
-                  "Encoded"
-                > | null
                 readonly Size: string
                 readonly RepoDigests: ReadonlyArray<string> | null
                 readonly RepoTags: ReadonlyArray<string> | null
@@ -1026,10 +1042,7 @@ declare const ImagesApi: HttpApi<
                   readonly Layers?: ReadonlyArray<string> | null | undefined
                 } | null
                 readonly Metadata: { readonly LastTagTime?: string | null | undefined } | null
-                readonly Parent: string
                 readonly Comment: string
-                readonly DockerVersion: string
-                readonly Author: string
                 readonly Architecture: string
                 readonly Os: string
                 readonly ContainerConfig?:
@@ -1048,7 +1061,6 @@ declare const ImagesApi: HttpApi<
                       readonly Volumes: { readonly [x: string]: object } | null
                       readonly WorkingDir: string
                       readonly Entrypoint: ReadonlyArray<string> | null
-                      readonly OnBuild: ReadonlyArray<string> | null
                       readonly Labels: { readonly [x: string]: string } | null
                       readonly Image: string
                       readonly ExposedPorts?:
@@ -1073,6 +1085,7 @@ declare const ImagesApi: HttpApi<
                       readonly ArgsEscaped?: boolean | undefined
                       readonly NetworkDisabled?: boolean | undefined
                       readonly MacAddress?: string | undefined
+                      readonly OnBuild?: ReadonlyArray<string> | null | undefined
                       readonly StopSignal?: string | undefined
                       readonly StopTimeout?: string | null | undefined
                       readonly Shell?: ReadonlyArray<string> | null | undefined
@@ -1080,6 +1093,8 @@ declare const ImagesApi: HttpApi<
                   | null
                   | undefined
                 readonly Created?: string | undefined
+                readonly GraphDriver?:
+                  { readonly Data: { readonly [x: string]: string } | null; readonly Name: string } | null | undefined
                 readonly Descriptor?:
                   | {
                       readonly size: string
@@ -1124,30 +1139,32 @@ declare const ImagesApi: HttpApi<
                           | undefined
                         readonly artifactType?: string | undefined
                       } | null
-                      readonly Size: Struct.ReadonlySide<
-                        { readonly Content: BigIntFromString; readonly Total: BigIntFromString },
-                        "Encoded"
-                      >
+                      readonly Size: { readonly Content: string; readonly Total: string }
                       readonly ID: string
                       readonly Available: boolean
                       readonly ImageData?:
-                        | Struct.ReadonlySide<
-                            {
-                              readonly Platform: NullOr<typeof V1Platform>
-                              readonly Size: Struct<{ readonly Unpacked: BigIntFromString }>
-                              readonly Containers: NullOr<$Array<String>>
-                            },
-                            "Encoded"
-                          >
+                        | {
+                            readonly Platform: {
+                              readonly architecture: string
+                              readonly os: string
+                              readonly "os.version"?: string | undefined
+                              readonly "os.features"?: ReadonlyArray<string> | null | undefined
+                              readonly variant?: string | undefined
+                            } | null
+                            readonly Size: { readonly Unpacked: string }
+                            readonly Containers: ReadonlyArray<string> | null
+                          }
                         | null
                         | undefined
-                      readonly AttestationData?:
-                        Struct.ReadonlySide<{ readonly For: brand<String, "Digest"> }, "Encoded"> | null | undefined
+                      readonly AttestationData?: { readonly For: string } | null | undefined
                     } | null>
                   | null
                   | undefined
                 readonly VirtualSize?: string | undefined
+                readonly Parent?: string | undefined
                 readonly Container?: string | undefined
+                readonly DockerVersion?: string | undefined
+                readonly Author?: string | undefined
                 readonly Variant?: string | undefined
                 readonly OsVersion?: string | undefined
               },
@@ -1156,21 +1173,21 @@ declare const ImagesApi: HttpApi<
                   readonly Id: brand<String, "ImageId">
                   readonly RepoTags: NullOr<$Array<String>>
                   readonly RepoDigests: NullOr<$Array<brand<String, "Digest">>>
-                  readonly Parent: String
+                  readonly Parent: optional<String>
                   readonly Comment: String
                   readonly Created: optional<String>
                   readonly Container: optional<String>
                   readonly ContainerConfig: optional<NullOr<typeof ContainerConfig>>
-                  readonly DockerVersion: String
-                  readonly Author: String
+                  readonly DockerVersion: optional<String>
+                  readonly Author: optional<String>
                   readonly Config: NullOr<typeof V1DockerOCIImageConfig>
                   readonly Architecture: String
                   readonly Variant: optional<String>
                   readonly Os: String
                   readonly OsVersion: optional<String>
-                  readonly Size: BigIntFromString
-                  readonly VirtualSize: optional<BigIntFromString>
-                  readonly GraphDriver: NullOr<typeof StorageDriverData>
+                  readonly Size: decodeTo<BigInt, String, never, never>
+                  readonly VirtualSize: optional<decodeTo<BigInt, String, never, never>>
+                  readonly GraphDriver: optional<NullOr<typeof StorageDriverData>>
                   readonly RootFS: NullOr<typeof ImageRootFS>
                   readonly Metadata: NullOr<typeof ImageMetadata>
                   readonly Descriptor: optional<NullOr<typeof V1Descriptor>>
@@ -1204,10 +1221,6 @@ declare const ImagesApi: HttpApi<
                   readonly Shell?: ReadonlyArray<string> | null | undefined
                 } | null
                 readonly Id: string & Brand<"ImageId">
-                readonly GraphDriver: Struct.ReadonlySide<
-                  { readonly Data: NullOr<$Record<String, String>>; readonly Name: String },
-                  "Iso"
-                > | null
                 readonly Size: bigint
                 readonly RepoDigests: ReadonlyArray<string & Brand<"Digest">> | null
                 readonly RepoTags: ReadonlyArray<string> | null
@@ -1216,10 +1229,7 @@ declare const ImagesApi: HttpApi<
                   readonly Layers?: ReadonlyArray<string> | null | undefined
                 } | null
                 readonly Metadata: { readonly LastTagTime?: Date | null | undefined } | null
-                readonly Parent: string
                 readonly Comment: string
-                readonly DockerVersion: string
-                readonly Author: string
                 readonly Architecture: string
                 readonly Os: string
                 readonly ContainerConfig?:
@@ -1238,7 +1248,6 @@ declare const ImagesApi: HttpApi<
                       readonly Volumes: { readonly [x: string]: object } | null
                       readonly WorkingDir: string
                       readonly Entrypoint: ReadonlyArray<string> | null
-                      readonly OnBuild: ReadonlyArray<string> | null
                       readonly Labels: { readonly [x: string]: string } | null
                       readonly Image: string
                       readonly ExposedPorts?:
@@ -1263,6 +1272,7 @@ declare const ImagesApi: HttpApi<
                       readonly ArgsEscaped?: boolean | undefined
                       readonly NetworkDisabled?: boolean | undefined
                       readonly MacAddress?: string | undefined
+                      readonly OnBuild?: ReadonlyArray<string> | null | undefined
                       readonly StopSignal?: string | undefined
                       readonly StopTimeout?: bigint | null | undefined
                       readonly Shell?: ReadonlyArray<string> | null | undefined
@@ -1270,6 +1280,8 @@ declare const ImagesApi: HttpApi<
                   | null
                   | undefined
                 readonly Created?: string | undefined
+                readonly GraphDriver?:
+                  { readonly Data: { readonly [x: string]: string } | null; readonly Name: string } | null | undefined
                 readonly Descriptor?:
                   | {
                       readonly size: bigint
@@ -1314,30 +1326,32 @@ declare const ImagesApi: HttpApi<
                           | undefined
                         readonly artifactType?: string | undefined
                       } | null
-                      readonly Size: Struct.ReadonlySide<
-                        { readonly Content: BigIntFromString; readonly Total: BigIntFromString },
-                        "Iso"
-                      >
+                      readonly Size: { readonly Content: bigint; readonly Total: bigint }
                       readonly ID: string
                       readonly Available: boolean
                       readonly ImageData?:
-                        | Struct.ReadonlySide<
-                            {
-                              readonly Platform: NullOr<typeof V1Platform>
-                              readonly Size: Struct<{ readonly Unpacked: BigIntFromString }>
-                              readonly Containers: NullOr<$Array<String>>
-                            },
-                            "Iso"
-                          >
+                        | {
+                            readonly Platform: {
+                              readonly architecture: string
+                              readonly os: string
+                              readonly "os.version"?: string | undefined
+                              readonly "os.features"?: ReadonlyArray<string> | null | undefined
+                              readonly variant?: string | undefined
+                            } | null
+                            readonly Size: { readonly Unpacked: bigint }
+                            readonly Containers: ReadonlyArray<string> | null
+                          }
                         | null
                         | undefined
-                      readonly AttestationData?:
-                        Struct.ReadonlySide<{ readonly For: brand<String, "Digest"> }, "Iso"> | null | undefined
+                      readonly AttestationData?: { readonly For: string & Brand<"Digest"> } | null | undefined
                     } | null>
                   | null
                   | undefined
                 readonly VirtualSize?: bigint | undefined
+                readonly Parent?: string | undefined
                 readonly Container?: string | undefined
+                readonly DockerVersion?: string | undefined
+                readonly Author?: string | undefined
                 readonly Variant?: string | undefined
                 readonly OsVersion?: string | undefined
               }
@@ -1346,21 +1360,21 @@ declare const ImagesApi: HttpApi<
               readonly Id: brand<String, "ImageId">
               readonly RepoTags: NullOr<$Array<String>>
               readonly RepoDigests: NullOr<$Array<brand<String, "Digest">>>
-              readonly Parent: String
+              readonly Parent: optional<String>
               readonly Comment: String
               readonly Created: optional<String>
               readonly Container: optional<String>
               readonly ContainerConfig: optional<NullOr<typeof ContainerConfig>>
-              readonly DockerVersion: String
-              readonly Author: String
+              readonly DockerVersion: optional<String>
+              readonly Author: optional<String>
               readonly Config: NullOr<typeof V1DockerOCIImageConfig>
               readonly Architecture: String
               readonly Variant: optional<String>
               readonly Os: String
               readonly OsVersion: optional<String>
-              readonly Size: BigIntFromString
-              readonly VirtualSize: optional<BigIntFromString>
-              readonly GraphDriver: NullOr<typeof StorageDriverData>
+              readonly Size: decodeTo<BigInt, String, never, never>
+              readonly VirtualSize: optional<decodeTo<BigInt, String, never, never>>
+              readonly GraphDriver: optional<NullOr<typeof StorageDriverData>>
               readonly RootFS: NullOr<typeof ImageRootFS>
               readonly Metadata: NullOr<typeof ImageMetadata>
               readonly Descriptor: optional<NullOr<typeof V1Descriptor>>
@@ -1418,7 +1432,7 @@ declare const ImagesApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L152)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L152)
 
 Since v1.0.0
 
@@ -1443,22 +1457,24 @@ declare const NetworksApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly dangling: optional<
-                  Union<
-                    readonly [
-                      decodeTo<Literal<true>, Literal<"true">, never, never>,
-                      decodeTo<Literal<false>, Literal<"false">, never, never>
-                    ]
+              fromJsonString<
+                Struct<{
+                  readonly dangling: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                  readonly driver: optional<$Array<String>>
+                  readonly id: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                  readonly name: optional<$Array<String>>
+                  readonly scope: optional<$Array<String>>
+                  readonly type: optional<
+                    decodeTo<
+                      Literals<readonly ["custom", "builtin"]>,
+                      Tuple<readonly [Literals<readonly ["custom", "builtin"]>]>,
+                      never,
+                      never
+                    >
                   >
-                >
-                readonly driver: optional<$Array<String>>
-                readonly id: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-                readonly name: optional<$Array<String>>
-                readonly scope: optional<$Array<String>>
-                readonly type: optional<Literals<readonly ["custom", "builtin"]>>
-              }>
+                }>
+              >
             >
           }>
         >,
@@ -1541,7 +1557,14 @@ declare const NetworksApi: HttpApi<
         never,
         toCodecStringTree<
           Struct<{
-            filters: optional<Struct<{ readonly label: optional<$Array<String>>; readonly until: optional<String> }>>
+            filters: optional<
+              fromJsonString<
+                Struct<{
+                  readonly label: optional<$Array<String>>
+                  readonly until: optional<decodeTo<String, Tuple<readonly [String]>, never, never>>
+                }>
+              >
+            >
           }>
         >,
         never,
@@ -1556,7 +1579,7 @@ declare const NetworksApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L182)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L182)
 
 Since v1.0.0
 
@@ -1581,14 +1604,16 @@ declare const NodesApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly id: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-                readonly membership: optional<$Array<Literals<readonly ["accepted", "pending"]>>>
-                readonly name: optional<$Array<String>>
-                readonly "node.label": optional<$Array<String>>
-                readonly role: optional<$Array<Literals<readonly ["manager", "worker"]>>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly id: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                  readonly membership: optional<$Array<Literals<readonly ["accepted", "pending"]>>>
+                  readonly name: optional<$Array<String>>
+                  readonly "node.label": optional<$Array<String>>
+                  readonly role: optional<$Array<Literals<readonly ["manager", "worker"]>>>
+                }>
+              >
             >
           }>
         >,
@@ -1643,7 +1668,7 @@ declare const NodesApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L212)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L212)
 
 Since v1.0.0
 
@@ -1668,10 +1693,12 @@ declare const PluginsApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly capability: optional<$Array<String>>
-                readonly enabled: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly capability: optional<$Array<String>>
+                  readonly enabled: optional<decodeTo<Boolean, Tuple<readonly [String]>, never, never>>
+                }>
+              >
             >
           }>
         >,
@@ -1768,7 +1795,7 @@ declare const PluginsApi: HttpApi<
         toCodecStringTree<Struct<{ remote: String }>>,
         toCodecJson<$Array<typeof RuntimePluginPrivilege>>,
         toCodecStringTree<Struct<{ "X-Registry-Auth": optional<String> }>>,
-        toCodecJson<Void>,
+        StreamUint8Array,
         toCodecJson<typeof InternalServerError | typeof NotFound>,
         never,
         never
@@ -1817,7 +1844,7 @@ declare const PluginsApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L242)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L242)
 
 Since v1.0.0
 
@@ -1845,11 +1872,13 @@ declare const SecretsApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly id: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-                readonly name: optional<$Array<String>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly id: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                  readonly name: optional<$Array<String>>
+                }>
+              >
             >
           }>
         >,
@@ -1924,7 +1953,7 @@ declare const SecretsApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L278)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L278)
 
 Since v1.0.0
 
@@ -1952,11 +1981,13 @@ declare const ServicesApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly id: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-                readonly mode: optional<$Array<Literals<readonly ["replicated", "global"]>>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly id: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                  readonly mode: optional<$Array<Literals<readonly ["replicated", "global"]>>>
+                }>
+              >
             >
             status: optional<Boolean>
           }>
@@ -2054,7 +2085,7 @@ declare const ServicesApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L320)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L320)
 
 Since v1.0.0
 
@@ -2089,7 +2120,7 @@ declare const SessionApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L349)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L349)
 
 Since v1.0.0
 
@@ -2212,7 +2243,7 @@ declare const SwarmApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L392)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L392)
 
 Since v1.0.0
 
@@ -2327,7 +2358,7 @@ declare const SystemApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L425)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L425)
 
 Since v1.0.0
 
@@ -2355,14 +2386,16 @@ declare const TasksApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly "desired-state": optional<$Array<Literals<readonly ["running", "shutdown", "accepted"]>>>
-                readonly id: optional<$Array<String>>
-                readonly name: optional<$Array<String>>
-                readonly node: optional<$Array<String>>
-                readonly service: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly "desired-state": optional<$Array<Literals<readonly ["running", "shutdown", "accepted"]>>>
+                  readonly id: optional<$Array<String>>
+                  readonly name: optional<$Array<String>>
+                  readonly node: optional<$Array<String>>
+                  readonly service: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                }>
+              >
             >
           }>
         >,
@@ -2414,7 +2447,7 @@ declare const TasksApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L461)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L461)
 
 Since v1.0.0
 
@@ -2439,12 +2472,14 @@ declare const VolumesApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly name: optional<$Array<String>>
-                readonly driver: optional<$Array<String>>
-                readonly label: optional<$Array<String>>
-                readonly dangling: optional<$Array<Literals<readonly ["true", "false", "1", "0"]>>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly name: optional<$Array<String>>
+                  readonly driver: optional<$Array<String>>
+                  readonly label: optional<$Array<String>>
+                  readonly dangling: optional<$Array<Literals<readonly ["true", "false", "1", "0"]>>>
+                }>
+              >
             >
           }>
         >,
@@ -2484,17 +2519,12 @@ declare const VolumesApi: HttpApi<
                       readonly Spec: {
                         readonly Availability?: "pause" | "active" | "drain" | undefined
                         readonly Secrets?:
-                          | ReadonlyArray<Struct.ReadonlySide<
-                              { readonly Key: String; readonly Secret: String },
-                              "Encoded"
-                            > | null>
-                          | null
-                          | undefined
+                          ReadonlyArray<{ readonly Key: string; readonly Secret: string } | null> | null | undefined
                         readonly Group?: string | undefined
                         readonly AccessMode?:
                           | {
                               readonly Scope?: "single" | "multi" | undefined
-                              readonly Sharing?: "readonly" | "all" | "none" | "onewriter" | undefined
+                              readonly Sharing?: "none" | "readonly" | "all" | "onewriter" | undefined
                               readonly MountVolume?:
                                 | {
                                     readonly FsType?: string | undefined
@@ -2502,7 +2532,7 @@ declare const VolumesApi: HttpApi<
                                   }
                                 | null
                                 | undefined
-                              readonly BlockVolume?: Struct.ReadonlySide<{}, "Encoded"> | null | undefined
+                              readonly BlockVolume?: {} | null | undefined
                             }
                           | null
                           | undefined
@@ -2524,12 +2554,7 @@ declare const VolumesApi: HttpApi<
                           | null
                           | undefined
                         readonly CapacityRange?:
-                          | Struct.ReadonlySide<
-                              { readonly RequiredBytes: BigIntFromString; readonly LimitBytes: BigIntFromString },
-                              "Encoded"
-                            >
-                          | null
-                          | undefined
+                          { readonly RequiredBytes: string; readonly LimitBytes: string } | null | undefined
                       } | null
                       readonly Version?: { readonly Index?: string | undefined } | null | undefined
                       readonly CreatedAt?: string | null | undefined
@@ -2564,13 +2589,7 @@ declare const VolumesApi: HttpApi<
                     }
                   | null
                   | undefined
-                readonly UsageData?:
-                  | Struct.ReadonlySide<
-                      { readonly RefCount: BigIntFromString; readonly Size: BigIntFromString },
-                      "Encoded"
-                    >
-                  | null
-                  | undefined
+                readonly UsageData?: { readonly RefCount: string; readonly Size: string } | null | undefined
               },
               readonly [
                 Struct<{
@@ -2601,17 +2620,12 @@ declare const VolumesApi: HttpApi<
                       readonly Spec: {
                         readonly Availability?: "pause" | "active" | "drain" | undefined
                         readonly Secrets?:
-                          | ReadonlyArray<Struct.ReadonlySide<
-                              { readonly Key: String; readonly Secret: String },
-                              "Iso"
-                            > | null>
-                          | null
-                          | undefined
+                          ReadonlyArray<{ readonly Key: string; readonly Secret: string } | null> | null | undefined
                         readonly Group?: string | undefined
                         readonly AccessMode?:
                           | {
                               readonly Scope?: "single" | "multi" | undefined
-                              readonly Sharing?: "readonly" | "all" | "none" | "onewriter" | undefined
+                              readonly Sharing?: "none" | "readonly" | "all" | "onewriter" | undefined
                               readonly MountVolume?:
                                 | {
                                     readonly FsType?: string | undefined
@@ -2619,7 +2633,7 @@ declare const VolumesApi: HttpApi<
                                   }
                                 | null
                                 | undefined
-                              readonly BlockVolume?: Struct.ReadonlySide<{}, "Iso"> | null | undefined
+                              readonly BlockVolume?: {} | null | undefined
                             }
                           | null
                           | undefined
@@ -2641,12 +2655,7 @@ declare const VolumesApi: HttpApi<
                           | null
                           | undefined
                         readonly CapacityRange?:
-                          | Struct.ReadonlySide<
-                              { readonly RequiredBytes: BigIntFromString; readonly LimitBytes: BigIntFromString },
-                              "Iso"
-                            >
-                          | null
-                          | undefined
+                          { readonly RequiredBytes: bigint; readonly LimitBytes: bigint } | null | undefined
                       } | null
                       readonly Version?: { readonly Index?: bigint | undefined } | null | undefined
                       readonly CreatedAt?: Date | null | undefined
@@ -2681,10 +2690,7 @@ declare const VolumesApi: HttpApi<
                     }
                   | null
                   | undefined
-                readonly UsageData?:
-                  | Struct.ReadonlySide<{ readonly RefCount: BigIntFromString; readonly Size: BigIntFromString }, "Iso">
-                  | null
-                  | undefined
+                readonly UsageData?: { readonly RefCount: bigint; readonly Size: bigint } | null | undefined
               }
             >,
             Struct<{
@@ -2754,10 +2760,12 @@ declare const VolumesApi: HttpApi<
         toCodecStringTree<
           Struct<{
             filters: optional<
-              Struct<{
-                readonly label: optional<$Array<String>>
-                readonly all: optional<$Array<Literals<readonly ["true", "false", "1", "0"]>>>
-              }>
+              fromJsonString<
+                Struct<{
+                  readonly label: optional<$Array<String>>
+                  readonly all: optional<$Array<Literals<readonly ["true", "false", "1", "0"]>>>
+                }>
+              >
             >
           }>
         >,
@@ -2778,7 +2786,7 @@ declare const VolumesApi: HttpApi<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L497)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L497)
 
 Since v1.0.0
 
@@ -2799,7 +2807,7 @@ Swarm mode must be enabled for these endpoints to work.
 declare const ConfigsLayer: Layer<Configs, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L36)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L36)
 
 Since v1.0.0
 
@@ -2818,7 +2826,7 @@ Swarm mode must be enabled for these endpoints to work.
 declare const ConfigsLayerLocalSocket: Layer<Configs, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L46)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L46)
 
 Since v1.0.0
 
@@ -2834,7 +2842,7 @@ Since v1.0.0
 declare const ContainersLayer: Layer<Containers, never, HttpClient | WebSocketConstructor>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L69)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L69)
 
 Since v1.0.0
 
@@ -2850,7 +2858,7 @@ Since v1.0.0
 declare const ContainersLayerLocalSocket: Layer<Containers, never, HttpClient | WebSocketConstructor>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L76)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L76)
 
 Since v1.0.0
 
@@ -2866,7 +2874,7 @@ Since v1.0.0
 declare const DistributionsLayer: Layer<Distributions, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L99)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L99)
 
 Since v1.0.0
 
@@ -2882,7 +2890,7 @@ Since v1.0.0
 declare const DistributionsLayerLocalSocket: Layer<Distributions, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L106)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L106)
 
 Since v1.0.0
 
@@ -2898,7 +2906,7 @@ Since v1.0.0
 declare const ExecsLayer: Layer<Execs, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L129)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L129)
 
 Since v1.0.0
 
@@ -2914,7 +2922,7 @@ Since v1.0.0
 declare const ExecsLayerLocalSocket: Layer<Execs, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L136)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L136)
 
 Since v1.0.0
 
@@ -2930,7 +2938,7 @@ Since v1.0.0
 declare const ImagesLayer: Layer<Images, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L159)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L159)
 
 Since v1.0.0
 
@@ -2946,7 +2954,7 @@ Since v1.0.0
 declare const ImagesLayerLocalSocket: Layer<Images, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L166)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L166)
 
 Since v1.0.0
 
@@ -2962,7 +2970,7 @@ Since v1.0.0
 declare const NetworksLayer: Layer<Networks, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L189)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L189)
 
 Since v1.0.0
 
@@ -2978,7 +2986,7 @@ Since v1.0.0
 declare const NetworksLayerLocalSocket: Layer<Networks, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L196)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L196)
 
 Since v1.0.0
 
@@ -2994,7 +3002,7 @@ Since v1.0.0
 declare const NodesLayer: Layer<Nodes, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L219)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L219)
 
 Since v1.0.0
 
@@ -3010,7 +3018,7 @@ Since v1.0.0
 declare const NodesLayerLocalSocket: Layer<Nodes, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L226)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L226)
 
 Since v1.0.0
 
@@ -3026,7 +3034,7 @@ Since v1.0.0
 declare const PluginsLayer: Layer<Plugins, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L249)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L249)
 
 Since v1.0.0
 
@@ -3042,7 +3050,7 @@ Since v1.0.0
 declare const PluginsLayerLocalSocket: Layer<Plugins, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L256)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L256)
 
 Since v1.0.0
 
@@ -3061,7 +3069,7 @@ be enabled for these endpoints to work.
 declare const SecretsLayer: Layer<Secrets, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L288)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L288)
 
 Since v1.0.0
 
@@ -3080,7 +3088,7 @@ be enabled for these endpoints to work.
 declare const SecretsLayerLocalSocket: Layer<Secrets, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L298)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L298)
 
 Since v1.0.0
 
@@ -3099,7 +3107,7 @@ be enabled for these endpoints to work.
 declare const ServicesLayer: Layer<Services, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L330)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L330)
 
 Since v1.0.0
 
@@ -3118,7 +3126,7 @@ be enabled for these endpoints to work.
 declare const ServicesLayerLocalSocket: Layer<Services, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L340)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L340)
 
 Since v1.0.0
 
@@ -3134,7 +3142,7 @@ Since v1.0.0
 declare const SessionsLayer: Layer<Sessions, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L363)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L363)
 
 Since v1.0.0
 
@@ -3150,7 +3158,7 @@ Since v1.0.0
 declare const SessionsLayerLocalSocket: Layer<Sessions, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L370)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L370)
 
 Since v1.0.0
 
@@ -3169,7 +3177,7 @@ documentation for more information.
 declare const SwarmLayer: Layer<Swarm, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L402)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L402)
 
 Since v1.0.0
 
@@ -3185,7 +3193,7 @@ Since v1.0.0
 declare const SwarmLayerLocalSocket: Layer<Swarm, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L409)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L409)
 
 Since v1.0.0
 
@@ -3201,7 +3209,7 @@ Since v1.0.0
 declare const SystemLayer: Layer<System, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L432)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L432)
 
 Since v1.0.0
 
@@ -3217,7 +3225,7 @@ Since v1.0.0
 declare const SystemLayerLocalSocket: Layer<System, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L439)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L439)
 
 Since v1.0.0
 
@@ -3236,7 +3244,7 @@ unit of swarm. Swarm mode must be enabled for these endpoints to work.
 declare const TasksLayer: Layer<Tasks, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L471)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L471)
 
 Since v1.0.0
 
@@ -3255,7 +3263,7 @@ unit of swarm. Swarm mode must be enabled for these endpoints to work.
 declare const TasksLayerLocalSocket: Layer<Tasks, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L481)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L481)
 
 Since v1.0.0
 
@@ -3271,7 +3279,7 @@ Since v1.0.0
 declare const VolumesLayer: Layer<Volumes, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L504)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L504)
 
 Since v1.0.0
 
@@ -3287,7 +3295,7 @@ Since v1.0.0
 declare const VolumesLayerLocalSocket: Layer<Volumes, never, HttpClient>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L511)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L511)
 
 Since v1.0.0
 
@@ -3308,7 +3316,7 @@ Swarm mode must be enabled for these endpoints to work.
 declare const Configs: typeof Configs
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L16)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L16)
 
 Since v1.0.0
 
@@ -3324,7 +3332,7 @@ Since v1.0.0
 declare const Containers: typeof Containers
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L55)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L55)
 
 Since v1.0.0
 
@@ -3340,7 +3348,7 @@ Since v1.0.0
 declare const Distributions: typeof Distributions
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L85)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L85)
 
 Since v1.0.0
 
@@ -3356,7 +3364,7 @@ Since v1.0.0
 declare const Execs: typeof Execs
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L115)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L115)
 
 Since v1.0.0
 
@@ -3372,7 +3380,7 @@ Since v1.0.0
 declare const Images: typeof Images
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L145)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L145)
 
 Since v1.0.0
 
@@ -3388,7 +3396,7 @@ Since v1.0.0
 declare const Networks: typeof Networks
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L175)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L175)
 
 Since v1.0.0
 
@@ -3404,7 +3412,7 @@ Since v1.0.0
 declare const Nodes: typeof Nodes
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L205)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L205)
 
 Since v1.0.0
 
@@ -3420,7 +3428,7 @@ Since v1.0.0
 declare const Plugins: typeof Plugins
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L235)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L235)
 
 Since v1.0.0
 
@@ -3439,7 +3447,7 @@ be enabled for these endpoints to work.
 declare const Secrets: typeof Secrets
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L268)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L268)
 
 Since v1.0.0
 
@@ -3458,7 +3466,7 @@ be enabled for these endpoints to work.
 declare const Services: typeof Services
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L310)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L310)
 
 Since v1.0.0
 
@@ -3474,7 +3482,7 @@ Since v1.0.0
 declare const Sessions: typeof Sessions
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L356)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L356)
 
 Since v1.0.0
 
@@ -3493,7 +3501,7 @@ documentation for more information.
 declare const Swarm: typeof Swarm
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L382)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L382)
 
 Since v1.0.0
 
@@ -3509,7 +3517,7 @@ Since v1.0.0
 declare const System: typeof System
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L418)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L418)
 
 Since v1.0.0
 
@@ -3528,7 +3536,7 @@ unit of swarm. Swarm mode must be enabled for these endpoints to work.
 declare const Tasks: typeof Tasks
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L451)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L451)
 
 Since v1.0.0
 
@@ -3544,6 +3552,6 @@ Since v1.0.0
 declare const Volumes: typeof Volumes
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyEndpoints.ts#L490)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyEndpoints.ts#L490)
 
 Since v1.0.0

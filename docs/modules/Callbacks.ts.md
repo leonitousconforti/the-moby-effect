@@ -30,12 +30,16 @@ Create a callback client for the docker engine
 **Signature**
 
 ```ts
-declare const callbackClient: <E>(
-  layer: Layer.Layer<
+declare const callbackClient: <E1, E2>(
+  layer: (
+    connectionOptions: MobyConnection.MobyConnectionOptions
+  ) => Layer.Layer<
     Layer.Success<DockerEngine.DockerLayer>,
-    Layer.Error<DockerEngine.DockerLayer> | E,
+    Layer.Error<DockerEngine.DockerLayer> | E1,
     Layer.Services<DockerEngine.DockerLayer>
-  >
+  >,
+  connectionOptions?:
+    MobyConnection.MobyConnectionOptions | Effect.Effect<MobyConnection.MobyConnectionOptions, E2, never>
 ) => Promise<{
   pull: (a: { image: string; platform?: string | undefined }) => ReadableStream<MobySchemas.JSONMessage>
   build: <E1>(a: {
@@ -190,19 +194,17 @@ declare const callbackClient: <E>(
   ping: (callback: (exit: Exit.Exit<void, DockerError>) => void) => void
   pingHead: (callback: (exit: Exit.Exit<void, DockerError>) => void) => void
   followProgressInConsole: (
-    y: ReadableStream<MobySchemas.JSONMessage>,
-    z: unknown,
+    z: ReadableStream<MobySchemas.JSONMessage>,
     callback: (exit: Exit.Exit<Array<MobySchemas.JSONMessage>, unknown>) => void
   ) => void
   waitForProgressToComplete: (
-    y: ReadableStream<MobySchemas.JSONMessage>,
-    z: unknown,
+    z: ReadableStream<MobySchemas.JSONMessage>,
     callback: (exit: Exit.Exit<Array<MobySchemas.JSONMessage>, unknown>) => void
   ) => void
 }>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/Callbacks.ts#L118)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/Callbacks.ts#L120)
 
 Since v1.0.0
 
@@ -251,7 +253,7 @@ declare const runCallback: {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/Callbacks.ts#L72)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/Callbacks.ts#L74)
 
 Since v1.0.0
 
@@ -267,6 +269,6 @@ declare const runCallbackForEffect: <R = never>(
 ) => (callback: (exit: Exit.Exit<A, E>) => void) => (interruptor?: number | undefined) => void
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/Callbacks.ts#L26)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/Callbacks.ts#L28)
 
 Since v1.0.0

@@ -68,7 +68,7 @@ declare const HttpConnectionOptions: Data.TaggedEnum.ConstructorFrom<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L156)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L156)
 
 Since v1.0.0
 
@@ -108,7 +108,7 @@ declare const HttpsConnectionOptions: Data.TaggedEnum.ConstructorFrom<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L173)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L173)
 
 Since v1.0.0
 
@@ -132,7 +132,7 @@ declare const SocketConnectionOptions: Data.TaggedEnum.ConstructorFrom<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L122)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L122)
 
 Since v1.0.0
 
@@ -199,7 +199,7 @@ declare const SshConnectionOptions: Data.TaggedEnum.ConstructorFrom<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L143)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L143)
 
 Since v1.0.0
 
@@ -213,7 +213,7 @@ Since v1.0.0
 type HttpConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "http">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L68)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L68)
 
 Since v1.0.0
 
@@ -225,7 +225,7 @@ Since v1.0.0
 type HttpConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "http">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L74)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L74)
 
 Since v1.0.0
 
@@ -237,7 +237,7 @@ Since v1.0.0
 type HttpsConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "https">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L80)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L80)
 
 Since v1.0.0
 
@@ -249,7 +249,7 @@ Since v1.0.0
 type HttpsConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "https">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L86)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L86)
 
 Since v1.0.0
 
@@ -671,7 +671,7 @@ declare const MobyConnectionOptions: {
 }
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L111)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L111)
 
 Since v1.0.0
 
@@ -713,7 +713,7 @@ type MobyConnectionOptions = Data.TaggedEnum<{
 }>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L27)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L27)
 
 Since v1.0.0
 
@@ -725,7 +725,7 @@ Since v1.0.0
 type SocketConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "socket">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L56)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L56)
 
 Since v1.0.0
 
@@ -737,7 +737,7 @@ Since v1.0.0
 type SocketConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "socket">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L62)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L62)
 
 Since v1.0.0
 
@@ -749,7 +749,7 @@ Since v1.0.0
 type SshConnectionOptions = Data.TaggedEnum.Args<MobyConnectionOptions, "ssh">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L92)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L92)
 
 Since v1.0.0
 
@@ -761,7 +761,7 @@ Since v1.0.0
 type SshConnectionOptionsTagged = Data.TaggedEnum.Value<MobyConnectionOptions, "ssh">
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L98)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L98)
 
 Since v1.0.0
 
@@ -833,7 +833,7 @@ declare const connectionOptionsFromDockerHostEnvironmentVariable: Effect.Effect<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L213)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L213)
 
 Since v1.0.0
 
@@ -903,7 +903,7 @@ declare const connectionOptionsFromPlatformSystemSocketDefault: Effect.Effect<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L225)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L225)
 
 Since v1.0.0
 
@@ -941,7 +941,7 @@ declare const connectionOptionsFromUrl: (
 ) => Effect.Effect<MobyConnectionOptions, Config.ConfigError, never>
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L203)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L203)
 
 Since v1.0.0
 
@@ -1011,6 +1011,6 @@ declare const connectionOptionsFromUserSocketDefault: Effect.Effect<
 >
 ```
 
-[Source](https://github.com/leonitousconforti/the-moby-effect/tree/main/src/MobyConnection.ts#L237)
+[Source](https://github.com/leonitousconforti/the-moby-effect/blob/main/src/MobyConnection.ts#L237)
 
 Since v1.0.0
