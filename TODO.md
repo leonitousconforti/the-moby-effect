@@ -11,17 +11,16 @@ headers required to hijack a connection, which disables exec, attach, and
 sessions on that transport.
 
 - [ ] `src/internal/endpoints/execs.ts:124` - exec start upgrade headers are
-  broken on undici
+      broken on undici
 - [ ] `src/internal/endpoints/containers.ts:572` - container attach upgrade
-  headers are broken on undici
+      headers are broken on undici
 - [ ] `test/session.test.ts:10` - session tests are skipped for every undici
       platform variant (`node-22.x-undici`, `node-24.x-undici`,
       `node-26.x-undici`, `deno-undici`, `bun-undici`)
 - [ ] `test/exec.test.ts:46` - `exec` test bails out early under
-  `DindEngine.layerUndici`
+      `DindEngine.layerUndici`
 - [ ] `test/exec.test.ts:78` - `execWebsocketsNonBlocking` hangs on undici over
-      the ssh tunnel (works on http/https/socket, verified in ci run
-      29949801595)
+      the ssh tunnel (works on http/https/socket, verified in ci run 29949801595)
 
 ## Response hijacking
 
@@ -50,6 +49,8 @@ sessions on that transport.
 
 ## Dependencies
 
-- [ ] `patches/effect@4.0.0-beta.99.patch` - carrying a local patch that adds
+- [ ] `patches/effect@4.0.0-beta.102.patch` - carrying a local patch that adds
       `StreamUint8Array` payload handling to `HttpApiClient` /
-      `HttpApiEndpoint`; upstream it and drop the patch
+      `HttpApiEndpoint`; upstream it and drop the patch. Still not fixed as of
+      beta.102, and the version-pinned `patchedDependencies` key means every
+      effect bump must retarget this patch or `pnpm install` breaks.
