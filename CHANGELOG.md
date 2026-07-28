@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.54.2
+
+### Patch Changes
+
+- d7884a3: Bump deps
+
 ## 1.48.4
 
 ### Patch Changes
