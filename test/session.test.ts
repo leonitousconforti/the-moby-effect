@@ -8,12 +8,15 @@ import { makePlatformDindLayer } from "./shared-file.js";
 import { testMatrix } from "./shared-global.js";
 
 // FIXME: Sessions over Undici HTTP clients currently might not work due to inability to set required headers?
-const skipForUndiciHttpClients = Match.value(inject("__PLATFORM_VARIANT")).pipe(
+// The bun and deno layers are fetch based, which can not expose the raw
+// socket of the http connection, so the session hijack is impossible there.
+const skipForIncompatibleHttpClients = Match.value(inject("__PLATFORM_VARIANT")).pipe(
     Match.whenOr("node-22.x-undici", "node-24.x-undici", "node-26.x-undici", "deno-undici", "bun-undici", () => true),
+    Match.whenOr("bun", "deno", () => true),
     Match.orElse(() => false)
 );
 
-describe.skipIf(skipForUndiciHttpClients).each(testMatrix)(
+describe.skipIf(skipForIncompatibleHttpClients).each(testMatrix)(
     "MobyApi Sessions tests for $exposeDindContainerBy+$dindBaseImage",
     ({ dindBaseImage, exposeDindContainerBy }) => {
         const testLayer = MobyConnection.connectionOptionsFromPlatformSystemSocketDefault.pipe(
