@@ -69,18 +69,18 @@
         "@babel/core": "8.0.1",
         "@changesets/cli": "2.31.1",
         "@effect/build-utils": "0.8.9",
-        "@effect/docgen": "4.0.0-beta.102",
-        "@effect/platform-browser": "4.0.0-beta.102",
-        "@effect/platform-bun": "4.0.0-beta.102",
-        "@effect/platform-node": "4.0.0-beta.102",
+        "@effect/docgen": "4.0.0-beta.103",
+        "@effect/platform-browser": "4.0.0-beta.103",
+        "@effect/platform-bun": "4.0.0-beta.103",
+        "@effect/platform-node": "4.0.0-beta.103",
         "@effect/tsgo": "0.32.0",
-        "@effect/vitest": "4.0.0-beta.102",
+        "@effect/vitest": "4.0.0-beta.103",
         "@types/node": "26.1.2",
         "@types/ssh2": "1.15.5",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "4.1.10",
         "babel-plugin-annotate-pure-calls": "0.5.0",
-        "effect": "4.0.0-beta.102",
+        "effect": "4.0.0-beta.103",
         "ioredis": "5.11.1",
         "madge": "8.0.0",
         "oxfmt": "0.62.0",
@@ -95,10 +95,10 @@
         "ws": "8.21.1"
     },
     "peerDependencies": {
-        "@effect/platform-browser": "4.0.0-beta.102",
-        "@effect/platform-bun": "4.0.0-beta.102",
-        "@effect/platform-node": "4.0.0-beta.102",
-        "effect": "4.0.0-beta.102"
+        "@effect/platform-browser": "4.0.0-beta.103",
+        "@effect/platform-bun": "4.0.0-beta.103",
+        "@effect/platform-node": "4.0.0-beta.103",
+        "effect": "4.0.0-beta.103"
     },
     "peerDependenciesMeta": {
         "@effect/platform-browser": {
