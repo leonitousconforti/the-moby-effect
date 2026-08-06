@@ -1,5 +1,4 @@
 import * as Effect from "effect/Effect";
-import * as Option from "effect/Option";
 import * as Schema from "effect/Schema";
 import * as SchemaGetter from "effect/SchemaGetter";
 import * as SchemaIssue from "effect/SchemaIssue";
@@ -31,9 +30,9 @@ export const NumberFilter = Schema.Tuple([Schema.NumberFromString]).pipe(
 export const BooleanFilter = (filterName: string) =>
     Schema.Tuple([Schema.String]).pipe(
         Schema.decodeTo(Schema.Boolean, {
-            decode: SchemaGetter.transformOrFail((fromA: readonly [string]) =>
+            decode: SchemaGetter.transformOrFail((_fromA: readonly [string]) =>
                 Effect.fail(
-                    new SchemaIssue.InvalidValue(Option.some(fromA), {
+                    new SchemaIssue.InvalidValue({
                         message: `Decoding '${filterName}' filter is not supported`,
                     })
                 )
