@@ -130,7 +130,7 @@ export class System extends Context.Service<System>()("@the-moby-effect/endpoint
                 Stream.unwrap,
                 Stream.decodeText(),
                 Stream.splitLines,
-                Stream.mapEffect((line) => Schema.decodeEffect(Schema.UnknownFromJsonString)(line)),
+                Stream.mapEffect((line) => Schema.decodeEffect(Schema.fromJsonString(Schema.Unknown))(line)),
                 Stream.mapError(SystemsError("events"))
             );
         const dataUsage_ = (params?: Options<"dataUsage">) =>

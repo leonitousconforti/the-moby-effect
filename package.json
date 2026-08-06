@@ -61,8 +61,8 @@
         "changeset-publish": "pnpm build && changeset publish"
     },
     "dependencies": {
-        "effect-schemas": "0.0.19",
-        "eftar": "0.0.81"
+        "effect-schemas": "0.0.20",
+        "eftar": "0.0.82"
     },
     "devDependencies": {
         "@babel/cli": "8.0.4",

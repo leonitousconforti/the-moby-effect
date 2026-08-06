@@ -662,7 +662,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                     HttpClientResponse.schemaHeaders(
                         Schema.Struct({
                             "x-docker-container-path-stat": Schema.StringFromBase64.pipe(
-                                Schema.decodeTo(Schema.UnknownFromJsonString),
+                                Schema.decodeTo(Schema.fromJsonString(Schema.Unknown)),
                                 Schema.optional
                             ),
                         })
