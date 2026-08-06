@@ -60,21 +60,14 @@
                 "effect-schemas",
                 "/^@effect//",
                 "!@effect/build-utils",
-                "!@effect/language-service"
+                "!@effect/tsgo"
             ],
             "groupName": "Effect-TS packages",
             "addLabels": ["pnpm"]
         },
         {
             "description": "Group build tools packages into one PR",
-            "matchPackageNames": [
-                "oxfmt",
-                "oxlint",
-                "@effect/build-utils",
-                "@effect/language-service",
-                "typescript",
-                "tsx"
-            ],
+            "matchPackageNames": ["oxfmt", "oxlint", "@effect/build-utils", "@effect/tsgo", "typescript", "tsx"],
             "groupName": "build tools packages",
             "addLabels": ["pnpm"]
         },
