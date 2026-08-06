@@ -9,10 +9,9 @@
         "noEmit": true,
         "erasableSyntaxOnly": false,
         "resolveJsonModule": true,
-        "baseUrl": ".",
         "paths": {
-            "the-moby-effect": ["src/index.ts"],
-            "the-moby-effect/*": ["src/*.ts"]
+            "the-moby-effect": ["./src/index.ts"],
+            "the-moby-effect/*": ["./src/*.ts"]
         },
         "types": ["node"]
     }

@@ -253,8 +253,17 @@ export const demuxStdioRawTupled: <
         ? { stderr: stderr?.[1] }
         : { stderr: Sink.succeed<void>(void 0) as unknown as Sink.Sink<never, string, never, never, never> };
 
+    // `sockets` guarantees at least one of stdin/stdout/stderr is defined, but spreading the
+    // three conditional objects widens to a union that also includes the all-absent case, which
+    // HeterogeneousStdioRawInput deliberately does not model. TypeScript 7 tracks this precisely
+    // where 5.9 did not, so restate the invariant here.
+    const rawSockets = { ...stdinSocketObject, ...stdoutSocketObject, ...stderrSocketObject } as Exclude<
+        typeof stdinSocketObject & typeof stdoutSocketObject & typeof stderrSocketObject,
+        Record<string, never>
+    >;
+
     return yield* demuxStdioRawToSeparateSinks(
-        { ...stdinSocketObject, ...stdoutSocketObject, ...stderrSocketObject },
+        rawSockets,
         { ...stdinIoObject, ...stdoutIoObject, ...stderrIoObject },
         options
     );

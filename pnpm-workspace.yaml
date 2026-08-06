@@ -19,12 +19,12 @@ allowBuilds:
     unrs-resolver: true
 
 overrides:
-    "@effect/docgen>typescript": "5.9.3"
-    "madge>typescript": "5.9.3"
+    "@effect/docgen>typescript": "7.0.2"
+    "madge>typescript": "7.0.2"
 
 peerDependencyRules:
     allowedVersions:
-        typescript: "5.9.3"
+        typescript: "7.0.2"
 
 minimumReleaseAgeExclude:
     - effect-schemas
