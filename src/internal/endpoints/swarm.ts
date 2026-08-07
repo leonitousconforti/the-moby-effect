@@ -171,18 +171,16 @@ export class Swarm extends Context.Service<Swarm>()("@the-moby-effect/endpoints/
                 Effect.flatMap((payload) => client.join({ payload })),
                 Effect.mapError(SwarmsError("join"))
             );
-        const leave_ = (options?: { force?: boolean | undefined } | undefined) =>
+        const leave_ = (options?: { force?: boolean | undefined }) =>
             client.leave({ query: { ...options } }).pipe(Effect.mapError(SwarmsError("leave")));
         const update_ = (
             spec: (typeof SwarmSpec)["~type.make.in"],
             version: bigint,
-            rotate?:
-                | {
-                      readonly rotateWorkerToken?: boolean | undefined;
-                      readonly rotateManagerToken?: boolean | undefined;
-                      readonly rotateManagerUnlockKey?: boolean | undefined;
-                  }
-                | undefined
+            rotate?: {
+                readonly rotateWorkerToken?: boolean | undefined;
+                readonly rotateManagerToken?: boolean | undefined;
+                readonly rotateManagerUnlockKey?: boolean | undefined;
+            }
         ) =>
             SwarmSpec.makeEffect(spec).pipe(
                 Effect.flatMap((payload) =>

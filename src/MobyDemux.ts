@@ -625,11 +625,9 @@ export const mergeRawToTaggedStream: <
 >(
     stdout: EitherRawInput<IE1, OE1, R1>,
     stderr: EitherRawInput<IE2, OE2, R2>,
-    options?:
-        | {
-              bufferSize?: number | undefined;
-          }
-        | undefined
+    options?: {
+        bufferSize?: number | undefined;
+    }
 ) => Stream.Stream<
     | {
           _tag: "stdout";
@@ -656,7 +654,7 @@ export const demuxRawToSingleSink: {
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): <IE = never, OE = Socket.SocketError, R3 = never>(
         socket: EitherRawInput<E1 | IE, OE, R3>
     ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>;
@@ -665,7 +663,7 @@ export const demuxRawToSingleSink: {
         socket: EitherRawInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>;
 } = internalRaw.demuxRawToSingleSink;
 
@@ -721,7 +719,7 @@ export const demuxStdioRawTupled: <
         R5,
         R6
     >,
-    options?: { encoding?: string | undefined } | undefined
+    options?: { encoding?: string | undefined }
 ) => Effect.Effect<
     CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
@@ -743,7 +741,7 @@ export const demuxStdioRawToSingleSink: {
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): <
         IE1 = never,
         IE2 = never,
@@ -778,7 +776,7 @@ export const demuxStdioRawToSingleSink: {
         sockets: HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): Effect.Effect<A1, E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3 | R4 | R5>;
 } = internalRaw.demuxStdioRawToSingleSink;
 
@@ -800,7 +798,7 @@ export const demuxStdioRawToSeparateSinks: {
             stdout: Sink.Sink<A1, string, L1, E2, R2>;
             stderr: Sink.Sink<A2, string, L2, E3, R3>;
         },
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): <
         IE1 = never,
         IE2 = never,
@@ -846,7 +844,7 @@ export const demuxStdioRawToSeparateSinks: {
             stdout: Sink.Sink<A1, string, L1, E2, R2>;
             stderr: Sink.Sink<A2, string, L2, E3, R3>;
         },
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
@@ -865,7 +863,7 @@ export const demuxMultiplexedToSingleSink: {
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): <IE = never, OE = Socket.SocketError, R3 = never>(
         socket: EitherMultiplexedInput<E1 | IE, OE, R3>
     ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
@@ -874,7 +872,7 @@ export const demuxMultiplexedToSingleSink: {
         socket: EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
 } = internalMultiplexed.demuxMultiplexedToSingleSink;
 
@@ -896,7 +894,7 @@ export const demuxMultiplexedToSeparateSinks: {
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink1: Sink.Sink<A1, string, L1, E2, R2>,
         sink2: Sink.Sink<A2, string, L2, E3, R3>,
-        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined }
     ): <IE = never, OE = Socket.SocketError, R4 = never>(
         socket: EitherMultiplexedInput<E1 | IE, OE, R4>
     ) => Effect.Effect<
@@ -910,7 +908,7 @@ export const demuxMultiplexedToSeparateSinks: {
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink1: Sink.Sink<A1, string, L1, E2, R2>,
         sink2: Sink.Sink<A2, string, L2, E3, R3>,
-        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined }
     ): Effect.Effect<
         CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE | OE | Schema.SchemaError,
@@ -929,7 +927,7 @@ export const demuxToSingleSink: {
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): <IE = never, OE = Socket.SocketError, R3 = never>(
         sockets: EitherRawInput<E1 | IE, OE, R3> | EitherMultiplexedInput<E1 | IE, OE, R3>
     ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
@@ -938,7 +936,7 @@ export const demuxToSingleSink: {
         sockets: EitherRawInput<E1 | IE, OE, R3> | EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>;
 } = internal.demuxToSingleSink;
 
@@ -1065,12 +1063,10 @@ export const fan: {
 export const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketError, R2 = never>(
     sockets: EitherMultiplexedInput<E | IE, OE, R2>,
     input: Stream.Stream<string | Uint8Array, E, R1>,
-    options?:
-        | {
-              bufferSize?: number | undefined;
-              encoding?: string | undefined;
-          }
-        | undefined
+    options?: {
+        bufferSize?: number | undefined;
+        encoding?: string | undefined;
+    }
 ) => Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1 | R2, Scope.Scope>> =
     internalStdio.demuxWithInputToConsole;
 
@@ -1092,12 +1088,10 @@ export const demuxWithInputToConsole: <E, R1, IE = never, OE = Socket.SocketErro
  */
 export const demuxFromStdinToStdoutAndStderr: <IE = never, OE = Socket.SocketError, R = never>(
     sockets: EitherMultiplexedInput<IE, OE, R>,
-    options?:
-        | {
-              bufferSize?: number | undefined;
-              encoding?: string | undefined;
-          }
-        | undefined
+    options?: {
+        bufferSize?: number | undefined;
+        encoding?: string | undefined;
+    }
 ) => Effect.Effect<
     void,
     IE | OE | PlatformError.PlatformError | Schema.SchemaError,

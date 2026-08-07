@@ -140,6 +140,8 @@ const stringifyOptions = (
             } else if (Predicate.isObject(value)) {
                 return Record.toEntries(value);
             } else {
+                // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                 return Function.absurd(value as never);
             }
         }),
@@ -204,16 +206,22 @@ const runCommand = (
     );
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const DockerComposeErrorTypeId: DockerComposeEngine.DockerComposeErrorTypeId = Symbol.for(
     "@the-moby-effect/engines/DockerCompose/DockerComposeError"
 ) as DockerComposeEngine.DockerComposeErrorTypeId;
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const TypeId: DockerComposeEngine.TypeId = Symbol.for(
     "@the-moby-effect/engines/DockerCompose"
 ) as DockerComposeEngine.TypeId;
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const DockerComposeProjectTypeId: DockerComposeEngine.DockerComposeProjectTypeId = Symbol.for(
     "@the-moby-effect/engines/DockerComposeProject"
 ) as DockerComposeEngine.DockerComposeProjectTypeId;
@@ -225,12 +233,12 @@ export const isDockerComposeError = (u: unknown): u is DockerComposeError =>
 /** @internal */
 export class DockerComposeError extends Data.TaggedError("DockerComposeError")<{
     method: string;
-    cause: Schema.SchemaError | Socket.SocketError | DockerEngine.DockerError | unknown;
+    cause: unknown;
 }> {
     public readonly [DockerComposeErrorTypeId]: DockerComposeEngine.DockerComposeErrorTypeId = DockerComposeErrorTypeId;
 
     public override get message() {
-        return `${String.capitalize(this.method)}`;
+        return String.capitalize(this.method);
     }
 }
 
@@ -253,9 +261,9 @@ export const make: (options?: {
     const build =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.BuildOptions | undefined
-        ): Stream.Stream<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.BuildOptions
+        ): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "build", services, { ...options }),
                 Stream.decodeText(),
@@ -265,9 +273,9 @@ export const make: (options?: {
     const config =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.ConfigOptions | undefined
-        ): Effect.Effect<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.ConfigOptions
+        ): Effect.Effect<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "config", services, { ...options }),
                 Stream.decodeText(),
@@ -281,7 +289,7 @@ export const make: (options?: {
             service: string,
             localSrc: Stream.Stream<Uint8Array, E1, R1>,
             remoteDestLocation: string,
-            options?: DockerComposeEngine.CopyOptions | undefined
+            options?: DockerComposeEngine.CopyOptions
         ): Effect.Effect<void, E1 | DockerComposeError, R1> =>
             Effect.gen(function* () {
                 const remoteTransferDir = yield* Effect.provideService(
@@ -304,8 +312,8 @@ export const make: (options?: {
         (
             service: string,
             remoteSrcLocation: string,
-            options?: DockerComposeEngine.CopyOptions | undefined
-        ): Stream.Stream<Uint8Array, DockerComposeError, never> =>
+            options?: DockerComposeEngine.CopyOptions
+        ): Stream.Stream<Uint8Array, DockerComposeError> =>
             Function.pipe(
                 makeTempDirScoped(dindContainerId),
                 Stream.fromEffect,
@@ -339,9 +347,9 @@ export const make: (options?: {
     const create =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.CreateOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.CreateOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "create", services, { ...options }),
                 Stream.runDrain
@@ -350,9 +358,9 @@ export const make: (options?: {
     const down =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.DownOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.DownOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "down", services, { ...options }),
                 Stream.runDrain
@@ -361,9 +369,9 @@ export const make: (options?: {
     const events =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.EventsOptions | undefined
-        ): Stream.Stream<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.EventsOptions
+        ): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "events", services, { ...options }),
                 Stream.decodeText(),
@@ -375,8 +383,8 @@ export const make: (options?: {
         (
             service: string,
             command: string,
-            args?: Array<string> | undefined,
-            options?: DockerComposeEngine.ExecOptions | undefined
+            args?: Array<string>,
+            options?: DockerComposeEngine.ExecOptions
         ): Effect.Effect<
             MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
             DockerComposeError,
@@ -395,9 +403,9 @@ export const make: (options?: {
     const images =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.ImagesOptions | undefined
-        ): Stream.Stream<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.ImagesOptions
+        ): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "images", services, { ...options }),
                 Stream.decodeText(),
@@ -407,9 +415,9 @@ export const make: (options?: {
     const kill =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.KillOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.KillOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "kill", services, { ...options }),
                 Stream.runDrain
@@ -418,9 +426,9 @@ export const make: (options?: {
     const logs =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.LogsOptions | undefined
-        ): Stream.Stream<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.LogsOptions
+        ): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "logs", services, { ...options }),
                 Stream.decodeText(),
@@ -429,7 +437,7 @@ export const make: (options?: {
 
     const ls =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (options?: DockerComposeEngine.ListOptions | undefined): Stream.Stream<string, DockerComposeError, never> =>
+        (options?: DockerComposeEngine.ListOptions): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "ls", [], { ...options }),
                 Stream.decodeText(),
@@ -438,7 +446,7 @@ export const make: (options?: {
 
     const pause =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
+        (services?: Array<string>): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(runCommandHelper(dindContainerId, projectPath, "pause", services), Stream.runDrain);
 
     const port =
@@ -446,8 +454,8 @@ export const make: (options?: {
         (
             service: string,
             privatePort: number,
-            options?: DockerComposeEngine.PortOptions | undefined
-        ): Effect.Effect<number, DockerComposeError, never> =>
+            options?: DockerComposeEngine.PortOptions
+        ): Effect.Effect<number, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "port", [service, privatePort.toString()], {
                     ...options,
@@ -463,9 +471,9 @@ export const make: (options?: {
     const ps =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.PsOptions | undefined
-        ): Stream.Stream<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.PsOptions
+        ): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "ps", services, { ...options }),
                 Stream.decodeText(),
@@ -475,9 +483,9 @@ export const make: (options?: {
     const pull =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.PullOptions | undefined
-        ): Stream.Stream<string, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.PullOptions
+        ): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "pull", services, { ...options }),
                 Stream.decodeText(),
@@ -487,9 +495,9 @@ export const make: (options?: {
     const push =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.PushOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.PushOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "push", services, { ...options }),
                 Stream.runDrain
@@ -498,9 +506,9 @@ export const make: (options?: {
     const restart =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.RestartOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.RestartOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "restart", services, { ...options }),
                 Stream.runDrain
@@ -508,10 +516,7 @@ export const make: (options?: {
 
     const rm =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.RmOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+        (services?: Array<string>, options?: DockerComposeEngine.RmOptions): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "rm", services, { ...options }),
                 Stream.runDrain
@@ -522,8 +527,8 @@ export const make: (options?: {
         (
             service: string,
             command: string,
-            args?: Array<string> | undefined,
-            options?: DockerComposeEngine.RunOptions | undefined
+            args?: Array<string>,
+            options?: DockerComposeEngine.RunOptions
         ): Effect.Effect<
             MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
             DockerComposeError,
@@ -541,15 +546,15 @@ export const make: (options?: {
 
     const start =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
+        (services?: Array<string>): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(runCommandHelper(dindContainerId, projectPath, "start", services), Stream.runDrain);
 
     const stop =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.StopOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            services?: Array<string>,
+            options?: DockerComposeEngine.StopOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "stop", services, { ...options }),
                 Stream.runDrain
@@ -557,7 +562,7 @@ export const make: (options?: {
 
     const top =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (services?: Array<string> | undefined): Stream.Stream<string, DockerComposeError, never> =>
+        (services?: Array<string>): Stream.Stream<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "top", services),
                 Stream.decodeText(),
@@ -566,15 +571,12 @@ export const make: (options?: {
 
     const unpause =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (services?: Array<string> | undefined): Effect.Effect<void, DockerComposeError, never> =>
+        (services?: Array<string>): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(runCommandHelper(dindContainerId, projectPath, "unpause", services), Stream.runDrain);
 
     const up =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (
-            services?: Array<string> | undefined,
-            options?: DockerComposeEngine.UpOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+        (services?: Array<string>, options?: DockerComposeEngine.UpOptions): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "up", services, { ...options }),
                 Stream.runDrain
@@ -582,7 +584,7 @@ export const make: (options?: {
 
     const version =
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
-        (options?: DockerComposeEngine.VersionOptions | undefined): Effect.Effect<string, DockerComposeError, never> =>
+        (options?: DockerComposeEngine.VersionOptions): Effect.Effect<string, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "version", [], { ...options }),
                 Stream.decodeText(),
@@ -593,8 +595,8 @@ export const make: (options?: {
         (dindContainerId: IdSchemas.ContainerIdentifier, projectPath: string) =>
         (
             services: Array.NonEmptyReadonlyArray<string>,
-            options?: DockerComposeEngine.WaitOptions | undefined
-        ): Effect.Effect<void, DockerComposeError, never> =>
+            options?: DockerComposeEngine.WaitOptions
+        ): Effect.Effect<void, DockerComposeError> =>
             Function.pipe(
                 runCommandHelper(dindContainerId, projectPath, "wait", services, { ...options }),
                 Stream.runDrain
@@ -667,7 +669,7 @@ export const make: (options?: {
             service: string,
             localSrc: Stream.Stream<Uint8Array, E2, R2>,
             remoteDestLocation: string,
-            options?: DockerComposeEngine.CopyOptions | undefined
+            options?: DockerComposeEngine.CopyOptions
         ): Effect.Effect<void, E1 | E2 | DockerComposeError, Exclude<R1, Scope.Scope> | Exclude<R2, Scope.Scope>> =>
             Effect.gen(function* () {
                 const cwd = yield* Effect.provideService(
@@ -767,9 +769,9 @@ export const make: (options?: {
 });
 
 /** @internal */
-export const layer = (
-    options?: { dockerEngineSocket?: string | undefined } | undefined
-): Layer.Layer<
+export const layer = (options?: {
+    dockerEngineSocket?: string | undefined;
+}): Layer.Layer<
     DockerComposeEngine.DockerCompose,
     DockerEngine.DockerError,
     MobyEndpoints.Containers | MobyEndpoints.System | MobyEndpoints.Images

@@ -85,7 +85,7 @@ export type DockerLayer = Layer.Layer<
 export type DockerLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
     Layer.Success<DockerLayer>,
     Layer.Error<DockerLayer>,
-    Layer.Services<DockerLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
+    HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**

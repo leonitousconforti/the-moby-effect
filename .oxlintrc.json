@@ -1,5 +1,5 @@
 {
-    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
     "ignorePatterns": [
         "**/dist",
         "**/build",
@@ -11,7 +11,10 @@
         "submodules/**",
         "!src/internal/generated/index.ts"
     ],
-    "plugins": ["typescript", "import", "oxc", "eslint", "unicorn", "node"],
+    "plugins": ["typescript", "import", "oxc", "eslint", "unicorn", "node", "effecttsgo"],
+    "options": {
+        "typeAware": true
+    },
     "categories": {
         "correctness": "error",
         "suspicious": "error",
@@ -19,13 +22,21 @@
     },
     "overrides": [
         {
-            "files": ["**/{test,typetest,examples,ai-docs,benchmark,bundle,scripts,scratchpad}/**"],
+            "files": ["**/{test,typetest,examples,ai-docs,benchmark,bundle,scripts,scratchpad,bin}/**"],
             "rules": {
-                "eslint/no-console": "off"
+                "eslint/no-console": "off",
+                // These are application entry points, so composing and providing layers here is correct,
+                // and one-off scripts have no reason to model their failures as tagged errors.
+                "effecttsgo/strict-effect-provide": "off",
+                "effecttsgo/any-unknown-in-error-context": "off"
             }
         }
     ],
     "rules": {
+        // The generated endpoint services expose their zero-argument operations as thunks so the
+        // call shape stays uniform with the ones that do take arguments. Worth seeing, not worth
+        // failing the build over.
+        "effecttsgo/lazy-effect": "warn",
         // Import rules
         "typescript/consistent-type-imports": [
             "error",
@@ -41,6 +52,9 @@
         "typescript/no-unnecessary-type-assertion": "error",
         "typescript/no-unnecessary-type-constraint": "error",
         "typescript/no-useless-empty-export": "error",
+        // Writing out the defaulted `never` channels keeps the public signatures readable
+        // side by side, so this one stays off.
+        "typescript/no-unnecessary-type-arguments": "off",
         // Code quality
         "eslint/no-console": "error",
         "eslint/no-var": "error",

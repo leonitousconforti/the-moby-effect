@@ -4,6 +4,8 @@ import * as Predicate from "effect/Predicate";
 import type * as DockerEngine from "../../DockerEngine.ts";
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const DockerErrorTypeId: DockerEngine.DockerErrorTypeId = Symbol.for(
     "@the-moby-effect/engines/Docker/DockerError"
 ) as DockerEngine.DockerErrorTypeId;

@@ -38,7 +38,7 @@ export type PodmanLayer = Layer.Layer<
 export type PodmanLayerWithoutHttpClientOrWebsocketConstructor = Layer.Layer<
     Layer.Success<PodmanLayer>,
     Layer.Error<PodmanLayer>,
-    Layer.Services<PodmanLayer> | HttpClient.HttpClient | Socket.WebSocketConstructor
+    HttpClient.HttpClient | Socket.WebSocketConstructor
 >;
 
 /**

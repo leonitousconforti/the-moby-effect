@@ -25,11 +25,15 @@ import * as internalCompressed from "./compressed.js";
 export const MultiplexedContentType = "application/vnd.docker.multiplexed-stream" as const;
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const MultiplexedSocketTypeId: MobyDemux.MultiplexedSocketTypeId = Symbol.for(
     "the-moby-effect/demux/MultiplexedSocket"
 ) as MobyDemux.MultiplexedSocketTypeId;
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const MultiplexedChannelTypeId: MobyDemux.MultiplexedChannelTypeId = Symbol.for(
     "the-moby-effect/demux/MultiplexedChannel"
 ) as MobyDemux.MultiplexedChannelTypeId;
@@ -114,12 +118,14 @@ export const asMultiplexedChannel = <IE = never, OE = Socket.SocketError, R = ne
     input: MobyDemux.EitherMultiplexedInput<IE, OE, R>
 ): MobyDemux.MultiplexedChannel<IE, OE, R> =>
     isMultiplexedSocket(input)
-        ? (makeMultiplexedChannel(Socket.toChannel<IE>(input.underlying)) as unknown as MobyDemux.MultiplexedChannel<
+        ? // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          (makeMultiplexedChannel(Socket.toChannel<IE>(input.underlying)) as unknown as MobyDemux.MultiplexedChannel<
               IE,
               OE,
               R
           >)
-        : (input as MobyDemux.MultiplexedChannel<IE, OE, R>);
+        : input;
 
 /** @internal */
 export const multiplexedToStream = <IE = never, OE = Socket.SocketError, R = never>(
@@ -218,7 +224,7 @@ export const demuxMultiplexedToSingleSink = Function.dual<
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
         socket: MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>
     ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>,
@@ -227,7 +233,7 @@ export const demuxMultiplexedToSingleSink = Function.dual<
         socket: MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, readonly [MultiplexedHeaderType, string], L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>
 >(
     (arguments_) => isMultiplexedSocket(arguments_[0]) || isMultiplexedChannel(arguments_[0]),
@@ -254,7 +260,7 @@ export const demuxMultiplexedToSeparateSinks = Function.dual<
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink1: Sink.Sink<A1, string, L1, E2, R2>,
         sink2: Sink.Sink<A2, string, L2, E3, R3>,
-        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined }
     ) => <IE = never, OE = Socket.SocketError, R4 = never>(
         socket: MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R4>
     ) => Effect.Effect<
@@ -268,7 +274,7 @@ export const demuxMultiplexedToSeparateSinks = Function.dual<
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink1: Sink.Sink<A1, string, L1, E2, R2>,
         sink2: Sink.Sink<A2, string, L2, E3, R3>,
-        options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+        options?: { bufferSize?: number | undefined; encoding?: string | undefined }
     ) => Effect.Effect<
         MobyDemux.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE | OE | Schema.SchemaError,

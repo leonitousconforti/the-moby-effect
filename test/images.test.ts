@@ -36,10 +36,10 @@ describe.each(testMatrix)(
                             });
                             expect(searchResults).toBeInstanceOf(Array);
                             expect(searchResults).toHaveLength(1);
-                            expect(searchResults[0]!.name).toBe("alpine");
-                            expect(searchResults[0]!.is_official).toBe(true);
-                            expect(searchResults[0]!.is_automated).toBe(false);
-                            expect(searchResults[0]!.description).toBe(
+                            expect(searchResults[0].name).toBe("alpine");
+                            expect(searchResults[0].is_official).toBe(true);
+                            expect(searchResults[0].is_automated).toBe(false);
+                            expect(searchResults[0].description).toBe(
                                 "A minimal Docker image based on Alpine Linux with a complete package index and only 5 MB in size!"
                             );
                         })

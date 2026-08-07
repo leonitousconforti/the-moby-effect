@@ -55,10 +55,7 @@ export const makeNodeSshAgent = (
         private sshConnection: "unopened" | "connecting" | "open-failed" | "ready" = "unopened";
         private openFailedError: Error | null = null;
 
-        public constructor(
-            ssh2ConnectConfig: MobyConnection.SshConnectionOptions,
-            agentOptions?: http.AgentOptions | undefined
-        ) {
+        public constructor(ssh2ConnectConfig: MobyConnection.SshConnectionOptions, agentOptions?: http.AgentOptions) {
             super(agentOptions);
             this.sshConfig = ssh2ConnectConfig;
             this.sshClient = new ssh2Lazy.Client();
@@ -87,6 +84,8 @@ export const makeNodeSshAgent = (
          * @since 1.0.0
          * @see https://nodejs.org/api/http.html#agentcreateconnectionoptions-callback
          */
+        // The early exits return never-typed values; the normal path runs to the end of the function.
+        // oxlint-disable-next-line typescript/consistent-return
         public override createConnection(
             _options: http.ClientRequestArgs,
             callback: (error: Error | null, socket: stream.Duplex | undefined) => void
@@ -142,7 +141,7 @@ export const makeNodeSshAgent = (
                         this.sshConfig.remoteSocketPath,
                         (error: Error | undefined, stream: ssh2.ClientChannel) => {
                             this.sshClient.off("error", onError);
-                            if (error) return callback(error, void 0 as unknown as stream.Duplex);
+                            if (error) return callback(error, void 0);
                             else return callback(null, stream);
                         }
                     )
@@ -172,6 +171,8 @@ export const getNodeAgent = (
             const AcquireNodeHttpAgent = internalConnection.MobyConnectionOptions.$match({
                 http: (options) => Effect.succeed(new httpLazy.Agent({ host: options.host, port: options.port })),
                 socket: (options) =>
+                    // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                     Effect.succeed(new httpLazy.Agent({ socketPath: options.socketPath } as http.AgentOptions)),
                 ssh: (options) =>
                     Effect.map(
@@ -195,7 +196,9 @@ export const getNodeAgent = (
             const resource = Effect.acquireRelease(AcquireNodeHttpAgent(connectionOptions), releaseNodeHttpAgent);
 
             return Effect.map(resource, (agent) => ({
-                http: agent as http.Agent,
+                http: agent,
+                // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                 https: agent as https.Agent,
             }));
         })
@@ -213,6 +216,8 @@ export const getWebsocketConstructor = (
             const agent = yield* nodeHttpClientLazy.HttpAgent;
 
             return (url, protocols) =>
+                // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                 new ws.WebSocket(
                     `ws://0.0.0.0${internalAgnostic.makeVersionPath(connectionOptions)}${url}`,
                     protocols,

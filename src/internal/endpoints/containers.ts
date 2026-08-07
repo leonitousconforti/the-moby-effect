@@ -484,7 +484,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
             group: "containers",
         });
 
-        const list_ = (options?: Options<"list"> | undefined) =>
+        const list_ = (options?: Options<"list">) =>
             client
                 .list({
                     query: {
@@ -634,6 +634,8 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                     websocket.addEventListener("open", onOpen, { once: true });
                     websocket.addEventListener("error", onFailure, { once: true });
                     websocket.addEventListener("close", onFailure, { once: true });
+                    // The early exits return never-typed values; the normal path runs to the end of the function.
+                    // oxlint-disable-next-line typescript/consistent-return
                     return Effect.sync(cleanup);
                 });
 
@@ -683,7 +685,7 @@ export class Containers extends Context.Service<Containers>()("@the-moby-effect/
                     payload: Stream.provideContext(stream, context),
                 })
             ).pipe(Effect.mapError(ContainersError("putArchive")));
-        const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters> | undefined) =>
+        const prune_ = (filters?: Schema.Schema.Type<typeof PruneFilters>) =>
             client.prune({ query: { filters } }).pipe(Effect.mapError(ContainersError("prune")));
 
         return {

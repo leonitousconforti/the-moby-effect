@@ -103,6 +103,9 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
     DockerEngine.DockerError | (ExposeDindBy extends "socket" ? PlatformError.PlatformError : never),
     MobyEndpoints.Volumes | Scope.Scope | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
 > =>
+    // The conditional error/requirement channels below depend on `ExposeDindBy`, which the
+    // compiler cannot follow through the generator, so the result is coerced.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     Effect.gen(function* () {
         const acquireScopedVolume = Effect.acquireRelease(
             MobyEndpoints.Volumes.use((volumes) => volumes.create({})),
@@ -183,6 +186,8 @@ export const makeDindLayerFromPlatformConstructor =
         platformLayerConstructor: PlatformLayerConstructor
     ): DindEngine.MakeDindLayerFromPlatformConstructor<PlatformLayerConstructor> =>
     <
+        // Kept for the public call signature: it is what lets caller argument types flow through.
+        // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
         ConnectionOptionsToHost extends SupportedConnectionOptions,
         ConnectionOptionsToDind extends SupportedConnectionOptions["_tag"],
         PlatformLayerConstructorError = ReturnType<PlatformLayerConstructor> extends Layer.Layer<
@@ -215,6 +220,8 @@ export const makeDindLayerFromPlatformConstructor =
         Effect.gen(function* () {
             // The generic type of the layer constructor is too wide
             // since we want to be able to pass it as the only required generic
+            // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion
             const platformLayerConstructorCasted = platformLayerConstructor as (
                 connectionOptions: SupportedConnectionOptions
             ) => Layer.Layer<
@@ -302,6 +309,8 @@ export const makeDindLayerFromPlatformConstructor =
                 : Effect.succeed({ ca: "", cert: "", key: "" } as const);
 
             // Craft the connection options
+            // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+            // oxlint-disable-next-line typescript/no-unsafe-type-assertion
             const connectionOptions = Function.pipe(
                 Match.value<MobyConnection.MobyConnectionOptions["_tag"]>(options.exposeDindContainerBy),
                 Match.when("socket", () =>
@@ -343,6 +352,9 @@ export const makeDindLayerFromPlatformConstructor =
             yield* Function.pipe(
                 DockerEngine.pingHead(),
                 Effect.retry(Schedule.recurs(5).pipe(Schedule.addDelay(() => Effect.succeed("3 seconds")))),
+                // One-shot reachability probe against the layer built just above, which is returned
+                // rather than used here. There is no outer entry point to hoist this to.
+                // oxlint-disable-next-line effecttsgo/strict-effect-provide
                 Effect.provide(layer)
             );
 

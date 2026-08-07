@@ -726,56 +726,56 @@ export interface DockerCompose {
     readonly [TypeId]: TypeId;
 
     readonly build: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: BuildOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: BuildOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly config: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: ConfigOptions | undefined
-    ) => Effect.Effect<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: ConfigOptions
+    ) => Effect.Effect<string, E1 | DockerComposeError>;
 
     readonly cpTo: <E1, E2>(
         project: Stream.Stream<Uint8Array, E1, never>,
         service: string,
         localSrc: Stream.Stream<Uint8Array, E2, never>,
         remoteDestLocation: string,
-        options?: CopyOptions | undefined
-    ) => Effect.Effect<void, E1 | E2 | DockerComposeError, never>;
+        options?: CopyOptions
+    ) => Effect.Effect<void, E1 | E2 | DockerComposeError>;
 
     readonly cpFrom: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
         service: string,
         remoteSrcLocation: string,
-        options?: CopyOptions | undefined
-    ) => Stream.Stream<Uint8Array, E1 | DockerComposeError, never>;
+        options?: CopyOptions
+    ) => Stream.Stream<Uint8Array, E1 | DockerComposeError>;
 
     readonly create: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: CreateOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: CreateOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly down: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: DownOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: DownOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly events: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: EventsOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: EventsOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly exec: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
         service: string,
         command: string,
-        args?: Array<string> | undefined,
-        options?: ExecOptions | undefined
+        args?: Array<string>,
+        options?: ExecOptions
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         E1 | DockerComposeError,
@@ -783,76 +783,76 @@ export interface DockerCompose {
     >;
 
     readonly images: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: ImagesOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: ImagesOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly kill: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: KillOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: KillOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly logs: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: LogsOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: LogsOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly ls: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        options?: ListOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        options?: ListOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly pause: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly port: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
         service: string,
         privatePort: number,
-        options?: PortOptions | undefined
-    ) => Effect.Effect<number, E1 | DockerComposeError, never>;
+        options?: PortOptions
+    ) => Effect.Effect<number, E1 | DockerComposeError>;
 
     readonly ps: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: PsOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: PsOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly pull: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: PullOptions | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: PullOptions
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly push: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: PushOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: PushOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly restart: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: RestartOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: RestartOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly rm: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: RmOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: RmOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly run: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
         service: string,
         command: string,
-        args?: Array<string> | undefined,
-        options?: RunOptions | undefined
+        args?: Array<string>,
+        options?: RunOptions
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         E1 | DockerComposeError,
@@ -860,42 +860,42 @@ export interface DockerCompose {
     >;
 
     readonly start: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly stop: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: StopOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: StopOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly top: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined
-    ) => Stream.Stream<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>
+    ) => Stream.Stream<string, E1 | DockerComposeError>;
 
     readonly unpause: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly up: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        services?: Array<string> | undefined,
-        options?: UpOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        services?: Array<string>,
+        options?: UpOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly version: <E1>(
-        project: Stream.Stream<Uint8Array, E1, never>,
-        options?: VersionOptions | undefined
-    ) => Effect.Effect<string, E1 | DockerComposeError, never>;
+        project: Stream.Stream<Uint8Array, E1>,
+        options?: VersionOptions
+    ) => Effect.Effect<string, E1 | DockerComposeError>;
 
     readonly wait: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>,
         services: Array.NonEmptyReadonlyArray<string>,
-        options?: WaitOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        options?: WaitOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly forProject: <E1>(
         project: Stream.Stream<Uint8Array, E1, never>
@@ -927,147 +927,102 @@ export type DockerComposeProjectTypeId = typeof DockerComposeProjectTypeId;
 export interface DockerComposeProject {
     readonly [DockerComposeProjectTypeId]: DockerComposeProjectTypeId;
 
-    readonly build: (
-        services?: Array<string> | undefined,
-        options?: BuildOptions | undefined
-    ) => Stream.Stream<string, DockerComposeError, never>;
+    readonly build: (services?: Array<string>, options?: BuildOptions) => Stream.Stream<string, DockerComposeError>;
 
-    readonly config: (
-        services?: Array<string> | undefined,
-        options?: ConfigOptions | undefined
-    ) => Effect.Effect<string, DockerComposeError, never>;
+    readonly config: (services?: Array<string>, options?: ConfigOptions) => Effect.Effect<string, DockerComposeError>;
 
     readonly cpTo: <E1>(
         service: string,
         localSrc: Stream.Stream<Uint8Array, E1, never>,
         remoteDestLocation: string,
-        options?: CopyOptions | undefined
-    ) => Effect.Effect<void, E1 | DockerComposeError, never>;
+        options?: CopyOptions
+    ) => Effect.Effect<void, E1 | DockerComposeError>;
 
     readonly cpFrom: (
         service: string,
         remoteSrcLocation: string,
-        options?: CopyOptions | undefined
-    ) => Stream.Stream<Uint8Array, DockerComposeError, never>;
+        options?: CopyOptions
+    ) => Stream.Stream<Uint8Array, DockerComposeError>;
 
-    readonly create: (
-        services?: Array<string> | undefined,
-        options?: CreateOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly create: (services?: Array<string>, options?: CreateOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly down: (
-        services?: Array<string> | undefined,
-        options?: DownOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly down: (services?: Array<string>, options?: DownOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly events: (
-        services?: Array<string> | undefined,
-        options?: EventsOptions | undefined
-    ) => Stream.Stream<string, DockerComposeError, never>;
+    readonly events: (services?: Array<string>, options?: EventsOptions) => Stream.Stream<string, DockerComposeError>;
 
     readonly exec: (
         service: string,
         command: string,
-        args?: Array<string> | undefined,
-        options?: ExecOptions | undefined
+        args?: Array<string>,
+        options?: ExecOptions
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         DockerComposeError,
         Scope.Scope
     >;
 
-    readonly images: (
-        services?: Array<string> | undefined,
-        options?: ImagesOptions | undefined
-    ) => Stream.Stream<string, DockerComposeError, never>;
+    readonly images: (services?: Array<string>, options?: ImagesOptions) => Stream.Stream<string, DockerComposeError>;
 
-    readonly kill: (
-        services?: Array<string> | undefined,
-        options?: KillOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly kill: (services?: Array<string>, options?: KillOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly logs: (
-        services?: Array<string> | undefined,
-        options?: LogsOptions | undefined
-    ) => Stream.Stream<string, DockerComposeError, never>;
+    readonly logs: (services?: Array<string>, options?: LogsOptions) => Stream.Stream<string, DockerComposeError>;
 
-    readonly ls: (options?: ListOptions | undefined) => Stream.Stream<string, DockerComposeError, never>;
+    readonly ls: (options?: ListOptions) => Stream.Stream<string, DockerComposeError>;
 
-    readonly pause: (services?: Array<string> | undefined) => Effect.Effect<void, DockerComposeError, never>;
+    readonly pause: (services?: Array<string>) => Effect.Effect<void, DockerComposeError>;
 
     readonly port: (
         service: string,
         privatePort: number,
-        options?: PortOptions | undefined
-    ) => Effect.Effect<number, DockerComposeError, never>;
+        options?: PortOptions
+    ) => Effect.Effect<number, DockerComposeError>;
 
-    readonly ps: (
-        services?: Array<string> | undefined,
-        options?: PsOptions | undefined
-    ) => Stream.Stream<string, DockerComposeError, never>;
+    readonly ps: (services?: Array<string>, options?: PsOptions) => Stream.Stream<string, DockerComposeError>;
 
-    readonly pull: (
-        services?: Array<string> | undefined,
-        options?: PullOptions | undefined
-    ) => Stream.Stream<string, DockerComposeError, never>;
+    readonly pull: (services?: Array<string>, options?: PullOptions) => Stream.Stream<string, DockerComposeError>;
 
-    readonly push: (
-        services?: Array<string> | undefined,
-        options?: PushOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly push: (services?: Array<string>, options?: PushOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly restart: (
-        services?: Array<string> | undefined,
-        options?: RestartOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly restart: (services?: Array<string>, options?: RestartOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly rm: (
-        services?: Array<string> | undefined,
-        options?: RmOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly rm: (services?: Array<string>, options?: RmOptions) => Effect.Effect<void, DockerComposeError>;
 
     readonly run: (
         service: string,
         command: string,
-        args?: Array<string> | undefined,
-        options?: RunOptions | undefined
+        args?: Array<string>,
+        options?: RunOptions
     ) => Effect.Effect<
         MobyDemux.MultiplexedChannel<never, DockerEngine.DockerError | Socket.SocketError, never>,
         DockerComposeError,
         Scope.Scope
     >;
 
-    readonly start: (services?: Array<string> | undefined) => Effect.Effect<void, DockerComposeError, never>;
+    readonly start: (services?: Array<string>) => Effect.Effect<void, DockerComposeError>;
 
-    readonly stop: (
-        services?: Array<string> | undefined,
-        options?: StopOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly stop: (services?: Array<string>, options?: StopOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly top: (services?: Array<string> | undefined) => Stream.Stream<string, DockerComposeError, never>;
+    readonly top: (services?: Array<string>) => Stream.Stream<string, DockerComposeError>;
 
-    readonly unpause: (services?: Array<string> | undefined) => Effect.Effect<void, DockerComposeError, never>;
+    readonly unpause: (services?: Array<string>) => Effect.Effect<void, DockerComposeError>;
 
-    readonly up: (
-        services?: Array<string> | undefined,
-        options?: UpOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+    readonly up: (services?: Array<string>, options?: UpOptions) => Effect.Effect<void, DockerComposeError>;
 
-    readonly version: (options?: VersionOptions | undefined) => Effect.Effect<string, DockerComposeError, never>;
+    readonly version: (options?: VersionOptions) => Effect.Effect<string, DockerComposeError>;
 
     readonly wait: (
         services: Array.NonEmptyReadonlyArray<string>,
-        options?: WaitOptions | undefined
-    ) => Effect.Effect<void, DockerComposeError, never>;
+        options?: WaitOptions
+    ) => Effect.Effect<void, DockerComposeError>;
 }
 
 /**
  * @since 1.0.0
  * @category Layers
  */
-export const layer: (
-    options?: { dockerEngineSocket?: string | undefined } | undefined
-) => Layer.Layer<
+export const layer: (options?: {
+    dockerEngineSocket?: string | undefined;
+}) => Layer.Layer<
     DockerCompose,
     DockerEngine.DockerError,
     MobyEndpoints.Containers | MobyEndpoints.System | MobyEndpoints.Images

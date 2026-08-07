@@ -23,7 +23,7 @@ export const demuxToSingleSink = Function.dual<
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
         sockets: MobyDemux.EitherRawInput<E1 | IE, OE, R3> | MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>
     ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>,
@@ -32,7 +32,7 @@ export const demuxToSingleSink = Function.dual<
         sockets: MobyDemux.EitherRawInput<E1 | IE, OE, R3> | MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3>
 >(
     /**
@@ -50,7 +50,7 @@ export const demuxToSingleSink = Function.dual<
         socketOptions: MobyDemux.EitherRawInput<E1 | IE, OE, R3> | MobyDemux.EitherMultiplexedInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ): Effect.Effect<A1, E1 | E2 | IE | OE | Schema.SchemaError, R1 | R2 | R3> => {
         if (isRawSocket(socketOptions) || isRawChannel<E1 | IE, OE, R3>(socketOptions)) {
             return demuxRawToSingleSink(socketOptions, source, sink, options);

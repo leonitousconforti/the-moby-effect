@@ -64,7 +64,7 @@ describe.each(testMatrix)(
                             },
                         ]);
 
-                        const secret = yield* secrets.inspect(secretsList[0]!.ID);
+                        const secret = yield* secrets.inspect(secretsList[0].ID);
                         expect(secret).toEqual(secretsList[0]);
                     })
                 );
@@ -73,8 +73,10 @@ describe.each(testMatrix)(
                     Effect.gen(function* () {
                         const secrets = yield* MobyEndpoints.Secrets;
                         const secretsList = yield* secrets.list();
-                        yield* secrets.update(secretsList[0]!.ID, secretsList[0]!.Version!.Index!, {
-                            ...secretsList[0]!.Spec,
+                        yield* secrets.update(secretsList[0].ID, secretsList[0].Version!.Index!, {
+                            // The payload is serialized to JSON, so losing the schema class prototype is fine.
+                            // oxlint-disable-next-line typescript/no-misused-spread
+                            ...secretsList[0].Spec,
                             Labels: { testLabelUpdated: "test" },
                         });
                     })
@@ -93,7 +95,7 @@ describe.each(testMatrix)(
                     Effect.gen(function* () {
                         const secrets = yield* MobyEndpoints.Secrets;
                         const secretsList = yield* secrets.list();
-                        yield* secrets.delete(secretsList[0]!.ID);
+                        yield* secrets.delete(secretsList[0].ID);
                         const secretsAfterDelete = yield* secrets.list();
                         expect(secretsAfterDelete).toEqual([]);
                     })
