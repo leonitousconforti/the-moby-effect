@@ -92,11 +92,11 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
       vite:
-        specifier: 8.2.0
-        version: 8.2.0(@types/node@26.1.2)(tsx@4.23.9)
+        specifier: 8.2.1
+        version: 8.2.1(@types/node@26.1.2)(tsx@4.23.9)
       vitest:
         specifier: 4.1.10
-        version: 4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9))
+        version: 4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9))
     optionalDependencies:
       ssh2:
         specifier: ^1.17.0
@@ -2536,8 +2536,8 @@ packages:
     resolution: {integrity: sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==}
     hasBin: true
 
-  vite@8.2.0:
-    resolution: {integrity: sha512-pn+CFpM0lwDeKwmOq1ZaBK/9sjorZcgqxki6MbY/jPEVd9vichIlmlD4HmQ5wdP5EgqQCFRaACBxMC7uEGc6lQ==}
+  vite@8.2.1:
+    resolution: {integrity: sha512-EU/eS7BH3XROHh2YnBefjM6DBKA6ZeMZEYQbj7NLWg5wHYlhB8B/Mayd5XsgWq+NFYccDOTemRpdETWR6Ka/lw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -3024,7 +3024,7 @@ snapshots:
   '@effect/vitest@4.0.0-beta.103(effect@4.0.0-beta.103(patch_hash=2a1d4188619556d9126df7d4e10c74e9ce24a6a606e80ffeb22aacaa96f27c0b))(vitest@4.1.10)':
     dependencies:
       effect: 4.0.0-beta.103(patch_hash=2a1d4188619556d9126df7d4e10c74e9ce24a6a606e80ffeb22aacaa96f27c0b)
-      vitest: 4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9))
+      vitest: 4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9))
 
   '@emnapi/core@2.0.0-alpha.3':
     dependencies:
@@ -3529,7 +3529,7 @@ snapshots:
       obug: 2.1.4
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9))
+      vitest: 4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9))
 
   '@vitest/expect@4.1.10':
     dependencies:
@@ -3540,13 +3540,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.1
 
-  '@vitest/mocker@4.1.10(vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9))':
+  '@vitest/mocker@4.1.10(vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9))':
     dependencies:
       '@vitest/spy': 4.1.10
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.2.0(@types/node@26.1.2)(tsx@4.23.9)
+      vite: 8.2.1(@types/node@26.1.2)(tsx@4.23.9)
 
   '@vitest/pretty-format@4.1.10':
     dependencies:
@@ -4907,7 +4907,7 @@ snapshots:
 
   uuid@14.0.1: {}
 
-  vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9):
+  vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.5
@@ -4919,10 +4919,10 @@ snapshots:
       fsevents: 2.3.3
       tsx: 4.23.9
 
-  vitest@4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9)):
+  vitest@4.1.10(@types/node@26.1.2)(@vitest/coverage-v8@4.1.10)(vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9)):
     dependencies:
       '@vitest/expect': 4.1.10
-      '@vitest/mocker': 4.1.10(vite@8.2.0(@types/node@26.1.2)(tsx@4.23.9))
+      '@vitest/mocker': 4.1.10(vite@8.2.1(@types/node@26.1.2)(tsx@4.23.9))
       '@vitest/pretty-format': 4.1.10
       '@vitest/runner': 4.1.10
       '@vitest/snapshot': 4.1.10
@@ -4939,7 +4939,7 @@ snapshots:
       tinyexec: 1.3.0
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 8.2.0(@types/node@26.1.2)(tsx@4.23.9)
+      vite: 8.2.1(@types/node@26.1.2)(tsx@4.23.9)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@types/node': 26.1.2
