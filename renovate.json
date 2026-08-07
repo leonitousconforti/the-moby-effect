@@ -7,6 +7,7 @@
         "helpers:pinGitHubActionDigests"
     ],
     "labels": ["dependencies", "renovate"],
+    "automergeType": "branch",
     "ignorePaths": ["**/node_modules/**", "repos/effect/**", "repos/effect-smol/**"],
     "enabledManagers": ["github-actions", "nix", "git-submodules", "pip_requirements", "npm"],
     "git-submodules": {
@@ -92,6 +93,17 @@
             "description": "Keep the Nix flake inputs (flake.lock) current",
             "matchManagers": ["nix"],
             "addLabels": ["nix"]
+        },
+        {
+            "description": "Automerge minor and patch devDependency updates once CI passes on the update branch",
+            "matchDepTypes": ["devDependencies"],
+            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+            "automerge": true
+        },
+        {
+            "description": "Never automerge typescript since minor releases can contain breaking changes",
+            "matchPackageNames": ["typescript"],
+            "automerge": false
         }
     ]
 }
