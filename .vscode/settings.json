@@ -3,8 +3,10 @@
     "oxc.path.oxfmt": "node_modules/oxfmt/bin/oxfmt",
     "oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
 
-    "js/ts.tsdk.path": "node_modules/typescript/lib",
+    "js/ts.experimental.useTsgo": true,
+    "js/ts.tsdk.path": "./node_modules/typescript/bin",
     "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+    "js/ts.tsdk.additionalLocations": ["./node_modules/typescript/bin"],
     "js/ts.preferences.autoImportFileExcludePatterns": [".direnv/**", "repos/**"],
     "editor.defaultFormatter": "EditorConfig.EditorConfig",
 

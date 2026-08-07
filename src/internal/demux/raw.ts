@@ -19,11 +19,15 @@ import * as internalCompressed from "./compressed.js";
 export const RawContentType = "application/vnd.docker.raw-stream" as const;
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const RawSocketTypeId: MobyDemux.RawSocketTypeId = Symbol.for(
     "the-moby-effect/demux/RawSocket"
 ) as MobyDemux.RawSocketTypeId;
 
 /** @internal */
+// The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+// oxlint-disable-next-line typescript/no-unsafe-type-assertion
 export const RawChannelTypeId: MobyDemux.RawChannelTypeId = Symbol.for(
     "the-moby-effect/demux/RawChannel"
 ) as MobyDemux.RawChannelTypeId;
@@ -81,8 +85,10 @@ export const asRawChannel = <IE = never, OE = Socket.SocketError, R = never>(
     input: MobyDemux.EitherRawInput<IE, OE, R>
 ): MobyDemux.RawChannel<IE, OE, R> =>
     isRawSocket(input)
-        ? (makeRawChannel(Socket.toChannel<IE>(input.underlying)) as unknown as MobyDemux.RawChannel<IE, OE, R>)
-        : (input as MobyDemux.RawChannel<IE, OE, R>);
+        ? // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          (makeRawChannel(Socket.toChannel<IE>(input.underlying)) as unknown as MobyDemux.RawChannel<IE, OE, R>)
+        : input;
 
 /** @internal */
 export const rawToStream = <IE = never, OE = Socket.SocketError, R = never>(
@@ -143,7 +149,7 @@ export const mergeRawToTaggedStream = <
 >(
     stdout: MobyDemux.EitherRawInput<IE1, OE1, R1>,
     stderr: MobyDemux.EitherRawInput<IE2, OE2, R2>,
-    options?: { bufferSize?: number | undefined } | undefined
+    options?: { bufferSize?: number | undefined }
 ): Stream.Stream<
     { _tag: "stdout"; value: Uint8Array } | { _tag: "stderr"; value: Uint8Array },
     IE1 | IE2 | OE1 | OE2,
@@ -164,7 +170,7 @@ export const demuxRawToSingleSink = Function.dual<
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => <IE = never, OE = Socket.SocketError, R3 = never>(
         socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>
     ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>,
@@ -173,7 +179,7 @@ export const demuxRawToSingleSink = Function.dual<
         socket: MobyDemux.EitherRawInput<E1 | IE, OE, R3>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => Effect.Effect<A1, E1 | E2 | IE | OE, R1 | R2 | R3>
 >(
     (arguments_) => isRawSocket(arguments_[0]) || isRawChannel(arguments_[0]),
@@ -229,7 +235,7 @@ export const demuxStdioRawTupled: <
         R5,
         R6
     >,
-    options?: { encoding?: string | undefined } | undefined
+    options?: { encoding?: string | undefined }
 ) => Effect.Effect<
     MobyDemux.CompressedDemuxOutput<A1, A2>,
     E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,
@@ -241,22 +247,26 @@ export const demuxStdioRawTupled: <
     const stdoutSocketObject = Predicate.isNotUndefined(stdout) ? { stdout: stdout?.[0] } : {};
     const stderrSocketObject = Predicate.isNotUndefined(stderr) ? { stderr: stderr?.[0] } : {};
 
-    const stdinIoObject = Predicate.isNotUndefined(stdin)
-        ? { stdin: stdin?.[0] }
-        : { stdin: Stream.empty as Stream.Stream<never, never, never> };
+    const stdinIoObject = Predicate.isNotUndefined(stdin) ? { stdin: stdin?.[0] } : { stdin: Stream.empty };
 
     const stdoutIoObject = Predicate.isNotUndefined(stdout)
         ? { stdout: stdout?.[1] }
-        : { stdout: Sink.succeed<void>(void 0) as unknown as Sink.Sink<never, string, never, never, never> };
+        : // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          { stdout: Sink.succeed<void>(void 0) as unknown as Sink.Sink<never, string> };
 
     const stderrIoObject = Predicate.isNotUndefined(stderr)
         ? { stderr: stderr?.[1] }
-        : { stderr: Sink.succeed<void>(void 0) as unknown as Sink.Sink<never, string, never, never, never> };
+        : // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+          // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+          { stderr: Sink.succeed<void>(void 0) as unknown as Sink.Sink<never, string> };
 
     // `sockets` guarantees at least one of stdin/stdout/stderr is defined, but spreading the
     // three conditional objects widens to a union that also includes the all-absent case, which
     // HeterogeneousStdioRawInput deliberately does not model. TypeScript 7 tracks this precisely
     // where 5.9 did not, so restate the invariant here.
+    // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const rawSockets = { ...stdinSocketObject, ...stdoutSocketObject, ...stderrSocketObject } as Exclude<
         typeof stdinSocketObject & typeof stdoutSocketObject & typeof stderrSocketObject,
         Record<string, never>
@@ -275,7 +285,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
     <A1, L1, E1, E2, R1, R2>(
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => <
         IE1 = never,
         IE2 = never,
@@ -310,7 +320,7 @@ export const demuxStdioRawToSingleSink = Function.dual<
         sockets: MobyDemux.HeterogeneousStdioRawInput<IE1 | E1, IE2, IE3, OE1, OE2, OE3, R3, R4, R5>,
         source: Stream.Stream<string | Uint8Array | Socket.CloseEvent, E1, R1>,
         sink: Sink.Sink<A1, string, L1, E2, R2>,
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => Effect.Effect<A1, E1 | E2 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3, R1 | R2 | R3 | R4 | R5>
 >(
     (arguments_) => "stdin" in arguments_[0] || "stdout" in arguments_[0] || "stderr" in arguments_[0],
@@ -345,7 +355,7 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
             stdout: Sink.Sink<A1, string, L1, E2, R2>;
             stderr: Sink.Sink<A2, string, L2, E3, R3>;
         },
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => <
         IE1 = never,
         IE2 = never,
@@ -391,7 +401,7 @@ export const demuxStdioRawToSeparateSinks = Function.dual<
             stdout: Sink.Sink<A1, string, L1, E2, R2>;
             stderr: Sink.Sink<A2, string, L2, E3, R3>;
         },
-        options?: { encoding?: string | undefined } | undefined
+        options?: { encoding?: string | undefined }
     ) => Effect.Effect<
         MobyDemux.CompressedDemuxOutput<A1, A2>,
         E1 | E2 | E3 | IE1 | IE2 | IE3 | OE1 | OE2 | OE3,

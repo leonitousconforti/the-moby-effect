@@ -34,7 +34,7 @@ describe.each(testMatrix)(
                     const nodesList = yield* nodes.list();
                     expect(nodesList).toBeInstanceOf(Array);
                     expect(nodesList).toHaveLength(1);
-                    yield* nodes.inspect(nodesList[0]!.ID);
+                    yield* nodes.inspect(nodesList[0].ID);
                 })
             );
         });

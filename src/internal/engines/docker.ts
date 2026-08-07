@@ -226,7 +226,7 @@ export const exec = ({
         );
 
         const execInspectResponse = yield* MobyEndpoints.Execs.use((execs) => execs.inspect(execId));
-        if (execInspectResponse.Running === true) return yield* Effect.die("Exec is still running");
+        if (execInspectResponse.Running) return yield* Effect.die("Exec is still running");
         else return Tuple.make(execInspectResponse.ExitCode, output);
     });
 

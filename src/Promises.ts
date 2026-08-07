@@ -26,14 +26,8 @@ import * as MobyConvey from "./MobyConvey.ts";
 export const promiseClient = async <E1, E2>(
     layer: (
         connectionOptions: MobyConnection.MobyConnectionOptions
-    ) => Layer.Layer<
-        Layer.Success<DockerEngine.DockerLayer>,
-        Layer.Error<DockerEngine.DockerLayer> | E1,
-        Layer.Services<DockerEngine.DockerLayer>
-    >,
-    connectionOptions?:
-        | MobyConnection.MobyConnectionOptions
-        | Effect.Effect<MobyConnection.MobyConnectionOptions, E2, never>
+    ) => Layer.Layer<Layer.Success<DockerEngine.DockerLayer>, E1>,
+    connectionOptions?: MobyConnection.MobyConnectionOptions | Effect.Effect<MobyConnection.MobyConnectionOptions, E2>
 ) => {
     const connectionOptionsEffect = Match.value(connectionOptions).pipe(
         Match.when(Match.undefined, () => MobyConnection.connectionOptionsFromPlatformSystemSocketDefault),

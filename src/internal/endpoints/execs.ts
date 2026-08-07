@@ -128,9 +128,9 @@ export class Execs extends Context.Service<Execs>()("@the-moby-effect/endpoints/
                 Effect.flatMap(responseToStreamingSocketOrFailUnsafe),
                 Effect.map(
                     (socket) =>
-                        (payload.Detach === true ? void 0 : socket) as [T] extends [false]
-                            ? RawSocket | MultiplexedSocket
-                            : void
+                        // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+                        (payload.Detach ? void 0 : socket) as [T] extends [false] ? RawSocket | MultiplexedSocket : void
                 ),
                 Effect.mapError(ExecsError("start"))
             );

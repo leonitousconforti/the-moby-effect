@@ -18,7 +18,7 @@ import { asMultiplexedChannel, demuxMultiplexedToSeparateSinks, makeMultiplexedC
 /** @internal */
 export const demuxFromStdinToStdoutAndStderr = <IE = never, OE = Socket.SocketError, R = never>(
     sockets: MobyDemux.EitherMultiplexedInput<IE, OE, R>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined }
 ): Effect.Effect<
     void,
     IE | OE | PlatformError.PlatformError | Schema.SchemaError,
@@ -26,6 +26,8 @@ export const demuxFromStdinToStdoutAndStderr = <IE = never, OE = Socket.SocketEr
 > => {
     const { underlying } = asMultiplexedChannel<IE, OE, R>(sockets);
     const multiplexedChannel = makeMultiplexedChannel<IE | PlatformError.PlatformError, IE | OE, R>(
+        // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
         underlying as Channel.Channel<
             Array.NonEmptyReadonlyArray<Uint8Array>,
             OE,
@@ -52,7 +54,7 @@ export const demuxFromStdinToStdoutAndStderr = <IE = never, OE = Socket.SocketEr
 export const demuxWithInputToConsole = <E, R1, IE = never, OE = Socket.SocketError, R2 = never>(
     sockets: MobyDemux.EitherMultiplexedInput<E | IE, OE, R2>,
     input: Stream.Stream<string | Uint8Array, E, R1>,
-    options?: { bufferSize?: number | undefined; encoding?: string | undefined } | undefined
+    options?: { bufferSize?: number | undefined; encoding?: string | undefined }
 ): Effect.Effect<void, E | IE | OE | Schema.SchemaError, Exclude<R1 | R2, Scope.Scope>> =>
     demuxMultiplexedToSeparateSinks(
         sockets,

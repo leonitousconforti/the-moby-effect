@@ -179,7 +179,7 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
         const PluginsError = DockerError.WrapForModule("plugins");
         const client = yield* HttpApiClient.group(PluginsApi, { group: "plugins", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<typeof ListFilters> | undefined) =>
+        const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
             client.list({ query: { filters } }).pipe(Effect.mapError(PluginsError("list")));
         const getPrivileges_ = (remote: string) =>
             client.getPrivileges({ query: { remote } }).pipe(Effect.mapError(PluginsError("getPrivileges")));
@@ -220,7 +220,7 @@ export class Plugins extends Context.Service<Plugins>()("@the-moby-effect/endpoi
         const upgrade_ = (
             name: string,
             remote: string,
-            privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]> | undefined
+            privileges?: Array<(typeof PluginPrivilege)["~type.make.in"]>
         ) =>
             Effect.forEach(privileges ?? [], (privilege) => PluginPrivilege.makeEffect(privilege)).pipe(
                 Effect.flatMap((payload) =>

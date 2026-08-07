@@ -49,7 +49,7 @@ describe.each(testMatrix)(
                         const networksListResponse = yield* networks.list({ label: ["testLabel=test"] });
                         expect(networksListResponse).toBeInstanceOf(Array);
                         expect(networksListResponse).toHaveLength(1);
-                        const id = networksListResponse[0]!.Id;
+                        const id = networksListResponse[0].Id;
                         const inspectResponse = yield* networks.inspect(id);
                         expect(inspectResponse).toBeDefined();
                         expect(inspectResponse.Id).toBe(id);
@@ -62,7 +62,7 @@ describe.each(testMatrix)(
                         const networksListResponse = yield* networks.list({ label: ["testLabel=test"] });
                         expect(networksListResponse).toBeInstanceOf(Array);
                         expect(networksListResponse).toHaveLength(1);
-                        const id = networksListResponse[0]!.Id;
+                        const id = networksListResponse[0].Id;
                         yield* networks.delete(id);
                     })
                 );

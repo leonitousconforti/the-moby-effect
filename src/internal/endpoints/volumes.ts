@@ -140,7 +140,7 @@ export class Volumes extends Context.Service<Volumes>()("@the-moby-effect/endpoi
             );
         const inspect_ = (name: string) =>
             client.inspect({ params: { name } }).pipe(Effect.mapError(VolumesError("inspect")));
-        const delete_ = (name: string, options?: { force?: boolean | undefined } | undefined) =>
+        const delete_ = (name: string, options?: { force?: boolean | undefined }) =>
             client.delete({ params: { name }, query: { ...options } }).pipe(Effect.mapError(VolumesError("delete")));
         const update_ = (name: string, version: number, spec: (typeof ClusterVolumeSpec)["~type.make.in"]) =>
             ClusterVolumeSpec.makeEffect(spec).pipe(

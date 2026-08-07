@@ -72,17 +72,15 @@ export function runCallback<R = never>(
     function_: (v: V, w: W, x: X, y: Y, z: Z) => Effect.Effect<A, E, R>
 ) => (v: V, w: W, x: X, y: Y, z: Z, callback: (exit: Exit.Exit<A, E>) => void) => void;
 export function runCallback<R = never>(services: Context.Context<R>, arity?: 0 | 1 | 2 | 3 | 4 | 5) {
+    // Kept for the public call signature: it is what lets caller argument types flow through.
+    // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
     return function <V, W, X, Y, Z, A = void, E = never>(
-        function_: (
-            v?: V | undefined,
-            w?: W | undefined,
-            x?: X | undefined,
-            y?: Y | undefined,
-            z?: Z | undefined
-        ) => Effect.Effect<A, E, R>
+        function_: (v?: V, w?: W, x?: X, y?: Y, z?: Z) => Effect.Effect<A, E, R>
     ) {
         if (Effect.isEffect(function_) || Predicate.isUndefined(arity)) {
             return (callback: (exit: Exit.Exit<A, E>) => void) =>
+                // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                 runCallbackForEffect(services)(function_ as unknown as Effect.Effect<A, E, R>)(callback);
         }
 
@@ -120,14 +118,8 @@ export function runCallback<R = never>(services: Context.Context<R>, arity?: 0 |
 export const callbackClient = async <E1, E2>(
     layer: (
         connectionOptions: MobyConnection.MobyConnectionOptions
-    ) => Layer.Layer<
-        Layer.Success<DockerEngine.DockerLayer>,
-        Layer.Error<DockerEngine.DockerLayer> | E1,
-        Layer.Services<DockerEngine.DockerLayer>
-    >,
-    connectionOptions?:
-        | MobyConnection.MobyConnectionOptions
-        | Effect.Effect<MobyConnection.MobyConnectionOptions, E2, never>
+    ) => Layer.Layer<Layer.Success<DockerEngine.DockerLayer>, E1>,
+    connectionOptions?: MobyConnection.MobyConnectionOptions | Effect.Effect<MobyConnection.MobyConnectionOptions, E2>
 ) => {
     const connectionOptionsEffect = Match.value(connectionOptions).pipe(
         Match.when(Match.undefined, () => MobyConnection.connectionOptionsFromPlatformSystemSocketDefault),

@@ -120,7 +120,7 @@ export class Configs extends Context.Service<Configs>()("@the-moby-effect/endpoi
         const ConfigsError = DockerError.WrapForModule("configs");
         const client = yield* HttpApiClient.group(ConfigsApi, { group: "configs", httpClient });
 
-        const list_ = (filters?: Schema.Schema.Type<typeof ListFilters> | undefined) =>
+        const list_ = (filters?: Schema.Schema.Type<typeof ListFilters>) =>
             client.list({ query: { filters } }).pipe(Effect.mapError(ConfigsError("list")));
         const create_ = (config: (typeof SwarmConfigSpec)["~type.make.in"]) =>
             SwarmConfigSpec.makeEffect(config).pipe(

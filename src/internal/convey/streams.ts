@@ -19,10 +19,13 @@ export const mapError = <E1, R1>(
                     () => "Errored with an unknown reason with an unknown code"
                 ),
                 Match.when({ message: Match.string }, ({ message }) => `Errored with ${message} and an unknown code`),
-                Match.when({ code: Match.number }, ({ code }) => `Errored with an unknown reason and code ${code}`),
+                Match.when(
+                    { code: Match.number },
+                    ({ code }) => `Errored with an unknown reason and code ${String(code)}`
+                ),
                 Match.when(
                     { code: Match.number, message: Match.string },
-                    ({ code, message }) => `Errored with ${message} and code ${code}`
+                    ({ code, message }) => `Errored with ${String(message)} and code ${String(code)}`
                 ),
                 Match.orElseAbsurd
             );

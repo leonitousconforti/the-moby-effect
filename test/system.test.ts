@@ -48,7 +48,7 @@ describe.each(testMatrix)(
                                 decode: SchemaGetter.transform((str) =>
                                     str === "docker.io/library/docker:dind-rootless"
                                         ? Result.fail("latest" as const)
-                                        : Result.succeed(str.split(":")[1]!.replace("-dind-rootless", ""))
+                                        : Result.succeed(str.split(":")[1].replace("-dind-rootless", ""))
                                 ),
                                 encode: SchemaGetter.transform((version) =>
                                     Result.match(version, {

@@ -180,11 +180,7 @@ export class Networks extends Context.Service<Networks>()("@the-moby-effect/endp
                 ),
                 Effect.mapError(NetworksError("connect"))
             );
-        const disconnect_ = (
-            id: string,
-            containerId: ContainerIdentifier,
-            options?: { force?: boolean | undefined } | undefined
-        ) =>
+        const disconnect_ = (id: string, containerId: ContainerIdentifier, options?: { force?: boolean | undefined }) =>
             client
                 .disconnect({
                     params: { id },

@@ -101,7 +101,7 @@ export class Nodes extends Context.Service<Nodes>()("@the-moby-effect/endpoints/
             client.list({ query: { filters } }).pipe(Effect.mapError(NodesError("list")));
         const inspect_ = (id: string) =>
             client.inspect({ params: { id } }).pipe(Effect.mapError(NodesError("inspect")));
-        const delete_ = (id: string, options?: { force?: boolean | undefined } | undefined) =>
+        const delete_ = (id: string, options?: { force?: boolean | undefined }) =>
             client.delete({ params: { id }, query: { ...options } }).pipe(Effect.mapError(NodesError("delete")));
         const update_ = (id: string, version: number, payload: (typeof SwarmNodeSpec)["~type.make.in"]) =>
             SwarmNodeSpec.makeEffect(payload).pipe(

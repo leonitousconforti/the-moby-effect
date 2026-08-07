@@ -22,7 +22,7 @@ import { System } from "./system.js";
 export class RegistryAuth extends Context.Service<RegistryAuth>()(
     "the-moby-effect/endpoints/httpApiHacks/RegistryAuth",
     {
-        make: (authHeader: Redacted.Redacted<string>) =>
+        make: (authHeader: Redacted.Redacted) =>
             Effect.succeed({
                 authHeader,
             } as const),
@@ -33,7 +33,7 @@ export class RegistryAuth extends Context.Service<RegistryAuth>()(
      * @category Auth
      * @see https://docs.docker.com/reference/api/engine/version/v1.51/#section/Authentication
      */
-    static readonly Live = (authHeader: Redacted.Redacted<string>): Layer.Layer<RegistryAuth, never, never> =>
+    static readonly Live = (authHeader: Redacted.Redacted): Layer.Layer<RegistryAuth> =>
         Layer.effect(RegistryAuth, RegistryAuth.make(authHeader));
 
     /**
@@ -43,9 +43,9 @@ export class RegistryAuth extends Context.Service<RegistryAuth>()(
      */
     static readonly Credentials = (credentials: {
         serverAddress?: string | undefined;
-        username: Redacted.Redacted<string>;
-        password: Redacted.Redacted<string>;
-        email?: Redacted.Redacted<string> | undefined;
+        username: Redacted.Redacted;
+        password: Redacted.Redacted;
+        email?: Redacted.Redacted | undefined;
     }) =>
         Layer.sync(RegistryAuth, () => {
             const encoded = Buffer.from(
@@ -68,9 +68,9 @@ export class RegistryAuth extends Context.Service<RegistryAuth>()(
      */
     static readonly Token = (credentials: {
         serverAddress?: string | undefined;
-        username: Redacted.Redacted<string>;
-        password: Redacted.Redacted<string>;
-        email?: Redacted.Redacted<string> | undefined;
+        username: Redacted.Redacted;
+        password: Redacted.Redacted;
+        email?: Redacted.Redacted | undefined;
     }) =>
         Function.pipe(
             System.use((systems) =>

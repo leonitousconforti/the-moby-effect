@@ -16,17 +16,14 @@ import * as internalAgnostic from "./agnostic.js";
 import * as internalConnection from "./connection.js";
 
 /** @internal */
-export const makeDispatcher: (
-    agentOptions?: undici.Agent.Options | undefined
-) => Effect.Effect<undici.Agent, never, Scope.Scope> = Effect.fnUntraced(function* (
-    agentOptions?: undici.Agent.Options | undefined
-) {
-    const undiciLazy = yield* Effect.promise(() => import("undici"));
-    const acquire = Effect.sync(() => new undiciLazy.Agent(agentOptions));
-    const release = (agent: undici.Dispatcher) => Effect.promise(() => agent.destroy());
-    const resource = Effect.acquireRelease(acquire, release);
-    return yield* resource;
-});
+export const makeDispatcher: (agentOptions?: undici.Agent.Options) => Effect.Effect<undici.Agent, never, Scope.Scope> =
+    Effect.fnUntraced(function* (agentOptions?: undici.Agent.Options) {
+        const undiciLazy = yield* Effect.promise(() => import("undici"));
+        const acquire = Effect.sync(() => new undiciLazy.Agent(agentOptions));
+        const release = (agent: undici.Dispatcher) => Effect.promise(() => agent.destroy());
+        const resource = Effect.acquireRelease(acquire, release);
+        return yield* resource;
+    });
 
 /** @internal */
 export const makeSshDispatcher: (
@@ -41,6 +38,8 @@ export const makeSshDispatcher: (
     let sshConnection: "unopened" | "connecting" | "open-failed" | "ready" = "unopened";
     let openFailedError: Error | null = null;
 
+    // The early exits return never-typed values; the normal path runs to the end of the function.
+    // oxlint-disable-next-line typescript/consistent-return
     const connector: undici.buildConnector.connector = (
         // oxlint-disable-next-line only-used-in-recursion
         _options: undici.buildConnector.Options,
@@ -68,6 +67,9 @@ export const makeSshDispatcher: (
 
         // Already tried to connect but failed
         else if (sshConnection === "open-failed") {
+            // Reaching this branch means `unableToOpen` already ran, so the error is set. The
+            // callback wants `Error | null` and dropping the assertion leaves `undefined` in.
+            // oxlint-disable-next-line typescript/no-unnecessary-type-assertion
             callback(openFailedError!, null);
         }
 
@@ -89,6 +91,8 @@ export const makeSshDispatcher: (
                     (error: Error | undefined, stream: ssh2.ClientChannel) => {
                         sshClient.off("error", onError);
                         if (error) return callback(error, null);
+                        // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                        // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                         else return callback(null, stream as unknown as net.Socket);
                     }
                 )
@@ -150,12 +154,14 @@ export const getUndiciDispatcher: (
 /** @internal */
 export const getUndiciWebsocketConstructor = (
     connectionOptions: MobyConnection.MobyConnectionOptions
-): Effect.Effect<(url: string, protocols?: string | Array<string> | undefined) => globalThis.WebSocket, never, never> =>
+): Effect.Effect<(url: string, protocols?: string | Array<string>) => globalThis.WebSocket> =>
     Function.pipe(
         Effect.promise(() => import("ws")),
         Effect.map((ws) => {
             const prependedUrl = internalAgnostic.makeWebsocketRequestUrl(connectionOptions);
-            return (url: string, protocols?: string | Array<string> | undefined) =>
+            return (url: string, protocols?: string | Array<string>) =>
+                // The demux/platform layers bridge untyped socket and dispatcher APIs; the shape is guaranteed by construction, not by the compiler.
+                // oxlint-disable-next-line typescript/no-unsafe-type-assertion
                 new ws.WebSocket(`${prependedUrl}${url}`, protocols) as unknown as globalThis.WebSocket;
         })
     );

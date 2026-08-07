@@ -53,9 +53,9 @@ describe.each(testMatrix)(
                                 name: "test-plugin:latest",
                                 privileges: [
                                     {
-                                        Name: privileges[0]!.Name,
-                                        Value: privileges[0]!.Value,
-                                        Description: privileges[0]!.Description,
+                                        Name: privileges[0].Name,
+                                        Value: privileges[0].Value,
+                                        Description: privileges[0].Description,
                                     },
                                 ],
                             });
@@ -89,9 +89,9 @@ describe.each(testMatrix)(
                         const privileges = yield* plugins.getPrivileges("docker.io/grafana/loki-docker-driver:main");
                         yield* plugins.upgrade("test-plugin:latest", "docker.io/grafana/loki-docker-driver:main", [
                             {
-                                Name: privileges[0]!.Name,
-                                Value: privileges[0]!.Value,
-                                Description: privileges[0]!.Description,
+                                Name: privileges[0].Name,
+                                Value: privileges[0].Value,
+                                Description: privileges[0].Description,
                             },
                         ]);
                     })

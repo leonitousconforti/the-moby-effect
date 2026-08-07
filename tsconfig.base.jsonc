@@ -1,5 +1,5 @@
 {
-    "$schema": "https://json.schemastore.org/tsconfig",
+    "$schema": "./node_modules/@effect/tsgo/schema.json",
     "compilerOptions": {
         // Use incremental builds with project references.
         "incremental": true,
@@ -30,6 +30,34 @@
                 "name": "@effect/language-service",
                 "transform": "@effect/language-service/transform",
                 "namespaceImportPackages": ["effect", "@effect/*"],
+                // Effect suggestions and warnings surface in the editor and in `tsc` output, but
+                // they do not fail the build. Only Effect diagnostics raised to `error` do.
+                "ignoreEffectSuggestionsInTscExitCode": true,
+                "ignoreEffectWarningsInTscExitCode": true,
+                "diagnosticSeverity": {
+                    "abortControllerInEffect": "warning",
+                    "asyncFunction": "warning",
+                    "cryptoRandomUUID": "warning",
+                    "cryptoRandomUUIDInEffect": "warning",
+                    "extendsNativeError": "warning",
+                    "globalConsole": "warning",
+                    "globalConsoleInEffect": "warning",
+                    "globalDate": "warning",
+                    "globalDateInEffect": "warning",
+                    "globalFetch": "warning",
+                    "globalFetchInEffect": "warning",
+                    "globalRandom": "warning",
+                    "globalRandomInEffect": "warning",
+                    "globalTimers": "warning",
+                    "globalTimersInEffect": "warning",
+                    "instanceOfSchema": "warning",
+                    "newPromise": "warning",
+                    "nodeBuiltinImport": "warning",
+                    "preferSchemaOverJson": "warning",
+                    "processEnv": "warning",
+                    "processEnvInEffect": "warning",
+                    "unsafeEffectTypeAssertion": "warning",
+                },
             },
         ],
     },

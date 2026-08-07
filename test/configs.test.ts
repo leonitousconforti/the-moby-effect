@@ -65,13 +65,15 @@ describe.each(testMatrix)(
                         const configsListResponse = yield* configs.list();
                         expect(configsListResponse).toBeInstanceOf(Array);
                         expect(configsListResponse).toHaveLength(1);
-                        const id = configsListResponse[0]!.ID;
+                        const id = configsListResponse[0].ID;
                         const configInspectResponse = yield* configs.inspect(id);
                         expect(configInspectResponse).toBeDefined();
                         expect(configInspectResponse.Spec).toBeDefined();
                         expect(configInspectResponse.Spec?.Labels).toBeDefined();
                         expect(configInspectResponse.Spec?.Labels?.["testLabel"]).toBe("test");
                         yield* configs.update(id, configInspectResponse.Version!.Index!, {
+                            // The payload is serialized to JSON, so losing the schema class prototype is fine.
+                            // oxlint-disable-next-line typescript/no-misused-spread
                             ...configInspectResponse.Spec,
                             Labels: { testLabel: "test2" },
                         });
@@ -93,7 +95,7 @@ describe.each(testMatrix)(
                         const configsListResponse = yield* configs.list();
                         expect(configsListResponse).toBeInstanceOf(Array);
                         expect(configsListResponse).toHaveLength(1);
-                        const id = configsListResponse[0]!.ID;
+                        const id = configsListResponse[0].ID;
                         yield* configs.delete(id);
                     })
                 );

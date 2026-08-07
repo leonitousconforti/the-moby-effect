@@ -63,7 +63,7 @@ export const replacer = (text: string): string => {
     let insideString = false;
 
     while (index < text.length) {
-        const char = text[index]!;
+        const char = text[index];
 
         if (insideString) {
             output += char;
@@ -167,7 +167,7 @@ export const makeAgnosticHttpClientLayer = (
                                         ogArrayBuffer,
                                         Effect.map((ab) => new TextDecoder().decode(ab)),
                                         Effect.map(replacer),
-                                        Effect.map((str) => new TextEncoder().encode(str).buffer as ArrayBuffer)
+                                        Effect.map((str) => new TextEncoder().encode(str).buffer)
                                     );
                                 }
 
