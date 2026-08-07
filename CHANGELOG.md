@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.54.5
+
+### Patch Changes
+
+- d9df8b0: Code cleanups across the demux, endpoints, engines, and platforms internals from enabling the type-aware Effect lints. No intended behavior changes.
+
 ## 1.54.4
 
 ### Patch Changes
