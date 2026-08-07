@@ -16,7 +16,7 @@ import { DockerError } from "./circular.ts";
 import { BadRequest, InternalServerError, NotFound } from "./errors.ts";
 
 /** @since 1.0.0 */
-export class NodeNotPartOfSwarm extends Schema.ErrorClass<NodeNotPartOfSwarm>(
+export class NodeNotPartOfSwarm extends Schema.Error<NodeNotPartOfSwarm>(
     "@the-moby-effect/endpoints/NodeNotPartOfSwarm"
 )(
     {
@@ -31,7 +31,7 @@ export class NodeNotPartOfSwarm extends Schema.ErrorClass<NodeNotPartOfSwarm>(
 ) {}
 
 /** @since 1.0.0 */
-export class NodeAlreadyPartOfSwarm extends Schema.ErrorClass<NodeAlreadyPartOfSwarm>(
+export class NodeAlreadyPartOfSwarm extends Schema.Error<NodeAlreadyPartOfSwarm>(
     "@the-moby-effect/endpoints/NodeAlreadyPartOfSwarm"
 )(
     {

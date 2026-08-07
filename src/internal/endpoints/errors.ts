@@ -1,7 +1,7 @@
 import * as Schema from "effect/Schema";
 
 /** @since 1.0.0 */
-export class BadRequest extends Schema.ErrorClass<BadRequest>("BadRequest")(
+export class BadRequest extends Schema.Error<BadRequest>("BadRequest")(
     {
         _tag: Schema.tagDefaultOmit("BadRequest"),
         message: Schema.optionalKey(Schema.String),
@@ -14,7 +14,7 @@ export class BadRequest extends Schema.ErrorClass<BadRequest>("BadRequest")(
 ) {}
 
 /** @since 1.0.0 */
-export class Unauthorized extends Schema.ErrorClass<Unauthorized>("Unauthorized")(
+export class Unauthorized extends Schema.Error<Unauthorized>("Unauthorized")(
     {
         _tag: Schema.tagDefaultOmit("Unauthorized"),
         message: Schema.optionalKey(Schema.String),
@@ -27,7 +27,7 @@ export class Unauthorized extends Schema.ErrorClass<Unauthorized>("Unauthorized"
 ) {}
 
 /** @since 1.0.0 */
-export class Forbidden extends Schema.ErrorClass<Forbidden>("Forbidden")(
+export class Forbidden extends Schema.Error<Forbidden>("Forbidden")(
     {
         _tag: Schema.tagDefaultOmit("Forbidden"),
         message: Schema.optionalKey(Schema.String),
@@ -40,7 +40,7 @@ export class Forbidden extends Schema.ErrorClass<Forbidden>("Forbidden")(
 ) {}
 
 /** @since 1.0.0 */
-export class NotFound extends Schema.ErrorClass<NotFound>("NotFound")(
+export class NotFound extends Schema.Error<NotFound>("NotFound")(
     {
         _tag: Schema.tagDefaultOmit("NotFound"),
         message: Schema.optionalKey(Schema.String),
@@ -53,7 +53,7 @@ export class NotFound extends Schema.ErrorClass<NotFound>("NotFound")(
 ) {}
 
 /** @since 1.0.0 */
-export class MethodNotAllowed extends Schema.ErrorClass<MethodNotAllowed>("MethodNotAllowed")(
+export class MethodNotAllowed extends Schema.Error<MethodNotAllowed>("MethodNotAllowed")(
     {
         _tag: Schema.tagDefaultOmit("MethodNotAllowed"),
         message: Schema.optionalKey(Schema.String),
@@ -66,7 +66,7 @@ export class MethodNotAllowed extends Schema.ErrorClass<MethodNotAllowed>("Metho
 ) {}
 
 /** @since 1.0.0 */
-export class NotAcceptable extends Schema.ErrorClass<NotAcceptable>("NotAcceptable")(
+export class NotAcceptable extends Schema.Error<NotAcceptable>("NotAcceptable")(
     {
         _tag: Schema.tagDefaultOmit("NotAcceptable"),
         message: Schema.optionalKey(Schema.String),
@@ -79,7 +79,7 @@ export class NotAcceptable extends Schema.ErrorClass<NotAcceptable>("NotAcceptab
 ) {}
 
 /** @since 1.0.0 */
-export class RequestTimeout extends Schema.ErrorClass<RequestTimeout>("RequestTimeout")(
+export class RequestTimeout extends Schema.Error<RequestTimeout>("RequestTimeout")(
     {
         _tag: Schema.tagDefaultOmit("RequestTimeout"),
         message: Schema.optionalKey(Schema.String),
@@ -92,7 +92,7 @@ export class RequestTimeout extends Schema.ErrorClass<RequestTimeout>("RequestTi
 ) {}
 
 /** @since 1.0.0 */
-export class Conflict extends Schema.ErrorClass<Conflict>("Conflict")(
+export class Conflict extends Schema.Error<Conflict>("Conflict")(
     {
         _tag: Schema.tagDefaultOmit("Conflict"),
         message: Schema.optionalKey(Schema.String),
@@ -105,7 +105,7 @@ export class Conflict extends Schema.ErrorClass<Conflict>("Conflict")(
 ) {}
 
 /** @since 1.0.0 */
-export class Gone extends Schema.ErrorClass<Gone>("Gone")(
+export class Gone extends Schema.Error<Gone>("Gone")(
     {
         _tag: Schema.tagDefaultOmit("Gone"),
         message: Schema.optionalKey(Schema.String),
@@ -118,7 +118,7 @@ export class Gone extends Schema.ErrorClass<Gone>("Gone")(
 ) {}
 
 /** @since 1.0.0 */
-export class UnprocessableEntity extends Schema.ErrorClass<UnprocessableEntity>("UnprocessableEntity")(
+export class UnprocessableEntity extends Schema.Error<UnprocessableEntity>("UnprocessableEntity")(
     {
         _tag: Schema.tagDefaultOmit("UnprocessableEntity"),
         message: Schema.optionalKey(Schema.String),
@@ -131,7 +131,7 @@ export class UnprocessableEntity extends Schema.ErrorClass<UnprocessableEntity>(
 ) {}
 
 /** @since 1.0.0 */
-export class InternalServerError extends Schema.ErrorClass<InternalServerError>("InternalServerError")(
+export class InternalServerError extends Schema.Error<InternalServerError>("InternalServerError")(
     {
         _tag: Schema.tagDefaultOmit("InternalServerError"),
         message: Schema.optionalKey(Schema.String),
@@ -144,7 +144,7 @@ export class InternalServerError extends Schema.ErrorClass<InternalServerError>(
 ) {}
 
 /** @since 1.0.0 */
-export class NotImplemented extends Schema.ErrorClass<NotImplemented>("NotImplemented")(
+export class NotImplemented extends Schema.Error<NotImplemented>("NotImplemented")(
     {
         _tag: Schema.tagDefaultOmit("NotImplemented"),
         message: Schema.optionalKey(Schema.String),
@@ -157,7 +157,7 @@ export class NotImplemented extends Schema.ErrorClass<NotImplemented>("NotImplem
 ) {}
 
 /** @since 1.0.0 */
-export class ServiceUnavailable extends Schema.ErrorClass<ServiceUnavailable>("ServiceUnavailable")(
+export class ServiceUnavailable extends Schema.Error<ServiceUnavailable>("ServiceUnavailable")(
     {
         _tag: Schema.tagDefaultOmit("ServiceUnavailable"),
         message: Schema.optionalKey(Schema.String),
