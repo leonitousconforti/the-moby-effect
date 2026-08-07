@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.54.4
+
+### Patch Changes
+
+- 1188be4: Update Effect-TS packages to v4.0.0-beta.104
+
 ## 1.54.3
 
 ### Patch Changes
