@@ -30,7 +30,7 @@ export const PortSet = Schema.Record(PortWithMaybeProtocol.from, Schema.ObjectKe
  */
 export class PortBinding extends Schema.Class<PortBinding>("PortBinding")(
     {
-        HostPort: Schema.NumberFromString.pipe(Schema.decodeTo(Port)),
+        HostPort: Schema.FiniteFromString.pipe(Schema.decodeTo(Port)),
         HostIp: Schema.optional(Schema.Union([Schema.Literal(""), Address])),
     },
     {

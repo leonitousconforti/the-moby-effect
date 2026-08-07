@@ -44,7 +44,7 @@ describe.each(testMatrix)(
                             Schema.Literal("docker.io/library/docker:dind-rootless"),
                             Schema.TemplateLiteral(["docker.io/library/docker:", Schema.String, "-dind-rootless"]),
                         ]).pipe(
-                            Schema.decodeTo(Schema.Result(Schema.NumberFromString, Schema.Literal("latest")), {
+                            Schema.decodeTo(Schema.Result(Schema.FiniteFromString, Schema.Literal("latest")), {
                                 decode: SchemaGetter.transform((str) =>
                                     str === "docker.io/library/docker:dind-rootless"
                                         ? Result.fail("latest" as const)
@@ -91,6 +91,8 @@ describe.each(testMatrix)(
 
                         // Gather the event
                         const system = yield* MobyEndpoints.System;
+                        // The daemon compares against real wall-clock time, not the virtual TestClock.
+                        // @effect-diagnostics-next-line globalDateInEffect:off
                         const stream = system.events({ until: `${Date.now()}` }).pipe(Stream.take(1));
                         const data = yield* Stream.runHead(stream);
                         expect(Option.getOrUndefined(data)).toBeDefined();
@@ -101,6 +103,8 @@ describe.each(testMatrix)(
                     Effect.gen(function* () {
                         const system = yield* MobyEndpoints.System;
                         const fiber = yield* system
+                            // The daemon compares against real wall-clock time, not the virtual TestClock.
+                            // @effect-diagnostics-next-line globalDateInEffect:off
                             .events({ since: `${Date.now()}` })
                             .pipe(Stream.take(1), Stream.runHead, Effect.forkChild);
 

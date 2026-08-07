@@ -105,7 +105,8 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
 > =>
     // The conditional error/requirement channels below depend on `ExposeDindBy`, which the
     // compiler cannot follow through the generator, so the result is coerced.
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+    // oxlint-disable typescript/no-unsafe-type-assertion
+    // @effect-diagnostics-next-line unsafeEffectTypeAssertion:off
     Effect.gen(function* () {
         const acquireScopedVolume = Effect.acquireRelease(
             MobyEndpoints.Volumes.use((volumes) => volumes.create({})),
@@ -142,6 +143,7 @@ const makeDindBinds = <ExposeDindBy extends MobyConnection.MobyConnectionOptions
         | Scope.Scope
         | (ExposeDindBy extends "socket" ? Path.Path | FileSystem.FileSystem : never)
     >;
+// oxlint-enable typescript/no-unsafe-type-assertion
 
 /**
  * Since the dind containers do not have health checks, we must wait until a

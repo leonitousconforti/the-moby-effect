@@ -1,4 +1,6 @@
 // Run with: pnpx tsx examples/callbacks/container-with-volume.ts
+// Printing to the console is the point of these callback-API examples.
+// @effect-diagnostics globalConsole:off
 
 import { Exit } from "effect";
 

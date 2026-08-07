@@ -73,7 +73,7 @@ const deletePluginEndpoint = HttpApiEndpoint.delete("delete", "/:name", {
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Plugin/operation/PluginEnable */
 const enablePluginEndpoint = HttpApiEndpoint.post("enable", "/:name/enable", {
     params: { name: Schema.String },
-    query: { timeout: Schema.optional(Schema.Number) },
+    query: { timeout: Schema.optional(Schema.Finite) },
     success: HttpApiSchema.Empty(200), // 200 OK
     error: [
         NotFound, // 404 No such plugin

@@ -19,8 +19,8 @@ export const StringFilter = Schema.Tuple([Schema.String]).pipe(
 );
 
 /** @internal */
-export const NumberFilter = Schema.Tuple([Schema.NumberFromString]).pipe(
-    Schema.decodeTo(Schema.Number, {
+export const NumberFilter = Schema.Tuple([Schema.FiniteFromString]).pipe(
+    Schema.decodeTo(Schema.Finite, {
         decode: SchemaGetter.transform(([value]: readonly [number]) => value),
         encode: SchemaGetter.transform((value: number) => [value] as const),
     })

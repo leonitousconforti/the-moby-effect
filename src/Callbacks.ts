@@ -115,6 +115,8 @@ export function runCallback<R = never>(services: Context.Context<R>, arity?: 0 |
  * @since 1.0.0
  * @category Callbacks
  */
+// This module is deliberately a callback adapter over the Effect API.
+// @effect-diagnostics-next-line asyncFunction:off
 export const callbackClient = async <E1, E2>(
     layer: (
         connectionOptions: MobyConnection.MobyConnectionOptions

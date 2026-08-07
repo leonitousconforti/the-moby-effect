@@ -58,8 +58,8 @@ const startExecEndpoint = HttpApiEndpoint.post("start", "/exec/:id/start", {
 const resizeExecEndpoint = HttpApiEndpoint.post("resize", "/exec/:id/resize", {
     params: { id: ExecIdentifier },
     query: {
-        h: Schema.Number,
-        w: Schema.Number,
+        h: Schema.Finite,
+        w: Schema.Finite,
     },
     success: HttpApiSchema.Empty(200), // 200 OK
     error: [

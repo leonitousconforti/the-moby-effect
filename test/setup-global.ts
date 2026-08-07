@@ -12,6 +12,8 @@ import { DockerEngine, MobyConnection, MobyConvey } from "the-moby-effect";
 import { testMatrix } from "./shared-global.js";
 
 const makePlatformDockerLayer = Function.pipe(
+    // The platform layer must be chosen before any Effect runtime exists to read Config from.
+    // @effect-diagnostics-next-line processEnv:off
     Match.value(process.env["__PLATFORM_VARIANT"] ?? "node-24.x"),
     Match.when("bun", () => DockerEngine.layerBun),
     Match.when("deno", () => DockerEngine.layerDeno),
@@ -25,6 +27,8 @@ const localDocker = Function.pipe(
     Layer.unwrap
 );
 
+// Vitest global setup hooks are async functions by contract.
+// @effect-diagnostics-next-line asyncFunction:off
 export const setup = async function ({ provide }: TestProject): Promise<void> {
     await Effect.gen(function* () {
         const platformVariant = yield* Config.literals(

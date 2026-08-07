@@ -40,6 +40,8 @@ describe.each(testMatrix)(
                         const testData = yield* volumes.create({ Name: "testVolume" });
                         expect(testData.Name).toBe("testVolume");
                         expect(testData.CreatedAt).toBeDefined();
+                        // CreatedAt is stamped by the daemon with real wall-clock time, not the virtual TestClock.
+                        // @effect-diagnostics-next-line globalDateInEffect:off
                         expect(testData.CreatedAt!.getTime()).toBeLessThanOrEqual(Date.now());
                     })
                 );
@@ -90,6 +92,8 @@ describe.each(testMatrix)(
                         const testData = yield* volumes.create({ Name: "testVolume", Labels: { testLabel: "test" } });
                         expect(testData.Name).toBe("testVolume");
                         expect(testData.CreatedAt).toBeDefined();
+                        // CreatedAt is stamped by the daemon with real wall-clock time, not the virtual TestClock.
+                        // @effect-diagnostics-next-line globalDateInEffect:off
                         expect(testData.CreatedAt!.getTime()).toBeLessThanOrEqual(Date.now());
                         expect(testData.Labels).toEqual({ testLabel: "test" });
                     })
