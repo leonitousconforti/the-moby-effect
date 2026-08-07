@@ -57,7 +57,7 @@ const logsTaskEndpoint = HttpApiEndpoint.get("logs", "/:id/logs", {
         follow: Schema.optional(Schema.Boolean),
         stdout: Schema.optional(Schema.Boolean),
         stderr: Schema.optional(Schema.Boolean),
-        since: Schema.optional(Schema.Number),
+        since: Schema.optional(Schema.Finite),
         timestamps: Schema.optional(Schema.Boolean),
         tail: Schema.optional(Schema.String),
     },

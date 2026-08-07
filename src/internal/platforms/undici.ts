@@ -107,7 +107,7 @@ export const makeSshDispatcher: (
 
     const acquire = Effect.sync(() => new undiciLazy.Agent({ connect: connector }));
     const release = (_agent: undici.Dispatcher) =>
-        Effect.promise(async () => {
+        Effect.sync(() => {
             sshClient.end();
             sshClient.destroy();
             // await agent.close();

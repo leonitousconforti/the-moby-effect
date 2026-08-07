@@ -31,7 +31,7 @@ export const hijackResponseUnsafe = (
                 );
             }
 
-            return nodeSocketLazy.fromDuplex(Effect.sync(() => socket));
+            return nodeSocketLazy.fromDuplex(Effect.succeed(socket));
         }
     );
 

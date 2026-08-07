@@ -23,6 +23,8 @@ import * as MobyConvey from "./MobyConvey.ts";
  * @since 1.0.0
  * @category Promises
  */
+// This module is deliberately a Promise adapter over the Effect API.
+// @effect-diagnostics-next-line asyncFunction:off
 export const promiseClient = async <E1, E2>(
     layer: (
         connectionOptions: MobyConnection.MobyConnectionOptions

@@ -80,7 +80,7 @@ const deleteVolumeEndpoint = HttpApiEndpoint.delete("delete", "/:name", {
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Volume/operation/VolumeUpdate */
 const updateVolumeEndpoint = HttpApiEndpoint.put("update", "/:name", {
     params: { name: Schema.String },
-    query: { version: Schema.Number },
+    query: { version: Schema.Finite },
     payload: ClusterVolumeSpec,
     success: HttpApiSchema.Empty(200), // 200 OK
     error: [

@@ -63,7 +63,7 @@ const deleteNodeEndpoint = HttpApiEndpoint.delete("delete", "/:id", {
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Node/operation/NodeUpdate */
 const updateNodeEndpoint = HttpApiEndpoint.post("update", "/:id/update", {
     params: { id: Schema.String },
-    query: { version: Schema.Number },
+    query: { version: Schema.Finite },
     payload: SwarmNodeSpec,
     success: HttpApiSchema.Empty(200), // 200 OK
     error: [

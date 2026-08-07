@@ -44,7 +44,7 @@ export const ListFilters = Schema.fromJsonString(
         ancestor: Schema.optional(Schema.Array(Schema.String)),
         before: Schema.optional(Schema.Array(Schema.String)),
         expose: Schema.optional(Schema.Array(Schema.String)),
-        exited: Schema.optional(Schema.Array(Schema.NumberFromString)),
+        exited: Schema.optional(Schema.Array(Schema.FiniteFromString)),
         health: Schema.optional(Schema.Array(ContainerHealth.fields["Status"])),
         identifier: Schema.optional(Schema.Array(ContainerIdentifier)),
         // isolation: Schema.optional(Schema.Array(ContainerHostConfig.fields["Isolation"])),
@@ -71,7 +71,7 @@ export const PruneFilters = Schema.fromJsonString(
 const listContainersEndpoint = HttpApiEndpoint.get("list", "/json", {
     query: {
         all: Schema.optional(Schema.Boolean),
-        limit: Schema.optional(Schema.Number),
+        limit: Schema.optional(Schema.Finite),
         size: Schema.optional(Schema.Boolean),
         filters: Schema.optional(ListFilters),
     },
@@ -132,8 +132,8 @@ const logsContainerEndpoint = HttpApiEndpoint.get("logs", "/:identifier/logs", {
         follow: Schema.optional(Schema.Boolean),
         stdout: Schema.optional(Schema.Boolean),
         stderr: Schema.optional(Schema.Boolean),
-        since: Schema.optional(Schema.Number),
-        until: Schema.optional(Schema.Number),
+        since: Schema.optional(Schema.Finite),
+        until: Schema.optional(Schema.Finite),
         timestamps: Schema.optional(Schema.Boolean),
         tail: Schema.optional(Schema.String),
     },
@@ -182,8 +182,8 @@ const statsContainerEndpoint = HttpApiEndpoint.get("stats", "/:identifier/stats"
 const resizeContainerEndpoint = HttpApiEndpoint.post("resize", "/:identifier/resize", {
     params: { identifier: ContainerIdentifier },
     query: {
-        h: Schema.optional(Schema.Number),
-        w: Schema.optional(Schema.Number),
+        h: Schema.optional(Schema.Finite),
+        w: Schema.optional(Schema.Finite),
     },
     success: HttpApiSchema.Empty(200), // 200 OK
     error: [
@@ -213,7 +213,7 @@ const stopContainerEndpoint = HttpApiEndpoint.post("stop", "/:identifier/stop", 
     params: { identifier: ContainerIdentifier },
     query: {
         signal: Schema.optional(Schema.String),
-        t: Schema.optional(Schema.Number),
+        t: Schema.optional(Schema.Finite),
     },
     success: [
         HttpApiSchema.Empty(204), // 204 No Content
@@ -230,7 +230,7 @@ const restartContainerEndpoint = HttpApiEndpoint.post("restart", "/:identifier/r
     params: { identifier: ContainerIdentifier },
     query: {
         signal: Schema.optional(Schema.String),
-        t: Schema.optional(Schema.Number),
+        t: Schema.optional(Schema.Finite),
     },
     success: HttpApiSchema.Empty(204), // 204 No Content
     error: [

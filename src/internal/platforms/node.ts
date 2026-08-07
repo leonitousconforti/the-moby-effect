@@ -7,7 +7,10 @@ import * as Function from "effect/Function";
 import * as Layer from "effect/Layer";
 import * as Socket from "effect/unstable/socket/Socket";
 
+// These type-only imports feed the Node http/https agent options that this platform adapter exists to build.
+// @effect-diagnostics-next-line nodeBuiltinImport:off
 import type * as http from "node:http";
+// @effect-diagnostics-next-line nodeBuiltinImport:off
 import type * as https from "node:https";
 import type * as net from "node:net";
 import type * as stream from "node:stream";

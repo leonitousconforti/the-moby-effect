@@ -84,7 +84,7 @@ const inspectServiceEndpoint = HttpApiEndpoint.get("inspect", "/:id", {
 const updateServiceEndpoint = HttpApiEndpoint.post("update", "/:id/update", {
     params: { id: Schema.String },
     query: {
-        version: Schema.Number,
+        version: Schema.Finite,
         rollback: Schema.optional(Schema.String),
         registryAuthFrom: Schema.optional(Schema.String),
     },
@@ -107,7 +107,7 @@ const logsServiceEndpoint = HttpApiEndpoint.get("logs", "/:id/logs", {
         follow: Schema.optional(Schema.Boolean),
         stdout: Schema.optional(Schema.Boolean),
         stderr: Schema.optional(Schema.Boolean),
-        since: Schema.optional(Schema.Number),
+        since: Schema.optional(Schema.Finite),
         timestamps: Schema.optional(Schema.Boolean),
         tail: Schema.optional(Schema.String),
     },

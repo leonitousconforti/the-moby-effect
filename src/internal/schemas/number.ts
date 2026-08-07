@@ -40,7 +40,7 @@ const sentinelTransformation = SchemaTransformation.transform({
  */
 export const NumberFromWireString = Schema.String.annotate({
     expected: "a string that will be decoded as a number and sent over the wire as a bare JSON number",
-}).pipe(Schema.decodeTo(Schema.Number, sentinelTransformation.compose(SchemaTransformation.numberFromString)));
+}).pipe(Schema.decodeTo(Schema.Finite, sentinelTransformation.compose(SchemaTransformation.numberFromString)));
 
 /**
  * A bigint that crosses the wire as a bare JSON number but is carried as a

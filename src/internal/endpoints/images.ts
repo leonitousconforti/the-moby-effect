@@ -72,16 +72,16 @@ const buildImageEndpoint = HttpApiEndpoint.post("build", "/build", {
         pull: Schema.optional(Schema.String),
         rm: Schema.optional(Schema.Boolean),
         forcerm: Schema.optional(Schema.Boolean),
-        memory: Schema.optional(Schema.Number),
-        memswap: Schema.optional(Schema.Number),
-        cpushares: Schema.optional(Schema.Number),
+        memory: Schema.optional(Schema.Finite),
+        memswap: Schema.optional(Schema.Finite),
+        cpushares: Schema.optional(Schema.Finite),
         cpusetcpus: Schema.optional(Schema.String),
-        cpuperiod: Schema.optional(Schema.Number),
-        cpuquota: Schema.optional(Schema.Number),
+        cpuperiod: Schema.optional(Schema.Finite),
+        cpuquota: Schema.optional(Schema.Finite),
         buildargs: Schema.optional(
             Schema.fromJsonString(Schema.Record(Schema.String, Schema.NullishOr(Schema.String)))
         ),
-        shmsize: Schema.optional(Schema.Number),
+        shmsize: Schema.optional(Schema.Finite),
         squash: Schema.optional(Schema.Boolean),
         labels: Schema.optional(Schema.String),
         networkmode: Schema.optional(Schema.String),
@@ -119,7 +119,7 @@ export const BuildPruneFilters = Schema.fromJsonString(
 /** @see https://docs.docker.com/reference/api/engine/latest/#tag/Image/operation/BuildPrune */
 const buildPruneEndpoint = HttpApiEndpoint.post("buildPrune", "/build/prune", {
     query: {
-        "keep-storage": Schema.optional(Schema.Number),
+        "keep-storage": Schema.optional(Schema.Finite),
         all: Schema.optional(Schema.Boolean),
         filters: Schema.optional(BuildPruneFilters),
     },
@@ -216,7 +216,7 @@ const deleteImageEndpoint = HttpApiEndpoint.delete("delete", "/images/:name", {
 const searchImagesEndpoint = HttpApiEndpoint.get("search", "/images/search", {
     query: {
         term: Schema.String,
-        limit: Schema.optional(Schema.Number),
+        limit: Schema.optional(Schema.Finite),
         filters: Schema.optional(SearchFilters),
     },
     success: Schema.Array(RegistrySearchResult), // 200 OK
