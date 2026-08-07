@@ -1,8 +1,8 @@
 diff --git a/dist/unstable/httpapi/HttpApiClient.js b/dist/unstable/httpapi/HttpApiClient.js
-index 7cd2743803fa7d402e806ace1399278e715e9648..654ced58235a2393f7ecc46801f616cb47649ca4 100644
+index 0ef877b094106f5eaad8de39041d6df46bb0e59f..24583559dce5d694dd12919247d5f5dabc2e2fda 100644
 --- a/dist/unstable/httpapi/HttpApiClient.js
 +++ b/dist/unstable/httpapi/HttpApiClient.js
-@@ -493,6 +493,20 @@ function getEncodePayloadSchemaFromBody(schema, method) {
+@@ -533,6 +533,20 @@ function getEncodePayloadSchemaFromBody(schema, method) {
    if (cached !== undefined) {
      return cached;
    }
@@ -24,10 +24,10 @@ index 7cd2743803fa7d402e806ace1399278e715e9648..654ced58235a2393f7ecc46801f616cb
    const out = $HttpBody.pipe(Schema.decodeTo(schema, SchemaTransformation.transformOrFail({
      decode() {
 diff --git a/dist/unstable/httpapi/HttpApiEndpoint.js b/dist/unstable/httpapi/HttpApiEndpoint.js
-index 84b80015eb679998caa2b0a8a19169cc30c487cf..e48ede3d922369c97be335f446a1436a7142c311 100644
+index dc8c1cb93fde0b2ed26d7da590a6930e8394f41d..189ce3189cf0ab96842abdf80f01b890e55791cc 100644
 --- a/dist/unstable/httpapi/HttpApiEndpoint.js
 +++ b/dist/unstable/httpapi/HttpApiEndpoint.js
-@@ -284,6 +284,9 @@ function transformResponse(schema) {
+@@ -341,6 +341,9 @@ function applyResponseEncoding(schema, encoding) {
    }
  }
  function transformPayload(schema, method) {
