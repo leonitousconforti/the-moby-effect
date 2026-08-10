@@ -33,4 +33,4 @@ minimumReleaseAgeExclude:
     - eftar
 
 patchedDependencies:
-    effect@4.0.0-beta.104: patches/effect@4.0.0-beta.104.patch
+    effect@4.0.0-beta.106: patches/effect@4.0.0-beta.106.patch
