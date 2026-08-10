@@ -109,7 +109,7 @@ importers:
         version: 8.10.0
       ws:
         specifier: ^8.21.2
-        version: 8.21.2
+        version: 8.21.3
 
 packages:
 
@@ -2660,8 +2660,8 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
-  ws@8.21.2:
-    resolution: {integrity: sha512-54dMVAo4WIe6SKy3vBgN+9bJZqqQ8IMRevAkOLQALhi49qkkQDQfWdAZ8KQlXiEabw88ARXXdUrlvtbKQX+aKw==}
+  ws@8.21.3:
+    resolution: {integrity: sha512-201TZ/kPWxoPr/OKWjquZR1SWKXcvxdH+e1xrx89b3YbmzLMFCLfnaG1HFIgWzJOEWZ7MvpK++odZufgYR50Rw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -2991,7 +2991,7 @@ snapshots:
     dependencies:
       '@types/ws': 8.18.1
       effect: 4.0.0-beta.104(patch_hash=eb939986ec5b3445c2b14d3b90127a5d861d309f14026167930fc70a5de12726)
-      ws: 8.21.2
+      ws: 8.21.3
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -4994,6 +4994,6 @@ snapshots:
       siginfo: 2.0.0
       stackback: 0.0.2
 
-  ws@8.21.2: {}
+  ws@8.21.3: {}
 
   xtend@4.0.2: {}
