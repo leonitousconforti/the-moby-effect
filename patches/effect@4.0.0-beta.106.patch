@@ -1,5 +1,5 @@
 diff --git a/dist/unstable/httpapi/HttpApiClient.js b/dist/unstable/httpapi/HttpApiClient.js
-index 0ef877b094106f5eaad8de39041d6df46bb0e59f..24583559dce5d694dd12919247d5f5dabc2e2fda 100644
+index 9036e8e06ff04fbf3b2e42e085bb8bfcedf16b68..3e74456166691650005ba0f0deff0aaa1efa9b0d 100644
 --- a/dist/unstable/httpapi/HttpApiClient.js
 +++ b/dist/unstable/httpapi/HttpApiClient.js
 @@ -533,6 +533,20 @@ function getEncodePayloadSchemaFromBody(schema, method) {
@@ -8,10 +8,10 @@ index 0ef877b094106f5eaad8de39041d6df46bb0e59f..24583559dce5d694dd12919247d5f5da
    }
 +  if (HttpApiSchema.isStreamUint8Array(schema)) {
 +    const out = $HttpBody.pipe(Schema.decodeTo(schema, SchemaTransformation.transformOrFail({
-+      decode() {
++      decode(input, options) {
 +        return Effect.fail(new SchemaIssue.Forbidden({
 +          message: "Encode only schema"
-+        }));
++        }, input, options));
 +      },
 +      encode(t) {
 +        return Effect.succeed(HttpBody.stream(t, schema.contentType));
@@ -22,7 +22,7 @@ index 0ef877b094106f5eaad8de39041d6df46bb0e59f..24583559dce5d694dd12919247d5f5da
 +  }
    const encoding = HttpApiSchema.getPayloadEncoding(ast, method);
    const out = $HttpBody.pipe(Schema.decodeTo(schema, SchemaTransformation.transformOrFail({
-     decode() {
+     decode(input, options) {
 diff --git a/dist/unstable/httpapi/HttpApiEndpoint.js b/dist/unstable/httpapi/HttpApiEndpoint.js
 index dc8c1cb93fde0b2ed26d7da590a6930e8394f41d..189ce3189cf0ab96842abdf80f01b890e55791cc 100644
 --- a/dist/unstable/httpapi/HttpApiEndpoint.js

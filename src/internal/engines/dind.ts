@@ -1,5 +1,4 @@
 import type * as PlatformError from "effect/PlatformError";
-import type * as Schema from "effect/Schema";
 import type * as Scope from "effect/Scope";
 
 import * as Array from "effect/Array";
@@ -13,6 +12,7 @@ import * as Match from "effect/Match";
 import * as Option from "effect/Option";
 import * as Path from "effect/Path";
 import * as Schedule from "effect/Schedule";
+import * as Schema from "effect/Schema";
 import * as Stream from "effect/Stream";
 import * as String from "effect/String";
 import * as Tuple from "effect/Tuple";
@@ -266,8 +266,12 @@ export const makeDindLayerFromPlatformConstructor =
             );
 
             // Create the dind container
-            const zeroHostPort = yield* InternetSchemas.Port.makeEffect(0);
-            const zeroHostPortBinding = yield* PortSchemas.PortBinding.makeEffect({ HostPort: zeroHostPort });
+            const zeroHostPort = yield* InternetSchemas.Port.makeEffect(0).pipe(
+                Effect.mapError((issue) => new Schema.SchemaError(issue))
+            );
+            const zeroHostPortBinding = yield* PortSchemas.PortBinding.makeEffect({ HostPort: zeroHostPort }).pipe(
+                Effect.mapError((issue) => new Schema.SchemaError(issue))
+            );
             const containerInspectResponse = yield* effectWithHostDocker(
                 DockerEngine.runScoped({
                     Image: `the-moby-effect-${options.exposeDindContainerBy}-${dindTag}:latest`,
