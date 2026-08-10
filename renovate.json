@@ -7,6 +7,7 @@
         "helpers:pinGitHubActionDigests"
     ],
     "labels": ["dependencies", "renovate"],
+    "automerge": true,
     "automergeType": "branch",
     "ignorePaths": ["**/node_modules/**", "repos/effect/**", "repos/effect-smol/**"],
     "enabledManagers": ["github-actions", "nix", "git-submodules", "pip_requirements", "npm"],
@@ -20,7 +21,8 @@
         "enabled": true,
         "schedule": ["before 5am on monday"],
         "commitMessageAction": "Refresh",
-        "addLabels": ["lockfile-maintenance"]
+        "addLabels": ["lockfile-maintenance"],
+        "automerge": true
     },
     "packageRules": [
         {
@@ -95,10 +97,10 @@
             "addLabels": ["nix"]
         },
         {
-            "description": "Automerge minor and patch devDependency updates once CI passes on the update branch",
-            "matchDepTypes": ["devDependencies"],
-            "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
-            "automerge": true
+            "description": "Never automerge npm runtime or peer dependency updates",
+            "matchManagers": ["npm"],
+            "matchDepTypes": ["dependencies", "peerDependencies"],
+            "automerge": false
         },
         {
             "description": "Never automerge typescript since minor releases can contain breaking changes",
