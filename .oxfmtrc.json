@@ -8,7 +8,6 @@
         ".agents/**/*",
         "**/index.ts",
         "repos/**",
-        "**/CHANGELOG.md",
         "submodules/**",
         "!src/internal/generated/index.ts"
     ],

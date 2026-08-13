@@ -41,7 +41,7 @@ jobs:
 
       - uses: changesets/action@22ccf9aa43179fe9e27dc62e575971d28cce197c # v2.0.0
         with:
-          publish: pnpm changeset-publish
-          version: pnpm changeset-version
+          publish-script: pnpm changeset-publish
+          version-script: pnpm changeset-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
