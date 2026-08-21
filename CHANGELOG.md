@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.54.7
+
+### Patch Changes
+
+- ab067b9: Update Effect-TS packages
+- ab067b9: Update Effect-TS packages
+
 ## 1.54.6
 
 ### Patch Changes
