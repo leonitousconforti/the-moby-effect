@@ -2,6 +2,7 @@
     "oxc.useExecPath": true,
     "oxc.path.oxfmt": "node_modules/oxfmt/bin/oxfmt",
     "oxc.path.oxlint": "node_modules/oxlint/bin/oxlint",
+    "oxc.path.tsgolint": "node_modules/oxlint-tsgolint/../@oxlint-tsgolint/darwin-arm64/tsgolint",
 
     "js/ts.experimental.useTsgo": true,
     "js/ts.tsdk.path": "./node_modules/typescript/bin",
