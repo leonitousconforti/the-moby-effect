@@ -74,7 +74,7 @@
         "@effect/platform-browser": "4.0.0-rc.111",
         "@effect/platform-bun": "4.0.0-rc.111",
         "@effect/platform-node": "4.0.0-rc.111",
-        "@effect/tsgo": "0.39.1",
+        "@effect/tsgo": "0.40.0",
         "@effect/vitest": "4.0.0-rc.111",
         "@types/node": "26.4.1",
         "@types/ssh2": "1.15.6",
