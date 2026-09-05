@@ -67,7 +67,7 @@
     "devDependencies": {
         "@babel/cli": "8.0.4",
         "@babel/core": "8.0.1",
-        "@changesets/cli": "3.0.1",
+        "@changesets/cli": "3.0.2",
         "@changesets/config": "4.0.0",
         "@effect/build-utils": "0.8.9",
         "@effect/docgen": "4.0.0-rc.111",
