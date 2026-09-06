@@ -79,7 +79,7 @@
         "@types/node": "26.4.1",
         "@types/ssh2": "1.15.6",
         "@types/ws": "8.18.1",
-        "@vitest/coverage-v8": "4.1.11",
+        "@vitest/coverage-v8": "5.0.0",
         "babel-plugin-annotate-pure-calls": "0.5.0",
         "effect": "4.0.0-rc.111",
         "madge": "8.0.0",
@@ -93,7 +93,7 @@
         "typescript": "7.0.2",
         "undici": "8.10.2",
         "vite": "8.2.2",
-        "vitest": "4.1.11",
+        "vitest": "5.0.0",
         "ws": "8.21.3"
     },
     "peerDependencies": {
