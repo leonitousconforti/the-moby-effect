@@ -76,7 +76,7 @@
         "@effect/platform-node": "4.0.0-rc.111",
         "@effect/tsgo": "0.41.0",
         "@effect/vitest": "4.0.0-rc.111",
-        "@types/node": "26.4.1",
+        "@types/node": "26.5.0",
         "@types/ssh2": "1.15.6",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "4.1.11",
