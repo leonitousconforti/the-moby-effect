@@ -151,8 +151,8 @@ importers:
         specifier: 4.0.0-rc.111
         version: 4.0.0-rc.111(effect@4.0.0-rc.111(patch_hash=ca2f839992a365ddd88de32a3e388ef8f1cc2946a694fec5c263985b3282cf9b))(redis@6.2.1)
       '@effect/tsgo':
-        specifier: 0.43.0
-        version: 0.43.0
+        specifier: 0.44.0
+        version: 0.44.0
       '@effect/vitest':
         specifier: 4.0.0-rc.111
         version: 4.0.0-rc.111(effect@4.0.0-rc.111(patch_hash=ca2f839992a365ddd88de32a3e388ef8f1cc2946a694fec5c263985b3282cf9b))(vitest@4.1.11)
@@ -424,43 +424,43 @@ packages:
       effect: ^4.0.0-rc.111
       redis: '>=5.0.0 <7.0.0'
 
-  '@effect/tsgo-darwin-arm64@0.43.0':
-    resolution: {integrity: sha512-IG/JjY2n2YbUCQUwTLss9dF/VLe/m9tXQsyUHxhqFWW0Ih/3AJN3zIEnKu1JH19eQASFgsnm5zJQXHpVmiMRng==}
+  '@effect/tsgo-darwin-arm64@0.44.0':
+    resolution: {integrity: sha512-aocqN+Q6wu4TiHf7g13hwA0FvNLBrIYcUa3vb4h8tOCkz4Z+/HHm9g2t3RpexLykc/hCEcVIgD4gW5Uuu34YoA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@effect/tsgo-darwin-x64@0.43.0':
-    resolution: {integrity: sha512-diUSga2Zhl7gp6TDJzw+JQ1CGOi1SvVS1gBWWS3AQExlYZaku3eQmtIQ6LJSfxTDBkVtk30zFuqT7/uqvXJkFA==}
+  '@effect/tsgo-darwin-x64@0.44.0':
+    resolution: {integrity: sha512-rkN+qgBac7yzIxMqZnThbMZDyw6bKqxb5k0xaTt6cPiL8H3AO2F8QFCkjp95qgo0zYBZKSuSHRdjZDum0Erqcg==}
     cpu: [x64]
     os: [darwin]
 
-  '@effect/tsgo-linux-arm64@0.43.0':
-    resolution: {integrity: sha512-5HZ2G8zeIUYxG9DL0zgoibjd/EgHjK2BrTS28DMdmwd0+uRpMhCRPHnfGxurTDEprcCavAOfvKx+32EKe4HWhA==}
+  '@effect/tsgo-linux-arm64@0.44.0':
+    resolution: {integrity: sha512-znT1wLILWVKpr69HrqoG6+SHJEJG9SvCB0qvjgzMU1Sx3NWazJKtYzZVrqFg4ZO7yN4equ65EA5XCfrNyS8u7A==}
     cpu: [arm64]
     os: [linux]
 
-  '@effect/tsgo-linux-arm@0.43.0':
-    resolution: {integrity: sha512-NCcggB9V3C3J0/mrP6K/O8EzoOj0ua6p85WZA4nNj/3mFXh8H3eTc4LPwdsVCiIi66u0qNNefFJjV2uNgDP6Qw==}
+  '@effect/tsgo-linux-arm@0.44.0':
+    resolution: {integrity: sha512-UdX8UJyi6kVP0slgcsKObQu/Y5EppZfHpoQRgeoD9XHWdx61uIPhkBoSrj2WAaO+0VfL5Q7p4/VEq6vRKIdk3A==}
     cpu: [arm]
     os: [linux]
 
-  '@effect/tsgo-linux-x64@0.43.0':
-    resolution: {integrity: sha512-prRQeThBFCLngHdPMiF+FzcvdEhh7tqFkZ7mZct87FYJNCNaWjO8I6wJsjRY3SOyV7gaMRZrTTpV54sCdErQvQ==}
+  '@effect/tsgo-linux-x64@0.44.0':
+    resolution: {integrity: sha512-wOEVYPaHoC5edJEK9V6tYO2eQobZIOjpqT4U2DLTlmzgJPMDCuWo/wQMFEpePX6kica58e0NkgTAcdU6nNKv0g==}
     cpu: [x64]
     os: [linux]
 
-  '@effect/tsgo-win32-arm64@0.43.0':
-    resolution: {integrity: sha512-O25TBiemFMEdtHscIJMmQ7NMPnIWPLWkuvudeSAB/VTmsfHoIgCsldC1vGDq3xP7wJDlxNPblZpCDpbnEO9s0Q==}
+  '@effect/tsgo-win32-arm64@0.44.0':
+    resolution: {integrity: sha512-n6kslI2tA6szxaACPlPs0CTSczqAkN/u7D0nW2lrDON7uyC9iGmUPbti7/dq1zngLDuvCWqFTpFtqfyblDgl2w==}
     cpu: [arm64]
     os: [win32]
 
-  '@effect/tsgo-win32-x64@0.43.0':
-    resolution: {integrity: sha512-Ic3hLnr8v8DBZ9Hx4VflSXJZSJh/Ak8PY/Tnz8nNWONtIpvBWTzFMXFmrib2h2O8N61FoAR/KG1S2M6mEqsExg==}
+  '@effect/tsgo-win32-x64@0.44.0':
+    resolution: {integrity: sha512-1z77IQzujL/GxobzshnbBxjywXmwqwAT+6+TUFB06idFI1V7828YoNiJgA3Meu9QLqBp+5cWm+KlrDVB5H5cHQ==}
     cpu: [x64]
     os: [win32]
 
-  '@effect/tsgo@0.43.0':
-    resolution: {integrity: sha512-Xpe9UNrQ4JGNXbk2YHE8r6Z575pswKcU4HS53CSHcT8obGAN14KmMh4a+A29Ky6TDdKaI4nwalkRwSizJi+9tw==}
+  '@effect/tsgo@0.44.0':
+    resolution: {integrity: sha512-zgrk2hLqx3vX7pZObBOBAFfvJN0bEVncEKyY2cie07KUeG3rB9IPUm4+4eTh7o0eXLQuB5rzh+ZjEJSpoLKe9A==}
     hasBin: true
 
   '@effect/vitest@4.0.0-rc.111':
@@ -2908,36 +2908,36 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@effect/tsgo-darwin-arm64@0.43.0':
+  '@effect/tsgo-darwin-arm64@0.44.0':
     optional: true
 
-  '@effect/tsgo-darwin-x64@0.43.0':
+  '@effect/tsgo-darwin-x64@0.44.0':
     optional: true
 
-  '@effect/tsgo-linux-arm64@0.43.0':
+  '@effect/tsgo-linux-arm64@0.44.0':
     optional: true
 
-  '@effect/tsgo-linux-arm@0.43.0':
+  '@effect/tsgo-linux-arm@0.44.0':
     optional: true
 
-  '@effect/tsgo-linux-x64@0.43.0':
+  '@effect/tsgo-linux-x64@0.44.0':
     optional: true
 
-  '@effect/tsgo-win32-arm64@0.43.0':
+  '@effect/tsgo-win32-arm64@0.44.0':
     optional: true
 
-  '@effect/tsgo-win32-x64@0.43.0':
+  '@effect/tsgo-win32-x64@0.44.0':
     optional: true
 
-  '@effect/tsgo@0.43.0':
+  '@effect/tsgo@0.44.0':
     optionalDependencies:
-      '@effect/tsgo-darwin-arm64': 0.43.0
-      '@effect/tsgo-darwin-x64': 0.43.0
-      '@effect/tsgo-linux-arm': 0.43.0
-      '@effect/tsgo-linux-arm64': 0.43.0
-      '@effect/tsgo-linux-x64': 0.43.0
-      '@effect/tsgo-win32-arm64': 0.43.0
-      '@effect/tsgo-win32-x64': 0.43.0
+      '@effect/tsgo-darwin-arm64': 0.44.0
+      '@effect/tsgo-darwin-x64': 0.44.0
+      '@effect/tsgo-linux-arm': 0.44.0
+      '@effect/tsgo-linux-arm64': 0.44.0
+      '@effect/tsgo-linux-x64': 0.44.0
+      '@effect/tsgo-win32-arm64': 0.44.0
+      '@effect/tsgo-win32-x64': 0.44.0
 
   '@effect/vitest@4.0.0-rc.111(effect@4.0.0-rc.111(patch_hash=ca2f839992a365ddd88de32a3e388ef8f1cc2946a694fec5c263985b3282cf9b))(vitest@4.1.11)':
     dependencies:
