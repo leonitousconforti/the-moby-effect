@@ -61,8 +61,8 @@
         "changeset-publish": "pnpm build && changeset publish"
     },
     "dependencies": {
-        "effect-schemas": "0.0.27",
-        "eftar": "0.1.5"
+        "effect-schemas": "0.0.28",
+        "eftar": "0.1.6"
     },
     "devDependencies": {
         "@babel/cli": "8.0.4",
@@ -70,18 +70,18 @@
         "@changesets/cli": "3.0.3",
         "@changesets/config": "4.0.1",
         "@effect/build-utils": "0.8.9",
-        "@effect/docgen": "4.0.0-rc.111",
-        "@effect/platform-browser": "4.0.0-rc.111",
-        "@effect/platform-bun": "4.0.0-rc.111",
-        "@effect/platform-node": "4.0.0-rc.111",
+        "@effect/docgen": "4.0.2",
+        "@effect/platform-browser": "4.0.2",
+        "@effect/platform-bun": "4.0.2",
+        "@effect/platform-node": "4.0.2",
         "@effect/tsgo": "0.45.0",
-        "@effect/vitest": "4.0.0-rc.111",
+        "@effect/vitest": "4.0.2",
         "@types/node": "26.6.4",
         "@types/ssh2": "1.15.6",
         "@types/ws": "8.18.2",
         "@vitest/coverage-v8": "4.1.11",
         "babel-plugin-annotate-pure-calls": "0.5.0",
-        "effect": "4.0.0-rc.111",
+        "effect": "4.0.2",
         "madge": "8.0.0",
         "oxfmt": "0.67.0",
         "oxlint": "1.82.0",
@@ -97,10 +97,10 @@
         "ws": "8.22.0"
     },
     "peerDependencies": {
-        "@effect/platform-browser": "4.0.0-rc.111",
-        "@effect/platform-bun": "4.0.0-rc.111",
-        "@effect/platform-node": "4.0.0-rc.111",
-        "effect": "4.0.0-rc.111"
+        "@effect/platform-browser": "4.0.2",
+        "@effect/platform-bun": "4.0.2",
+        "@effect/platform-node": "4.0.2",
+        "effect": "4.0.2"
     },
     "peerDependenciesMeta": {
         "@effect/platform-browser": {
